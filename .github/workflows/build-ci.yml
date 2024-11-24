@@ -45,16 +45,22 @@ jobs:
 
       - if: contains( matrix.os, 'windows')
         name: Prepare for Windows
-        run: aqt list-qt linux desktop
+        run: |
+          pip install aqtinstall
+          aqt list-qt linux desktop
       - if: contains( matrix.os, 'ubuntu')
         name: Install dependencies
         run: |
-          sudo apt install build-essential libssl-dev
+          pip install aqtinstall
+          aqt list-qt linux desktop
+          sudo apt install build-essential libssl-dev \
              cmake ninja-build \
              libssl-dev libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev
       - if: contains( matrix.os, 'macos')
         name: Install for macOS
-        run: aqt list-qt linux desktop
+        run: |
+          pip install aqtinstall
+          aqt list-qt linux desktop
 
       #
       # Install Qt
