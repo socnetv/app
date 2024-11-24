@@ -11,5 +11,5 @@ jobs:
       - uses: actions/checkout@v4
       - name: Validate YAML file
         run:
-          yamllint  -d "{extends: relaxed, rules: {line-length: {max: 120}}}"  ${{ github.workspace }}/.github/workflows/*.yml
+          yamllint -c ${{ github.workspace }}/.github/workflows/yamlint.conf  ${{ github.workspace }}/.github/workflows/*.yml
 
