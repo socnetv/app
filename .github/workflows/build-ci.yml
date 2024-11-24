@@ -6,7 +6,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-2019]
+        os: [ubuntu-22.04, ubuntu-latest, macos-latest, windows-2019]
         qt-version: ['6.2.4', '6.4.3', '6.5.3', '6.6.3']
         # exclude:
         #   - os: ubuntu-latest
@@ -136,7 +136,7 @@ jobs:
         name: Build for Windows
         run: |
           qmake CONFIG+=debug socnetv.pro
-          mingw32-make
+          mingw64-make
           make
           dir
 
