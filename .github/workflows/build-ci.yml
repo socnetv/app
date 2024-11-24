@@ -48,6 +48,23 @@ jobs:
       #
 
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
+        name: Prepare for Windows
+      - if: contains( matrix.os, 'ubuntu') && startsWith( matrix.qt-version, '6.' )
+        name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install \
+            build-essential cmake ninja-build \
+            libssl-dev libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev
+      - if: contains( matrix.os, 'macos') && startsWith( matrix.qt-version, '6.' )
+        name: Install for macOS
+
+
+      #
+      # Install Qt
+      #
+
+      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
         name: Install Qt 6 on Windows
         uses: jurplel/install-qt-action@v4
         with:
@@ -56,18 +73,12 @@ jobs:
           arch: win64_mingw
           modules: qtwebsockets core5compat xml network widgets printsupport charts svg
       - if: contains( matrix.os, 'ubuntu') && startsWith( matrix.qt-version, '6.' )
-        - name: Install dependencies
-          run: |
-            sudo apt update
-            sudo apt install \
-              build-essential cmake ninja-build \
-              libssl-dev libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev
-        - name: Install Qt 6 on Linux
-          uses: jurplel/install-qt-action@v4
-          with:
-            aqtversion: '==2.0.0'
-            version: ${{ matrix.qt-version }}
-            modules: qtwebsockets core5compat xml network widgets printsupport charts svg
+        name: Install Qt 6 on Linux
+        uses: jurplel/install-qt-action@v4
+        with:
+          aqtversion: '==2.0.0'
+          version: ${{ matrix.qt-version }}
+          modules: qtwebsockets core5compat xml network widgets printsupport charts svg
 
       - if: contains( matrix.os, 'macos') && startsWith( matrix.qt-version, '6.' )
         name: Install Qt 6 on macOS
