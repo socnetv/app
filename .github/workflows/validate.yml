@@ -12,3 +12,4 @@ jobs:
       - name: Validate YAML file
         run:
           yamllint ${{ github.workspace }}/.github/workflows/*.yml
+
