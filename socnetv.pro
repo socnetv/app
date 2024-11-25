@@ -151,6 +151,8 @@ win32 {
 
 
 win32:msvc {
+    # Fixes msvc compile/linking error "unresolved external symbol WinMain referenced in function ..."
+    # see https://stackoverflow.com/questions/39689162/qt-project-in-visual-studio-2015-unresolved-external-symbol-wwinmain
     QMAKE_LFLAGS += /ENTRY:mainCRTStartup
 }
 
