@@ -86,7 +86,7 @@ jobs:
           version: ${{ matrix.qt-version }}
           arch: win64_mingw
           modules: qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d
-          # cache: true
+          cache: true
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
         name: Install Qt 6.3+ on Windows
         uses: jurplel/install-qt-action@v4
@@ -95,7 +95,7 @@ jobs:
           version: ${{ matrix.qt-version }}
           #arch: win64_mingw
           modules: qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d
-          # cache: true
+          cache: true
       - if: contains( matrix.os, 'ubuntu') && startsWith( matrix.qt-version, '6.' )
         name: Install Qt 6 on Linux
         uses: jurplel/install-qt-action@v4
@@ -144,10 +144,20 @@ jobs:
           echo "Listing some directories"
           dir D:\a\app\Qt\
           dir D:\a\app\Qt\6.2.4
-          # dir D:\a\app\Qt\6.2.4\msvc2019_64
-          # dir D:\a\app\Qt\6.2.4\msvc2019_64\bin
-          # dir D:\a\app\Qt\6.2.4\mingw_64
-          # dir D:\a\app\Qt\6.2.4\mingw_64\bin
+          dir D:\a\app\Qt\6.2.4\mingw_64
+          dir D:\a\app\Qt\6.2.4\mingw_64\bin
+          echo "Setting LINK variable"
+          set LINK=/entry:mainCRTStartup
+          echo LINK
+          echo "Running qmake6"
+          qmake6 CONFIG+=debug socnetv.pro -r
+          echo "Compiling with nmake. Please wait..."
+          make
+      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
+        name: Build for Windows
+        run: |
+          echo "Listing some directories"
+          dir D:\a\app\Qt\
           echo "Setting LINK variable"
           set LINK=/entry:mainCRTStartup
           echo LINK
@@ -155,6 +165,5 @@ jobs:
           qmake6 CONFIG+=debug socnetv.pro -r
           echo "Compiling with nmake. Please wait..."
           nmake
-          # dir
 
       - run: echo "🍏 This job's status is ${{ job.status }}."
