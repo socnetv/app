@@ -47,11 +47,11 @@ jobs:
         name: Prepare for Windows
         run: |
           dir
-          pip install aqtinstall
+          # pip install aqtinstall
           # aqt list-qt linux desktop
           # aqt list-qt windows desktop
           # aqt list-qt mac desktop
-          aqt list-qt windows desktop --arch ${{ matrix.qt-version }}
+          # aqt list-qt windows desktop --arch ${{ matrix.qt-version }}
           # aqt list-qt windows desktop --modules ${{ matrix.qt-version }} win64_mingw
       - if: contains( matrix.os, 'ubuntu')
         name: Install dependencies
