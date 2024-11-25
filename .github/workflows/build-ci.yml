@@ -147,6 +147,7 @@ jobs:
           dir D:\a\app\Qt\6.2.4\msvc2019_64\bin
           # dir D:\a\app\Qt\6.2.4\mingw_64
           # dir D:\a\app\Qt\6.2.4\mingw_64\bin
+          set LINK=/entry:mainCRTStartup
           qmake6 CONFIG+=debug socnetv.pro -r
           nmake
           # dir
