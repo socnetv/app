@@ -84,7 +84,7 @@ jobs:
         with:
           aqtversion: '==2.0.0'
           version: ${{ matrix.qt-version }}
-          #arch: win64_mingw
+          arch: win64_mingw
           modules: qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d
           # cache: true
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
