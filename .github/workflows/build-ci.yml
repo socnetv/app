@@ -84,7 +84,7 @@ jobs:
         with:
           aqtversion: '==2.0.0'
           version: ${{ matrix.qt-version }}
-          arch: win64_mingw
+          # arch: win64_mingw
           modules: qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d
           cache: true
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
@@ -144,14 +144,10 @@ jobs:
           echo "Listing some directories"
           dir D:\a\app\Qt\
           dir D:\a\app\Qt\6.2.4
-          dir D:\a\app\Qt\6.2.4\mingw_64
-          dir D:\a\app\Qt\6.2.4\mingw_64\bin
-          echo "Setting LINK variable"
-          set LINK=/entry:mainCRTStartup && echo LINK
           echo "Running qmake6"
           qmake6 CONFIG+=debug socnetv.pro -r
-          echo "Compiling with nmake. Please wait..."
-          make
+          echo "Compiling, please wait..."
+          nmake
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
         name: Build for Windows
         run: |
