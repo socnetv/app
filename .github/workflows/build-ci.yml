@@ -74,24 +74,28 @@ jobs:
       #
       # Install Qt
       #
+      - if: contains( matrix.os, 'windows')
+        name: Make sure MSVC is found
+        uses: ilammy/msvc-dev-cmd@v1
+
       - if: contains( matrix.os, 'windows') && matrix.qt-version == '6.2.4'
         name: Install Qt Qt 6.2.4 on Windows
         uses: jurplel/install-qt-action@v4
         with:
           aqtversion: '==2.0.0'
           version: ${{ matrix.qt-version }}
-          arch: win64_mingw81
+          #arch: win64_mingw
           modules: qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d
-          cache: true
+          # cache: true
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
         name: Install Qt 6.3+ on Windows
         uses: jurplel/install-qt-action@v4
         with:
           aqtversion: '==2.1.*'
           version: ${{ matrix.qt-version }}
-          arch: win64_mingw81
+          #arch: win64_mingw
           modules: qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d
-          cache: true
+          # cache: true
       - if: contains( matrix.os, 'ubuntu') && startsWith( matrix.qt-version, '6.' )
         name: Install Qt 6 on Linux
         uses: jurplel/install-qt-action@v4
@@ -141,8 +145,8 @@ jobs:
           dir D:\a\app\Qt\6.2.4
           dir D:\a\app\Qt\6.2.4\mingw_64
           dir D:\a\app\Qt\6.2.4\mingw_64\bin
-          qmake6 CONFIG+=debug socnetv.pro
-          make
+          qmake6 CONFIG+=debug socnetv.pro -r
+          nmake
           # dir
 
       - run: echo "🍏 This job's status is ${{ job.status }}."
