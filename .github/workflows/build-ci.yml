@@ -141,14 +141,19 @@ jobs:
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.2.4'
         name: Build for Windows
         run: |
+          echo "Listing some directories"
           dir D:\a\app\Qt\
           dir D:\a\app\Qt\6.2.4
           dir D:\a\app\Qt\6.2.4\msvc2019_64
           dir D:\a\app\Qt\6.2.4\msvc2019_64\bin
           # dir D:\a\app\Qt\6.2.4\mingw_64
           # dir D:\a\app\Qt\6.2.4\mingw_64\bin
+          echo "Setting LINK variable"
           set LINK=/entry:mainCRTStartup
+          echo LINK
+          echo "Running qmake6"
           qmake6 CONFIG+=debug socnetv.pro -r
+          echo "Compiling with nmake. Please wait..."
           nmake
           # dir
 
