@@ -147,8 +147,7 @@ jobs:
           dir D:\a\app\Qt\6.2.4\mingw_64
           dir D:\a\app\Qt\6.2.4\mingw_64\bin
           echo "Setting LINK variable"
-          set LINK=/entry:mainCRTStartup
-          echo LINK
+          set LINK=/entry:mainCRTStartup && echo LINK
           echo "Running qmake6"
           qmake6 CONFIG+=debug socnetv.pro -r
           echo "Compiling with nmake. Please wait..."
@@ -159,8 +158,7 @@ jobs:
           echo "Listing some directories"
           dir D:\a\app\Qt\
           echo "Setting LINK variable"
-          set LINK=/entry:mainCRTStartup
-          echo LINK
+          set LINK=/entry:mainCRTStartup && echo LINK
           echo "Running qmake6"
           qmake6 CONFIG+=debug socnetv.pro -r
           echo "Compiling with nmake. Please wait..."
