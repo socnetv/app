@@ -150,6 +150,11 @@ win32 {
 }
 
 
+win32:msvc {
+    QMAKE_LFLAGS += /ENTRY:mainCRTStartup
+}
+
+
 # This is Linux/Unix only
 unix:!macx{
 
