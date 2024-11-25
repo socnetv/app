@@ -47,10 +47,11 @@ jobs:
         name: Prepare for Windows
         run: |
           dir
-          # pip install aqtinstall
+          pip install aqtinstall
           # aqt list-qt linux desktop
           # aqt list-qt windows desktop
           # aqt list-qt mac desktop
+          aqt list-qt windows desktop --arch ${{ matrix.qt-version }}
           # aqt list-qt windows desktop --modules ${{ matrix.qt-version }} win64_mingw
       - if: contains( matrix.os, 'ubuntu')
         name: Install dependencies
@@ -79,7 +80,7 @@ jobs:
         with:
           aqtversion: '==2.0.0'
           version: ${{ matrix.qt-version }}
-          arch: win64_mingw
+          arch: win64_mingw81
           modules: qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d
           cache: true
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
@@ -88,7 +89,7 @@ jobs:
         with:
           aqtversion: '==2.1.*'
           version: ${{ matrix.qt-version }}
-          arch: win64_mingw
+          arch: win64_mingw81
           modules: qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d
           cache: true
       - if: contains( matrix.os, 'ubuntu') && startsWith( matrix.qt-version, '6.' )
@@ -141,7 +142,7 @@ jobs:
           dir D:\a\app\Qt\6.2.4\mingw_64
           dir D:\a\app\Qt\6.2.4\mingw_64\bin
           qmake6 CONFIG+=debug socnetv.pro
-          # make
+          make
           # dir
 
       - run: echo "🍏 This job's status is ${{ job.status }}."
