@@ -148,16 +148,35 @@ jobs:
           qmake6 CONFIG+=debug socnetv.pro -r
           echo "Compiling, please wait..."
           nmake
-      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
+          dir
+      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.4.3'
         name: Build for Windows
         run: |
           echo "Listing some directories"
           dir D:\a\app\Qt\
-          echo "Setting LINK variable"
-          set LINK=/entry:mainCRTStartup && echo LINK
           echo "Running qmake6"
           qmake6 CONFIG+=debug socnetv.pro -r
           echo "Compiling with nmake. Please wait..."
           nmake
-
+          dir
+      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.5.3'
+        name: Build for Windows
+        run: |
+          echo "Listing some directories"
+          dir D:\a\app\Qt\
+          echo "Running qmake6"
+          qmake6 CONFIG+=debug socnetv.pro -r
+          echo "Compiling with nmake. Please wait..."
+          nmake
+          dir
+      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.6.3'
+        name: Build for Windows
+        run: |
+          echo "Listing some directories"
+          dir D:\a\app\Qt\
+          echo "Running cmake"
+          qmake6 CONFIG+=debug socnetv.pro -r
+          echo "Compiling with nmake. Please wait..."
+          nmake
+          dir
       - run: echo "🍏 This job's status is ${{ job.status }}."
