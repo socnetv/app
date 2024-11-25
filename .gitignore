@@ -16,6 +16,8 @@ prime
 snap/.snapcraft/state
 src/languages/*.qm
 .vscode/
+CMakeFiles/
+CMakeCache.txt
 CMakeLists.txt.user*
 *.o
 qrc_*.cpp
