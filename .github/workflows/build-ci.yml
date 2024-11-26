@@ -21,7 +21,9 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-22.04, ubuntu-latest, macos-latest, windows-2019]
-        # NOTE: For supported Qt Versions, check here: https://ddalcino.github.io/aqt-list-server/
+        # NOTE:
+        # - We will CI build only for Qt6 LTS releases, see: https://doc.qt.io/qt-6/qt-releases.html
+        # - For the Qt Versions supported by aqtinstall, see: https://ddalcino.github.io/aqt-list-server/
         qt-version: ['6.2.4', '6.5.3', '6.6.3', '6.8.0']
         # exclude:
         #   - os: ubuntu-latest
@@ -42,16 +44,18 @@ jobs:
         #     qt-version: '6.5.3'
     runs-on: ${{ matrix.os }}
     steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event, by actor ${{ github.actor }}."
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-      - name: Check out repository code
+      - name: 🤖 Job information
+        run: |
+          echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event, by actor ${{ github.actor }}."
+          echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+          echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - name: 📂 Check out repository ${{ github.repository }}
         uses: actions/checkout@v4
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: List files in the repository
+      - name: 💡 List files cloned from the ${{ github.repository }}
         run: |
           ls ${{ github.workspace }}
+          echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+          echo "🖥️ The workflow is now ready to test your code on the runner."
 
 
       #
@@ -59,7 +63,7 @@ jobs:
       #
 
       - if: contains( matrix.os, 'windows')
-        name: Prepare for Windows
+        name: Prepare for ${{matrix.os}}
         run: |
           echo "🪟 -- Preparing for Windows..."
           # DONT NEED IT. FOR DEBUG ONLY
@@ -68,7 +72,7 @@ jobs:
           # aqt list-qt windows desktop --arch ${{ matrix.qt-version }}
           # aqt list-qt windows desktop --modules ${{ matrix.qt-version }} win64_mingw
       - if: contains( matrix.os, 'ubuntu')
-        name: Install dependencies
+        name: Prepare for ${{matrix.os}}
         run: |
           echo "🐧 -- Preparing for ubuntu..."
           sudo apt install build-essential libssl-dev \
@@ -79,7 +83,7 @@ jobs:
           # aqt list-qt linux desktop
           # aqt list-qt linux desktop --long-modules ${{ matrix.qt-version }} win64_mingw
       - if: contains( matrix.os, 'macos')
-        name: Install for macOS
+        name: Prepare for ${{matrix.os}}
         run: |
           echo "🍎 -- Preparing for macos..."
           ls
@@ -220,7 +224,7 @@ jobs:
           echo "🔧 Running 'cmake -S . -B build' to configure the project..."
           cmake -S . -B build
           echo "🚧 🛠️ Compiling into build/ with 'cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}}'. Please wait..."
-          cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}} -v
+          cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}}
           echo "👉 Building finished. Listing directory build/ for verification: "
           dir build
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.8.0'
