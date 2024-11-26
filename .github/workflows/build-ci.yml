@@ -73,7 +73,6 @@ jobs:
           sudo apt install build-essential libssl-dev \
              cmake ninja-build \
              libssl-dev libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev
-          
           # DONT NEED IT. FOR DEBUG ONLY
           # pip install aqtinstall
           # aqt list-qt linux desktop
@@ -143,12 +142,12 @@ jobs:
           which qmake6
           echo "🔎 Check qmake6 version:"
           qmake6 -v
-          echo "🔧 Running qmake on ubuntu 22.04..."
+          echo "🔧 Running qmake on ubuntu 22.04 with ${{env.QMAKE_CONFIG}}..."
           qmake6 CONFIG+=${{env.QMAKE_CONFIG}}
           echo "🚧 🛠️ Compiling for linux with make. Please wait..."
           make -j${{env.CORES}}
           echo "👉 Building finished. Listing current directory with find for verification:"
-          find .      
+          find .
       - if: contains( matrix.os, 'ubuntu-latest')
         name: Build for Linux
         run: |
@@ -158,20 +157,20 @@ jobs:
           which qmake6
           echo "🔎 Check qmake6 version:"
           qmake6 -v
-          echo "🔧 Running qmake on ubuntu..."
+          echo "🔧 Running qmake on ubuntu with ${{env.QMAKE_CONFIG}}..."
           qmake6 CONFIG+=${{env.QMAKE_CONFIG}}
           echo "🚧 🛠️ Compiling for linux with make. Please wait..."
-          make 
+          make
           echo "👉 Building finished. Listing current directory with find for verification:"
           find .
       # BUILD FOR MACOS
       - if: contains( matrix.os, 'macos')
         name: Build for macOS
         run: |
-          echo "🔧 Running qmake on macos..."
+          echo "🔧 Running qmake on macos with ${{env.QMAKE_CONFIG}}..."
           qmake CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}}
           echo "🚧 🛠️ Compiling for macos with make. Please wait..."
-          make 
+          make
           echo "👉 Building finished. Listing current directory with find for verification:"
           find .
       # BUILD FOR WINDOWS
@@ -206,8 +205,8 @@ jobs:
           mkdir build
           echo "🔧 Running cmake""
           cmake -S . -B build
-          echo "🚧 🛠️ Compiling into build/ with cmake --build. Please wait..."
-          cmake --build build ${{env.CMAKE_CONFIG}}
+          echo "🚧 🛠️ Compiling into build/ with cmake --build build --config ${{env.CMAKE_CONFIG}}. Please wait..."
+          cmake --build build --config ${{env.CMAKE_CONFIG}}
           echo "👉 Building finished. Listing directory build/ for verification:"
           dir build
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.6.3'
@@ -218,8 +217,8 @@ jobs:
           echo "💡 Creating build dir"
           mkdir build
           echo "🔧 Running cmake"
-          cmake -S . -B build 
-          echo "🚧 🛠️ Compiling into build/ with cmake --build. Please wait..."
+          cmake -S . -B build
+          echo "🚧 🛠️ Compiling into build/ with cmake --build build --config ${{env.CMAKE_CONFIG}}. Please wait..."
           cmake --build build --config ${{env.CMAKE_CONFIG}}
           echo "👉 Building finished. Listing directory build/ for verification:"
           dir build
