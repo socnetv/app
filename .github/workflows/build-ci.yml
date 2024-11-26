@@ -21,7 +21,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-22.04, ubuntu-latest, macos-latest, windows-2019]
-        qt-version: ['6.2.4', '6.4.3', '6.5.3', '6.6.3']
+        # NOTE: For supported Qt Versions, check here: https://ddalcino.github.io/aqt-list-server/
+        qt-version: ['6.2.4', '6.5.3', '6.6.3', '6.8.0']
         # exclude:
         #   - os: ubuntu-latest
         #     qt-version: '6.5.3'
@@ -100,8 +101,12 @@ jobs:
         with:
           aqtversion: '==2.0.0'
           version: ${{ matrix.qt-version }}
-          # arch: win64_mingw # we build with msvc
-          modules: qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d
+          # arch: win64_mingw
+          # NOTE: We build with default arch: 
+          # win64_msvc2019_64 if Qt < 6.8
+          # win64_msvc2022_64 if Qt >= 6.8
+          # see https://github.com/jurplel/install-qt-action
+          modules: ${{env.QT_MODULES}} 
           cache: true
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
         name: Install Qt 6.3+ on Windows
@@ -109,8 +114,12 @@ jobs:
         with:
           aqtversion: '==2.1.*'
           version: ${{ matrix.qt-version }}
-          #arch: win64_mingw # we build with msvc
-          modules: qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d
+          # arch: win64_mingw
+          # NOTE: We build with default arch: 
+          # win64_msvc2019_64 if Qt < 6.8
+          # win64_msvc2022_64 if Qt >= 6.8
+          # see https://github.com/jurplel/install-qt-action
+          modules: ${{env.QT_MODULES}} 
           cache: true
       - if: contains( matrix.os, 'ubuntu') && startsWith( matrix.qt-version, '6.' )
         name: Install Qt 6 on Linux
@@ -118,7 +127,7 @@ jobs:
         with:
           aqtversion: '==2.0.0'
           version: ${{ matrix.qt-version }}
-          modules: qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d
+          modules: ${{env.QT_MODULES}} 
           cache: true
       - if: contains( matrix.os, 'macos') && startsWith( matrix.qt-version, '6.' )
         name: Install Qt 6 on macOS
@@ -126,7 +135,7 @@ jobs:
         with:
           aqtversion: '==2.0.0'
           version: ${{ matrix.qt-version }}
-          modules: qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d
+          modules: ${{env.QT_MODULES}} 
           cache: true
 
 
@@ -134,7 +143,7 @@ jobs:
       # Build SocNetV
       #
       - if: contains( matrix.os, 'ubuntu-22.04')
-        name: Build for Linux
+        name: Build for ${{matrix.os}} with Qt${{matrix.qt-version}}
         run: |
           echo "🔎 Check openssl version:"
           echo `openssl version`
@@ -149,7 +158,7 @@ jobs:
           echo "👉 Building finished. Listing current directory with find for verification:"
           find .
       - if: contains( matrix.os, 'ubuntu-latest')
-        name: Build for Linux
+        name: Build for ${{matrix.os}} with Qt${{matrix.qt-version}}
         run: |
           echo "🔎 Check openssl version:"
           echo `openssl version`
@@ -165,7 +174,7 @@ jobs:
           find .
       # BUILD FOR MACOS
       - if: contains( matrix.os, 'macos')
-        name: Build for macOS
+        name: Build for ${{matrix.os}} with Qt${{matrix.qt-version}}
         run: |
           echo "🔧 Running 'qmake CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}}' to configure on macos..."
           qmake CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}}
@@ -175,7 +184,7 @@ jobs:
           find .
       # BUILD FOR WINDOWS
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.2.4'
-        name: Build for Windows
+        name: Build for ${{matrix.os}} with Qt${{matrix.qt-version}}
         run: |
           echo "🔎 Listing some directories"
           dir D:\a\app\Qt\
@@ -185,19 +194,8 @@ jobs:
           nmake
           echo "👉 Building finished. Listing current directory for verification:"
           dir
-      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.4.3'
-        name: Build for Windows
-        run: |
-          echo "🔎 Listing some directories"
-          dir D:\a\app\Qt\
-          echo "🔧 Running 'qmake6 CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}} -r' to configure the project..."
-          qmake6 CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}} -r
-          echo "🚧 🛠️ Compiling with nmake. Please wait..."
-          nmake
-          echo "👉 Building finished. Listing current directory for verification:"
-          dir
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.5.3'
-        name: Build for Windows
+        name: Build for ${{matrix.os}} with Qt${{matrix.qt-version}}
         run: |
           echo "🔎 Listing some directories"
           dir D:\a\app\Qt\
@@ -210,7 +208,7 @@ jobs:
           echo "👉 Building finished. Listing directory build/ for verification: "
           dir build
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.6.3'
-        name: Build for Windows
+        name: Build for ${{matrix.os}} with Qt${{matrix.qt-version}}
         run: |
           echo "🔎 Listing some directories"
           dir D:\a\app\Qt\
@@ -219,7 +217,20 @@ jobs:
           echo "🔧 Running 'cmake -S . -B build' to configure the project..."
           cmake -S . -B build
           echo "🚧 🛠️ Compiling into build/ with 'cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}}'. Please wait..."
-          cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}}
+          cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}} -v
           echo "👉 Building finished. Listing directory build/ for verification: "
           dir build
+      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.8.0'
+        name: Build for ${{matrix.os}} with Qt${{matrix.qt-version}}
+        run: |
+          echo "🔎 Listing some directories"
+          dir D:\a\app\Qt\
+          echo "💡 Creating build dir"
+          mkdir build
+          echo "🔧 Running 'cmake -S . -B build' to configure the project..."
+          cmake -S . -B build
+          echo "🚧 🛠️ Compiling into build/ with 'cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}}'. Please wait..."
+          cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}} -v
+          echo "👉 Building finished. Listing directory build/ for verification: "
+          dir build          
       - run: echo "🍏 This job's status is ${{ job.status }}."
