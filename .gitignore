@@ -25,5 +25,8 @@ moc_*.cpp
 moc_*.h
 ui_*.h
 /src/.qmake.stash
+.qmake.stash
 /src/Makefile
+Makefile
 secrets/*
+.DS_Store
