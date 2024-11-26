@@ -36,10 +36,6 @@ jobs:
         #   - os: macos-latest
         #     qt-version: '6.5.3'
         # include:
-        #   - os: ubuntu-latest
-        #     qt-version: '6.6.3'
-        #   - os: windows-2019
-        #     qt-version: '6.6.3'
         #   - os: macos-latest
         #     qt-version: '6.6.3'
         #   # Snapcraft
