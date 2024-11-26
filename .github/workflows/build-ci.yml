@@ -89,45 +89,48 @@ jobs:
           # aqt list-qt mac desktop --modules ${{ matrix.qt-version }}
 
       #
-      # Install Qt
+      # Install Qt (using https://github.com/jurplel/install-qt-action)
       #
       - if: contains( matrix.os, 'windows')
         name: Make sure MSVC is found
         uses: ilammy/msvc-dev-cmd@v1
 
       - if: contains( matrix.os, 'windows') && matrix.qt-version == '6.2.4'
-        name: Install Qt Qt 6.2.4 on Windows
+        name: Install Qt ${{ matrix.qt-version }} on ${{ matrix.os }}
         uses: jurplel/install-qt-action@v4
         with:
-          aqtversion: '==2.0.0'
-          version: ${{ matrix.qt-version }}
+          # aqtversion: '==2.0.0'             # The aqtinstall version
+          aqtversion: '==3.1.*'               # Use the default aqtinstall version
+          version: ${{ matrix.qt-version }}   # Qt version to install
           # arch: win64_mingw
-          # NOTE: We build with default arch: 
+          # NOTE: We build with default arch:
           # win64_msvc2019_64 if Qt < 6.8
           # win64_msvc2022_64 if Qt >= 6.8
           # see https://github.com/jurplel/install-qt-action
-          modules: ${{env.QT_MODULES}} 
+          modules: ${{env.QT_MODULES}}
           cache: true
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
-        name: Install Qt 6.3+ on Windows
+        name: Install Qt 6.3+ on on ${{ matrix.os }}
         uses: jurplel/install-qt-action@v4
         with:
-          aqtversion: '==2.1.*'
-          version: ${{ matrix.qt-version }}
+          # aqtversion: '==2.1.*'
+          aqtversion: '==3.1.*'               # Use the default aqtinstall version
+          version: ${{ matrix.qt-version }}   # Qt version to install
           # arch: win64_mingw
-          # NOTE: We build with default arch: 
+          # NOTE: We build with default arch:
           # win64_msvc2019_64 if Qt < 6.8
           # win64_msvc2022_64 if Qt >= 6.8
           # see https://github.com/jurplel/install-qt-action
-          modules: ${{env.QT_MODULES}} 
+          modules: ${{env.QT_MODULES}}
           cache: true
       - if: contains( matrix.os, 'ubuntu') && startsWith( matrix.qt-version, '6.' )
-        name: Install Qt 6 on Linux
+        name: Install Qt 6 on ${{ matrix.os }}
         uses: jurplel/install-qt-action@v4
         with:
-          aqtversion: '==2.0.0'
-          version: ${{ matrix.qt-version }}
-          modules: ${{env.QT_MODULES}} 
+          # aqtversion: '==2.0.0'
+          aqtversion: '==3.1.*'               # Use the default aqtinstall version
+          version: ${{ matrix.qt-version }}   # Qt version to install
+          modules: ${{env.QT_MODULES}}
           cache: true
       - if: contains( matrix.os, 'macos') && startsWith( matrix.qt-version, '6.' )
         name: Install Qt 6 on macOS
@@ -135,7 +138,7 @@ jobs:
         with:
           aqtversion: '==2.0.0'
           version: ${{ matrix.qt-version }}
-          modules: ${{env.QT_MODULES}} 
+          modules: ${{env.QT_MODULES}}
           cache: true
 
 
@@ -158,7 +161,7 @@ jobs:
           echo "👉 Building finished. Listing current directory with find for verification:"
           find .
       - if: contains( matrix.os, 'ubuntu-latest')
-        name: Build for ${{matrix.os}} with Qt${{matrix.qt-version}}
+        name: Build for ${{matrix.os}} with Qt ${{matrix.qt-version}}
         run: |
           echo "🔎 Check openssl version:"
           echo `openssl version`
@@ -174,7 +177,7 @@ jobs:
           find .
       # BUILD FOR MACOS
       - if: contains( matrix.os, 'macos')
-        name: Build for ${{matrix.os}} with Qt${{matrix.qt-version}}
+        name: Build for ${{matrix.os}} with Qt ${{matrix.qt-version}}
         run: |
           echo "🔧 Running 'qmake CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}}' to configure on macos..."
           qmake CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}}
@@ -184,7 +187,7 @@ jobs:
           find .
       # BUILD FOR WINDOWS
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.2.4'
-        name: Build for ${{matrix.os}} with Qt${{matrix.qt-version}}
+        name: Build for ${{matrix.os}} with Qt ${{matrix.qt-version}}
         run: |
           echo "🔎 Listing some directories"
           dir D:\a\app\Qt\
@@ -195,7 +198,7 @@ jobs:
           echo "👉 Building finished. Listing current directory for verification:"
           dir
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.5.3'
-        name: Build for ${{matrix.os}} with Qt${{matrix.qt-version}}
+        name: Build for ${{matrix.os}} with Qt ${{matrix.qt-version}}
         run: |
           echo "🔎 Listing some directories"
           dir D:\a\app\Qt\
@@ -208,7 +211,7 @@ jobs:
           echo "👉 Building finished. Listing directory build/ for verification: "
           dir build
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.6.3'
-        name: Build for ${{matrix.os}} with Qt${{matrix.qt-version}}
+        name: Build for ${{matrix.os}} with Qt ${{matrix.qt-version}}
         run: |
           echo "🔎 Listing some directories"
           dir D:\a\app\Qt\
@@ -221,7 +224,7 @@ jobs:
           echo "👉 Building finished. Listing directory build/ for verification: "
           dir build
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.8.0'
-        name: Build for ${{matrix.os}} with Qt${{matrix.qt-version}}
+        name: Build for ${{matrix.os}} with Qt ${{matrix.qt-version}}
         run: |
           echo "🔎 Listing some directories"
           dir D:\a\app\Qt\
@@ -232,5 +235,5 @@ jobs:
           echo "🚧 🛠️ Compiling into build/ with 'cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}}'. Please wait..."
           cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}} -v
           echo "👉 Building finished. Listing directory build/ for verification: "
-          dir build          
+          dir build
       - run: echo "🍏 This job's status is ${{ job.status }}."
