@@ -1,7 +1,10 @@
 name: Build SocNetV (CI) 🚀
 # run-name: ${{ github.actor }} testing latest SocNetV build with
-on: [push]
-
+on: 
+  push:
+    branches:
+      - master
+      - develop
 
 env:
   EXECUTABLE: "SocNetV"
@@ -16,7 +19,7 @@ env:
 
 
 jobs:
-  build:
+  ci_build:
     strategy:
       fail-fast: false
       matrix:
@@ -43,6 +46,7 @@ jobs:
         #   - os: ubuntu-22.04
         #     qt-version: '6.5.3'
     runs-on: ${{ matrix.os }}
+    if: contains(github.event.head_commit.message, '[ci]') || contains(github.event.head_commit.message, '[gha]')
     steps:
       - name: 🤖 Job information
         run: |
