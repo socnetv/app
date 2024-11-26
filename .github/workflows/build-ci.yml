@@ -47,6 +47,7 @@ jobs:
         name: Prepare for Windows
         run: |
           dir
+          # DONT NEED IT. FOR DEBUG ONLY
           # pip install aqtinstall
           # aqt list-qt linux desktop
           # aqt list-qt windows desktop
@@ -57,6 +58,7 @@ jobs:
         name: Install dependencies
         run: |
           ls
+          # DONT NEED IT. FOR DEBUG ONLY
           # pip install aqtinstall
           # aqt list-qt linux desktop
           # aqt list-qt linux desktop --long-modules ${{ matrix.qt-version }} win64_mingw
@@ -67,6 +69,7 @@ jobs:
         name: Install for macOS
         run: |
           ls
+          # DONT NEED IT. FOR DEBUG ONLY
           # pip install aqtinstall
           # aqt list-qt mac desktop
           # aqt list-qt mac desktop --modules ${{ matrix.qt-version }}
@@ -117,33 +120,32 @@ jobs:
       #
       # Build SocNetV
       #
-      # - if: contains( matrix.os, 'ubuntu-latest')
-      #   name: Build for Linux
-      #   run: |
-      #     echo "openssl version:"
-      #     echo `openssl version`
-      #     echo "Check output of 'which qmake6':"
-      #     which qmake6
-      #     echo "Check qmake6 -v:"
-      #     qmake6 -v
-      #     qmake6 CONFIG+=debug && make -s -j 8
-      #     echo "Building finished! "
-      #     echo "Files in current directory: "
-      #     find .
-      # # BUILD FOR MACOS
-      # - if: contains( matrix.os, 'macos')
-      #   name: Build for macOS
-      #   run: |
-      #     qmake CONFIG+=debug socnetv.pro
-      #     make -s -j 8
-      #     find .
+      - if: contains( matrix.os, 'ubuntu-latest')
+        name: Build for Linux
+        run: |
+          echo "openssl version:"
+          echo `openssl version`
+          echo "Check output of 'which qmake6':"
+          which qmake6
+          echo "Check qmake6 -v:"
+          qmake6 -v
+          qmake6 CONFIG+=debug && make -s -j 8
+          echo "Building finished! "
+          echo "Files in current directory: "
+          find .
+      # BUILD FOR MACOS
+      - if: contains( matrix.os, 'macos')
+        name: Build for macOS
+        run: |
+          qmake CONFIG+=debug socnetv.pro
+          make -s -j 8
+          find .
       # BUILD FOR WINDOWS
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.2.4'
         name: Build for Windows
         run: |
           echo "Listing some directories"
           dir D:\a\app\Qt\
-          dir D:\a\app\Qt\6.2.4
           echo "Running qmake6"
           qmake6 CONFIG+=debug socnetv.pro -r
           echo "Compiling, please wait..."
@@ -164,19 +166,25 @@ jobs:
         run: |
           echo "Listing some directories"
           dir D:\a\app\Qt\
-          echo "Running qmake6"
-          qmake6 CONFIG+=debug socnetv.pro -r
-          echo "Compiling with nmake. Please wait..."
-          nmake
-          dir
+          echo "Creating build dir"
+          mkdir build
+          echo "Running cmake ..."
+          cmake -S . -B build
+          echo "Compiling with cmake at once. Please wait..."
+          cmake --build build
+          dir build
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.6.3'
         name: Build for Windows
         run: |
           echo "Listing some directories"
           dir D:\a\app\Qt\
+          echo "Creating build dir"
+          mkdir build
+          echo "Entering build dir"
+          cd build
           echo "Running cmake"
-          qmake6 CONFIG+=debug socnetv.pro -r
+          cmake ..
           echo "Compiling with nmake. Please wait..."
           nmake
-          dir
+          dir build
       - run: echo "🍏 This job's status is ${{ job.status }}."
