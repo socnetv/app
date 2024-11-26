@@ -98,26 +98,10 @@ jobs:
       - if: contains( matrix.os, 'windows')
         name: Make sure MSVC is found
         uses: ilammy/msvc-dev-cmd@v1
-
-      - if: contains( matrix.os, 'windows') && matrix.qt-version == '6.2.4'
+      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' )
         name: Install Qt ${{ matrix.qt-version }} on ${{ matrix.os }}
         uses: jurplel/install-qt-action@v4
         with:
-          # aqtversion: '==2.0.0'             # The aqtinstall version
-          aqtversion: '==3.1.*'               # Use the default aqtinstall version
-          version: ${{ matrix.qt-version }}   # Qt version to install
-          # arch: win64_mingw
-          # NOTE: We build with default arch:
-          # win64_msvc2019_64 if Qt < 6.8
-          # win64_msvc2022_64 if Qt >= 6.8
-          # see https://github.com/jurplel/install-qt-action
-          modules: ${{env.QT_MODULES}}
-          cache: true
-      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
-        name: Install Qt 6.3+ on on ${{ matrix.os }}
-        uses: jurplel/install-qt-action@v4
-        with:
-          # aqtversion: '==2.1.*'
           aqtversion: '==3.1.*'               # Use the default aqtinstall version
           version: ${{ matrix.qt-version }}   # Qt version to install
           # arch: win64_mingw
@@ -131,7 +115,6 @@ jobs:
         name: Install Qt 6 on ${{ matrix.os }}
         uses: jurplel/install-qt-action@v4
         with:
-          # aqtversion: '==2.0.0'
           aqtversion: '==3.1.*'               # Use the default aqtinstall version
           version: ${{ matrix.qt-version }}   # Qt version to install
           modules: ${{env.QT_MODULES}}
@@ -140,7 +123,7 @@ jobs:
         name: Install Qt 6 on macOS
         uses: jurplel/install-qt-action@v4
         with:
-          aqtversion: '==2.0.0'
+          aqtversion: '==3.1.*'               # Use the default aqtinstall version
           version: ${{ matrix.qt-version }}
           modules: ${{env.QT_MODULES}}
           cache: true
