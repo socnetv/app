@@ -1,6 +1,9 @@
+# GitHub Action to CI build SocNetV for all 3 major OSes
+# Triggered only when the commit message contains [gha] or [ci]
+
 name: Build SocNetV (CI) 🚀
-# run-name: ${{ github.actor }} testing latest SocNetV build with
-on: 
+
+on:
   push:
     branches:
       - master
