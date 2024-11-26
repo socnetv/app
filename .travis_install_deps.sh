@@ -43,17 +43,16 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
 
 elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
     #
-    # Install Qt5 for macOS via brew and configure host environment
+    # Install Qt for macOS via brew and configure host environment
     #
-    # echo "Installing Qt6 (v6.4.3) for macOS via brew..."
-    # Note we use qt@6 to install. Also, `brew install qt` installs Qt 6 by default.
-    # brew install qt@6 p7zip
-    echo "installing p7zip"
-    brew install p7zip
-    echo "installing create-dmg"
-    brew install create-dmg
-    # Install npm appdmg if you want to create custom dmg files with it
-    # npm install -g appdmg
+    # echo "Installing Qt6 for macOS via brew..."
+    # brew install qt@6
+    # echo "installing p7zip"
+    # brew install p7zip
+    # echo "installing create-dmg"
+    # brew install create-dmg
+    ## Install npm appdmg if you want to create custom dmg files with it
+    # # npm install -g appdmg
     echo "Running brew link to symlink various Qt binaries into /usr/local/bin etc so..."
     brew link --force qt@6
     echo "Adding qt binaries installation path to system PATH..."

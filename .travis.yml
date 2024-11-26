@@ -47,7 +47,10 @@ jobs:
         homebrew:
           packages:
           - qt
-          update: true
+          - p7zip
+          - wget
+          - create-dmg
+          # update: true
   exclude:
     - os: osx
       compiler: gcc

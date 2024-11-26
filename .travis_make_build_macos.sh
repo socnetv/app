@@ -54,7 +54,7 @@ echo "Entering project dir:"
 cd ${project_dir}
 
 echo "Running qmake to configure it as release..."
-qmake -config release
+qmake QMAKE_APPLE_DEVICE_ARCHS="x86_64 arm64" -config release 
 
 echo "Running make to compile the source code..."
 make -j4
