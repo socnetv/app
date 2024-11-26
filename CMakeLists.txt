@@ -3,9 +3,11 @@
 # Set the minimum cmake version here:
 cmake_minimum_required(VERSION 3.16)
 
-# Set the project name and version here:
+# Set our project name and version here:
 project(SocNetV 
     VERSION 3.2
+    DESCRIPTION "SocNetV: Open-source social network analysis application based on Qt."
+    HOMEPAGE_URL "https://socnetv.org"
     LANGUAGES CXX)
 
 # Other way to set project version
@@ -17,13 +19,15 @@ project(SocNetV
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+# Some options here:
+option(DEV_MODE "Build in developer mode" OFF)
 
-option(DEV_MODE "Build in developer mode" ON)
-
-
+# Echo some debug messages for sanity check:
+message(STATUS "####")
+message(STATUS "#### Variable checks...")
+message(STATUS "####")
 message(STATUS "PROJECT_NAME: " ${PROJECT_NAME})
 message(STATUS "PROJECT_VERSION: "  ${PROJECT_VERSION})
-
 message(STATUS "CMAKE_SOURCE_DIR: "  ${CMAKE_SOURCE_DIR})
 message(STATUS "CMAKE_CURRENT_LIST_DIR: "  ${CMAKE_CURRENT_LIST_DIR})
 message(STATUS "CMAKE_CURRENT_BINARY_DIR: "  ${CMAKE_CURRENT_BINARY_DIR})
@@ -31,16 +35,12 @@ message(STATUS "CMAKE_CURRENT_BINARY_DIR: "  ${CMAKE_CURRENT_BINARY_DIR})
 message(STATUS "CMAKE_RUNTIME_OUTPUT_DIRECTORY: "  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 message(STATUS "CMAKE_MODULE_PATH: "  ${CMAKE_MODULE_PATH})
 
-
-message(STATUS "####")
-message(STATUS "#### Variable checks...")
-message(STATUS "####")
-
+# Prepare compile time flags
 set(gcc_like_cxx "$<COMPILE_LANG_AND_ID:CXX,ARMClang,AppleClang,Clang,GNU,LCC>")
 set(msvc_cxx "$<COMPILE_LANG_AND_ID:CXX,MSVC>")
 
-message(STATUS ${gcc_like_cxx})
-message(STATUS ${msvc_cxx})
+message(STATUS "For GCC I will use these flags: " ${gcc_like_cxx})
+message(STATUS "For MSVC I will use these flags: " ${msvc_cxx})
 
 message(CHECK_START "Checking INSTALL_DIR")
 
@@ -54,11 +54,13 @@ else()
 endif()
 
 
+
 message(STATUS "####")
 message(STATUS "#### Finding Qt6 and other packages ...")
 message(STATUS "####")
 
 find_package(Qt6 REQUIRED COMPONENTS Core OpenGLWidgets Gui Core5Compat Widgets PrintSupport Network Charts Svg Xml)
+
 
 
 message(STATUS "####")
@@ -68,25 +70,11 @@ message(STATUS "####")
 qt_standard_project_setup()
 
 
-if (DEV_MODE) 
-    message(STATUS "DEV_MODE build configuration detected")
-endif()
-
-
-if (CMAKE_BUILD_TYPE MATCHES Debug)
-    message(STATUS "Debug build configuration detected")
-    add_definitions(-DQT_DEBUG)
-else()
-    message(STATUS "Non-debug build configuration detected")
-endif()
-
 
 message(STATUS "####")
 message(STATUS "#### Adding sources and executable ...")
 message(STATUS "####")
 
-
-# List source files
 set(SOURCE_FILES  
     src/forms/dialogfilteredgesbyweight.ui 
     src/forms/dialogsettings.ui 
@@ -191,15 +179,14 @@ list(APPEND SOURCE_FILES
     src/forms/dialogsysteminfo.cpp
  )
 
+# List source files
+message(STATUS "Source files to be compiled: ${SOURCE_FILES}")
 
-message(STATUS "Source files to be compiled: ${SOURCES}")
-
-
- # Add Qt resource files
- qt6_add_resources(RESOURCES 
-    #  ./src/application.qrc # obsolete ? 
-     ./src/src.qrc
- )
+# Add Qt resource files
+qt6_add_resources(RESOURCES 
+#  ./src/application.qrc # obsolete ? 
+    ./src/src.qrc
+)
  
 add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${RESOURCES})
 
@@ -211,9 +198,13 @@ target_include_directories(${PROJECT_NAME}  PUBLIC
                            "${CMAKE_SOURCE_DIR}/src"
                            )
 
-
 message(STATUS "Include paths: ${CMAKE_SOURCE_DIR}/src")
 
+
+
+message(STATUS "####")
+message(STATUS "#### Setting target properties and compile time options ...")
+message(STATUS "####")
 
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -228,19 +219,43 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 
 
+if (DEV_MODE) 
+    message(STATUS "DEV_MODE build configuration detected")
 
+    else()
+        message(STATUS "NORMAL build configuration detected")
+        # target_compile_options(${PROJECT_NAME} INTERFACE
+        # "$<${gcc_like_cxx}:$<BUILD_INTERFACE:-Wall;-Wextra;-Wshadow;-Wformat=2;-Wunused>>"
+        # "$<${msvc_cxx}:$<BUILD_INTERFACE:-W3>>"
+        # )
+endif()
+
+
+if (CMAKE_BUILD_TYPE MATCHES Debug)
+    message(STATUS "Debug build configuration detected. Adding -DQT_DEBUG and compile flags...")
+    add_definitions(-DQT_DEBUG)
+    target_compile_options(${PROJECT_NAME} INTERFACE
+        "$<${gcc_like_cxx}:$<BUILD_INTERFACE:-Wall;-Wextra;-Wshadow;-Wformat=2;-Wunused>>"
+        "$<${msvc_cxx}:$<BUILD_INTERFACE:-W3>>"
+    )
+else()
+    message(STATUS "Non-debug build configuration detected")
+endif()
+
+#
+#  SET OS Specific things here
+#
+if(WINDOWS)
+    message(STATUS "Setting up for building on WINDOWS...")
+endif()
 
 if(APPLE AND NOT IOS)
-    target_compile_options(${PROJECT_NAME} PRIVATE
-    -Wall -Wextra -pedantic -Wno-gnu-zero-variadic-macro-arguments -Wno-error=deprecated-declarations
-    )
-    # QMAKE_CXXFLAGS = -Wno-unused-variable -Wdeprecated-declarations
-    # QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-unused-parameter -Wdeprecated-declarations
-
+    message(STATUS "Setting up for building on APPLE...")
     set_target_properties(${PROJECT_NAME} PROPERTIES
         MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/macos/Info.plist.in"
     )
 elseif(IOS)
+    message(STATUS "Setting up for building on IOS...")
     set_target_properties(${PROJECT_NAME} PROPERTIES
         MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/ios/Info.plist.in"
     )
@@ -248,12 +263,8 @@ endif()
 
 
 if(LINUX)
-    message(STATUS "Setting compile options...")
+    message(STATUS "Setting up for building on LINUX...")
     # target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -O2)
-    target_compile_options(${PROJECT_NAME} INTERFACE
-    "$<${gcc_like_cxx}:-Wall;-Wextra;-Wshadow;-Wformat=2;-Wunused>"
-    "$<${msvc_cxx}:-W3>"
-    )
 endif()
 
 
@@ -273,8 +284,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::Svg 
     Qt6::Xml
 )
-
-# Resources:
 
 
 # Finalize:
