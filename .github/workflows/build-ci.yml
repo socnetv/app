@@ -144,7 +144,7 @@ jobs:
           qmake6 -v
           echo "🔧 Running qmake on ubuntu 22.04 with ${{env.QMAKE_CONFIG}}..."
           qmake6 CONFIG+=${{env.QMAKE_CONFIG}}
-          echo "🚧 🛠️ Compiling for linux with make. Please wait..."
+          echo "🚧 🛠️ Compiling for linux with make -j${{env.CORES}}. Please wait..."
           make -j${{env.CORES}}
           echo "👉 Building finished. Listing current directory with find for verification:"
           find .
@@ -157,9 +157,9 @@ jobs:
           which qmake6
           echo "🔎 Check qmake6 version:"
           qmake6 -v
-          echo "🔧 Running qmake on ubuntu with ${{env.QMAKE_CONFIG}}..."
+          echo "🔧 Running 'qmake6 CONFIG+=${{env.QMAKE_CONFIG}}' to configure on ubuntu ..."
           qmake6 CONFIG+=${{env.QMAKE_CONFIG}}
-          echo "🚧 🛠️ Compiling for linux with make. Please wait..."
+          echo "🚧 🛠️ Compiling for linux with make (unlimited cores). Please wait..."
           make
           echo "👉 Building finished. Listing current directory with find for verification:"
           find .
@@ -167,7 +167,7 @@ jobs:
       - if: contains( matrix.os, 'macos')
         name: Build for macOS
         run: |
-          echo "🔧 Running qmake on macos with ${{env.QMAKE_CONFIG}}..."
+          echo "🔧 Running 'qmake CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}}' to configure on macos..."
           qmake CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}}
           echo "🚧 🛠️ Compiling for macos with make. Please wait..."
           make
@@ -179,7 +179,7 @@ jobs:
         run: |
           echo "🔎 Listing some directories"
           dir D:\a\app\Qt\
-          echo "🔧 Running qmake6"
+          echo "🔧 Running 'qmake6 CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}} -r' to configure the project on Windows..."
           qmake6 CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}} -r
           echo "🚧 🛠️ Compiling with nmake. Please wait..."
           nmake
@@ -190,7 +190,7 @@ jobs:
         run: |
           echo "🔎 Listing some directories"
           dir D:\a\app\Qt\
-          echo "🔧 Running qmake6"
+          echo "🔧 Running 'qmake6 CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}} -r' to configure the project..."
           qmake6 CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}} -r
           echo "🚧 🛠️ Compiling with nmake. Please wait..."
           nmake
@@ -203,11 +203,11 @@ jobs:
           dir D:\a\app\Qt\
           echo "💡 Creating build dir"
           mkdir build
-          echo "🔧 Running cmake""
+          echo "🔧 Running 'cmake -S . -B build' to configure the project..."
           cmake -S . -B build
-          echo "🚧 🛠️ Compiling into build/ with cmake --build build --config ${{env.CMAKE_CONFIG}}. Please wait..."
-          cmake --build build --config ${{env.CMAKE_CONFIG}}
-          echo "👉 Building finished. Listing directory build/ for verification:"
+          echo "🚧 🛠️ Compiling into build/ with 'cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}}'. Please wait..."
+          cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}}
+          echo "👉 Building finished. Listing directory build/ for verification: "
           dir build
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.6.3'
         name: Build for Windows
@@ -216,10 +216,10 @@ jobs:
           dir D:\a\app\Qt\
           echo "💡 Creating build dir"
           mkdir build
-          echo "🔧 Running cmake"
+          echo "🔧 Running 'cmake -S . -B build' to configure the project..."
           cmake -S . -B build
-          echo "🚧 🛠️ Compiling into build/ with cmake --build build --config ${{env.CMAKE_CONFIG}}. Please wait..."
-          cmake --build build --config ${{env.CMAKE_CONFIG}}
-          echo "👉 Building finished. Listing directory build/ for verification:"
+          echo "🚧 🛠️ Compiling into build/ with 'cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}}'. Please wait..."
+          cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}}
+          echo "👉 Building finished. Listing directory build/ for verification: "
           dir build
       - run: echo "🍏 This job's status is ${{ job.status }}."
