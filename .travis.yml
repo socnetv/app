@@ -63,31 +63,31 @@ jobs:
 
 before_install:
   # Run preparation script, before installing our dependencies, to add repos etc.
-  - chmod +x .travis_before.sh
-  - ./.travis_before.sh
+  - chmod +x build-tools/travis_before.sh
+  - ./build-tools/travis_before.sh
 
 
 
 
 install:
   # Run script to install our dependencies.
-  - chmod +x .travis_install_deps.sh
-  - ./.travis_install_deps.sh
+  - chmod +x build-tools/travis_install_deps.sh
+  - ./build-tools/travis_install_deps.sh
 
 
 
 
 script:
   # Run script to build our app.
-  -  if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then chmod +x .travis_make_build_linux.sh; fi
-  - '[ "$TRAVIS_OS_NAME" != linux ] || ./.travis_make_build_linux.sh'
-  -  if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then chmod +x .travis_make_build_macos.sh; fi
-  - '[ "$TRAVIS_OS_NAME" != osx ] || ./.travis_make_build_macos.sh'
+  -  if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then chmod +x build-tools/travis_make_build_linux.sh; fi
+  - '[ "$TRAVIS_OS_NAME" != linux ] || ./build-tools/travis_make_build_linux.sh'
+  -  if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then chmod +x build-tools/travis_make_build_macos.sh; fi
+  - '[ "$TRAVIS_OS_NAME" != osx ] || ./build-tools/travis_make_build_macos.sh'
 
 
 after_success:
   # Run script to upload our packages
-  - chmod +x .travis_upload_packages.sh
-  - ./.travis_upload_packages.sh
+  - chmod +x build-tools/travis_upload_packages.sh
+  - ./build-tools/travis_upload_packages.sh
 
 
