@@ -299,6 +299,7 @@ if(APPLE AND NOT IOS)
         TARGET ${PROJECT_NAME}
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E echo "Post-build step for ${PROJECT_NAME}"
+        # TODO
         # COMMAND  /bin/bash macdeployqt ${PROJECT_NAME}.app -dmg
         COMMENT "Running post-build command"
     )
