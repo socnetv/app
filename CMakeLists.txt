@@ -3,8 +3,11 @@
 # Set the minimum cmake version here:
 cmake_minimum_required(VERSION 3.16)
 
+set(ICON_NAME socnetv)
+set(APP_NAME SocNetV)
+
 # Set our project name and version here:
-project(SocNetV 
+project(${APP_NAME} 
     VERSION 3.2
     DESCRIPTION "SocNetV: Open-source social network analysis application based on Qt."
     HOMEPAGE_URL "https://socnetv.org"
@@ -26,10 +29,12 @@ option(DEV_MODE "Build in developer mode" OFF)
 message(STATUS "####")
 message(STATUS "#### Variable checks...")
 message(STATUS "####")
+message(STATUS "QT6_DIR" ${QT6_DIR})
 message(STATUS "PROJECT_NAME: " ${PROJECT_NAME})
 message(STATUS "PROJECT_VERSION: "  ${PROJECT_VERSION})
 message(STATUS "CMAKE_SOURCE_DIR: "  ${CMAKE_SOURCE_DIR})
 message(STATUS "CMAKE_CURRENT_LIST_DIR: "  ${CMAKE_CURRENT_LIST_DIR})
+message(STATUS "CMAKE_BINARY_DIR: "  ${CMAKE_BINARY_DIR})
 message(STATUS "CMAKE_CURRENT_BINARY_DIR: "  ${CMAKE_CURRENT_BINARY_DIR})
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 message(STATUS "CMAKE_RUNTIME_OUTPUT_DIRECTORY: "  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
@@ -70,6 +75,12 @@ message(STATUS "####")
 qt_standard_project_setup()
 
 
+# Copy and rename our COPYING license file (Configure Time)
+configure_file(${CMAKE_SOURCE_DIR}/COPYING
+               ${CMAKE_BINARY_DIR}/LICENSE.txt
+               COPYONLY)
+
+               
 
 message(STATUS "####")
 message(STATUS "#### Adding sources and executable ...")
@@ -182,13 +193,21 @@ list(APPEND SOURCE_FILES
 # List source files
 message(STATUS "Source files to be compiled: ${SOURCE_FILES}")
 
-# Add Qt resource files
+# Qt resource files: Compile our icons into Resource object code
 qt6_add_resources(RESOURCES 
 #  ./src/application.qrc # obsolete ? 
-    ./src/src.qrc
+    src/src.qrc
 )
+
+set(ICON_FILE src/images/${ICON_NAME}.png)
+if (APPLE)
+    set(ICON_FILE src/images/${ICON_NAME}.icns)
+endif()
+if (WIN32)
+    set(ICON_FILE src/images/${ICON_NAME}.ico)
+endif()
  
-add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${RESOURCES})
+add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${RESOURCES} ${ICON_FILE})
 
 # qt_add_executable(${PROJECT_NAME}     ${SOURCE_FILES} ${RESOURCES} )
 
@@ -203,13 +222,10 @@ message(STATUS "Include paths: ${CMAKE_SOURCE_DIR}/src")
 
 
 message(STATUS "####")
-message(STATUS "#### Setting target properties and compile time options ...")
+message(STATUS "#### Setting default target properties and compile time options ...")
 message(STATUS "####")
 
-
 set_target_properties(${PROJECT_NAME} PROPERTIES
-    WIN32_EXECUTABLE TRUE
-    MACOSX_BUNDLE TRUE
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
     AUTOMOC ON
@@ -218,16 +234,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 
-
 if (DEV_MODE) 
-    message(STATUS "DEV_MODE build configuration detected")
-
-    else()
-        message(STATUS "NORMAL build configuration detected")
-        # target_compile_options(${PROJECT_NAME} INTERFACE
-        # "$<${gcc_like_cxx}:$<BUILD_INTERFACE:-Wall;-Wextra;-Wshadow;-Wformat=2;-Wunused>>"
-        # "$<${msvc_cxx}:$<BUILD_INTERFACE:-W3>>"
-        # )
+    message(STATUS "DEV_MODE: ON")
+else()
+    message(STATUS "DEV_MODE: OFF")
 endif()
 
 
@@ -245,20 +255,55 @@ endif()
 #
 #  SET OS Specific things here
 #
-if(WINDOWS)
+if(WIN32)
     message(STATUS "Setting up for building on WINDOWS...")
+
+
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        WIN32_EXECUTABLE TRUE
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON
+        AUTOMOC ON
+        AUTOUIC ON
+        AUTORCC ON
+    )
+
 endif()
 
+
+
 if(APPLE AND NOT IOS)
+    # TODO: Add QMAKE_APPLE_DEVICE_ARCHS equivalent.
     message(STATUS "Setting up for building on APPLE...")
+    set_source_files_properties("${CMAKE_SOURCE_DIR}/src/images/${ICON_NAME}.icns" PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+    target_sources(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src/images/${ICON_NAME}.icns")
+
     set_target_properties(${PROJECT_NAME} PROPERTIES
-        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/macos/Info.plist.in"
+        MACOSX_BUNDLE TRUE
+        # No need, CMake will automatically populate the app's Info.plist, i.e. edit the CFBundleIconFile key with the icon filename.
+        # MACOSX_BUNDLE_INFO_PLIST  "${CMAKE_SOURCE_DIR}/cmake/Info.plist.in"
+        # Sets ``CFBundleName``
+        MACOSX_BUNDLE_BUNDLE_NAME ${PROJECT_NAME} 
+        # Sets ``CFBundleVersion``.
+        MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION} 
+        # Sets ``CFBundleIdentifier``
+        MACOSX_BUNDLE_GUI_IDENTIFIER "org.${PROJECT_NAME}.app"
+        # Sets ``NSHumanReadableCopyright``.
+        MACOSX_BUNDLE_COPYRIGHT  "© 2024 Dimitris Kalamaras. Licensed under the GNU GPL v3. Source code available at https://socnetv.org"
+        # Sets the icon file
+        MACOSX_BUNDLE_ICON_FILE "${ICON_NAME}.icns"
     )
-elseif(IOS)
-    message(STATUS "Setting up for building on IOS...")
-    set_target_properties(${PROJECT_NAME} PROPERTIES
-        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/ios/Info.plist.in"
+
+
+    # Define the custom command to run after the build
+    add_custom_command(
+        TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E echo "Post-build step for ${PROJECT_NAME}"
+        # COMMAND  /bin/bash macdeployqt ${PROJECT_NAME}.app -dmg
+        COMMENT "Running post-build command"
     )
+
 endif()
 
 
@@ -290,7 +335,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 # qt_finalize_executable(${PROJECT_NAME})
 
 install(TARGETS ${PROJECT_NAME}
-    # RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
-    # BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
-    # LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
+    # RUNTIME DESTINATION "${INSTALL_DIR}"
+    BUNDLE DESTINATION "${INSTALL_DIR}"
+    # LIBRARY DESTINATION "${INSTALL_DIR}"
 )
