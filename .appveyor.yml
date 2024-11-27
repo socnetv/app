@@ -167,7 +167,7 @@ after_build:
   - cmd: cp COPYING %BUILD_TYPE%/LICENSE.txt
 
   - cmd: echo "Running Innosetup..."
-  - cmd: cp C:\projects\socnetv\build-tools\innosetup.iss innosetup.iss
+  - cmd: cp C:\projects\socnetv\scripts\innosetup.iss innosetup.iss
   - cmd: echo "Available Innosetup languages:"
   - cmd: dir "C:\Program Files (x86)\Inno Setup 6\Languages"
   - iscc innosetup.iss
