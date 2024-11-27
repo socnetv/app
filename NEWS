@@ -4,10 +4,11 @@ Social Network Visualizer (SocNetV)
 SocNetV News
 -==========-
 
-Jan 2024
+Dec 2024
 ========
-- Version 3.2 release. 
-  Support node labels in matrix formatted files.
+- Version 3.2 release:
+  Support for node labels in matrix formatted files.
+  New CMake-based build system
 
 June 2023
 ========
