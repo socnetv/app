@@ -294,7 +294,6 @@ if(APPLE AND NOT IOS)
         MACOSX_BUNDLE_ICON_FILE "${ICON_NAME}.icns"
     )
 
-
     # Define the custom command to run after the build
     add_custom_command(
         TARGET ${PROJECT_NAME}
