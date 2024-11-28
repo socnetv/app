@@ -53,12 +53,12 @@ elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
     # brew install create-dmg
     ## Install npm appdmg if you want to create custom dmg files with it
     # # npm install -g appdmg
-    echo "Running brew link to symlink various Qt binaries into /usr/local/bin etc so..."
-    brew link --force qt@6
-    echo "Adding qt binaries installation path to system PATH..."
+    # echo "Running brew link to symlink various Qt binaries into /usr/local/bin etc so..."
+    # brew link --force qt@6
     # Add Qt binaries to path
-    PATH=/usr/local/opt/qt/bin/:${PATH}
-
+    echo "Adding qt binaries installation path to system PATH..."
+    # PATH=/usr/local/opt/qt/bin/:${PATH}       
+    export PATH="$(brew --prefix qt)/bin:$PATH"
 else
 	exit 1
 fi
