@@ -43,14 +43,15 @@ jobs:
       env: FAILURES=true
       osx_image: xcode14.2
       if: tag IS present OR commit_message =~ /\[travis\]|\[ci\]/ AND commit_message !~ /\[skip osx\]/
-      addons:
-        homebrew:
-          packages:
-          - qt
-          - p7zip
-          - wget
-          - create-dmg
-          update: true
+      # addons:
+      #   homebrew:
+      #     packages:
+      #     - qt
+      #     - cmake
+      #     - p7zip
+      #     - wget
+      #     - create-dmg
+      #     update: true
   exclude:
     - os: osx
       compiler: gcc
