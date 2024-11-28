@@ -86,11 +86,11 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     echo "SocNetV files installed in appdir -- final:"
     find appdir/
 
-    # Check Qt plugins
-    echo "Checking Qt plugins directory..."
-    find /opt/ | grep "/plugins" | grep qt
-    echo "Checking /opt directory for Qt:"
-    find /opt | grep qt
+    # # Check Qt plugins
+    # echo "Checking Qt plugins directory..."
+    # find /opt/ | grep "/plugins" | grep qt
+    # echo "Checking /opt directory for Qt:"
+    # find /opt | grep qt
 
     
     # Download and run linuxdeployqt tool

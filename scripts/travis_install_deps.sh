@@ -51,7 +51,8 @@ elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
     # brew install p7zip
     # echo "installing create-dmg"
     # brew install create-dmg
-    brew install qt cmake ninja brotli c-ares icu4c@76 pkgconf libnghttp2 autoconf automake libtool ca-certificates mpdecimal openssl@3 p7zip create-dmg
+    brew install --no-quarantine qt cmake ninja brotli c-ares icu4c@76 pkgconf libnghttp2 autoconf automake libtool ca-certificates mpdecimal openssl@3 p7zip create-dmg
+    # brew install --no-quarantine qt cmake ninja brotli vulkan-headers vulkan-loader
     ## Install npm appdmg if you want to create custom dmg files with it
     ## npm install -g appdmg
     # echo "Running brew link to symlink various Qt binaries into /usr/local/bin etc so..."
