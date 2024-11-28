@@ -58,7 +58,10 @@ elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
     # Add Qt binaries to path
     echo "Adding qt binaries installation path to system PATH..."
     # PATH=/usr/local/opt/qt/bin/:${PATH}       
-    export PATH="$(brew --prefix qt)/bin:$PATH"
+    # Ensure Homebrew Qt is accessible in PATH
+    echo 'export PATH="$(brew --prefix qt)/bin:$PATH"' >> ~/.bash_profile; 
+    source ~/.bash_profile;
+
 else
 	exit 1
 fi

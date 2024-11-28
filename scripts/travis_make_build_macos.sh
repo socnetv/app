@@ -4,6 +4,9 @@ echo "************************************************"
 echo "* STAGE 'script':  Building SocNetV for macOS  *"
 echo "************************************************"
 
+# Set the project name as app name
+APP_NAME="SocNetV"
+
 # Check current directory
 project_dir=$(pwd)
 echo "Project dir is: ${project_dir}"
@@ -34,6 +37,21 @@ else
 fi
 echo "VERSION = ${VERSION}";
 
+
+# SYSTEM CHECK
+# Ensure Qt is installed and in PATH
+export PATH="$(brew --prefix qt)/bin:$PATH"
+
+# Debugging: Check if qmake is found
+if ! command -v qmake &> /dev/null; then
+    echo "Error: qmake not found. Ensure Qt is installed and added to PATH."
+    exit 1
+fi
+
+echo ""
+echo "qmake version = "
+qmake -version
+
 # Print macOS version
 echo ""
 echo "macOS version = "
@@ -43,9 +61,9 @@ sw_vers
 echo "Xcode build version = "
 xcrun -sdk macosx --show-sdk-path
 
-APP_NAME="SocNetV"
 
-# Build your app
+
+# Build the app
 echo "*****************************"
 echo "Building ${APP_NAME} ${VERSION}..."
 echo "*****************************"
@@ -57,15 +75,13 @@ echo "Running qmake to configure it as release..."
 qmake QMAKE_APPLE_DEVICE_ARCHS="x86_64 arm64" -config release 
 
 echo "Running make to compile the source code..."
-make -j4
+make -j$(sysctl -n hw.ncpu)
 
-echo "Finished building!"
-
-echo "Current dir contents now:"
+echo "Finished building! Current dir contents now:"
 find .
 
 
-# Package your app
+# Package the app
 echo "*****************************"
 echo "Packaging ${APP_NAME} ${VERSION}..."
 echo "*****************************"
@@ -74,7 +90,7 @@ echo "Entering project dir ${project_dir} ..."
 cd ${project_dir}/
 
 
-# Remove build directories that you don't want to deploy
+# Remove build directories that we don't want to deploy
 echo "Removing items we do not deploy from project dir ${project_dir}..."
 rm -rf moc
 rm -rf obj
