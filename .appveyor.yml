@@ -1,7 +1,7 @@
-# Build SocNetV on x86 and x86_64 architectures using Qt/MinGW/VS2019 platforms
+# Build SocNetV for Windows x86_64 using Qt/MinGW/VS2019 platforms
 # https://socnetv.org
-# Last Update: July 28, 2021
-# Copyright (c) 2021 by Dimitris Kalamaras
+# Last Update: Nov 28, 2024
+# Copyright (c) 2024 by Dimitris Kalamaras
 #
 
 #
@@ -81,6 +81,9 @@ matrix:
 
 # Scripts that run after cloning repository
 install:
+  - ps: Write-Host $env:APPVEYOR_PROJECT_NAME
+  - ps: Write-Host $env:APPVEYOR_PROJECT_SLUG
+  - ps: Write-Host $env:APPVEYOR_BUILD_WORKER_IMAGE
   - ps: Write-Host $env:APPVEYOR_REPO_BRANCH
   - ps: Write-Host $env:APPVEYOR_REPO_COMMIT
   - ps: Write-Host $env:APPVEYOR_REPO_TAG
