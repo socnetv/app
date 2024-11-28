@@ -50,7 +50,7 @@ jobs:
           - p7zip
           - wget
           - create-dmg
-          # update: true
+          update: true
   exclude:
     - os: osx
       compiler: gcc
