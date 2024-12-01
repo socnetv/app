@@ -61,6 +61,7 @@ jobs:
           echo "🖥️ The workflow is now ready to test your code on the runner."
 
       - name: Set version dynamically
+        shell: bash
         id: set_version
         run: |
           # Check if this is a tagged commit
@@ -155,7 +156,7 @@ jobs:
         name: Build for ${{matrix.os}} with Qt${{matrix.qt-version}}
         run: |
           echo '⚙️ Install dependencies'
-          sudo apt install desktop-file-utils 
+          sudo apt install desktop-file-utils
           echo "🔎 Check openssl version:"
           echo `openssl version`
           echo "🔎 Check output of 'which qmake6':"
@@ -195,7 +196,8 @@ jobs:
           cmake --build build -- -j${{env.CORES}}
 
           echo "🔎 Verifying built files..."
-          find build -type f -name "${{env.EXECUTABLE}}*"
+          ls -lh ./build/
+          find build -type f -name "${{env.UNIXNAME}}*"
 
           echo "🔧 Installing the application into AppDir..."
           cd build
@@ -250,6 +252,7 @@ jobs:
           cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}}
           echo "👉 Building finished. Listing directory build/ for verification: "
           dir build
+          find build -type f -name "${{env.EXECUTABLE}}*"
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.6.3'
         name: Build for ${{matrix.os}} with Qt ${{matrix.qt-version}}
         run: |
@@ -263,6 +266,7 @@ jobs:
           cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}}
           echo "👉 Building finished. Listing directory build/ for verification: "
           dir build
+          find build -type f -name "${{env.EXECUTABLE}}*"
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.8.0'
         name: Build for ${{matrix.os}} with Qt ${{matrix.qt-version}}
         run: |
@@ -276,4 +280,5 @@ jobs:
           cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}} -v
           echo "👉 Building finished. Listing directory build/ for verification: "
           dir build
+          find build -type f -name "${{env.EXECUTABLE}}*"
       - run: echo "🍏 This job's status is ${{ job.status }}."
