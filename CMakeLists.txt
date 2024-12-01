@@ -38,6 +38,18 @@ message(STATUS "CMAKE_INSTALL_DATADIR: "  ${CMAKE_INSTALL_DATADIR})
 # CMAKE_INSTALL_DATAROOTDIR	Root directory for read-only data	share
 # CMAKE_INSTALL_SYSCONFDIR	Directory for configuration files	etc
 include(GNUInstallDirs)
+
+# Define platform-specific binary names
+if(WIN32)
+    set(TARGET_NAME SocNetV)
+elseif(APPLE)
+    set(TARGET_NAME SocNetV)
+else()
+    set(TARGET_NAME socnetv)
+endif()
+
+message(STATUS "Building ${PROJECT_NAME} (${TARGET_NAME}) ${PROJECT_VERSION}")
+
 set(INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_PROJECT_NAME})
 # Override with -DCMAKE_INSTALL_PREFIX=/custom/path.
 message(STATUS "INSTALL_DIR: "  ${INSTALL_DIR})
@@ -119,11 +131,6 @@ set(SOURCES
     # Add remaining source files here
 )
 
-# set(HEADERS
-#      src/global.h
-#     # Other headers
-# )
-
 
 set(RESOURCES
     src/src.qrc
@@ -148,9 +155,8 @@ endif()
 
 # The MANUAL_FINALIZATION option allows for additional 
 # configuration before finalization
-qt_add_executable(${PROJECT_NAME} 
+qt_add_executable(${TARGET_NAME} 
     MANUAL_FINALIZATION  
-    # ${HEADERS}
     ${SOURCES}
     ${FORMS}
     ${RESOURCES}
@@ -158,33 +164,64 @@ qt_add_executable(${PROJECT_NAME}
 )
 
 # Add include directories for headers (equivalent to INCLUDEPATH)
-target_include_directories(${PROJECT_NAME}  PUBLIC
+target_include_directories(${TARGET_NAME}  PUBLIC
                            "${CMAKE_SOURCE_DIR}/src"
                            )
 
 
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
+set_target_properties(${TARGET_NAME} PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
     AUTOMOC ON
     AUTOUIC ON
     AUTORCC ON
 )
+
+
+
+# Add compiler options
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+    target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra -Wpedantic)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    target_compile_options(${TARGET_NAME} PRIVATE /W4)
+endif()
+
+
+# Link libraries
+target_link_libraries(${TARGET_NAME} PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
+    Qt6::OpenGLWidgets  
+    Qt6::Core5Compat 
+    Qt6::PrintSupport 
+    Qt6::Network 
+    Qt6::Charts 
+    Qt6::Svg 
+    Qt6::Xml
+)
                        
 # Set properties for macOS
 if(APPLE AND NOT IOS)
     set_source_files_properties("${CMAKE_SOURCE_DIR}/src/images/socnetv.icns" PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
-    target_sources(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src/images/socnetv.icns")
+    target_sources(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src/images/socnetv.icns")
 
-    set_target_properties(${PROJECT_NAME} PROPERTIES
+    set_target_properties(${TARGET_NAME} PROPERTIES
         MACOSX_BUNDLE TRUE
-        MACOSX_BUNDLE_BUNDLE_NAME ${PROJECT_NAME}
+        MACOSX_BUNDLE_BUNDLE_NAME ${TARGET_NAME}
         MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
         MACOSX_BUNDLE_GUI_IDENTIFIER "org.socnetv.app"
         MACOSX_BUNDLE_COPYRIGHT "© 2024 Dimitris Kalamaras. Licensed under GNU GPL v3."
         MACOSX_BUNDLE_ICON_FILE "socnetv.icns"
     )
+
+    # Installation
+    install(TARGETS ${TARGET_NAME}
+    BUNDLE DESTINATION "${INSTALL_DIR}"
+    )
+
+
 endif()
 
 if(LINUX)
@@ -233,35 +270,48 @@ if(LINUX)
 
 endif()
 
-# Add compiler options
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    target_compile_options(${PROJECT_NAME} PRIVATE /W4)
+
+
+# Set the target name for Windows
+if(WIN32)
+    set(TARGET_NAME SocNetV)
+
+    # Add executable with Windows-specific settings
+    add_executable(${TARGET_NAME} WIN32 
+        ${SOURCES}  # Your source files
+        src/images/socnetv.ico  # Icon file for Windows
+    )
+
+    # Set properties for the PE header (optional, for advanced customization)
+    set_target_properties(${TARGET_NAME} PROPERTIES
+        VERSION ${PROJECT_VERSION}
+        SOVERSION ${PROJECT_VERSION}  # Equivalent to VERSION_PE_HEADER
+    )
+
+    # Embed version and metadata into the binary (using resource file)
+    set_source_files_properties(src/images/socnetv.ico PROPERTIES
+        MACOSX_PACKAGE_LOCATION Resources
+    )
+
+    # Define metadata for the executable (only for Visual Studio or resource scripts)
+    set_target_properties(${TARGET_NAME} PROPERTIES
+        COMPANY_NAME "socnetv.org"
+        PRODUCT_NAME "Social Network Visualizer"
+        DESCRIPTION "SocNetV: Open-source social network analysis application based on Qt."
+        COPYRIGHT "Copyright (C) 2023 Dimitris V. Kalamaras. GPLv3."
+    )
+
+    # Optionally copy the target to a specific directory after build
+    install(TARGETS ${TARGET_NAME}
+        RUNTIME DESTINATION release/  # Install to release/ folder
+    )
 endif()
 
-# Link libraries
-target_link_libraries(${PROJECT_NAME} PRIVATE
-    Qt6::Core
-    Qt6::Gui
-    Qt6::Widgets
-    Qt6::OpenGLWidgets  
-    Qt6::Core5Compat 
-    Qt6::PrintSupport 
-    Qt6::Network 
-    Qt6::Charts 
-    Qt6::Svg 
-    Qt6::Xml
-)
 
-qt_finalize_executable(${PROJECT_NAME})
+qt_finalize_executable(${TARGET_NAME})
 
-# Installation
-install(TARGETS ${PROJECT_NAME}
-    BUNDLE DESTINATION "${INSTALL_DIR}"
-)
 
-# install(TARGETS ${PROJECT_NAME}
+# install(TARGETS ${TARGET_NAME}
 #     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 #     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 #     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
