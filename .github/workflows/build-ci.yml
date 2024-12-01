@@ -11,12 +11,13 @@ on:
 env:
   EXECUTABLE: "SocNetV"
   APPLICATION: "SocNetV"
-  UNIXNAME: "SocNetV"
+  UNIXNAME: "socnetv"
+  SOCNETV_VERSION: "3.2"
   QMAKE_PROJECT: "socnetv.pro"
   PUBLISHER: "Dimitris Kalamaras"
   QT_MODULES: "qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d"
-  QMAKE_CONFIG: debug
-  CMAKE_CONFIG: Debug
+  QMAKE_CONFIG: debug  # release
+  CMAKE_CONFIG: Debug  # Release
   CORES: 16
 
 
@@ -59,6 +60,22 @@ jobs:
           echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
           echo "🖥️ The workflow is now ready to test your code on the runner."
 
+      - name: Set version dynamically
+        id: set_version
+        run: |
+          # Check if this is a tagged commit
+          if [ -n "${GITHUB_REF}" ] && [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/} # Extract tag name
+          else
+            LAST_COMMIT_SHORT=$(git rev-parse --short HEAD)
+            VERSION="${SOCNETV_VERSION}-${LAST_COMMIT_SHORT}" # Use custom versioning for non-tagged commits
+          fi
+
+          # Export VERSION as an environment variable for subsequent steps
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+
+      - name: Display the determined version
+        run: echo "VERSION is set to ${{ env.VERSION }}"
 
       #
       # Install Qt
@@ -169,20 +186,27 @@ jobs:
           chmod a+x linuxdeployqt-continuous-x86_64.AppImage
 
           echo "💡 Creating build directory..."
-          mkdir build && cd build
+          mkdir build
 
-          echo "🔧 Configuring project using cmake..."
-          cmake .. -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}}
+          echo "🔧 Configuring project using 'cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}}' ..."
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}}
 
           echo "🚧 Compiling the project..."
-          cmake --build . -- -j${{env.CORES}}
+          cmake --build build -- -j${{env.CORES}}
 
           echo "🔎 Verifying built files..."
-          find . -type f -name "${{env.EXECUTABLE}}*"
+          find build -type f -name "${{env.EXECUTABLE}}*"
 
           echo "🔧 Installing the application into AppDir..."
-          mkdir AppDir
+          cd build
           make install DESTDIR=AppDir
+
+          if [ -d "./AppDir" ]; then
+              echo "AppDir created successfully!"
+          else
+              echo "Error: AppDir was not created!"
+              exit 1
+          fi
 
           echo "🚀 Creating the AppImage using linuxdeployqt..."
           ./linuxdeployqt-continuous-x86_64.AppImage AppDir/usr/share/applications/*.desktop \

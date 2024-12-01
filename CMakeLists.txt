@@ -2,8 +2,8 @@
 cmake_minimum_required(VERSION 3.16) # 3.21 or 3.22 for better features and compatibility with modern tools.
 
 # Set our project name and version:
-set(ICON_NAME socnetv)
 set(APP_NAME SocNetV)
+set(APP_NAME_LOWER socnetv)
 
 project(SocNetV 
     VERSION 3.2
@@ -14,19 +14,8 @@ project(SocNetV
 # Set the CMAKE_CXX_STANDARD 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-# Some options here:
+# Some options here (UNUSED for now...):
 option(DEV_MODE "Build in developer mode" OFF)
-
-# Debug information
-message(STATUS "Building ${PROJECT_NAME} ${PROJECT_VERSION}")
-message(STATUS "CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
-
-message(STATUS "CMAKE_SOURCE_DIR: "  ${CMAKE_SOURCE_DIR})
-message(STATUS "CMAKE_CURRENT_LIST_DIR: "  ${CMAKE_CURRENT_LIST_DIR})
-message(STATUS "CMAKE_RUNTIME_OUTPUT_DIRECTORY: "  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-message(STATUS "CMAKE_MODULE_PATH: "  ${CMAKE_MODULE_PATH})
-message(STATUS "CMAKE_INSTALL_DATADIR: "  ${CMAKE_INSTALL_DATADIR})
-
 
 
 # Include GNUInstallDirs for standardized install locations
@@ -48,10 +37,17 @@ else()
     set(TARGET_NAME socnetv)
 endif()
 
-message(STATUS "Building ${PROJECT_NAME} (${TARGET_NAME}) ${PROJECT_VERSION}")
-
-set(INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_PROJECT_NAME})
 # Override with -DCMAKE_INSTALL_PREFIX=/custom/path.
+set(INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_PROJECT_NAME})
+
+# Debug information
+message(STATUS "Building ${PROJECT_NAME} (${TARGET_NAME}) ${PROJECT_VERSION}")
+message(STATUS "CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
+message(STATUS "CMAKE_SOURCE_DIR: "  ${CMAKE_SOURCE_DIR})
+message(STATUS "CMAKE_CURRENT_LIST_DIR: "  ${CMAKE_CURRENT_LIST_DIR})
+message(STATUS "CMAKE_RUNTIME_OUTPUT_DIRECTORY: "  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+message(STATUS "CMAKE_MODULE_PATH: "  ${CMAKE_MODULE_PATH})
+message(STATUS "CMAKE_INSTALL_DATADIR: "  ${CMAKE_INSTALL_DATADIR})
 message(STATUS "INSTALL_DIR: "  ${INSTALL_DIR})
 
 
@@ -143,13 +139,13 @@ message(STATUS "Source files to be compiled: ${SOURCES}")
 
 
 # Set icons.
-set(ICON_FILE src/images/${ICON_NAME}.png)
+set(ICON_FILE src/images/${APP_NAME_LOWER}.png)
 if (APPLE)
-    set(ICON_FILE src/images/${ICON_NAME}.icns)
+    set(ICON_FILE src/images/${APP_NAME_LOWER}.icns)
 endif()
 
 if (WIN32)
-    set(ICON_FILE src/images/${ICON_NAME}.ico)
+    set(ICON_FILE src/images/${APP_NAME_LOWER}.ico)
 endif()
 
 
@@ -200,7 +196,6 @@ target_link_libraries(${TARGET_NAME} PRIVATE
     Qt6::Svg 
     Qt6::Xml
 )
-                 
 
 
 # Add platform-specific properties
@@ -249,6 +244,8 @@ elseif(LINUX)
     # Set the installation paths and files
     install(TARGETS ${TARGET_NAME}
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"  # Binaries go to /usr/bin
+#     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+#     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     )
 
     # Install the pixmap (icon file)
@@ -272,9 +269,9 @@ elseif(LINUX)
     )
 
     # Install translations
-    install(FILES translations/socnetv_*.qm
-        DESTINATION "${CMAKE_INSTALL_DATADIR}/socnetv"
-    )
+    # install(FILES translations/socnetv_*.qm
+    #     DESTINATION "${CMAKE_INSTALL_DATADIR}/socnetv"
+    # )
 
     # Install documentation
     install(FILES changelog.gz NEWS README.md TODO COPYING AUTHORS INSTALL
@@ -285,14 +282,8 @@ endif()
 
 
 
-
-
 qt_finalize_executable(${TARGET_NAME})
 
 
-# install(TARGETS ${TARGET_NAME}
-#     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-#     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-#     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-# )
+
 
