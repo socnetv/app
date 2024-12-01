@@ -12,11 +12,11 @@ env:
   EXECUTABLE: "SocNetV"
   APPLICATION: "SocNetV"
   UNIXNAME: "socnetv"
-  SOCNETV_VERSION: "3.2"
+  SOCNETV_VERSION: "3.2"    # TODO - READ FROM FILE
   QMAKE_PROJECT: "socnetv.pro"
   PUBLISHER: "Dimitris Kalamaras"
   QT_MODULES: "qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d"
-  QMAKE_CONFIG: debug  # release
+  QMAKE_CONFIG: debug  # release  # TODO IF IN MASTER SET AS RELEASE
   CMAKE_CONFIG: Debug  # Release
   CORES: 16
 
@@ -153,7 +153,7 @@ jobs:
       # Build SocNetV
       #
       - if: contains( matrix.os, 'ubuntu-22.04')
-        name: Build for ${{matrix.os}} with Qt${{matrix.qt-version}}
+        name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt${{matrix.qt-version}}
         run: |
           echo '⚙️ Install dependencies'
           sudo apt install desktop-file-utils
@@ -170,7 +170,7 @@ jobs:
           echo "👉 Building finished. Listing current directory with find for verification:"
           find .
       - if: contains( matrix.os, 'ubuntu-latest')
-        name: Build for ${{matrix.os}} with Qt ${{matrix.qt-version}}
+        name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}}
         run: |
           echo "🔧 Installing dependencies for AppImage creation..."
           sudo apt update
@@ -220,7 +220,7 @@ jobs:
 
       # BUILD FOR MACOS
       - if: contains( matrix.os, 'macos')
-        name: Build for ${{matrix.os}} with Qt ${{matrix.qt-version}}
+        name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}}
         run: |
           echo "🔧 Running 'qmake CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}}' to configure on macos..."
           qmake CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}}
@@ -230,7 +230,7 @@ jobs:
           find .
       # BUILD FOR WINDOWS
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.2.4'
-        name: Build for ${{matrix.os}} with Qt ${{matrix.qt-version}}
+        name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}}
         run: |
           echo "🔎 Listing some directories"
           dir D:\a\app\Qt\
@@ -240,36 +240,9 @@ jobs:
           nmake
           echo "👉 Building finished. Listing current directory for verification:"
           dir
-      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.5.3'
-        name: Build for ${{matrix.os}} with Qt ${{matrix.qt-version}}
-        run: |
-          echo "🔎 Listing some directories"
-          dir D:\a\app\Qt\
-          echo "💡 Creating build dir"
-          mkdir build
-          echo "🔧 Running 'cmake -S . -B build' to configure the project..."
-          cmake -S . -B build
-          echo "🚧 🛠️ Compiling into build/ with 'cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}}'. Please wait..."
-          cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}}
-          echo "👉 Building finished. Listing directory build/ for verification: "
-          dir build
 
-      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.6.3'
-        name: Build for ${{matrix.os}} with Qt ${{matrix.qt-version}}
-        run: |
-          echo "🔎 Listing some directories"
-          dir D:\a\app\Qt\
-          echo "💡 Creating build dir"
-          mkdir build
-          echo "🔧 Running 'cmake -S . -B build' to configure the project..."
-          cmake -S . -B build
-          echo "🚧 🛠️ Compiling into build/ with 'cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}}'. Please wait..."
-          cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}}
-          echo "👉 Building finished. Listing directory build/ for verification: "
-          dir build
-
-      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.8.0'
-        name: Build for ${{matrix.os}} with Qt ${{matrix.qt-version}}
+      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version != '6.2.4'
+        name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}}
         run: |
           echo "🔎 Listing some directories"
           dir D:\a\app\Qt\
