@@ -1,92 +1,61 @@
 # SPDX-License-Identifier: BSD-3-Clause
+cmake_minimum_required(VERSION 3.16) # 3.21 or 3.22 for better features and compatibility with modern tools.
 
-# Set the minimum cmake version here:
-cmake_minimum_required(VERSION 3.16)
-
+# Set our project name and version:
 set(ICON_NAME socnetv)
 set(APP_NAME SocNetV)
 
-# Set our project name and version here:
-project(${APP_NAME} 
+project(SocNetV 
     VERSION 3.2
     DESCRIPTION "SocNetV: Open-source social network analysis application based on Qt."
     HOMEPAGE_URL "https://socnetv.org"
-    LANGUAGES CXX)
-
-# Other way to set project version
-# set(PROJECT_VERSION_MAJOR 3)
-# set(PROJECT_VERSION_MINOR 2)
-# set(PROJECT_VERSION_PATCH 0)
-
+    LANGUAGES CXX
+)
 # Set the CMAKE_CXX_STANDARD 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-
 # Some options here:
 option(DEV_MODE "Build in developer mode" OFF)
 
-# Echo some debug messages for sanity check:
-message(STATUS "####")
-message(STATUS "#### Variable checks...")
-message(STATUS "####")
-message(STATUS "QT6_DIR" ${QT6_DIR})
-message(STATUS "PROJECT_NAME: " ${PROJECT_NAME})
-message(STATUS "PROJECT_VERSION: "  ${PROJECT_VERSION})
+# Debug information
+message(STATUS "Building ${PROJECT_NAME} ${PROJECT_VERSION}")
+message(STATUS "CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
+
 message(STATUS "CMAKE_SOURCE_DIR: "  ${CMAKE_SOURCE_DIR})
 message(STATUS "CMAKE_CURRENT_LIST_DIR: "  ${CMAKE_CURRENT_LIST_DIR})
-message(STATUS "CMAKE_BINARY_DIR: "  ${CMAKE_BINARY_DIR})
-message(STATUS "CMAKE_CURRENT_BINARY_DIR: "  ${CMAKE_CURRENT_BINARY_DIR})
-# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 message(STATUS "CMAKE_RUNTIME_OUTPUT_DIRECTORY: "  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 message(STATUS "CMAKE_MODULE_PATH: "  ${CMAKE_MODULE_PATH})
-
-# Prepare compile time flags
-set(gcc_like_cxx "$<COMPILE_LANG_AND_ID:CXX,ARMClang,AppleClang,Clang,GNU,LCC>")
-set(msvc_cxx "$<COMPILE_LANG_AND_ID:CXX,MSVC>")
-
-message(STATUS "For GCC I will use these flags: " ${gcc_like_cxx})
-message(STATUS "For MSVC I will use these flags: " ${msvc_cxx})
-
-message(CHECK_START "Checking INSTALL_DIR")
-
-if(NOT DEFINED INSTALL_DIR)
-    message(CHECK_FAIL "None")
-    set(INSTALL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build")
-    message(CHECK_START "Setting INSTALL_DIR")
-    message(CHECK_PASS ${INSTALL_DIR})
-else()
-    message(CHECK_SUCCESS ${INSTALL_DIR})
-endif()
+message(STATUS "CMAKE_INSTALL_DATADIR: "  ${CMAKE_INSTALL_DATADIR})
 
 
 
-message(STATUS "####")
-message(STATUS "#### Finding Qt6 and other packages ...")
-message(STATUS "####")
+# Include GNUInstallDirs for standardized install locations
+# Defines a set of variables for installation directories:
+# CMAKE_INSTALL_PREFIX	Root directory for installation	/usr/local or C:/Program Files/<project>
+# CMAKE_INSTALL_BINDIR	Directory for executable binaries	bin
+# CMAKE_INSTALL_LIBDIR	Directory for libraries	lib or lib64
+# CMAKE_INSTALL_INCLUDEDIR	Directory for header files	include
+# CMAKE_INSTALL_DATAROOTDIR	Root directory for read-only data	share
+# CMAKE_INSTALL_SYSCONFDIR	Directory for configuration files	etc
+include(GNUInstallDirs)
+set(INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_PROJECT_NAME})
+# Override with -DCMAKE_INSTALL_PREFIX=/custom/path.
+message(STATUS "INSTALL_DIR: "  ${INSTALL_DIR})
 
+
+# Find Qt6
 find_package(Qt6 REQUIRED COMPONENTS Core OpenGLWidgets Gui Core5Compat Widgets PrintSupport Network Charts Svg Xml)
+# find_package_handle_standard_args(Qt6 DEFAULT_MSG Qt6_FOUND)
 
-
-
-message(STATUS "####")
-message(STATUS "#### Running standard Qt project setup ...")
-message(STATUS "####")
-
-qt_standard_project_setup()
-
+# qt_standard_project_setup()
 
 # Copy and rename our COPYING license file (Configure Time)
 configure_file(${CMAKE_SOURCE_DIR}/COPYING
                ${CMAKE_BINARY_DIR}/LICENSE.txt
                COPYONLY)
 
-               
-
-message(STATUS "####")
-message(STATUS "#### Adding sources and executable ...")
-message(STATUS "####")
-
-set(SOURCE_FILES  
+# Define sources and headers
+set (FORMS 
     src/forms/dialogfilteredgesbyweight.ui 
     src/forms/dialogsettings.ui 
     src/forms/dialogsysteminfo.ui 
@@ -106,51 +75,10 @@ set(SOURCE_FILES
     src/forms/dialogedgedichotomization.ui 
     src/forms/dialogexportpdf.ui 
     src/forms/dialogexportimage.ui
+    # Other UI files
 )
 
-# # Headers
-# list(APPEND SOURCE_FILES
-#     src/mainwindow.h 
-#     src/texteditor.h 
-#     src/graph.h 
-#     src/graphvertex.h 
-#     src/matrix.h 
-#     src/parser.h 
-#     src/webcrawler.h 
-#     src/chart.h 
-#     src/graphicswidget.h 
-#     src/graphicsedge.h 
-#     src/graphicsedgeweight.h 
-#     src/graphicsedgelabel.h 
-#     src/graphicsguide.h 
-#     src/graphicsnode.h 
-#     src/graphicsnodelabel.h 
-#     src/graphicsnodenumber.h 
-#     src/forms/dialogfilteredgesbyweight.h 
-#     src/forms/dialogedgedichotomization.h 
-#     src/forms/dialogwebcrawler.h 
-#     src/forms/dialogdatasetselect.h 
-#     src/forms/dialogpreviewfile.h 
-#     src/forms/dialognodeedit.h 
-#     src/forms/dialogranderdosrenyi.h 
-#     src/forms/dialograndsmallworld.h 
-#     src/forms/dialograndscalefree.h 
-#     src/forms/dialograndregular.h 
-#     src/forms/dialogsettings.h 
-#     src/forms/dialogsimilaritypearson.h 
-#     src/forms/dialogsimilaritymatches.h 
-#     src/forms/dialogdissimilarities.h 
-#     src/forms/dialogclusteringhierarchical.h  
-#     src/forms/dialograndlattice.h 
-#     src/forms/dialognodefind.h 
-#     src/forms/dialogexportpdf.h 
-#     src/forms/dialogexportimage.h 
-#     src/forms/dialogsysteminfo.h 
-#     src/global.h
-# )
-    
-    
-list(APPEND SOURCE_FILES
+set(SOURCES
     src/main.cpp 
     src/mainwindow.cpp 
     src/texteditor.cpp 
@@ -188,42 +116,53 @@ list(APPEND SOURCE_FILES
     src/forms/dialogexportpdf.cpp 
     src/forms/dialogexportimage.cpp 
     src/forms/dialogsysteminfo.cpp
- )
+    # Add remaining source files here
+)
 
-# List source files
-message(STATUS "Source files to be compiled: ${SOURCE_FILES}")
+# set(HEADERS
+#      src/global.h
+#     # Other headers
+# )
 
-# Qt resource files: Compile our icons into Resource object code
-qt6_add_resources(RESOURCES 
-#  ./src/application.qrc # obsolete ? 
+
+set(RESOURCES
     src/src.qrc
 )
 
+
+# List source files
+message(STATUS "Source files to be compiled: ${SOURCES}")
+
+
+
+# Set icons.
 set(ICON_FILE src/images/${ICON_NAME}.png)
 if (APPLE)
     set(ICON_FILE src/images/${ICON_NAME}.icns)
 endif()
+
 if (WIN32)
     set(ICON_FILE src/images/${ICON_NAME}.ico)
 endif()
- 
-add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${RESOURCES} ${ICON_FILE})
 
-# qt_add_executable(${PROJECT_NAME}     ${SOURCE_FILES} ${RESOURCES} )
 
+# The MANUAL_FINALIZATION option allows for additional 
+# configuration before finalization
+qt_add_executable(${PROJECT_NAME} 
+    MANUAL_FINALIZATION  
+    # ${HEADERS}
+    ${SOURCES}
+    ${FORMS}
+    ${RESOURCES}
+    ${ICON_FILE}
+)
 
 # Add include directories for headers (equivalent to INCLUDEPATH)
 target_include_directories(${PROJECT_NAME}  PUBLIC
                            "${CMAKE_SOURCE_DIR}/src"
                            )
 
-message(STATUS "Include paths: ${CMAKE_SOURCE_DIR}/src")
 
-
-
-message(STATUS "####")
-message(STATUS "#### Setting default target properties and compile time options ...")
-message(STATUS "####")
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_STANDARD 17
@@ -232,91 +171,76 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     AUTOUIC ON
     AUTORCC ON
 )
-
-
-if (DEV_MODE) 
-    message(STATUS "DEV_MODE: ON")
-else()
-    message(STATUS "DEV_MODE: OFF")
-endif()
-
-
-if (CMAKE_BUILD_TYPE MATCHES Debug)
-    message(STATUS "Debug build configuration detected. Adding -DQT_DEBUG and compile flags...")
-    add_definitions(-DQT_DEBUG)
-    target_compile_options(${PROJECT_NAME} INTERFACE
-        "$<${gcc_like_cxx}:$<BUILD_INTERFACE:-Wall;-Wextra;-Wshadow;-Wformat=2;-Wunused>>"
-        "$<${msvc_cxx}:$<BUILD_INTERFACE:-W3>>"
-    )
-else()
-    message(STATUS "Non-debug build configuration detected")
-endif()
-
-#
-#  SET OS Specific things here
-#
-if(WIN32)
-    message(STATUS "Setting up for building on WINDOWS...")
-
-
-    set_target_properties(${PROJECT_NAME} PROPERTIES
-        WIN32_EXECUTABLE TRUE
-        CXX_STANDARD 17
-        CXX_STANDARD_REQUIRED ON
-        AUTOMOC ON
-        AUTOUIC ON
-        AUTORCC ON
-    )
-
-endif()
-
-
-
+                       
+# Set properties for macOS
 if(APPLE AND NOT IOS)
-    # TODO: Add QMAKE_APPLE_DEVICE_ARCHS equivalent.
-    message(STATUS "Setting up for building on APPLE...")
-    set_source_files_properties("${CMAKE_SOURCE_DIR}/src/images/${ICON_NAME}.icns" PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
-    target_sources(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src/images/${ICON_NAME}.icns")
+    set_source_files_properties("${CMAKE_SOURCE_DIR}/src/images/socnetv.icns" PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+    target_sources(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src/images/socnetv.icns")
 
     set_target_properties(${PROJECT_NAME} PROPERTIES
         MACOSX_BUNDLE TRUE
-        # No need, CMake will automatically populate the app's Info.plist, i.e. edit the CFBundleIconFile key with the icon filename.
-        # MACOSX_BUNDLE_INFO_PLIST  "${CMAKE_SOURCE_DIR}/cmake/Info.plist.in"
-        # Sets ``CFBundleName``
-        MACOSX_BUNDLE_BUNDLE_NAME ${PROJECT_NAME} 
-        # Sets ``CFBundleVersion``.
-        MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION} 
-        # Sets ``CFBundleIdentifier``
-        MACOSX_BUNDLE_GUI_IDENTIFIER "org.${PROJECT_NAME}.app"
-        # Sets ``NSHumanReadableCopyright``.
-        MACOSX_BUNDLE_COPYRIGHT  "© 2024 Dimitris Kalamaras. Licensed under the GNU GPL v3. Source code available at https://socnetv.org"
-        # Sets the icon file
-        MACOSX_BUNDLE_ICON_FILE "${ICON_NAME}.icns"
+        MACOSX_BUNDLE_BUNDLE_NAME ${PROJECT_NAME}
+        MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+        MACOSX_BUNDLE_GUI_IDENTIFIER "org.socnetv.app"
+        MACOSX_BUNDLE_COPYRIGHT "© 2024 Dimitris Kalamaras. Licensed under GNU GPL v3."
+        MACOSX_BUNDLE_ICON_FILE "socnetv.icns"
     )
-
-    # Define the custom command to run after the build
-    add_custom_command(
-        TARGET ${PROJECT_NAME}
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E echo "Post-build step for ${PROJECT_NAME}"
-        # TODO
-        # COMMAND  /bin/bash macdeployqt ${PROJECT_NAME}.app -dmg
-        COMMENT "Running post-build command"
-    )
-
 endif()
-
 
 if(LINUX)
-    message(STATUS "Setting up for building on LINUX...")
-    # target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -O2)
+
+    # Define the installation prefix (equivalent to qmake's PREFIX)
+    # By default, this is /usr/local, but we set it to /usr for compatibility
+    set(CMAKE_INSTALL_PREFIX "/usr" CACHE PATH "Installation prefix")
+
+    # Define the target executable name
+    set(TARGET_NAME socnetv)
+
+    # Set the installation paths and files
+    install(TARGETS ${TARGET_NAME}
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"  # Binaries go to /usr/bin
+    )
+
+    # Install the pixmap (icon file)
+    install(FILES src/images/socnetv.png
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/pixmaps"
+    )
+
+    # Install the desktop entry file
+    install(FILES socnetv.desktop
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/applications"
+    )
+
+    # Install the man page
+    install(FILES man/socnetv.1
+        DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/man/man1"
+    )
+
+    # Install the AppStream metadata file
+    install(FILES socnetv.appdata.xml
+        DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/metainfo"
+    )
+
+    # Install translations
+    install(FILES translations/socnetv_*.qm
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/socnetv"
+    )
+
+    # Install documentation
+    install(FILES changelog.gz NEWS README.md TODO COPYING AUTHORS INSTALL
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/doc/socnetv"
+    )
+
 endif()
 
+# Add compiler options
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    target_compile_options(${PROJECT_NAME} PRIVATE /W4)
+endif()
 
-get_target_property(COMPILE_OPTIONS ${PROJECT_NAME} COMPILE_OPTIONS)
-message(STATUS "Compile options for ${PROJECT_NAME}: ${COMPILE_OPTIONS}")
-
-
+# Link libraries
 target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::Core
     Qt6::Gui
@@ -330,12 +254,16 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::Xml
 )
 
+qt_finalize_executable(${PROJECT_NAME})
 
-# Finalize:
-# qt_finalize_executable(${PROJECT_NAME})
-
+# Installation
 install(TARGETS ${PROJECT_NAME}
-    # RUNTIME DESTINATION "${INSTALL_DIR}"
     BUNDLE DESTINATION "${INSTALL_DIR}"
-    # LIBRARY DESTINATION "${INSTALL_DIR}"
 )
+
+# install(TARGETS ${PROJECT_NAME}
+#     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+#     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+#     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+# )
+

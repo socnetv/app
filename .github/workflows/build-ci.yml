@@ -6,7 +6,6 @@ name: Build SocNetV (CI) 🚀
 on:
   push:
     branches:
-      - master
       - develop
 
 env:
@@ -138,6 +137,8 @@ jobs:
       - if: contains( matrix.os, 'ubuntu-22.04')
         name: Build for ${{matrix.os}} with Qt${{matrix.qt-version}}
         run: |
+          echo '⚙️ Install dependencies'
+          sudo apt install desktop-file-utils 
           echo "🔎 Check openssl version:"
           echo `openssl version`
           echo "🔎 Check output of 'which qmake6':"
@@ -153,18 +154,43 @@ jobs:
       - if: contains( matrix.os, 'ubuntu-latest')
         name: Build for ${{matrix.os}} with Qt ${{matrix.qt-version}}
         run: |
+          echo "🔧 Installing dependencies for AppImage creation..."
+          sudo apt update
+          sudo apt install -y build-essential libssl-dev cmake ninja-build \
+             libssl-dev libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev \
+             desktop-file-utils patchelf libglu1-mesa-dev libfontconfig1 libfreetype6 libx11-dev libxext-dev \
+             libxrandr-dev libxrender-dev libxcb1-dev libx11-xcb-dev libxcb-glx0-dev
+
           echo "🔎 Check openssl version:"
           echo `openssl version`
-          echo "🔎 Check output of 'which qmake6':"
-          which qmake6
-          echo "🔎 Check qmake6 version:"
-          qmake6 -v
-          echo "🔧 Running 'qmake6 CONFIG+=${{env.QMAKE_CONFIG}}' to configure on ubuntu ..."
-          qmake6 CONFIG+=${{env.QMAKE_CONFIG}}
-          echo "🚧 🛠️ Compiling for linux with make (unlimited cores). Please wait..."
-          make
-          echo "👉 Building finished. Listing current directory with find for verification:"
-          find .
+
+          echo "🔧 Installing linuxdeployqt..."
+          wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
+          chmod a+x linuxdeployqt-continuous-x86_64.AppImage
+
+          echo "💡 Creating build directory..."
+          mkdir build && cd build
+
+          echo "🔧 Configuring project using cmake..."
+          cmake .. -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}}
+
+          echo "🚧 Compiling the project..."
+          cmake --build . -- -j${{env.CORES}}
+
+          echo "🔎 Verifying built files..."
+          find . -type f -name "${{env.EXECUTABLE}}*"
+
+          echo "🔧 Installing the application into AppDir..."
+          mkdir AppDir
+          make install DESTDIR=AppDir
+
+          echo "🚀 Creating the AppImage using linuxdeployqt..."
+          ./linuxdeployqt-continuous-x86_64.AppImage AppDir/usr/share/applications/*.desktop \
+            -appimage -extra-plugins=iconengines,imageformats
+
+          echo "🎉 AppImage created! Listing files in current directory..."
+          ls -lh ./*.AppImage
+
       # BUILD FOR MACOS
       - if: contains( matrix.os, 'macos')
         name: Build for ${{matrix.os}} with Qt ${{matrix.qt-version}}
