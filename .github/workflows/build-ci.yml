@@ -186,14 +186,15 @@ jobs:
           wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
           chmod a+x linuxdeployqt-continuous-x86_64.AppImage
 
-          echo "💡 Creating build directory..."
-          mkdir build
+          echo "💡 Deleting old build directory..."
+          rm -rf build
+          ls
 
           echo "🔧 Configuring project using 'cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}}' ..."
           cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}}
 
           echo "🚧 Compiling the project..."
-          cmake --build build -- -j${{env.CORES}}
+          cmake --build build -j$(nproc)
 
           echo "🔎 Verifying built files..."
           ls -lh ./build/
@@ -252,7 +253,7 @@ jobs:
           cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}}
           echo "👉 Building finished. Listing directory build/ for verification: "
           dir build
-          find build -type f -name "${{env.EXECUTABLE}}*"
+
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.6.3'
         name: Build for ${{matrix.os}} with Qt ${{matrix.qt-version}}
         run: |
@@ -266,7 +267,7 @@ jobs:
           cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}}
           echo "👉 Building finished. Listing directory build/ for verification: "
           dir build
-          find build -type f -name "${{env.EXECUTABLE}}*"
+
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.8.0'
         name: Build for ${{matrix.os}} with Qt ${{matrix.qt-version}}
         run: |
@@ -280,5 +281,5 @@ jobs:
           cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}} -v
           echo "👉 Building finished. Listing directory build/ for verification: "
           dir build
-          find build -type f -name "${{env.EXECUTABLE}}*"
+
       - run: echo "🍏 This job's status is ${{ job.status }}."
