@@ -47,7 +47,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     if: contains(github.event.head_commit.message, '[ci]') || contains(github.event.head_commit.message, '[gha]')
     steps:
-      - name: 🤖 Job information
+      - name: 🤖 Job information, on branch ${{ github.ref }}
         run: |
           echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event, by actor ${{ github.actor }}."
           echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
@@ -75,7 +75,7 @@ jobs:
           # Export VERSION as an environment variable for subsequent steps
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
 
-      - name: Display the determined version
+      - name: Determined build version ${{ env.VERSION }} 
         run: echo "VERSION is set to ${{ env.VERSION }}"
 
       #
@@ -188,17 +188,21 @@ jobs:
 
           echo "💡 Deleting old build directory..."
           rm -rf build
+          echo "💡 List current directory..."
+          pwd
           ls
 
           echo "🔧 Configuring project using 'cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}}' ..."
           cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}}
+          
+          ls build/
 
           echo "🚧 Compiling the project..."
           cmake --build build -j$(nproc)
 
           echo "🔎 Verifying built files..."
           ls -lh ./build/
-          find build -type f -name "${{env.UNIXNAME}}*"
+          find ./build -type f -name "${{env.UNIXNAME}}*"
 
           echo "🔧 Installing the application into AppDir..."
           cd build
