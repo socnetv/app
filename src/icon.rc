@@ -1,2 +1,21 @@
-IDI_ICON1 ICON DISCARDABLE "images/socnetv.ico"
+1 VERSIONINFO
+FILEVERSION 3,2,0,0
+PRODUCTVERSION 3,2,0,0
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0" // Locale and codepage: 0409 (English - United States), 04B0 (Unicode)
+        BEGIN
+            VALUE "CompanyName", "socnetv.org"
+            VALUE "FileDescription", "SocNetV: Open-source social network analysis application based on Qt."
+            VALUE "ProductName", "Social Network Visualizer"
+            VALUE "LegalCopyright", "Copyright (C) 2024 Dimitris V. Kalamaras. GPLv3."
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0409, 1200
+    END
+END
 
+IDI_ICON1 ICON "images/socnetv.ico"

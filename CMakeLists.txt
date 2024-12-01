@@ -169,7 +169,7 @@ target_include_directories(${TARGET_NAME}  PUBLIC
                            )
 
 
-
+# Set DEFAULT Target Properties
 set_target_properties(${TARGET_NAME} PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
@@ -177,7 +177,6 @@ set_target_properties(${TARGET_NAME} PROPERTIES
     AUTOUIC ON
     AUTORCC ON
 )
-
 
 
 # Add compiler options
@@ -201,9 +200,28 @@ target_link_libraries(${TARGET_NAME} PRIVATE
     Qt6::Svg 
     Qt6::Xml
 )
-                       
-# Set properties for macOS
-if(APPLE AND NOT IOS)
+                 
+
+
+# Add platform-specific properties
+if(WIN32)
+
+    # Add Windows-specific metadata and icon
+    set_target_properties(${TARGET_NAME} PROPERTIES
+        WIN32_EXECUTABLE TRUE
+        VERSION ${PROJECT_VERSION}
+        SOVERSION ${PROJECT_VERSION}
+    )
+    
+    # Embed version and metadata into the binary using a resource file
+    target_sources(${TARGET_NAME} PRIVATE src/icon.rc)
+
+    # Optionally copy the target to a specific directory after build
+    install(TARGETS ${TARGET_NAME}
+        RUNTIME DESTINATION release/  # Install to release/ folder
+    )
+
+elseif(APPLE AND NOT IOS)
     set_source_files_properties("${CMAKE_SOURCE_DIR}/src/images/socnetv.icns" PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
     target_sources(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src/images/socnetv.icns")
 
@@ -218,20 +236,15 @@ if(APPLE AND NOT IOS)
 
     # Installation
     install(TARGETS ${TARGET_NAME}
-    BUNDLE DESTINATION "${INSTALL_DIR}"
+        BUNDLE DESTINATION "${INSTALL_DIR}"
     )
 
 
-endif()
-
-if(LINUX)
+elseif(LINUX)
 
     # Define the installation prefix (equivalent to qmake's PREFIX)
     # By default, this is /usr/local, but we set it to /usr for compatibility
     set(CMAKE_INSTALL_PREFIX "/usr" CACHE PATH "Installation prefix")
-
-    # Define the target executable name
-    set(TARGET_NAME socnetv)
 
     # Set the installation paths and files
     install(TARGETS ${TARGET_NAME}
@@ -272,40 +285,6 @@ endif()
 
 
 
-# Set the target name for Windows
-if(WIN32)
-    set(TARGET_NAME SocNetV)
-
-    # Add executable with Windows-specific settings
-    add_executable(${TARGET_NAME} WIN32 
-        ${SOURCES}  # Your source files
-        src/images/socnetv.ico  # Icon file for Windows
-    )
-
-    # Set properties for the PE header (optional, for advanced customization)
-    set_target_properties(${TARGET_NAME} PROPERTIES
-        VERSION ${PROJECT_VERSION}
-        SOVERSION ${PROJECT_VERSION}  # Equivalent to VERSION_PE_HEADER
-    )
-
-    # Embed version and metadata into the binary (using resource file)
-    set_source_files_properties(src/images/socnetv.ico PROPERTIES
-        MACOSX_PACKAGE_LOCATION Resources
-    )
-
-    # Define metadata for the executable (only for Visual Studio or resource scripts)
-    set_target_properties(${TARGET_NAME} PROPERTIES
-        COMPANY_NAME "socnetv.org"
-        PRODUCT_NAME "Social Network Visualizer"
-        DESCRIPTION "SocNetV: Open-source social network analysis application based on Qt."
-        COPYRIGHT "Copyright (C) 2023 Dimitris V. Kalamaras. GPLv3."
-    )
-
-    # Optionally copy the target to a specific directory after build
-    install(TARGETS ${TARGET_NAME}
-        RUNTIME DESTINATION release/  # Install to release/ folder
-    )
-endif()
 
 
 qt_finalize_executable(${TARGET_NAME})
