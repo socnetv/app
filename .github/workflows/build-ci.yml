@@ -12,7 +12,8 @@ env:
   EXECUTABLE: "SocNetV"
   APPLICATION: "SocNetV"
   UNIXNAME: "socnetv"
-  SOCNETV_VERSION: "3.2"    # TODO - READ FROM FILE
+  SOCNETV_VERSION: "3.2"      # TODO - READ FROM FILE
+  VERSION: "3.2"              # WILL BE UPDATED DYNAMICALLY BELOW
   QMAKE_PROJECT: "socnetv.pro"
   PUBLISHER: "Dimitris Kalamaras"
   QT_MODULES: "qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d"
@@ -59,8 +60,7 @@ jobs:
           ls ${{ github.workspace }}
           echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
           echo "🖥️ The workflow is now ready to test your code on the runner."
-
-      - name: Set version dynamically
+      - name: 💡 Set version dynamically
         shell: bash
         id: set_version
         run: |
@@ -152,10 +152,74 @@ jobs:
       #
       # Build SocNetV
       #
-      - if: contains( matrix.os, 'ubuntu-22.04')
+      - if: contains( matrix.os, 'ubuntu-22.04') && matrix.qt-version == '6.2.4'
+        name: Build ${{ env.VERSION }} AppImage for ${{matrix.os}} with Qt${{matrix.qt-version}}
+        run: |
+          echo "🔧 Installing dependencies for AppImage creation..."
+          sudo apt update
+          sudo apt install -y build-essential libssl-dev cmake ninja-build \
+            libssl-dev libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev \
+            desktop-file-utils patchelf libglu1-mesa-dev libfontconfig1 libfreetype6 libx11-dev libxext-dev \
+            libxrandr-dev libxrender-dev libxcb1-dev libx11-xcb-dev libxcb-glx0-dev libfuse2
+
+          echo "🔎 Check openssl version:"
+          echo `openssl version`
+
+          echo "🔧 Installing linuxdeployqt..."
+          wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
+          chmod a+x linuxdeployqt-continuous-x86_64.AppImage
+
+          echo "💡 Deleting old build directory..."
+          rm -rf build
+          echo "💡 List current directory..."
+          pwd
+          ls
+
+          echo "🔧 Configuring project using 'cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}}' ..."
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}}
+
+          ls build/
+
+          echo "🚧 Compiling the project..."
+          cmake --build build -j$(nproc)
+
+          echo "🔎 Verifying built files..."
+          ls -lh ./build/
+          echo "🔎 Search for built executable..."
+          find ./build -type f -name "${{env.UNIXNAME}}*"
+
+          echo "🔧 Installing the application into AppDir..."
+          cd build
+          make install DESTDIR=AppDir
+
+          if [ -d "./AppDir" ]; then
+              echo "AppDir created successfully!"
+          else
+              echo "Error: AppDir was not created!"
+              exit 1
+          fi
+
+          # NOTE: linuxdeployqt supports up to Ubuntu Focal Fossa 
+          echo "🚀 Creating the AppImage using linuxdeployqt..."
+          ../linuxdeployqt-continuous-x86_64.AppImage AppDir/usr/share/applications/*.desktop \
+            -appimage -extra-plugins=iconengines,imageformats
+
+          echo "🎉 AppImage created! Listing files in current directory..."
+          ls -lh ./*.AppImage
+      - if: contains( matrix.os, 'ubuntu-22.04') && matrix.qt-version == '6.2.4'
+        name: Upload Ubuntu build AppImage to GitHub Releases
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.repository.releases_url }}/continuous/assets
+          asset_path: build/*.AppImage
+          asset_name: "${{ env.UNIXNAME }}-${{ env.VERSION }}.AppImage"
+          asset_content_type: "application/octet-stream"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
+      - if: contains( matrix.os, 'ubuntu-22.04') && matrix.qt-version != '6.2.4'
         name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt${{matrix.qt-version}}
         run: |
-          echo '⚙️ Install dependencies'
+          echo '⚙️ Install dependencies for building....'
           sudo apt install desktop-file-utils
           echo "🔎 Check openssl version:"
           echo `openssl version`
@@ -168,7 +232,7 @@ jobs:
           echo "🚧 🛠️ Compiling for linux with make -j${{env.CORES}}. Please wait..."
           make -j${{env.CORES}}
           echo "👉 Building finished. Listing current directory with find for verification:"
-          find .
+          find .          
       - if: contains( matrix.os, 'ubuntu-latest')
         name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}}
         run: |
@@ -216,12 +280,6 @@ jobs:
               exit 1
           fi
 
-          echo "🚀 Creating the AppImage using linuxdeployqt..."
-          ../linuxdeployqt-continuous-x86_64.AppImage AppDir/usr/share/applications/*.desktop \
-            -appimage -extra-plugins=iconengines,imageformats
-
-          echo "🎉 AppImage created! Listing files in current directory..."
-          ls -lh ./*.AppImage
 
       # BUILD FOR MACOS
       - if: contains( matrix.os, 'macos')
@@ -279,7 +337,17 @@ jobs:
 
           echo "🎉 Build and packaging complete. Final DMG: ${DMG_NAME}"
           ls -lh "${DMG_NAME}"
-
+      # Upload artifacts from macOS build to 'continuous' pre-release tag
+      - if: contains( matrix.os, 'macos')
+        name: Upload macOS build artifacts to GitHub ${{ github.event.repository.releases_url }}/continuous/assets
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.repository.releases_url }}/continuous/assets
+          asset_path: "${{ env.APPLICATION }}-${{ env.VERSION }}.dmg"
+          asset_name: "${{ env.APPLICATION }}-${{ env.VERSION }}.dmg"
+          asset_content_type: "application/octet-stream"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # BUILD FOR WINDOWS
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.2.4'
         name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}}
