@@ -27,6 +27,8 @@ env:
 
 jobs:
   ci_build:
+    permissions:
+      contents: write  # Required to upload release assets    
     strategy:
       fail-fast: false
       matrix:
@@ -206,7 +208,7 @@ jobs:
 
           # NOTE: linuxdeployqt supports up to Ubuntu Focal Fossa 
           echo "🚀 Creating the AppImage using linuxdeployqt..."
-          ../linuxdeployqt-continuous-x86_64.AppImage AppDir/${MY_PREFIX}/usr/share/applications/*.desktop \
+          ../linuxdeployqt-continuous-x86_64.AppImage AppDir/${MY_PREFIX}/share/applications/*.desktop \
             -appimage -extra-plugins=iconengines,imageformats
 
           ARTIFACT_FN="${{env.APPLICATION}}-${{env.VERSION}}.AppImage"
@@ -374,7 +376,7 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: "https://uploads.github.com/repos/${{ github.repository }}/releases/continuous/assets{?name,label}"
-          asset_path: "${{ env.APPLICATION }}-${{ env.VERSION }}.dmg"
+          asset_path: ${{ env.MAC_ARTIFACT }}
           asset_name: "${{ env.MAC_ARTIFACT }}"
           asset_content_type: "application/octet-stream"
         env:
