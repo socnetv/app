@@ -202,6 +202,7 @@ jobs:
 
           echo "🔎 Verifying built files..."
           ls -lh ./build/
+          echo "🔎 Search for built executable..."
           find ./build -type f -name "${{env.UNIXNAME}}*"
 
           echo "🔧 Installing the application into AppDir..."
@@ -216,7 +217,7 @@ jobs:
           fi
 
           echo "🚀 Creating the AppImage using linuxdeployqt..."
-          ./linuxdeployqt-continuous-x86_64.AppImage AppDir/usr/share/applications/*.desktop \
+          ../linuxdeployqt-continuous-x86_64.AppImage AppDir/usr/share/applications/*.desktop \
             -appimage -extra-plugins=iconengines,imageformats
 
           echo "🎉 AppImage created! Listing files in current directory..."
@@ -226,12 +227,42 @@ jobs:
       - if: contains( matrix.os, 'macos')
         name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}}
         run: |
+          echo "🍎 Preparing macOS build..."
+          echo "Building version: ${{env.VERSION}}"
+          # Ensure Qt is installed and in PATH
+          # export PATH="$(brew --prefix qt)/bin:$PATH"
+          which qmake
+
           echo "🔧 Running 'qmake CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}}' to configure on macos..."
           qmake CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}}
           echo "🚧 🛠️ Compiling for macos with make. Please wait..."
           make
           echo "👉 Building finished. Listing current directory with find for verification:"
           find .
+          # Install into AppDir
+          echo "🔧 Installing the application into AppDir..."
+          make install DESTDIR=AppDir
+
+          # Verify AppDir contents
+          echo "Verifying installed files in AppDir..."
+          find AppDir
+
+          # Run macdeployqt to bundle the app
+          echo "🚀 Running macdeployqt to create macOS bundle..."
+          macdeployqt AppDir/usr/bin/SocNetV.app -dmg
+
+          # Rename DMG file
+          DMG_NAME="SocNetV-${{env.VERSION}}.dmg"
+          if [[ -f SocNetV.dmg ]]; then
+              mv "SocNetV.dmg" "${DMG_NAME}"
+          else
+              echo "Error: DMG creation failed. No DMG file found."
+              exit 1
+          fi
+
+          echo "🎉 Build and packaging complete. Final DMG: ${DMG_NAME}"
+          ls -lh "${DMG_NAME}"
+
       # BUILD FOR WINDOWS
       - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.2.4'
         name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}}
