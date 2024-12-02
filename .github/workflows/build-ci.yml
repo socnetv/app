@@ -20,9 +20,9 @@ env:
   QMAKE_CONFIG: debug  # release  # TODO IF IN MASTER SET AS RELEASE
   CMAKE_CONFIG: Debug  # Release
   CORES: 16
-  MAC_ARTIFACT: false
-  LINUX_ARTIFACT: false
-  WINDOWS_ARTIFACT: false
+  MAC_ARTIFACT: ""
+  LINUX_ARTIFACT: ""
+  WINDOWS_ARTIFACT: ""
 
 
 jobs:
@@ -178,8 +178,10 @@ jobs:
           pwd
           ls
 
+          MY_PREFIX="/usr"
+
           echo "🔧 Configuring project using 'cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}}' ..."
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}}
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${MY_PREFIX}
 
           ls build/
 
@@ -204,7 +206,7 @@ jobs:
 
           # NOTE: linuxdeployqt supports up to Ubuntu Focal Fossa 
           echo "🚀 Creating the AppImage using linuxdeployqt..."
-          ../linuxdeployqt-continuous-x86_64.AppImage AppDir/usr/share/applications/*.desktop \
+          ../linuxdeployqt-continuous-x86_64.AppImage AppDir/${MY_PREFIX}/usr/share/applications/*.desktop \
             -appimage -extra-plugins=iconengines,imageformats
 
           ARTIFACT_FN="${{env.APPLICATION}}-${{env.VERSION}}.AppImage"
@@ -215,22 +217,31 @@ jobs:
               echo "Artifact created! Exporting LINUX_ARTIFACT=${ARTIFACT_FN}"
               echo "LINUX_ARTIFACT=${ARTIFACT_FN}" >> $GITHUB_ENV
           else
-              echo "Error: Linux artifact creation failed. No AppImage file found. Skipping upload."
+              echo "❌ AppImage creation failed!"
               exit 1
           fi
-
-
-
-      - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version == '6.2.4' && env.LINUX_ARTIFACT
+      - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version == '6.2.4' && env.LINUX_ARTIFACT != ''
+        name: Create (or fetch) continuous release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: continuous
+          release_name: "Continuous Build"
+          draft: false
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
+      - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version == '6.2.4' && env.LINUX_ARTIFACT != ''
         name: Upload Ubuntu 20.04 build AppImage to GitHub Releases
         uses: actions/upload-release-asset@v1
         with:
-          upload_url: "https://uploads.github.com/repos/socnetv/app/releases/continuous/assets{?name,label}"
-          asset_path: build/*.AppImage
+          upload_url: "https://uploads.github.com/repos/${{ github.repository }}/releases/continuous/assets{?name,label}"
+          asset_path: build/${{ env.LINUX_ARTIFACT }}
           asset_name: "${{ env.LINUX_ARTIFACT }}"
           asset_content_type: "application/octet-stream"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
+
       - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version != '6.2.4'
         name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt${{matrix.qt-version}}
         run: |
@@ -358,11 +369,11 @@ jobs:
 
 
       # Upload artifacts from macOS build to 'continuous' pre-release tag
-      - if: contains( matrix.os, 'macos') && env.MAC_ARTIFACT
+      - if: contains( matrix.os, 'macos') && env.MAC_ARTIFACT != ''
         name: Upload macOS build artifacts to GitHub ${{ github.event.repository.releases_url }}/continuous/assets
         uses: actions/upload-release-asset@v1
         with:
-          upload_url: "https://uploads.github.com/repos/socnetv/app/releases/continuous/assets{?name,label}"
+          upload_url: "https://uploads.github.com/repos/${{ github.repository }}/releases/continuous/assets{?name,label}"
           asset_path: "${{ env.APPLICATION }}-${{ env.VERSION }}.dmg"
           asset_name: "${{ env.MAC_ARTIFACT }}"
           asset_content_type: "application/octet-stream"
