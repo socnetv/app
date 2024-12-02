@@ -175,9 +175,9 @@ jobs:
           echo "🔧 Installing dependencies for AppImage creation..."
           sudo apt update
           sudo apt install -y build-essential libssl-dev cmake ninja-build \
-             libssl-dev libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev \
-             desktop-file-utils patchelf libglu1-mesa-dev libfontconfig1 libfreetype6 libx11-dev libxext-dev \
-             libxrandr-dev libxrender-dev libxcb1-dev libx11-xcb-dev libxcb-glx0-dev
+            libssl-dev libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev \
+            desktop-file-utils patchelf libglu1-mesa-dev libfontconfig1 libfreetype6 libx11-dev libxext-dev \
+            libxrandr-dev libxrender-dev libxcb1-dev libx11-xcb-dev libxcb-glx0-dev libfuse2
 
           echo "🔎 Check openssl version:"
           echo `openssl version`
@@ -239,22 +239,39 @@ jobs:
           make
           echo "👉 Building finished. Listing current directory with find for verification:"
           find .
-          # Install into AppDir
-          echo "🔧 Installing the application into AppDir..."
-          make install DESTDIR=AppDir
 
-          # Verify AppDir contents
-          echo "Verifying installed files in AppDir..."
-          find AppDir
+
+          # Verify the binary with lipo
+          echo "🔎 Verifying architectures in the built binary..."
+          if [[ -f "${{env.EXECUTABLE}}.app/Contents/MacOS/${{env.EXECUTABLE}}" ]]; then
+              lipo -info "${{env.EXECUTABLE}}.app/Contents/MacOS/${{env.EXECUTABLE}}"
+          else
+              echo "❌ Error: Binary file not found!"
+              exit 1
+          fi
+
+          echo "🔧 Removing items we do not deploy from project dir ..."
+          rm -rf moc obj qrc
+
+          # # Install into AppDir
+          # echo "🔧 Installing the application into AppDir..."
+          # make install DESTDIR=AppDir
+
+          # # Verify AppDir contents
+          # echo "Verifying installed files in AppDir..."
+          # find AppDir
 
           # Run macdeployqt to bundle the app
           echo "🚀 Running macdeployqt to create macOS bundle..."
-          macdeployqt AppDir/usr/bin/SocNetV.app -dmg
+          macdeployqt "${{env.APPLICATION}}.app"  -dmg || {
+            echo "Error: macdeployqt failed."
+            exit 1
+          }
 
           # Rename DMG file
-          DMG_NAME="SocNetV-${{env.VERSION}}.dmg"
-          if [[ -f SocNetV.dmg ]]; then
-              mv "SocNetV.dmg" "${DMG_NAME}"
+          DMG_NAME="${{env.APPLICATION}}-${{env.VERSION}}.dmg"
+          if [[ -f ${{env.APPLICATION}}.dmg ]]; then
+              mv "${{env.APPLICATION}}.dmg" "${DMG_NAME}"
           else
               echo "Error: DMG creation failed. No DMG file found."
               exit 1

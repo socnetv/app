@@ -37,8 +37,7 @@ else()
     set(TARGET_NAME socnetv)
 endif()
 
-# Override with -DCMAKE_INSTALL_PREFIX=/custom/path.
-set(INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_PROJECT_NAME})
+
 
 # Debug information
 message(STATUS "Building ${PROJECT_NAME} (${TARGET_NAME}) ${PROJECT_VERSION}")
@@ -48,7 +47,10 @@ message(STATUS "CMAKE_CURRENT_LIST_DIR: "  ${CMAKE_CURRENT_LIST_DIR})
 message(STATUS "CMAKE_RUNTIME_OUTPUT_DIRECTORY: "  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 message(STATUS "CMAKE_MODULE_PATH: "  ${CMAKE_MODULE_PATH})
 message(STATUS "CMAKE_INSTALL_DATADIR: "  ${CMAKE_INSTALL_DATADIR})
-message(STATUS "INSTALL_DIR: "  ${INSTALL_DIR})
+# The root directory for the installation. 
+# Defaults to /usr/local on Unix systems and C:/Program Files/<Project> on Windows. 
+# You can override this with -DCMAKE_INSTALL_PREFIX=<path>.
+message(STATUS "CMAKE_INSTALL_PREFIX: "  ${CMAKE_INSTALL_PREFIX})
 
 
 # Find Qt6
@@ -229,10 +231,14 @@ elseif(APPLE AND NOT IOS)
         MACOSX_BUNDLE_ICON_FILE "socnetv.icns"
     )
 
-    # Installation
+
+    # Install the main app bundle
     install(TARGETS ${TARGET_NAME}
-        BUNDLE DESTINATION "${INSTALL_DIR}"
+        BUNDLE DESTINATION "${CMAKE_INSTALL_PREFIX}/Applications"
     )
+
+
+
 
 
 elseif(LINUX)
