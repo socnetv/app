@@ -20,6 +20,9 @@ env:
   QMAKE_CONFIG: debug  # release  # TODO IF IN MASTER SET AS RELEASE
   CMAKE_CONFIG: Debug  # Release
   CORES: 16
+  MAC_ARTIFACT: false
+  LINUX_ARTIFACT: false
+  WINDOWS_ARTIFACT: false
 
 
 jobs:
@@ -27,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, ubuntu-latest, macos-latest, windows-2019]
+        os: [ubuntu-20.04, ubuntu-latest, macos-latest, windows-2019]
         # NOTE:
         # - We will CI build only for Qt6 LTS releases, see: https://doc.qt.io/qt-6/qt-releases.html
         # - For the Qt Versions supported by aqtinstall, see: https://ddalcino.github.io/aqt-list-server/
@@ -43,7 +46,7 @@ jobs:
         #   - os: macos-latest
         #     qt-version: '6.6.3'
         #   # Snapcraft
-        #   - os: ubuntu-22.04
+        #   - os: ubuntu-20.04
         #     qt-version: '6.5.3'
     runs-on: ${{ matrix.os }}
     if: contains(github.event.head_commit.message, '[ci]') || contains(github.event.head_commit.message, '[gha]')
@@ -152,7 +155,7 @@ jobs:
       #
       # Build SocNetV
       #
-      - if: contains( matrix.os, 'ubuntu-22.04') && matrix.qt-version == '6.2.4'
+      - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version == '6.2.4'
         name: Build ${{ env.VERSION }} AppImage for ${{matrix.os}} with Qt${{matrix.qt-version}}
         run: |
           echo "🔧 Installing dependencies for AppImage creation..."
@@ -204,19 +207,31 @@ jobs:
           ../linuxdeployqt-continuous-x86_64.AppImage AppDir/usr/share/applications/*.desktop \
             -appimage -extra-plugins=iconengines,imageformats
 
-          echo "🎉 AppImage created! Listing files in current directory..."
-          ls -lh ./*.AppImage
-      - if: contains( matrix.os, 'ubuntu-22.04') && matrix.qt-version == '6.2.4'
-        name: Upload Ubuntu build AppImage to GitHub Releases
+          ARTIFACT_FN="${{env.APPLICATION}}-${{env.VERSION}}.AppImage"
+
+          if [[ -f ${ARTIFACT_FN} ]]; then
+              echo "🎉 AppImage created! Listing files in current directory..."
+              ls -lh ./*.AppImage
+              echo "Artifact created! Exporting LINUX_ARTIFACT=${ARTIFACT_FN}"
+              echo "LINUX_ARTIFACT=${ARTIFACT_FN}" >> $GITHUB_ENV
+          else
+              echo "Error: Linux artifact creation failed. No AppImage file found. Skipping upload."
+              exit 1
+          fi
+
+
+
+      - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version == '6.2.4' && env.LINUX_ARTIFACT
+        name: Upload Ubuntu 20.04 build AppImage to GitHub Releases
         uses: actions/upload-release-asset@v1
         with:
-          upload_url: ${{ github.event.repository.releases_url }}/continuous/assets
+          upload_url: "https://uploads.github.com/repos/socnetv/app/releases/continuous/assets{?name,label}"
           asset_path: build/*.AppImage
-          asset_name: "${{ env.UNIXNAME }}-${{ env.VERSION }}.AppImage"
+          asset_name: "${{ env.LINUX_ARTIFACT }}"
           asset_content_type: "application/octet-stream"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
-      - if: contains( matrix.os, 'ubuntu-22.04') && matrix.qt-version != '6.2.4'
+      - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version != '6.2.4'
         name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt${{matrix.qt-version}}
         run: |
           echo '⚙️ Install dependencies for building....'
@@ -284,6 +299,7 @@ jobs:
       # BUILD FOR MACOS
       - if: contains( matrix.os, 'macos')
         name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}}
+        id: build_macos_artifact
         run: |
           echo "🍎 Preparing macOS build..."
           echo "Building version: ${{env.VERSION}}"
@@ -327,24 +343,28 @@ jobs:
           }
 
           # Rename DMG file
-          DMG_NAME="${{env.APPLICATION}}-${{env.VERSION}}.dmg"
           if [[ -f ${{env.APPLICATION}}.dmg ]]; then
-              mv "${{env.APPLICATION}}.dmg" "${DMG_NAME}"
+            DMG_NAME="${{env.APPLICATION}}-${{env.VERSION}}.dmg"
+            mv "${{env.APPLICATION}}.dmg" "${DMG_NAME}"
+            echo "🎉 Build and packaging complete. Final DMG: ${DMG_NAME}"
+            ls -lh "${DMG_NAME}"
+            echo "Artifact created! Exporting MAC_ARTIFACT=${DMG_NAME}"
+            echo "MAC_ARTIFACT=${DMG_NAME}" >> $GITHUB_ENV
           else
-              echo "Error: DMG creation failed. No DMG file found."
-              exit 1
+             echo "Error: DMG creation failed. No DMG file found. Skipping upload."
+             exit 1
           fi
 
-          echo "🎉 Build and packaging complete. Final DMG: ${DMG_NAME}"
-          ls -lh "${DMG_NAME}"
+
+
       # Upload artifacts from macOS build to 'continuous' pre-release tag
-      - if: contains( matrix.os, 'macos')
+      - if: contains( matrix.os, 'macos') && env.MAC_ARTIFACT
         name: Upload macOS build artifacts to GitHub ${{ github.event.repository.releases_url }}/continuous/assets
         uses: actions/upload-release-asset@v1
         with:
-          upload_url: ${{ github.event.repository.releases_url }}/continuous/assets
+          upload_url: "https://uploads.github.com/repos/socnetv/app/releases/continuous/assets{?name,label}"
           asset_path: "${{ env.APPLICATION }}-${{ env.VERSION }}.dmg"
-          asset_name: "${{ env.APPLICATION }}-${{ env.VERSION }}.dmg"
+          asset_name: "${{ env.MAC_ARTIFACT }}"
           asset_content_type: "application/octet-stream"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
