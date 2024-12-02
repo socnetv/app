@@ -75,7 +75,7 @@ jobs:
           # Export VERSION as an environment variable for subsequent steps
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
 
-      - name: Determined build version ${{ env.VERSION }} 
+      - name: Determined build version ${{ env.VERSION }}
         run: echo "VERSION is set to ${{ env.VERSION }}"
 
       #
@@ -193,8 +193,8 @@ jobs:
           ls
 
           echo "🔧 Configuring project using 'cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}}' ..."
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}}
-          
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}}
+
           ls build/
 
           echo "🚧 Compiling the project..."
