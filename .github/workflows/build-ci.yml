@@ -211,7 +211,7 @@ jobs:
           ../linuxdeployqt-continuous-x86_64.AppImage AppDir/${MY_PREFIX}/share/applications/*.desktop \
             -appimage -extra-plugins=iconengines,imageformats
 
-          ARTIFACT_FN="${{env.APPLICATION}}-${{env.VERSION}}.AppImage"
+          ARTIFACT_FN="${{env.APPLICATION}}-${{env.VERSION}}-$(uname -i).AppImage"
 
           if [[ -f ${ARTIFACT_FN} ]]; then
               echo "🎉 AppImage created! Listing files in current directory..."
@@ -376,7 +376,7 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: "https://uploads.github.com/repos/${{ github.repository }}/releases/continuous/assets{?name,label}"
-          asset_path: ${{ env.MAC_ARTIFACT }}
+          asset_path: ./${{ env.MAC_ARTIFACT }}
           asset_name: "${{ env.MAC_ARTIFACT }}"
           asset_content_type: "application/octet-stream"
         env:
