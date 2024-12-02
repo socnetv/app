@@ -204,7 +204,7 @@ Download the archive with the source code of the latest version from
 https://github.com/socnetv/app/releases/latest. You will get a compressed file like app-3.0.tar.gz
 
 Then type in the following commands in order to decompress the
-SocNetV tarball and build it. Replace 3.X with the version you downloaded.
+SocNetV source code, configure and build it into a executable binary. The commands require that the command `qmake` is in your PATH, otherwise you will not be able to configure the build and it will fail. Replace 3.X with the version you downloaded.
 
 ```
 untar zxfv app-3.X.tar.gz
@@ -214,8 +214,7 @@ make
 sudo make install # or su -c 'make install'
 ```
 
-Probably you have already done the first 2 steps, so just type in 'qmake' or 'qmake-qt6'.
-
+Probably you have already done the first 2 steps, so just type in 'qmake' or 'qmake6'.
 When you finish compiling and installing, run the application typing:
 
 ```
@@ -224,6 +223,17 @@ socnetv
 
 or go to Start Menu > Mathematics  > SocNetV.
 
+
+Alternatively, if you have `cmake` installed, you can use it like this:
+
+```
+untar zxfv app-3.X.tar.gz
+cd app-3.X
+cmake -S . -B build -DCMAKE_PREFIX_PATH=/path/to/Qt/ver/gcc_64/lib/cmake 
+cmake --build build
+```
+
+The executable `socnetv` will be placed inside the `build` folder.
 
 
 # 5. Command Line Options
