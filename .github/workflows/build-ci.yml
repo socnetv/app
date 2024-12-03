@@ -114,7 +114,7 @@ jobs:
           sudo apt install -y build-essential libssl-dev cmake ninja-build \
             libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev \
             desktop-file-utils patchelf libglu1-mesa-dev libfontconfig1 libfreetype6 libx11-dev libxext-dev \
-            libxrandr-dev libxrender-dev libxcb1-dev libx11-xcb-dev libxcb-glx0-dev libfuse2             
+            libxrandr-dev libxrender-dev libxcb1-dev libx11-xcb-dev libxcb-glx0-dev libfuse2
           # DONT NEED IT. FOR DEBUG ONLY
           # pip install aqtinstall
           # aqt list-qt linux desktop --long-modules ${{ matrix.qt-version }} win64_mingw
@@ -204,7 +204,7 @@ jobs:
           cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}}
 
           echo "🔎 Verifying ./build directory (before compiling)..."
-          if [ -d "./build" ]; then
+          if [[ -d "./build" ]]; then
               echo "🎉 ./build directory created! Contents:"
               ls -lh ./build/
           else
@@ -220,7 +220,7 @@ jobs:
           ls -lh .
 
           echo "🔎 Search for built executable ./${{env.UNIXNAME}}*..."
-          if [ -f "./${{env.UNIXNAME}}" ]; then
+          if [[ -f "./${{env.UNIXNAME}}" ]]; then
             echo "🎉 executable found!"
             ls -ls "${{env.UNIXNAME}}"
           else
@@ -236,7 +236,7 @@ jobs:
           pwd
 
           echo "🔎 Check where we are..."
-          if [ -d "./build" ]; then
+          if [[ -d "./build" ]]; then
               echo "We are outside of ./build directory! Entering..."
               cd ./build/
           fi
@@ -247,7 +247,7 @@ jobs:
           echo "🔧 Installing the application into a new 'AppDir' directory..."
           make install DESTDIR=AppDir
 
-          if [ -d "./AppDir" ]; then
+          if [[ -d "./AppDir" ]]; then
               echo "🎉 SocNetv Installed in AppDir successfully!"
           else
               echo "❌ Error: AppDir was not created!"
@@ -315,7 +315,7 @@ jobs:
           cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}}
 
           echo "🔎 Verifying ./build directory (before compiling)..."
-          if [ -d "./build" ]; then
+          if [[ -d "./build" ]]; then
               echo "🎉 ./build directory created! Contents:"
               ls -lh ./build/
           else
@@ -331,7 +331,7 @@ jobs:
           ls -lh .
 
           echo "🔎 Search for built executable ./${{env.UNIXNAME}}*..."
-          if [ -f "./${{env.UNIXNAME}}" ]; then
+          if [[ -f "./${{env.UNIXNAME}}" ]]; then
             echo "🎉 executable found!"
             ls -ls "${{env.UNIXNAME}}"
           else
@@ -386,9 +386,9 @@ jobs:
             echo "Artifact created! Exporting MAC_ARTIFACT=${DMG_NAME}"
             echo "MAC_ARTIFACT=${DMG_NAME}" >> $GITHUB_ENV
           else
-              echo "Error: DMG creation failed. No DMG file found. Skipping upload."
-              exit 1
-          fi      
+            echo "Error: DMG creation failed. No DMG file found. Skipping upload."
+            exit 1
+          fi
       - if: contains( matrix.os, 'macos') && matrix.qt-version != '6.5.3'
         name: Build ${{env.APP_NAME}} ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}} using cmake
         run: |
@@ -410,7 +410,7 @@ jobs:
           cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}}
 
           echo "🔎 Verifying ./build directory (before compiling)..."
-          if [ -d "./build" ]; then
+          if [[ -d "./build" ]]; then
               echo "🎉 ./build directory created! Contents:"
               ls -lh ./build/
           else
@@ -425,12 +425,12 @@ jobs:
           cd build
           ls -lh .
 
-          echo "🔎 Search for built macos binary ./${{env.APP_NAME}}.app..."
-          if [ -f "./${{env.APP_NAME}}.app" ]; then
+          echo "🔎 Search for built macos binary ./${{env.APP_NAME}}.app ..."
+          if [[ -f "./${{env.APP_NAME}}.app" ]]; then
             echo "🎉 bundle found!"
           else
-              echo "❌ Error! Binary not found !"
-              exit 1
+            echo "❌ Error! Binary not found !"
+            exit 1
           fi
 
           # Verify the binary with lipo
@@ -482,11 +482,11 @@ jobs:
           echo "🔎 Listing some directories"
           dir D:\a\app\Qt\
           echo "🔧 Running 'qmake6 CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}} -r' to configure the project on Windows..."
-          qmake6 CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}} -r
+          qmake6 CONFIG+=${{env.QMAKE_CONFIG}} TARGET.path=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}} -r
           echo "🚧 🛠️ Compiling with nmake. Please wait..."
           nmake
-          echo "👉 Building finished. Listing current directory for verification:"
-          dir
+          echo "👉 Building finished. Listing  directory ${{env.QMAKE_CONFIG}} for verification:"
+          dir ${{env.QMAKE_CONFIG}}
 
       - if: contains( matrix.os, 'windows') && matrix.qt-version != '6.5.3'
         name: Build ${{env.APP_NAME}} ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}} using cmake.
