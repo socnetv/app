@@ -201,8 +201,9 @@ jobs:
 
           echo "🔎 Entering build directory..."
           cd build
+          ls -lh .
 
-          echo "🔎 Search for built executable..."
+          echo "🔎 Search for built executable ./${{env.UNIXNAME}}*..."
           if [ -f "./${{env.UNIXNAME}}*" ]; then
             echo "🎉 executable found!"
             find ./build -type f -name "${{env.UNIXNAME}}*"
