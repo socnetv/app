@@ -22,6 +22,7 @@ env:
   CORES: 16
   MAC_ARTIFACT: ""
   LINUX_ARTIFACT: ""
+  APPDIR_PREFIX: "/usr"
   WINDOWS_ARTIFACT: ""
   UPLOAD_URL: ''
 
@@ -37,14 +38,14 @@ jobs:
         # NOTE:
         # - We will CI build only for Qt6 LTS releases, see: https://doc.qt.io/qt-6/qt-releases.html
         # - For the Qt Versions supported by aqtinstall, see: https://ddalcino.github.io/aqt-list-server/
-        qt-version: ['6.2.4', '6.5.3', '6.6.3', '6.8.0']
+        qt-version: ['6.2.4', '6.5.3', '6.8.0']
         # exclude:
         #   - os: ubuntu-latest
-        #     qt-version: '6.5.3'
+        #     qt-version: '6.6.3'
         #   - os: windows-2019
-        #     qt-version: '6.5.3'
+        #     qt-version: '6.6.3'
         #   - os: macos-latest
-        #     qt-version: '6.5.3'
+        #     qt-version: '6.6.3'
         # include:
         #   - os: macos-latest
         #     qt-version: '6.6.3'
@@ -83,45 +84,47 @@ jobs:
       - name: Determined build version ${{ env.VERSION }}
         run: echo "VERSION is set to ${{ env.VERSION }}"
       - name: Fetch 'continuous' release upload URL
+        shell: bash
         id: fetch_release
         run: |
           RELEASE_INFO=$(gh api -H "Accept: application/vnd.github+json" /repos/${{ github.repository }}/releases/tags/continuous)
-          echo "UPLOAD_URL=$(echo "$RELEASE_INFO" | jq -r '.upload_url' | sed 's/{?name,label}//')" >> $GITHUB_ENV
-          echo ${{ env.UPLOAD_URL }}
+          UPLOAD_URL=$(echo "$RELEASE_INFO" | jq -r '.upload_url' | sed 's/{?name,label}//')
+          echo "UPLOAD_URL=${UPLOAD_URL}" >> $GITHUB_ENV
+          echo "UPLOAD_URL=${UPLOAD_URL}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   
+
       #
-      # Install Qt
+      # Install dependencies (build tools, cmake, etc)
       #
 
       - if: contains( matrix.os, 'windows')
-        name: Prepare for ${{matrix.os}}
+        name: 🪟 Prepare for buiilding on ${{matrix.os}}
         run: |
-          echo "🪟 -- Preparing for Windows..."
+          echo '⚙️ Install dependencies for building....'
           # DONT NEED IT. FOR DEBUG ONLY
           # pip install aqtinstall
           # aqt list-qt windows desktop
           # aqt list-qt windows desktop --arch ${{ matrix.qt-version }}
           # aqt list-qt windows desktop --modules ${{ matrix.qt-version }} win64_mingw
       - if: contains( matrix.os, 'ubuntu')
-        name: Prepare for ${{matrix.os}}
+        name: 🐧 Prepare for building on ${{matrix.os}}
         run: |
-          echo "🐧 -- Preparing for ubuntu..."
+          echo '⚙️ Install dependencies for building....'
+          sudo apt install desktop-file-utils
           sudo apt install build-essential libssl-dev \
              cmake ninja-build \
              libssl-dev libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev
           # DONT NEED IT. FOR DEBUG ONLY
           # pip install aqtinstall
-          # aqt list-qt linux desktop
           # aqt list-qt linux desktop --long-modules ${{ matrix.qt-version }} win64_mingw
       - if: contains( matrix.os, 'macos')
-        name: Prepare for ${{matrix.os}}
+        name: 🍎 Prepare for building on ${{matrix.os}}
         run: |
-          echo "🍎 -- Preparing for macos..."
+          echo '⚙️ Install dependencies for building....'
           ls
           # DONT NEED IT. FOR DEBUG ONLY
           # pip install aqtinstall
-          # aqt list-qt mac desktop
           # aqt list-qt mac desktop --modules ${{ matrix.qt-version }}
 
       #
@@ -136,10 +139,10 @@ jobs:
         with:
           aqtversion: '==3.1.*'               # Use the default aqtinstall version
           version: ${{ matrix.qt-version }}   # Qt version to install
-          # arch: win64_mingw
+          # arch: win64_mingw           
           # NOTE: We build with default arch:
-          # win64_msvc2019_64 if Qt < 6.8
-          # win64_msvc2022_64 if Qt >= 6.8
+          #   win64_msvc2019_64 if Qt < 6.8
+          #   win64_msvc2022_64 if Qt >= 6.8
           # see https://github.com/jurplel/install-qt-action
           modules: ${{env.QT_MODULES}}
           cache: true
@@ -164,58 +167,90 @@ jobs:
       #
       # Build SocNetV
       #
+
       - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version == '6.2.4'
-        name: Build ${{ env.VERSION }} AppImage for ${{matrix.os}} with Qt${{matrix.qt-version}}
+        name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt${{matrix.qt-version}}
         run: |
-          echo "🔧 Installing dependencies for AppImage creation..."
-          sudo apt update
-          sudo apt install -y build-essential libssl-dev cmake ninja-build \
-            libssl-dev libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev \
-            desktop-file-utils patchelf libglu1-mesa-dev libfontconfig1 libfreetype6 libx11-dev libxext-dev \
-            libxrandr-dev libxrender-dev libxcb1-dev libx11-xcb-dev libxcb-glx0-dev libfuse2
 
           echo "🔎 Check openssl version:"
           echo `openssl version`
+
+          echo "💡 Checking current directory..."
+          pwd
+
+          echo "💡 List current directory..."
+          ls
+
+          echo "💡 Deleting old build subdirectory..."
+          rm -rf build
+
+          echo "🔧 Configuring project using 'cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}}' ..."
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}}
+
+          echo "🔎 Verifying ./build directory (before compiling)..."
+          if [ -d "./build" ]; then
+              echo "🎉 ./build directory created! Contents:"
+              ls -lh ./build/
+          else
+              echo "❌ Error! ./build directory was not created!"
+              exit 1
+          fi
+
+          echo "🚧 Compiling the project..."
+          cmake --build build -j$(nproc)
+
+          echo "🔎 Entering build directory..."
+          cd build
+
+          echo "🔎 Search for built executable..."
+          if [ -f "./${{env.UNIXNAME}}*" ]; then
+            echo "🎉 executable found!"
+            find ./build -type f -name "${{env.UNIXNAME}}*"
+            ls "${{env.UNIXNAME}}*"
+          else
+              echo "❌ Error! ./build directory was not created!"
+              exit 1
+          fi
+
+      - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version == '6.2.4'
+        name: Create AppImage ${{ env.VERSION }} for ${{matrix.os}} with Qt${{matrix.qt-version}}
+        run: |          
+
+          echo "💡 Checking current directory..."
+          pwd
+
+          echo "🔎 Check where we are..."
+          if [ -d "./build" ]; then
+              echo "We are outside of ./build directory! Entering..."
+              cd ./build/
+          fi
+
+          echo "💡 List current directory (./build)..."
+          ls
+          
+          echo "🔧 Installing the application into a new 'AppDir' directory..."
+          make install DESTDIR=AppDir
+
+          if [ -d "./AppDir" ]; then
+              echo "🎉 SocNetv Installed in AppDir successfully!"
+          else
+              echo "❌ Error: AppDir was not created!"
+              exit 1
+          fi
+
+          echo "🔧 Installing dependencies for AppImage creation..."
+          sudo apt update
+          sudo apt install -y libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev \
+            desktop-file-utils patchelf libglu1-mesa-dev libfontconfig1 libfreetype6 libx11-dev libxext-dev \
+            libxrandr-dev libxrender-dev libxcb1-dev libx11-xcb-dev libxcb-glx0-dev libfuse2
 
           echo "🔧 Installing linuxdeployqt..."
           wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
           chmod a+x linuxdeployqt-continuous-x86_64.AppImage
 
-          echo "💡 Deleting old build directory..."
-          rm -rf build
-          echo "💡 List current directory..."
-          pwd
-          ls
-
-          MY_PREFIX="/usr"
-
-          echo "🔧 Configuring project using 'cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}}' ..."
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${MY_PREFIX}
-
-          ls build/
-
-          echo "🚧 Compiling the project..."
-          cmake --build build -j$(nproc)
-
-          echo "🔎 Verifying built files..."
-          ls -lh ./build/
-          echo "🔎 Search for built executable..."
-          find ./build -type f -name "${{env.UNIXNAME}}*"
-
-          echo "🔧 Installing the application into AppDir..."
-          cd build
-          make install DESTDIR=AppDir
-
-          if [ -d "./AppDir" ]; then
-              echo "AppDir created successfully!"
-          else
-              echo "Error: AppDir was not created!"
-              exit 1
-          fi
-
           # NOTE: linuxdeployqt supports up to Ubuntu Focal Fossa 
           echo "🚀 Creating the AppImage using linuxdeployqt..."
-          ../linuxdeployqt-continuous-x86_64.AppImage AppDir/${MY_PREFIX}/share/applications/*.desktop \
+          ../linuxdeployqt-continuous-x86_64.AppImage AppDir/${{env.APPDIR_PREFIX}}/share/applications/*.desktop \
             -appimage -extra-plugins=iconengines,imageformats
 
           ARTIFACT_FN="${{env.APPLICATION}}-${{env.VERSION}}-$(uname -i).AppImage"
@@ -223,13 +258,12 @@ jobs:
           if [[ -f ${ARTIFACT_FN} ]]; then
               echo "🎉 AppImage created! Listing files in current directory..."
               ls -lh ./*.AppImage
-              echo "Artifact created! Exporting LINUX_ARTIFACT=${ARTIFACT_FN}"
+              echo "...Exporting LINUX_ARTIFACT=${ARTIFACT_FN}"
               echo "LINUX_ARTIFACT=${ARTIFACT_FN}" >> $GITHUB_ENV
           else
               echo "❌ AppImage creation failed!"
               exit 1
           fi
-       
       # - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version == '6.2.4' && env.LINUX_ARTIFACT != ''
       #   name: Create (or fetch) continuous release
       #   id: create_release
@@ -256,8 +290,7 @@ jobs:
       - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version != '6.2.4'
         name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt${{matrix.qt-version}}
         run: |
-          echo '⚙️ Install dependencies for building....'
-          sudo apt install desktop-file-utils
+
           echo "🔎 Check openssl version:"
           echo `openssl version`
           echo "🔎 Check output of 'which qmake6':"
