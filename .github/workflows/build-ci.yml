@@ -9,8 +9,7 @@ on:
       - develop
 
 env:
-  EXECUTABLE: "SocNetV"
-  APPLICATION: "SocNetV"
+  APP_NAME: "SocNetV"
   UNIXNAME: "socnetv"
   SOCNETV_VERSION: "3.2"      # TODO - READ FROM FILE
   VERSION: "3.2"              # WILL BE UPDATED DYNAMICALLY BELOW
@@ -92,7 +91,7 @@ jobs:
           echo "UPLOAD_URL=${UPLOAD_URL}" >> $GITHUB_ENV
           echo "UPLOAD_URL=${UPLOAD_URL}"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       #
       # Install dependencies (build tools, cmake, etc)
@@ -140,7 +139,7 @@ jobs:
         with:
           aqtversion: '==3.1.*'               # Use the default aqtinstall version
           version: ${{ matrix.qt-version }}   # Qt version to install
-          # arch: win64_mingw           
+          # arch: win64_mingw
           # NOTE: We build with default arch:
           #   win64_msvc2019_64 if Qt < 6.8
           #   win64_msvc2022_64 if Qt >= 6.8
@@ -184,7 +183,7 @@ jobs:
           make -j${{env.CORES}}
           echo "👉 Building finished. Listing current directory with find for verification:"
           find .
-      # Test building with cmake and all other versions of Qt 
+      # Test building with cmake and all other versions of Qt
       - if: matrix.os == 'ubuntu-20.04' && matrix.qt-version != '6.5.3'
         name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt${{matrix.qt-version}} using cmake
         run: |
@@ -231,7 +230,7 @@ jobs:
       # We build appImage on Ubuntu 20.04 and Qt 6.8 (latest LTS)
       - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version == '6.8.0'
         name: Create AppImage ${{ env.VERSION }} for ${{matrix.os}} with Qt${{matrix.qt-version}}
-        run: |          
+        run: |
 
           echo "💡 Checking current directory..."
           pwd
@@ -244,7 +243,7 @@ jobs:
 
           echo "💡 List current directory (./build)..."
           ls
-          
+
           echo "🔧 Installing the application into a new 'AppDir' directory..."
           make install DESTDIR=AppDir
 
@@ -259,12 +258,12 @@ jobs:
           wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
           chmod a+x linuxdeployqt-continuous-x86_64.AppImage
 
-          # NOTE: linuxdeployqt supports up to Ubuntu Focal Fossa 
+          # NOTE: linuxdeployqt supports up to Ubuntu Focal Fossa
           echo "🚀 Creating the AppImage using linuxdeployqt..."
           ../linuxdeployqt-continuous-x86_64.AppImage AppDir/${{env.APPDIR_PREFIX}}/share/applications/*.desktop \
             -appimage -extra-plugins=iconengines,imageformats
 
-          ARTIFACT_FN="${{env.APPLICATION}}-${{env.VERSION}}-$(uname -i).AppImage"
+          ARTIFACT_FN="${{env.APP_NAME}}-${{env.VERSION}}-$(uname -i).AppImage"
 
           if [[ -f ${ARTIFACT_FN} ]]; then
               echo "🎉 AppImage created! Listing files in current directory..."
@@ -285,9 +284,9 @@ jobs:
       #     draft: false
       #     prerelease: true
       #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version == '6.8.0' && env.LINUX_ARTIFACT != ''
-        name: Upload Ubuntu 20.04 build AppImage to GitHub Releases
+        name: Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ env.UPLOAD_URL }}
@@ -295,11 +294,10 @@ jobs:
           asset_name: "${{ env.LINUX_ARTIFACT }}"
           asset_content_type: "application/octet-stream"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      
       - if: contains( matrix.os, 'ubuntu-latest')
-        name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}}
+        name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}} using cmake
         run: |
           echo "🔎 Check openssl version:"
           echo `openssl version`
@@ -343,9 +341,8 @@ jobs:
 
 
       # BUILD FOR MACOS
-      - if: contains( matrix.os, 'macos')
-        name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}}
-        id: build_macos_artifact
+      - if: contains( matrix.os, 'macos') && matrix.qt-version == '6.5.3'
+        name: Build ${{env.APP_NAME}} ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}} using qmake
         run: |
           echo "🍎 Preparing macOS build..."
           echo "Building version: ${{env.VERSION}}"
@@ -363,8 +360,8 @@ jobs:
 
           # Verify the binary with lipo
           echo "🔎 Verifying architectures in the built binary..."
-          if [[ -f "${{env.EXECUTABLE}}.app/Contents/MacOS/${{env.EXECUTABLE}}" ]]; then
-              lipo -info "${{env.EXECUTABLE}}.app/Contents/MacOS/${{env.EXECUTABLE}}"
+          if [[ -f "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}" ]]; then
+              lipo -info "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}"
           else
               echo "❌ Error: Binary file not found!"
               exit 1
@@ -373,25 +370,90 @@ jobs:
           echo "🔧 Removing items we do not deploy from project dir ..."
           rm -rf moc obj qrc
 
-          # # Install into AppDir
-          # echo "🔧 Installing the application into AppDir..."
-          # make install DESTDIR=AppDir
-
-          # # Verify AppDir contents
-          # echo "Verifying installed files in AppDir..."
-          # find AppDir
-
           # Run macdeployqt to bundle the app
           echo "🚀 Running macdeployqt to create macOS bundle..."
-          macdeployqt "${{env.APPLICATION}}.app"  -dmg || {
+          macdeployqt "${{env.APP_NAME}}.app"  -dmg || {
             echo "Error: macdeployqt failed."
             exit 1
           }
 
           # Rename DMG file
-          if [[ -f ${{env.APPLICATION}}.dmg ]]; then
-            DMG_NAME="${{env.APPLICATION}}-${{env.VERSION}}.dmg"
-            mv "${{env.APPLICATION}}.dmg" "${DMG_NAME}"
+          if [[ -f ${{env.APP_NAME}}.dmg ]]; then
+            DMG_NAME="${{env.APP_NAME}}-${{env.VERSION}}.dmg"
+            mv "${{env.APP_NAME}}.dmg" "${DMG_NAME}"
+            echo "🎉 Build and packaging complete. Final DMG: ${DMG_NAME}"
+            ls -lh "${DMG_NAME}"
+            echo "Artifact created! Exporting MAC_ARTIFACT=${DMG_NAME}"
+            echo "MAC_ARTIFACT=${DMG_NAME}" >> $GITHUB_ENV
+          else
+              echo "Error: DMG creation failed. No DMG file found. Skipping upload."
+              exit 1
+          fi      
+      - if: contains( matrix.os, 'macos') && matrix.qt-version != '6.5.3'
+        name: Build ${{env.APP_NAME}} ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}} using cmake
+        run: |
+          echo "🍎 Preparing macOS build..."
+
+          echo "🔎 Check openssl version:"
+          echo `openssl version`
+
+          echo "💡 Checking current directory..."
+          pwd
+
+          echo "💡 List current directory..."
+          ls
+
+          echo "💡 Deleting old build subdirectory..."
+          rm -rf build
+
+          echo "🔧 Configuring project using 'cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}}' ..."
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}}
+
+          echo "🔎 Verifying ./build directory (before compiling)..."
+          if [ -d "./build" ]; then
+              echo "🎉 ./build directory created! Contents:"
+              ls -lh ./build/
+          else
+              echo "❌ Error! ./build directory was not created!"
+              exit 1
+          fi
+
+          echo "🚧 Compiling the project..."
+          cmake --build build -j$(nproc)
+
+          echo "🔎 Entering build directory..."
+          cd build
+          ls -lh .
+
+          echo "🔎 Search for built macos binary ./${{env.APP_NAME}}.app..."
+          if [ -f "./${{env.APP_NAME}}.app" ]; then
+            echo "🎉 bundle found!"
+          else
+              echo "❌ Error! Binary not found !"
+              exit 1
+          fi
+
+          # Verify the binary with lipo
+          echo "🔎 Verifying architectures in the built binary..."
+          if [[ -f "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}" ]]; then
+              lipo -info "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}"
+          else
+              echo "❌ Error: ${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}} file not found!"
+              exit 1
+          fi
+
+
+          # Run macdeployqt to bundle the app
+          echo "🚀 Running macdeployqt to create macOS bundle..."
+          macdeployqt "${{env.APP_NAME}}.app"  -dmg || {
+            echo "Error: macdeployqt failed."
+            exit 1
+          }
+
+          # Rename DMG file
+          if [[ -f ${{env.APP_NAME}}.dmg ]]; then
+            DMG_NAME="${{env.APP_NAME}}-${{env.VERSION}}.dmg"
+            mv "${{env.APP_NAME}}.dmg" "${DMG_NAME}"
             echo "🎉 Build and packaging complete. Final DMG: ${DMG_NAME}"
             ls -lh "${DMG_NAME}"
             echo "Artifact created! Exporting MAC_ARTIFACT=${DMG_NAME}"
@@ -403,7 +465,7 @@ jobs:
 
       # Upload artifacts from macOS build to 'continuous' pre-release tag
       - if: contains( matrix.os, 'macos') && matrix.qt-version == '6.8.0' && env.MAC_ARTIFACT != ''
-        name: Upload macOS build artifacts to GitHub ${{ github.event.repository.releases_url }}/continuous/assets
+        name: Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ env.UPLOAD_URL }}
@@ -415,7 +477,7 @@ jobs:
 
       # BUILD FOR WINDOWS
       - if: contains( matrix.os, 'windows') && matrix.qt-version == '6.5.3'
-        name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}}
+        name: Build ${{env.APP_NAME}} ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}} using qmake.
         run: |
           echo "🔎 Listing some directories"
           dir D:\a\app\Qt\
@@ -427,7 +489,7 @@ jobs:
           dir
 
       - if: contains( matrix.os, 'windows') && matrix.qt-version != '6.5.3'
-        name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}}
+        name: Build ${{env.APP_NAME}} ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}} using cmake.
         run: |
           echo "🔎 Listing some directories"
           dir D:\a\app\Qt\
