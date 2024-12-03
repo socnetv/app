@@ -152,7 +152,7 @@ jobs:
           aqtversion: '==3.1.*'               # Use the default aqtinstall version
           version: ${{ matrix.qt-version }}   # Qt version to install
           modules: ${{env.QT_MODULES}}
-          cache: false
+          cache: true
       - if: contains( matrix.os, 'macos') && startsWith( matrix.qt-version, '6.' )
         name: Install Qt 6 on macOS
         uses: jurplel/install-qt-action@v4
@@ -259,7 +259,7 @@ jobs:
 
           # NOTE: linuxdeployqt supports up to Ubuntu Focal Fossa
           echo "🚀 Creating the AppImage using linuxdeployqt..."
-          ../linuxdeployqt-continuous-x86_64.AppImage AppDir/${{env.APPDIR_PREFIX}}/share/applications/*.desktop \
+          ./linuxdeployqt-continuous-x86_64.AppImage AppDir/${{env.APPDIR_PREFIX}}/share/applications/*.desktop \
             -appimage -extra-plugins=iconengines,imageformats
 
           ARTIFACT_FN="${{env.APP_NAME}}-${{env.VERSION}}-$(uname -i).AppImage"
@@ -492,6 +492,11 @@ jobs:
         run: |
           echo "🔎 Listing some directories"
           dir D:\a\app\Qt\
+
+          echo "🔎 Verifying Qt installation path..."
+          where qmake
+          where windeployqt
+
           echo "💡 Creating build dir"
           mkdir build
           echo "🔧 Running 'cmake -S . -B build' to configure the project..."
@@ -500,5 +505,32 @@ jobs:
           cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}} -v
           echo "👉 Building finished. Listing directory build/ for verification: "
           dir build
+
+          echo "🔧 Running windeployqt on built executable..."
+          windeployqt build\${{env.CMAKE_CONFIG}}\socnetv.exe
+          
+          echo "🔧 Copying license file to build directory..."
+          copy COPYING build\${{env.CMAKE_CONFIG}}\LICENSE.txt
+
+          echo "🔧 Installing Inno Setup..."
+          choco install -y InnoSetup
+          
+          echo "🔧 Adding Inno Setup to PATH..."
+          set PATH=%PATH%;C:\Program Files (x86)\Inno Setup 6\
+
+          echo "🔧 Copying InnoSetup script..."
+          copy scripts\innosetup.iss build\innosetup.iss
+          
+          echo "🔧 Running Inno Setup to create installer..."
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" build\innosetup.iss
+  
+          echo "👉 Checking output installer..."
+          dir build
+          
+          echo "🔧 Renaming installer..."
+          rename build\SocNetV-*installer.exe SocNetV-${{env.VERSION}}-windows-installer.exe
+          dir build
+          
+          echo "🎉 Windows build complete. Artifacts are ready!"
 
       - run: echo "🍏 This job's status is ${{ job.status }}."
