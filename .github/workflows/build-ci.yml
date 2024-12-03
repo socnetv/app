@@ -204,10 +204,9 @@ jobs:
           ls -lh .
 
           echo "🔎 Search for built executable ./${{env.UNIXNAME}}*..."
-          if [ -f "./${{env.UNIXNAME}}*" ]; then
+          if [ -f "./${{env.UNIXNAME}}" ]; then
             echo "🎉 executable found!"
-            find ./build -type f -name "${{env.UNIXNAME}}*"
-            ls "${{env.UNIXNAME}}*"
+            ls -ls "${{env.UNIXNAME}}"
           else
               echo "❌ Error! ./build directory was not created!"
               exit 1
