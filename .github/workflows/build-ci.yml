@@ -110,9 +110,8 @@ jobs:
         name: 🐧 Prepare for building on ${{matrix.os}}
         run: |
           echo '⚙️ Install dependencies for building....'
-          sudo apt install desktop-file-utils
           sudo apt install -y build-essential libssl-dev cmake ninja-build \
-            libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev \
+            libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev libcups2-dev libvulkan-dev \
             desktop-file-utils patchelf libglu1-mesa-dev libfontconfig1 libfreetype6 libx11-dev libxext-dev \
             libxrandr-dev libxrender-dev libxcb1-dev libx11-xcb-dev libxcb-glx0-dev libfuse2
           # DONT NEED IT. FOR DEBUG ONLY
@@ -425,16 +424,16 @@ jobs:
           cd build
           ls -lh .
 
-          echo "🔎 Search for built macos binary ./${{env.APP_NAME}}.app ..."
-          if [[ -f "./${{env.APP_NAME}}.app" ]]; then
-            echo "🎉 bundle found!"
+          echo "🔎 Search for built ${{matrix.os}} bundle (DIRECTORY!)./${{env.APP_NAME}}.app ..."
+          if [[ -d "./${{env.APP_NAME}}.app" ]]; then
+            echo "🎉 ${{matrix.os}} bundle created!"
           else
-            echo "❌ Error! Binary not found !"
+            echo "❌ Error! ${{matrix.os}} bundle not found !"
             exit 1
           fi
 
           # Verify the binary with lipo
-          echo "🔎 Verifying architectures in the built binary..."
+          echo "🔎 Verifying architectures in the ${{matrix.os}} bundle..."
           if [[ -f "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}" ]]; then
               lipo -info "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}"
           else
