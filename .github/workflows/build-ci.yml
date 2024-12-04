@@ -307,30 +307,27 @@ jobs:
               exit 1
           fi
 
+      - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version == '6.8.9' && env.LINUX_ARTIFACT != ''
+        name: 📤 Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
+        run: |
+          echo "🔍 Verifying artifact: ${{ env.LINUX_ARTIFACT }}"
+          if [ ! -f "./${{ env.LINUX_ARTIFACT }}" ]; then
+            echo "❌ Error: Artifact not found!"
+            exit 1
+          fi
 
           echo "📤 Uploading artifact to GitHub release..."
-          gh release upload continuous ./${ARTIFACT_FN}" --repo "${{ github.repository }}" \
+          gh release upload continuous "./${{ env.LINUX_ARTIFACT }}" --repo "${{ github.repository }}" \
             --clobber --title "${{ env.APP_NAME }} ${env.VERSION}" --content-type application/octet-stream
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
 
-      # - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version == '6.8.9' && env.LINUX_ARTIFACT != ''
-      #   name: Create (or fetch) continuous release
-      #   id: create_release
-      #   uses: actions/create-release@v1
-      #   with:
-      #     tag_name: continuous
-      #     release_name: "Continuous Build"
-      #     draft: false
-      #     prerelease: true
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version == '6.8.0' && env.LINUX_ARTIFACT != ''
       #   name: Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
       #   uses: actions/upload-release-asset@v1
       #   with:
       #     upload_url: ${{ env.UPLOAD_URL }}
-      #     asset_path: build/${{ env.LINUX_ARTIFACT }}
+      #     asset_path: ./${{ env.LINUX_ARTIFACT }}
       #     asset_name: "${{ env.LINUX_ARTIFACT }}"
       #     asset_content_type: "application/octet-stream"
       #   env:
@@ -503,8 +500,17 @@ jobs:
              exit 1
           fi
 
+      - if: contains( matrix.os, 'macos') && matrix.qt-version == '6.8.0' && env.MAC_ARTIFACT != ''
+        name: 📤 Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
+        run: |
+          echo "🔍 Verifying artifact: ${{ env.MAC_ARTIFACT }}"
+          if [ ! -f "./${{ env.MAC_ARTIFACT }}" ]; then
+            echo "❌ Error: Artifact not found!"
+            exit 1
+          fi
+
           echo "📤 Uploading artifact to GitHub release..."
-          gh release upload continuous ./${DMG_NAME} --repo "${{ github.repository }}" \
+          gh release upload continuous "./${{ env.MAC_ARTIFACT }}" --repo "${{ github.repository }}" \
             --clobber --title "${{ env.APP_NAME }} ${env.VERSION}" --content-type application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -515,7 +521,7 @@ jobs:
       #   uses: actions/upload-release-asset@v1
       #   with:
       #     upload_url: ${{ env.UPLOAD_URL }}
-      #     asset_path: ./build/${{ env.MAC_ARTIFACT }}
+      #     asset_path: ./${{ env.MAC_ARTIFACT }}
       #     asset_name: "${{ env.MAC_ARTIFACT }}"
       #     asset_content_type: "application/octet-stream"
       #   env:
