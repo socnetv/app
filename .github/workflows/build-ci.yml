@@ -90,7 +90,7 @@ jobs:
             const { data: rateLimit } = await github.rest.rateLimit.get();
             console.log(rateLimit);
             core.setOutput("rate_limit", rateLimit);
-          github-token: ${{ secrets.GITHUB_TOKEN }}        
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Use script to get continuous release Upload URL
         id: get_release
         uses: actions/github-script@v6
@@ -322,7 +322,7 @@ jobs:
           gh release upload continuous "./build/${{ env.LINUX_ARTIFACT }}" --repo "${{ github.repository }}" \
             --clobber
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version == '6.8.0' && env.LINUX_ARTIFACT != ''
       #   name: Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
@@ -515,7 +515,7 @@ jobs:
 
           echo "📤 Uploading artifact to GitHub release..."
           gh release upload continuous "./build/${{ env.MAC_ARTIFACT }}" --repo "${{ github.repository }}" \
-            --clobber 
+            --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -579,7 +579,7 @@ jobs:
 
           echo "🔧 Adding Inno Setup to PATH..."
           $env:PATH += ";C:\Program Files (x86)\Inno Setup 6\"
-      
+
           echo "🔧 Verifying Inno Setup Installation..."
           iscc.exe /?
 
@@ -588,10 +588,11 @@ jobs:
 
           echo "Updating RELEASEFOLDER in innosetup.iss with ${{env.CMAKE_CONFIG}}..."
           $config = "${{env.CMAKE_CONFIG}}"
-          (Get-Content innosetup.iss) -replace '#define RELEASEFOLDER "release\\\\"', "#define RELEASEFOLDER \"$config\\\"" | Set-Content innosetup.iss
+          $replacement = "#define RELEASEFOLDER `"$config\\`""
+          (Get-Content innosetup.iss) -replace '#define RELEASEFOLDER "release\\"', $replacement | Set-Content innosetup.iss
           echo "Updated innosetup.iss:"
           type innosetup.iss
-        
+
           echo "🔧 Running Inno Setup to create installer..."
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "innosetup.iss"
 
