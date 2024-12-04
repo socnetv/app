@@ -306,6 +306,14 @@ jobs:
               echo "❌ AppImage creation failed!"
               exit 1
           fi
+
+
+          echo "📤 Uploading artifact to GitHub release..."
+          gh release upload continuous "./${{ env.LINUX_ARTIFACT }}" --repo "${{ github.repository }}" \
+            --clobber --title "${{ env.APP_NAME }} ${env.VERSION}" --content-type application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       # - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version == '6.8.9' && env.LINUX_ARTIFACT != ''
       #   name: Create (or fetch) continuous release
       #   id: create_release
@@ -317,16 +325,16 @@ jobs:
       #     prerelease: true
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version == '6.8.0' && env.LINUX_ARTIFACT != ''
-        name: Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ env.UPLOAD_URL }}
-          asset_path: build/${{ env.LINUX_ARTIFACT }}
-          asset_name: "${{ env.LINUX_ARTIFACT }}"
-          asset_content_type: "application/octet-stream"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version == '6.8.0' && env.LINUX_ARTIFACT != ''
+      #   name: Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
+      #   uses: actions/upload-release-asset@v1
+      #   with:
+      #     upload_url: ${{ env.UPLOAD_URL }}
+      #     asset_path: build/${{ env.LINUX_ARTIFACT }}
+      #     asset_name: "${{ env.LINUX_ARTIFACT }}"
+      #     asset_content_type: "application/octet-stream"
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - if: contains( matrix.os, 'ubuntu-latest')
         name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}} using cmake
@@ -495,17 +503,23 @@ jobs:
              exit 1
           fi
 
-      # Upload artifacts from macOS build to 'continuous' pre-release tag
-      - if: contains( matrix.os, 'macos') && matrix.qt-version == '6.8.0' && env.MAC_ARTIFACT != ''
-        name: Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ env.UPLOAD_URL }}
-          asset_path: ./build/${{ env.MAC_ARTIFACT }}
-          asset_name: "${{ env.MAC_ARTIFACT }}"
-          asset_content_type: "application/octet-stream"
+          echo "📤 Uploading artifact to GitHub release..."
+          gh release upload continuous "./${{ env.MAC_ARTIFACT }}" --repo "${{ github.repository }}" \
+            --clobber --title "${{ env.APP_NAME }} ${env.VERSION}" --content-type application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Upload artifacts from macOS build to 'continuous' pre-release tag
+      # - if: contains( matrix.os, 'macos') && matrix.qt-version == '6.8.0' && env.MAC_ARTIFACT != ''
+      #   name: Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
+      #   uses: actions/upload-release-asset@v1
+      #   with:
+      #     upload_url: ${{ env.UPLOAD_URL }}
+      #     asset_path: ./build/${{ env.MAC_ARTIFACT }}
+      #     asset_name: "${{ env.MAC_ARTIFACT }}"
+      #     asset_content_type: "application/octet-stream"
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # BUILD FOR WINDOWS
       - if: contains( matrix.os, 'windows') && matrix.qt-version == '6.5.3'
