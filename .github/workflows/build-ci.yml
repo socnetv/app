@@ -309,7 +309,7 @@ jobs:
 
 
           echo "📤 Uploading artifact to GitHub release..."
-          gh release upload continuous "./${{ env.LINUX_ARTIFACT }}" --repo "${{ github.repository }}" \
+          gh release upload continuous ./${ARTIFACT_FN}" --repo "${{ github.repository }}" \
             --clobber --title "${{ env.APP_NAME }} ${env.VERSION}" --content-type application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -422,7 +422,7 @@ jobs:
             DMG_NAME="${{env.APP_NAME}}-${{env.VERSION}}.dmg"
             mv "${{env.APP_NAME}}.dmg" "${DMG_NAME}"
             echo "🎉 Build and packaging complete. Final DMG: ${DMG_NAME}"
-            ls -lh "${DMG_NAME}"
+            ls -lh *.dmg
             echo "Artifact created! Exporting MAC_ARTIFACT=${DMG_NAME}"
             echo "MAC_ARTIFACT=${DMG_NAME}" >> $GITHUB_ENV
           else
@@ -495,7 +495,7 @@ jobs:
             DMG_NAME="${{env.APP_NAME}}-${{env.VERSION}}.dmg"
             mv "${{env.APP_NAME}}.dmg" "${DMG_NAME}"
             echo "🎉 Build and packaging complete. Final DMG: ${DMG_NAME}"
-            ls -lh "${DMG_NAME}"
+            ls -lh *.dmg
             echo "Artifact created! Exporting MAC_ARTIFACT=${DMG_NAME}"
             echo "MAC_ARTIFACT=${DMG_NAME}" >> $GITHUB_ENV
           else
@@ -504,7 +504,7 @@ jobs:
           fi
 
           echo "📤 Uploading artifact to GitHub release..."
-          gh release upload continuous "./${{ env.MAC_ARTIFACT }}" --repo "${{ github.repository }}" \
+          gh release upload continuous ./${DMG_NAME} --repo "${{ github.repository }}" \
             --clobber --title "${{ env.APP_NAME }} ${env.VERSION}" --content-type application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -582,7 +582,7 @@ jobs:
           dir build
 
           echo "🔧 Renaming installer..."
-          rename build\SocNetV-*installer.exe SocNetV-${{env.VERSION}}-windows-installer.exe
+          Get-ChildItem -Path "build\SocNetV-*installer.exe" | Move-Item -Destination "build\SocNetV-${{env.VERSION}}-windows-installer.exe"
           dir build
 
           echo "🎉 Windows build complete. Artifacts are ready!"
