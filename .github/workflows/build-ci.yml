@@ -632,7 +632,7 @@ jobs:
           echo "📤 Uploading artifact to GitHub release..."
           gh release upload continuous "./build/${{ env.WINDOWS_ARTIFACT }}" `
             --repo "${{ github.repository }}" `
-            --clobber            
+            --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
