@@ -312,7 +312,7 @@ jobs:
         run: |
           echo "🔍 Verifying artifact: ${{ env.LINUX_ARTIFACT }}"
           pwd
-          ls
+          ls build
           if [ ! -f "./build/${{ env.LINUX_ARTIFACT }}" ]; then
             echo "❌ Error: Artifact not found!"
             exit 1
@@ -320,7 +320,7 @@ jobs:
 
           echo "📤 Uploading artifact to GitHub release..."
           gh release upload continuous "./build/${{ env.LINUX_ARTIFACT }}" --repo "${{ github.repository }}" \
-            --clobber --title "${{ env.APP_NAME }} ${env.VERSION}" --content-type application/octet-stream
+            --clobber --title "${{ env.APP_NAME }} ${{env.VERSION}}" --content-type application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
 
@@ -507,7 +507,7 @@ jobs:
         run: |
           echo "🔍 Verifying artifact: ${{ env.MAC_ARTIFACT }}"
           pwd
-          ls
+          ls build
           if [ ! -f "./build/${{ env.MAC_ARTIFACT }}" ]; then
             echo "❌ Error: Artifact not found!"
             exit 1
@@ -515,7 +515,7 @@ jobs:
 
           echo "📤 Uploading artifact to GitHub release..."
           gh release upload continuous "./build/${{ env.MAC_ARTIFACT }}" --repo "${{ github.repository }}" \
-            --clobber --title "${{ env.APP_NAME }} ${env.VERSION}" --content-type application/octet-stream
+            --clobber --title "${{ env.APP_NAME }} ${{env.VERSION}}" --content-type application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -587,10 +587,11 @@ jobs:
 
           echo "Updating RELEASEFOLDER in innosetup.iss with ${{env.CMAKE_CONFIG}}..."
           $config = "${{env.CMAKE_CONFIG}}"
-          (Get-Content innosetup.iss) -replace '#define RELEASEFOLDER "release\\\\"', "#define RELEASEFOLDER \"$config\\\"" | Set-Content innosetup.iss
+          $replacement = "#define RELEASEFOLDER `"$config\\`""
+          (Get-Content innosetup.iss) -replace '#define RELEASEFOLDER "release\\\\"', $replacement | Set-Content innosetup.iss
           echo "Updated innosetup.iss:"
-          type build\innosetup.iss
-          
+          type innosetup.iss
+        
           echo "🔧 Running Inno Setup to create installer..."
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "build\innosetup.iss"
 
