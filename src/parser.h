@@ -165,7 +165,15 @@ signals:
 	
 protected:
 
-private: 
+private:
+
+    bool validateAndInitialize(const QByteArray &rawData, const QString &delimiter);
+    void resetCounters();
+    bool doParseAdjacency(QTextStream &ts, const QString &delimiter);
+    void createNodeWithDefaults(int nodeIndex, const QString &label);
+    bool createEdgesForRow(const QStringList &currentRow, int rowIndex);
+    bool containsReservedKeywords(const QString &str) const;
+
     QHash<QString, int> nodeHash;
 	QHash<QString, QString> keyFor, keyName, keyType, keyDefaultValue ;
     QHash<QString, QString> edgesMissingNodesHash;

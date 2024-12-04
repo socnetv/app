@@ -1605,236 +1605,256 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
 }
 
 
-
-
-
 /**
- * @brief Parses the data as adjacency sociomatrix-formatted.
- *
- * @return bool
+ * Main function to parse adjacency-formatted data.
+ * Validates the format, resets counters, and processes the file to create nodes and edges.
+ * Parsing is aborted immediately if any invalid data is encountered.
+ * @param rawData Raw input data as QByteArray.
+ * @param delimiter Delimiter used to split rows and columns.
+ * @param sm_has_labels Indicates if the sociomatrix has labels in the first comment line.
+ * @return true if parsing succeeds, false otherwise.
  */
-bool Parser::parseAsAdjacency(const QByteArray &rawData, const QString &delimiter, const bool &sm_has_labels){
-
+bool Parser::parseAsAdjacency(const QByteArray &rawData, const QString &delimiter, const bool &sm_has_labels) {
     qDebug() << "Parsing data as adjacency formatted...";
 
-    QTextCodec *codec = QTextCodec::codecForName( m_textCodecName.toLatin1() );
+    // Validate the input data and initialize node labels if present.
+    if (!validateAndInitialize(rawData, delimiter)) {
+        return false;
+    }
+
+    // Decode the data and prepare a QTextStream for processing.
+    QTextCodec *codec = QTextCodec::codecForName(m_textCodecName.toLatin1());
+    QString decodedData = codec->toUnicode(rawData);
+    QTextStream ts(&decodedData);
+
+    // Reset internal counters and data structures.
+    resetCounters();
+
+    // Process the file to create nodes and edges.
+    if (!doParseAdjacency(ts, delimiter)) {
+        return false; // Abort if any error occurs during node or edge creation.
+    }
+
+    // If no relations are defined, add a default unnamed relation.
+    if (relationsList.empty()) {
+        emit signalAddNewRelation("unnamed");
+    }
+
+    qDebug() << "Finished OK. Returning.";
+    return true;
+}
+
+/**
+ * Validates the adjacency matrix file format.
+ * Checks for reserved keywords, row consistency, and appropriate delimiters in the first 11 rows.
+ * Parsing is aborted immediately if any issue is encountered.
+ * @param rawData Raw input data as QByteArray.
+ * @param delimiter Delimiter used to split rows and columns.
+ * @return true if the file format is valid, false otherwise.
+ */
+bool Parser::validateAndInitialize(const QByteArray &rawData, const QString &delimiter) {
+    QTextCodec *codec = QTextCodec::codecForName(m_textCodecName.toLatin1());
     QString decodedData = codec->toUnicode(rawData);
     QTextStream ts(&decodedData);
 
     QString str;
-    QString edgeStr;
-    QStringList currentRow;
     QStringList nodeLabels;
-    QString nodeLabel;
-    int fileLine=0;
-    int actualLineNumber=0;
-    int i=0, j=0, colCount=0, lastCount=0;
-    bool conversionOK=false;
+    int fileLine = 0, actualLineNumber = 0, lastCount = 0;
 
-    relationsList.clear();
-    totalNodes=0;
-    edgeWeight=1.0;
-    totalLinks=0;
-    edgeDirType=EdgeType::Directed;
+    while (actualLineNumber < 11 && !ts.atEnd()) {
+        fileLine++;
+        str = ts.readLine().simplified().trimmed();
 
-    // Initially, do a small 11-row read to understand what kind of file this is
-    while ( actualLineNumber < 11 &&  !ts.atEnd() ) {
-
-        fileLine ++ ;
-
-        str= ts.readLine().simplified().trimmed(); // transforms "/t", "  ", etc to plain " ".
-
-        if (
-             str.contains("vertices",Qt::CaseInsensitive)
-             || str.contains("network",Qt::CaseInsensitive)
-             || str.contains("graph",Qt::CaseInsensitive)
-             || str.contains("digraph",Qt::CaseInsensitive)
-             || str.contains("DL n",Qt::CaseInsensitive)
-             || str == "DL"
-             || str == "dl"
-             || str.contains("list",Qt::CaseInsensitive)
-             || str.contains("graphml",Qt::CaseInsensitive)
-             || str.contains("xml",Qt::CaseInsensitive)
-
-             ) {
-            qDebug()<< "*** Not an Adjacency-formatted file. Aborting!!";
-
+        // Check for reserved keywords to ensure the file is adjacency-formatted.
+        if (containsReservedKeywords(str)) {
             errorMessage = tr("Invalid adjacency-formatted file. "
-                              "Non-comment line %1 includes keywords reserved by other file formats (i.e vertices, graphml, network, graph, digraph, DL, xml)")
-                    .arg(fileLine);
-
+                              "Non-comment line %1 includes reserved keywords ('%2'). Parsing aborted.")
+                               .arg(fileLine)
+                               .arg(str);
             return false;
         }
 
-        if ( isComment(str) ) {
-            // Try to read node labels from the first comment line
-            if ( fileLine == 1 ) {
-                // This is a comment and the first line.
-                // Split the row at the delimiter
+        if (isComment(str)) {
+            // If the first line is a comment, extract node labels (if provided).
+            if (fileLine == 1) {
                 nodeLabels = str.split(delimiter);
             }
             continue;
         }
 
-        actualLineNumber ++;
+        actualLineNumber++;
+        int colCount = str.split(delimiter).size();
 
-
-        // Split the row to count the columns
-        colCount = (str.split(delimiter)).size();
-
-        qDebug() << "non-comment row:" << actualLineNumber << ":"<< str << "colCount:"<<colCount ;
-
-        if  ( (colCount != lastCount && actualLineNumber > 1 ) || (colCount < actualLineNumber) ) {
-            // row column sizes differ, this can't be an adjacency matrix
-            qDebug()<< "*** Not an Adjacency-formatted file. Aborting!!";
-
+        // Ensure that all rows have consistent column counts.
+        if ((colCount != lastCount && actualLineNumber > 1) || (colCount < actualLineNumber)) {
             errorMessage = tr("Invalid Adjacency-formatted file. "
-                              "Matrix row %1 at line %2 has different number of elements from previous row.").arg(actualLineNumber).arg(fileLine);
+                              "Row %1 at line %2 has a different number of elements (%3) than expected (%4). Parsing aborted.")
+                               .arg(actualLineNumber)
+                               .arg(fileLine)
+                               .arg(colCount)
+                               .arg(lastCount);
             return false;
         }
 
-        lastCount=colCount;
+        lastCount = colCount;
+    }
 
-    }  // end while
+    qDebug() << "Validation successful. Proceeding.";
+    return true;
+}
 
-    // RESET file and row counter
+/**
+ * Resets counters and data structures used during parsing.
+ * Clears relations and resets node and edge counters to ensure a clean state.
+ */
+void Parser::resetCounters() {
+    relationsList.clear();
+    totalNodes = 0;
+    edgeWeight = 1.0;
+    totalLinks = 0;
+    edgeDirType = EdgeType::Directed;
+}
+
+/**
+ * Processes the adjacency matrix file to create nodes and edges.
+ * Reads each line of the matrix, creates nodes for the first row, and creates edges for subsequent rows.
+ * Parsing is aborted immediately if any issue is encountered.
+ * @param ts QTextStream of the decoded adjacency matrix file.
+ * @param delimiter Delimiter used to split rows and columns.
+ * @return true if the nodes and edges are successfully created, false otherwise.
+ */
+bool Parser::doParseAdjacency(QTextStream &ts, const QString &delimiter) {
+    QString str;
+    QStringList currentRow;
+    QStringList nodeLabels;
+    int fileLine = 0, actualLineNumber = 0;
+
+    // Reset the QTextStream to the beginning of the file for full processing.
     ts.reset();
     ts.seek(0);
 
-    actualLineNumber = 0;
-    fileLine = 0;
+    while (!ts.atEnd()) {
+        fileLine++;
+        str = ts.readLine().simplified().trimmed();
 
-    // Now do the full read
-    while ( !ts.atEnd() ) {
-
-        fileLine ++ ;
-
-        str= ts.readLine().simplified().trimmed(); // transforms "/t", "  ", etc to plain " ".
-
-        if ( isComment(str) ) {
-            qDebug()<< tr("fileLine: %1 is comment...").arg(fileLine);
+        // Skip comment lines but count them for accurate line tracking.
+        if (isComment(str)) {
+            qDebug() << tr("fileLine: %1 is a comment...").arg(fileLine);
             continue;
         }
 
-        i = ++actualLineNumber;
+        actualLineNumber++;
+        currentRow = str.split(delimiter);
 
-        qDebug()<<"fileLine: " << fileLine << "i: " <<i;
+        if (actualLineNumber == 1) {
+            // Initialize nodes based on the first row of the adjacency matrix.
+            totalNodes = currentRow.size();
+            qDebug() << "Nodes to be created:" << totalNodes;
 
-        // Split the current row
-        currentRow=str.split(delimiter);
-
-        if ( actualLineNumber == 1 ) {
-
-            // Since a sociomatrix is NxN matrix,
-            // the number of items in the first row
-            // is the total nodes declared in this file.
-            totalNodes=currentRow.size();
-
-            qDebug()<< "Nodes to be created:"<< totalNodes;
-
-            // We know how many nodes there are in this adjacency sociomatrix
-            // thus we create them, one by one.
-
-            for (j=1; j<=totalNodes; j++) {
-
-                // compute random position for this node
-                randX=rand()%gwWidth;
-                randY=rand()%gwHeight;
-
-                nodeLabel = ! nodeLabels.isEmpty() ? nodeLabels.at(j-1) : QString::number(j);
-
-                qDebug()<<"Signaling to create new node"<< j
-                       << "at random pos"<< QPointF(randX,randY);
-\
-
-                emit signalCreateNode( j,
-                                 initNodeSize,
-                                 initNodeColor,
-                                 initNodeNumberColor,
-                                 initNodeNumberSize,
-                                 nodeLabel,
-                                 initNodeLabelColor,
-                                 initNodeLabelSize,
-                                 QPointF(randX, randY),
-                                 initNodeShape,
-                                 QString()
-                                 );
+            // Create each node, assigning random positions and labels.
+            for (int j = 1; j <= totalNodes; ++j) {
+                createNodeWithDefaults(j, nodeLabels.isEmpty() ? QString::number(j) : nodeLabels.at(j - 1));
             }
+
             qDebug() << "Finished creating nodes";
         }
 
-
-        // Check if this actual line is over the expected total nodes
-        if ( i > totalNodes ) {
-            emit signalCreateNode( i,
-                             initNodeSize,
-                             initNodeColor,
-                             initNodeNumberColor,
-                             initNodeNumberSize,
-                             QString::number(i),
-                             initNodeLabelColor,
-                             initNodeLabelSize,
-                             QPointF(randX, randY),
-                             initNodeShape,
-                             QString()
-                             );
+        // If more rows exist than declared nodes, create additional nodes.
+        if (actualLineNumber > totalNodes) {
+            createNodeWithDefaults(actualLineNumber, QString::number(actualLineNumber));
         }
 
-        // Check the number of items in this line
-        if ( (int) currentRow.size() > totalNodes )  {
-            errorMessage = tr("Invalid Adjacency-formatted file.  "
-                              "Not a NxN matrix. Row %1 declares %2 edges. Expected: %3").arg(actualLineNumber).arg((int) currentRow.size()).arg(totalNodes);
+        // Abort if a row contains more columns than the expected NxN matrix format.
+        if (currentRow.size() > totalNodes) {
+            errorMessage = tr("Invalid Adjacency-formatted file. "
+                              "Not a NxN matrix. Row %1 declares %2 edges. Expected: %3. Parsing aborted.")
+                               .arg(actualLineNumber)
+                               .arg(currentRow.size())
+                               .arg(totalNodes);
             return false;
         }
 
-        // Edge creation loop
-        // Create the edges declared in current row.
-
-        // Init the column counter
-        j=0;
-
-        qDebug()<< "Starting edge creation loop for matrix row:" << actualLineNumber;
-
-        for (QStringList::Iterator it1 = currentRow.begin(); it1!=currentRow.end(); ++it1)  {
-
-            j++;
-
-            edgeStr = (*it1);
-            edgeWeight =edgeStr.toDouble(&conversionOK);
-
-            if ( !conversionOK )  {
-                errorMessage = tr("Error reading Adjacency-formatted file. "
-                                   "Element (%1,%2) cannot be converted to number. ").arg(i).arg(j);
-                return false;
-            }
-
-            if ( edgeWeight ){
-
-                arrows=true;
-                bezier=false;
-
-                qDebug() << "signaling to create new edge: " << i << "->" <<  j
-                         << "weight" << edgeWeight << "TotalLinks: " << totalLinks+1;
-
-                emit signalCreateEdge(i, j, edgeWeight, initEdgeColor, EdgeType::Directed, arrows, bezier);
-
-                totalLinks++;
-
-            }
-
-        } // end edge creation loop
-
-
-    }  // end full while
-
-
-    if (relationsList.size() == 0 ) {
-        emit signalAddNewRelation( "unnamed" );
+        // Create edges for the current row of the matrix.
+        if (!createEdgesForRow(currentRow, actualLineNumber)) {
+            return false; // Abort if edge creation fails.
+        }
     }
 
-    qDebug() << "Finished OK. Returning.";
     return true;
+}
 
+/**
+ * Emits a signal to create a node with the specified properties.
+ * Assigns a random position for the node within the graph dimensions.
+ * @param nodeIndex Index of the node to create.
+ * @param label Label for the node (numerical or custom).
+ */
+void Parser::createNodeWithDefaults(int nodeIndex, const QString &label) {
+    // Assign a random position for the node within the graph dimensions.
+    QPointF randomPosition(rand() % gwWidth, rand() % gwHeight);
+
+    // Emit a signal to create the node with the given properties.
+    emit signalCreateNode(nodeIndex, initNodeSize, initNodeColor, initNodeNumberColor, initNodeNumberSize,
+                          label, initNodeLabelColor, initNodeLabelSize, randomPosition, initNodeShape, QString());
+}
+
+/**
+ * Iterates through a row of the adjacency matrix to create edges.
+ * Emits a signal for each non-zero weight to create an edge between nodes.
+ * Parsing is aborted immediately if any invalid data is encountered.
+ * @param currentRow The adjacency matrix row being processed.
+ * @param rowIndex The index of the row (source node for edges).
+ * @return true if edges are successfully created, false otherwise.
+ */
+bool Parser::createEdgesForRow(const QStringList &currentRow, int rowIndex) {
+    int colIndex = 0;
+    bool conversionOK = false;
+
+    for (const QString &edgeStr : currentRow) {
+        colIndex++;
+        edgeWeight = edgeStr.toDouble(&conversionOK);
+
+        // Abort if a matrix element cannot be converted to a number.
+        if (!conversionOK) {
+            errorMessage = tr("Error reading Adjacency-formatted file. "
+                              "Element (%1, %2) contains invalid data ('%3'). Parsing aborted.")
+                               .arg(rowIndex)
+                               .arg(colIndex)
+                               .arg(edgeStr);
+            return false;
+        }
+
+        // If the weight is greater than 0, create a directed edge.
+        if (edgeWeight > 0) {
+            qDebug() << "Signaling to create new edge:" << rowIndex << "->" << colIndex
+                     << "weight:" << edgeWeight << "TotalLinks:" << totalLinks + 1;
+
+            emit signalCreateEdge(rowIndex, colIndex, edgeWeight, initEdgeColor, EdgeType::Directed, true, false);
+            totalLinks++;
+        }
+    }
+
+    return true;
+}
+
+/**
+ * Checks if the given string contains any reserved keywords.
+ * Reserved keywords suggest the file is not adjacency-formatted but in another graph format.
+ * Parsing is aborted if a reserved keyword is found.
+ * @param str The string to check for keywords.
+ * @return true if a reserved keyword is found, false otherwise.
+ */
+bool Parser::containsReservedKeywords(const QString &str) const {
+    // List of keywords reserved by other file formats.
+    static const QStringList reservedKeywords = {
+        "vertices", "network", "graph", "digraph", "DL n", "DL", "dl", "list", "graphml", "xml"};
+
+    for (const QString &keyword : reservedKeywords) {
+        if (str.contains(keyword, Qt::CaseInsensitive)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 
