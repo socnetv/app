@@ -313,13 +313,13 @@ jobs:
           echo "🔍 Verifying artifact: ${{ env.LINUX_ARTIFACT }}"
           pwd
           ls
-          if [ ! -f "./${{ env.LINUX_ARTIFACT }}" ]; then
+          if [ ! -f "./build/${{ env.LINUX_ARTIFACT }}" ]; then
             echo "❌ Error: Artifact not found!"
             exit 1
           fi
 
           echo "📤 Uploading artifact to GitHub release..."
-          gh release upload continuous "./${{ env.LINUX_ARTIFACT }}" --repo "${{ github.repository }}" \
+          gh release upload continuous "./build/${{ env.LINUX_ARTIFACT }}" --repo "${{ github.repository }}" \
             --clobber --title "${{ env.APP_NAME }} ${env.VERSION}" --content-type application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
@@ -508,13 +508,13 @@ jobs:
           echo "🔍 Verifying artifact: ${{ env.MAC_ARTIFACT }}"
           pwd
           ls
-          if [ ! -f "./${{ env.MAC_ARTIFACT }}" ]; then
+          if [ ! -f "./build/${{ env.MAC_ARTIFACT }}" ]; then
             echo "❌ Error: Artifact not found!"
             exit 1
           fi
 
           echo "📤 Uploading artifact to GitHub release..."
-          gh release upload continuous "./${{ env.MAC_ARTIFACT }}" --repo "${{ github.repository }}" \
+          gh release upload continuous "./build/${{ env.MAC_ARTIFACT }}" --repo "${{ github.repository }}" \
             --clobber --title "${{ env.APP_NAME }} ${env.VERSION}" --content-type application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -587,7 +587,7 @@ jobs:
 
           echo "Updating RELEASEFOLDER in innosetup.iss with ${{env.CMAKE_CONFIG}}..."
           $config = "${{env.CMAKE_CONFIG}}"
-          (Get-Content innosetup.iss) -replace '#define RELEASEFOLDER "release\\\\"', "#define RELEASEFOLDER `"$config\\\\"`" | Set-Content innosetup.iss
+          (Get-Content innosetup.iss) -replace '#define RELEASEFOLDER "release\\\\"', "#define RELEASEFOLDER \"$config\\\"" | Set-Content innosetup.iss
           echo "Updated innosetup.iss:"
           type build\innosetup.iss
           
