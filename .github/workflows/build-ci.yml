@@ -82,16 +82,33 @@ jobs:
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
       - name: Determined build version ${{ env.VERSION }}
         run: echo "VERSION is set to ${{ env.VERSION }}"
+      - name: Use script to get continuous release Upload URL
+        id: get_release
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { data: releases } = await github.repos.listReleases({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            const release = releases.find(r => r.tag_name === "continuous");
+            if (!release) {
+              throw new Error("Continuous release not found.");
+            }
+            core.setOutput("upload_url", release.upload_url);
+          result-encoding: string
       - name: Fetch 'continuous' release upload URL
         shell: bash
         id: fetch_release
         run: |
+          echo "steps.get_release.outputs.upload_url = ${{ steps.get_release.outputs.upload_url }}"
           RELEASE_INFO=$(gh api -H "Accept: application/vnd.github+json" https://api.github.com/repos/${{ github.repository }}/releases/tags/continuous)
           UPLOAD_URL=$(echo "$RELEASE_INFO" | jq -r '.upload_url' | sed 's/{?name,label}//')
           echo "UPLOAD_URL=${UPLOAD_URL}" >> $GITHUB_ENV
           echo "UPLOAD_URL=${UPLOAD_URL}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
       #
       # Install dependencies (build tools, cmake, etc)
