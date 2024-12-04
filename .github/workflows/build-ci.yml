@@ -87,7 +87,7 @@ jobs:
         id: get_ratelimit
         with:
           script: |
-            const { data: rateLimit } = await github.rateLimit.get();
+            const { data: rateLimit } = await github.rest.rateLimit.get();
             console.log(rateLimit);
             core.setOutput("rate_limit", rateLimit);
           github-token: ${{ secrets.GITHUB_TOKEN }}        
@@ -96,7 +96,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const { data: releases } = await github.repos.listReleases({
+            const { data: releases } = await github.rest.repos.listReleases({
               owner: context.repo.owner,
               repo: context.repo.repo,
             });
