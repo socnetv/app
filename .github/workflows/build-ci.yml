@@ -82,6 +82,15 @@ jobs:
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
       - name: Determined build version ${{ env.VERSION }}
         run: echo "VERSION is set to ${{ env.VERSION }}"
+      - name: Check Rate Limit
+        uses: actions/github-script@v6
+        id: get_ratelimit
+        with:
+          script: |
+            const { data: rateLimit } = await github.rateLimit.get();
+            console.log(rateLimit);
+            core.setOutput("rate_limit", rateLimit);
+          github-token: ${{ secrets.GITHUB_TOKEN }}        
       - name: Use script to get continuous release Upload URL
         id: get_release
         uses: actions/github-script@v6
@@ -93,15 +102,22 @@ jobs:
             });
             const release = releases.find(r => r.tag_name === "continuous");
             if (!release) {
-              throw new Error("Continuous release not found.");
+              console.log("Continuous release not found. Exiting gracefully.");
+              core.setOutput("upload_url", "");
+            } else {
+              core.setOutput("upload_url", release.upload_url);
             }
-            core.setOutput("upload_url", release.upload_url);
           result-encoding: string
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Fetch 'continuous' release upload URL
         shell: bash
         id: fetch_release
         run: |
+          echo "steps.get_ratelimit.outputs.rate_limit = ${{ steps.get_ratelimit.outputs.rate_limit }}"
           echo "steps.get_release.outputs.upload_url = ${{ steps.get_release.outputs.upload_url }}"
+          if [ -z "${{ steps.get_release.outputs.upload_url }}" ]; then
+            echo "No continuous release found in get_release step."
+          fi
           RELEASE_INFO=$(gh api -H "Accept: application/vnd.github+json" https://api.github.com/repos/${{ github.repository }}/releases/tags/continuous)
           UPLOAD_URL=$(echo "$RELEASE_INFO" | jq -r '.upload_url' | sed 's/{?name,label}//')
           echo "UPLOAD_URL=${UPLOAD_URL}" >> $GITHUB_ENV
@@ -529,11 +545,18 @@ jobs:
           echo "🔧 Copying license file to build directory..."
           copy COPYING build\${{env.CMAKE_CONFIG}}\LICENSE.txt
 
-          echo "🔧 Installing Inno Setup..."
-          choco install -y InnoSetup
+          if (!(Get-Command "iscc.exe" -ErrorAction SilentlyContinue)) {
+            echo "🔧 Installing Inno Setup..."
+            choco install -y InnoSetup
+          } else {
+            echo "Inno Setup is already installed. Skipping installation."
+          }
 
           echo "🔧 Adding Inno Setup to PATH..."
-          set PATH=%PATH%;C:\Program Files (x86)\Inno Setup 6\
+          $env:PATH += ";C:\Program Files (x86)\Inno Setup 6\"
+      
+          echo "🔧 Verifying Inno Setup Installation..."
+          iscc.exe /?
 
           echo "🔧 Copying InnoSetup script..."
           copy scripts\innosetup.iss build\innosetup.iss
