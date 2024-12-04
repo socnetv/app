@@ -320,7 +320,7 @@ jobs:
 
           echo "📤 Uploading artifact to GitHub release..."
           gh release upload continuous "./build/${{ env.LINUX_ARTIFACT }}" --repo "${{ github.repository }}" \
-            --clobber --content-type application/octet-stream
+            --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
 
@@ -515,7 +515,7 @@ jobs:
 
           echo "📤 Uploading artifact to GitHub release..."
           gh release upload continuous "./build/${{ env.MAC_ARTIFACT }}" --repo "${{ github.repository }}" \
-            --clobber --content-type application/octet-stream
+            --clobber 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -588,8 +588,7 @@ jobs:
 
           echo "Updating RELEASEFOLDER in innosetup.iss with ${{env.CMAKE_CONFIG}}..."
           $config = "${{env.CMAKE_CONFIG}}"
-          $replacement = "#define RELEASEFOLDER `"$config\\`""
-          (Get-Content innosetup.iss) -replace '#define RELEASEFOLDER "release\\\\"', $replacement | Set-Content innosetup.iss
+          (Get-Content innosetup.iss) -replace '#define RELEASEFOLDER "release\\\\"', "#define RELEASEFOLDER \"$config\\\"" | Set-Content innosetup.iss
           echo "Updated innosetup.iss:"
           type innosetup.iss
         
