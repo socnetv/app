@@ -307,10 +307,12 @@ jobs:
               exit 1
           fi
 
-      - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version == '6.8.9' && env.LINUX_ARTIFACT != ''
+      - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version == '6.8.0' && env.LINUX_ARTIFACT != ''
         name: 📤 Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
         run: |
           echo "🔍 Verifying artifact: ${{ env.LINUX_ARTIFACT }}"
+          pwd
+          ls
           if [ ! -f "./${{ env.LINUX_ARTIFACT }}" ]; then
             echo "❌ Error: Artifact not found!"
             exit 1
@@ -504,6 +506,8 @@ jobs:
         name: 📤 Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
         run: |
           echo "🔍 Verifying artifact: ${{ env.MAC_ARTIFACT }}"
+          pwd
+          ls
           if [ ! -f "./${{ env.MAC_ARTIFACT }}" ]; then
             echo "❌ Error: Artifact not found!"
             exit 1
@@ -581,6 +585,12 @@ jobs:
           echo "🔧 Copying InnoSetup script..."
           copy scripts\innosetup.iss build\innosetup.iss
 
+          echo "Updating RELEASEFOLDER in innosetup.iss with ${{env.CMAKE_CONFIG}}..."
+          $config = "${{env.CMAKE_CONFIG}}"
+          (Get-Content innosetup.iss) -replace '#define RELEASEFOLDER "release\\\\"', "#define RELEASEFOLDER `"$config\\\\"`" | Set-Content innosetup.iss
+          echo "Updated innosetup.iss:"
+          type build\innosetup.iss
+          
           echo "🔧 Running Inno Setup to create installer..."
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "build\innosetup.iss"
 
