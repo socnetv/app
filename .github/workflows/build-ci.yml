@@ -618,16 +618,21 @@ jobs:
         name: 📤 Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
         run: |
           echo "🔍 Verifying artifact: ${{ env.WINDOWS_ARTIFACT }}"
+          echo "Current working directory:"
           pwd
-          ls build
-          if [ ! -f "./build/${{ env.WINDOWS_ARTIFACT }}" ]; then
+
+          echo "Contents of build directory:"
+          Get-ChildItem -Path build
+
+          if (!(Test-Path -Path "./build/${{ env.WINDOWS_ARTIFACT }}")) {
             echo "❌ Error: Artifact not found!"
             exit 1
-          fi
+          }
 
           echo "📤 Uploading artifact to GitHub release..."
-          gh release upload continuous "./build/${{ env.WINDOWS_ARTIFACT }}" --repo "${{ github.repository }}" \
-            --clobber
+          gh release upload continuous "./build/${{ env.WINDOWS_ARTIFACT }}" `
+            --repo "${{ github.repository }}" `
+            --clobber            
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
