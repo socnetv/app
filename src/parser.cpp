@@ -37,6 +37,7 @@
 #include <QPointF>
 #include <QTextCodec>
 #include <QRegularExpression>
+#include <QRandomGenerator>
 
 #include <list>  // used as list<int> listDummiesPajek
 #include <queue>		//for priority queue
@@ -1608,30 +1609,55 @@ bool Parser::parseAsPajek(const QByteArray &rawData){
 /**
  * Main function to parse adjacency-formatted data.
  * Validates the format, resets counters, and processes the file to create nodes and edges.
- * Parsing is aborted immediately if any invalid data is encountered.
+ * If `sm_has_labels` is true, the first comment line is treated as node labels.
+ * NOTE: Parsing is aborted if any invalid data is encountered.
+ *
+ * Example of a supported adjacency matrix file with node labels:
+ * 
+ * # Alice, Bob, Charlie
+ * 0, 1, 1
+ * 1, 0, 0
+ * 1, 0, 0
+ *
+ * In this example:
+ * - The first line is a comment containing the node labels: Alice, Bob, Charlie.
+ * - The remaining lines form a 3x3 adjacency matrix where:
+ *     - Row 1 corresponds to Alice
+ *     - Row 2 corresponds to Bob
+ *     - Row 3 corresponds to Charlie
+ * - A "1" indicates an edge (e.g., Alice is connected to Bob and Charlie).
+ * - A "0" indicates no edge (e.g., Bob is not connected to Charlie).
+ *
  * @param rawData Raw input data as QByteArray.
  * @param delimiter Delimiter used to split rows and columns.
  * @param sm_has_labels Indicates if the sociomatrix has labels in the first comment line.
  * @return true if parsing succeeds, false otherwise.
  */
 bool Parser::parseAsAdjacency(const QByteArray &rawData, const QString &delimiter, const bool &sm_has_labels) {
-    qDebug() << "Parsing data as adjacency formatted...";
-
-    // Validate the input data and initialize node labels if present.
-    if (!validateAndInitialize(rawData, delimiter)) {
-        return false;
-    }
+    qDebug() << "Parsing data as adjacency formatted... delimiter: " << delimiter;
 
     // Decode the data and prepare a QTextStream for processing.
     QTextCodec *codec = QTextCodec::codecForName(m_textCodecName.toLatin1());
     QString decodedData = codec->toUnicode(rawData);
     QTextStream ts(&decodedData);
 
+    QStringList nodeLabels; // Stores node labels if `sm_has_labels` is true.
+    QString str;
+
+
+    // Validate the input data.
+    if (!validateAndInitialize(rawData, delimiter, sm_has_labels, nodeLabels)) {
+        return false;
+    }
+
+    // Reset the QTextStream for processing the adjacency matrix.
+    ts.seek(0);
+
     // Reset internal counters and data structures.
     resetCounters();
 
     // Process the file to create nodes and edges.
-    if (!doParseAdjacency(ts, delimiter)) {
+    if (!doParseAdjacency(ts, delimiter, nodeLabels)) {
         return false; // Abort if any error occurs during node or edge creation.
     }
 
@@ -1645,20 +1671,20 @@ bool Parser::parseAsAdjacency(const QByteArray &rawData, const QString &delimite
 }
 
 /**
- * Validates the adjacency matrix file format.
+ * Validates the adjacency matrix file format and, optionally, gets node labels from first line (if it is a comment line).
  * Checks for reserved keywords, row consistency, and appropriate delimiters in the first 11 rows.
  * Parsing is aborted immediately if any issue is encountered.
  * @param rawData Raw input data as QByteArray.
  * @param delimiter Delimiter used to split rows and columns.
  * @return true if the file format is valid, false otherwise.
  */
-bool Parser::validateAndInitialize(const QByteArray &rawData, const QString &delimiter) {
+bool Parser::validateAndInitialize(const QByteArray &rawData, const QString &delimiter, const bool &sm_has_labels, QStringList &nodeLabels) {
     QTextCodec *codec = QTextCodec::codecForName(m_textCodecName.toLatin1());
     QString decodedData = codec->toUnicode(rawData);
     QTextStream ts(&decodedData);
 
     QString str;
-    QStringList nodeLabels;
+
     int fileLine = 0, actualLineNumber = 0, lastCount = 0;
 
     while (actualLineNumber < 11 && !ts.atEnd()) {
@@ -1674,13 +1700,27 @@ bool Parser::validateAndInitialize(const QByteArray &rawData, const QString &del
             return false;
         }
 
+
         if (isComment(str)) {
-            // If the first line is a comment, extract node labels (if provided).
-            if (fileLine == 1) {
+
+            // Get node labels from first line, if `sm_has_labels` is true.
+            if (fileLine == 1 && sm_has_labels)
+            {
+                str.remove(QRegularExpression("^#\\s*")); // Removes '#' and any trailing spaces
                 nodeLabels = str.split(delimiter);
+                if (nodeLabels.isEmpty())
+                {
+                    errorMessage = tr("Invalid Adjacency-formatted file. "
+                                      "Node labels line is empty or improperly formatted. Parsing aborted.");
+                    return false;
+                }
+                qDebug() << "Parsed node labels:" << nodeLabels;
+                break;
             }
+
             continue;
         }
+
 
         actualLineNumber++;
         int colCount = str.split(delimiter).size();
@@ -1718,20 +1758,17 @@ void Parser::resetCounters() {
 /**
  * Processes the adjacency matrix file to create nodes and edges.
  * Reads each line of the matrix, creates nodes for the first row, and creates edges for subsequent rows.
+ * Uses `nodeLabels` to assign labels to nodes if provided.
  * Parsing is aborted immediately if any issue is encountered.
  * @param ts QTextStream of the decoded adjacency matrix file.
  * @param delimiter Delimiter used to split rows and columns.
+ * @param nodeLabels List of node labels (optional). If empty, numeric labels are used.
  * @return true if the nodes and edges are successfully created, false otherwise.
  */
-bool Parser::doParseAdjacency(QTextStream &ts, const QString &delimiter) {
+bool Parser::doParseAdjacency(QTextStream &ts, const QString &delimiter, const QStringList &nodeLabels) {
     QString str;
     QStringList currentRow;
-    QStringList nodeLabels;
     int fileLine = 0, actualLineNumber = 0;
-
-    // Reset the QTextStream to the beginning of the file for full processing.
-    ts.reset();
-    ts.seek(0);
 
     while (!ts.atEnd()) {
         fileLine++;
@@ -1753,7 +1790,8 @@ bool Parser::doParseAdjacency(QTextStream &ts, const QString &delimiter) {
 
             // Create each node, assigning random positions and labels.
             for (int j = 1; j <= totalNodes; ++j) {
-                createNodeWithDefaults(j, nodeLabels.isEmpty() ? QString::number(j) : nodeLabels.at(j - 1));
+                QString label = (j <= nodeLabels.size()) ? nodeLabels[j - 1] : QString::number(j);
+                createNodeWithDefaults(j, label);
             }
 
             qDebug() << "Finished creating nodes";
@@ -1767,10 +1805,10 @@ bool Parser::doParseAdjacency(QTextStream &ts, const QString &delimiter) {
         // Abort if a row contains more columns than the expected NxN matrix format.
         if (currentRow.size() > totalNodes) {
             errorMessage = tr("Invalid Adjacency-formatted file. "
-                              "Not a NxN matrix. Row %1 declares %2 edges. Expected: %3. Parsing aborted.")
-                               .arg(actualLineNumber)
-                               .arg(currentRow.size())
-                               .arg(totalNodes);
+                                "Not a NxN matrix. Row %1 declares %2 edges. Expected: %3. Parsing aborted.")
+                                .arg(actualLineNumber)
+                                .arg(currentRow.size())
+                                .arg(totalNodes);
             return false;
         }
 
@@ -1791,7 +1829,8 @@ bool Parser::doParseAdjacency(QTextStream &ts, const QString &delimiter) {
  */
 void Parser::createNodeWithDefaults(int nodeIndex, const QString &label) {
     // Assign a random position for the node within the graph dimensions.
-    QPointF randomPosition(rand() % gwWidth, rand() % gwHeight);
+    // QPointF randomPosition(rand() % gwWidth, rand() % gwHeight);
+    QPointF randomPosition(QRandomGenerator::global()->bounded(gwWidth), QRandomGenerator::global()->bounded(gwHeight));
 
     // Emit a signal to create the node with the given properties.
     emit signalCreateNode(nodeIndex, initNodeSize, initNodeColor, initNodeNumberColor, initNodeNumberSize,
@@ -1850,7 +1889,8 @@ bool Parser::containsReservedKeywords(const QString &str) const {
         "vertices", "network", "graph", "digraph", "DL n", "DL", "dl", "list", "graphml", "xml"};
 
     for (const QString &keyword : reservedKeywords) {
-        if (str.contains(keyword, Qt::CaseInsensitive)) {
+        if (str.trimmed().contains(keyword, Qt::CaseInsensitive))
+        {
             return true;
         }
     }

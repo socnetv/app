@@ -7349,7 +7349,7 @@ void MainWindow::slotNetworkFileLoad(const QString &fileNameToLoad,
          fileFormat == FileType::EDGELIST_SIMPLE ||
          fileFormat == FileType::EDGELIST_WEIGHTED ) {
         bool ok;
-        QString delimiter =
+        delimiter =
                 QInputDialog::getText(
                     this, tr("Column delimiter in file "),
                     tr("SocNetV supports edge list and adjacency "

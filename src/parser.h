@@ -167,9 +167,9 @@ protected:
 
 private:
 
-    bool validateAndInitialize(const QByteArray &rawData, const QString &delimiter);
+    bool validateAndInitialize(const QByteArray &rawData, const QString &delimiter, const bool &sm_has_labels, QStringList &nodeLabels);
     void resetCounters();
-    bool doParseAdjacency(QTextStream &ts, const QString &delimiter);
+    bool doParseAdjacency(QTextStream &ts, const QString &delimiter, const QStringList &nodeLabels);
     void createNodeWithDefaults(int nodeIndex, const QString &label);
     bool createEdgesForRow(const QStringList &currentRow, int rowIndex);
     bool containsReservedKeywords(const QString &str) const;
@@ -177,7 +177,7 @@ private:
     QHash<QString, int> nodeHash;
 	QHash<QString, QString> keyFor, keyName, keyType, keyDefaultValue ;
     QHash<QString, QString> edgesMissingNodesHash;
-    QStringList edgeMissingNodesList,edgeMissingNodesListData, relationsList;
+    QStringList edgeMissingNodesList,edgeMissingNodesListData,relationsList;
 	QMultiMap<int, int> firstModeMultiMap, secondModeMultiMap;
 	QXmlStreamReader *xml;
     QString fileDirPath;
