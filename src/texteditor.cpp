@@ -1,29 +1,18 @@
-/****************************************************************************
-SocNetV: Social Network Visualizer 
-version: 3.2
-Written in Qt
-
-                               texteditor.cpp 
-                             -------------------
-    copyright         : (C) 2005-2023 by Dimitris B. Kalamaras
-    project site      : https://socnetv.org
-
-*****************************************************************************/
-
-/*******************************************************************************
-*     This program is free software: you can redistribute it and/or modify     *
-*     it under the terms of the GNU General Public License as published by     *
-*     the Free Software Foundation, either version 3 of the License, or        *
-*     (at your option) any later version.                                      *
-*                                                                              *
-*     This program is distributed in the hope that it will be useful,          *
-*     but WITHOUT ANY WARRANTY; without even the implied warranty of           *
-*     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            *
-*     GNU General Public License for more details.                             *
-*                                                                              *
-*     You should have received a copy of the GNU General Public License        *
-*     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
-********************************************************************************/
+/**
+ * @file texteditor.cpp
+ * @brief Implements the TextEditor class for editing and managing text-based network data files.
+ * @details This file contains the logic for displaying, editing, and saving raw network data in text format within the SocNetV application.
+ * @author Dimitris B. Kalamaras
+ * @copyright
+ *   Copyright (C) 2005-2024 by Dimitris B. Kalamaras.
+ *   This file is part of SocNetV (Social Network Visualizer).
+ * @license
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, version 3 or later.
+ *   For more details, see <http://www.gnu.org/licenses/>.
+ * @see https://socnetv.org
+ */
 
 
 #include <QtWidgets>

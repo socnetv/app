@@ -1,31 +1,18 @@
-/***************************************************************************
- SocNetV: Social Network Visualizer
- version: 3.2
- Written in Qt
- 
- @file mainwindow.h
- @brief The MainWindow declaration
+/**
+ * @file mainwindow.h
+ * @brief Declares the MainWindow class, the primary interface for the SocNetV application.
+ * @author Dimitris B. Kalamaras (http://dimitris.apeiro.gr)
+ * @copyright
+ *   Copyright (C) 2005-2024 by Dimitris B. Kalamaras.
+ *   This file is part of SocNetV (Social Network Visualizer).
+ * @license
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, version 3 or later.
+ *   For more details, see <http://www.gnu.org/licenses/>.
+ * @see https://socnetv.org
+ */
 
-    copyright         : (C) 2005-2023 by Dimitris B. Kalamaras
-    blog              : http://dimitris.apeiro.gr
-    project site      : https://socnetv.org
-
- ***************************************************************************/
-
-/*******************************************************************************
-*     This program is free software: you can redistribute it and/or modify     *
-*     it under the terms of the GNU General Public License as published by     *
-*     the Free Software Foundation, either version 3 of the License, or        *
-*     (at your option) any later version.                                      *
-*                                                                              *
-*     This program is distributed in the hope that it will be useful,          *
-*     but WITHOUT ANY WARRANTY; without even the implied warranty of           *
-*     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            *
-*     GNU General Public License for more details.                             *
-*                                                                              *
-*     You should have received a copy of the GNU General Public License        *
-*     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
-*******************************************************************************/
 
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H

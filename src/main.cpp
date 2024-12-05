@@ -1,29 +1,19 @@
-/***************************************************************************
- SocNetV: Social Network Visualizer
- version: 3.2
- Written in Qt
+/**
+ * @file main.cpp
+ * @brief Entry point for the SocNetV application, initializing the application and starting the main event loop.
+ * @details This file contains the `main()` function, which sets up the application environment, initializes the main window, and handles command-line arguments.
+ * @author Dimitris B. Kalamaras
+ * @copyright
+ *   Copyright (C) 2005-2024 by Dimitris B. Kalamaras.
+ *   This file is part of SocNetV (Social Network Visualizer).
+ * @license
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, version 3 or later.
+ *   For more details, see <http://www.gnu.org/licenses/>.
+ * @see https://socnetv.org
+ */
 
-                        main.cpp  -  description
-                             -------------------
-    copyright         : (C) 2005-2023 by Dimitris B. Kalamaras
-    project site      : https://socnetv.org
-
- ***************************************************************************/
-
-/*******************************************************************************
-*     This program is free software: you can redistribute it and/or modify     *
-*     it under the terms of the GNU General Public License as published by     *
-*     the Free Software Foundation, either version 3 of the License, or        *
-*     (at your option) any later version.                                      *
-*                                                                              *
-*     This program is distributed in the hope that it will be useful,          *
-*     but WITHOUT ANY WARRANTY; without even the implied warranty of           *
-*     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            *
-*     GNU General Public License for more details.                             *
-*                                                                              *
-*     You should have received a copy of the GNU General Public License        *
-*     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
-********************************************************************************/
 
 #include <QApplication>		//core Qt functionality
 #include <QFile>
