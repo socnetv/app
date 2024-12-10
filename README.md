@@ -130,12 +130,12 @@ the project's [Downloads](https://socnetv.org/downloads) page.
 
 Then, make the .appimage file executable and double-click on it to run SocNetV. That's it. :)
 
-Please note that SocNetV is also available in the [repositories of most Linux distributions](https://repology.org/project/socnetv/versions).
-However that is not always the most recent version. We urge you to use the AppImage of the latest version available from our website instead.
+> Please note that SocNetV is also available in the [repositories of most Linux distributions](https://repology.org/project/socnetv/versions). 
+However, that is not always the most recent version. We urge you to use the AppImage of the latest version available from our website instead.
 
-Also, users of openSUSE, Fedora and Ubuntu/Debian can install SocNetV from our own repositories.
+Alternatively, users of openSUSE, Fedora and Ubuntu/Debian can install SocNetV from our own repositories.
 
-In Debian and Ubuntu, add our repository and install SocNetV with these commands:
+For Debian and Ubuntu, use the following commands to add our repository and install SocNetV:
 
 ```bash
 sudo add-apt-repository ppa:dimitris-kalamaras/ppa
@@ -165,7 +165,7 @@ development libraries, version 6.
 
 Qt is an open source C++ toolkit, for Windows, Linux and MacOS.
 
-Windows and MacOS users should download and install Qt6 from https://www.qt.io/developers
+Windows and MacOS users should download and install Qt6 from <https://www.qt.io/developers>
 
 Linux users need to install the following packages:
 
@@ -177,8 +177,8 @@ Debian: qt6-base-dev, qt6-base-dev-tools, qt6-charts-dev, qt6-svg-dev, qt6-5comp
 
 Once you have Qt installed, you are ready to compile SocNetV from source.
 
-Download the archive with the source code of the latest version from 
-https://github.com/socnetv/app/releases/latest. You will get a compressed file like app-3.0.tar.gz
+Download the archive with the source code of the latest version from
+<https://github.com/socnetv/app/releases/latest>. You will get a compressed file like app-3.0.tar.gz
 
 Then type in the following commands in order to decompress the
 SocNetV source code, configure and build it into a executable binary. The commands require that the command `qmake` is in your PATH, otherwise you will not be able to configure the build and it will fail. Replace 3.X with the version you downloaded.
@@ -212,10 +212,10 @@ cmake --build build
 The executable `socnetv` will be placed inside the `build` folder.
 
 ## 5. Command Line Options
-	
+
 SocNetV is primarily a GUI program. Nevertheless, some command line options are available:
 
-```
+```bash
 Options:
   -h, --help           Displays this help.
   -v, --version        Displays version information.
