@@ -1,3 +1,5 @@
+# SocNetV
+
 [![version](https://img.shields.io/github/release/socnetv/app.svg?logo=c%2B%2B)](https://github.com/socnetv/app/releases)
 [![Build Status GitHub Actions](https://github.com/socnetv/app/actions/workflows/build-ci.yml/badge.svg)](https://github.com/socnetv/app/actions/workflows/build-ci.yml)
 [![Build Status in Travis (.com)](https://img.shields.io/travis/com/socnetv/app/master?logo=travis)](https://travis-ci.com/github/socnetv/app)
@@ -6,98 +8,75 @@
 [![downloads](https://img.shields.io/github/downloads/socnetv/app/total.svg?logo=github)](https://socnetv.org/downloads)
 [![license](https://img.shields.io/github/license/socnetv/app.svg)](https://github.com/socnetv/app/blob/master/COPYING)
 [![website](https://img.shields.io/website-up-down-green-red/https/socnetv.org.svg)](https://socnetv.org)
-====================================
 
 [![socnetv](/src/images/socnetv.png)](https://socnetv.org) SocNetV - Social Network Visualizer
-====================================
 
+---
 
+## 1. Overview
 
-# 1. Overview
-
-Social Network Visualizer (SocNetV) is a cross-platform, user-friendly free
-software application for social network analysis and visualization.
+Social Network Visualizer (SocNetV) is a cross-platform, user-friendly free software application for social network analysis and visualization.
 
 With SocNetV you can:
 
 - Draw social networks with a few clicks on a virtual canvas, load your
-field data from a file in a supported format (GraphML, GraphViz, EdgeList, GML, 
-Adjacency, Edgelist, Pajek, UCINET, etc.), automatically recreate famous data sets or 
-crawl the internet to create a social network of connected webpages.
+field data from a file in a supported format (GraphML, GraphViz, EdgeList, GML, Adjacency, Edgelist, Pajek, UCINET, etc.), automatically recreate famous data sets or crawl the internet to create a social network of connected webpages.
 
-- Edit actors and ties through point-and-click, analyse graph and social 
-network properties, produce beautiful HTML reports and embed visualization 
-layouts to the network.
+- Edit actors and ties through point-and-click, analyse graph and social network properties, produce beautiful HTML reports and embed visualization layouts to the network.
 
 [![socnetv](https://socnetv.org/data/uploads/screenshots/25/socnetv-25-padget-power-centrality-size-distribution.png)](https://socnetv.org)
 
-# 2. Features
+## 2. Features
 
-- Standard graph-theoretic and network cohesion metrics, such as density, 
-diameter, geodesics and distances, connectedness, eccentricity, 
-clustering coefficient, walks, reciprocity etc.
+- Standard graph-theoretic and network cohesion metrics, such as density, diameter, geodesics and distances, connectedness, eccentricity, clustering coefficient, walks, reciprocity etc.
 
 - Matrix routines: Adjacency plot, Laplacian matrix, Degree matrix, Cocitation, etc.
 
-- Advanced structural measures for social network analysis such as centrality and prestige 
-indices (i.e. eigenvector and closeness centrality, betweenness centrality, information centrality, 
-power centrality, proximity and pagerank prestige), 
+- Advanced structural measures for social network analysis such as centrality and prestige indices (i.e. eigenvector and closeness centrality, betweenness centrality, information centrality, power centrality, proximity and pagerank prestige), 
 
 - Community detection algorithms such as triad census, clique census, etc.
 
-- Structural equivalence analysis, using hierarchical clustering, 
-actor similarities and tie profile dissimilarities, pearson coefficients, etc.
+- Structural equivalence analysis, using hierarchical clustering, actor similarities and tie profile dissimilarities, pearson coefficients, etc.
 
 - Random network creation, i.e. Erdos-Renyi, Watts-Strogatz, scale-free, lattice, etc.
 
 - One-click recreation of well-known social network datasets such as Padgett's Florentine families.
 
-- Layout algorithms based on either prominence indices (i.e. circular, level and nodal sizes 
-by centrality score) or force-directed models (i.e. Kamada-Kawai, Fruchterman-Reingold, etc) 
-for meaningful visualizations of your social network data.
+- Layout algorithms based on either prominence indices (i.e. circular, level and nodal sizes by centrality score) or force-directed models (i.e. Kamada-Kawai, Fruchterman-Reingold, etc) for meaningful visualizations of your social network data.
 
-- Multirelational loading and editing. You can load a network consisting of multiple 
-relations or create a network on your own and add multiple relations to it. 
+- Multirelational loading and editing. You can load a network consisting of multiple relations or create a network on your own and add multiple relations to it.
 
 - Built-in web crawler allowing you to automatically create networks from links found in a given initial URL.
 
-- Comprehensive documentation both online and while running the 
-application explaining each feature and algorithm of SocNetV in detail.
+- Comprehensive documentation both online and while running the application explaining each feature and algorithm of SocNetV in detail.
 
 - Binary packages and installers for Windows, Linux and macOS.
 
+## 3. Availability & License
 
+Official Website: <https://socnetv.org>
 
-# 3. Availability & License
+Email: <info@socnetv.org>
 
-Official Website: https://socnetv.org
-Email: info@socnetv.org
+Author: Dimitris V. Kalamaras
 
-Author: Dimitris V. Kalamaras 
-Blog:   https://dimitris.apeiro.gr
+Blog:   <https://dimitris.apeiro.gr>
 
-SocNetV is a cross-platform application developed in C++ and Qt, an open source 
-software development platform published under the GPL.
+SocNetV is a cross-platform application developed in C++ and Qt, an open source software development platform published under the GPL.
 
 This means you can compile and run SocNetV on any Operating System supported by Qt.
 See available packages and installation instructions below.
 
-SocNetV is Free Software, distributed under the General Public Licence Version 3 
-(see the COPYING file for details). 
+SocNetV is Free Software, distributed under the General Public Licence Version 3 (see the COPYING file for details).
 The documentation is also Free, licensed under the Free Documentation License (FDL).
 
-The application is not a "finished" product. Therefore, there is no warranty of 
-efficiency, correctness or usability. 
+The application is not a "finished" product. Therefore, there is no warranty of efficiency, correctness or usability.
 
-Nevertheless, we are looking forward to help you if you experience any problems 
-with SocNetV! See bug reporting below.
+Nevertheless, we are looking forward to help you if you experience any problems with SocNetV! See bug reporting below.
 
+## 4. Installation
 
-
-# 4. Installation
-
-SocNetV is multi-platform, which means that it can be installed and run in every
-Operating System supported by the Qt toolkit.
+SocNetV is multi-platform, which means that it can be installed and run in every Operating System supported by the Qt toolkit.
 
 The project offers binaries and installers for the three major Operating Systems:
 Windows, macOS and Linux.
@@ -105,15 +84,14 @@ Windows, macOS and Linux.
 If there is no binary package for your OS, please download and compile the source code,
 as explained further below.
 
-
-## a) Install a binary package or installer (Linux/macOS/Windows)
+### a. Install a binary package or installer (Linux/macOS/Windows)
 
 You can download an installer or a binary package for your Operating System from the
-project's Downloads page: https://socnetv.org/downloads
+project's Downloads page: <https://socnetv.org/downloads>
 
 Follow the instructions below to install it in your system.
 
-### Install in Windows
+#### Install in Windows
 
 To install SocNetV in Windows, download the latest SocNetV Windows installer from
 the [Downloads](https://socnetv.org/downloads) page, and double-click on the executable to start the installation.
@@ -127,7 +105,7 @@ Start Menu shortcut will be created.
 
 Afterwards you can run the application from your Start menu.
 
-### Install in macOS
+#### Install in macOS
 
 To install SocNetV in macOS, download the latest SocNetV macOS package from
 the [Downloads](https://socnetv.org/downloads) page. Then right-click on it and select Open.
@@ -145,7 +123,7 @@ After that, in order to permanently install SocNetV in your macOS, you can simpl
 
 Alternatively, there is a SocNetV port in MacPorts (thanks to Szabolcs Horvát!). It can be installed with `port install socnetv`.
 
-### Install in Linux
+#### Install in Linux
 
 To run the latest and greatest version of SocNetV in Linux, download the latest Linux AppImage from
 the project's [Downloads](https://socnetv.org/downloads) page.
@@ -153,14 +131,13 @@ the project's [Downloads](https://socnetv.org/downloads) page.
 Then, make the .appimage file executable and double-click on it to run SocNetV. That's it. :)
 
 Please note that SocNetV is also available in the [repositories of most Linux distributions](https://repology.org/project/socnetv/versions).
-However that is not always the most recent version. We urge you to use the AppImage of the latest version 
-available from our website instead.
+However that is not always the most recent version. We urge you to use the AppImage of the latest version available from our website instead.
 
-Also, users of openSUSE, Fedora and Ubuntu/Debian can install SocNetV from our own repositories. 
+Also, users of openSUSE, Fedora and Ubuntu/Debian can install SocNetV from our own repositories.
 
 In Debian and Ubuntu, add our repository and install SocNetV with these commands:
 
-```
+```bash
 sudo add-apt-repository ppa:dimitris-kalamaras/ppa
 sudo apt-get update
 sudo apt-get install socnetv
@@ -171,17 +148,17 @@ from here: https://software.opensuse.org/download.html?project=home%3Aoxy86&pack
 
 Once you add the repo, install SocNetV using the command (Fedora):
 
-```
+```bash
 sudo yum install socnetv
 ```
 
-or (openSUSE): 
-```
+or (openSUSE):
+
+```bash
 sudo zypper in socnetv
 ```
 
-
-## b) Compile from Source Code
+### b. Compile from Source Code
 
 To compile and install SocNetV from source you need the Qt toolkit
 development libraries, version 6.
@@ -206,7 +183,7 @@ https://github.com/socnetv/app/releases/latest. You will get a compressed file l
 Then type in the following commands in order to decompress the
 SocNetV source code, configure and build it into a executable binary. The commands require that the command `qmake` is in your PATH, otherwise you will not be able to configure the build and it will fail. Replace 3.X with the version you downloaded.
 
-```
+```bash
 untar zxfv app-3.X.tar.gz
 cd app-3.X
 qmake
@@ -217,16 +194,15 @@ sudo make install # or su -c 'make install'
 Probably you have already done the first 2 steps, so just type in 'qmake' or 'qmake6'.
 When you finish compiling and installing, run the application typing:
 
-```
+```bash
 socnetv
 ```
 
 or go to Start Menu > Mathematics  > SocNetV.
 
-
 Alternatively, if you have `cmake` installed, you can use it like this:
 
-```
+```bash
 untar zxfv app-3.X.tar.gz
 cd app-3.X
 cmake -S . -B build -DCMAKE_PREFIX_PATH=/path/to/Qt/ver/gcc_64/lib/cmake 
@@ -235,8 +211,7 @@ cmake --build build
 
 The executable `socnetv` will be placed inside the `build` folder.
 
-
-# 5. Command Line Options
+## 5. Command Line Options
 	
 SocNetV is primarily a GUI program. Nevertheless, some command line options are available:
 
@@ -260,27 +235,24 @@ Arguments:
 
 For example, type:
 
-```
+```bash
 ./socnetv net.graphml
 ```
 
 to start SocNetV and immediately load network file named 'net.graphml' (in current folder).
 
-
-
-# 6. Usage & documentation
+## 6. Usage & documentation
 
 To help you work with the application, there are tooltips and What's This help messages
 inside the application, when running SocNetV.
 
-To see the full documentation, press F1. It will open a browser window with the SocNetV Manual, 
-which is available online at the project's website: https://socnetv.org/documentation/
+To see the full documentation, press F1. It will open a browser window with the SocNetV Manual,
+which is available online at the project's website: <https://socnetv.org/documentation/>
 
-
-# 7. Bug reporting & contact
+## 7. Bug reporting & contact
 
 If you have a bug report or a feature request, please file it in our GitHub issue tracker:
 https://github.com/socnetv/app/issues
 
-To contact us directly, send an email to: info@socnetv.org
+To contact us directly, send an email to: <info@socnetv.org>
 
