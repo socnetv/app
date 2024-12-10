@@ -31,7 +31,7 @@ SOCNETV_BEGIN_NAMESPACE
 #define M_PI_X_2 (6.28318530717958647692)
 #endif
 
-
+static const QString VERSION="3.2";
 
 enum NodeShape{
     Box,
@@ -101,7 +101,7 @@ enum NetworkRequestType {
 
 };
 
-static const QString VERSION="3.2";
+
 
 static const int USER_MSG_INFO=0;
 static const int USER_MSG_CRITICAL=1;
