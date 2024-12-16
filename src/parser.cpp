@@ -1904,7 +1904,7 @@ bool Parser::parseAsTwoModeSociomatrix(const QByteArray &rawData){
 
     QString str;
     QStringList lineElement;
-    int fileLine=0, actualLineNumber=0;
+    int fileLine=0;
     int i=0, j=0,  newCount=0, lastCount=0;
     totalNodes=0;
     edgeWeight=1.0;
@@ -1917,7 +1917,6 @@ bool Parser::parseAsTwoModeSociomatrix(const QByteArray &rawData){
         str= ts.readLine().simplified();
         if ( isComment(str) )
             continue;
-        actualLineNumber ++;
         if ( str.contains("vertices",Qt::CaseInsensitive)
              || str.contains("network",Qt::CaseInsensitive)
              || str.contains("graph",Qt::CaseInsensitive)
