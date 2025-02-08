@@ -297,10 +297,10 @@ public slots:
     void slotEditNodePropertiesDialog();
     void slotEditNodeProperties( const QString &label,
                                  const int &size,
-                                 const QString &value,
                                  const QColor &color,
                                  const QString &shape,
-                                 const QString &iconPath
+                                 const QString &iconPath,
+                                 const QHash<QString, QString> &customAttributes
                                  );
     void slotEditNodeSelectedToClique();
     void slotEditNodeSelectedToStar();

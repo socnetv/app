@@ -9634,21 +9634,21 @@ void MainWindow::slotEditNodePropertiesDialog() {
  */
 void MainWindow::slotEditNodeProperties(const QString &label,
                                         const int &size,
-                                        const QString &value,
                                         const QColor &color,
                                         const QString &shape,
-                                        const QString &iconPath) {
+                                        const QString &iconPath,
+                                        const QHash<QString, QString> &customAttributes) {
 
     int selectedNodesCount = activeGraph->getSelectedVerticesCount();
 
     qDebug()<< "Request to update node properties - new properties: "
             << " label " << label
             << " size " << size
-            << "value " << value
             << " color " << color
             << " shape " << shape
             << " vertexClicked " <<activeGraph->vertexClicked()
-            << " selectedNodesCount " << selectedNodesCount;
+            << " selectedNodesCount " << selectedNodesCount
+            << "customAttributes" << customAttributes;
 
     if ( selectedNodesCount == 0 && activeGraph->vertexClicked() != 0) {
         // no node selected but user entered a node number in a dialog
@@ -9658,6 +9658,7 @@ void MainWindow::slotEditNodeProperties(const QString &label,
         activeGraph->vertexColorSet( activeGraph->vertexClicked(), color.name());
         activeGraph->vertexSizeSet( activeGraph->vertexClicked(), size);
         activeGraph->vertexShapeSet( activeGraph->vertexClicked(), shape, iconPath );
+        activeGraph->vertexCustomAttributesSet( activeGraph->vertexClicked(), customAttributes);
 
         statusMessage( tr("Updated the properties of node %1. ").arg(activeGraph->vertexClicked()));
 

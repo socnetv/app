@@ -1,39 +1,27 @@
-/***************************************************************************
- SocNetV: Social Network Visualizer
- version: 3.2
- Written in Qt
-
-                         dialognodeedit.h  -  description
-                             -------------------
-    copyright         : (C) 2005-2023 by Dimitris B. Kalamaras
-    project site      : https://socnetv.org
-
- ***************************************************************************/
-
-/*******************************************************************************
-*     This program is free software: you can redistribute it and/or modify     *
-*     it under the terms of the GNU General Public License as published by     *
-*     the Free Software Foundation, either version 3 of the License, or        *
-*     (at your option) any later version.                                      *
-*                                                                              *
-*     This program is distributed in the hope that it will be useful,          *
-*     but WITHOUT ANY WARRANTY; without even the implied warranty of           *
-*     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            *
-*     GNU General Public License for more details.                             *
-*                                                                              *
-*     You should have received a copy of the GNU General Public License        *
-*     along with this program.  If not, see <http://www.gnu.org/licenses/>.    *
-********************************************************************************/
-
+/**
+ * @file dialognodeedit.h
+ * @brief Declares the DialogNodeEdit class for editing node properties in the network graph visualization.
+ * @author Dimitris B. Kalamaras
+ * @copyright
+ *   Copyright (C) 2005-2025 by Dimitris B. Kalamaras.
+ *   This file is part of SocNetV (Social Network Visualizer).
+ * @license
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, version 3 or later.
+ *   For more details, see <http://www.gnu.org/licenses/>.
+ * @see https://socnetv.org
+ */
 
 #ifndef DIALOGNODEEDIT_H
 #define DIALOGNODEEDIT_H
 
 #include <QDialog>
+#include <QHash>
 
-
-namespace Ui {
-class DialogNodeEdit;
+namespace Ui
+{
+    class DialogNodeEdit;
 }
 
 class DialogNodeEdit : public QDialog
@@ -41,27 +29,33 @@ class DialogNodeEdit : public QDialog
     Q_OBJECT
 public:
     explicit DialogNodeEdit(QWidget *parent = Q_NULLPTR,
-                            const QStringList &nodeShapeList=QStringList(),
-                            const QStringList &iconPathList=QStringList(),
-                            const QString &label = "",
-                            const int &size = 8,
-                            const QColor &color= QColor("red"),
-                            const QString &shape = "circle",
-                            const QString &path=QString());
+                            const QStringList &nodeShapeList = QStringList(),
+                            const QStringList &iconPathList = QStringList(),
+                            const QString &label = QString(),
+                            const int &size = 0,
+                            const QColor &color = QColor(),
+                            const QString &shape = QString(),
+                            const QString &path = QString(),
+                            const QHash<QString, QString> &customAttributes = QHash<QString, QString>());
+
     ~DialogNodeEdit();
-public slots:
-    void checkErrors ();
+
+    void setCustomAttributes(const QHash<QString, QString> &attributes);
+
+private slots:
+    void checkErrors();
     void getNodeShape(const int &nodeShapeIndex);
     void getNodeIconFile();
-    void getUserChoices ();
+    void getUserChoices();
     void selectColor();
+    void on_addPropertyButton_clicked();
 signals:
-    void userChoices( const QString &label,
-                      const int &size,
-                      const QString &value,
-                      const QColor &color,
-                      const QString &shape,
-                      const QString &iconPath=QString());
+    void userChoices(const QString &label,
+                     const int &size,
+                     const QColor &color,
+                     const QString &shape,
+                     const QString &iconPath = QString(),
+                     const QHash<QString, QString> &customAttributes = QHash<QString, QString>());
     void nodeEditDialogError(QString);
 
 private:
@@ -75,6 +69,7 @@ private:
     QString nodeValue;
     QPixmap pixmap;
     Ui::DialogNodeEdit *ui;
+    QHash<QString, QString> m_customAttributes;
 };
 
 #endif
