@@ -1857,9 +1857,6 @@ void Graph::vertexNumberDistanceSet(const int &v, const int &newDistance) {
 
 
 
-
-
-
 /**
  * @brief Changes the label of a vertex v1
  * @param v1
@@ -2037,7 +2034,20 @@ void Graph::vertexLabelDistanceInit(const int &distance) {
 }
 
 
-
+/**
+ * @brief Sets custom attributes for a specified vertex.
+ *
+ * This function assigns a set of custom attributes to a vertex identified by its index.
+ * It also updates the modification status to indicate that vertex metadata has been changed.
+ *
+ * @param v1 The index of the vertex for which custom attributes are being set.
+ * @param customAttributes A QHash containing the custom attributes to be set for the vertex.
+ *                         The keys and values of the QHash are both QStrings.
+ */
+void Graph::vertexCustomAttributesSet( const int &v1, const QHash<QString, QString> &customAttributes) {
+    m_graph[ vpos[v1] ]->setCustomAttributes(customAttributes);
+    setModStatus(ModStatus::VertexMetadata);
+}
 
 /**
  * @brief Checks a) if edge exists and b) if the reverse edge exists

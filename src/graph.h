@@ -556,6 +556,7 @@ public:
 
     void vertexLabelDistanceAllSet (const int &newDistance);
 
+    void vertexCustomAttributesSet(const int &v1, const QHash<QString, QString> &customAttributes);
 
     void vertexPosSet(const int &v, const int &x, const int &y);
 
