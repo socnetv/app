@@ -112,6 +112,9 @@ public:
     void setLabelDistance (const int &distance);
     int labelDistance() const;
 
+    void setCustomAttributes(QHash<QString,QString> customAttributes);
+    QHash<QString,QString> customAttributes() const;
+
     void setX(const qreal &x);
     qreal x() const;
 
@@ -314,7 +317,7 @@ private:
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape, m_iconPath;
     QPointF m_disp;
 
-    QHash<QString,QString> m_nodeAttributes;
+    QHash<QString,QString> m_customAttributes;
     QHash<int,qreal> m_reciprocalEdges;
     L_int myPs;
     QMultiHash <int, L_int> m_cliques;

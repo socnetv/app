@@ -36,7 +36,7 @@ GraphVertex::GraphVertex(Graph* parentGraph,
                          const QString &shape,
                          const QString &iconPath,
                          const int &edgesEstimate,
-                         const QHash<QString,QString> &nodeAttr
+                         const QHash<QString,QString> &customAttributes
                          ): m_graph (parentGraph)
 { 
     qDebug() << "vertex:"<< name << "initializing...edgesEstimate:" << edgesEstimate;
@@ -64,7 +64,7 @@ GraphVertex::GraphVertex(Graph* parentGraph,
         m_neighborhoodList.reserve(edgesEstimate);
     }
 
-    m_nodeAttributes = nodeAttr;
+    m_customAttributes = customAttributes;
 
     m_outEdgesCounter = 0;
     m_inEdgesCounter = 0;
@@ -104,7 +104,7 @@ GraphVertex::GraphVertex(const int &name) {
     m_DC=0; m_SDC=0; m_DP=0; m_SDP=0; m_CC=0; m_SCC=0; m_BC=0; m_SBC=0;
     m_IRCC=0; m_SIRCC=0; m_SC=0; m_SSC=0;
     m_curRelation=0;
-    m_nodeAttributes = QHash<QString,QString>();
+    m_customAttributes = QHash<QString,QString>();
 }
 
 
@@ -319,6 +319,29 @@ void GraphVertex::setLabelDistance (const int &distance) {
 int GraphVertex::labelDistance() const {
     return m_labelDistance;
 }
+
+/**
+ * @brief Sets custom attributes for the graph vertex.
+ * 
+ * The custom attributes are provided as a QHash with QString keys and values.
+ * 
+ * @param customAttributes A QHash containing the custom attributes to be set.
+ */
+void GraphVertex::setCustomAttributes(QHash<QString,QString> customAttributes){
+    m_customAttributes = customAttributes;
+}
+
+/**
+ * @brief Returns the custom attributes of the graph vertex.
+ * 
+ * The custom attributes are returned as a QHash with QString keys and values.
+ * 
+ * @return A QHash containing the custom attributes of the graph vertex.
+ */
+QHash<QString,QString> GraphVertex::customAttributes() const {
+    return m_customAttributes;
+}
+
 
 /**
  * @brief Sets the horizontal position (in pixels) of the vertex
