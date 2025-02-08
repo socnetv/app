@@ -14,8 +14,6 @@ TARGET = socnetv
 VERSION=3.2
 LANGUAGE = C++
 
-# Build app for both x86_64 and arm64, see https://doc.qt.io/qt-6/macos.html#architectures
-QMAKE_APPLE_DEVICE_ARCHS = x86_64 arm64
 
 # add Qt module support
 QT += core
@@ -203,6 +201,9 @@ macx {
   TARGET = SocNetV
   QMAKE_CXXFLAGS = -Wno-unused-variable -Wdeprecated-declarations
   QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-unused-parameter -Wdeprecated-declarations
+
+  # Build app for both x86_64 and arm64, see https://doc.qt.io/qt-6/macos.html#architectures
+  QMAKE_APPLE_DEVICE_ARCHS = x86_64 arm64
 }
 
 
