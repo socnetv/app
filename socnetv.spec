@@ -62,7 +62,7 @@ BuildRequires:  pkgconfig(Qt6Core)
 BuildRequires:  pkgconfig(Qt6Gui)
 BuildRequires:  pkgconfig(Qt6PrintSupport)
 BuildRequires:  pkgconfig(Qt6Widgets)
-BuildRequires:  pkgconfig(Qt56etwork)
+BuildRequires:  pkgconfig(Qt6Network)
 BuildRequires:  pkgconfig(Qt6Xml)
 BuildRequires:  pkgconfig(Qt6OpenGL)
 
