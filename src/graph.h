@@ -558,6 +558,8 @@ public:
 
     void vertexCustomAttributesSet(const int &v1, const QHash<QString, QString> &customAttributes);
 
+    QHash<QString,QString> vertexCustomAttributes(const int &v1) const;
+
     void vertexPosSet(const int &v, const int &x, const int &y);
 
     QPointF vertexPos(const int &v1) const;
