@@ -49,9 +49,18 @@ DialogNodeEdit::DialogNodeEdit(QWidget *parent,
                                                                                   nodeColor(color),
                                                                                   nodeShape(shape),
                                                                                   iconPath(path),
+                                                                                  m_customAttributes(customAttributes),
                                                                                   ui(new Ui::DialogNodeEdit)
 {
     ui->setupUi(this);
+
+    qDebug() << "opening DialogNodeEdit."
+             << "label" << nodeLabel
+             << "size" << nodeSize
+             << "color" << nodeColor
+             << "shape" << shape
+             << "iconPath" << iconPath
+             << "customAttributes" << customAttributes;
 
     // Set the builtin node properties
     ui->labelEdit->setText(nodeLabel);
@@ -108,7 +117,17 @@ DialogNodeEdit::DialogNodeEdit(QWidget *parent,
     ui->colorButton->setIcon(QIcon(pixmap));
 
     // Set the custom attributes
-    setCustomAttributes(customAttributes);
+    // setCustomAttributes(customAttributes);
+    ;
+    ui->customAttributesTable->setRowCount(0);
+    for (auto it = customAttributes.begin(); it != customAttributes.end(); ++it)
+    {
+        int row = ui->customAttributesTable->rowCount();
+        ui->customAttributesTable->insertRow(row);
+        ui->customAttributesTable->setItem(row, 0, new QTableWidgetItem(it.key()));
+        ui->customAttributesTable->setItem(row, 1, new QTableWidgetItem(it.value()));
+    }
+
 
     // Connect signals and slots
     connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(getUserChoices()));
@@ -355,17 +374,17 @@ void DialogNodeEdit::selectColor()
 
 void DialogNodeEdit::setCustomAttributes(const QHash<QString, QString> &attributes)
 {
-    m_customAttributes = attributes;
-    ui->customAttributesTable->setRowCount(0);
-    for (auto it = attributes.begin(); it != attributes.end(); ++it)
-    {
-        int row = ui->customAttributesTable->rowCount();
-        ui->customAttributesTable->insertRow(row);
-        ui->customAttributesTable->setItem(row, 0, new QTableWidgetItem(it.key()));
-        ui->customAttributesTable->setItem(row, 1, new QTableWidgetItem(it.value()));
-    }
+
 }
 
+/**
+ * @brief Slot function that is called when the "Add Property" button is clicked.
+ *
+ * This function retrieves the key and value from the respective line edits,
+ * checks if both are non-empty, and if so, inserts the key-value pair into
+ * the custom attributes map and updates the custom attributes table with the
+ * new entry. After adding the new property, it clears the input fields.
+ */
 void DialogNodeEdit::on_addPropertyButton_clicked()
 {
     QString key = ui->keyLineEdit->text();
