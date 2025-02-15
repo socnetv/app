@@ -9518,30 +9518,32 @@ void MainWindow::slotEditNodeRemove() {
 }
 
 
-
 /**
  * @brief Opens the Node Properties dialog for the selected nodes.
  * If no nodes are selected, prompts the user for a node number
  */
-void MainWindow::slotEditNodePropertiesDialog() {
-
+void MainWindow::slotEditNodePropertiesDialog()
+{
     qDebug() << "Request to open the node properties dialog...";
 
-    if ( !activeNodes() )  {
+    if (!activeNodes())
+    {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
-    int min=-1, max=-1, size = appSettings["initNodeSize"].toInt(0, 10);
+    int min = -1, max = -1, size = appSettings["initNodeSize"].toInt(nullptr, 10);
     int nodeNumber = 0;
     int selectedNodesCount = activeGraph->getSelectedVerticesCount();
     QColor color = QColor(appSettings["initNodeColor"]);
-    QString shape= appSettings["initNodeShape"];
+    QString shape = appSettings["initNodeShape"];
     QString iconPath = QString();
-    QString label="";
-    bool ok=false;
+    QString label = "";
+    bool ok = false;
+    QHash<QString, QString> customAttributes = QHash<QString, QString>();
 
-    if ( selectedNodesCount  == 0) {
+    if (selectedNodesCount == 0)
+    {
 
         min = activeGraph->vertexNumberMin();
         max = activeGraph->vertexNumberMax();
@@ -9551,86 +9553,99 @@ void MainWindow::slotEditNodePropertiesDialog() {
                  << "max node number " << max
                  << "opening inputdialog";
 
-        if (min==-1 || max==-1 ) {
+        if (min == -1 || max == -1)
+        {
             qDebug("ERROR in finding min max nodeNumbers. Abort");
             return;
         }
 
-        nodeNumber =  QInputDialog::getInt(
-                    this,
-                    "Node Properties",
-                    tr("Choose a node between ("
-                       + QString::number(min).toLatin1()
-                       +"..."
-                       + QString::number(max).toLatin1()+"):"),min, 1, max, 1, &ok);
-        if (!ok) {
-            statusMessage( "Node properties cancelled." );
+        nodeNumber = QInputDialog::getInt(
+            this,
+            "Node Properties",
+            tr("Choose a node between (" + QString::number(min).toLatin1() + "..." + QString::number(max).toLatin1() + "):"), min, 1, max, 1, &ok);
+        if (!ok)
+        {
+            statusMessage("Node properties cancelled.");
             return;
         }
-        label = activeGraph->vertexLabel( nodeNumber );
-        color = activeGraph->vertexColor( nodeNumber );
-        shape = activeGraph->vertexShape( nodeNumber);
-        size =  activeGraph->vertexSize ( nodeNumber);
-        iconPath = activeGraph->vertexShapeIconPath ( nodeNumber);
-
+        label = activeGraph->vertexLabel(nodeNumber);
+        color = activeGraph->vertexColor(nodeNumber);
+        shape = activeGraph->vertexShape(nodeNumber);
+        size = activeGraph->vertexSize(nodeNumber);
+        iconPath = activeGraph->vertexShapeIconPath(nodeNumber);
+        customAttributes=activeGraph->vertexCustomAttributes(nodeNumber);
     }
-    else   {
+    else
+    {
         qDebug() << ""
-                    "selectedNodesCount" << selectedNodesCount;
+                    "selectedNodesCount"
+                 << selectedNodesCount;
 
-        foreach (nodeNumber, activeGraph->getSelectedVertices() ) {
+        foreach (const int &nodeNumber, activeGraph->getSelectedVertices())
+        {
             qDebug() << "reading properties of selected node"
                      << nodeNumber;
-            if ( selectedNodesCount > 1 ) {
-                color = activeGraph->vertexColor( nodeNumber );
-                shape = activeGraph->vertexShape( nodeNumber);
-                iconPath = activeGraph->vertexShapeIconPath ( nodeNumber);
-                size = activeGraph->vertexSize ( nodeNumber);
+            if (selectedNodesCount > 1)
+            {
+                color = activeGraph->vertexColor(nodeNumber);
+                shape = activeGraph->vertexShape(nodeNumber);
+                iconPath = activeGraph->vertexShapeIconPath(nodeNumber);
+                size = activeGraph->vertexSize(nodeNumber);
             }
-            else {
-                label = activeGraph->vertexLabel( nodeNumber );
-                color = activeGraph->vertexColor( nodeNumber );
-                shape = activeGraph->vertexShape( nodeNumber);
-                iconPath = activeGraph->vertexShapeIconPath ( nodeNumber);
-                size = activeGraph->vertexSize ( nodeNumber);
+            else
+            {
+                label = activeGraph->vertexLabel(nodeNumber);
+                color = activeGraph->vertexColor(nodeNumber);
+                shape = activeGraph->vertexShape(nodeNumber);
+                iconPath = activeGraph->vertexShapeIconPath(nodeNumber);
+                size = activeGraph->vertexSize(nodeNumber);
+                customAttributes=activeGraph->vertexCustomAttributes(nodeNumber);
             }
         }
     }
 
-    //@todo add some grouping function here?
+    // @todo Add a function to group multiple nodes' properties changes together
+    // This function should allow setting properties like color, size, and shape for multiple nodes at once.
 
     qDebug() << "opening DialogNodeEdit."
-             << "label"<<label
-             << "size"<<size
-             << "color"<<color
-             << "shape"<<shape
-             << "iconPath"<<iconPath;
+             << "label" << label
+             << "size" << size
+             << "color" << color
+             << "shape" << shape
+             << "iconPath" << iconPath
+             << "customAttributes" << customAttributes;
 
-    m_nodeEditDialog = new DialogNodeEdit(this,
-                                          nodeShapeList,
-                                          iconPathList,
-                                          label,
-                                          size,
-                                          color,
-                                          shape,
-                                          iconPath) ;
-
-    connect( m_nodeEditDialog, &DialogNodeEdit::userChoices,
-             this, &MainWindow::slotEditNodeProperties );
+             
+    std::unique_ptr<DialogNodeEdit> m_nodeEditDialog = std::make_unique<DialogNodeEdit>(this,
+                                                                                        nodeShapeList,
+                                                                                        iconPathList,
+                                                                                        label,
+                                                                                        size,
+                                                                                        color,
+                                                                                        shape,
+                                                                                        iconPath,
+                                                                                        customAttributes);
+                                                                                       
+    connect(m_nodeEditDialog.get(), &DialogNodeEdit::userChoices,
+            this, &MainWindow::slotEditNodeProperties);
 
     m_nodeEditDialog->exec();
-
 }
 
 
 /**
- * @brief Applies new (user-defined) values to all selected nodes
- * Called on exit from DialogNodeEdit
- * @param label
- * @param size
- * @param value
- * @param color
- * @param shape
+ * @brief Applies the selected properties to one or multiple nodes in the graph.
+ *
+ * This slot updates the properties of the selected nodes or a single node, as
+ * specified by the user in DialogNodeEdit. It updates the label, size, color, shape, and custom
+ * attributes of the nodes.
+ *
+ * @param label The new label for the node(s).
+ * @param size The new size for the node(s).
+ * @param color The new color for the node(s).
+ * @param shape The new shape for the node(s).
+ * @param iconPath The path to the icon for the node(s).
+ * @param customAttributes A hash of custom attributes to set for the node(s).
  */
 void MainWindow::slotEditNodeProperties(const QString &label,
                                         const int &size,
