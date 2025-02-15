@@ -2050,6 +2050,18 @@ void Graph::vertexCustomAttributesSet( const int &v1, const QHash<QString, QStri
 }
 
 /**
+ * @brief Calls the customAttributes method for a specific vertex in the graph.
+ * 
+ * This function retrieves the vertex at the position specified by the index `v1`
+ * from the `vpos` map and calls its `customAttributes` method.
+ * 
+ * @param v1 The index of the vertex whose custom attributes are to be accessed.
+ */
+QHash<QString,QString> Graph::vertexCustomAttributes(const int &v1) const {
+    return m_graph[ vpos[v1] ]->customAttributes();
+}
+
+/**
  * @brief Checks a) if edge exists and b) if the reverse edge exists
  * Calls edgeAdd to add the new edge to the Graph,
  * then emits drawEdge() which calls GW::drawEdge() to draw the new edge.
