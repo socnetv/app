@@ -1,6 +1,7 @@
 /**
-* https://doc.qt.io/Qt-5/stylesheet-syntax.html
+* For Style Sheet Syntax see: https://doc.qt.io/qt-6/stylesheet-syntax.html
 */
+
 /* Customize any plain widget that is a child of a QMainWindow. */
 QMainWindow,
 QWidget,
@@ -281,14 +282,13 @@ QToolButton:pressed {
 QToolButton:checked{
     background-color: #d2d2d2;
 }
-
-QSpinBox, QComboBox, QLineEdit, QTextEdit,QPlainTextEdit, QListView  {
+QTableWidget,QSpinBox, QComboBox, QLineEdit, QTextEdit,QPlainTextEdit, QListView  {
     background-color: #fafafa;
     color: #333;
 
 }
 
-QComboBox, QLineEdit, QTextEdit,QPlainTextEdit, QListView {
+QTableWidget,QComboBox, QLineEdit, QTextEdit,QPlainTextEdit, QListView {
     selection-color: #fff;
     selection-background-color: #0277BD;
     /* selection-border: 0 none; */
@@ -301,6 +301,8 @@ QComboBox, QLineEdit, QTextEdit,QPlainTextEdit, QListView {
 QLineEdit, QTextEdit {
     min-height: 20px;
 }
+
+QTableWidget:focus,
 QToolButton:focus,
 QComboBox:focus,
 QComboBox:hover,
