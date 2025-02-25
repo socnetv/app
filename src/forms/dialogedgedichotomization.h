@@ -13,7 +13,6 @@
  * @see https://socnetv.org
  */
 
-
 #ifndef DIALOGEDGEDICHOTOMIZATION_H
 #define DIALOGEDGEDICHOTOMIZATION_H
 

@@ -13,7 +13,6 @@
  * @see https://socnetv.org
  */
 
-
 #ifndef DIALOGDATASETSELECT_H
 #define DIALOGDATASETSELECT_H
 

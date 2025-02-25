@@ -12,7 +12,6 @@
  *   For more details, see <http://www.gnu.org/licenses/>.
  * @see https://socnetv.org
  */
- 
 
 #include "dialogdissimilarities.h"
 

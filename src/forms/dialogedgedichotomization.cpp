@@ -13,7 +13,6 @@
  * @see https://socnetv.org
  */
 
-
 #include "dialogedgedichotomization.h"
 #include <QPushButton>
 #include <QDebug>

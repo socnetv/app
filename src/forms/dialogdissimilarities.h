@@ -13,7 +13,6 @@
  * @see https://socnetv.org
  */
 
-
 #ifndef DIALOGDISSIMILARITIES_H
 #define DIALOGDISSIMILARITIES_H
 

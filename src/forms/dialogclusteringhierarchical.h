@@ -13,7 +13,6 @@
  * @see https://socnetv.org
  */
 
-
 #ifndef DIALOGCLUSTERINGHIERARCHICAL_H
 #define DIALOGCLUSTERINGHIERARCHICAL_H
 
