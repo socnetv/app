@@ -3131,6 +3131,10 @@ bool Parser::parseAsGML(const QByteArray &rawData){
             qDebug()<< "edge description list start";
             edgeKey = true;
             totalLinks++;
+            // Reset edge attributes
+            edgeWeight = 1.0; // Default weight
+            edgeColor = "black";
+            edgeLabel.clear();
         }
         else if ( str.startsWith("source ",Qt::CaseInsensitive) ) {
             if (edgeKey) {
@@ -3162,6 +3166,21 @@ bool Parser::parseAsGML(const QByteArray &rawData){
                            << "edge target" << edge_target;
             }
         }
+
+        else if ( str.startsWith("weight ", Qt::CaseInsensitive) ) {
+            if (edgeKey) {
+                edgeWeight = str.split(" ", Qt::SkipEmptyParts).last().toDouble(&floatOK);
+                if (!floatOK) {
+                    errorMessage = tr("Not a proper GML-formatted file. "
+                                      "Edge weight tag at line %1 has an invalid value.")
+                                  .arg(fileLine);
+                    return false;
+                }
+                qDebug()<< "edge weight definition"
+                         << "edge weight" << edgeWeight;
+            }
+        }
+
         else if ( str.startsWith("graphics",Qt::CaseInsensitive) ) {
             //Describes graphics which are used to draw a particular object.
             if (nodeKey)  {
@@ -3269,8 +3288,7 @@ bool Parser::parseAsGML(const QByteArray &rawData){
             else if (edgeKey && !graphicsKey) {
                 qDebug()<< "edge description list ends. signaling to create new edge.";
                 edgeKey = false;
-                edgeWeight = 1;
-                edgeColor = "black";
+
                 if (edgeLabel==QString()) {
                     edgeLabel = edge_source + "->" + edge_target;
                 }
