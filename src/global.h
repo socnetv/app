@@ -174,10 +174,22 @@ public:
     int type;  ///< Type of the edge
     double rWeight;  ///< Reserved weight of the edge
 
-    MyEdge();  ///< Default constructor
-    MyEdge(const int &from, const int &to, const double &w =0, const int &type=0, const double &rw = 0);  ///< Parameterized constructor
-    MyEdge(const MyEdge &edge);  ///< Copy constructor
-    ~MyEdge();  ///< Destructor
+    // Default constructor
+    MyEdge() { source=0; target=0;weight=0;type=0; rWeight=0; }
+    // Parameterized constructor
+    MyEdge (const int &from, const int &to, const double &w =0, const int &type=0, const double &rw = 0)
+        : source(from), target(to), weight(w), type(type), rWeight(rw)  {  }
+    // Copy constructor
+    MyEdge (const MyEdge &edge) {
+        source = edge.source;
+        target = edge.target;
+        weight = edge.weight;
+        rWeight = edge.rWeight ;
+        type = edge.type;
+    }
+    // Destructor
+    ~MyEdge(){}
+
 };
 
 /**
@@ -187,11 +199,16 @@ public:
 class GraphDistance
 {
 public:
-    int target;  ///< Target vertex
-    int distance;  ///< Distance to the target vertex
+    int target;
+    int distance;
 
-    GraphDistance(int t, int dist);  ///< Constructor
+    GraphDistance(int t, int dist)
+        : target(t), distance(dist)
+    {
+
+    }
 };
+
 
 /**
  * @class GraphDistancesCompare
@@ -200,9 +217,14 @@ public:
  * Used in Graph::dijkstra() priority_queue.
  */
 class GraphDistancesCompare {
-public:
-    bool operator()(GraphDistance& t1, GraphDistance& t2);  ///< Comparison operator
-};
+    public:
+        bool operator()(GraphDistance& t1, GraphDistance& t2)
+        {
+            if (t1.distance == t2.distance)
+                return t1.target > t2.target;
+            return t1.distance > t2.distance;  //minimum priority
+        }
+    };
 
 /**
  * @class PairVF
@@ -211,10 +233,11 @@ public:
 class PairVF
 {
 public:
-    qreal value;  ///< Value
-    qreal frequency;  ///< Frequency
+    qreal value;
+    qreal frequency;
 
-    PairVF(qreal v, qreal f);  ///< Constructor
+    PairVF(qreal v, qreal f)
+        : value(v), frequency(f)  { }
 };
 
 /**
@@ -222,8 +245,13 @@ public:
  * @brief Implements a min-priority queue.
  */
 class PairVFCompare {
-public:
-    bool operator()(PairVF& v1, PairVF& v2);  ///< Comparison operator
+    public:
+        bool operator()(PairVF& v1, PairVF& v2)
+        {
+            return v1.value > v2.value; //minimum priority
+            // Returns true if t1 is closer than t2
+            // else
+        }
 };
 
 SOCNETV_END_NAMESPACE
