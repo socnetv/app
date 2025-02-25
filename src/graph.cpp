@@ -16469,7 +16469,7 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
         for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
             if ( ! (*it)->isEnabled () )
                 continue;
-//            qDebug() << "Node id:" <<  (*it)->number();
+            qDebug() << "Node id:" <<  (*it)->number();
             outText << "    <node id=\"" << (*it)->number() << "\"> \n";
             m_color = (*it)->color();
             m_size = (*it)->size() ;
@@ -16478,7 +16478,8 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
             m_label=(*it)->label();
             m_label = htmlEscaped(m_label);
 
-
+            // TODO: save custom attributes
+            
             outText << "      <data key=\"d0\">" << m_label <<"</data>\n";
 
             rel_coord_x = (*it)->x()/(maxWidth);
