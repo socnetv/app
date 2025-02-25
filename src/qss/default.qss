@@ -252,6 +252,27 @@ QPushButton#toolBoxLayoutByIndexApplyButton:pressed {
    background-color:#007ac1;
    color: #fff;
 }
+QPushButton#removePropertyBtn {
+    background-color:#de0000;
+    color: #fff;
+    min-height: 1.5ex;
+}
+QPushButton#removePropertyBtn:disabled {
+    background-color: #32414B;
+    border: 1px solid #32414B;
+    color: #787878;
+}
+QPushButton#removePropertyBtn:hover {
+    background-color:#ff0000;
+}
+QPushButton#addPropertyBtn{
+    background-color:#00a42c;
+    color: #fff;
+    min-height: 1.2ex;
+}
+QPushButton#addPropertyBtn:hover {
+    background-color:#00c33b;
+}   
 
 QToolButton {
     border:1px solid rgba(0, 0, 0, 0.1);
