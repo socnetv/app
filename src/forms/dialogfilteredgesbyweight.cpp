@@ -13,8 +13,6 @@
  * @see https://socnetv.org
  */
 
-
-
 #include "dialogfilteredgesbyweight.h"
 #include <QPushButton>
 #include <QDebug>

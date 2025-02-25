@@ -13,7 +13,6 @@
  * @see https://socnetv.org
  */
 
-
 #ifndef DIALOGFILTEREDGESBYWEIGHT_H
 #define DIALOGFILTEREDGESBYWEIGHT_H
 
