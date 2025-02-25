@@ -42,6 +42,7 @@ DialogNodeEdit::DialogNodeEdit(QWidget *parent,
                                const QString &shape,
                                const QString &path,
                                const QHash<QString, QString> &customAttributes) : QDialog(parent),
+                                                                                  ui(new Ui::DialogNodeEdit),
                                                                                   m_shapeList(nodeShapeList),
                                                                                   m_iconList(iconPathList),
                                                                                   nodeLabel(label),
@@ -49,8 +50,7 @@ DialogNodeEdit::DialogNodeEdit(QWidget *parent,
                                                                                   nodeColor(color),
                                                                                   nodeShape(shape),
                                                                                   iconPath(path),
-                                                                                  m_customAttributes(customAttributes),
-                                                                                  ui(new Ui::DialogNodeEdit)
+                                                                                  m_customAttributes(customAttributes)
 {
     ui->setupUi(this);
 
@@ -75,6 +75,7 @@ DialogNodeEdit::DialogNodeEdit(QWidget *parent,
 
     ui->nodeIconSelectButton->setEnabled(false);
     ui->nodeIconSelectEdit->setEnabled(false);
+    ui->removePropertyBtn->setEnabled(false);
 
     int index = -1;
     if ((index = m_shapeList.indexOf(nodeShape)) != -1)
@@ -116,9 +117,6 @@ DialogNodeEdit::DialogNodeEdit(QWidget *parent,
     pixmap.fill(nodeColor);
     ui->colorButton->setIcon(QIcon(pixmap));
 
-    // Set the custom attributes
-    // setCustomAttributes(customAttributes);
-    ;
     ui->customAttributesTable->setRowCount(0);
     for (auto it = customAttributes.begin(); it != customAttributes.end(); ++it)
     {
@@ -127,7 +125,6 @@ DialogNodeEdit::DialogNodeEdit(QWidget *parent,
         ui->customAttributesTable->setItem(row, 0, new QTableWidgetItem(it.key()));
         ui->customAttributesTable->setItem(row, 1, new QTableWidgetItem(it.value()));
     }
-
 
     // Connect signals and slots
     connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(getUserChoices()));
@@ -149,14 +146,17 @@ DialogNodeEdit::DialogNodeEdit(QWidget *parent,
             this, &DialogNodeEdit::getNodeIconFile);
 
     connect(ui->addPropertyBtn, &QPushButton::clicked, this, &DialogNodeEdit::on_addPropertyButton_clicked);
+    
+    connect(ui->customAttributesTable, &QTableWidget::itemSelectionChanged, [this]() {
+        ui->removePropertyBtn->setEnabled(true);
+    }); 
+    connect(ui->removePropertyBtn, &QPushButton::clicked, this, &DialogNodeEdit::on_removePropertyButton_clicked);
 }
-
 
 DialogNodeEdit::~DialogNodeEdit()
 {
     delete ui;
 }
-
 
 /**
  * @brief Sets the node shape based on the provided index and updates the UI accordingly.
@@ -372,11 +372,6 @@ void DialogNodeEdit::selectColor()
     }
 }
 
-void DialogNodeEdit::setCustomAttributes(const QHash<QString, QString> &attributes)
-{
-
-}
-
 /**
  * @brief Slot function that is called when the "Add Property" button is clicked.
  *
@@ -399,6 +394,27 @@ void DialogNodeEdit::on_addPropertyButton_clicked()
         ui->keyLineEdit->clear();
         ui->valueLineEdit->clear();
     }
+}
+
+
+/**
+ * @brief Slot function called when the remove property button is clicked.
+ *
+ * This function removes the currently selected property from the custom attributes table
+ * and the internal custom attributes map. If a row is selected in the table, it retrieves
+ * the key from the first column of the selected row, removes the corresponding entry from
+ * the custom attributes map, and then removes the row from the table.
+ */
+void DialogNodeEdit::on_removePropertyButton_clicked()
+{
+    int row = ui->customAttributesTable->currentRow();
+    if (row != -1)
+    {
+        QString key = ui->customAttributesTable->item(row, 0)->text();
+        m_customAttributes.remove(key);
+        ui->customAttributesTable->removeRow(row);
+    }
+    ui->removePropertyBtn->setEnabled(false);
 }
 
 /**

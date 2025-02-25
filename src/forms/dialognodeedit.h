@@ -40,8 +40,6 @@ public:
 
     ~DialogNodeEdit();
 
-    void setCustomAttributes(const QHash<QString, QString> &attributes);
-
 private slots:
     void checkErrors();
     void getNodeShape(const int &nodeShapeIndex);
@@ -49,6 +47,7 @@ private slots:
     void getUserChoices();
     void selectColor();
     void on_addPropertyButton_clicked();
+    void on_removePropertyButton_clicked();
 signals:
     void userChoices(const QString &label,
                      const int &size,
@@ -59,6 +58,7 @@ signals:
     void nodeEditDialogError(QString);
 
 private:
+    Ui::DialogNodeEdit *ui;
     QStringList m_shapeList;
     QStringList m_iconList;
     QString nodeLabel;
@@ -68,7 +68,6 @@ private:
     QString iconPath;
     QString nodeValue;
     QPixmap pixmap;
-    Ui::DialogNodeEdit *ui;
     QHash<QString, QString> m_customAttributes;
 };
 

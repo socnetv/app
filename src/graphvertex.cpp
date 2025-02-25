@@ -339,6 +339,7 @@ void GraphVertex::setCustomAttributes(QHash<QString,QString> customAttributes){
  * @return A QHash containing the custom attributes of the graph vertex.
  */
 QHash<QString,QString> GraphVertex::customAttributes() const {
+    // qDebug() << "GraphVertex::customAttributes()" << m_customAttributes;
     return m_customAttributes;
 }
 

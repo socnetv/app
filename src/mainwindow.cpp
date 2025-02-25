@@ -9520,7 +9520,7 @@ void MainWindow::slotEditNodeRemove() {
 
 /**
  * @brief Opens the Node Properties dialog for the selected nodes.
- * If no nodes are selected, prompts the user for a node number
+ * If no nodes are selected, prompts the user for a node number.
  */
 void MainWindow::slotEditNodePropertiesDialog()
 {
@@ -9577,14 +9577,12 @@ void MainWindow::slotEditNodePropertiesDialog()
     }
     else
     {
-        qDebug() << ""
-                    "selectedNodesCount"
-                 << selectedNodesCount;
+        qDebug() << "selectedNodesCount" << selectedNodesCount;
 
         foreach (const int &nodeNumber, activeGraph->getSelectedVertices())
         {
-            qDebug() << "reading properties of selected node"
-                     << nodeNumber;
+            qDebug() << "reading properties of selected node"<< nodeNumber;
+
             if (selectedNodesCount > 1)
             {
                 color = activeGraph->vertexColor(nodeNumber);
@@ -9615,7 +9613,6 @@ void MainWindow::slotEditNodePropertiesDialog()
              << "iconPath" << iconPath
              << "customAttributes" << customAttributes;
 
-             
     std::unique_ptr<DialogNodeEdit> m_nodeEditDialog = std::make_unique<DialogNodeEdit>(this,
                                                                                         nodeShapeList,
                                                                                         iconPathList,
@@ -9702,6 +9699,7 @@ void MainWindow::slotEditNodeProperties(const QString &label,
             activeGraph->vertexColorSet( nodeNumber, color.name());
             activeGraph->vertexSizeSet(nodeNumber,size);
             activeGraph->vertexShapeSet( nodeNumber, shape, iconPath);
+            activeGraph->vertexCustomAttributesSet( nodeNumber, customAttributes);
         }
         statusMessage( tr("Updated the properties of %1 nodes. ").arg(selectedNodesCount));
     }

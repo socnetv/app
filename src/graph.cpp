@@ -2045,6 +2045,7 @@ void Graph::vertexLabelDistanceInit(const int &distance) {
  *                         The keys and values of the QHash are both QStrings.
  */
 void Graph::vertexCustomAttributesSet( const int &v1, const QHash<QString, QString> &customAttributes) {
+    // qDebug() << "Setting custom attributes for vertex" << v1 << ":"<< customAttributes;
     m_graph[ vpos[v1] ]->setCustomAttributes(customAttributes);
     setModStatus(ModStatus::VertexMetadata);
 }
