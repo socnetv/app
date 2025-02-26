@@ -641,11 +641,7 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                 if (NR != 0 && NC != 0) {
                     twoMode_flag=true;
                     qDebug() << "this is a two-mode net.";
-                    //emit something
-//                    errorMessage = tr("UCINET declared NR=") + QString::number(NR)
-//                            + tr(" and NC=") + QString::number(NC)
-//                            + tr(" aka a two-mode net which is not yet supported.");
-//                    return false;
+                    // TODO: Check two-mode networks...
                 }
 
                 // check if we have found row labels
