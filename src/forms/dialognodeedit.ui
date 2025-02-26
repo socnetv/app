@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>427</width>
+    <width>461</width>
     <height>595</height>
    </rect>
   </property>
@@ -202,7 +202,7 @@
    <item row="5" column="0">
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Custom properties</string>
+      <string>Custom attributes</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <property name="leftMargin">
@@ -321,7 +321,7 @@
          </size>
         </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows the current custom attributes (key-value pairs).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows the current custom attributes of the node. Custom attributes are key-value pairs.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="gridStyle">
          <enum>Qt::PenStyle::DotLine</enum>
