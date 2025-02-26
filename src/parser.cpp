@@ -292,11 +292,35 @@ void Parser::createRandomNodes(const int &fixedNum,
 
 
 
+
 /**
- * @brief Parses the data as DL-formatted (UCINET)
+ * @brief Parses the given raw data as DL formatted (UCINET) data.
  *
- * @param rawData
- * @return bool
+ * This function reads and interprets a DL formatted file, which is a format used by UCINET.
+ * It processes the file line by line, extracting relevant information such as node labels,
+ * edge weights, and network properties. The function supports both fullmatrix and edgelist1
+ * formats, and can handle two-mode networks.
+ *
+ * @param rawData The raw data to be parsed, provided as a QByteArray.
+ * @return true if the parsing is successful, false otherwise.
+ *
+ * The function performs the following steps:
+ * - Reads the raw data and decodes it using the specified text codec.
+ * - Checks if the first non-comment line starts with "DL".
+ * - Extracts keywords such as N, NM, NR, NC, and FORMAT from the file.
+ * - Reads row and column labels if present.
+ * - Creates nodes based on the labels or the declared number of nodes.
+ * - Reads and processes the data section to create edges between nodes.
+ * - Emits signals to create nodes and edges in the network.
+ * - Handles errors and inconsistencies in the file format.
+ *
+ * @note The function emits several signals during the parsing process:
+ * - signalAddNewRelation(const QString &relation): Emitted when a new relation is found.
+ * - signalSetRelation(int relationIndex): Emitted to set the current relation.
+ * - signalCreateEdge(int source, int target, double weight, const QColor &color, EdgeType type, bool arrows, bool bezier): Emitted to create a new edge.
+ *
+ * @warning The function assumes that the input data is correctly formatted according to the DL specification.
+ * Any deviations or errors in the format may result in parsing failures.
  */
 bool Parser::parseAsDL(const QByteArray &rawData){
 
@@ -333,6 +357,7 @@ bool Parser::parseAsDL(const QByteArray &rawData){
 
     bool fullmatrixFormat=false;
     bool edgelist1Format=false;
+    bool diagonalPresent=false; 
 
     bool intOK=false;
     bool conversionOK=false;
@@ -389,7 +414,7 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                 // then the line might declare some keywords (N, NM, FORMAT)
                 // this happens in R's sna output files
                 lineElement = str.split(",", Qt::SkipEmptyParts);
-                readDLKeywords(lineElement, totalNodes, NM, NR, NC, fullmatrixFormat, edgelist1Format);
+                readDLKeywords(lineElement, totalNodes, NM, NR, NC, fullmatrixFormat, edgelist1Format, diagonalPresent);
 
             } //  end if str.contains(",")
 
@@ -399,7 +424,7 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                 qDebug() << "DL starting line contains a = but not a comma" ;
                 // this is space separated
                 lineElement = str.split(" ", Qt::SkipEmptyParts);
-                readDLKeywords(lineElement, totalNodes, NM, NR, NC, fullmatrixFormat, edgelist1Format);
+                readDLKeywords(lineElement, totalNodes, NM, NR, NC, fullmatrixFormat, edgelist1Format, diagonalPresent);
 
             } // end else if contains =
 
@@ -478,13 +503,23 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                 else if (  label == "format" || label  == "FORMAT" ) {
                     qDebug() << "FORMAT is declared to be : "
                              << value ;
-                    if (value.contains("FULLMATRIX",Qt::CaseInsensitive)) {
-                        fullmatrixFormat=true;
-                        qDebug() << "FORMAT fullmatrix detected" ;
+                    if (value.contains("FULLMATRIX", Qt::CaseInsensitive))
+                    {
+                        fullmatrixFormat = true;
+                        edgelist1Format = false;
+                        qDebug() << "✅ FORMAT: FullMatrix detected";
                     }
-                    else if (value.contains("edgelist",Qt::CaseInsensitive) ){
-                        edgelist1Format=true;
-                        qDebug() << "FORMAT edgelist detected" ;
+                    else if (value.contains("edgelist", Qt::CaseInsensitive))
+                    {
+                        edgelist1Format = true;
+                        fullmatrixFormat = false;
+                        qDebug() << "✅ FORMAT: EdgeList detected";
+                    }
+                    else
+                    {
+                        qDebug() << "❌ ERROR: Unknown DL format. Expected 'FULLMATRIX' or 'edgelist'.";
+                        errorMessage = tr("Invalid UCINET format declaration. Expected 'FULLMATRIX' or 'edgelist' but found: %1").arg(value);
+                        return false;
                     }
                 }
             } // end if count 1 "=" in line (network properties)
@@ -495,14 +530,14 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                  if (str.contains(",")) {
                     // this is comma separated
                     lineElement = str.split(",", Qt::SkipEmptyParts);
-                   readDLKeywords(lineElement, totalNodes, NM, NR, NC, fullmatrixFormat, edgelist1Format);
+                   readDLKeywords(lineElement, totalNodes, NM, NR, NC, fullmatrixFormat, edgelist1Format, diagonalPresent);
                  } // end else if contains comma
 
                  // check if line contains space i.e. "NR=18 NC=14"
                  else if (str.contains(" ")) {
                      // this is space separated
                      lineElement = str.split(" ", Qt::SkipEmptyParts);
-                     readDLKeywords(lineElement, totalNodes, NM, NR, NC, fullmatrixFormat, edgelist1Format);
+                     readDLKeywords(lineElement, totalNodes, NM, NR, NC, fullmatrixFormat, edgelist1Format, diagonalPresent);
                   } // end else if contains space
 
             } // end if str.count("=") > 1 in line (network properties)
@@ -553,15 +588,15 @@ bool Parser::parseAsDL(const QByteArray &rawData){
         if (rowLabels_flag) {
             // try to read row labels
 
-            label=str;
+            label = str.trimmed().simplified();
 
             if ( rowLabels.contains(label) ) {
-                qDebug() << "label exists. CONTINUE";
+                qDebug() << "⚠ Warning: Duplicate row label '" << label << "' found. Ignoring.";
                 continue;
             }
             else{
                 qDebug() << "Adding label " << label
-                         << " to rowLabels";
+                         << " to rowLabels, list size: " << rowLabels.size();
                 rowLabels << label;
             }
         }
@@ -569,7 +604,7 @@ bool Parser::parseAsDL(const QByteArray &rawData){
         else if (colLabels_flag) {
             // try to read col labels
 
-            label=str;
+            label = str.trimmed().simplified();
 
             if ( colLabels.contains(label) ) {
                 qDebug() << "col label exists. CONTINUE";
@@ -642,8 +677,8 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                     // multiple label lines were found
 
                     qDebug() << "Nodes have not been created yet."
-                             << "Multiple label lines were found."
-                             << "Calling createRandomNodes(1) for each label" ;
+                             << "Multiple label lines were found: " << rowLabels.size()
+                             << "Calling createRandomNodes() for each label" ;
                     for (QStringList::Iterator it1 = rowLabels.begin(); it1!=rowLabels.end(); ++it1)   {
                         label = (*it1);
                         nodeSum++;
@@ -690,10 +725,24 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                     }
 
                 }
+
+                // sanity check
+                if (!twoMode_flag && nodeSum != totalNodes)
+                {
+
+                    qDebug() << "❌ ERROR: Number of nodes processed (" << nodeSum
+                             << ") does not match declared N=" << totalNodes;
+                    errorMessage = tr("Error reading UCINET-formatted file: Number of nodes found (%1) does not match declared N=%2")
+                                       .arg(nodeSum)
+                                       .arg(totalNodes);
+                    return false;
+                }
+
                 nodesCreated_flag = true;
 
             } // endif nodesCreated
 
+    
             if ( fullmatrixFormat ) {
 
                 if (!twoMode_flag) {
@@ -711,14 +760,17 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                     myRegExp.setPattern("\\s+");
                     lineElement=str.split(myRegExp, Qt::SkipEmptyParts);
                     qDebug() << "line elements " << lineElement.size();
-                    if (lineElement.size() < totalNodes ) {
-                        qDebug() << "This line has "
-                                 << lineElement.size()
-                                 << " elements, expected "
-                                 << totalNodes << " - appending next line";
-                        prevLineStr=str;
-                        continue;
-                    }
+                    if (lineElement.size() != totalNodes) {
+                        qDebug() << "❌ ERROR: Mismatch in matrix row size at line" << fileLineNumber
+                                 << ". Expected" << totalNodes << "columns but found" << lineElement.size();
+                        qDebug() << "🔍 Full row content: " << str;
+                        
+                        errorMessage = tr("Matrix row size mismatch. Expected %1 but got %2 at line %3.")
+                                            .arg(totalNodes)
+                                            .arg(lineElement.size())
+                                            .arg(fileLineNumber);
+                        return false;
+                    }                  
                     prevLineStr.clear();
                     target=1;
                     if (source==1 && relationCounter>0){
@@ -759,20 +811,31 @@ bool Parser::parseAsDL(const QByteArray &rawData){
                             return false;
                         }
 
-                        if ( edgeWeight ){
-
-                            qDebug() << "relation"
-                                     << relationCounter
-                                     << "found edge from "
-                                     << source << " to " << target
-                                     << "weight " << edgeWeight
-                                     << "signaling to create new edge..." ;
-
-                            emit signalCreateEdge( source, target, edgeWeight, initEdgeColor,
-                                             EdgeType::Directed, arrows, bezier);
-                            totalLinks++;
-                            qDebug() << "TotalLinks= " << totalLinks;
-
+                        // Properly handle diagonal elements based on diagonalPresent flag
+                        if (source == target) {
+                            // This is a diagonal element (self-loop)
+                            qDebug() << "Diagonal element at (" << source << "," << target 
+                                     << ") with value " << edgeWeight;
+                                     
+                            if (diagonalPresent && edgeWeight > 0) {
+                                // Create self-loop only if DIAGONAL PRESENT and value is non-zero
+                                qDebug() << "Creating self-loop for node " << source;
+                                emit signalCreateEdge(source, target, edgeWeight, initEdgeColor,
+                                                    EdgeType::Directed, arrows, bezier);
+                                totalLinks++;
+                            }
+                        }
+                        else {
+                            // Non-diagonal element - normal edge
+                            if (edgeWeight > 0) {
+                                qDebug() << "relation"  << relationCounter
+                                         << "Adding edge from " << source << " to " << target
+                                         << " with weight " << edgeWeight;
+                                emit signalCreateEdge(source, target, edgeWeight, initEdgeColor,
+                                                    EdgeType::Directed, arrows, bezier);
+                                totalLinks++;
+                                qDebug() << "TotalLinks= " << totalLinks;
+                            }
                         }
                         target++;
                     } // end for
@@ -885,21 +948,14 @@ bool Parser::parseAsDL(const QByteArray &rawData){
 
     } // end while there are more lines
 
-    //sanity check
-    if (!twoMode_flag && nodeSum != totalNodes) {
-        qDebug()<< "Error: aborting";
-        //emit something
-        errorMessage = tr("Problem interpreting UCINET-formatted file. The file declared %1 actors initially, "
-                          "but I found a different number %2 of node labels, at line %3.")
-                            .arg(QString::number(totalNodes))
-                            .arg(QString::number(nodeSum))
-                            .arg(fileLineNumber);
-        return false;
-    }
 
-    if (relationsList.size() == 0) {
+
+    if (relationsList.isEmpty()) {
+        // QString defaultRelation = "DefaultRelation_" + QString::number(QDateTime::currentSecsSinceEpoch());
+        // relationsList << defaultRelation;
+        // emit signalAddNewRelation(defaultRelation);
         emit signalAddNewRelation("unnamed");
-    }
+    }  
 
 
     //The network has been loaded. Change to the first relation
@@ -917,15 +973,30 @@ bool Parser::parseAsDL(const QByteArray &rawData){
 
 }
 
-
-
-bool Parser::readDLKeywords(QStringList &strList,
-                            int &N,
-                            int &NM,
-                            int &NR,
-                            int &NC,
-                            bool &fullmatrixFormat,
-                            bool &edgelist1Format){
+/**
+ * @brief Reads and parses DL keywords from a given QStringList.
+ *
+ * This function processes a list of strings to extract and interpret DL keywords.
+ * It updates the provided references with the parsed values.
+ *
+ * @param strList A reference to a QStringList containing the DL keywords.
+ * @param N A reference to an integer to store the parsed value of 'N'.
+ * @param NM A reference to an integer to store the parsed value of 'NM'.
+ * @param NR A reference to an integer to store the parsed value of 'NR'.
+ * @param NC A reference to an integer to store the parsed value of 'NC'.
+ * @param fullmatrixFormat A reference to a boolean to indicate if the format is 'FULLMATRIX'.
+ * @param edgelist1Format A reference to a boolean to indicate if the format is 'edgelist'.
+ * @return true if all keywords are successfully parsed and valid, false otherwise.
+ */
+bool Parser::readDLKeywords(QStringList &strList, 
+    int &N, 
+    int &NM, 
+    int &NR, 
+    int &NC, 
+    bool &fullmatrixFormat, 
+    bool &edgelist1Format,
+    bool &diagonalPresent)
+{
     QStringList tempList;
     QString tempStr=QString();
     QString label=QString();
@@ -1002,14 +1073,32 @@ bool Parser::readDLKeywords(QStringList &strList,
                 else if (  label == "format" || label  == "FORMAT" ) {
                     qDebug() << "FORMAT is declared to be : "
                              << value ;
-                    if (value.contains("FULLMATRIX",Qt::CaseInsensitive)) {
-                        fullmatrixFormat=true;
-                        qDebug() << "FORMAT fullmatrix detected" ;
+
+                    // Check if DIAGONAL PRESENT is specified in the format
+                    if (value.contains("DIAGONAL PRESENT", Qt::CaseInsensitive))
+                    {
+                        diagonalPresent = true;
+                        qDebug() << "✅ DIAGONAL PRESENT detected in format";
                     }
-                    else if (value.contains("edgelist",Qt::CaseInsensitive) ){
-                        edgelist1Format=true;
-                        qDebug() << "FORMAT edgelist detected" ;
+                    if (value.contains("FULLMATRIX", Qt::CaseInsensitive))
+                    {
+                        fullmatrixFormat = true;
+                        edgelist1Format = false;
+                        qDebug() << "✅ FORMAT: FullMatrix detected";
                     }
+                    else if (value.contains("edgelist", Qt::CaseInsensitive))
+                    {
+                        edgelist1Format = true;
+                        fullmatrixFormat = false;
+                        qDebug() << "✅ FORMAT: EdgeList detected";
+                    }
+                    else
+                    {
+                        qDebug() << "❌ ERROR: Unknown DL format. Expected 'FULLMATRIX' or 'edgelist'.";
+                        errorMessage = tr("Invalid UCINET format declaration. Expected 'FULLMATRIX' or 'edgelist' but found: %1").arg(value);
+                        return false;
+                    }
+
                 } // end format
             } // end if contains =
             else {
@@ -1027,15 +1116,13 @@ bool Parser::readDLKeywords(QStringList &strList,
 }
 
 
-
-
 /**
  * @brief Parses the data as Pajek-formatted
  *
  * @param rawData
  * @return
  */
-bool Parser::parseAsPajek(const QByteArray &rawData){
+    bool Parser::parseAsPajek(const QByteArray &rawData){
 
     qDebug() << "Parsing data as pajek formatted...";
 

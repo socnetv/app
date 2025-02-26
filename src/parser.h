@@ -87,7 +87,14 @@ public:
     bool parseAsEdgeListWeighted(const QByteArray &rawData, const QString &delimiter);
     bool parseAsTwoModeSociomatrix(const QByteArray &rawData);
 
-    bool readDLKeywords(QStringList &strList, int &N, int &NM, int &NR, int &NC, bool &fullmatrixFormat, bool &edgelist1Format);
+    bool readDLKeywords(QStringList &strList, 
+        int &N, 
+        int &NM, 
+        int &NR, 
+        int &NC, 
+        bool &fullmatrixFormat, 
+        bool &edgelist1Format,
+        bool &diagonalPresent);
 
     void readDotProperties(QString str, qreal &, QString &label,
                        QString &shape, QString &color, QString &fontName,
