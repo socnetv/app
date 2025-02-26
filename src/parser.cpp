@@ -3495,15 +3495,27 @@ bool Parser::parseAsDot(const QByteArray &rawData){
                 netProperties = true;
                 Q_UNUSED(netProperties);
         }
-
+        else if (str.startsWith("node [", Qt::CaseInsensitive)) {
+            qDebug() << "🔵 Detected global node settings...";
+            readDotProperties(str.mid(str.indexOf('[') + 1, str.indexOf(']') - str.indexOf('[') - 1),
+                              nodeValue, nodeLabel, nodeShape, initNodeColor, fontName, fontColor);
+            qDebug() << "✅ Default node color set to: " << initNodeColor;
+        }
+        else if (str.startsWith("edge [", Qt::CaseInsensitive)) {
+            qDebug() << "🔵 Detected global edge settings...";
+            readDotProperties(str.mid(str.indexOf('[') + 1, str.indexOf(']') - str.indexOf('[') - 1),
+                              edgeWeight, edgeLabel, edgeShape, initEdgeColor, fontName, fontColor);
+            qDebug() << "✅ Default edge color set to: " << initEdgeColor;
+        }
         if (
-             str.startsWith("label",Qt::CaseInsensitive)
-             || str.startsWith("mincross",Qt::CaseInsensitive)
-             || str.startsWith("ratio",Qt::CaseInsensitive)
-                || str.startsWith("name",Qt::CaseInsensitive)
-                || str.startsWith("type",Qt::CaseInsensitive)
-                || str.startsWith("loops",Qt::CaseInsensitive)
-             ) { 	 //Default network properties
+            str.startsWith("label",Qt::CaseInsensitive)
+            || str.startsWith("mincross",Qt::CaseInsensitive)
+            || str.startsWith("ratio",Qt::CaseInsensitive)
+            || str.startsWith("name",Qt::CaseInsensitive)
+            || str.startsWith("type",Qt::CaseInsensitive)
+            || str.startsWith("loops",Qt::CaseInsensitive)
+            || str.startsWith("size",Qt::CaseInsensitive)  // Handle size attribute
+        ) { 	 //Default network properties
             next=str.indexOf('=', 1);
             qDebug("Found next = at %i. Start is at %i", next, 1);
             prop=str.mid(0, next).simplified();
@@ -3515,6 +3527,10 @@ bool Parser::parseAsDot(const QByteArray &rawData){
             }
             else if ( prop == "ratio" ){
 
+            }
+            else if ( prop == "size" ) {
+                qDebug() << "⚠️ Ignoring 'size' attribute: " << value;
+                // Graphviz size= controls graph scaling, but in SocNetV we don't use it.
             }
             else if ( prop == "mincross" ){
 
@@ -3670,6 +3686,8 @@ bool Parser::parseAsDot(const QByteArray &rawData){
                 temp=temp.remove(';');
                 qDebug()<<"edge properties "<<temp.toLatin1();
                 readDotProperties(temp, edgeWeight, edgeLabel, edgeShape, edgeColor, fontName, fontColor );
+
+                initEdgeColor = edgeColor;
             }
             else{
                 qDebug("* Edge definition found - no properties...");
