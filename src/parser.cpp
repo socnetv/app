@@ -3686,7 +3686,6 @@ bool Parser::parseAsDot(const QByteArray &rawData){
                 temp=temp.remove(';');
                 qDebug()<<"edge properties "<<temp.toLatin1();
                 readDotProperties(temp, edgeWeight, edgeLabel, edgeShape, edgeColor, fontName, fontColor );
-
                 initEdgeColor = edgeColor;
             }
             else{
@@ -4566,16 +4565,13 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
 
 
 
-
-//
 /**
  * @brief Helper. Checks if the string parameter is a comment (starts with a known char, i.e #).
  *
  * @param str
  * @return  bool
  */
-bool Parser::
-    isComment(QString str){
+bool Parser::isComment(QString str){
     if ( str.startsWith("#", Qt::CaseInsensitive)
          || str.startsWith("/*", Qt::CaseInsensitive)
          || str.startsWith("%", Qt::CaseInsensitive)
