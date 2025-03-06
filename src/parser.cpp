@@ -3866,49 +3866,73 @@ bool Parser::parseAsDot(const QByteArray &rawData)
             end = str.size();
             qDebug("* Finished EDGE PROPERTIES!");
         }
-        // TODO What about comments inside ? ie. in the end of the line //
-        else if (!str.startsWith('[', Qt::CaseInsensitive) && !str.contains("--", Qt::CaseInsensitive) && !str.contains("->", Qt::CaseInsensitive) && str.contains("=", Qt::CaseInsensitive) && !netProperties)
+        else if (!str.startsWith('[', Qt::CaseInsensitive) &&
+                 !str.contains("--", Qt::CaseInsensitive) &&
+                 !str.contains("->", Qt::CaseInsensitive) &&
+                 str.contains("[", Qt::CaseInsensitive) &&
+                 !netProperties)
         {
             qDebug() << "* A node definition must be here: \n"
                      << str;
-            end = str.indexOf('[');
-            if (end != -1)
+            // Node definitions in the format: nodeName [properties]
+            int start = str.indexOf('[');
+            if (start != -1)
             {
-                temp = str.right(str.size() - end - 1); // keep the properties
-                temp = temp.remove(']');
-                temp = temp.remove(';');
-                node = str.left(end - 1);
+                // Extract node name and properties
+                QString node = str.left(start).simplified();
                 node = node.remove('\"');
                 qDebug() << "node named " << node.toLatin1();
-                qDebug() << "node properties " << temp.toLatin1();
-                nodeLabel = node; // Will change only if label exists in readDotProperties
-                readDotProperties(temp, nodeValue, nodeLabel, initNodeShape, initNodeColor, fontName, fontColor);
-                if (nodeLabel == "")
+
+                // Extract properties
+                int end = str.lastIndexOf(']');
+                QString temp;
+                if (end != -1)
+                {
+                    temp = str.mid(start + 1, end - start - 1);
+                    qDebug() << "node properties " << temp.toLatin1();
+
+                    // Set default label to node name
                     nodeLabel = node;
-                totalNodes++;
-                randX = rand() % gwWidth;
-                randY = rand() % gwHeight;
-                qDebug() << " *** Signaling to create new node " << totalNodes
-                         << "at " << randX << "," << randY
-                         << " label " << node.toLatin1()
-                         << " colored " << initNodeColor
-                         << "initNodeSize " << initNodeSize
-                         << "initNodeNumberColor " << initNodeNumberColor
-                         << "initNodeNumberSize " << initNodeNumberSize
-                         << "initNodeLabelColor " << initNodeLabelColor
-                         << "nodeShape" << initNodeShape;
-                emit signalCreateNode(
-                    totalNodes, initNodeSize, initNodeColor,
-                    initNodeNumberColor, initNodeNumberSize,
-                    nodeLabel, initNodeLabelColor, initNodeLabelSize,
-                    QPointF(randX, randY),
-                    initNodeShape, QString());
-                // Note that we push the numbered nodelabel whereas we create
-                // the node with its file specified node label.
-                nodesDiscovered.push_back(node);
-                qDebug() << " * Total totalNodes " << totalNodes
-                         << " nodesDiscovered  " << nodesDiscovered.size();
-                target = totalNodes;
+
+                    // Process properties
+                    readDotProperties(temp, nodeValue, nodeLabel, initNodeShape, initNodeColor, fontName, fontColor);
+
+                    // If no label was specified, use the node name
+                    if (nodeLabel.isEmpty())
+                        nodeLabel = node;
+
+                    totalNodes++;
+                    randX = rand() % gwWidth;
+                    randY = rand() % gwHeight;
+                    qDebug() << " *** Signaling to create new node " << totalNodes
+                             << "at " << randX << "," << randY
+                             << " label " << node.toLatin1()
+                             << " colored " << initNodeColor
+                             << "initNodeSize " << initNodeSize
+                             << "initNodeNumberColor " << initNodeNumberColor
+                             << "initNodeNumberSize " << initNodeNumberSize
+                             << "initNodeLabelColor " << initNodeLabelColor
+                             << "nodeShape" << initNodeShape;
+                    emit signalCreateNode(
+                        totalNodes, initNodeSize, initNodeColor,
+                        initNodeNumberColor, initNodeNumberSize,
+                        nodeLabel, initNodeLabelColor, initNodeLabelSize,
+                        QPointF(randX, randY),
+                        initNodeShape, QString());
+                    // Note that we push the numbered nodelabel whereas we create
+                    // the node with its file specified node label.
+                    nodesDiscovered.push_back(node);
+                    qDebug() << " * Total totalNodes " << totalNodes
+                             << " nodesDiscovered  " << nodesDiscovered.size();
+                    target = totalNodes;
+                }
+                else
+                {
+                    qDebug("* ERROR!");
+                    errorMessage = tr("Not properly GraphViz-formatted file. "
+                                      "Node definition without closing ]");
+                    return false;
+                }
             }
             else
             {
@@ -4113,7 +4137,6 @@ bool Parser::parseAsDot(const QByteArray &rawData)
     return true;
 }
 
-
 /**
  * @brief Preprocesses the content of a DOT file to normalize its formatting.
  *
@@ -4126,52 +4149,48 @@ bool Parser::parseAsDot(const QByteArray &rawData)
 QString Parser::preprocessDotContent(const QString &dotContent) {
     QString processedData = dotContent;
     
-    // First check if it's a one-line DOT file
-    bool isSingleLine = !processedData.contains('\n') || 
-                        (processedData.count('\n') == 1 && processedData.endsWith('\n'));
+    // Convert escaped newlines (&#92;n) into actual newlines
+    processedData.replace("&#92;n", "\\n");
     
-    if (isSingleLine) {
-        qDebug() << "Single-line DOT content detected. Preprocessing...";
-    }
-
-    // Add newline after opening brace (do this for all files)
+    // Add newline after opening brace `{`
     processedData.replace(QRegularExpression("\\{\\s*"), "{\n  ");
     
-    // Add newline after each semicolon (do this for all files)
+    // Add newline after each closing bracket `]` (but don't add semicolon if one already exists)
+    processedData.replace(QRegularExpression("\\](\\s*)(?!;)"), "];\n  ");
+    processedData.replace(QRegularExpression("\\];(\\s*)"), "];\n  ");
+    
+    // Add newline after each semicolon `;`
     processedData.replace(";", ";\n  ");
     
-    // Add newline before closing brace (do this for all files)
+    // Add newline before closing brace `}`
     processedData.replace(QRegularExpression("\\s*\\}"), "\n}");
+    
+    // Normalize brackets - add spaces around them for better parsing
+    processedData.replace("[", " [ ");
+    processedData.replace("]", " ] ");
+    
+    // Ensure there is a semicolon `;` between consecutive node definitions
+    processedData.replace(QRegularExpression("(\\]\\s*)(struct\\d+)"), "];\n  \\2");
+    
+    // Add spaces around edge definitions
+    processedData.replace("->", " -> ");
+    processedData.replace("--", " -- ");
     
     // Handle node and edge attribute blocks more carefully
     processedData.replace(QRegularExpression("\\bnode\\s*\\["), "\nnode [");
     processedData.replace(QRegularExpression("\\bedge\\s*\\["), "\nedge [");
-
-    // Add space around arrows for better parsing
-    processedData.replace("->", " -> ");
-    processedData.replace("--", " -- ");
     
-    // Normalize brackets - add spaces around them for better parsing
-    processedData.replace("[", " [");
-    processedData.replace("]", "] ");
-
-    // Add newlines before node definitions that appear after edge definitions
-    // This fixes cases where node declarations follow edge declarations on the same line
-    processedData.replace(QRegularExpression("(->|--)[^\\[\\]\\n]*\\bnode\\b"), "\\1\nnode");
-    
-    // Handle the case of separate edge attribute lines that should be associated with previous edge
+    // Handle cases where an edge attribute is written on a separate line
     QStringList lines = processedData.split('\n');
     QStringList processedLines;
-    
     bool previousLineWasEdge = false;
     QString previousLine;
     
-    for (int i = 0; i < lines.size(); i++) {
-        QString currentLine = lines[i].trimmed();
+    for (const QString &line : lines) {
+        QString currentLine = line.trimmed();
         
         if (currentLine.isEmpty()) {
-            // Skip empty lines
-            continue;
+            continue; // Skip empty lines
         }
         
         // Check if this line contains only attributes (starts with '[' but not a node/edge definition)
@@ -4182,30 +4201,22 @@ QString Parser::preprocessDotContent(const QString &dotContent) {
             !currentLine.startsWith("edge") &&
             previousLineWasEdge) {
             
-            qDebug() << "Found separate edge attribute line:" << currentLine;
-            
-            // Append these attributes to the previous edge line
+            // Merge edge attributes with previous edge definition
             QString combinedLine = previousLine;
-            
-            // Remove trailing semicolon if present
             if (combinedLine.endsWith(';')) {
                 combinedLine.chop(1);
             }
             
-            // Append the attributes
             combinedLine += " " + currentLine;
             
-            // Replace the previous line with our combined line
+            // Replace the previous line with the combined line
             processedLines.removeLast();
             processedLines.append(combinedLine);
             
-            previousLineWasEdge = false; // Reset flag
+            previousLineWasEdge = false;
         } else {
-            // Check if this is an edge definition line without attributes
-            previousLineWasEdge = (currentLine.contains("->") || currentLine.contains("--")) && 
-                                 !currentLine.contains('[');
-            
-            // Store this line for possible future reference
+            // Check if this is an edge definition line
+            previousLineWasEdge = (currentLine.contains("->") || currentLine.contains("--"));
             previousLine = currentLine;
             
             // Add the current line as-is
@@ -4213,13 +4224,11 @@ QString Parser::preprocessDotContent(const QString &dotContent) {
         }
     }
     
-    // Reconstruct the processed data
-    processedData = processedLines.join('\n');
-    
-    qDebug() << "Preprocessed DOT content:" << (isSingleLine ? "\n" + processedData : "Done");
-    
-    return processedData;
+    // Return the processed data
+    return processedLines.join('\n');
 }
+
+
 
 /**
  * @brief Reads the properties of a dot element with improved handling of quoted values
