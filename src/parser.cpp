@@ -3725,7 +3725,7 @@ bool Parser::parseAsDot(const QByteArray &rawData)
 
         fileLine++;
 
-        qDebug() << "Reading fileLine " << fileLine;
+        qDebug() << "🔎 Reading fileLine " << fileLine;
 
         str = ts.readLine().simplified().trimmed();
 
@@ -3801,7 +3801,11 @@ bool Parser::parseAsDot(const QByteArray &rawData)
             qDebug() << "✅ Default edge color set to: " << initEdgeColor;
         }
         if (
-            str.startsWith("label", Qt::CaseInsensitive) || str.startsWith("mincross", Qt::CaseInsensitive) || str.startsWith("ratio", Qt::CaseInsensitive) || str.startsWith("name", Qt::CaseInsensitive) || str.startsWith("type", Qt::CaseInsensitive) || str.startsWith("loops", Qt::CaseInsensitive) || str.startsWith("size", Qt::CaseInsensitive) // Handle size attribute
+            str.startsWith("label", Qt::CaseInsensitive) 
+            || str.startsWith("mincross", Qt::CaseInsensitive) 
+            || str.startsWith("ratio", Qt::CaseInsensitive) || str.startsWith("name", Qt::CaseInsensitive) 
+            || str.startsWith("type", Qt::CaseInsensitive) || str.startsWith("loops", Qt::CaseInsensitive) 
+            || str.startsWith("size", Qt::CaseInsensitive) // Handle size attribute
         )
         { // Default network properties
             next = str.indexOf('=', 1);
@@ -3978,6 +3982,7 @@ bool Parser::parseAsDot(const QByteArray &rawData)
 
             // FIXME Cannot parse nodes named with '-' character
             str = str.mid(0, end).remove('\"'); // keep only edges
+            
 
             qDebug() << "edge " << str.toLatin1();
 
@@ -4109,19 +4114,11 @@ bool Parser::parseAsDot(const QByteArray &rawData)
 }
 
 
-
 /**
  * @brief Preprocesses the content of a DOT file to normalize its formatting.
  *
  * This function takes the content of a DOT file as input and performs several
- * preprocessing steps to normalize its formatting. The steps include:
- * - Normalizing whitespace by simplifying the input string.
- * - Detecting single-line DOT content and splitting it into multiple lines.
- * - Adding newlines after opening braces and before closing braces.
- * - Handling node and edge attribute blocks more carefully by adding newlines.
- * - Adding spaces around arrows for better parsing.
- * - Normalizing brackets by adding spaces around them.
- * - Adding newlines before node definitions that appear after edge definitions.
+ * preprocessing steps to normalize its formatting.
  *
  * @param dotContent The content of the DOT file as a QString.
  * @return A QString containing the preprocessed DOT content.
@@ -4129,23 +4126,21 @@ bool Parser::parseAsDot(const QByteArray &rawData)
 QString Parser::preprocessDotContent(const QString &dotContent) {
     QString processedData = dotContent;
     
-    // First, normalize whitespace
-    processedData = processedData.simplified();
-
     // First check if it's a one-line DOT file
-    if (!processedData.contains('\n') || (processedData.count('\n') == 1 && processedData.endsWith('\n')))
-    {
-        qDebug() << "Single-line DOT content detected. Splitting it to multiple lines... " << processedData;
-        // Add newline after each semicolon
-        processedData.replace(";", ";\n  ");
-        qDebug() << "processedData now: " << processedData;
+    bool isSingleLine = !processedData.contains('\n') || 
+                        (processedData.count('\n') == 1 && processedData.endsWith('\n'));
+    
+    if (isSingleLine) {
+        qDebug() << "Single-line DOT content detected. Preprocessing...";
     }
 
-    // Add newline after opening brace
+    // Add newline after opening brace (do this for all files)
     processedData.replace(QRegularExpression("\\{\\s*"), "{\n  ");
     
+    // Add newline after each semicolon (do this for all files)
+    processedData.replace(";", ";\n  ");
     
-    // Add newline before closing brace
+    // Add newline before closing brace (do this for all files)
     processedData.replace(QRegularExpression("\\s*\\}"), "\n}");
     
     // Handle node and edge attribute blocks more carefully
@@ -4156,126 +4151,233 @@ QString Parser::preprocessDotContent(const QString &dotContent) {
     processedData.replace("->", " -> ");
     processedData.replace("--", " -- ");
     
-    // Normalize brackets
+    // Normalize brackets - add spaces around them for better parsing
     processedData.replace("[", " [");
     processedData.replace("]", "] ");
 
     // Add newlines before node definitions that appear after edge definitions
+    // This fixes cases where node declarations follow edge declarations on the same line
     processedData.replace(QRegularExpression("(->|--)[^\\[\\]\\n]*\\bnode\\b"), "\\1\nnode");
+    
+    // Handle the case of separate edge attribute lines that should be associated with previous edge
+    QStringList lines = processedData.split('\n');
+    QStringList processedLines;
+    
+    bool previousLineWasEdge = false;
+    QString previousLine;
+    
+    for (int i = 0; i < lines.size(); i++) {
+        QString currentLine = lines[i].trimmed();
         
+        if (currentLine.isEmpty()) {
+            // Skip empty lines
+            continue;
+        }
+        
+        // Check if this line contains only attributes (starts with '[' but not a node/edge definition)
+        if (currentLine.startsWith('[') && 
+            !currentLine.contains("->") && 
+            !currentLine.contains("--") && 
+            !currentLine.startsWith("node") && 
+            !currentLine.startsWith("edge") &&
+            previousLineWasEdge) {
+            
+            qDebug() << "Found separate edge attribute line:" << currentLine;
+            
+            // Append these attributes to the previous edge line
+            QString combinedLine = previousLine;
+            
+            // Remove trailing semicolon if present
+            if (combinedLine.endsWith(';')) {
+                combinedLine.chop(1);
+            }
+            
+            // Append the attributes
+            combinedLine += " " + currentLine;
+            
+            // Replace the previous line with our combined line
+            processedLines.removeLast();
+            processedLines.append(combinedLine);
+            
+            previousLineWasEdge = false; // Reset flag
+        } else {
+            // Check if this is an edge definition line without attributes
+            previousLineWasEdge = (currentLine.contains("->") || currentLine.contains("--")) && 
+                                 !currentLine.contains('[');
+            
+            // Store this line for possible future reference
+            previousLine = currentLine;
+            
+            // Add the current line as-is
+            processedLines.append(currentLine);
+        }
+    }
+    
+    // Reconstruct the processed data
+    processedData = processedLines.join('\n');
+    
+    qDebug() << "Preprocessed DOT content:" << (isSingleLine ? "\n" + processedData : "Done");
     
     return processedData;
 }
 
 /**
- * @brief Reads the properties of a dot element
- * @param str
- * @param nValue
- * @param label
- * @param shape
- * @param color
- * @param fontName
- * @param fontColor
+ * @brief Reads the properties of a dot element with improved handling of quoted values
+ * @param str String containing properties (format: "prop1=value1, prop2=value2, ...")
+ * @param nValue Output variable for numeric value property
+ * @param label Output variable for label property
+ * @param shape Output variable for shape property
+ * @param color Output variable for color property
+ * @param fontName Output variable for font name property
+ * @param fontColor Output variable for font color property
  */
 void Parser::readDotProperties(QString str, qreal &nValue, QString &label,
                                QString &shape, QString &color, QString &fontName,
                                QString &fontColor)
 {
-    int next = 0;
-    QString prop, value;
+    qDebug() << "Reading DOT properties from:" << str;
 
-    // FIXME Implement a qstringlist here splitted from str in ,
-    bool ok = false;
-    do
-    { // stops when it passes the index of ']'
-        next = str.indexOf('=', 1);
-        qDebug("Found next = at %i. Start is at %i", next, 1);
-        prop = str.mid(0, next).simplified();
-        qDebug() << "Prop: " << prop.toLatin1();
-        str = str.right(str.size() - next - 1).simplified();
-        if (str.startsWith(","))
-            str = str.right(str.size() - 1).simplified();
+    str = str.simplified();
 
-        qDebug() << "whatsleft: " << str.toLatin1();
-
-        if (str.indexOf('\"') == 0)
+    // Process properties one by one
+    while (!str.isEmpty())
+    {
+        int equalPos = str.indexOf('=');
+        if (equalPos == -1)
         {
-            qDebug("found text, parsing...");
-            next = str.indexOf('\"', 1);
-            value = str.left(next).simplified().remove('\"');
-
-            if (prop == "label")
-            {
-                label = value.trimmed();
-                qDebug() << "Found label " << value.toLatin1() << ". Assigned label " << label.toLatin1();
-            }
-            else if (prop == "fontname")
-            {
-                qDebug() << "Found fontname" << value.toLatin1();
-                fontName = value.trimmed();
-            }
-            str = str.right(str.size() - next - 1).simplified();
-            qDebug() << "whatsleft: " << str.toLatin1() << ".";
+            break; // No more properties
         }
-        else
+
+        // Extract property name
+        QString prop = str.left(equalPos).simplified();
+        str = str.mid(equalPos + 1).simplified();
+
+        // Check for quoted value
+        QString value;
+        if (str.startsWith('\"'))
         {
-            if (str.isEmpty())
-                break;
-            if (str.contains(','))
+            // Handle quoted value (which might contain commas)
+            int endQuotePos = -1;
+            bool escaped = false;
+
+            // Find the matching end quote, accounting for escaped quotes
+            for (int i = 1; i < str.length(); i++)
             {
-                next = str.indexOf(',');
-                value = str.mid(0, next).simplified();
+                if (str.at(i) == '\\')
+                {
+                    escaped = !escaped;
+                }
+                else if (str.at(i) == '\"' && !escaped)
+                {
+                    endQuotePos = i;
+                    break;
+                }
+                else
+                {
+                    escaped = false;
+                }
             }
 
-            else if (str.contains(' '))
+            if (endQuotePos != -1)
             {
-                next = str.indexOf(' ');
-                value = str.mid(0, next).simplified();
+                value = str.mid(1, endQuotePos - 1); // Extract without quotes
+                str = str.mid(endQuotePos + 1).simplified();
             }
             else
             {
-                value = str;
+                // Malformed - no closing quote
+                qDebug() << "Warning: No closing quote found in property value";
+                value = str.mid(1);
+                str.clear();
             }
 
-            qDebug() << "Prop Value: " << value.toLatin1();
-            if (prop == "value")
-            {
-                qDebug() << "Found value " << value.toLatin1();
-                nValue = value.trimmed().toFloat(&ok);
-                if (ok)
-                    qDebug() << "Assigned value " << nValue;
-                else
-                    qDebug() << "Error in value conversion ";
-            }
-            else if (prop == "color")
-            {
-                color = value.trimmed();
-                qDebug() << "Found color " << value.toLatin1() << ". Assigned color " << color.toLatin1() << ".";
-            }
-            else if (prop == "fillcolor")
-            {
-                qDebug() << "Found color " << value.toLatin1();
-                color = value.trimmed();
-                qDebug() << "Assigned node color " << color.toLatin1() << ".";
-            }
-
-            else if (prop == "fontcolor")
-            {
-                qDebug() << "Found fontcolor " << value.toLatin1();
-                fontColor = value.trimmed();
-            }
-            else if (prop == "shape")
-            {
-                shape = value.trimmed();
-                qDebug() << "Found node shape " << shape.toLatin1();
-            }
-            qDebug() << "count" << str.size() << " next " << next;
-            str = str.right(str.size() - next - 1).simplified();
-            qDebug() << "whatsleft: " << str.toLatin1() << ".";
-            if ((next = str.indexOf('=', 1)) == -1)
-                break;
+            // Handle unescape if needed
+            value = value.replace("\\\"", "\"");
         }
-    } while (!str.isEmpty());
+        else
+        {
+            // Handle unquoted value (which ends at next comma or end of string)
+            int commaPos = str.indexOf(',');
+            if (commaPos != -1)
+            {
+                value = str.left(commaPos).simplified();
+                str = str.mid(commaPos + 1).simplified();
+            }
+            else
+            {
+                value = str.simplified();
+                str.clear();
+            }
+        }
+
+        // Skip any leading comma in remaining string
+        if (str.startsWith(','))
+        {
+            str = str.mid(1).simplified();
+        }
+
+        qDebug() << "Parsed property:" << prop << "=" << value;
+
+        // Process the property
+        bool ok = false;
+        if (prop == "label")
+        {
+            label = value;
+            qDebug() << "Set label to:" << label;
+        }
+        else if (prop == "fontname")
+        {
+            fontName = value;
+            qDebug() << "Set fontName to:" << fontName;
+        }
+        else if (prop == "value")
+        {
+            nValue = value.toFloat(&ok);
+            if (ok)
+            {
+                qDebug() << "Set value to:" << nValue;
+            }
+            else
+            {
+                qDebug() << "Error converting value:" << value;
+            }
+        }
+        else if (prop == "color" || prop == "fillcolor")
+        {
+            color = value;
+            qDebug() << "Set color to:" << color;
+        }
+        else if (prop == "fontcolor")
+        {
+            fontColor = value;
+            qDebug() << "Set fontColor to:" << fontColor;
+        }
+        else if (prop == "shape")
+        {
+            shape = value;
+            qDebug() << "Set shape to:" << shape;
+        }
+        else if (prop == "weight")
+        {
+            nValue = value.toFloat(&ok);
+            if (ok)
+            {
+                qDebug() << "Set weight to:" << nValue;
+            }
+            else
+            {
+                qDebug() << "Error converting weight:" << value;
+            }
+        }
+        else if (prop == "style")
+        {
+            qDebug() << "Style property:" << value << "(currently not used)";
+        }
+        else
+        {
+            qDebug() << "Ignoring unknown property:" << prop << "=" << value;
+        }
+    }
 }
 
 /**
