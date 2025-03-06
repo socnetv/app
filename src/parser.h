@@ -80,6 +80,7 @@ public:
     bool parseAsPajek(const QByteArray &rawData);
     bool parseAsAdjacency(const QByteArray &rawData, const QString &delimiter=",", const bool &sm_has_labels=false);
     bool parseAsDot(const QByteArray &rawData);
+    QString preprocessDotContent(const QString &dotContent);
     bool parseAsGraphML(const QByteArray &rawData);
     bool parseAsGML(const QByteArray &rawData);
     bool parseAsDL(const QByteArray &rawData);

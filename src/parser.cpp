@@ -3700,7 +3700,22 @@ bool Parser::parseAsDot(const QByteArray &rawData)
     source = 0, target = 0;
 
     QTextCodec *codec = QTextCodec::codecForName(m_textCodecName.toLatin1());
-    QString decodedData = codec->toUnicode(rawData);
+    QString decodedData = codec->toUnicode(rawData).trimmed();
+
+    // Check if the file contains valid GraphViz (dot) data
+    if (!decodedData.contains("digraph", Qt::CaseInsensitive) && !decodedData.contains("graph", Qt::CaseInsensitive))
+    {
+        qDebug() << "Not a valid GraphViz (dot) file. Aborting!";
+        errorMessage = tr("Invalid GraphViz (dot) file. The file does not contain 'digraph' or 'graph'.");
+        return false;
+    }
+
+
+    
+    // Apply preprocessing to handle single-line DOT files properly
+    decodedData = preprocessDotContent(decodedData);
+
+
     QTextStream ts(&decodedData);
 
     totalNodes = 0;
@@ -4091,6 +4106,65 @@ bool Parser::parseAsDot(const QByteArray &rawData)
 
     qDebug() << "Parser::parseAsDot() - Finished OK. Returning.";
     return true;
+}
+
+
+
+/**
+ * @brief Preprocesses the content of a DOT file to normalize its formatting.
+ *
+ * This function takes the content of a DOT file as input and performs several
+ * preprocessing steps to normalize its formatting. The steps include:
+ * - Normalizing whitespace by simplifying the input string.
+ * - Detecting single-line DOT content and splitting it into multiple lines.
+ * - Adding newlines after opening braces and before closing braces.
+ * - Handling node and edge attribute blocks more carefully by adding newlines.
+ * - Adding spaces around arrows for better parsing.
+ * - Normalizing brackets by adding spaces around them.
+ * - Adding newlines before node definitions that appear after edge definitions.
+ *
+ * @param dotContent The content of the DOT file as a QString.
+ * @return A QString containing the preprocessed DOT content.
+ */
+QString Parser::preprocessDotContent(const QString &dotContent) {
+    QString processedData = dotContent;
+    
+    // First, normalize whitespace
+    processedData = processedData.simplified();
+
+    // First check if it's a one-line DOT file
+    if (!processedData.contains('\n') || (processedData.count('\n') == 1 && processedData.endsWith('\n')))
+    {
+        qDebug() << "Single-line DOT content detected. Splitting it to multiple lines... " << processedData;
+        // Add newline after each semicolon
+        processedData.replace(";", ";\n  ");
+        qDebug() << "processedData now: " << processedData;
+    }
+
+    // Add newline after opening brace
+    processedData.replace(QRegularExpression("\\{\\s*"), "{\n  ");
+    
+    
+    // Add newline before closing brace
+    processedData.replace(QRegularExpression("\\s*\\}"), "\n}");
+    
+    // Handle node and edge attribute blocks more carefully
+    processedData.replace(QRegularExpression("\\bnode\\s*\\["), "\nnode [");
+    processedData.replace(QRegularExpression("\\bedge\\s*\\["), "\nedge [");
+
+    // Add space around arrows for better parsing
+    processedData.replace("->", " -> ");
+    processedData.replace("--", " -- ");
+    
+    // Normalize brackets
+    processedData.replace("[", " [");
+    processedData.replace("]", "] ");
+
+    // Add newlines before node definitions that appear after edge definitions
+    processedData.replace(QRegularExpression("(->|--)[^\\[\\]\\n]*\\bnode\\b"), "\\1\nnode");
+        
+    
+    return processedData;
 }
 
 /**
