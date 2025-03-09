@@ -1847,12 +1847,13 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
  * NOTE: Parsing is aborted if any invalid data is encountered.
  *
  * Example of a supported adjacency matrix file with node labels:
- *
+ * 
+ *```
  * # Alice, Bob, Charlie
  * 0, 1, 1
  * 1, 0, 0
  * 1, 0, 0
- *
+ *```
  * In this example:
  * - The first line is a comment containing the node labels: Alice, Bob, Charlie.
  * - The remaining lines form a 3x3 adjacency matrix where:
@@ -2071,7 +2072,7 @@ bool Parser::doParseAdjacency(QTextStream &ts, const QString &delimiter, const Q
 }
 
 /**
- * Emits a signal to create a node with the specified properties.
+ * Emits a signal to create a node with the specified index and label, and default node properties.
  * Assigns a random position for the node within the graph dimensions.
  * @param nodeIndex Index of the node to create.
  * @param label Label for the node (numerical or custom).
