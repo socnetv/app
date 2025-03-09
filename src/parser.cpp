@@ -4156,6 +4156,7 @@ QString Parser::preprocessDotContent(const QString &dotContent) {
     processedData.replace(QRegularExpression("\\{\\s*"), "{\n  ");
     
     // Add newline after each closing bracket `]` (but don't add semicolon if one already exists)
+    // This effectively splits node definitions into separate lines and ensures they end with a semicolon
     processedData.replace(QRegularExpression("\\](\\s*)(?!;)"), "];\n  ");
     processedData.replace(QRegularExpression("\\];(\\s*)"), "];\n  ");
     
