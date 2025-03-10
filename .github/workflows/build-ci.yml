@@ -411,10 +411,19 @@ jobs:
 
           # Run macdeployqt to bundle the app
           echo "🚀 Running macdeployqt to create macOS bundle..."
-          macdeployqt "${{env.APP_NAME}}.app"  -dmg || {
+          macdeployqt "${{env.APP_NAME}}.app" -dmg -verbose=3 || {
             echo "Error: macdeployqt failed."
             exit 1
           }
+
+          # Verify the bundled libraries in the binary 
+          echo "🔎 Verify the bundled libraries in the built binary ..."
+          if [[ -f "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}" ]]; then
+              otool -L "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}"
+          else
+              echo "❌ Error: Binary file not found!"
+              exit 1
+          fi
 
           # Rename DMG file
           if [[ -f ${{env.APP_NAME}}.dmg ]]; then
@@ -484,10 +493,20 @@ jobs:
 
           # Run macdeployqt to bundle the app
           echo "🚀 Running macdeployqt to create macOS bundle..."
-          macdeployqt "${{env.APP_NAME}}.app"  -dmg || {
+          macdeployqt "${{env.APP_NAME}}.app" -dmg -verbose=3 || {
             echo "Error: macdeployqt failed."
             exit 1
           }
+
+          # Verify the bundled libraries in the binary 
+          echo "🔎 Verify the bundled libraries in the built binary ..."
+          if [[ -f "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}" ]]; then
+              otool -L "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}"
+          else
+              echo "❌ Error: Binary file not found!"
+              exit 1
+          fi
+
 
           # Rename DMG file
           if [[ -f ${{env.APP_NAME}}.dmg ]]; then
