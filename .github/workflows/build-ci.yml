@@ -393,8 +393,15 @@ jobs:
           qmake CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}}
           echo "🚧 🛠️ Compiling for macos with make. Please wait..."
           make
-          echo "👉 Building finished. Listing current directory with find for verification:"
-          find .
+
+          echo "👉 Building finished! Searching for built ${{matrix.os}} bundle (DIRECTORY!)./${{env.APP_NAME}}.app ..."
+          if [[ -d "./${{env.APP_NAME}}.app" ]]; then
+            echo "🎉 ${{matrix.os}} bundle created! Bundle contents:"
+            find "${{env.APP_NAME}}.app"
+          else
+            echo "❌ Error! ${{matrix.os}} bundle not found !"
+            exit 1
+          fi
 
 
           # Verify the binary with lipo
@@ -416,7 +423,7 @@ jobs:
             exit 1
           }
 
-          # Verify the bundled libraries in the binary 
+          # Verify the bundled libraries in the binary
           echo "🔎 Verify the bundled libraries in the built binary ..."
           if [[ -f "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}" ]]; then
               otool -L "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}"
@@ -475,7 +482,8 @@ jobs:
 
           echo "🔎 Search for built ${{matrix.os}} bundle (DIRECTORY!)./${{env.APP_NAME}}.app ..."
           if [[ -d "./${{env.APP_NAME}}.app" ]]; then
-            echo "🎉 ${{matrix.os}} bundle created!"
+            echo "🎉 ${{matrix.os}} bundle created! Bundle contents:"
+            find "${{env.APP_NAME}}.app"
           else
             echo "❌ Error! ${{matrix.os}} bundle not found !"
             exit 1
@@ -498,7 +506,7 @@ jobs:
             exit 1
           }
 
-          # Verify the bundled libraries in the binary 
+          # Verify the bundled libraries in the binary
           echo "🔎 Verify the bundled libraries in the built binary ..."
           if [[ -f "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}" ]]; then
               otool -L "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}"
