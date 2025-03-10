@@ -2142,11 +2142,11 @@ bool Parser::containsReservedKeywords(const QString &str) const
 {
     // List of keywords reserved by other file formats.
     static const QStringList reservedKeywords = {
-        "vertices", "network", "graph", "digraph", "DL n", "DL", "dl", "list", "graphml", "xml"};
+        "*Vertices", "*Arcs", "*Edges", "*Network", "graph", "digraph", "DL n", "DL", "dl", "list", "<graphml", "<?xml"};
 
     for (const QString &keyword : reservedKeywords)
     {
-        if (str.trimmed().contains(keyword, Qt::CaseInsensitive))
+        if (str.trimmed().startsWith(keyword, Qt::CaseInsensitive))
         {
             return true;
         }
