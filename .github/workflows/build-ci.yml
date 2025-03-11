@@ -125,6 +125,24 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: 🗑️ Delete old assets from 'continuous' release
+        if: contains(matrix.os, 'windows') || contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos')
+        run: |
+          echo "🔍 Fetching existing assets from the 'continuous' release..."
+          ASSETS=$(gh release view continuous --json assets -q '.assets[].name')
+
+          if [[ -z "$ASSETS" ]]; then
+            echo "✅ No previous assets found in 'continuous' release."
+          else
+            echo "🗑️ Deleting old assets..."
+            for ASSET in $ASSETS; do
+              echo "❌ Removing $ASSET..."
+              gh release delete-asset continuous "$ASSET" --yes
+            done
+            echo "✅ Old assets deleted."
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       #
       # Install dependencies (build tools, cmake, etc)
