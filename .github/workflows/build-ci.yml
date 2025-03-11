@@ -16,8 +16,8 @@ env:
   QMAKE_PROJECT: "socnetv.pro"
   PUBLISHER: "Dimitris Kalamaras"
   QT_MODULES: "qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d"
-  QMAKE_CONFIG: debug  # release  # TODO IF IN MASTER SET AS RELEASE
-  CMAKE_CONFIG: Debug  # Release
+  QMAKE_CONFIG: release  ## debug  # Never use debug. Windows builds will break.
+  CMAKE_CONFIG: Release  ## Debug
   CORES: 16
   MAC_ARTIFACT: ""
   LINUX_ARTIFACT: ""
