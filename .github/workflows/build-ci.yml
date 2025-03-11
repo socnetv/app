@@ -539,7 +539,7 @@ jobs:
           echo "🔏 Sign SocNetV.app"
           codesign --deep --force --verbose \
           --options runtime \
-          --entitlements scripts/entitlements.plist \
+          --entitlements ../scripts/entitlements.plist \
           --sign "Developer ID Application: Dimitris Kalamaras (K89VSL4N97)" \
           "${{env.APP_NAME}}.app"
 
