@@ -527,7 +527,7 @@ jobs:
               echo "✅ PkgInfo has been successfully created."
           fi
 
-
+          echo "🔑 Import macOS Developer Certificate"
           echo "${{ secrets.MACOS_CERTIFICATE }}" | base64 --decode > certificate.p12
           security create-keychain -p "" build.keychain
           security default-keychain -s build.keychain
