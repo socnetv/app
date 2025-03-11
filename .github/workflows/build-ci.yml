@@ -597,6 +597,7 @@ jobs:
           echo "🔧 Manually copying MSVC runtime DLLs..."
           copy "C:\Windows\System32\MSVCP140.dll" ${{env.CMAKE_CONFIG}}\
           copy "C:\Windows\System32\VCRUNTIME140.dll" ${{env.CMAKE_CONFIG}}\
+          copy "C:\Windows\System32\VCRUNTIME140_1.dll" ${{env.CMAKE_CONFIG}}\          
           copy "C:\Windows\System32\CONCRT140.dll" ${{env.CMAKE_CONFIG}}\
 
           echo "🔧 Copying license file to build directory..."
