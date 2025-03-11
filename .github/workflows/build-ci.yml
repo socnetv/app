@@ -599,6 +599,14 @@ jobs:
           copy "C:\Windows\System32\VCRUNTIME140.dll" ${{env.CMAKE_CONFIG}}\
           copy "C:\Windows\System32\VCRUNTIME140_1.dll" ${{env.CMAKE_CONFIG}}\          
           copy "C:\Windows\System32\CONCRT140.dll" ${{env.CMAKE_CONFIG}}\
+          echo "🔧 Copying MSVCP140_1.dll..."
+          if (Test-Path "C:\Windows\System32\MSVCP140_1.dll") {
+              echo "✅ MSVCP140_1.dll is present in System32."
+              copy "C:\Windows\System32\MSVCP140_1.dll" ${{env.CMAKE_CONFIG}}\
+          } else {
+              echo "❌ MSVCP140_1.dll NOT FOUND in System32! This may cause runtime errors."
+              exit 1  # Fail the build when the file is missing
+          }
 
           echo "🔧 Copying license file to build directory..."
           copy ..\COPYING ${{env.CMAKE_CONFIG}}\LICENSE.txt
