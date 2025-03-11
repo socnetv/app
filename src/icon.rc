@@ -9,7 +9,7 @@ BEGIN
             VALUE "CompanyName", "socnetv.org"
             VALUE "FileDescription", "SocNetV: Open-source social network analysis application based on Qt."
             VALUE "ProductName", "Social Network Visualizer"
-            VALUE "LegalCopyright", "Copyright (C) 2024 Dimitris V. Kalamaras. GPLv3."
+            VALUE "LegalCopyright", "Copyright (C) 2025 Dimitris V. Kalamaras. GPLv3."
         END
     END
     BLOCK "VarFileInfo"
