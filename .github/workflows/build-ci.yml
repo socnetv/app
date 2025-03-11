@@ -516,90 +516,85 @@ jobs:
               exit 1
           fi
 
-          # Verify PkgInfo is present
-          echo "🔎 Checking for PkgInfo in the app bundle..."
-          if [[ -f "${{env.APP_NAME}}.app/Contents/PkgInfo" ]]; then
-              echo "✅ PkgInfo exists."
-          else
-              echo "❌ PkgInfo is missing! Creating it now..."
+          echo "🔧 Checking bundle structure before packaging..."
+          # Remove any PkgInfo file in the root of the app bundle
+          if [[ -f "${{env.APP_NAME}}.app/PkgInfo" ]]; then
+              echo "⚠️ Found PkgInfo in root directory - removing it"
+              rm "${{env.APP_NAME}}.app/PkgInfo"
+          fi
+
+          # Ensure PkgInfo exists in the Contents directory
+          if [[ ! -f "${{env.APP_NAME}}.app/Contents/PkgInfo" ]]; then
+              echo "Creating PkgInfo in Contents directory"
               echo "APPL????" > "${{env.APP_NAME}}.app/Contents/PkgInfo"
-              ls -l "${{env.APP_NAME}}.app/Contents/PkgInfo"  # Verify it's created
-              echo "✅ PkgInfo has been successfully created."
           fi
 
-          # Check for any other unexpected files in the root
-          echo "🔎 Checking for other unexpected files in the root..."
-          ROOT_FILES=$(find "${{env.APP_NAME}}.app" -maxdepth 1 -type f)
-          if [[ -n "$ROOT_FILES" ]]; then
-              echo "⚠️ Found unexpected files in app bundle root:"
-              echo "$ROOT_FILES"
-              echo "Removing these files..."
-              find "${{env.APP_NAME}}.app" -maxdepth 1 -type f -delete
-          fi
-
-          # List all extended attributes and clear them if necessary
-          find "${{env.APP_NAME}}.app" -type f -exec xattr -l {} \; | grep -v "^$" && \
+          # Clear extended attributes that could interfere with signing
           find "${{env.APP_NAME}}.app" -type f -exec xattr -c {} \;
 
-          echo "🔑 Import macOS Developer Certificate"
-          echo "${{ secrets.MACOS_CERTIFICATE }}" | base64 --decode > certificate.p12
-          security create-keychain -p "" build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "" build.keychain
-          security import certificate.p12 -k build.keychain -P "${{ secrets.MACOS_CERTIFICATE_PASSWORD }}" -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple: -k "" build.keychain
-          rm -f certificate.p12
+          # First run macdeployqt WITHOUT creating DMG yet
+          echo "🚀 Running macdeployqt to bundle required libraries..."
+          macdeployqt "${{env.APP_NAME}}.app" -verbose=3 || {
+            echo "Error: macdeployqt failed."
+            exit 1
+          }
 
-          echo "🛠️ Store Apple ID Credentials for Notarization"
-          xcrun notarytool store-credentials "AC_PASSWORD" \
-          --apple-id "${{ secrets.AC_APPLE_ID }}" \
-          --team-id "${{ secrets.AC_TEAM_ID }}" \
-          --password "${{ secrets.AC_PASSWORD }}"
-
-          echo "🔏 Sign SocNetV.app"
+          # Now sign the .app bundle AFTER macdeployqt has added all dependencies
+          echo "🔏 Sign the application bundle"
           codesign --deep --force --verbose \
           --options runtime \
           --entitlements ../scripts/entitlements.plist \
           --sign "Developer ID Application: Dimitris Kalamaras (K89VSL4N97)" \
           "${{env.APP_NAME}}.app"
 
-          # Run macdeployqt to bundle the app
-          echo "🚀 Running macdeployqt to create macOS bundle..."
-          macdeployqt "${{env.APP_NAME}}.app" -dmg -verbose=3 || {
-            echo "Error: macdeployqt failed."
-            exit 1
-          }
+          # Verify the signature
+          echo "🔍 Verifying signature..."
+          codesign --verify --verbose "${{env.APP_NAME}}.app"
 
-          # Verify the bundled libraries in the binary
-          echo "🔎 Verify the bundled libraries in the built binary ..."
-          if [[ -f "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}" ]]; then
-              otool -L "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}"
-          else
-              echo "❌ Error: Binary file not found!"
-              exit 1
-          fi
+          # Create the DMG from the signed app
+          echo "📦 Creating DMG from signed application..."
+          hdiutil create -volname "${{env.APP_NAME}}" -srcfolder "${{env.APP_NAME}}.app" -ov -format UDZO "${{env.APP_NAME}}.dmg"
 
+          # Sign the DMG
+          echo "🔏 Signing the DMG..."
+          codesign --force --sign "Developer ID Application: Dimitris Kalamaras (K89VSL4N97)" "${{env.APP_NAME}}.dmg"
 
+          # Notarize the signed DMG
           echo "📜 Notarize the DMG"
-          xcrun notarytool submit ${{env.APP_NAME}}.dmg \
+          xcrun notarytool submit "${{env.APP_NAME}}.dmg" \
           --keychain-profile "AC_PASSWORD" --wait
 
-          # Rename DMG file **AFTER** notarization
-          if [[ -f ${{env.APP_NAME}}.dmg ]]; then
+          # Check the notarization status to handle success or failure
+          notarization_info=$(xcrun notarytool info --keychain-profile "AC_PASSWORD" "$(xcrun notarytool history --keychain-profile "AC_PASSWORD" | grep "${{env.APP_NAME}}.dmg" | head -1 | awk '{print $1}')")
+
+          if echo "$notarization_info" | grep -q "status: Accepted"; then
+            echo "✅ Notarization successful!"
+            
+            # Staple the notarization ticket to the DMG
+            echo "📌 Stapling notarization ticket to DMG..."
+            xcrun stapler staple "${{env.APP_NAME}}.dmg"
+            
+            # Rename DMG file after successful notarization and stapling
             DMG_NAME="${{env.APP_NAME}}-${{env.VERSION}}.dmg"
             mv "${{env.APP_NAME}}.dmg" "${DMG_NAME}"
-            echo "🎉 Build and packaging complete. Final DMG: ${DMG_NAME}"
+            echo "🎉 Build, signing, notarization and stapling complete. Final DMG: ${DMG_NAME}"
             ls -lh *.dmg
-            echo "Artifact created! Exporting MAC_ARTIFACT=${DMG_NAME}"
             echo "MAC_ARTIFACT=${DMG_NAME}" >> $GITHUB_ENV
           else
-             echo "Error: DMG creation failed. No DMG file found. Skipping upload."
-             exit 1
+            echo "❌ Notarization failed. Details:"
+            echo "$notarization_info"
+            
+            # You might want to check for specific errors and provide guidance
+            if echo "$notarization_info" | grep -q "issues"; then
+              xcrun notarytool log --keychain-profile "AC_PASSWORD" "$(xcrun notarytool history --keychain-profile "AC_PASSWORD" | grep "${{env.APP_NAME}}.dmg" | head -1 | awk '{print $1}')"
+            fi
+            
+            # Still create the artifact, but with a different name to indicate it's not notarized
+            DMG_NAME="${{env.APP_NAME}}-${{env.VERSION}}-unsigned.dmg"
+            mv "${{env.APP_NAME}}.dmg" "${DMG_NAME}"
+            echo "⚠️ Created unsigned DMG: ${DMG_NAME}"
+            echo "MAC_ARTIFACT=${DMG_NAME}" >> $GITHUB_ENV
           fi
-
-          # Staple notarization **AFTER RENAMING** the DMG
-          echo "📌 Staple Notarization"
-          xcrun stapler staple "${DMG_NAME}"
 
       - if: contains( matrix.os, 'macos') && matrix.qt-version == '6.8.0' && env.MAC_ARTIFACT != ''
         name: 📤 Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
