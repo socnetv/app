@@ -516,6 +516,16 @@ jobs:
               exit 1
           fi
 
+          # Verify PkgInfo is present
+          echo "🔎 Checking for PkgInfo in the app bundle..."
+          if [[ -f "${{env.APP_NAME}}.app/PkgInfo" ]]; then
+              echo "✅ PkgInfo exists."
+          else
+              echo "❌ PkgInfo is missing! Creating it now..."
+              echo "APPL????" > "${{env.APP_NAME}}.app/PkgInfo"
+              ls -l "${{env.APP_NAME}}.app/PkgInfo"  # Verify it's created
+              echo "✅ PkgInfo has been successfully created."
+          fi          
 
           # Run macdeployqt to bundle the app
           echo "🚀 Running macdeployqt to create macOS bundle..."
