@@ -492,7 +492,7 @@ jobs:
           fi
 
           echo "🚧 Compiling the project..."
-          cmake --build build -j$(nproc)
+          cmake --build build -j$(sysctl -n hw.ncpu)
 
           echo "🔎 Entering build directory..."
           cd build
@@ -527,6 +527,31 @@ jobs:
               echo "✅ PkgInfo has been successfully created."
           fi
 
+          echo "🔧 Removing items we do not deploy from project dir ..."
+          find "${{env.APP_NAME}}.app" -type f -exec sh -c 'xattr "{}" && echo "{}"' \;
+
+          echo "🔑 Import macOS Developer Certificate"
+          echo "${{ secrets.MACOS_CERTIFICATE }}" | base64 --decode > certificate.p12
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security import certificate.p12 -k build.keychain -P "${{ secrets.MACOS_CERTIFICATE_PASSWORD }}" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -k "" build.keychain
+          rm -f certificate.p12
+
+          echo "🛠️ Store Apple ID Credentials for Notarization"
+          xcrun notarytool store-credentials "AC_PASSWORD" \
+          --apple-id "${{ secrets.AC_APPLE_ID }}" \
+          --team-id "${{ secrets.AC_TEAM_ID }}" \
+          --password "${{ secrets.AC_PASSWORD }}"
+
+          echo "🔏 Sign SocNetV.app"
+          codesign --deep --force --verbose \
+          --options runtime \
+          --entitlements ../scripts/entitlements.plist \
+          --sign "Developer ID Application: Dimitris Kalamaras (K89VSL4N97)" \
+          "${{env.APP_NAME}}.app"
+
           # Run macdeployqt to bundle the app
           echo "🚀 Running macdeployqt to create macOS bundle..."
           macdeployqt "${{env.APP_NAME}}.app" -dmg -verbose=3 || {
@@ -543,27 +568,6 @@ jobs:
               exit 1
           fi
 
-          echo "🔑 Import macOS Developer Certificate"
-          echo "${{ secrets.MACOS_CERTIFICATE }}" | base64 --decode > certificate.p12
-          security create-keychain -p "" build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "" build.keychain
-          security import certificate.p12 -k build.keychain -P "${{ secrets.MACOS_CERTIFICATE_PASSWORD }}" -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple: -k "" build.keychain
-          rm -f certificate.p12
-
-          echo "🔏 Sign SocNetV.app"
-          codesign --deep --force --verbose \
-          --options runtime \
-          --entitlements ../scripts/entitlements.plist \
-          --sign "Developer ID Application: Dimitris Kalamaras (K89VSL4N97)" \
-          "${{env.APP_NAME}}.app"
-
-          echo "🛠️ Store Apple ID Credentials for Notarization"
-          xcrun notarytool store-credentials "AC_PASSWORD" \
-          --apple-id "${{ secrets.AC_APPLE_ID }}" \
-          --team-id "${{ secrets.AC_TEAM_ID }}" \
-          --password "${{ secrets.AC_PASSWORD }}"
 
           echo "📜 Notarize the DMG"
           xcrun notarytool submit ${{env.APP_NAME}}.dmg \
