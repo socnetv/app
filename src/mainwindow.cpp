@@ -14961,12 +14961,11 @@ void MainWindow::slotHelpSystemInfo() {
 */
 void MainWindow::slotHelpAbout(){
     int randomCookie=rand()%fortuneCookie.size();
-QString BUILD="Tue Dec 19 19:30:23 EET 2023";
+
     QMessageBox::about(
                 this, tr("About SocNetV"),
                 tr("<b>Soc</b>ial <b>Net</b>work <b>V</b>isualizer (SocNetV)") +
                 tr("<p><b>Version</b>: ") + VERSION + "</p>" +
-                tr("<p><b>Build</b>: ")  + BUILD + " </p>" +
 
                 tr("<p>Website: <a href=\"https://socnetv.org\">https://socnetv.org</a></p>")+
 
