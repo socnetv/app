@@ -525,7 +525,7 @@ jobs:
               echo "APPL????" > "${{env.APP_NAME}}.app/PkgInfo"
               ls -l "${{env.APP_NAME}}.app/PkgInfo"  # Verify it's created
               echo "✅ PkgInfo has been successfully created."
-          fi          
+          fi
 
           # Run macdeployqt to bundle the app
           echo "🚀 Running macdeployqt to create macOS bundle..."
