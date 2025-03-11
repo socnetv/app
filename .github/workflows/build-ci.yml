@@ -125,8 +125,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 🗑️ Delete old assets from 'continuous' release
-        if: contains(matrix.os, 'windows') || contains(matrix.os, 'ubuntu') || contains(matrix.os, 'macos')
+      - name: 🗑️ Delete old assets from 'continuous' release (only once, from ubuntu)
+        if: matrix.os == 'ubuntu-latest' && matrix.qt-version == '6.8.0'
         run: |
           echo "🔍 Fetching existing assets from the 'continuous' release..."
           ASSETS=$(gh release view continuous --json assets -q '.assets[].name')
