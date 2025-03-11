@@ -527,6 +527,22 @@ jobs:
               echo "✅ PkgInfo has been successfully created."
           fi
 
+          # Run macdeployqt to bundle the app
+          echo "🚀 Running macdeployqt to create macOS bundle..."
+          macdeployqt "${{env.APP_NAME}}.app" -dmg -verbose=3 || {
+            echo "Error: macdeployqt failed."
+            exit 1
+          }
+
+          # Verify the bundled libraries in the binary
+          echo "🔎 Verify the bundled libraries in the built binary ..."
+          if [[ -f "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}" ]]; then
+              otool -L "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}"
+          else
+              echo "❌ Error: Binary file not found!"
+              exit 1
+          fi
+
           echo "🔑 Import macOS Developer Certificate"
           echo "${{ secrets.MACOS_CERTIFICATE }}" | base64 --decode > certificate.p12
           security create-keychain -p "" build.keychain
@@ -548,23 +564,6 @@ jobs:
           --apple-id "${{ secrets.AC_APPLE_ID }}" \
           --team-id "${{ secrets.AC_TEAM_ID }}" \
           --password "${{ secrets.AC_PASSWORD }}"
-
-
-          # Run macdeployqt to bundle the app
-          echo "🚀 Running macdeployqt to create macOS bundle..."
-          macdeployqt "${{env.APP_NAME}}.app" -dmg -verbose=3 || {
-            echo "Error: macdeployqt failed."
-            exit 1
-          }
-
-          # Verify the bundled libraries in the binary
-          echo "🔎 Verify the bundled libraries in the built binary ..."
-          if [[ -f "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}" ]]; then
-              otool -L "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}"
-          else
-              echo "❌ Error: Binary file not found!"
-              exit 1
-          fi
 
           echo "📜 Notarize the DMG"
           xcrun notarytool submit ${{env.APP_NAME}}.dmg \
