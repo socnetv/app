@@ -591,11 +591,14 @@ jobs:
           cd build
           dir
 
-          echo "🔧 Running windeployqt on built executable..."
-          windeployqt ${{env.CMAKE_CONFIG}}\socnetv.exe
+          echo "🔧 Running windeployqt on built executable (and ensuring required .dlls are copied into the folder)..."
+          windeployqt ${{env.CMAKE_CONFIG}}\socnetv.exe --release --compiler-runtime
 
           echo "🔧 Copying license file to build directory..."
           copy ..\COPYING ${{env.CMAKE_CONFIG}}\LICENSE.txt
+
+          echo "👉 Checking deployed DLLs..."
+          dir ${{env.CMAKE_CONFIG}}
 
           if (!(Get-Command "iscc.exe" -ErrorAction SilentlyContinue)) {
             echo "🔧 Installing Inno Setup..."
