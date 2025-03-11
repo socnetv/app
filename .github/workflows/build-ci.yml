@@ -595,18 +595,20 @@ jobs:
           windeployqt ${{env.CMAKE_CONFIG}}\socnetv.exe --release --compiler-runtime
 
           echo "🔧 Manually copying MSVC runtime DLLs..."
-          copy "C:\Windows\System32\MSVCP140.dll" ${{env.CMAKE_CONFIG}}\
-          copy "C:\Windows\System32\VCRUNTIME140.dll" ${{env.CMAKE_CONFIG}}\
-          copy "C:\Windows\System32\VCRUNTIME140_1.dll" ${{env.CMAKE_CONFIG}}\          
-          copy "C:\Windows\System32\CONCRT140.dll" ${{env.CMAKE_CONFIG}}\
-          echo "🔧 Copying MSVCP140_1.dll..."
-          if (Test-Path "C:\Windows\System32\MSVCP140_1.dll") {
-              echo "✅ MSVCP140_1.dll is present in System32."
-              copy "C:\Windows\System32\MSVCP140_1.dll" ${{env.CMAKE_CONFIG}}\
-          } else {
+          if (!(Test-Path "C:\Windows\System32\MSVCP140_1.dll")) {
               echo "❌ MSVCP140_1.dll NOT FOUND in System32! This may cause runtime errors."
               exit 1  # Fail the build when the file is missing
           }
+          if (!(Test-Path "C:\Windows\System32\MSVCP140_2.dll")) {
+              echo "❌ MSVCP140_2.dll NOT FOUND in System32! This may cause runtime errors."
+              exit 1  # Fail the build when the file is missing
+          }
+          copy "C:\Windows\System32\MSVCP140.dll" ${{env.CMAKE_CONFIG}}\
+          copy "C:\Windows\System32\MSVCP140_1.dll" ${{env.CMAKE_CONFIG}}\
+          copy "C:\Windows\System32\MSVCP140_2.dll" ${{env.CMAKE_CONFIG}}\
+          copy "C:\Windows\System32\VCRUNTIME140.dll" ${{env.CMAKE_CONFIG}}\
+          copy "C:\Windows\System32\VCRUNTIME140_1.dll" ${{env.CMAKE_CONFIG}}\
+          copy "C:\Windows\System32\CONCRT140.dll" ${{env.CMAKE_CONFIG}}\
 
           echo "🔧 Copying license file to build directory..."
           copy ..\COPYING ${{env.CMAKE_CONFIG}}\LICENSE.txt
