@@ -583,7 +583,7 @@ jobs:
              exit 1
           fi
 
-          # Staple notarization **AFTER RENAMING** ✅
+          # Staple notarization **AFTER RENAMING** the DMG
           echo "📌 Staple Notarization"
           xcrun stapler staple "${DMG_NAME}"
 
