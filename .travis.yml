@@ -18,7 +18,6 @@ branches:
     - # Do not build tags that we create when we upload to GitHub Releases
     - /^(?i:continuous)$/
 
-
 language: cpp
 
 
@@ -37,12 +36,14 @@ jobs:
       compiler: gcc
       dist: focal
       env: FAILURES=true
-      if: tag IS present OR commit_message =~ /\[travis\]|\[ci\]/ AND commit_message !~ /\[skip linux\]/
+      # if: tag IS present OR commit_message =~ /\[travis\]|\[ci\]/ AND commit_message !~ /\[skip linux\]/
+      if: commit_message =~ /\[travis\]/ AND commit_message !~ /\[skip linux\]/
     - os: osx
       compiler: clang
       env: FAILURES=true
       osx_image: xcode14.2
-      if: tag IS present OR commit_message =~ /\[travis\]|\[ci\]/ AND commit_message !~ /\[skip osx\]/
+      # if: tag IS present OR commit_message =~ /\[travis\]|\[ci\]/ AND commit_message !~ /\[skip osx\]/
+      if: commit_message =~ /\[travis\]/ AND commit_message !~ /\[skip osx\]/
       cache:
         directories:
           - /usr/local/Homebrew
