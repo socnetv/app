@@ -17,8 +17,8 @@ env:
   QMAKE_PROJECT: "socnetv.pro"
   PUBLISHER: "Dimitris Kalamaras"
   QT_MODULES: "qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d"
-  QMAKE_CONFIG: debug
-  CMAKE_CONFIG: Debug
+  QMAKE_CONFIG: release  ## debug  # Never use debug. Windows builds will break.
+  CMAKE_CONFIG: Release  ## Debug
   CORES: 16
 
 
@@ -31,7 +31,7 @@ jobs:
         # NOTE:
         # - We will CI build only for Qt6 LTS releases, see: https://doc.qt.io/qt-6/qt-releases.html
         # - For the Qt Versions supported by aqtinstall, see: https://ddalcino.github.io/aqt-list-server/
-        qt-version: ['6.2.4', '6.5.3', '6.6.3', '6.8.0']
+        qt-version: ['6.5.3', '6.8.0']
         # exclude:
         #   - os: ubuntu-latest
         #     qt-version: '6.5.3'
