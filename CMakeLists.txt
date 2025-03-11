@@ -233,7 +233,7 @@ elseif(APPLE AND NOT IOS)
 
     # 🔧 Ensure PkgInfo is explicitly created in the app bundle
     add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-        COMMAND echo -n "APPL????" > "${CMAKE_BINARY_DIR}/${TARGET_NAME}.app/PkgInfo"
+        COMMAND echo -n "APPL????" > "${CMAKE_BINARY_DIR}/${TARGET_NAME}.app/Contents/PkgInfo"
         COMMENT "🔍 Ensuring PkgInfo exists in the macOS app bundle"
     )
 

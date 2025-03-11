@@ -518,17 +518,28 @@ jobs:
 
           # Verify PkgInfo is present
           echo "🔎 Checking for PkgInfo in the app bundle..."
-          if [[ -f "${{env.APP_NAME}}.app/PkgInfo" ]]; then
+          if [[ -f "${{env.APP_NAME}}.app/Contents/PkgInfo" ]]; then
               echo "✅ PkgInfo exists."
           else
               echo "❌ PkgInfo is missing! Creating it now..."
-              echo "APPL????" > "${{env.APP_NAME}}.app/PkgInfo"
-              ls -l "${{env.APP_NAME}}.app/PkgInfo"  # Verify it's created
+              echo "APPL????" > "${{env.APP_NAME}}.app/Contents/PkgInfo"
+              ls -l "${{env.APP_NAME}}.app/Contents/PkgInfo"  # Verify it's created
               echo "✅ PkgInfo has been successfully created."
           fi
 
-          echo "🔧 Removing items we do not deploy from project dir ..."
-          find "${{env.APP_NAME}}.app" -type f -exec sh -c 'xattr "{}" && echo "{}"' \;
+          # Check for any other unexpected files in the root
+          echo "🔎 Checking for other unexpected files in the root..."
+          ROOT_FILES=$(find "${{env.APP_NAME}}.app" -maxdepth 1 -type f)
+          if [[ -n "$ROOT_FILES" ]]; then
+              echo "⚠️ Found unexpected files in app bundle root:"
+              echo "$ROOT_FILES"
+              echo "Removing these files..."
+              find "${{env.APP_NAME}}.app" -maxdepth 1 -type f -delete
+          fi
+
+          # List all extended attributes and clear them if necessary
+          find "${{env.APP_NAME}}.app" -type f -exec xattr -l {} \; | grep -v "^$" && \
+          find "${{env.APP_NAME}}.app" -type f -exec xattr -c {} \;
 
           echo "🔑 Import macOS Developer Certificate"
           echo "${{ secrets.MACOS_CERTIFICATE }}" | base64 --decode > certificate.p12
