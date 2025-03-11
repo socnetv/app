@@ -4,7 +4,7 @@
  * @details This file contains the logic for displaying, editing, and saving raw network data in text format within the SocNetV application.
  * @author Dimitris B. Kalamaras
  * @copyright
- *   Copyright (C) 2005-2024 by Dimitris B. Kalamaras.
+ *   Copyright (C) 2005-2025 by Dimitris B. Kalamaras.
  *   This file is part of SocNetV (Social Network Visualizer).
  * @license
  *   This program is free software: you can redistribute it and/or modify

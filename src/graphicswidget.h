@@ -3,7 +3,7 @@
  * @brief Declares the GraphicsWidget class for handling the main visualization widget in the network graph interface.
  * @author Dimitris B. Kalamaras
  * @copyright
- *   Copyright (C) 2005-2024 by Dimitris B. Kalamaras.
+ *   Copyright (C) 2005-2025 by Dimitris B. Kalamaras.
  *   This file is part of SocNetV (Social Network Visualizer).
  * @license
  *   This program is free software: you can redistribute it and/or modify

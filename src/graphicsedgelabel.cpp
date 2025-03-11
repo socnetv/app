@@ -3,7 +3,7 @@
  * @brief Implements the GraphicsEdgeLabel class for rendering edge labels in the network graph.
  * @author Dimitris B. Kalamaras
  * @copyright
- *   Copyright (C) 2005-2024 by Dimitris B. Kalamaras.
+ *   Copyright (C) 2005-2025 by Dimitris B. Kalamaras.
  *   This file is part of SocNetV (Social Network Visualizer).
  * @license
  *   This program is free software: you can redistribute it and/or modify

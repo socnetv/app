@@ -4,7 +4,7 @@
  * @details This file contains the logic for the main application window, including menus, toolbars, and user interactions for network visualization and analysis.
  * @author Dimitris B. Kalamaras (http://dimitris.apeiro.gr)
  * @copyright
- *   Copyright (C) 2005-2024 by Dimitris B. Kalamaras.
+ *   Copyright (C) 2005-2025 by Dimitris B. Kalamaras.
  *   This file is part of SocNetV (Social Network Visualizer).
  * @license
  *   This program is free software: you can redistribute it and/or modify
