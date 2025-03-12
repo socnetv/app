@@ -617,7 +617,7 @@ jobs:
             echo "$NOTARY_INFO"
 
             # Extract status
-            NOTARY_STATUS=$(echo "$NOTARY_INFO" | grep "Status:" | awk '{print $2}')
+            NOTARY_STATUS=$(echo "$NOTARY_INFO" | grep -i "status:" | awk '{print $2}' | tr -d '[:space:]')
 
             if [[ "$NOTARY_STATUS" == "Accepted" ]]; then
               echo "✅ Notarization successful!"
@@ -632,6 +632,7 @@ jobs:
               echo "🎉 Build, signing, notarization and stapling complete. Final DMG: ${DMG_NAME}"
               ls -lh *.dmg
               echo "MAC_ARTIFACT=${DMG_NAME}" >> $GITHUB_ENV
+              break
             elif [[ "$NOTARY_STATUS" == "Invalid" || "$NOTARY_STATUS" == "Rejected" ]]; then
               echo "❌ Notarization failed. Details:"
               echo "$notarization_info"
@@ -647,9 +648,11 @@ jobs:
               break
             elif [[ "$NOTARY_STATUS" == "In Progress" ]]; then
               echo "⏳ Notarization still in progress, waiting..."
+            elif [[ "$NOTARY_STATUS" == "InProgress" ]]; then
+              echo "⏳ Notarization still in progress, waiting..."
             else
               echo "⚠️ Unexpected status: $NOTARY_STATUS"
-              echo "$NOTARY_INFO"              
+              echo "$NOTARY_INFO"
             fi
 
             echo "⏳ Still waiting for notarization... ($(($ELAPSED_TIME / 60)) minutes elapsed)"
