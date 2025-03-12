@@ -615,7 +615,7 @@ jobs:
             echo "🔍 Checking notarization status..."
             NOTARY_INFO=$(xcrun notarytool info --keychain-profile "AC_PASSWORD" "$NOTARY_SUBMISSION_ID" 2>&1)
             echo "$NOTARY_INFO"
-            
+
             # Extract status
             NOTARY_STATUS=$(echo "$NOTARY_INFO" | grep "Status:" | awk '{print $2}')
 
