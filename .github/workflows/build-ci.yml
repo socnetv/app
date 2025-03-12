@@ -644,7 +644,6 @@ jobs:
               mv "${{env.APP_NAME}}.dmg" "${DMG_NAME}"
               echo "⚠️ Created unsigned DMG: ${DMG_NAME}"
               echo "MAC_ARTIFACT=${DMG_NAME}" >> $GITHUB_ENV
-
               break
             elif [[ "$NOTARY_STATUS" == "In Progress" ]]; then
               echo "⏳ Notarization still in progress, waiting..."
