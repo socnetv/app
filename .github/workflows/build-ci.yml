@@ -464,6 +464,7 @@ jobs:
           fi
       - if: contains( matrix.os, 'macos') && matrix.qt-version != '6.5.3'
         name: Build ${{env.APP_NAME}} ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}} using cmake
+        timeout-minutes: 360  # 6 hours maximum
         run: |
           echo "🍎 Preparing macOS build..."
 
@@ -574,42 +575,83 @@ jobs:
           echo "🔏 Signing the DMG..."
           codesign --force --sign "Developer ID Application: Dimitris Kalamaras (${{ secrets.AC_TEAM_ID }})" "${{env.APP_NAME}}.dmg"
 
+          # Before starting notarization, set keychain to not timeout
+          echo "🔐 Setting keychain to not timeout..."
+          security set-keychain-settings -t 72000 -l build.keychain
+
           # Notarize the signed DMG
           echo "📜 Notarize the DMG"
-          xcrun notarytool submit "${{env.APP_NAME}}.dmg" \
-          --keychain-profile "AC_PASSWORD" --wait
+          SUBMIT_OUTPUT=$(xcrun notarytool submit "${{env.APP_NAME}}.dmg" --keychain-profile "AC_PASSWORD")
+          NOTARY_SUBMISSION_ID=$(echo "$SUBMIT_OUTPUT" | grep "id:" | awk '{print $2}')
+          echo "Notarization submission ID: $NOTARY_SUBMISSION_ID"
 
-          # Check the notarization status to handle success or failure
-          notarization_info=$(xcrun notarytool info --keychain-profile "AC_PASSWORD" "$(xcrun notarytool history --keychain-profile "AC_PASSWORD" | grep "${{env.APP_NAME}}.dmg" | head -1 | awk '{print $1}')")
+          if [[ -z "$NOTARY_SUBMISSION_ID" ]]; then
+            echo "❌ Error: Notarization submission ID is empty!"
+            exit 1
+          fi
 
-          if echo "$notarization_info" | grep -q "status: Accepted"; then
-            echo "✅ Notarization successful!"
+          # Store the submission id
+          echo "NOTARY_SUBMISSION_ID=$NOTARY_SUBMISSION_ID" >> $GITHUB_ENV
 
-            # Staple the notarization ticket to the DMG
-            echo "📌 Stapling notarization ticket to DMG..."
-            xcrun stapler staple "${{env.APP_NAME}}.dmg"
+          echo "🕒 Waiting for notarization to complete (with timeout)..."
+          START_TIME=$(date +%s)
+          TIMEOUT_SECONDS=1800  # 30 minutes timeout
 
-            # Rename DMG file after successful notarization and stapling
-            DMG_NAME="${{env.APP_NAME}}-${{env.VERSION}}.dmg"
-            mv "${{env.APP_NAME}}.dmg" "${DMG_NAME}"
-            echo "🎉 Build, signing, notarization and stapling complete. Final DMG: ${DMG_NAME}"
-            ls -lh *.dmg
-            echo "MAC_ARTIFACT=${DMG_NAME}" >> $GITHUB_ENV
-          else
-            echo "❌ Notarization failed. Details:"
-            echo "$notarization_info"
+          while true; do
 
-            # You might want to check for specific errors and provide guidance
-            if echo "$notarization_info" | grep -q "issues"; then
-              xcrun notarytool log --keychain-profile "AC_PASSWORD" "$(xcrun notarytool history --keychain-profile "AC_PASSWORD" | grep "${{env.APP_NAME}}.dmg" | head -1 | awk '{print $1}')"
+            # Check if we've exceeded the timeout
+            CURRENT_TIME=$(date +%s)
+            ELAPSED_TIME=$((CURRENT_TIME - START_TIME))
+            if [[ $ELAPSED_TIME -gt $TIMEOUT_SECONDS ]]; then
+              echo "⚠️ Notarization timeout after $(($TIMEOUT_SECONDS / 60)) minutes"
+              break
             fi
 
-            # Still create the artifact, but with a different name to indicate it's not notarized
-            DMG_NAME="${{env.APP_NAME}}-${{env.VERSION}}-unsigned.dmg"
-            mv "${{env.APP_NAME}}.dmg" "${DMG_NAME}"
-            echo "⚠️ Created unsigned DMG: ${DMG_NAME}"
-            echo "MAC_ARTIFACT=${DMG_NAME}" >> $GITHUB_ENV
-          fi
+            # Explicitly unlock the keychain again before checking status
+            echo "🔓 Unlocking keychain before checking notarization status..."
+            security unlock-keychain -p "" build.keychain
+
+            # Check notarization status
+            NOTARY_INFO=$(xcrun notarytool info --keychain-profile "AC_PASSWORD" "$NOTARY_SUBMISSION_ID")
+            echo "$NOTARY_INFO"
+            
+            # Extract status
+            NOTARY_STATUS=$(echo "$NOTARY_INFO" | grep "Status:" | awk '{print $2}')
+
+            if [[ "$NOTARY_STATUS" == "Accepted" ]]; then
+              echo "✅ Notarization successful!"
+
+              # Staple the notarization ticket to the DMG
+              echo "📌 Stapling notarization ticket to DMG..."
+              xcrun stapler staple "${{env.APP_NAME}}.dmg"
+
+              # Rename DMG file after successful notarization and stapling
+              DMG_NAME="${{env.APP_NAME}}-${{env.VERSION}}.dmg"
+              mv "${{env.APP_NAME}}.dmg" "${DMG_NAME}"
+              echo "🎉 Build, signing, notarization and stapling complete. Final DMG: ${DMG_NAME}"
+              ls -lh *.dmg
+              echo "MAC_ARTIFACT=${DMG_NAME}" >> $GITHUB_ENV
+            else
+              echo "❌ Notarization failed. Details:"
+              echo "$notarization_info"
+
+              # Get logs for failure details
+              xcrun notarytool log --keychain-profile "AC_PASSWORD" "$NOTARY_SUBMISSION_ID"
+
+              # Still create the artifact, but with a different name to indicate it's not notarized
+              DMG_NAME="${{env.APP_NAME}}-${{env.VERSION}}-unsigned.dmg"
+              mv "${{env.APP_NAME}}.dmg" "${DMG_NAME}"
+              echo "⚠️ Created unsigned DMG: ${DMG_NAME}"
+              echo "MAC_ARTIFACT=${DMG_NAME}" >> $GITHUB_ENV
+
+              break
+
+            fi
+
+            echo "⏳ Still waiting for notarization... ($(($ELAPSED_TIME / 60)) minutes elapsed)"
+            sleep 60  # Check every minute
+
+          done
 
       - if: contains( matrix.os, 'macos') && matrix.qt-version == '6.8.0' && env.MAC_ARTIFACT != ''
         name: 📤 Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
