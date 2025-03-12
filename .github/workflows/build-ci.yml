@@ -632,7 +632,7 @@ jobs:
               echo "🎉 Build, signing, notarization and stapling complete. Final DMG: ${DMG_NAME}"
               ls -lh *.dmg
               echo "MAC_ARTIFACT=${DMG_NAME}" >> $GITHUB_ENV
-            else
+            elif [[ "$NOTARY_STATUS" == "Invalid" || "$NOTARY_STATUS" == "Rejected" ]]; then
               echo "❌ Notarization failed. Details:"
               echo "$notarization_info"
 
@@ -646,7 +646,11 @@ jobs:
               echo "MAC_ARTIFACT=${DMG_NAME}" >> $GITHUB_ENV
 
               break
-
+            elif [[ "$NOTARY_STATUS" == "In Progress" ]]; then
+              echo "⏳ Notarization still in progress, waiting..."
+            else
+              echo "⚠️ Unexpected status: $NOTARY_STATUS"
+              echo "$NOTARY_INFO"              
             fi
 
             echo "⏳ Still waiting for notarization... ($(($ELAPSED_TIME / 60)) minutes elapsed)"
