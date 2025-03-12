@@ -582,7 +582,7 @@ jobs:
           # Notarize the signed DMG
           echo "📜 Notarize the DMG"
           SUBMIT_OUTPUT=$(xcrun notarytool submit "${{env.APP_NAME}}.dmg" --keychain-profile "AC_PASSWORD")
-          NOTARY_SUBMISSION_ID=$(echo "$SUBMIT_OUTPUT" | grep "id:" | awk '{print $2}')
+          NOTARY_SUBMISSION_ID=$(echo "$SUBMIT_OUTPUT" | grep "id:" | head -1 | awk '{print $2}')
           echo "Notarization submission ID: $NOTARY_SUBMISSION_ID"
 
           if [[ -z "$NOTARY_SUBMISSION_ID" ]]; then
@@ -612,7 +612,8 @@ jobs:
             security unlock-keychain -p "" build.keychain
 
             # Check notarization status
-            NOTARY_INFO=$(xcrun notarytool info --keychain-profile "AC_PASSWORD" "$NOTARY_SUBMISSION_ID")
+            echo "🔍 Checking notarization status..."
+            NOTARY_INFO=$(xcrun notarytool info --keychain-profile "AC_PASSWORD" "$NOTARY_SUBMISSION_ID" 2>&1)
             echo "$NOTARY_INFO"
             
             # Extract status
