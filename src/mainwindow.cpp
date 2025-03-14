@@ -488,6 +488,7 @@ QMap<QString,QString> MainWindow::initSettings(const int &debugLevel, const bool
     appSettings["showProgressBar"] = "true";
     appSettings["showToolBar"] = "true";
     appSettings["showStatusBar"] = "true";
+    appSettings["useCustomStyleSheet"]="true";
     appSettings["opengl"] = "true";
     appSettings["antialiasing"] = "true";
     appSettings["canvasAntialiasingAutoAdjustment"] = "true";
@@ -728,8 +729,8 @@ void MainWindow::slotOpenSettingsDialog() {
     connect( m_settingsDialog, &DialogSettings::setPrintLogo,
              this, &MainWindow::slotOptionsEmbedLogoExporting);
 
-    connect (m_settingsDialog, &DialogSettings::setStyleSheetDefault,
-             this, &MainWindow::slotStyleSheetDefault);
+    connect (m_settingsDialog, &DialogSettings::setCustomStylesheet,
+             this, &MainWindow::slotOptionsCustomStylesheet);
 
     connect( m_settingsDialog, &DialogSettings::setToolBar,
              this, &MainWindow::slotOptionsWindowToolbarVisibility);
@@ -840,56 +841,6 @@ void MainWindow::slotOpenSettingsDialog() {
     m_settingsDialog->exec();
 
 
-}
-
-
-
-/**
- * @brief Toggles the use of our own Qt StyleSheet
- *
- * The .qss file is defined in project resources
- *
- * @param checked
- */
-void MainWindow::slotStyleSheetDefault(const bool checked = true ){
-    if ( checked ) {
-        slotStyleSheetByName(":/qss/default.qss");
-    }
-    else {
-        slotStyleSheetByName("");
-    }
-}
-
-
-
-/**
- * @brief Loads a custom Qt StyleSheet (.qss file)
- *
- * If sheetFileName is empty, the app uses platform-specific Qt style
- *
- * @param sheetFileName
- */
-void MainWindow::slotStyleSheetByName(const QString &sheetFileName) {
-
-    qDebug() << "Opening stylesheet file: "<< sheetFileName;
-
-    QString styleSheet = "";
-
-    if ( !sheetFileName.isEmpty() ) {
-
-        QFile file(sheetFileName);
-
-        if (!file.open(QFile::ReadOnly)) {
-            qDebug () << "Could not open (for reading) file:" << sheetFileName;
-            slotHelpMessageToUserError(
-                        tr("Cannot read stylesheet file %1:\n%2")
-                        .arg(sheetFileName, file.errorString())
-                        );
-            return;
-        }
-        styleSheet = QString::fromLatin1(file.readAll());
-    }
-    qApp->setStyleSheet(styleSheet);
 }
 
 
@@ -5341,6 +5292,15 @@ void MainWindow::initWindowLayout() {
     if ( appSettings["showLeftPanel"] == "false") {
         slotOptionsWindowLeftPanelVisibility(false);
     }
+
+
+    //
+    // Load our default stylesheet, if set in the app settings.
+    //
+    if (appSettings["useCustomStyleSheet"] == "true") {
+        slotStyleSheetByName(":/qss/default.qss");
+    }
+
 
     qDebug() << "Finished window layout init.";
 
@@ -14211,7 +14171,6 @@ void MainWindow::slotOptionsCanvasAntialiasing(bool toggle) {
 
 
 
-
 /**
  * @brief Turns antialiasing auto-adjustment on or off
  * @param toggle
@@ -14298,8 +14257,6 @@ void MainWindow::slotOptionsCanvasSavePainterState(const bool &toggle) {
 
 
 
-
-
 /**
  * @brief Turns caching of canvas background on or off
  * @param toggle
@@ -14325,10 +14282,6 @@ void MainWindow::slotOptionsCanvasCacheBackground(const bool &toggle) {
 
     QApplication::restoreOverrideCursor();
 }
-
-
-
-
 
 
 
@@ -14689,6 +14642,58 @@ void MainWindow::slotOptionsWindowRightPanelVisibility(bool toggle) {
 
 }
 
+
+
+
+/**
+ * @brief Toggles the use of our own Qt StyleSheet
+ *
+ * The .qss file is defined in project resources
+ *
+ * @param checked
+ */
+void MainWindow::slotOptionsCustomStylesheet(const bool checked = true ){
+    if ( checked ) {
+        slotStyleSheetByName(":/qss/default.qss");
+        appSettings["useCustomStyleSheet"] = "true";
+    }
+    else {
+        slotStyleSheetByName("");
+        appSettings["useCustomStyleSheet"] = "false";
+    }
+}
+
+
+
+/**
+ * @brief Loads a custom Qt StyleSheet (.qss file)
+ *
+ * If sheetFileName is empty, the app uses platform-specific Qt style
+ *
+ * @param sheetFileName
+ */
+void MainWindow::slotStyleSheetByName(const QString &sheetFileName) {
+
+    qDebug() << "Opening stylesheet file: "<< sheetFileName;
+
+    QString styleSheet = "";
+
+    if ( !sheetFileName.isEmpty() ) {
+
+        QFile file(sheetFileName);
+
+        if (!file.open(QFile::ReadOnly)) {
+            qDebug () << "Could not open (for reading) file:" << sheetFileName;
+            slotHelpMessageToUserError(
+                        tr("Cannot read stylesheet file %1:\n%2")
+                        .arg(sheetFileName, file.errorString())
+                        );
+            return;
+        }
+        styleSheet = QString::fromLatin1(file.readAll());
+    }
+    qApp->setStyleSheet(styleSheet);
+}
 
 
 /**

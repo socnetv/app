@@ -92,7 +92,7 @@ signals:
     void setReportsLabelLength(const int &length);
     void setReportsChartType(const int &type);
 
-    void setStyleSheetDefault(const bool &toggle);
+    void setCustomStylesheet(const bool &toggle);
 
     void setProgressDialog(bool);
     void setToolBar(bool);

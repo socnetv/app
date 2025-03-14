@@ -108,9 +108,8 @@ QToolBar::separator{
 
 QStatusBar {
     background-color: #edecec;
-    padding: 5px 0;
-    border: 0px none;
-    padding-top: 0;
+    padding: 0;
+    border: 1px solid #ddd;
 }
 
 

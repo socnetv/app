@@ -42,24 +42,6 @@ int main(int argc, char *argv[])
     //
     QApplication app(argc, argv);
 
-    //
-    // Load our default stylesheet
-    //
-    QString sheetName = "default.qss";
-    QFile file(":/qss/" + sheetName );
-
-    if (!file.open(QFile::ReadOnly)) {
-        qDebug () << "Could not open stylesheet file:" << file.fileName();
-    }
-    else {
-        // Read stylesheet
-        QString styleSheet = QString::fromLatin1(file.readAll());
-        // Apply our default stylesheet to the app
-        qApp->setStyleSheet(styleSheet);
-
-    }
-    file.close();
-
 
     //
     // Setup app translations

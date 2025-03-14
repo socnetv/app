@@ -109,7 +109,7 @@ public:
     MainWindow(const QString &m_fileName=QString(), const bool &forceProgress=false, const bool &maximized=false, const bool &fullscreen=false, const int &debugLevel=0);
     ~MainWindow();
 
-    void slotStyleSheetDefault(const bool checked);
+    void slotOptionsCustomStylesheet(const bool checked);
     void slotStyleSheetByName(const QString &sheetFileName);
 
     void polishProgressDialog(QProgressDialog* dialog);

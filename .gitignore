@@ -1,5 +1,6 @@
 *.pro.user
 build
+builds/
 build-SocNetV*
 build-tools
 .directory

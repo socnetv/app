@@ -109,11 +109,12 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
                 (appSettings["showProgressBar"] == "true") ? true:false
                 );
 
-
     /**
       * Style options
       */
-    ui->stylesheetDefaultChkBox->setChecked(true);
+    ui->useCustomStylesheetChkBox->setChecked(
+                (appSettings["useCustomStyleSheet"] == "true") ? true:false
+                );
 
 
     /**
@@ -396,8 +397,8 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
              this, &DialogSettings::setPrintLogo);
 
 
-    connect( ui->stylesheetDefaultChkBox,&QCheckBox::clicked,
-             this,  &DialogSettings::setStyleSheetDefault);
+    connect( ui->useCustomStylesheetChkBox,&QCheckBox::clicked,
+             this,  &DialogSettings::setCustomStylesheet);
 
 
     connect (ui->progressDialogChkBox, &QCheckBox::stateChanged,
