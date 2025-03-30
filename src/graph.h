@@ -516,7 +516,7 @@ public:
 
     QString vertexShapeIconPath(const int &v);
 
-    bool graphHasVertexCustomIcons () const { return m_graphHasVertexCustomIcons; }
+    bool graphHasVertexCustomIcons () const;
 
     void vertexColorInit (const QString &color);
 

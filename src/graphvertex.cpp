@@ -175,7 +175,7 @@ QString GraphVertex::shape() const {
 }
 
 /**
- * @brief Returns the path of the vertex shape
+ * @brief Returns the path of the custom vertex icon
  * @return
  */
 QString GraphVertex::shapeIconPath() {

@@ -401,8 +401,6 @@ void Graph::clear(const QString &reason) {
 
     m_graphModStatus=ModStatus::NewNet;
 
-    m_graphHasVertexCustomIcons = false;
-
     //    if ( urlQueue->size() > 0 ) {
     //        urlQueue->clear();
     //    }
@@ -1586,13 +1584,6 @@ int Graph::vertexSize( const int &v ) const {
 void Graph::vertexShapeSetDefault(const QString shape, const QString &iconPath) {
     initVertexShape=shape;
     initVertexIconPath=iconPath;
-    if ( ! iconPath.isEmpty() ) {
-        m_graphHasVertexCustomIcons = true;
-    }
-    else {
-        m_graphHasVertexCustomIcons = false;
-    }
-
 }
 
 
@@ -1625,7 +1616,6 @@ void Graph::vertexShapeSet(const int &v1, const QString &shape, const QString &i
                  << "new shape:" << shape
                  << "iconPath:" <<iconPath;
         m_graph[ vpos[v1] ]->setShape(shape, iconPath);
-        if (shape=="custom") { m_graphHasVertexCustomIcons = true; }
         emit setNodeShape(v1, shape, iconPath);
     }
     setModStatus(ModStatus::VertexMetadata);
@@ -1653,7 +1643,22 @@ QString Graph::vertexShapeIconPath(const int &v1) {
 }
 
 
+/**
+ * @brief Returns true if at least one vertex has a 'custom' shape (therefore a custom icon).
+ * @return bool
+ */
+bool Graph::graphHasVertexCustomIcons() const {
+    VList::const_iterator it;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( ! (*it)->isEnabled () )
+            continue;
 
+        if ( (*it)->shape() == "custom" ) {
+            return true;
+        }
+    }
+    return false;
+}
 
 
 /**

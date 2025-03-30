@@ -2283,6 +2283,7 @@ bool Parser::parseAsGraphML(const QByteArray &rawData)
     key_name = "";
     key_type = "";
     key_value = "";
+    initNodeCustomIcon="";
     initEdgeWeight = 1;
     edgeWeight = 1;
     edgeColor = "black";
