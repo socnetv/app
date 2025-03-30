@@ -6555,6 +6555,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
              ! m_fileName.endsWith(".gml",Qt::CaseInsensitive ) &&
              ! m_fileName.endsWith(".wlst",Qt::CaseInsensitive ) &&
              ! m_fileName.endsWith(".wlist",Qt::CaseInsensitive )&&
+             ! m_fileName.endsWith(".dot",Qt::CaseInsensitive ) &&
              ! m_fileName.endsWith(".2sm",Qt::CaseInsensitive ) &&
              ! m_fileName.endsWith(".sm",Qt::CaseInsensitive ) &&
              ! m_fileName.endsWith(".csv",Qt::CaseInsensitive ) &&
