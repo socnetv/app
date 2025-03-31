@@ -131,7 +131,7 @@ MainWindow::MainWindow(const QString & m_fileName, const bool &forceProgress, co
 
 
     //
-    // Initialize app window (minimum) size
+    // Initialize minimum app window  size
     //
 
     // Get host screen width and height
@@ -161,15 +161,7 @@ MainWindow::MainWindow(const QString & m_fileName, const bool &forceProgress, co
              << "Set Minimum MW size to:"<<windowMinWidth<<"x"<<windowMinHeight;
 
     // Set MW minimum size, before creating the graphics widget
-    #ifdef Q_OS_LINUX
-        setMinimumSize(windowMinWidth,windowMinHeight);
-    #elif defined(Q_OS_MACOS)
-        setMinimumSize(windowMinWidth,windowMinHeight);
-    #elif defined(Q_OS_WIN)
-        setMinimumSize(windowMinWidth,windowMinHeight);
-    #else
-        setMinimumSize(windowMinWidth,windowMinHeight);
-    #endif
+    setMinimumSize(windowMinWidth,windowMinHeight);
 
     //
     // Initialize devices
@@ -218,7 +210,6 @@ MainWindow::MainWindow(const QString & m_fileName, const bool &forceProgress, co
     if (fullscreen) {
         showFullScreen();
     }
-
 
 
     initApp();          // Load and initialise default app parameters
