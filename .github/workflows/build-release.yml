@@ -1,99 +1,140 @@
-# GitHub Action to CI build SocNetV for all 3 major OSes
-# Triggered only when the commit message contains [gha] or [ci]
+# GitHub Action to build SocNetV releases for all 3 major OSes
+# Triggered only when a tag is pushed on the master branch
 
-# WIP
-
-name: Build SocNetV Release 🚀
+name: Release SocNetV 📦
 
 on:
   push:
+    tags:
+      - 'v*'
     branches:
-      - master
+      - master  # This ensures it only runs on tags pushed to master
 
 env:
-  EXECUTABLE: "SocNetV"
-  APPLICATION: "SocNetV"
-  UNIXNAME: "SocNetV"
+  APP_NAME: "SocNetV"
+  UNIXNAME: "socnetv"
   QMAKE_PROJECT: "socnetv.pro"
   PUBLISHER: "Dimitris Kalamaras"
   QT_MODULES: "qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d"
-  QMAKE_CONFIG: release  ## debug  # Never use debug. Windows builds will break.
-  CMAKE_CONFIG: Release  ## Debug
+  QMAKE_CONFIG: release  # Never use debug. Windows builds will break.
+  CMAKE_CONFIG: Release
   CORES: 16
-
+  MAC_ARTIFACT: ""
+  LINUX_ARTIFACT: ""
+  APPDIR_PREFIX: "/usr"
+  WINDOWS_ARTIFACT: ""
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
-  ci_build:
+  release_build:
+    permissions:
+      contents: write  # Required to upload release assets
+    
+    # Only run when it's a tag push on master (both conditions must be true)
+    if: startsWith(github.ref, 'refs/tags/') && github.event.base_ref == 'refs/heads/master'
+    
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, ubuntu-latest, macos-latest, windows-2019]
-        # NOTE:
-        # - We will CI build only for Qt6 LTS releases, see: https://doc.qt.io/qt-6/qt-releases.html
-        # - For the Qt Versions supported by aqtinstall, see: https://ddalcino.github.io/aqt-list-server/
-        qt-version: ['6.5.3', '6.8.0']
-        # exclude:
-        #   - os: ubuntu-latest
-        #     qt-version: '6.5.3'
-        #   - os: windows-2019
-        #     qt-version: '6.5.3'
-        #   - os: macos-latest
-        #     qt-version: '6.5.3'
-        # include:
-        #   - os: macos-latest
-        #     qt-version: '6.6.3'
-        #   # Snapcraft
-        #   - os: ubuntu-22.04
-        #     qt-version: '6.5.3'
+        os: [ubuntu-20.04, macos-latest, windows-2019]
+        # Use only the latest Qt LTS version for release builds
+        qt-version: ['6.8.0']
+    
     runs-on: ${{ matrix.os }}
-    if: contains(github.event.head_commit.message, '[ci]') || contains(github.event.head_commit.message, '[gha]')
+
     steps:
-      - name: 🤖 Job information
+      - name: 🤖 Job information - Release on tag ${{ github.ref }}
         run: |
-          echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event, by actor ${{ github.actor }}."
-          echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-          echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+          echo "🎉 Building release for tag ${{ github.ref }}"
+          echo "🐧 This job is now running on a ${{ runner.os }} server"
+      
       - name: 📂 Check out repository ${{ github.repository }}
         uses: actions/checkout@v4
-      - name: 💡 List files cloned from the ${{ github.repository }}
+      
+      - name: 💡 Set version from tag
+        shell: bash
+        id: set_version
         run: |
-          ls ${{ github.workspace }}
-          echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-          echo "🖥️ The workflow is now ready to test your code on the runner."
+          # Extract version from tag (removes the 'v' prefix if present)
+          VERSION=${GITHUB_REF#refs/tags/v}
+          # Also handle tags without 'v' prefix
+          if [[ "${GITHUB_REF}" == refs/tags/* && ! "${GITHUB_REF}" == refs/tags/v* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          fi
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "Set VERSION to ${VERSION}"
+
+      - name: 🏷️ Create GitHub Release if it doesn't exist
+        id: create_release
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const tagName = context.ref.replace('refs/tags/', '');
+            try {
+              // Check if release exists
+              const { data: releases } = await github.rest.repos.listReleases({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              });
+              const release = releases.find(r => r.tag_name === tagName);
+              
+              if (release) {
+                console.log(`Release for tag ${tagName} already exists.`);
+                return { upload_url: release.upload_url, id: release.id };
+              }
+              
+              // Create a new release
+              console.log(`Creating new release for tag ${tagName}`);
+              const { data: newRelease } = await github.rest.repos.createRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_name: tagName,
+                name: `SocNetV ${tagName.replace(/^v/, '')}`,
+                draft: false,
+                prerelease: false,
+                generate_release_notes: true,
+                make_latest: true
+              });
+              
+              return { upload_url: newRelease.upload_url, id: newRelease.id };
+            } catch (error) {
+              console.error(`Error handling release: ${error}`);
+              throw error;
+            }
+          result-encoding: string
 
 
       #
-      # Install Qt
+      # Install dependencies (build tools, cmake, etc)
       #
 
       - if: contains( matrix.os, 'windows')
-        name: Prepare for ${{matrix.os}}
+        name: 🪟 Prepare for buiilding on ${{matrix.os}}
         run: |
-          echo "🪟 -- Preparing for Windows..."
+          echo '⚙️ Install dependencies for building....'
           # DONT NEED IT. FOR DEBUG ONLY
           # pip install aqtinstall
           # aqt list-qt windows desktop
           # aqt list-qt windows desktop --arch ${{ matrix.qt-version }}
           # aqt list-qt windows desktop --modules ${{ matrix.qt-version }} win64_mingw
       - if: contains( matrix.os, 'ubuntu')
-        name: Prepare for ${{matrix.os}}
+        name: 🐧 Prepare for building on ${{matrix.os}}
         run: |
-          echo "🐧 -- Preparing for ubuntu..."
-          sudo apt install build-essential libssl-dev \
-             cmake ninja-build \
-             libssl-dev libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev
+          echo '⚙️ Install dependencies for building....'
+          sudo apt install -y build-essential libssl-dev cmake ninja-build \
+            libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev libcups2-dev libvulkan-dev \
+            desktop-file-utils patchelf libglu1-mesa-dev libfontconfig1 libfreetype6 libx11-dev libxext-dev \
+            libxrandr-dev libxrender-dev libxcb1-dev libx11-xcb-dev libxcb-glx0-dev libfuse2
           # DONT NEED IT. FOR DEBUG ONLY
           # pip install aqtinstall
-          # aqt list-qt linux desktop
           # aqt list-qt linux desktop --long-modules ${{ matrix.qt-version }} win64_mingw
       - if: contains( matrix.os, 'macos')
-        name: Prepare for ${{matrix.os}}
+        name: 🍎 Prepare for building on ${{matrix.os}}
         run: |
-          echo "🍎 -- Preparing for macos..."
+          echo '⚙️ Install dependencies for building....'
           ls
           # DONT NEED IT. FOR DEBUG ONLY
           # pip install aqtinstall
-          # aqt list-qt mac desktop
           # aqt list-qt mac desktop --modules ${{ matrix.qt-version }}
 
       #
@@ -110,8 +151,8 @@ jobs:
           version: ${{ matrix.qt-version }}   # Qt version to install
           # arch: win64_mingw
           # NOTE: We build with default arch:
-          # win64_msvc2019_64 if Qt < 6.8
-          # win64_msvc2022_64 if Qt >= 6.8
+          #   win64_msvc2019_64 if Qt < 6.8
+          #   win64_msvc2022_64 if Qt >= 6.8
           # see https://github.com/jurplel/install-qt-action
           modules: ${{env.QT_MODULES}}
           cache: true
@@ -136,95 +177,472 @@ jobs:
       #
       # Build SocNetV
       #
-      - if: contains( matrix.os, 'ubuntu-22.04')
-        name: Build for ${{matrix.os}} with Qt${{matrix.qt-version}}
+
+
+      # PACKAGE FOR UBUNTU
+      - if: contains( matrix.os, 'ubuntu')
+        name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt${{matrix.qt-version}} using cmake
         run: |
+
           echo "🔎 Check openssl version:"
           echo `openssl version`
-          echo "🔎 Check output of 'which qmake6':"
-          which qmake6
-          echo "🔎 Check qmake6 version:"
-          qmake6 -v
-          echo "🔧 Running qmake on ubuntu 22.04 with ${{env.QMAKE_CONFIG}}..."
-          qmake6 CONFIG+=${{env.QMAKE_CONFIG}}
-          echo "🚧 🛠️ Compiling for linux with make -j${{env.CORES}}. Please wait..."
-          make -j${{env.CORES}}
-          echo "👉 Building finished. Listing current directory with find for verification:"
-          find .
-      - if: contains( matrix.os, 'ubuntu-latest')
-        name: Build for ${{matrix.os}} with Qt ${{matrix.qt-version}}
+
+          echo "💡 Checking current directory..."
+          pwd
+
+          echo "💡 List current directory..."
+          ls
+
+          echo "💡 Deleting old build subdirectory..."
+          rm -rf build
+
+          echo "🔧 Configuring project using 'cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}}' ..."
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}}
+
+          echo "🔎 Verifying ./build directory (before compiling)..."
+          if [[ -d "./build" ]]; then
+              echo "🎉 ./build directory created! Contents:"
+              ls -lh ./build/
+          else
+              echo "❌ Error! ./build directory was not created!"
+              exit 1
+          fi
+
+          echo "🚧 Compiling the project..."
+          cmake --build build -j$(nproc)
+
+          echo "🔎 Entering build directory..."
+          cd build
+          ls -lh .
+
+          echo "🔎 Search for built executable ./${{env.UNIXNAME}}*..."
+          if [[ -f "./${{env.UNIXNAME}}" ]]; then
+            echo "🎉 executable found!"
+            ls -ls "${{env.UNIXNAME}}"
+          else
+              echo "❌ Error! ./build directory was not created!"
+              exit 1
+          fi
+
+          echo "📦 Creating AppImage ${{ env.VERSION }} for ${{matrix.os}}"
+ 
+          echo "💡 Checking current directory..."
+          pwd
+
+          echo "🔎 Check where we are..."
+          if [[ -d "./build" ]]; then
+              echo "We are outside of ./build directory! Entering..."
+              cd ./build/
+          fi
+
+          echo "💡 List current directory (./build)..."
+          ls
+
+          echo "🔧 Installing the application into a new 'AppDir' directory..."
+          make install DESTDIR=AppDir
+
+          if [[ -d "./AppDir" ]]; then
+              echo "🎉 SocNetv Installed in AppDir successfully!"
+          else
+              echo "❌ Error: AppDir was not created!"
+              exit 1
+          fi
+
+          echo "🔧 Installing linuxdeployqt..."
+          wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
+          chmod a+x linuxdeployqt-continuous-x86_64.AppImage
+
+          # NOTE: linuxdeployqt supports up to Ubuntu Focal Fossa
+          echo "🚀 Creating the AppImage using linuxdeployqt..."
+          ./linuxdeployqt-continuous-x86_64.AppImage AppDir/${{env.APPDIR_PREFIX}}/share/applications/*.desktop \
+            -appimage -extra-plugins=iconengines,imageformats
+
+          ARTIFACT_FN="${{env.APP_NAME}}-${{env.VERSION}}-$(uname -i).AppImage"
+
+          if [[ -f ${ARTIFACT_FN} ]]; then
+              echo "🎉 AppImage created! Listing files in current directory..."
+              ls -lh ./*.AppImage
+              echo "...Exporting LINUX_ARTIFACT=${ARTIFACT_FN}"
+              echo "LINUX_ARTIFACT=${ARTIFACT_FN}" >> $GITHUB_ENV
+          else
+              echo "❌ AppImage creation failed!"
+              exit 1
+          fi
+
+      # PACKAGE FOR MACOS
+      - if: contains( matrix.os, 'macos') 
+        name: Build ${{env.APP_NAME}} ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}} using cmake
+        timeout-minutes: 360  # 6 hours maximum
         run: |
+          echo "🍎 Preparing macOS build..."
+
           echo "🔎 Check openssl version:"
           echo `openssl version`
-          echo "🔎 Check output of 'which qmake6':"
-          which qmake6
-          echo "🔎 Check qmake6 version:"
-          qmake6 -v
-          echo "🔧 Running 'qmake6 CONFIG+=${{env.QMAKE_CONFIG}}' to configure on ubuntu ..."
-          qmake6 CONFIG+=${{env.QMAKE_CONFIG}}
-          echo "🚧 🛠️ Compiling for linux with make (unlimited cores). Please wait..."
-          make
-          echo "👉 Building finished. Listing current directory with find for verification:"
-          find .
-      # BUILD FOR MACOS
-      - if: contains( matrix.os, 'macos')
-        name: Build for ${{matrix.os}} with Qt ${{matrix.qt-version}}
-        run: |
-          echo "🔧 Running 'qmake CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}}' to configure on macos..."
-          qmake CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}}
-          echo "🚧 🛠️ Compiling for macos with make. Please wait..."
-          make
-          echo "👉 Building finished. Listing current directory with find for verification:"
-          find .
-      # BUILD FOR WINDOWS
-      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.2.4'
-        name: Build for ${{matrix.os}} with Qt ${{matrix.qt-version}}
+
+          echo "💡 Checking current directory..."
+          pwd
+
+          echo "💡 List current directory..."
+          ls
+
+          echo "💡 Deleting old build subdirectory..."
+          rm -rf build
+
+          echo "🔧 Configuring project using 'cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}}' ..."
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}}
+
+          echo "🔎 Verifying ./build directory (before compiling)..."
+          if [[ -d "./build" ]]; then
+              echo "🎉 ./build directory created! Contents:"
+              ls -lh ./build/
+          else
+              echo "❌ Error! ./build directory was not created!"
+              exit 1
+          fi
+
+          echo "🚧 Compiling the project..."
+          cmake --build build -j$(sysctl -n hw.ncpu)
+
+          echo "🔎 Entering build directory..."
+          cd build
+          ls -lh .
+
+          echo "🔎 Search for built ${{matrix.os}} bundle (DIRECTORY!)./${{env.APP_NAME}}.app ..."
+          if [[ -d "./${{env.APP_NAME}}.app" ]]; then
+            echo "🎉 ${{matrix.os}} bundle created! Bundle contents:"
+            find "${{env.APP_NAME}}.app"
+          else
+            echo "❌ Error! ${{matrix.os}} bundle not found !"
+            exit 1
+          fi
+
+          # Verify the binary with lipo
+          echo "🔎 Verifying architectures in the ${{matrix.os}} bundle..."
+          if [[ -f "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}" ]]; then
+              lipo -info "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}"
+          else
+              echo "❌ Error: ${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}} file not found!"
+              exit 1
+          fi
+
+          echo "🔑 Import macOS Developer Certificate"
+          echo "${{ secrets.MACOS_CERTIFICATE }}" | base64 --decode > certificate.p12
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security import certificate.p12 -k build.keychain -P "${{ secrets.MACOS_CERTIFICATE_PASSWORD }}" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -k "" build.keychain
+          rm -f certificate.p12
+
+          echo "🛠️ Store Apple ID Credentials for Notarization"
+          xcrun notarytool store-credentials "AC_PASSWORD" \
+          --apple-id "${{ secrets.AC_APPLE_ID }}" \
+          --team-id "${{ secrets.AC_TEAM_ID }}" \
+          --password "${{ secrets.AC_PASSWORD }}"
+
+          echo "🔧 Checking bundle structure before packaging..."
+          # Remove any PkgInfo file in the root of the app bundle
+          if [[ -f "${{env.APP_NAME}}.app/PkgInfo" ]]; then
+              echo "⚠️ Found PkgInfo in root directory - removing it"
+              rm "${{env.APP_NAME}}.app/PkgInfo"
+          fi
+
+          # Ensure PkgInfo exists in the Contents directory
+          if [[ ! -f "${{env.APP_NAME}}.app/Contents/PkgInfo" ]]; then
+              echo "Creating PkgInfo in Contents directory"
+              echo "APPL????" > "${{env.APP_NAME}}.app/Contents/PkgInfo"
+          fi
+
+          # Clear extended attributes that could interfere with signing
+          find "${{env.APP_NAME}}.app" -type f -exec xattr -c {} \;
+
+          # First run macdeployqt WITHOUT creating DMG yet
+          echo "🚀 Running macdeployqt to bundle required libraries..."
+          macdeployqt "${{env.APP_NAME}}.app" -verbose=3 || {
+            echo "Error: macdeployqt failed."
+            exit 1
+          }
+
+          # Now sign the .app bundle AFTER macdeployqt has added all dependencies
+          echo "🔏 Sign the application bundle"
+          codesign --deep --force --verbose \
+          --options runtime \
+          --entitlements ../scripts/entitlements.plist \
+          --sign "Developer ID Application: Dimitris Kalamaras (${{ secrets.AC_TEAM_ID }})" \
+          "${{env.APP_NAME}}.app"
+
+          # Verify the signature
+          echo "🔍 Verifying signature..."
+          codesign --verify --verbose "${{env.APP_NAME}}.app"
+
+          # Create the DMG from the signed app
+          echo "📦 Creating DMG from signed application..."
+          hdiutil create -volname "${{env.APP_NAME}}" -srcfolder "${{env.APP_NAME}}.app" -ov -format UDZO "${{env.APP_NAME}}.dmg"
+
+          # Sign the DMG
+          echo "🔏 Signing the DMG..."
+          codesign --force --sign "Developer ID Application: Dimitris Kalamaras (${{ secrets.AC_TEAM_ID }})" "${{env.APP_NAME}}.dmg"
+
+          # Before starting notarization, set keychain to not timeout
+          echo "🔐 Setting keychain to not timeout..."
+          security set-keychain-settings -t 72000 -l build.keychain
+
+          # Notarize the signed DMG
+          echo "📜 Notarize the DMG"
+          SUBMIT_OUTPUT=$(xcrun notarytool submit "${{env.APP_NAME}}.dmg" --keychain-profile "AC_PASSWORD")
+          NOTARY_SUBMISSION_ID=$(echo "$SUBMIT_OUTPUT" | grep "id:" | head -1 | awk '{print $2}')
+          echo "Notarization submission ID: $NOTARY_SUBMISSION_ID"
+
+          if [[ -z "$NOTARY_SUBMISSION_ID" ]]; then
+            echo "❌ Error: Notarization submission ID is empty!"
+            exit 1
+          fi
+
+          # Store the submission id
+          echo "NOTARY_SUBMISSION_ID=$NOTARY_SUBMISSION_ID" >> $GITHUB_ENV
+
+          echo "🕒 Waiting for notarization to complete (with timeout)..."
+          START_TIME=$(date +%s)
+          TIMEOUT_SECONDS=1800  # 30 minutes timeout
+
+          while true; do
+
+            # Check if we've exceeded the timeout
+            CURRENT_TIME=$(date +%s)
+            ELAPSED_TIME=$((CURRENT_TIME - START_TIME))
+            if [[ $ELAPSED_TIME -gt $TIMEOUT_SECONDS ]]; then
+              echo "⚠️ Notarization timeout after $(($TIMEOUT_SECONDS / 60)) minutes"
+              break
+            fi
+
+            # Explicitly unlock the keychain again before checking status
+            echo "🔓 Unlocking keychain before checking notarization status..."
+            security unlock-keychain -p "" build.keychain
+
+            # Check notarization status
+            echo "🔍 Checking notarization status..."
+            NOTARY_INFO=$(xcrun notarytool info --keychain-profile "AC_PASSWORD" "$NOTARY_SUBMISSION_ID" 2>&1)
+            echo "$NOTARY_INFO"
+
+            # Extract status
+            NOTARY_STATUS=$(echo "$NOTARY_INFO" | grep -i "status:" | awk '{print $2}' | tr -d '[:space:]')
+
+            if [[ "$NOTARY_STATUS" == "Accepted" ]]; then
+              echo "✅ Notarization successful!"
+
+              # Staple the notarization ticket to the DMG
+              echo "📌 Stapling notarization ticket to DMG..."
+              xcrun stapler staple "${{env.APP_NAME}}.dmg"
+
+              # Rename DMG file after successful notarization and stapling
+              DMG_NAME="${{env.APP_NAME}}-${{env.VERSION}}.dmg"
+              mv "${{env.APP_NAME}}.dmg" "${DMG_NAME}"
+              echo "🎉 Build, signing, notarization and stapling complete. Final DMG: ${DMG_NAME}"
+              ls -lh *.dmg
+              echo "MAC_ARTIFACT=${DMG_NAME}" >> $GITHUB_ENV
+              break
+            elif [[ "$NOTARY_STATUS" == "Invalid" || "$NOTARY_STATUS" == "Rejected" ]]; then
+              echo "❌ Notarization failed. Details:"
+              echo "$notarization_info"
+
+              # Get logs for failure details
+              xcrun notarytool log --keychain-profile "AC_PASSWORD" "$NOTARY_SUBMISSION_ID"
+
+              # Still create the artifact, but with a different name to indicate it's not notarized
+              DMG_NAME="${{env.APP_NAME}}-${{env.VERSION}}-unsigned.dmg"
+              mv "${{env.APP_NAME}}.dmg" "${DMG_NAME}"
+              echo "⚠️ Created unsigned DMG: ${DMG_NAME}"
+              echo "MAC_ARTIFACT=${DMG_NAME}" >> $GITHUB_ENV
+              break
+            elif [[ "$NOTARY_STATUS" == "In Progress" ]]; then
+              echo "⏳ Notarization still in progress, waiting..."
+            elif [[ "$NOTARY_STATUS" == "InProgress" ]]; then
+              echo "⏳ Notarization still in progress, waiting..."
+            else
+              echo "⚠️ Unexpected status: $NOTARY_STATUS"
+              echo "$NOTARY_INFO"
+            fi
+
+            echo "⏳ Still waiting for notarization... ($(($ELAPSED_TIME / 60)) minutes elapsed)"
+            sleep 60  # Check every minute
+
+          done
+
+
+      # PACKAGE FOR WINDOWS
+      - if: contains( matrix.os, 'windows') 
+        name: Build ${{env.APP_NAME}} ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}} using cmake.
         run: |
           echo "🔎 Listing some directories"
           dir D:\a\app\Qt\
-          echo "🔧 Running 'qmake6 CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}} -r' to configure the project on Windows..."
-          qmake6 CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}} -r
-          echo "🚧 🛠️ Compiling with nmake. Please wait..."
-          nmake
-          echo "👉 Building finished. Listing current directory for verification:"
-          dir
-      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.5.3'
-        name: Build for ${{matrix.os}} with Qt ${{matrix.qt-version}}
-        run: |
-          echo "🔎 Listing some directories"
-          dir D:\a\app\Qt\
-          echo "💡 Creating build dir"
-          mkdir build
-          echo "🔧 Running 'cmake -S . -B build' to configure the project..."
-          cmake -S . -B build
-          echo "🚧 🛠️ Compiling into build/ with 'cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}}'. Please wait..."
-          cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}}
-          echo "👉 Building finished. Listing directory build/ for verification: "
-          dir build
-      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.6.3'
-        name: Build for ${{matrix.os}} with Qt ${{matrix.qt-version}}
-        run: |
-          echo "🔎 Listing some directories"
-          dir D:\a\app\Qt\
-          echo "💡 Creating build dir"
-          mkdir build
-          echo "🔧 Running 'cmake -S . -B build' to configure the project..."
-          cmake -S . -B build
-          echo "🚧 🛠️ Compiling into build/ with 'cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}}'. Please wait..."
-          cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}}
-          echo "👉 Building finished. Listing directory build/ for verification: "
-          dir build
-      - if: contains( matrix.os, 'windows') && startsWith( matrix.qt-version, '6.' ) && matrix.qt-version == '6.8.0'
-        name: Build for ${{matrix.os}} with Qt ${{matrix.qt-version}}
-        run: |
-          echo "🔎 Listing some directories"
-          dir D:\a\app\Qt\
+
+          echo "🔎 Verifying Qt installation path..."
+          where qmake
+          where windeployqt
+
           echo "💡 Creating build dir"
           mkdir build
           echo "🔧 Running 'cmake -S . -B build' to configure the project..."
           cmake -S . -B build
           echo "🚧 🛠️ Compiling into build/ with 'cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}}'. Please wait..."
           cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}} -v
-          echo "👉 Building finished. Listing directory build/ for verification: "
-          dir build
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+          echo "👉 Building finished. Entering build/ and listing it for verification: "
+          cd build
+          dir
+
+          echo "🔧 Running windeployqt on built executable (and ensuring required .dlls are copied into the folder)..."
+          windeployqt ${{env.CMAKE_CONFIG}}\socnetv.exe --release --compiler-runtime
+
+          echo "🔧 Manually copying MSVC runtime DLLs..."
+          if (!(Test-Path "C:\Windows\System32\MSVCP140_1.dll")) {
+              echo "❌ MSVCP140_1.dll NOT FOUND in System32! This may cause runtime errors."
+              exit 1  # Fail the build when the file is missing
+          }
+          if (!(Test-Path "C:\Windows\System32\MSVCP140_2.dll")) {
+              echo "❌ MSVCP140_2.dll NOT FOUND in System32! This may cause runtime errors."
+              exit 1  # Fail the build when the file is missing
+          }
+          copy "C:\Windows\System32\MSVCP140.dll" ${{env.CMAKE_CONFIG}}\
+          copy "C:\Windows\System32\MSVCP140_1.dll" ${{env.CMAKE_CONFIG}}\
+          copy "C:\Windows\System32\MSVCP140_2.dll" ${{env.CMAKE_CONFIG}}\
+          copy "C:\Windows\System32\VCRUNTIME140.dll" ${{env.CMAKE_CONFIG}}\
+          copy "C:\Windows\System32\VCRUNTIME140_1.dll" ${{env.CMAKE_CONFIG}}\
+          copy "C:\Windows\System32\CONCRT140.dll" ${{env.CMAKE_CONFIG}}\
+
+          echo "🔧 Copying license file to build directory..."
+          copy ..\COPYING ${{env.CMAKE_CONFIG}}\LICENSE.txt
+
+          echo "👉 Checking deployed DLLs..."
+          dir ${{env.CMAKE_CONFIG}}
+
+          if (!(Get-Command "iscc.exe" -ErrorAction SilentlyContinue)) {
+            echo "🔧 Installing Inno Setup..."
+            choco install -y InnoSetup
+          } else {
+            echo "Inno Setup is already installed. Skipping installation."
+          }
+
+          echo "🔧 Adding Inno Setup to PATH..."
+          $env:PATH += ";C:\Program Files (x86)\Inno Setup 6\"
+
+          echo "🔧 Verifying Inno Setup Installation..."
+          iscc.exe /?
+
+          echo "🔧 Copying InnoSetup script..."
+          copy ..\scripts\innosetup.iss innosetup.iss
+
+          echo "Updating RELEASEFOLDER in innosetup.iss with ${{env.CMAKE_CONFIG}}..."
+          $config = "${{env.CMAKE_CONFIG}}"
+          $replacement = "#define RELEASEFOLDER `"$config\\`""
+          (Get-Content innosetup.iss) -replace '#define RELEASEFOLDER "release\\"', $replacement | Set-Content innosetup.iss
+          echo "Updated innosetup.iss:"
+          type innosetup.iss
+
+          echo "🔧 Running Inno Setup to create installer..."
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "innosetup.iss"
+
+          echo "👉 Checking if installer exists in current directory ..."
+          dir
+          $originalInstaller = Get-ChildItem -Path "SocNetV-*installer.exe" -ErrorAction SilentlyContinue
+          if (-not $originalInstaller) {
+            echo "❌ Error: Installer file not found!"
+            exit 1
+          }
+
+          echo "🔧 Renaming installer..."
+          $installerName = "SocNetV-${{env.VERSION}}-windows-installer.exe"
+          Get-ChildItem -Path "SocNetV-*installer.exe" | Move-Item -Destination $installerName
+          dir
+
+          echo "🎉 Exporting installer name to environment variable..."
+          echo "WINDOWS_ARTIFACT=$installerName" >> $env:GITHUB_ENV
+
+          echo "🎉 Windows build complete. Artifacts are ready!"
+
+
+      # Create and upload source code archives (only run once)
+      - if: contains(matrix.os, 'ubuntu')
+        name: 📦 Create and Upload Source Code Archives
+        run: |
+          echo "📦 Creating source code archives..."
+          
+          # Create source tarball
+          SRC_TARBALL="${{env.APP_NAME}}-${{env.VERSION}}-src.tar.gz"
+          git archive --format=tar.gz --prefix=${{env.APP_NAME}}-${{env.VERSION}}/ -o "$SRC_TARBALL" HEAD
+          
+          # Create source zip
+          SRC_ZIP="${{env.APP_NAME}}-${{env.VERSION}}-src.zip"
+          git archive --format=zip --prefix=${{env.APP_NAME}}-${{env.VERSION}}/ -o "$SRC_ZIP" HEAD
+          
+          echo "📤 Uploading source archives to GitHub release..."
+          # Get the tag name from GITHUB_REF
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          gh release upload "$TAG_NAME" "$SRC_TARBALL" "$SRC_ZIP" --repo "${{ github.repository }}" --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      #
+      # UPLOAD BINARIES TO RELEASE
+      #
+
+      # Upload the Linux artifact
+      - if: contains(matrix.os, 'ubuntu') && env.LINUX_ARTIFACT != ''
+        name: 📤 Upload Linux artifact to GitHub Release
+        run: |
+          echo "🔍 Verifying artifact: ${{ env.LINUX_ARTIFACT }}"
+          pwd
+          ls build
+          if [ ! -f "./build/${{ env.LINUX_ARTIFACT }}" ]; then
+            echo "❌ Error: Artifact not found!"
+            exit 1
+          fi
+
+          echo "📤 Uploading artifact to GitHub release..."
+          # Get the tag name from GITHUB_REF
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          gh release upload "$TAG_NAME" "./build/${{ env.LINUX_ARTIFACT }}" --repo "${{ github.repository }}" --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Upload macOS artifact 
+      - if: contains(matrix.os, 'macos') && env.MAC_ARTIFACT != ''
+        name: 📤 Upload macOS artifact to GitHub Release
+        run: |
+          echo "🔍 Verifying artifact: ${{ env.MAC_ARTIFACT }}"
+          pwd
+          ls build
+          if [ ! -f "./build/${{ env.MAC_ARTIFACT }}" ]; then
+            echo "❌ Error: Artifact not found!"
+            exit 1
+          fi
+
+          echo "📤 Uploading artifact to GitHub release..."
+          # Get the tag name from GITHUB_REF
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          gh release upload "$TAG_NAME" "./build/${{ env.MAC_ARTIFACT }}" --repo "${{ github.repository }}" --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Upload Windows artifact
+      - if: contains(matrix.os, 'windows') && env.WINDOWS_ARTIFACT != ''
+        name: 📤 Upload Windows artifact to GitHub Release
+        run: |
+          echo "🔍 Verifying artifact: ${{ env.WINDOWS_ARTIFACT }}"
+          echo "Current working directory:"
+          pwd
+
+          echo "Contents of build directory:"
+          Get-ChildItem -Path build
+
+          if (!(Test-Path -Path "./build/${{ env.WINDOWS_ARTIFACT }}")) {
+            echo "❌ Error: Artifact not found!"
+            exit 1
+          }
+
+          echo "📤 Uploading artifact to GitHub release..."
+          # Get the tag name from GITHUB_REF
+          $TagName = "${{ github.ref }}".Replace("refs/tags/", "")
+          gh release upload "$TagName" "./build/${{ env.WINDOWS_ARTIFACT }}" --repo "${{ github.repository }}" --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
