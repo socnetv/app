@@ -28,6 +28,7 @@ QT += core5compat
 INCLUDEPATH  += ./src
 
 FORMS += src/forms/dialogfilteredgesbyweight.ui \
+    src/forms/dialogfilternodesbycentrality.ui \
     src/forms/dialogsettings.ui \
     src/forms/dialogsysteminfo.ui \
     src/forms/dialogwebcrawler.ui \
@@ -64,6 +65,7 @@ HEADERS += src/mainwindow.h \
     src/graphicsnodelabel.h \
     src/graphicsnodenumber.h \
     src/forms/dialogfilteredgesbyweight.h \
+    src/forms/dialogfilternodesbycentrality.h \
     src/forms/dialogedgedichotomization.h \
     src/forms/dialogwebcrawler.h \
     src/forms/dialogdatasetselect.h \
@@ -103,6 +105,7 @@ SOURCES += src/main.cpp \
     src/graphicsnodelabel.cpp \
     src/graphicsnodenumber.cpp \
     src/forms/dialogfilteredgesbyweight.cpp \
+    src/forms/dialogfilternodesbycentrality.cpp \
     src/forms/dialogedgedichotomization.cpp \
     src/forms/dialogwebcrawler.cpp \
     src/forms/dialogdatasetselect.cpp \
