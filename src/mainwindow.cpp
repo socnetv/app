@@ -5857,6 +5857,7 @@ int MainWindow::slotHelpMessageToUser(const int type,
                                       ) {
     int response=0;
     QMessageBox msgBox;
+    msgBox.setMinimumWidth(400);
     QPushButton *pbtn1, *pbtn2;
 
     switch (type) {
@@ -12231,7 +12232,7 @@ void MainWindow::slotAnalyzeDistance(){
         this,
         tr("Distance between two nodes"),
         tr("Select source node (%1..%2):")
-            .arg(QString::number(min),QString::number(max)),
+            .arg(QString::number(min)).arg(QString::number(max)),
         min, min, max, 1, &ok1
         )   ;
 
@@ -12274,9 +12275,8 @@ void MainWindow::slotAnalyzeDistance(){
                     USER_MSG_INFO,
                     tr("Geodesic Distance: %1").arg(distanceGeodesic),
                     tr("Geodesic Distance: %1").arg(distanceGeodesic),
-                    tr("Nodes %1 and %2 are connected through at least one path. "
-                       "The length of the shortest path is %3.")
-                        .arg(sourceNum, targetNum, distanceGeodesic)
+                    tr("Nodes %1 and %2 are connected through at least one path. The length of the shortest path is %3.")
+                        .arg(sourceNum).arg(targetNum).arg(distanceGeodesic)
                     );
     }
     else {
@@ -12287,7 +12287,7 @@ void MainWindow::slotAnalyzeDistance(){
                     tr("Geodesic Distance: %1").arg(QString("\xE2\x88\x9E")),
                     tr("Nodes %1 and %2 are not connected. "
                        "In this case, their geodesic distance is considered to be infinite.")
-                    .arg(sourceNum, targetNum)
+                    .arg(sourceNum).arg(targetNum)
                     );
     }
 
@@ -14700,7 +14700,7 @@ void MainWindow::slotStyleSheetByName(const QString &sheetFileName) {
             qDebug () << "Could not open (for reading) file:" << sheetFileName;
             slotHelpMessageToUserError(
                         tr("Cannot read stylesheet file %1:\n%2")
-                        .arg(sheetFileName, file.errorString())
+                        .arg(sheetFileName).arg(file.errorString())
                         );
             return;
         }
