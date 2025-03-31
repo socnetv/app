@@ -23,10 +23,10 @@
    <item row="0" column="0">
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>With this temporary action, you may disable (and make invisible) some network links according to their weight. By default, it disables edges with weight equal or over a numeric threshold that you enter in the spinbox below. Select your desired weight threshold then click on one of the radio buttons further below to control what to do.</string>
+      <string>From this dialog, you can filter edges according to their weight. Select your desired weight threshold, then click on one of the radio buttons further below to control what to do. By default, it will filter edges with weight equal or over the weight threshold. The rest edges will be disabled (and invisible).</string>
      </property>
      <property name="textFormat">
-      <enum>Qt::RichText</enum>
+      <enum>Qt::TextFormat::RichText</enum>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -39,7 +39,7 @@
       <number>6</number>
      </property>
      <property name="sizeConstraint">
-      <enum>QLayout::SetDefaultConstraint</enum>
+      <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
      </property>
      <property name="topMargin">
       <number>0</number>
@@ -50,7 +50,7 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Select Weight Threshold:</string>
+        <string>Weight Threshold:</string>
        </property>
       </widget>
      </item>
@@ -62,7 +62,7 @@
         </font>
        </property>
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -129,7 +129,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Note: You can undo the filtering by running this action again later, only that time select either a threshold higher than the biggest edge weight (i.e. 99), if filtering edges over threshold is selected (first radio), or a threshold lower than the lowest edge weight (i.e. 0) if filtering edges below threshold is selected (second radio). </string>
+      <string>Note: This action is not destructive, until you close the app. You can undo the filtering by running this action again later, ie by selecting a threshold lower than the lowest edge weight (i.e. 0), if previously you had filtered edges over a threshold (first radio). Otherwise, when you save the network, only the filtered edges will be saved. </string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -139,10 +139,10 @@
    <item row="4" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
      </property>
     </widget>
    </item>

@@ -2358,17 +2358,6 @@ void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold
 
         source = (*it)->number();
 
-//        if (overThreshold) {
-//            qDebug() << "vertex:" << source
-//                     << "outedges:" << (*it)->outEdgesEnabledHash()
-//                     << "disabling outedges with weights >=" << m_threshold;
-//        }
-//        else {
-//            qDebug() << "vertex:" << source
-//                     << "outedges:" << (*it)->outEdgesEnabledHash()
-//                     << "disabling outedges with weights <=" << m_threshold;
-//        }
-
         // Loop over all out edges of source
         for ( ed = (*it)->m_outEdges.cbegin(); ed != (*it)->m_outEdges.cend(); ++ed) {
 
@@ -2385,11 +2374,11 @@ void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold
 
             // Check the filtering type: over or under
             if (overThreshold) {
-                // We should disable all edges with weights >= threshold
-                if ( weight >= m_threshold ) {
+                // We should enable only edges with weight >= threshold
+                if ( weight < m_threshold ) {
                     // this outedge must be disabled - check reverse edge
                     reverseEdgeWeight = (*it)->hasEdgeFrom(target);
-                    if ( reverseEdgeWeight != 0 && reverseEdgeWeight < m_threshold ) {
+                    if ( reverseEdgeWeight != 0 && reverseEdgeWeight >= m_threshold ) {
                         // reverse edge exists and doesn't match. It must be preserved.
                         preserveReverseEdge = true;
                     }
@@ -2415,11 +2404,11 @@ void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold
 
             }
             else {
-                // We should disable all edges <= the threshold
-                 if ( weight <= m_threshold ) {
+                // We should enable edges with weight <= the threshold
+                 if ( weight > m_threshold ) {
                      // this outedge must be disabled - check reverse edge
                      reverseEdgeWeight = (*it)->hasEdgeFrom(target);
-                     if ( reverseEdgeWeight !=0 && reverseEdgeWeight > m_threshold ) {
+                     if ( reverseEdgeWeight !=0 && reverseEdgeWeight <= m_threshold ) {
                          // reverse edge exists and doesn't match. It must be preserved.
                          preserveReverseEdge = true;
                      }
