@@ -13,8 +13,8 @@
  * @see https://socnetv.org
  */
 
-#ifndef DIALOGFILTERNODES_H
-#define DIALOGFILTERNODES_H
+#ifndef DIALOGFILTERNODESBYCENTRALITY_H
+#define DIALOGFILTERNODESBYCENTRALITY_H
 
 
 #include <QDialog>

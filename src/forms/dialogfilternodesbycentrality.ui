@@ -114,10 +114,10 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the weight threshold to use while filtering.&lt;/p&gt;&lt;p&gt;By default, it filters edges with weights equal or above the selected threshold. &lt;/p&gt;&lt;p&gt;You can control the behaviour with the radio boxes below. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the hreshold to use while filtering.&lt;/p&gt;&lt;p&gt;By default, it filters nodes with scores equal or above the selected threshold. &lt;/p&gt;&lt;p&gt;You can control the behaviour with the radio boxes below. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="statusTip">
-        <string>Enter the weight threshold to use while filtering. By default, it filters all edges with weights equal or above your selected threshold here. You can control the behaviour with the radio boxes below. </string>
+        <string>Enter the threshold to use while filtering. </string>
        </property>
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>

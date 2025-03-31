@@ -11255,7 +11255,7 @@ void MainWindow::slotFilterNodesDialogByCentrality() {
 
     // Connect dialog signal to the graph
     connect( m_DialogNodeFilterByCentrality, &DialogFilterNodesByCentrality::userChoices,
-             activeGraph, &Graph::edgeFilterByWeight);
+             activeGraph, &Graph::edgeFilterByWeight);      // PLACEHOLDER -- TODO :)
 
     // Show the dialog
     m_DialogNodeFilterByCentrality->exec() ;
