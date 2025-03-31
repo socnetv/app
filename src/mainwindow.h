@@ -81,6 +81,7 @@ class DialogExportPDF;
 class DialogExportImage;
 class DialogNodeFind;
 class DialogNodeEdit;
+class DialogFilterNodesByCentrality;
 class DialogFilterEdgesByWeight;
 class DialogEdgeDichotomization;
 class DialogSettings;
@@ -340,7 +341,7 @@ public slots:
     void slotEditEdgeDichotomizationDialog();
     void slotEditEdgeDichotomization(const qreal threshold);
 
-    void slotFilterNodes();
+    void slotFilterNodesDialogByCentrality();
     void slotEditFilterNodesIsolates(bool checked);
     void slotEditFilterEdgesByWeightDialog();
     void slotEditFilterEdgesUnilateral(bool checked);
@@ -591,6 +592,7 @@ private:
     DialogExportImage *m_dialogExportImage;
     DialogNodeEdit *m_nodeEditDialog;
     DialogNodeFind *m_nodeFindDialog;
+    DialogFilterNodesByCentrality *m_DialogNodeFilterByCentrality;
     DialogEdgeDichotomization *m_edgeDichotomizationDialog;
     DialogFilterEdgesByWeight *m_DialogEdgeFilterByWeight;
     DialogRandErdosRenyi *m_randErdosRenyiDialog;
@@ -666,7 +668,7 @@ private:
     QAction *editNodeNumbersSizeAct, *editNodeLabelsSizeAct;
     QAction *editNodeSizeAllAct, *editNodeShapeAll;
     QAction *editEdgeLabelAct, *editEdgeColorAct, *editEdgeWeightAct;
-    QAction *filterNodesAct, *editFilterNodesIsolatesAct, *editFilterEdgesByWeightAct;
+    QAction *filterNodesByCentralityAct, *editFilterNodesIsolatesAct, *editFilterEdgesByWeightAct;
     QAction *editFilterEdgesUnilateralAct;
     QAction *transformNodes2EdgesAct, *editEdgeSymmetrizeAllAct;
     QAction *editEdgeSymmetrizeStrongTiesAct, *editEdgeUndirectedAllAct;

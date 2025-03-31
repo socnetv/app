@@ -66,6 +66,7 @@
 #include "forms/dialogexportimage.h"
 #include "forms/dialognodefind.h"
 #include "forms/dialognodeedit.h"
+#include "forms/dialogfilternodesbycentrality.h"
 #include "forms/dialogfilteredgesbyweight.h"
 #include "forms/dialogedgedichotomization.h"
 #include "forms/dialogsimilaritypearson.h"
@@ -1815,19 +1816,18 @@ void MainWindow::initActions(){
 
 
 
-    filterNodesAct = new QAction(tr("Filter Nodes"), this);
-    filterNodesAct->setEnabled(false);
-    filterNodesAct->setShortcut(QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_F));
-    filterNodesAct->setStatusTip(tr("Filters Nodes of some value out of the network"));
-    filterNodesAct->setWhatsThis(tr("Filter Nodes\n\n"
-                                    "Filters Nodes of some value out of the network."));
-    connect(filterNodesAct, SIGNAL(triggered()), this, SLOT(slotFilterNodes()));
+    filterNodesByCentralityAct = new QAction(tr("Filter Nodes By Centrality"), this);
+    filterNodesByCentralityAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_E));
+    filterNodesByCentralityAct->setStatusTip(tr("Temporarily filter out nodes according to their centrality score."));
+    filterNodesByCentralityAct->setWhatsThis(tr("Filter Nodes By Centrality\n\n"
+                                    "Filters out nodes according to their score in a user-selected centrality index."));
+    connect(filterNodesByCentralityAct, SIGNAL(triggered()), this, SLOT(slotFilterNodesDialogByCentrality()));
 
     editFilterNodesIsolatesAct = new QAction(tr("Disable Isolate Nodes"), this);
     editFilterNodesIsolatesAct->setEnabled(true);
     editFilterNodesIsolatesAct->setCheckable(true);
     editFilterNodesIsolatesAct->setChecked(false);
-    editFilterNodesIsolatesAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_F));
+    editFilterNodesIsolatesAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_I));
     editFilterNodesIsolatesAct->setStatusTip(tr("Temporarily filter out nodes with no edges"));
     editFilterNodesIsolatesAct->setWhatsThis(tr("Filter Isolate Nodes\n\n"
                                                   "Enables or disables displaying of isolate nodes. "
@@ -1840,7 +1840,7 @@ void MainWindow::initActions(){
     editFilterEdgesByWeightAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_E, Qt::CTRL | Qt::Key_F));
     editFilterEdgesByWeightAct->setStatusTip(tr("Temporarily filter edges of some weight out of the network"));
     editFilterEdgesByWeightAct->setWhatsThis(tr("Filter Edges\n\n"
-                                                  "Filters Edge of some specific weight out of the network."));
+                                                  "Filters edges according to their weight."));
     connect(editFilterEdgesByWeightAct , SIGNAL(triggered()),
             this, SLOT(slotEditFilterEdgesByWeightDialog()));
 
@@ -3842,7 +3842,7 @@ void MainWindow::initMenuBar() {
     filterMenu->setIcon(QIcon(":/images/filter_list_48px.svg"));
     editMenu->addMenu(filterMenu);
 
-    filterMenu->addAction(filterNodesAct );
+    filterMenu->addAction(filterNodesByCentralityAct );
     filterMenu->addAction(editFilterNodesIsolatesAct );
     filterMenu->addAction(editFilterEdgesByWeightAct );
     filterMenu->addAction(editFilterEdgesUnilateralAct);
@@ -11244,18 +11244,31 @@ void MainWindow::slotEditEdgeMode(const int &mode){
 
 
 
+
+
+
 /**
-*	Filters Nodes by their value   
-    TODO slotFilterNodes
-*	
-*/
-void MainWindow::slotFilterNodes(){
+ * @brief Shows a dialog where the user can specify criteria to filter nodes
+ *
+ */
+void MainWindow::slotFilterNodesDialogByCentrality() {
 
     if ( !activeNodes() )  {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
+
+    // Create a new node filtering dialog
+    m_DialogNodeFilterByCentrality = new DialogFilterNodesByCentrality(this);
+
+    // Connect dialog signal to the graph
+    connect( m_DialogNodeFilterByCentrality, &DialogFilterNodesByCentrality::userChoices,
+             activeGraph, &Graph::edgeFilterByWeight);
+
+    // Show the dialog
+    m_DialogNodeFilterByCentrality->exec() ;
 }
+
 
 
 /**
