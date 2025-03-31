@@ -54,19 +54,19 @@ class GraphVertex : public QObject{
 public:
 
     GraphVertex(Graph* parentGraph,
-           const int &name,
-           const int &relation,
-           const int &size,
-           const QString &color,
-           const QString &numColor,
-           const int &numSize,
-           const QString &label,
-           const QString &labelColor,
-           const int &labelSize,
-           const QPointF &p,
-           const QString &shape,
-           const QString &iconPath,
-           const int &edgesEstimate = 2000,
+                const int &name,
+                const int &relation,
+                const int &size,
+                const QString &color,
+                const QString &numColor,
+                const int &numSize,
+                const QString &label,
+                const QString &labelColor,
+                const int &labelSize,
+                const QPointF &p,
+                const QString &shape,
+                const QString &iconPath,
+                const int &edgesEstimate = 2000,
                 const QHash<QString,QString> &nodeAttr = QHash<QString,QString>()
     );
 

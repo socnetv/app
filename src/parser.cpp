@@ -2600,72 +2600,79 @@ void Parser::readGraphMLElementDefaultValue(QXmlStreamReader &xml)
 {
 
     key_value = xml.readElementText();
+    key_name = keyName.value(key_id);
     keyDefaultValue[key_id] = key_value; // key_id is already stored
 
     qDebug() << "Reading default key values - key default value is"
              << key_value;
 
-    if (keyName.value(key_id) == "size" && keyFor.value(key_id) == "node")
-    {
-        qDebug() << "key default value" << key_value << "is for node size";
-        conv_OK = false;
-        initNodeSize = key_value.toInt(&conv_OK);
-        if (!conv_OK)
-            initNodeSize = 8;
-    }
-    if (keyName.value(key_id) == "shape" && keyFor.value(key_id) == "node")
-    {
-        qDebug() << "key default value" << key_value << "is for nodes shape";
-        initNodeShape = key_value;
-    }
-    if (keyName.value(key_id) == "custom-icon" && keyFor.value(key_id) == "node")
-    {
-        qDebug() << "key default value" << key_value << "is for node custom-icon path";
-        initNodeCustomIcon = key_value;
-        initNodeCustomIcon = fileDirPath + "/" + initNodeCustomIcon;
-        qDebug() << "initNodeCustomIcon full path:" << initNodeCustomIcon;
-        if (QFileInfo::exists(initNodeCustomIcon))
+    if ( keyFor.value(key_id) == "node" ) {
+        if (key_name == "size")
         {
-            qDebug() << "custom icon file exists!";
+            qDebug() << "key default value" << key_value << "is for node size";
+            conv_OK = false;
+            initNodeSize = key_value.toInt(&conv_OK);
+            if (!conv_OK)
+                initNodeSize = 8;
         }
-        else
+        if (key_name == "shape")
         {
-            qDebug() << "custom icon file does not exists!";
-            xml.raiseError(
-                QObject::tr(" Default custom icon for nodes does not exist in the filesystem. \nThe declared icon file was: \n%1").arg(initNodeCustomIcon));
+            qDebug() << "key default value" << key_value << "is for nodes shape";
+            initNodeShape = key_value;
+        }
+        if (key_name == "custom-icon")
+        {
+            qDebug() << "key default value" << key_value << "is for node custom-icon path";
+            initNodeCustomIcon = key_value;
+            initNodeCustomIcon = fileDirPath + "/" + initNodeCustomIcon;
+            qDebug() << "initNodeCustomIcon full path:" << initNodeCustomIcon;
+            if (QFileInfo::exists(initNodeCustomIcon))
+            {
+                qDebug() << "custom icon file exists!";
+            }
+            else
+            {
+                qDebug() << "custom icon file does not exists!";
+                xml.raiseError(
+                    QObject::tr(" Default custom icon for nodes does not exist in the filesystem. \nThe declared icon file was: \n%1").arg(initNodeCustomIcon));
+            }
+        }
+        if (key_name == "color")
+        {
+            qDebug() << "key default value" << key_value << "is for nodes color";
+            initNodeColor = key_value;
+        }
+        if (key_name == "label.color")
+        {
+            qDebug() << "key default value" << key_value << "is for node labels color";
+            initNodeLabelColor = key_value;
+        }
+        if (key_name == "label.size")
+        {
+            qDebug() << "key default value" << key_value << "is for node labels size";
+            conv_OK = false;
+            initNodeLabelSize = key_value.toInt(&conv_OK);
+            if (!conv_OK)
+                initNodeLabelSize = 8;
         }
     }
-    if (keyName.value(key_id) == "color" && keyFor.value(key_id) == "node")
-    {
-        qDebug() << "key default value" << key_value << "is for nodes color";
-        initNodeColor = key_value;
+    else if ( keyFor.value(key_id) == "edge" ) {
+        if (key_name == "weight" )
+        {
+            qDebug() << "key default value" << key_value << "is for edges weight";
+            conv_OK = false;
+            initEdgeWeight = key_value.toDouble(&conv_OK);
+            if (!conv_OK)
+                initEdgeWeight = 1;
+        }
+        if (key_name == "color" )
+        {
+            qDebug() << "key default value" << key_value << "is for edges color";
+            initEdgeColor = key_value;
+        }
     }
-    if (keyName.value(key_id) == "label.color" && keyFor.value(key_id) == "node")
-    {
-        qDebug() << "key default value" << key_value << "is for node labels color";
-        initNodeLabelColor = key_value;
-    }
-    if (keyName.value(key_id) == "label.size" && keyFor.value(key_id) == "node")
-    {
-        qDebug() << "key default value" << key_value << "is for node labels size";
-        conv_OK = false;
-        initNodeLabelSize = key_value.toInt(&conv_OK);
-        if (!conv_OK)
-            initNodeLabelSize = 8;
-    }
-    if (keyName.value(key_id) == "weight" && keyFor.value(key_id) == "edge")
-    {
-        qDebug() << "key default value" << key_value << "is for edges weight";
-        conv_OK = false;
-        initEdgeWeight = key_value.toDouble(&conv_OK);
-        if (!conv_OK)
-            initEdgeWeight = 1;
-    }
-    if (keyName.value(key_id) == "color" && keyFor.value(key_id) == "edge")
-    {
-        qDebug() << "key default value" << key_value << "is for edges color";
-        initEdgeColor = key_value;
-    }
+
+
 }
 
 /**
@@ -2699,6 +2706,7 @@ void Parser::readGraphMLElementNode(QXmlStreamReader &xml)
     nodeLabel = node_id;
     nodeLabelSize = initNodeLabelSize;
     nodeLabelColor = initNodeLabelColor;
+    nodeCustomAttributes = initNodeCustomAttributes;
     bool_node = true;
     randX = rand() % gwWidth;
     randY = rand() % gwHeight;
@@ -2739,7 +2747,9 @@ void Parser::endGraphMLElementNode(QXmlStreamReader &xml)
                               nodeLabelSize,
                               QPointF(randX, randY),
                               nodeShape,
-                              (nodeIconPath.isEmpty() ? initNodeCustomIcon : nodeIconPath));
+                              (nodeIconPath.isEmpty() ? initNodeCustomIcon : nodeIconPath),
+                              false,
+                              nodeCustomAttributes);
     }
     else
     {
@@ -2753,7 +2763,9 @@ void Parser::endGraphMLElementNode(QXmlStreamReader &xml)
                               nodeLabelSize,
                               QPointF(randX, randY),
                               nodeShape,
-                              QString());
+                              QString(),
+                              false,
+                              nodeCustomAttributes);
     }
 
     bool_node = false;
@@ -2867,6 +2879,7 @@ void Parser::readGraphMLElementData(QXmlStreamReader &xml)
 
     QXmlStreamAttributes xmlStreamAttr = xml.attributes();
     key_id = xmlStreamAttr.value("key").toString();
+    key_name = keyName.value(key_id);
     key_value = xml.text().toString();
 
     qDebug() << "parding data for key_id: "
@@ -2898,132 +2911,144 @@ void Parser::readGraphMLElementData(QXmlStreamReader &xml)
             return;
         }
     }
+    if ( keyFor.value(key_id) == "node" ) {
 
-    if (keyName.value(key_id) == "color" && keyFor.value(key_id) == "node")
-    {
-        qDebug() << "Data found. Node color: "
-                 << key_value << " for this node";
-        nodeColor = key_value;
-    }
-    else if (keyName.value(key_id) == "label" && keyFor.value(key_id) == "node")
-    {
-        qDebug() << "Data found. Node label: "
-                    ""
-                 << key_value << " for this node";
-        nodeLabel = key_value;
-    }
-    else if (keyName.value(key_id) == "x_coordinate" && keyFor.value(key_id) == "node")
-    {
-        qDebug() << "Data found. Node x: "
-                 << key_value << " for this node";
-        conv_OK = false;
-        randX = key_value.toFloat(&conv_OK);
-        if (!conv_OK)
-            randX = 0;
-        else
-            randX = randX * gwWidth;
-        qDebug() << "Using: " << randX;
-    }
-    else if (keyName.value(key_id) == "y_coordinate" && keyFor.value(key_id) == "node")
-    {
-        qDebug() << "Data found. Node y: "
-                 << key_value << " for this node";
-        conv_OK = false;
-        randY = key_value.toFloat(&conv_OK);
-        if (!conv_OK)
-            randY = 0;
-        else
-            randY = randY * gwHeight;
-        qDebug() << "Using: " << randY;
-    }
-    else if (keyName.value(key_id) == "size" && keyFor.value(key_id) == "node")
-    {
-        qDebug() << "Data found. Node size: "
-                 << key_value << " for this node";
-        conv_OK = false;
-        nodeSize = key_value.toInt(&conv_OK);
-        if (!conv_OK)
-            nodeSize = initNodeSize;
-        qDebug() << "Using: " << nodeSize;
-    }
-    else if (keyName.value(key_id) == "label.size" && keyFor.value(key_id) == "node")
-    {
-        qDebug() << "Data found. Node label size: "
-                 << key_value << " for this node";
-        conv_OK = false;
-        nodeLabelSize = key_value.toInt(&conv_OK);
-        if (!conv_OK)
-            nodeLabelSize = initNodeLabelSize;
-        qDebug() << "Using: " << nodeSize;
-    }
-    else if (keyName.value(key_id) == "label.color" && keyFor.value(key_id) == "node")
-    {
-        qDebug() << "Data found. Node label Color: "
-                 << key_value << " for this node";
-        nodeLabelColor = key_value;
-    }
-    else if (keyName.value(key_id) == "shape" && keyFor.value(key_id) == "node")
-    {
-        qDebug() << "Data found. Node shape: "
-                 << key_value << " for this node";
-        nodeShape = key_value;
-    }
-    else if (keyName.value(key_id) == "custom-icon" && keyFor.value(key_id) == "node")
-    {
-        qDebug() << "Data found. Node custom-icon path: "
-                 << key_value << " for this node";
-        nodeIconPath = key_value;
-        nodeIconPath = fileDirPath + ("/") + nodeIconPath;
-        qDebug() << "full node custom-icon path: "
-                 << nodeIconPath;
-    }
-    else if (keyName.value(key_id) == "color" && keyFor.value(key_id) == "edge")
-    {
-        qDebug() << "Data found. Edge color: "
-                 << key_value << " for this edge";
-        edgeColor = key_value;
-        if (missingNode)
+        if (key_name == "color")
         {
-            edgesMissingNodesHash.insert(edge_source + "===>" + edge_target,
-                                         QString::number(edgeWeight) + "|" + edgeColor + "|" + QString::number(edgeDirType));
+            qDebug() << "Data found. Node color: "
+                     << key_value << " for this node";
+            nodeColor = key_value;
+        }
+        else if (key_name == "label" )
+        {
+            qDebug() << "Data found. Node label: "
+                        ""
+                     << key_value << " for this node";
+            nodeLabel = key_value;
+        }
+        else if (key_name == "x_coordinate" )
+        {
+            qDebug() << "Data found. Node x: "
+                     << key_value << " for this node";
+            conv_OK = false;
+            randX = key_value.toFloat(&conv_OK);
+            if (!conv_OK)
+                randX = 0;
+            else
+                randX = randX * gwWidth;
+            qDebug() << "Using: " << randX;
+        }
+        else if (key_name == "y_coordinate" )
+        {
+            qDebug() << "Data found. Node y: "
+                     << key_value << " for this node";
+            conv_OK = false;
+            randY = key_value.toFloat(&conv_OK);
+            if (!conv_OK)
+                randY = 0;
+            else
+                randY = randY * gwHeight;
+            qDebug() << "Using: " << randY;
+        }
+        else if (key_name == "size" )
+        {
+            qDebug() << "Data found. Node size: "
+                     << key_value << " for this node";
+            conv_OK = false;
+            nodeSize = key_value.toInt(&conv_OK);
+            if (!conv_OK)
+                nodeSize = initNodeSize;
+            qDebug() << "Using: " << nodeSize;
+        }
+        else if (key_name == "label.size" )
+        {
+            qDebug() << "Data found. Node label size: "
+                     << key_value << " for this node";
+            conv_OK = false;
+            nodeLabelSize = key_value.toInt(&conv_OK);
+            if (!conv_OK)
+                nodeLabelSize = initNodeLabelSize;
+            qDebug() << "Using: " << nodeSize;
+        }
+        else if (key_name == "label.color" )
+        {
+            qDebug() << "Data found. Node label Color: "
+                     << key_value << " for this node";
+            nodeLabelColor = key_value;
+        }
+        else if (key_name == "shape" )
+        {
+            qDebug() << "Data found. Node shape: "
+                     << key_value << " for this node";
+            nodeShape = key_value;
+        }
+        else if (key_name == "custom-icon" )
+        {
+            qDebug() << "Data found. Node custom-icon path: "
+                     << key_value << " for this node";
+            nodeIconPath = key_value;
+            nodeIconPath = fileDirPath + ("/") + nodeIconPath;
+            qDebug() << "full node custom-icon path: "
+                     << nodeIconPath;
+        }
+        else
+        {
+            qDebug() << "Data found for custom attribute: "
+                     << key_name  << " of this node. Data: " << key_value;
+            nodeCustomAttributes.insert(key_name, key_value);
+
         }
     }
-    else if ((keyName.value(key_id) == "value" || keyName.value(key_id) == "weight") && keyFor.value(key_id) == "edge")
-    {
-        conv_OK = false;
-        edgeWeight = key_value.toDouble(&conv_OK);
-        if (!conv_OK)
-            edgeWeight = 1.0;
-        if (missingNode)
+    else if ( keyFor.value(key_id) == "edge" ) {
+        if (key_name == "color" )
         {
-            edgesMissingNodesHash.insert(edge_source + "===>" + edge_target,
-                                         QString::number(edgeWeight) + "|" + edgeColor + "|" + QString::number(edgeDirType));
+            qDebug() << "Data found. Edge color: "
+                     << key_value << " for this edge";
+            edgeColor = key_value;
+            if (missingNode)
+            {
+                edgesMissingNodesHash.insert(edge_source + "===>" + edge_target,
+                                             QString::number(edgeWeight) + "|" + edgeColor + "|" + QString::number(edgeDirType));
+            }
         }
-        qDebug() << "Data found. Edge value: "
-                 << key_value << " Using " << edgeWeight << " for this edge";
-    }
-    else if (keyName.value(key_id) == "size of arrow" && keyFor.value(key_id) == "edge")
-    {
-        conv_OK = false;
-        qreal temp = key_value.toFloat(&conv_OK);
-        if (!conv_OK)
-            arrowSize = 1;
-        else
-            arrowSize = temp;
-        qDebug() << "Data found. Edge arrow size: "
-                 << key_value << " Using  " << arrowSize << " for this edge";
-    }
-    else if (keyName.value(key_id) == "label" && keyFor.value(key_id) == "edge")
-    {
-        edgeLabel = key_value;
-        if (missingNode)
+        else if ((key_name == "value" || key_name == "weight") )
         {
-            edgesMissingNodesHash.insert(edge_source + "===>" + edge_target,
-                                         QString::number(edgeWeight) + "|" + edgeColor + "|" + QString::number(edgeDirType));
+            conv_OK = false;
+            edgeWeight = key_value.toDouble(&conv_OK);
+            if (!conv_OK)
+                edgeWeight = 1.0;
+            if (missingNode)
+            {
+                edgesMissingNodesHash.insert(edge_source + "===>" + edge_target,
+                                             QString::number(edgeWeight) + "|" + edgeColor + "|" + QString::number(edgeDirType));
+            }
+            qDebug() << "Data found. Edge value: "
+                     << key_value << " Using " << edgeWeight << " for this edge";
         }
-        qDebug() << "Data found. Edge label: "
-                 << edgeLabel << " for this edge";
+        else if (key_name == "size of arrow" )
+        {
+            conv_OK = false;
+            qreal temp = key_value.toFloat(&conv_OK);
+            if (!conv_OK)
+                arrowSize = 1;
+            else
+                arrowSize = temp;
+            qDebug() << "Data found. Edge arrow size: "
+                     << key_value << " Using  " << arrowSize << " for this edge";
+        }
+        else if (key_name == "label")
+        {
+            edgeLabel = key_value;
+            if (missingNode)
+            {
+                edgesMissingNodesHash.insert(edge_source + "===>" + edge_target,
+                                             QString::number(edgeWeight) + "|" + edgeColor + "|" + QString::number(edgeDirType));
+            }
+            qDebug() << "Data found. Edge label: "
+                     << edgeLabel << " for this edge";
+        }
     }
+
 }
 
 /**

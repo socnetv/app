@@ -111,18 +111,18 @@ public slots:
 
     /** Slots to signals from Parser */
     void vertexCreate (const int &number,
-                        const int &size,
-                        const QString &color,
-                        const QString &numColor,
-                        const int &numSize,
-                        const QString &label,
-                        const QString &labelColor,
-                        const int &labelSize,
-                        const QPointF &p,
-                        const QString &shape,
-                        const QString &iconPath = QString(),
-                        const bool &signalMW = false
-            );
+                      const int &size,
+                      const QString &color,
+                      const QString &numColor,
+                      const int &numSize,
+                      const QString &label,
+                      const QString &labelColor,
+                      const int &labelSize,
+                      const QPointF &p,
+                      const QString &shape,
+                      const QString &iconPath = QString(),
+                      const bool &signalMW = false,
+                      const QHash<QString, QString> &customAttributes =  QHash<QString,QString>());
 
     void graphFileLoaded(const int &fileType,
                          const QString &fName=QString(),
@@ -517,6 +517,8 @@ public:
     QString vertexShapeIconPath(const int &v);
 
     bool graphHasVertexCustomIcons () const;
+
+    QStringList graphHasVertexCustomAttributes() const;
 
     void vertexColorInit (const QString &color);
 

@@ -765,7 +765,8 @@ void Graph::vertexCreate(const int &number,
                          const QPointF &p,
                          const QString &shape,
                          const QString &iconPath,
-                         const bool &signalMW) {
+                         const bool &signalMW,
+                         const QHash<QString,QString> &customAttributes) {
 
     qDebug() << "Creating a new vertex:" << number
              << "shape:" << shape
@@ -793,7 +794,8 @@ void Graph::vertexCreate(const int &number,
                     p,
                     shape,
                     iconPath,
-                    m_reserveEdgesPerVertexSize
+                    m_reserveEdgesPerVertexSize,
+                    customAttributes
                     )
                 );
 
@@ -1659,6 +1661,30 @@ bool Graph::graphHasVertexCustomIcons() const {
     }
     return false;
 }
+
+/**
+ * @brief Returns true if at least one vertex has a 'custom' attribute
+ * @return bool
+ */
+QStringList Graph::graphHasVertexCustomAttributes() const {
+    VList::const_iterator it;
+    QStringList m_customAttributesNames;
+    for (it=m_graph.cbegin(); it!=m_graph.cend(); ++it){
+        if ( ! (*it)->isEnabled () ) {
+            continue;
+        }
+        QHashIterator<QString, QString> i((*it)->customAttributes());
+        while (i.hasNext()) {
+            i.next();
+            if (!m_customAttributesNames.contains(i.key())) {
+                m_customAttributesNames.append(i.key());
+            }
+        }
+
+    }
+    return m_customAttributesNames;
+}
+
 
 
 /**
@@ -16335,6 +16361,10 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
     QString iconFileName = QString ();
     QString copyIconFileNamePath = QString();
 
+    // Init custom attributes list and temp hash
+    QStringList vertexCustomAttributesList = graphHasVertexCustomAttributes();
+    QHash<QString, QString> m_vertexCustomAttributes = QHash<QString, QString>();
+
     networkName  = (networkName == "") ? getName().toHtmlEscaped(): networkName;
     networkName  = (networkName == "unnamed") ? fileNameNoPath.toHtmlEscaped().left(fileNameNoPath.lastIndexOf('.')): networkName;
     qDebug () << "file:" << fileName.toUtf8() << "networkName"<< networkName;
@@ -16412,6 +16442,7 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
                                                                           "  </key> \n";
     } // end check if custom icons exist
 
+
     outText <<	"  <key id=\"d6\" for=\"node\" attr.name=\"label.color\" attr.type=\"string\"> \n"
                 "    <default>" << initVertexLabelColor << "</default> \n"
                 "  </key> \n";
@@ -16429,6 +16460,24 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
     outText <<	"  <key id=\"d10\" for=\"edge\" attr.name=\"label\" attr.type=\"string\"> \n"
                 "    <default>" << ""<< "</default> \n"
                 "  </key> \n";
+
+
+    // Save custom attributes defaults, if any.
+    if (!vertexCustomAttributesList.isEmpty()) {
+        qDebug () << "saving defaults for vertexCustomAttributesList:" << vertexCustomAttributesList;
+        QString customVertexAttrId;
+        for (qsizetype i = 0; i < vertexCustomAttributesList.size(); ++i) {
+            customVertexAttrId = 'd' + QString::number(1000+i);
+            qDebug () << "customVertexAttrId:" << customVertexAttrId
+                       << "customVertexAttr" << vertexCustomAttributesList.at(i);
+            outText <<	"  <key id=\""+ customVertexAttrId +"\" for=\"node\" attr.name=\""+ vertexCustomAttributesList.at(i) + "\" attr.type=\"string\"> \n"
+                       "    <default></default> \n"
+                           "  </key> \n";
+
+        }
+
+    }
+
 
     VList::const_iterator it;
     VList::const_iterator jt;
@@ -16460,9 +16509,7 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
             m_labelColor=(*it)->labelColor() ;
             m_label=(*it)->label();
             m_label = htmlEscaped(m_label);
-
-            // TODO: save custom attributes
-            
+            m_vertexCustomAttributes = (*it)->customAttributes();
             outText << "      <data key=\"d0\">" << m_label <<"</data>\n";
 
             rel_coord_x = (*it)->x()/(maxWidth);
@@ -16515,6 +16562,21 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
             if (  initVertexLabelSize != m_labelSize ) {
                 outText << "      <data key=\"d7\">" << m_labelSize <<"</data>\n";
             }
+
+
+            qDebug () << "m_vertexCustomAttributes:" << m_vertexCustomAttributes;
+            if (!m_vertexCustomAttributes.isEmpty()) {
+                QString customVertexAttrId;
+                QHashIterator<QString, QString> i(m_vertexCustomAttributes);
+                int customAttrCount = 0;
+                for (auto  cit = m_vertexCustomAttributes.cbegin(), end = m_vertexCustomAttributes.cend(); cit != end; ++cit) {
+                    customVertexAttrId = 'd' + QString::number(1000+customAttrCount);
+                    outText << "      <data key=\""+ customVertexAttrId +"\">" << cit.value() <<"</data>\n";
+                    customAttrCount++;
+                }
+
+            }
+
 
             outText << "    </node>\n";
 

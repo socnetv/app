@@ -19,8 +19,6 @@
 #include <QtDebug>		//used for qDebug messages
 
 #include "graph.h"
-#include "graphicsnode.h"
-
 
 GraphVertex::GraphVertex(Graph* parentGraph,
                          const int &name,
