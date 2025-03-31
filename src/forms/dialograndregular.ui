@@ -22,12 +22,6 @@
     <height>440</height>
    </size>
   </property>
-  <property name="maximumSize">
-   <size>
-    <width>800</width>
-    <height>600</height>
-   </size>
-  </property>
   <property name="windowTitle">
    <string>d-Regular network generator</string>
   </property>
@@ -53,16 +47,16 @@
       </size>
      </property>
      <property name="frameShape">
-      <enum>QFrame::NoFrame</enum>
+      <enum>QFrame::Shape::NoFrame</enum>
      </property>
      <property name="frameShadow">
-      <enum>QFrame::Sunken</enum>
+      <enum>QFrame::Shadow::Sunken</enum>
      </property>
      <property name="text">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Generate a &lt;span style=&quot; font-style:italic;&quot;&gt;d-regular&lt;/span&gt; random network of &lt;span style=&quot; font-style:italic;&quot;&gt;n&lt;/span&gt; nodes. This is a graph where each vertex has the same number of neighbors &lt;span style=&quot; font-style:italic;&quot;&gt;d&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;This model produces undirect and directed provided that n &amp;gt; 5, d/&lt;span style=&quot; font-style:italic;&quot;&gt;n &amp;lt; 0.5 &lt;/span&gt;and &lt;span style=&quot; font-style:italic;&quot;&gt;n*d &lt;/span&gt;is even. Read more in the manual.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
-      <enum>Qt::RichText</enum>
+      <enum>Qt::TextFormat::RichText</enum>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -72,7 +66,7 @@
    <item row="1" column="0">
     <widget class="Line" name="line">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
     </widget>
    </item>
@@ -133,14 +127,14 @@
    <item row="3" column="0">
     <widget class="Line" name="line_2">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
     </widget>
    </item>
    <item row="4" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_6">
      <property name="sizeConstraint">
-      <enum>QLayout::SetMinimumSize</enum>
+      <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
      </property>
      <item>
       <widget class="QLabel" name="degreeLabel">
@@ -191,7 +185,7 @@
    <item row="5" column="0">
     <widget class="Line" name="line_4">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
     </widget>
    </item>
@@ -278,7 +272,7 @@
    <item row="7" column="0">
     <widget class="Line" name="line_5">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
     </widget>
    </item>
@@ -337,17 +331,17 @@
    <item row="9" column="0">
     <widget class="Line" name="line_6">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
     </widget>
    </item>
    <item row="10" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
      </property>
     </widget>
    </item>
