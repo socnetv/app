@@ -16565,6 +16565,7 @@ bool Graph::saveToGraphMLFormat (const QString &fileName,
 
 
             qDebug () << "m_vertexCustomAttributes:" << m_vertexCustomAttributes;
+            // TODO: TEST ME
             if (!m_vertexCustomAttributes.isEmpty()) {
                 QString customVertexAttrId;
                 QHashIterator<QString, QString> i(m_vertexCustomAttributes);
