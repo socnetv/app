@@ -67,6 +67,7 @@ configure_file(${CMAKE_SOURCE_DIR}/COPYING
 # Define sources and headers
 set (FORMS 
     src/forms/dialogfilteredgesbyweight.ui 
+    src/forms/dialogfilternodesbycentrality.ui
     src/forms/dialogsettings.ui 
     src/forms/dialogsysteminfo.ui 
     src/forms/dialogwebcrawler.ui 
@@ -106,6 +107,7 @@ set(SOURCES
     src/graphicsnode.cpp 
     src/graphicsnodelabel.cpp 
     src/graphicsnodenumber.cpp 
+    src/forms/dialogfilternodesbycentrality.cpp
     src/forms/dialogfilteredgesbyweight.cpp 
     src/forms/dialogedgedichotomization.cpp 
     src/forms/dialogwebcrawler.cpp 
