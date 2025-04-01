@@ -49,7 +49,7 @@ branches:
 #   - socnetv.spec
 #   - debian/**/*
 #   - socnetv.appdata.xml
-#   - changelog.gz
+#   - CHANGELOG.md
 #   - README.md
 #   - TODO
 #   - AUTHORS

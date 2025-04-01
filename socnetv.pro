@@ -192,7 +192,7 @@ unix:!macx{
   translations.files = translations/socnetv_*.qm
 
   doc.path = $${PREFIX}/share/doc/socnetv
-  doc.files = changelog.gz NEWS README.md TODO COPYING AUTHORS INSTALL
+  doc.files = CHANGELOG.md README.md TODO COPYING AUTHORS INSTALL
 
   INSTALLS += pixmap desktop manpage translations appstream
 

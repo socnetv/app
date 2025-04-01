@@ -334,7 +334,7 @@ elseif(LINUX)
     # )
 
     # Install documentation
-    install(FILES changelog.gz NEWS README.md TODO COPYING AUTHORS INSTALL
+    install(FILES CHANGELOG.md README.md TODO COPYING AUTHORS INSTALL
         DESTINATION "${CMAKE_INSTALL_DATADIR}/doc/socnetv"
     )
 
