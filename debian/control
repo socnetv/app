@@ -13,7 +13,7 @@ Build-Depends: debhelper-compat (= 12),
 
 Standards-Version: 4.5.1
 Homepage: https://socnetv.org
-Vcs-Git: https://github.com/socnetv/app.git 
+Vcs-Git: https://github.com/socnetv/app.git
 Vcs-Browser: https://github.com/socnetv/app/tree/master/
 
 Package: socnetv
@@ -23,16 +23,16 @@ Description: Social Networks Analysis and Visualization software
  SocNetV (Social Network Visualiser) is a flexible and
  user-friendly tool for Social Networks Analysis and Visualisation.
  It lets you create new networks (graphs) with a few clicks on a
- virtual canvas or load networks of various formats (GraphML, 
- GraphViz, Adjacency, UCINET, Pajek, etc) and modify them to suit 
+ virtual canvas or load networks of various formats (GraphML,
+ GraphViz, Adjacency, UCINET, Pajek, etc) and modify them to suit
  your needs.
  .
  The application can compute network properties, such as density,
- diameter and geodesic distances, as well as node-wise and network 
- indices such as various types of Centrality and Prestige. 
+ diameter and geodesic distances, as well as node-wise and network
+ indices such as various types of Centrality and Prestige.
  Various layout algorithms (i.e. Spring-embedder, circular and in
- levels according to prominence indices) are supported for 
+ levels according to prominence indices) are supported for
  meaningful visualisations of your networks. Furthermore, it can
- create various random networks (Erdos-Renyi, Watts-Strogatz, 
+ create various random networks (Erdos-Renyi, Watts-Strogatz,
  ring lattice, etc) with a few clicks.
  .
