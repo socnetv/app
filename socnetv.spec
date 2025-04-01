@@ -35,7 +35,7 @@
 
 Name:		socnetv
 Version:	3.2
-Release:	1{?dist}
+Release:	1%{?dist}
 Summary:	A Social Networks Analyser and Visualiser
 License:	GPL-3.0-or-later
 Group:		Productivity/Scientific/Math 
@@ -47,12 +47,12 @@ BuildRequires:	gzip
 
 %if 0%{?suse_version}
 BuildRequires:  qt6-tools-linguist
-BuildRequires:  libQt6Core5Compat6
+BuildRequires:  qt6-core5compat-devel
 %endif
 
 %if 0%{?fedora} || 0%{?rhel_version} || 0%{?centos_version}
 BuildRequires:	qt6-linguist
-BuildRequires:  qt6-qt5compat
+BuildRequires:  qt6-qt5compat-devel
 BuildRequires:  glibc-all-langpacks
 %endif
 
@@ -94,10 +94,10 @@ find .
 
 %build
 # Run lrelease to generate Qt message files from Qt Linguist translation files
-lrelease-qt6 socnetv.pro
+%{lrelease} socnetv.pro
 
 ### Run qmake
-qmake CONFIG+=release
+%{qmake} CONFIG+=release
 
 ### Run make to build the application
 %__make %{?_smp_mflags}
