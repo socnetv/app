@@ -29,17 +29,17 @@ jobs:
   release_build:
     permissions:
       contents: write  # Required to upload release assets
-    
+
     # Only run when it's a tag push on master (both conditions must be true)
     if: startsWith(github.ref, 'refs/tags/') && github.event.base_ref == 'refs/heads/master'
-    
+
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-20.04, macos-latest, windows-2019]
         # Use only the latest Qt LTS version for release builds
         qt-version: ['6.8.0']
-    
+
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -47,10 +47,10 @@ jobs:
         run: |
           echo "🎉 Building release for tag ${{ github.ref }}"
           echo "🐧 This job is now running on a ${{ runner.os }} server"
-      
+
       - name: 📂 Check out repository ${{ github.repository }}
         uses: actions/checkout@v4
-      
+
       - name: 💡 Set version from tag
         shell: bash
         id: set_version
@@ -77,12 +77,12 @@ jobs:
                 repo: context.repo.repo,
               });
               const release = releases.find(r => r.tag_name === tagName);
-              
+
               if (release) {
                 console.log(`Release for tag ${tagName} already exists.`);
                 return { upload_url: release.upload_url, id: release.id };
               }
-              
+
               // Create a new release
               console.log(`Creating new release for tag ${tagName}`);
               const { data: newRelease } = await github.rest.repos.createRelease({
@@ -95,7 +95,7 @@ jobs:
                 generate_release_notes: true,
                 make_latest: true
               });
-              
+
               return { upload_url: newRelease.upload_url, id: newRelease.id };
             } catch (error) {
               console.error(`Error handling release: ${error}`);
@@ -225,7 +225,7 @@ jobs:
           fi
 
           echo "📦 Creating AppImage ${{ env.VERSION }} for ${{matrix.os}}"
- 
+
           echo "💡 Checking current directory..."
           pwd
 
@@ -270,7 +270,7 @@ jobs:
           fi
 
       # PACKAGE FOR MACOS
-      - if: contains( matrix.os, 'macos') 
+      - if: contains( matrix.os, 'macos')
         name: Build ${{env.APP_NAME}} ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}} using cmake
         timeout-minutes: 360  # 6 hours maximum
         run: |
