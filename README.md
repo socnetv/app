@@ -128,9 +128,9 @@ Alternatively, there is a SocNetV port in MacPorts (thanks to Szabolcs Horvát!)
 To run the latest and greatest version of SocNetV in Linux, download the latest Linux AppImage from
 the project's [Downloads](https://socnetv.org/downloads) page.
 
-Then, make the .appimage file executable and double-click on it to run SocNetV. That's it. :)
+Then, make the .AppImage file executable and double-click on it to run SocNetV. That's it! Note, however, that your system needs to have libfuse2 installed. On latest Ubuntu releases, you need to instal it with `sudo apt install libfuse2t64`
 
-> Please note that SocNetV is also available in the [repositories of most Linux distributions](https://repology.org/project/socnetv/versions). 
+> SocNetV is also available in the [repositories of most Linux distributions](https://repology.org/project/socnetv/versions). 
 However, that is not always the most recent version. We urge you to use the AppImage of the latest version available from our website instead.
 
 Alternatively, users of openSUSE, Fedora and Ubuntu/Debian can install SocNetV from our own repositories.
@@ -248,6 +248,8 @@ inside the application, when running SocNetV.
 
 To see the full documentation, press F1. It will open a browser window with the SocNetV Manual,
 which is available online at the project's website: <https://socnetv.org/documentation/>
+
+For a full list of changes, see our CHANGELOG.md
 
 ## 7. Bug reporting & contact
 

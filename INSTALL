@@ -38,7 +38,9 @@ Install in Linux
 To run the latest version of SocNetV in Linux, download the latest Linux AppImage from
 the project's Downloads page.
 
-Make the file executable and double-click on it to run SocNetV.
+Make the file executable and double-click on it to run SocNetV. Note, however, that your system needs to have libfuse2 installed. On latest Ubuntu releases, you need to instal it with:
+
+sudo apt install libfuse2t64
 
 Please note that a version of SocNetV is available in the repositories of most Linux distributions.
 However that is not always the most recent and updated version.
