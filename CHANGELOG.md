@@ -1,6 +1,8 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to this project will be documented in this file. 
+
+Old entries were migrated from the legacy NEWS file for historical reference.
 
 ## [3.2] – April 2025
 
