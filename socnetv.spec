@@ -86,9 +86,6 @@ visualisation.
 ### Runn autosetup. The autosetup macro is new, see: https://rpm.org/user_doc/autosetup.html
 %autosetup -p 0 -n app-%{version}
 
-### Unzip changelog
-gunzip changelog.gz
-chmod -x changelog
 
 ### Debugging: Show files
 pwd
@@ -142,7 +139,7 @@ pwd
 %defattr(-,root,root)
 %dir /usr/share/socnetv
 %license COPYING
-%doc AUTHORS NEWS README.md changelog
+%doc AUTHORS CHANGELOG.md README.md CHANGELOG.md
 %{_bindir}/%{name}
 %{_datadir}/%{name}/%{name}_*.qm
 %{_datadir}/applications/%{name}.desktop
@@ -156,8 +153,8 @@ pwd
 ### CHANGELOG SECTION
 ###
 %changelog
-* Tue Dec 19 2023 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 3.2-1
-- Development v3.2
+* Tue Apr 1 2025 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 3.2-1
+- Upstream v3.2
 * Mon Jun 12 2023 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 3.1-1
 - Upstream v3.1
 * Fri Jul 30 2021 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 3.0.4-1
