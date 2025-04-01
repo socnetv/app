@@ -93,7 +93,7 @@ jobs:
                 draft: false,
                 prerelease: false,
                 generate_release_notes: true,
-                make_latest: true
+                make_latest: "true"
               });
 
               return { upload_url: newRelease.upload_url, id: newRelease.id };
