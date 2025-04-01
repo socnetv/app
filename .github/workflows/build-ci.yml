@@ -813,3 +813,49 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
+
+      # Update the continuous release description (only once, from ubuntu)
+      - if: matrix.os == 'ubuntu-latest' && matrix.qt-version == '6.8.0'
+        name: 🔄 Update continuous release description
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const commitSha = context.sha;
+            const shortSha = commitSha.slice(0, 7);
+            const commitDate = new Date().toISOString().split('T')[0];
+            
+            const { data: commit } = await github.rest.git.getCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: commitSha
+            });
+            
+            const commitMessage = commit.message.split('\n')[0];
+            
+            const newDescription = `Latest Continuous Build. Built from commit \`${shortSha}\` on ${commitDate}. This is an automated continuous build. These builds are generated automatically from the latest \`develop\` code and are intended for testing purposes.`;
+            
+            try {
+              // Find the continuous release
+              const { data: releases } = await github.rest.repos.listReleases({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              });
+              const release = releases.find(r => r.tag_name === "continuous");
+              
+              if (release) {
+                // Update the release description
+                await github.rest.repos.updateRelease({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  release_id: release.id,
+                  body: newDescription
+                });
+                console.log("Release description updated successfully");
+              } else {
+                console.log("Continuous release not found");
+              }
+            } catch (error) {
+              console.error("Error updating release description:", error);
+            }
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
