@@ -800,19 +800,21 @@ bool Parser::parseAsDL(const QByteArray &rawData)
 
                     qDebug() << "reading edges in fullmatrix format";
 
-                    // SPLIT EACH LINE (ON EMPTY SPACE CHARACTERS)
-                    if (!prevLineStr.isEmpty())
-                    {
-                        str = (prevLineStr.append(" ")).append(str);
-                        qDebug() << "prevLineStr not empty - "
-                                    "prepending it to str - new str: \n"
-                                 << str;
-                        str = str.simplified();
-                    }
-                    qDebug() << "splitting str to elements ";
+                    // Accumulate wrapped lines until we get totalNodes values
+                    QString accumulatedLine = str;
                     myRegExp.setPattern("\\s+");
-                    lineElement = str.split(myRegExp, Qt::SkipEmptyParts);
+                    lineElement = accumulatedLine.split(myRegExp, Qt::SkipEmptyParts);
                     qDebug() << "line elements " << lineElement.size();
+
+                    while (lineElement.size() < totalNodes && !ts.atEnd()) {
+                        QString nextLine = ts.readLine().simplified();
+                        if (!nextLine.isEmpty() && !isComment(nextLine)) {
+                            accumulatedLine += " " + nextLine;
+                            lineElement = accumulatedLine.split(myRegExp, Qt::SkipEmptyParts);
+                            fileLineNumber++; // Advance line count to keep error reporting consistent
+                        }
+                    }
+
                     if (lineElement.size() != totalNodes)
                     {
                         qDebug() << "❌ ERROR: Mismatch in matrix row size at line" << fileLineNumber
