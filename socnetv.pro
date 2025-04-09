@@ -11,7 +11,7 @@ ALLOW_WARNINGS = warn_off
 TEMPLATE = app
 CONFIG  += qt thread $${ALLOW_WARNINGS} $${MY_TARGET_BUILD}
 TARGET = socnetv
-VERSION=3.2
+VERSION=3.3
 LANGUAGE = C++
 
 
@@ -147,7 +147,7 @@ win32 {
   QMAKE_TARGET_DESCRIPTION = "SocNetV: Open-source social network analysis application based on Qt."
 
   # Copyright Information
-  QMAKE_TARGET_COPYRIGHT = "Copyright (C) 2023 Dimitris V. Kalamaras. GPLv3."
+  QMAKE_TARGET_COPYRIGHT = "Copyright (C) 2023 Dimitris B. Kalamaras. GPLv3."
 
   TARGET = SocNetV
   target.path = release/

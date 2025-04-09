@@ -1,8 +1,8 @@
 Source: socnetv
 Section: math
 Priority: optional
-Maintainer: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
-XSBC-Original-Maintainer: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>
+Maintainer: Dimitris B. Kalamaras <dimitris.kalamaras@gmail.com>
+XSBC-Original-Maintainer: Dimitris B. Kalamaras <dimitris.kalamaras@gmail.com>
 Build-Depends: debhelper-compat (= 12),
                qt6-base-dev,
                qt6-base-dev-tools,

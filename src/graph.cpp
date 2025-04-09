@@ -2,7 +2,6 @@
  * @file graph.cpp
  * @brief Implements the Graph class for managing network structures, nodes, and edges in SocNetV.
  * @author Dimitris B. Kalamaras
- * @contact dimitris.kalamaras@gmail.com
  * @copyright
  *   Copyright (C) 2005-2025 by Dimitris B. Kalamaras.
  *   This file is part of SocNetV (Social Network Visualizer).

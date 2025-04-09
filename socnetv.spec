@@ -34,7 +34,7 @@
 %endif
 
 Name:		socnetv
-Version:	3.2
+Version:	3.3
 Release:	1%{?dist}
 Summary:	A Social Networks Analyser and Visualiser
 License:	GPL-3.0-or-later

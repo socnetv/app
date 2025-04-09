@@ -34,7 +34,7 @@ SOCNETV_BEGIN_NAMESPACE
 #define M_PI_X_2 (6.28318530717958647692)
 #endif
 
-static const QString VERSION="3.2";
+static const QString VERSION="3.3";
 
 /**
  * @enum NodeShape

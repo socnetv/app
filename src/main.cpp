@@ -73,8 +73,10 @@ int main(int argc, char *argv[])
     QCommandLineParser parser;
 
     QString cmdDescr = "\nSocial Network Visualizer, version " + (VERSION) + "\n\n"
-            "Copyright: Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>\n" +
-            "License: GPL3";
+            "Copyright: Dimitris B. Kalamaras \n" +
+            "License: GPL3" + "\n" +
+            "Website: https://socnetv.org\n";
+
     parser.setApplicationDescription(cmdDescr);
 
     parser.addHelpOption();
