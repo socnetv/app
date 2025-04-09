@@ -1,0 +1,29 @@
+*Network petersen
+*Vertices 10
+1 "blue" ic RGB5555FF      0.301331  0.398259  circle
+2 "red" ic red             0.474335  0.238302  circle
+3 "blue" ic RGB5555FF      0.652082  0.407722  circle
+4 "green" ic RGB00FF00     0.601418  0.681758  circle
+5 "red" ic red             0.348936  0.677763  circle
+6 "green" ic RGB00FF00     0.410646  0.581066  circle
+7 "red" ic red             0.534221  0.583243  circle
+8 "red" ic red             0.561787  0.437432  circle
+9 "blue" ic RGB5555FF      0.475285  0.351469  circle
+10 "green" ic RGB00FF00    0.38308   0.436344  circle
+*Arcs 
+*Edges 
+1 2 1 c black
+1 5 1 c black
+1 10 1 c black
+2 3 1 c black
+2 9 1 c black
+3 4 1 c black
+3 8 1 c black
+4 5 1 c black
+4 7 1 c black
+5 6 1 c black
+6 8 1 c black
+6 9 1 c black
+7 9 1 c black
+7 10 1 c black
+8 10 1 c black

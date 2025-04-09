@@ -1,0 +1,66 @@
+*Network Campnet
+*Vertices 18
+1 "HOLLY" ic RGBF1F5D5		0.63046 	0.575472	circle
+2 "BRAZEY" ic RGBF1F5D5		0.0991736 	0.511006	circle
+3 "CAROL" ic RGBF1F5D5		0.576151 	0.43239		circle
+4 "PAM" ic RGBF1F5D5		0.726092 	0.371069	circle
+5 "PAT" ic RGBF1F5D5		0.709563 	0.5		circle
+6 "JENNIE" ic RGBF1F5D5		0.876033 	0.482704	circle
+7 "PAULINE" ic RGBF1F5D5	0.619835 	0.286164	circle
+8 "ANN" ic RGBF1F5D5		0.864227 	0.309748	circle
+9 "MICHAEL" ic RGBF1F5D5	0.489965 	0.638365	box
+10 "BILL" ic RGBF1F5D5		0.475797 	0.805031	box
+11 "LEE" ic RGBF1F5D5		0.0885478 	0.267296	box
+12 "DON" ic RGBF1F5D5		0.645809 	0.778302	box
+13 "JOHN" ic RGBF1F5D5		0.453365 	0.290881	box
+14 "HARRY" ic RGBF1F5D5		0.593861 	0.669811	box
+15 "GERY" ic RGBF1F5D5		0.362456 	0.539308	box
+16 "STEVE" ic RGBF1F5D5		0.230224 	0.5		box
+17 "BERT" ic RGBF1F5D5		0.218418 	0.245283	box
+18 "RUSS" ic RGBF1F5D5		0.323495 	0.29717		box
+*Arcs 
+1 4 1 c black
+2 16 1 c black
+2 17 1 c black
+3 4 1 c black
+7 5 1 c black
+8 7 1 c black
+9 1 1 c black
+10 9 1 c black
+10 12 1 c black
+10 14 1 c black
+13 7 1 c black
+13 15 1 c black
+13 18 1 c black
+14 1 1 c black
+15 9 1 c black
+15 16 1 c black
+*Edges 
+1 4 1 c black
+1 5 1 c black
+1 12 1 c black
+2 11 1 c black
+2 16 1 c black
+2 17 1 c black
+3 4 1 c black
+3 5 1 c black
+3 7 1 c black
+4 6 1 c black
+4 7 1 c black
+4 8 1 c black
+5 6 1 c black
+6 8 1 c black
+9 12 1 c black
+9 14 1 c black
+10 12 1 c black
+10 14 1 c black
+11 16 1 c black
+11 17 1 c black
+12 14 1 c black
+13 15 1 c black
+13 18 1 c black
+15 16 1 c black
+15 18 1 c black
+16 17 1 c black
+16 18 1 c black
+17 18 1 c black

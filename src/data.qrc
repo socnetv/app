@@ -1,0 +1,27 @@
+<!DOCTYPE RCC>
+<RCC>
+    <qresource prefix="/">
+        <file>data/Bernard_Killworth_Fraternity.dl</file>
+        <file>data/Campnet.paj</file>
+        <file>data/Freeman_34_possible_graphs_with_N_5_multirelational.paj</file>
+        <file>data/Freeman_EIES_network_48actors_Acquaintanceship_at_time_1.dl</file>
+        <file>data/Freeman_EIES_network_48actors_Acquaintanceship_at_time_2.dl</file>
+        <file>data/Freeman_EIES_network_48actors_Messages.dl</file>
+        <file>data/Freeman_EIES_networks_32actors.dl</file>
+        <file>data/Herschel_Graph.paj</file>
+        <file>data/Knoke_Bureaucracies_Network.pajek</file>
+        <file>data/Krackhardt_High-tech_managers.paj</file>
+        <file>data/Mexican_Power_Network_1940s.lst</file>
+        <file>data/Padgett_Florentine_Families.paj</file>
+        <file>data/Petersen_Graph.paj</file>
+        <file>data/Stephenson_Zelen_40_AIDS_patients_sex_contact.paj</file>
+        <file>data/Stephenson_Zelen_5actors_6edges_IC_test_dataset.paj</file>
+        <file>data/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj</file>
+        <file>data/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl</file>
+        <file>data/Stokman_Ziegler_Corporate_Interlocks_West_Germany.dl</file>
+        <file>data/Thurman_Office_Networks_Coalitions.dl</file>
+        <file>data/Wasserman_Faust_7actors_star_circle_line_graphs.paj</file>
+        <file>data/Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek</file>
+        <file>data/Zachary_Karate_Club.dl</file>
+    </qresource>
+</RCC>

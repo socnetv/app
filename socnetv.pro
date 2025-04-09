@@ -127,13 +127,14 @@ SOURCES += src/main.cpp \
     src/forms/dialogsysteminfo.cpp
 
 
-RESOURCES = src/src.qrc
+RESOURCES = src/src.qrc \
+    src/data.qrc
     
 
 # This is Windows only
 win32 {
-  VERSION = 3.1.0.1           # major.minor.patch.build
-  VERSION_PE_HEADER = 3.1
+  VERSION = 3.3.0.1           # major.minor.patch.build
+  VERSION_PE_HEADER = 3.3
 
   #RC_FILE = src/icon.rc
   RC_ICONS = src/images/socnetv.ico

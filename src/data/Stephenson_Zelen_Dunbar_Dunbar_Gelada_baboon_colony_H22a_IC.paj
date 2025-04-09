@@ -1,0 +1,40 @@
+*Network Dunbar&Dunbar_Gelada_baboon_colony_H22a
+*Vertices 12
+1 "Adult Female" ic RGB729FCF		0.223061 	0.329258	circle
+2 "2 years Male" ic RGB729FCF		0.212487 	0.530562	circle
+3 "Adult Female" ic RGB729FCF		0.426989 	0.427873	circle
+4 "Adult Female" ic RGB729FCF		0.341893 	0.414018	circle
+5 "Adult Male" ic RGB729FCF		0.348943 	0.243684	circle
+6 "3 years Female" ic RGB729FCF		0.475327 	0.271394	circle
+7 "3 years Male" ic RGB729FCF		0.632931 	0.323553	circle
+8 "Adult Female" ic RGB729FCF		0.63142 	0.444988	circle
+9 "1 year Male" ic RGB729FCF		0.571501 	0.554197	circle
+10 "3 years Female" ic RGB729FCF		0.486908 	0.604727	circle
+11 "2 years Female" ic RGB729FCF		0.405337 	0.581092	circle
+12 "1 year Male" ic RGB729FCF		0.331319 	0.550937	circle
+*Arcs 
+*Edges 
+1 2 11 c #666666
+1 4 5 c #666666
+1 5 9 c #666666
+1 11 2 c #666666
+1 12 1 c #666666
+3 4 30 c #666666
+3 5 4 c #666666
+3 6 3 c #666666
+3 7 1 c #666666
+3 10 8 c #666666
+3 11 6 c #666666
+3 12 3 c #666666
+4 5 10 c #666666
+4 6 2 c #666666
+4 7 3 c #666666
+4 10 1 c #666666
+4 12 3 c #666666
+5 6 20 c #666666
+5 8 3 c #666666
+6 10 5 c #666666
+6 12 1 c #666666
+7 8 17 c #666666
+8 9 2 c #666666
+8 10 7 c #666666
