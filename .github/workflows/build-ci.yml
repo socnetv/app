@@ -11,8 +11,8 @@ on:
 env:
   APP_NAME: "SocNetV"
   UNIXNAME: "socnetv"
-  SOCNETV_VERSION: "3.2"      # TODO - READ FROM FILE
-  VERSION: "3.2"              # WILL BE UPDATED DYNAMICALLY BELOW
+  SOCNETV_VERSION: "3.3"      # TODO - READ FROM FILE
+  VERSION: "3.3"              # WILL BE UPDATED DYNAMICALLY BELOW
   QMAKE_PROJECT: "socnetv.pro"
   PUBLISHER: "Dimitris Kalamaras"
   QT_MODULES: "qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d"
