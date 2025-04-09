@@ -58,7 +58,7 @@ Official Website: <https://socnetv.org>
 
 Email: <info@socnetv.org>
 
-Author: Dimitris V. Kalamaras
+Author: Dimitris B. Kalamaras
 
 Blog:   <https://dimitris.apeiro.gr>
 
