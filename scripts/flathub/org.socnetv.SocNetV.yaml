@@ -1,0 +1,21 @@
+app-id: org.socnetv.SocNetV
+runtime: org.kde.Platform
+runtime-version: '6.5'
+sdk: org.kde.Sdk
+command: socnetv
+finish-args:
+  - --share=network
+  - --share=ipc
+  - --socket=x11
+  - --socket=wayland
+  - --device=dri
+  - --filesystem=home
+
+modules:
+  - name: socnetv
+    buildsystem: cmake
+    sources:
+      - type: git
+        url: https://github.com/socnetv/app.git
+        tag: v3.2
+        commit: auto

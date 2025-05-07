@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Social Network Visualizer
+GenericName=Social Network Visualizer
+Comment=Visualize and analyze social networks
+Exec=socnetv
+Icon=org.socnetv.SocNetV
+Terminal=false
+Type=Application
+Categories=Education;Science;Math;
+StartupNotify=true
