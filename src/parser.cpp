@@ -327,7 +327,6 @@ void Parser::createRandomNodes(const int &fixedNum,
  */
 bool Parser::parseAsDL(const QByteArray &rawData)
 {
-
     qDebug() << "Parsing data as DL formatted (UCINET)...";
 
     QTextCodec *codec = QTextCodec::codecForName(m_textCodecName.toLatin1());
@@ -361,7 +360,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
 
     bool fullmatrixFormat = false;
     bool edgelist1Format = false;
-    bool diagonalPresent = false;
+    bool diagonalPresent = false;  // Flag to handle diagonal elements (self-loops)
 
     bool intOK = false;
     bool conversionOK = false;
@@ -383,7 +382,6 @@ bool Parser::parseAsDL(const QByteArray &rawData)
 
     while (!ts.atEnd())
     {
-
         fileLineNumber++;
 
         str = ts.readLine();
@@ -416,7 +414,6 @@ bool Parser::parseAsDL(const QByteArray &rawData)
 
         if (str.startsWith("DL", Qt::CaseInsensitive))
         {
-
             if (str.contains(","))
             {
                 qDebug() << "DL starting line contains a comma";
@@ -438,7 +435,6 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                 readDLKeywords(lineElement, totalNodes, NM, NR, NC, fullmatrixFormat, edgelist1Format, diagonalPresent);
 
             } // end else if contains =
-
         } // end if startsWith("DL")
 
         //
@@ -456,7 +452,6 @@ bool Parser::parseAsDL(const QByteArray &rawData)
              str.contains("format =", Qt::CaseInsensitive) ||
              str.contains("format=", Qt::CaseInsensitive)))
         {
-
             // check if this line contains precisely one "="
             if (str.count("=", Qt::CaseInsensitive) == 1)
             {
@@ -541,6 +536,12 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                         errorMessage = tr("Invalid UCINET format declaration. Expected 'FULLMATRIX' or 'edgelist' but found: %1").arg(value);
                         return false;
                     }
+
+                    // Check if DIAGONAL PRESENT is specified
+                    if (value.contains("DIAGONAL", Qt::CaseInsensitive)) {
+                        diagonalPresent = true;
+                        qDebug() << "✅ FORMAT: Found standalone DIAGONAL token";
+                    }
                 }
             } // end if count 1 "=" in line (network properties)
 
@@ -562,9 +563,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                     lineElement = str.split(" ", Qt::SkipEmptyParts);
                     readDLKeywords(lineElement, totalNodes, NM, NR, NC, fullmatrixFormat, edgelist1Format, diagonalPresent);
                 } // end else if contains space
-
             } // end if str.count("=") > 1 in line (network properties)
-
         } // end if str contains keywords
 
         else if (str.startsWith("labels", Qt::CaseInsensitive) || str.startsWith("row labels", Qt::CaseInsensitive))
@@ -625,7 +624,6 @@ bool Parser::parseAsDL(const QByteArray &rawData)
         if (rowLabels_flag)
         {
             // try to read row labels
-
             label = str.trimmed().simplified();
 
             if (rowLabels.contains(label))
@@ -644,7 +642,6 @@ bool Parser::parseAsDL(const QByteArray &rawData)
         else if (colLabels_flag)
         {
             // try to read col labels
-
             label = str.trimmed().simplified();
 
             if (colLabels.contains(label))
@@ -678,11 +675,9 @@ bool Parser::parseAsDL(const QByteArray &rawData)
 
         else if (data_flag)
         {
-
             // check if we haven't created any nodes...
             if (!nodesCreated_flag)
             {
-
                 // check if there were NR and NC declared (then this is two-mode)
                 qDebug() << "check if NR != 0 (two mode net).";
                 if (NR != 0 && NC != 0)
@@ -721,7 +716,6 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                 else
                 {
                     // multiple label lines were found
-
                     qDebug() << "Nodes have not been created yet."
                              << "Multiple label lines were found: " << rowLabels.size()
                              << "Calling createRandomNodes() for each label";
@@ -735,7 +729,6 @@ bool Parser::parseAsDL(const QByteArray &rawData)
 
                 if (twoMode_flag)
                 {
-
                     // check if we have found col labels
                     if (colLabels.size() == 0)
                     {
@@ -779,7 +772,6 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                 // sanity check
                 if (!twoMode_flag && nodeSum != totalNodes)
                 {
-
                     qDebug() << "❌ ERROR: Number of nodes processed (" << nodeSum
                              << ") does not match declared N=" << totalNodes;
                     errorMessage = tr("Error reading UCINET-formatted file: Number of nodes found (%1) does not match declared N=%2")
@@ -789,17 +781,15 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                 }
 
                 nodesCreated_flag = true;
-
             } // endif nodesCreated
 
             if (fullmatrixFormat)
             {
-
                 if (!twoMode_flag)
                 {
-
                     qDebug() << "reading edges in fullmatrix format";
 
+                    // FIX FOR ISSUE #174: Handle wrapped matrix rows
                     // Accumulate wrapped lines until we get totalNodes values
                     QString accumulatedLine = str;
                     myRegExp.setPattern("\\s+");
@@ -858,7 +848,6 @@ bool Parser::parseAsDL(const QByteArray &rawData)
 
                     for (QStringList::Iterator it1 = lineElement.begin(); it1 != lineElement.end(); ++it1)
                     {
-
                         edgeStr = (*it1);
                         edgeWeight = (*it1).toDouble(&conversionOK);
                         if (!conversionOK)
@@ -872,7 +861,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                             return false;
                         }
 
-                        // Properly handle diagonal elements based on diagonalPresent flag
+                        // FIX FOR ISSUE #173: Properly handle diagonal elements based on diagonalPresent flag
                         if (source == target)
                         {
                             // This is a diagonal element (self-loop)
@@ -930,7 +919,6 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                     }
                     for (QStringList::Iterator it1 = lineElement.begin(); it1 != lineElement.end(); ++it1)
                     {
-
                         edgeStr = (*it1);
                         edgeWeight = (*it1).toDouble(&conversionOK);
                         if (!conversionOK)
@@ -946,7 +934,6 @@ bool Parser::parseAsDL(const QByteArray &rawData)
 
                         if (edgeWeight)
                         {
-
                             qDebug() << "relation "
                                      << relationCounter
                                      << "found edge from "
@@ -964,7 +951,6 @@ bool Parser::parseAsDL(const QByteArray &rawData)
 
                     source++;
                 }
-
             } // END FULLMATRIX FORMAT READING
 
             if (edgelist1Format)
@@ -1012,9 +998,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                                       arrows, bezier);
                 totalLinks++;
             } // END edgelist1 format reading.
-
         } // end if data_flag
-
     } // end while there are more lines
 
     if (relationsList.isEmpty())
@@ -1023,6 +1007,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
         // relationsList << defaultRelation;
         // emit signalAddNewRelation(defaultRelation);
         emit signalAddNewRelation("unnamed");
+
     }
 
     // The network has been loaded. Change to the first relation
