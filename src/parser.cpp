@@ -565,7 +565,13 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                 } // end else if contains space
             } // end if str.count("=") > 1 in line (network properties)
         } // end if str contains keywords
-
+        // Check for standalone DIAGONAL line
+        else if (str.compare("DIAGONAL", Qt::CaseInsensitive) == 0)
+        {
+            qDebug() << "✅ Found standalone DIAGONAL line in main parser loop";
+            diagonalPresent = true;
+            continue;
+        }
         else if (str.startsWith("labels", Qt::CaseInsensitive) || str.startsWith("row labels", Qt::CaseInsensitive))
         {
             rowLabels_flag = true;
@@ -1059,6 +1065,13 @@ bool Parser::readDLKeywords(QStringList &strList,
         tempStr = (*it1);
         qDebug() << "element:" << tempStr.toLatin1();
 
+        // Check for standalone DIAGONAL token
+        if (tempStr.compare("DIAGONAL", Qt::CaseInsensitive) == 0) {
+            qDebug() << "✅ Found standalone DIAGONAL token";
+            diagonalPresent = true;
+            continue;
+        }
+
         if (tempStr.startsWith("DL", Qt::CaseInsensitive))
         {
             // remove DL
@@ -1071,7 +1084,6 @@ bool Parser::readDLKeywords(QStringList &strList,
         // check if this element contains a "="
         if (tempStr.size() > 0)
         {
-
             if (tempStr.contains("=", Qt::CaseInsensitive))
             {
                 qDebug() << "splitting element at = sign";
@@ -1139,11 +1151,12 @@ bool Parser::readDLKeywords(QStringList &strList,
                              << value;
 
                     // Check if DIAGONAL PRESENT is specified in the format
-                    if (value.contains("DIAGONAL PRESENT", Qt::CaseInsensitive))
+                    if (value.contains("DIAGONAL", Qt::CaseInsensitive))
                     {
                         diagonalPresent = true;
-                        qDebug() << "✅ DIAGONAL PRESENT detected in format";
+                        qDebug() << "✅ FORMAT: DIAGONAL token found in format value";
                     }
+
                     if (value.contains("FULLMATRIX", Qt::CaseInsensitive))
                     {
                         fullmatrixFormat = true;
@@ -1162,16 +1175,15 @@ bool Parser::readDLKeywords(QStringList &strList,
                         errorMessage = tr("Invalid UCINET format declaration. Expected 'FULLMATRIX' or 'edgelist' but found: %1").arg(value);
                         return false;
                     }
-
                 } // end format
             } // end if contains =
             else
             {
-                return false;
+                // We'll be more lenient here - if we encounter unknown tokens without =
+                // we'll just ignore them rather than returning false
+                qDebug() << "Ignoring unknown token without = sign:" << tempStr;
             }
-
         } // end if > 0
-
     } // end for lineElement
     return true;
 }
