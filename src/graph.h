@@ -100,6 +100,8 @@ class Graph:  public QObject{
     QThread file_parserThread;
     QThread webcrawlerThread;
 
+    friend class DistanceEngine;
+    
 public slots:
 
     int relationCurrent();
