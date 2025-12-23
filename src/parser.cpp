@@ -26,7 +26,7 @@
 #include <QTextCodec>
 #include <QRegularExpression>
 #include <QRandomGenerator>
-
+#include <QElapsedTimer>
 #include <list>  // used as list<int> listDummiesPajek
 #include <queue> //for priority queue
 
