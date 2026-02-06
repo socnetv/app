@@ -50,7 +50,6 @@
 
 
 
-namespace {
 
 class DistanceEngine {
 public:
@@ -66,7 +65,6 @@ private:
     Graph& graph;
 };
 
-} 
 
 
 void DistanceEngine::compute(const bool computeCentralities,
@@ -288,7 +286,7 @@ void DistanceEngine::compute(const bool computeCentralities,
             graph.maxIndexSC= ( N == 2 ) ? 1 : ( N-1.0 ) * ( N-2.0 ) / 2.0;
             graph.maxIndexCC=N-1.0;
             graph.maxIndexPC=N-1.0;
-            qDebug("############# m_graphIsSymmetric - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
+            qDebug("############# m_graphIsSymmetric - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", graph.maxIndexBC, graph.maxIndexCC, graph.maxIndexSC);
         }
         else {
 
@@ -296,11 +294,11 @@ void DistanceEngine::compute(const bool computeCentralities,
             graph.maxIndexSC= ( N == 2 ) ? 1 : ( N-1.0 ) * ( N-2.0 );
             graph.maxIndexPC=N-1.0;
             graph.maxIndexCC=N-1.0;
-            qDebug("############# NOT SymmetricAdjacencyMatrix - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", maxIndexBC, maxIndexCC, maxIndexSC);
+            qDebug("############# NOT SymmetricAdjacencyMatrix - maxIndexBC %f, maxIndexCC %f, maxIndexSC %f", graph.maxIndexBC, graph.maxIndexCC, graph.maxIndexSC);
         }
 
         if (considerWeights && inverseWeights) {
-            graph.maxIndexCC = maxIndexCC * (1.0 / maxEdgeWeightInNetwork);
+            graph.maxIndexCC = graph.maxIndexCC * (1.0 / maxEdgeWeightInNetwork);
         }
 
         qDebug() << "*********** MAIN LOOP: "
