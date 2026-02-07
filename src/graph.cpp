@@ -46,6 +46,8 @@
 #include <queue> //for BFS queue Q
 #include <ctime> // for randomizeThings
 
+#include "engine/graph_distance_progress_sink.h"
+
 struct DistanceScratch
 {
     // Iterators (kept exactly as locals were)
@@ -96,26 +98,14 @@ struct CentralityScratchSSSP
 
 struct CentralityScratchFinalize
 {
-    // Values computed/used during finalize + aggregation
-    qreal BC = 0;
-    qreal SC = 0;
-    qreal eccentricity = 0;
-    qreal EC = 0;
+    // Values used while scanning vertices and aggregating
+    qreal CC = 0, BC = 0, SC = 0, eccentricity = 0, EC = 0;
+    qreal SCC = 0, SBC = 0, SSC = 0, SEC = 0, SPC = 0;
 
-    qreal SCC = 0;
-    qreal SBC = 0;
-    qreal SSC = 0;
-    qreal SEC = 0;
-    qreal SPC = 0;
-
-    // Variance temps (same ones you had before)
-    qreal tempVarianceBC = 0;
-    qreal tempVarianceSC = 0;
-    qreal tempVarianceEC = 0;
-    qreal tempVarianceCC = 0;
-    qreal tempVariancePC = 0;
+    // Variance temps used in the final aggregation loop(s)
+    qreal tempVarianceBC = 0, tempVarianceSC = 0, tempVarianceEC = 0;
+    qreal tempVarianceCC = 0, tempVariancePC = 0;
 };
-
 
 class DistanceEngine
 {
@@ -137,20 +127,25 @@ private:
                  const bool dropIsolates,
                  DistanceScratch &ds,
                  CentralityScratchSSSP &csssp,
-                 CentralityScratchFinalize &csfin);
+                 CentralityScratchFinalize &csfin,
+                 IDistanceProgressSink &sink);
 
     void runAllSources(const bool computeCentralities,
                        const bool considerWeights,
                        const bool inverseWeights,
                        const bool dropIsolates,
                        DistanceScratch &ds,
-                       CentralityScratchSSSP &csssp);
+                       CentralityScratchSSSP &csssp,
+                       IDistanceProgressSink &sink);
 
     void finalize(const bool computeCentralities,
                   const bool dropIsolates,
                   DistanceScratch &ds,
-                  CentralityScratchFinalize &csfin);
+                  CentralityScratchFinalize &csfin,
+                  IDistanceProgressSink &sink);
 };
+
+
 
 void DistanceEngine::compute(const bool computeCentralities,
                              const bool considerWeights,
@@ -179,6 +174,8 @@ void DistanceEngine::compute(const bool computeCentralities,
     CentralityScratchSSSP csssp;
     CentralityScratchFinalize csfin;
 
+    GraphDistanceProgressSink sink(graph);
+
     // ---- Phase 0/Init (includes E==0 handling) ----
     initRun(computeCentralities,
             considerWeights,
@@ -186,7 +183,8 @@ void DistanceEngine::compute(const bool computeCentralities,
             dropIsolates,
             ds,
             csssp,
-            csfin);
+            csfin,
+            sink);
 
     if (ds.E != 0)
     {
@@ -196,21 +194,24 @@ void DistanceEngine::compute(const bool computeCentralities,
                       inverseWeights,
                       dropIsolates,
                       ds,
-                      csssp);
+                      csssp,
+                      sink);
 
         // ---- Finalization: connectivity scan + aggregation ----
         finalize(computeCentralities,
                  dropIsolates,
                  ds,
-                 csfin);
+                 csfin,
+                 sink);
     }
 
     graph.calculatedDistances = true;
 
     qDebug() << "Graph::graphDistancesGeodesic()- FINISHED computing distances";
 
-    emit graph.signalProgressBoxKill();
+    sink.progressKill();
 }
+
 
 void DistanceEngine::initRun(const bool computeCentralities,
                              const bool considerWeights,
@@ -218,15 +219,17 @@ void DistanceEngine::initRun(const bool computeCentralities,
                              const bool dropIsolates,
                              DistanceScratch &ds,
                              CentralityScratchSSSP &csssp,
-                             CentralityScratchFinalize &csfin)
+                             CentralityScratchFinalize &csfin,
+                             IDistanceProgressSink &sink)
 {
     // drop isolated vertices from calculations (i.e. std C and group C).
     ds.N = graph.vertices(dropIsolates, false, true);
     ds.E = graph.edgesEnabled();
 
     ds.pMsg = QObject::tr("Computing geodesic distances. \nPlease wait...");
-    emit graph.statusMessage(ds.pMsg);
-    emit graph.signalProgressBoxCreate(ds.N, ds.pMsg);
+
+    sink.statusMessage(ds.pMsg);
+    sink.progressCreate(ds.N, ds.pMsg);
 
     graph.m_graphIsSymmetric = graph.isSymmetric();
 
@@ -437,7 +440,8 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
                                    const bool inverseWeights,
                                    const bool dropIsolates,
                                    DistanceScratch &ds,
-                                   CentralityScratchSSSP &csssp)
+                                   CentralityScratchSSSP &csssp,
+                                   IDistanceProgressSink &sink)
 {
     qDebug() << "*********** MAIN LOOP: "
                 "for every s in V solve the Single Source Shortest Path (SSSP) problem...";
@@ -450,7 +454,7 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
         qDebug() << "***** PHASE 1 (SSSP): "
                  << "Source vertex s" << ds.s << "vpos" << ds.si;
 
-        emit graph.signalProgressBoxUpdate(++ds.progressCounter);
+        sink.progressUpdate(++ds.progressCounter);
 
         if (!(*ds.it)->isEnabled())
         {
@@ -677,7 +681,8 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
 void DistanceEngine::finalize(const bool computeCentralities,
                               const bool dropIsolates,
                               DistanceScratch &ds,
-                              CentralityScratchFinalize &csf)
+                              CentralityScratchFinalize &csf,
+                              IDistanceProgressSink &sink)
 {
     // check if there are disconnected nodes
     // and get the distance sums

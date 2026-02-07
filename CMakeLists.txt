@@ -121,7 +121,8 @@ set (FORMS
 set(SOURCES
     src/main.cpp 
     src/mainwindow.cpp 
-    src/texteditor.cpp 
+    src/texteditor.cpp
+    src/engine/graph_distance_progress_sink.cpp
     src/graph.cpp 
     src/graphvertex.cpp 
     src/matrix.cpp 
