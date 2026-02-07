@@ -46,6 +46,52 @@
 #include <queue> //for BFS queue Q
 #include <ctime> // for randomizeThings
 
+struct DistanceScratch
+{
+    // Iterators (kept exactly as locals were)
+    VList::const_iterator it;
+    VList::const_iterator it1;
+    QList<int>::const_iterator it2;
+
+    // Indices / counters
+    int w = 0, u = 0, s = 0, si = 0, ui = 0, wi = 0;
+    int progressCounter = 0;
+
+    // Graph size snapshot
+    int N = 0;
+    int E = 0;
+
+    // UI message
+    QString pMsg;
+
+    // Scratch scalars used across phases
+    qreal distances_sum_for_s = 0;
+    qreal maxEdgeWeightInNetwork = 0;
+    qreal tempEdgeWeight = 0;
+
+    // Used during finalize/connectivity scan
+    qreal pairDistance = 0;
+};
+
+struct CentralityScratch
+{
+    // Per-vertex / accumulation scalars (exactly as before)
+    qreal CC = 0, BC = 0, SC = 0, eccentricity = 0, EC = 0, PC = 0;
+    qreal SCC = 0, SBC = 0, SSC = 0, SEC = 0, SPC = 0;
+
+    // Variance temps (exactly as before)
+    qreal tempVarianceBC = 0, tempVarianceSC = 0, tempVarianceEC = 0;
+    qreal tempVarianceCC = 0, tempVariancePC = 0;
+
+    // Brandes / dependency scratch
+    qreal sigma_u = 0, sigma_w = 0;
+    qreal delta_u = 0, delta_w = 0;
+    qreal d_sw = 0, d_su = 0;
+
+    // Power Centrality iterator
+    H_f_i::const_iterator hfi;
+};
+
 class DistanceEngine
 {
 public:
@@ -60,86 +106,32 @@ public:
 private:
     Graph &graph;
 
-    void initRun(const bool computeCentralities,
-                 const bool considerWeights,
-                 const bool inverseWeights,
-                 const bool dropIsolates,
-                 int &N,
-                 int &E,
-                 VList::const_iterator &it,
-                 VList::const_iterator &it1,
-                 QList<int>::const_iterator &it2,
-                 int &w, int &u, int &s, int &si, int &ui, int &wi,
-                 int &progressCounter,
-                 QString &pMsg,
-                 qreal &distances_sum_for_s,
-                 qreal &maxEdgeWeightInNetwork,
-                 qreal &tempEdgeWeight,
-                 qreal &CC, qreal &BC, qreal &SC, qreal &eccentricity, qreal &EC, qreal &PC,
-                 qreal &SCC, qreal &SBC, qreal &SSC, qreal &SEC, qreal &SPC,
-                 qreal &tempVarianceBC, qreal &tempVarianceSC, qreal &tempVarianceEC,
-                 qreal &tempVarianceCC, qreal &tempVariancePC,
-                 qreal &sigma_u, qreal &sigma_w,
-                 qreal &delta_u, qreal &delta_w,
-                 qreal &d_sw, qreal &d_su,
-                 qreal &pairDistance,
-                 H_f_i::const_iterator &hfi);
+    void initRun(bool computeCentralities,
+                 bool considerWeights,
+                 bool inverseWeights,
+                 bool dropIsolates,
+                 DistanceScratch &ds,
+                 CentralityScratch &cs);
 
-
-    void runAllSources(const bool computeCentralities,
-                       const bool considerWeights,
-                       const bool inverseWeights,
-                       const bool dropIsolates,
-                       const int N,
-                       int &progressCounter,
-                       VList::const_iterator &it,
-                       VList::const_iterator &it1,
-                       QList<int>::const_iterator &it2,
-                       int &w, int &u, int &s, int &si, int &ui, int &wi,
-                       qreal &distances_sum_for_s,
-                       qreal &CC, qreal &BC, qreal &SC, qreal &eccentricity, qreal &EC, qreal &PC,
-                       qreal &SCC, qreal &SBC, qreal &SSC, qreal &SEC, qreal &SPC,
-                       qreal &tempVarianceBC, qreal &tempVarianceSC, qreal &tempVarianceEC,
-                       qreal &tempVarianceCC, qreal &tempVariancePC,
-                       qreal &sigma_u, qreal &sigma_w,
-                       qreal &delta_u, qreal &delta_w,
-                       qreal &d_sw, qreal &d_su,
-                       qreal &pairDistance,
-                       H_f_i::const_iterator &hfi);
-
+    void runAllSources(bool computeCentralities,
+                       bool considerWeights,
+                       bool inverseWeights,
+                       bool dropIsolates,
+                       DistanceScratch &ds,
+                       CentralityScratch &cs);
 
 private:
-    void finalize(const bool computeCentralities,
-                  const bool dropIsolates,
-                  const int N,
-                  VList::const_iterator &it,
-                  VList::const_iterator &it1,
-                  qreal &pairDistance,
-                  qreal &eccentricity,
-                  qreal &EC,
-                  qreal &CC,
-                  qreal &BC,
-                  qreal &SC,
-                  qreal &SCC,
-                  qreal &SBC,
-                  qreal &SSC,
-                  qreal &SEC,
-                  qreal &SPC,
-                  qreal &tempVarianceBC,
-                  qreal &tempVarianceSC,
-                  qreal &tempVarianceEC,
-                  qreal &tempVarianceCC,
-                  qreal &tempVariancePC);
-
+    void finalize(bool computeCentralities,
+                  bool dropIsolates,
+                  DistanceScratch &ds,
+                  CentralityScratch &cs);
 };
-
 
 void DistanceEngine::compute(const bool computeCentralities,
                              const bool considerWeights,
                              const bool inverseWeights,
                              const bool dropIsolates)
 {
-    // MOVE EVERYTHING from the old
     qDebug() << "Graph::graphDistancesGeodesic()"
              << "centralities" << computeCentralities
              << "considerWeights:" << considerWeights
@@ -150,162 +142,27 @@ void DistanceEngine::compute(const bool computeCentralities,
     {
         if (graph.calculatedCentralities)
         {
-            // qDebug() << "Graph::graphDistancesGeodesic() - Centralities calculated. Return.";
             return;
         }
     }
     else if (graph.calculatedDistances)
     {
-        // qDebug() << "Graph::graphDistancesGeodesic() - graph not modified. Return.";
         return;
     }
 
-    // ---- keep original locals (unchanged) ----
-    VList::const_iterator it, it1;
-    QList<int>::const_iterator it2;
+    DistanceScratch ds;
+    CentralityScratch cs;
 
-    int w = 0, u = 0, s = 0, si = 0, ui = 0, wi = 0;
-    int progressCounter = 0;
+    // ---- Phase 0/Init (includes E==0 handling) ----
+    initRun(computeCentralities, considerWeights, inverseWeights, dropIsolates, ds, cs);
 
-    int N = 0;
-    int E = 0;
-
-    QString pMsg;
-
-    qreal distances_sum_for_s = 0, maxEdgeWeightInNetwork = 0, tempEdgeWeight = 0;
-    qreal CC = 0, BC = 0, SC = 0, eccentricity = 0, EC = 0, PC = 0;
-    qreal SCC = 0, SBC = 0, SSC = 0, SEC = 0, SPC = 0;
-    qreal tempVarianceBC = 0, tempVarianceSC = 0, tempVarianceEC = 0;
-    qreal tempVarianceCC = 0, tempVariancePC = 0;
-    qreal sigma_u = 0, sigma_w = 0;
-    qreal delta_u = 0, delta_w = 0;
-    qreal d_sw = 0, d_su = 0;
-    qreal pairDistance = 0;
-
-    H_f_i::const_iterator hfi; // for Power Centrality
-
-    // ---- Phase 0/Init (includes E==0 handling as in original code) ----
-    initRun(computeCentralities,
-            considerWeights,
-            inverseWeights,
-            dropIsolates,
-            N,
-            E,
-            it,
-            it1,
-            it2,
-            w,
-            u,
-            s,
-            si,
-            ui,
-            wi,
-            progressCounter,
-            pMsg,
-            distances_sum_for_s,
-            maxEdgeWeightInNetwork,
-            tempEdgeWeight,
-            CC,
-            BC,
-            SC,
-            eccentricity,
-            EC,
-            PC,
-            SCC,
-            SBC,
-            SSC,
-            SEC,
-            SPC,
-            tempVarianceBC,
-            tempVarianceSC,
-            tempVarianceEC,
-            tempVarianceCC,
-            tempVariancePC,
-            sigma_u,
-            sigma_w,
-            delta_u,
-            delta_w,
-            d_sw,
-            d_su,
-            pairDistance,
-            hfi);
-
-    // If E==0, initRun already performed the exact original E==0 block.
-    // Now we only finish exactly like the original function.
-    if (E == 0)
+    if (ds.E != 0)
     {
-        graph.calculatedDistances = true;
-
-        qDebug() << "Graph::graphDistancesGeodesic()- FINISHED computing distances";
-
-        emit graph.signalProgressBoxKill();
-        return;
+        // ---- Phase 1+2: SSSP loop + per-source accumulation ----
+        runAllSources(computeCentralities, considerWeights, inverseWeights, dropIsolates, ds, cs);
+        // ---- Finalization: connectivity scan + aggregation ----
+        finalize(computeCentralities, dropIsolates, ds, cs);
     }
-
-    // ---- Phase 1+2: SSSP loop + per-source accumulation (verbatim moved) ----
-    runAllSources(computeCentralities,
-                  considerWeights,
-                  inverseWeights,
-                  dropIsolates,
-                  N,
-                  progressCounter,
-                  it,
-                  it1,
-                  it2,
-                  w,
-                  u,
-                  s,
-                  si,
-                  ui,
-                  wi,
-                  distances_sum_for_s,
-                  CC,
-                  BC,
-                  SC,
-                  eccentricity,
-                  EC,
-                  PC,
-                  SCC,
-                  SBC,
-                  SSC,
-                  SEC,
-                  SPC,
-                  tempVarianceBC,
-                  tempVarianceSC,
-                  tempVarianceEC,
-                  tempVarianceCC,
-                  tempVariancePC,
-                  sigma_u,
-                  sigma_w,
-                  delta_u,
-                  delta_w,
-                  d_sw,
-                  d_su,
-                  pairDistance,
-                  hfi);
-
-    // ---- Finalization: connectivity scan + aggregation (verbatim moved) ----
-    finalize(computeCentralities,
-             dropIsolates,
-             N,
-             it,
-             it1,
-             pairDistance,
-             eccentricity,
-             EC,
-             CC,
-             BC,
-             SC,
-             SCC,
-             SBC,
-             SSC,
-             SEC,
-             SPC,
-             tempVarianceBC,
-             tempVarianceSC,
-             tempVarianceEC,
-             tempVarianceCC,
-             tempVariancePC);
 
     graph.calculatedDistances = true;
 
@@ -314,34 +171,12 @@ void DistanceEngine::compute(const bool computeCentralities,
     emit graph.signalProgressBoxKill();
 }
 
-
-
-
-
 void DistanceEngine::initRun(const bool computeCentralities,
                              const bool considerWeights,
                              const bool inverseWeights,
                              const bool dropIsolates,
-                             int &N,
-                             int &E,
-                             VList::const_iterator &it,
-                             VList::const_iterator &it1,
-                             QList<int>::const_iterator &it2,
-                             int &w, int &u, int &s, int &si, int &ui, int &wi,
-                             int &progressCounter,
-                             QString &pMsg,
-                             qreal &distances_sum_for_s,
-                             qreal &maxEdgeWeightInNetwork,
-                             qreal &tempEdgeWeight,
-                             qreal &CC, qreal &BC, qreal &SC, qreal &eccentricity, qreal &EC, qreal &PC,
-                             qreal &SCC, qreal &SBC, qreal &SSC, qreal &SEC, qreal &SPC,
-                             qreal &tempVarianceBC, qreal &tempVarianceSC, qreal &tempVarianceEC,
-                             qreal &tempVarianceCC, qreal &tempVariancePC,
-                             qreal &sigma_u, qreal &sigma_w,
-                             qreal &delta_u, qreal &delta_w,
-                             qreal &d_sw, qreal &d_su,
-                             qreal &pairDistance,
-                             H_f_i::const_iterator &hfi)
+                             DistanceScratch &ds,
+                             CentralityScratch &cs)
 {
     // === Everything below is moved verbatim from the top of compute() ===
 
@@ -350,42 +185,42 @@ void DistanceEngine::initRun(const bool computeCentralities,
     Q_UNUSED(_it1);
 
     // iterators are already declared in compute(), we just keep references alive
-    Q_UNUSED(it);
-    Q_UNUSED(it1);
-    Q_UNUSED(it2);
+    Q_UNUSED(ds.it);
+    Q_UNUSED(ds.it1);
+    Q_UNUSED(ds.it2);
 
     // locals declared in compute(), we just keep references alive
-    Q_UNUSED(w);
-    Q_UNUSED(u);
-    Q_UNUSED(s);
-    Q_UNUSED(si);
-    Q_UNUSED(ui);
-    Q_UNUSED(wi);
-    Q_UNUSED(progressCounter);
+    Q_UNUSED(ds.w);
+    Q_UNUSED(ds.u);
+    Q_UNUSED(ds.s);
+    Q_UNUSED(ds.si);
+    Q_UNUSED(ds.ui);
+    Q_UNUSED(ds.wi);
+    Q_UNUSED(ds.progressCounter);
 
     // drop isolated vertices from calculations (i.e. std C and group C).
-    N = graph.vertices(dropIsolates, false, true);
-    E = graph.edgesEnabled();
+    ds.N = graph.vertices(dropIsolates, false, true);
+    ds.E = graph.edgesEnabled();
 
-    pMsg = QObject::tr("Computing geodesic distances. \nPlease wait...");
-    emit graph.statusMessage(pMsg);
-    emit graph.signalProgressBoxCreate(N, pMsg);
+    ds.pMsg = QObject::tr("Computing geodesic distances. \nPlease wait...");
+    emit graph.statusMessage(ds.pMsg);
+    emit graph.signalProgressBoxCreate(ds.N, ds.pMsg);
 
     graph.m_graphIsSymmetric = graph.isSymmetric();
 
-    if (E == 0)
+    if (ds.E == 0)
     {
-        for (it = graph.m_graph.cbegin(); it != graph.m_graph.cend(); ++it)
+        for (ds.it = graph.m_graph.cbegin(); ds.it != graph.m_graph.cend(); ++ds.it)
         {
-            for (it1 = graph.m_graph.cbegin(); it1 != graph.m_graph.cend(); ++it1)
+            for (ds.it1 = graph.m_graph.cbegin(); ds.it1 != graph.m_graph.cend(); ++ds.it1)
             {
                 // Set all pair-wise distances to RAND_MAX
-                (*it)->setDistance((*it1)->number(), RAND_MAX);
+                (*ds.it)->setDistance((*ds.it1)->number(), RAND_MAX);
                 // Set all pair-wise shortest-path counts (sigmas) to 0
-                (*it)->setShortestPaths((*it1)->number(), 0);
+                (*ds.it)->setShortestPaths((*ds.it1)->number(), 0);
             }
         }
-        if (N < 2)
+        if (ds.N < 2)
         {
             // singleton graph consisting of a single isolated node
             // is considered connected
@@ -399,43 +234,43 @@ void DistanceEngine::initRun(const bool computeCentralities,
     }
     else
     {
-        distances_sum_for_s = 0;
-        maxEdgeWeightInNetwork = 0;
-        tempEdgeWeight = 0;
+        ds.distances_sum_for_s = 0;
+        ds.maxEdgeWeightInNetwork = 0;
+        ds.tempEdgeWeight = 0;
 
-        CC = 0;
-        BC = 0;
-        SC = 0;
-        eccentricity = 0;
-        EC = 0;
-        PC = 0;
+        cs.CC = 0;
+        cs.BC = 0;
+        cs.SC = 0;
+        cs.eccentricity = 0;
+        cs.EC = 0;
+        cs.PC = 0;
 
-        SCC = 0;
-        SBC = 0;
-        SSC = 0;
-        SEC = 0;
-        SPC = 0;
+        cs.SCC = 0;
+        cs.SBC = 0;
+        cs.SSC = 0;
+        cs.SEC = 0;
+        cs.SPC = 0;
 
-        tempVarianceBC = 0;
-        tempVarianceSC = 0;
-        tempVarianceEC = 0;
-        tempVarianceCC = 0;
-        tempVariancePC = 0;
+        cs.tempVarianceBC = 0;
+        cs.tempVarianceSC = 0;
+        cs.tempVarianceEC = 0;
+        cs.tempVarianceCC = 0;
+        cs.tempVariancePC = 0;
 
-        sigma_u = 0;
-        sigma_w = 0;
-        delta_u = 0;
-        delta_w = 0;
-        d_sw = 0;
-        d_su = 0;
+        cs.sigma_u = 0;
+        cs.sigma_w = 0;
+        cs.delta_u = 0;
+        cs.delta_w = 0;
+        cs.d_sw = 0;
+        cs.d_su = 0;
 
-        pairDistance = 0;
+        ds.pairDistance = 0;
 
         graph.m_graphIsConnected = true;
 
         // hfi is for Power Centrality
         // (iterator itself will be set later where used)
-        Q_UNUSED(hfi);
+        Q_UNUSED(cs.hfi);
 
         graph.maxSCC = 0;
         graph.minSCC = RAND_MAX;
@@ -514,27 +349,27 @@ void DistanceEngine::initRun(const bool computeCentralities,
         // Zero Closeness Centrality
         graph.m_vertexPairsNotConnected.clear();
 
-        for (it = graph.m_graph.cbegin(); it != graph.m_graph.cend(); ++it)
+        for (ds.it = graph.m_graph.cbegin(); ds.it != graph.m_graph.cend(); ++ds.it)
         {
-            for (it1 = graph.m_graph.cbegin(); it1 != graph.m_graph.cend(); ++it1)
+            for (ds.it1 = graph.m_graph.cbegin(); ds.it1 != graph.m_graph.cend(); ++ds.it1)
             {
                 // All pair-wise distances are set to RAND_MAX by default
                 // inside GraphVertex::distance()
                 // so we don't need to explicitly set them here.
                 // We just clear distance hashmap of each actor.
-                (*it)->clearDistance();
+                (*ds.it)->clearDistance();
                 // Set all pair-wise shortest-path counts (sigmas) to 0
                 // (*it)->setShortestPaths((*it1)->number(), 0);
-                (*it)->clearShortestPaths();
+                (*ds.it)->clearShortestPaths();
 
                 if (considerWeights && inverseWeights)
                 {
                     // find the max weight in the network.
                     // it will be used for maxCC below
-                    tempEdgeWeight = (*it)->hasEdgeTo((*it1)->number());
-                    if (tempEdgeWeight > maxEdgeWeightInNetwork)
+                    ds.tempEdgeWeight = (*ds.it)->hasEdgeTo((*ds.it1)->number());
+                    if (ds.tempEdgeWeight > ds.maxEdgeWeightInNetwork)
                     {
-                        maxEdgeWeightInNetwork = tempEdgeWeight;
+                        ds.maxEdgeWeightInNetwork = ds.tempEdgeWeight;
                     }
                 }
             }
@@ -542,90 +377,76 @@ void DistanceEngine::initRun(const bool computeCentralities,
             // Zero centrality scores for each vertex
             if (computeCentralities)
             {
-                (*it)->setBC(0.0);
-                (*it)->setSC(0.0);
-                (*it)->setEccentricity(0.0);
-                (*it)->setEC(0.0);
-                (*it)->setCC(0.0);
-                (*it)->setIRCC(0.0);
-                (*it)->setPC(0.0);
+                (*ds.it)->setBC(0.0);
+                (*ds.it)->setSC(0.0);
+                (*ds.it)->setEccentricity(0.0);
+                (*ds.it)->setEC(0.0);
+                (*ds.it)->setCC(0.0);
+                (*ds.it)->setIRCC(0.0);
+                (*ds.it)->setPC(0.0);
             }
         }
 
         if (graph.m_graphIsSymmetric)
         {
-            graph.maxIndexBC = (N == 2) ? 1 : (N - 1.0) * (N - 2.0) / 2.0;
-            graph.maxIndexSC = (N == 2) ? 1 : (N - 1.0) * (N - 2.0) / 2.0;
-            graph.maxIndexCC = N - 1.0;
-            graph.maxIndexPC = N - 1.0;
+            graph.maxIndexBC = (ds.N == 2) ? 1 : (ds.N - 1.0) * (ds.N - 2.0) / 2.0;
+            graph.maxIndexSC = (ds.N == 2) ? 1 : (ds.N - 1.0) * (ds.N - 2.0) / 2.0;
+            graph.maxIndexCC = ds.N - 1.0;
+            graph.maxIndexPC = ds.N - 1.0;
         }
         else
         {
-            graph.maxIndexBC = (N == 2) ? 1 : (N - 1.0) * (N - 2.0); // fix N=2 case where maxIndex becomes zero
-            graph.maxIndexSC = (N == 2) ? 1 : (N - 1.0) * (N - 2.0);
-            graph.maxIndexPC = N - 1.0;
-            graph.maxIndexCC = N - 1.0;
+            graph.maxIndexBC = (ds.N == 2) ? 1 : (ds.N - 1.0) * (ds.N - 2.0); // fix N=2 case where maxIndex becomes zero
+            graph.maxIndexSC = (ds.N == 2) ? 1 : (ds.N - 1.0) * (ds.N - 2.0);
+            graph.maxIndexPC = ds.N - 1.0;
+            graph.maxIndexCC = ds.N - 1.0;
         }
 
         if (considerWeights && inverseWeights)
         {
-            graph.maxIndexCC = graph.maxIndexCC * (1.0 / maxEdgeWeightInNetwork);
+            graph.maxIndexCC = graph.maxIndexCC * (1.0 / ds.maxEdgeWeightInNetwork);
         }
     }
 }
 
 void DistanceEngine::runAllSources(const bool computeCentralities,
-                                  const bool considerWeights,
-                                  const bool inverseWeights,
-                                  const bool dropIsolates,
-                                  const int N,
-                                  int &progressCounter,
-                                  VList::const_iterator &it,
-                                  VList::const_iterator &it1,
-                                  QList<int>::const_iterator &it2,
-                                  int &w, int &u, int &s, int &si, int &ui, int &wi,
-                                  qreal &distances_sum_for_s,
-                                  qreal &CC, qreal &BC, qreal &SC, qreal &eccentricity, qreal &EC, qreal &PC,
-                                  qreal &SCC, qreal &SBC, qreal &SSC, qreal &SEC, qreal &SPC,
-                                  qreal &tempVarianceBC, qreal &tempVarianceSC, qreal &tempVarianceEC,
-                                  qreal &tempVarianceCC, qreal &tempVariancePC,
-                                  qreal &sigma_u, qreal &sigma_w,
-                                  qreal &delta_u, qreal &delta_w,
-                                  qreal &d_sw, qreal &d_su,
-                                  qreal &pairDistance,
-                                  H_f_i::const_iterator &hfi)
+                                   const bool considerWeights,
+                                   const bool inverseWeights,
+                                   const bool dropIsolates,
+                                   DistanceScratch &ds,
+                                   CentralityScratch &cs)
 {
-    Q_UNUSED(BC);
-    Q_UNUSED(SC);
-    Q_UNUSED(eccentricity);
-    Q_UNUSED(EC);
-    Q_UNUSED(SCC);
-    Q_UNUSED(SBC);
-    Q_UNUSED(SSC);
-    Q_UNUSED(SEC);
-    Q_UNUSED(tempVarianceBC);
-    Q_UNUSED(tempVarianceSC);
-    Q_UNUSED(tempVarianceEC);
-    Q_UNUSED(tempVarianceCC);
-    Q_UNUSED(tempVariancePC);
-    Q_UNUSED(pairDistance);
+    Q_UNUSED(cs.BC);
+    Q_UNUSED(cs.SC);
+    Q_UNUSED(cs.eccentricity);
+    Q_UNUSED(cs.EC);
+    Q_UNUSED(cs.SCC);
+    Q_UNUSED(cs.SBC);
+    Q_UNUSED(cs.SSC);
+    Q_UNUSED(cs.SEC);
+    Q_UNUSED(cs.tempVarianceBC);
+    Q_UNUSED(cs.tempVarianceSC);
+    Q_UNUSED(cs.tempVarianceEC);
+    Q_UNUSED(cs.tempVarianceCC);
+    Q_UNUSED(cs.tempVariancePC);
+    Q_UNUSED(ds.pairDistance);
 
     qDebug() << "*********** MAIN LOOP: "
                 "for every s in V solve the Single Source Shortest Path (SSSP) problem...";
-    for (it = graph.m_graph.cbegin(); it != graph.m_graph.cend(); ++it)
+    for (ds.it = graph.m_graph.cbegin(); ds.it != graph.m_graph.cend(); ++ds.it)
     {
-        s = (*it)->number();
-        si = graph.vpos[s];
-        distances_sum_for_s = 0;
+        ds.s = (*ds.it)->number();
+        ds.si = graph.vpos[ds.s];
+        ds.distances_sum_for_s = 0;
 
         qDebug() << "***** PHASE 1 (SSSP): "
-                 << "Source vertex s" << s << "vpos" << si;
+                 << "Source vertex s" << ds.s << "vpos" << ds.si;
 
-        emit graph.signalProgressBoxUpdate(++progressCounter);
+        emit graph.signalProgressBoxUpdate(++ds.progressCounter);
 
-        if (!(*it)->isEnabled())
+        if (!(*ds.it)->isEnabled())
         {
-            qDebug() << "***** PHASE 1 (SSSP): s" << s << "disabled. SKIP/CONTINUE";
+            qDebug() << "***** PHASE 1 (SSSP): s" << ds.s << "disabled. SKIP/CONTINUE";
             continue;
         }
 
@@ -642,25 +463,25 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
 
             qDebug() << "***** PHASE 1 (SSSP): "
                         "...and for each vertex: empty list Ps of predecessors";
-            for (it1 = graph.m_graph.cbegin(); it1 != graph.m_graph.cend(); ++it1)
+            for (ds.it1 = graph.m_graph.cbegin(); ds.it1 != graph.m_graph.cend(); ++ds.it1)
             {
-                (*it1)->clearPs();
+                (*ds.it1)->clearPs();
             }
             graph.sizeOfNthOrderNeighborhood.clear();
         }
 
         qDebug() << "***** PHASE 1 (SSSP): "
                     "Call BFS or dijkstra for s"
-                 << s << " vpos " << si
+                 << ds.s << " vpos " << ds.si
                  << " to compute distance and shortest paths to every vertex t";
 
         if (!considerWeights)
         {
-            graph.BFS(s, si, computeCentralities, dropIsolates);
+            graph.BFS(ds.s, ds.si, computeCentralities, dropIsolates);
         }
         else
         {
-            graph.dijkstra(s, si, computeCentralities, inverseWeights, dropIsolates);
+            graph.dijkstra(ds.s, ds.si, computeCentralities, inverseWeights, dropIsolates);
         }
 
         qDebug() << "***** PHASE 1 (SSSP): "
@@ -671,7 +492,7 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
         {
             qDebug() << "***** PHASE 2 (CENTRALITIES): "
                         "s"
-                     << s << "vpos" << si << "CC" << CC;
+                     << ds.s << "vpos" << ds.si << "CC" << cs.CC;
 
             // Compute Power Centrality
             // In = [ 1/(N-1) ] * ( Nd1 + Nd2 * 1/2 + ... + Ndi * 1/i )
@@ -680,32 +501,32 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
             // N is the sum Nd0 + Nd1 + Nd2 + ... + Ndi, that is the amount of nodes in the same component as the current node
 
             graph.sizeOfComponent = 1;
-            PC = 0;
-            hfi = graph.sizeOfNthOrderNeighborhood.constBegin();
+            cs.PC = 0;
+            cs.hfi = graph.sizeOfNthOrderNeighborhood.constBegin();
             // FIXME do we need to check for disabled nodes somewhere?
-            while (hfi != graph.sizeOfNthOrderNeighborhood.constEnd())
+            while (cs.hfi != graph.sizeOfNthOrderNeighborhood.constEnd())
             {
-                qDebug() << " sizeOfNthOrderNeighborhood.value(" << hfi.key() << ")"
-                         << hfi.value();
-                PC += (1.0 / hfi.key()) * hfi.value();
-                graph.sizeOfComponent += hfi.value();
-                ++hfi;
+                qDebug() << " sizeOfNthOrderNeighborhood.value(" << cs.hfi.key() << ")"
+                         << cs.hfi.value();
+                cs.PC += (1.0 / cs.hfi.key()) * cs.hfi.value();
+                graph.sizeOfComponent += cs.hfi.value();
+                ++cs.hfi;
             }
 
-            (*it)->setPC(PC);
-            graph.sumPC += PC;
+            (*ds.it)->setPC(cs.PC);
+            graph.sumPC += cs.PC;
             if (graph.sizeOfComponent != 1)
-                SPC = (1.0 / (graph.sizeOfComponent - 1.0)) * PC;
+                cs.SPC = (1.0 / (graph.sizeOfComponent - 1.0)) * cs.PC;
             else
-                SPC = 0;
+                cs.SPC = 0;
 
-            (*it)->setSPC(SPC); // Set std PC
+            (*ds.it)->setSPC(cs.SPC); // Set std PC
 
-            graph.sumSPC += SPC; // add to sumSPC -- used later to compute mean and variance
+            graph.sumSPC += cs.SPC; // add to sumSPC -- used later to compute mean and variance
 
             qDebug() << "***** PHASE 2 (CENTRALITIES): "
                         "s"
-                     << s << "vpos" << si << "PC" << PC;
+                     << ds.s << "vpos" << ds.si << "PC" << cs.PC;
 
             // Compute Betweenness Centrality
 
@@ -713,32 +534,32 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
                         "Start back propagation of dependencies."
                      << "Set dependency delta[u]=0 on each vertex";
 
-            for (it1 = graph.m_graph.cbegin(); it1 != graph.m_graph.cend(); ++it1)
+            for (ds.it1 = graph.m_graph.cbegin(); ds.it1 != graph.m_graph.cend(); ++ds.it1)
             {
-                (*it1)->setDelta(0.0);
+                (*ds.it1)->setDelta(0.0);
 
                 // compute sum of distances from current vertex to every other vertex
 
-                distances_sum_for_s += (*it)->distance((*it1)->number());
+                ds.distances_sum_for_s += (*ds.it)->distance((*ds.it1)->number());
                 qDebug() << "    Compute Centralities: "
                             "For CC: sum of distances. distance("
-                         << (*it)->number()
-                         << "," << (*it1)->number() << ") = " << (*it)->distance((*it1)->number())
-                         << "new sum of distances for s =" << distances_sum_for_s;
+                         << (*ds.it)->number()
+                         << "," << (*ds.it1)->number() << ") = " << (*ds.it)->distance((*ds.it1)->number())
+                         << "new sum of distances for s =" << ds.distances_sum_for_s;
             }
             qDebug() << "    Compute Centralities: "
                         "For CC: total sum of distances for s ="
-                     << distances_sum_for_s;
+                     << ds.distances_sum_for_s;
 
-            graph.m_graphSumDistance += distances_sum_for_s;
+            graph.m_graphSumDistance += ds.distances_sum_for_s;
 
             // Compute Closeness Centrality
-            if (distances_sum_for_s != 0 && distances_sum_for_s < RAND_MAX)
+            if (ds.distances_sum_for_s != 0 && ds.distances_sum_for_s < RAND_MAX)
             {
                 // Connected actor:
                 // There is a path from this actor to all others
                 // Invert the sum of distances and set it as CC
-                CC = 1.0 / distances_sum_for_s;
+                cs.CC = 1.0 / ds.distances_sum_for_s;
             }
             else
             {
@@ -748,27 +569,27 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
                 // to some of the other actors, which means her distance to
                 // them is infinite
                 // For these two cases, set CC as zero.
-                CC = 0;
+                cs.CC = 0;
             }
-            (*it)->setCC(CC);
+            (*ds.it)->setCC(cs.CC);
 
             qDebug() << "***** PHASE 2 (BC/ACCUMULATION): "
                         "Visit all vertices in reverse order of their discovery (from s = "
-                     << s
+                     << ds.s
                      << " ) to sum dependencies. Initial Stack size " << graph.Stack.size();
 
             while (!graph.Stack.empty())
             {
-                w = graph.Stack.top();
-                wi = graph.vpos[w];
+                ds.w = graph.Stack.top();
+                ds.wi = graph.vpos[ds.w];
 
                 qDebug() << "***** PHASE 2 (BC/ACCUMULATION): "
                             "Stack top is vertex w "
-                         << w
+                         << ds.w
                          << "This is the furthest vertex from s. Popping it.";
 
                 graph.Stack.pop();
-                QList<int> lst = graph.m_graph[wi]->Ps();
+                QList<int> lst = graph.m_graph[ds.wi]->Ps();
 
                 qDebug() << "***** PHASE 2 (BC/ACCUMULATION): "
                             "preLOOP: Size of predecessors list Ps[w]"
@@ -776,65 +597,65 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
 
                 qDebug() << "***** PHASE 2 (BC/ACCUMULATION): "
                             "LOOP over every vertex u in Ps of w"
-                         << w;
+                         << ds.w;
 
                 if (lst.size() > 0) // just in case...do a sanity check
-                    for (it2 = lst.cbegin(); it2 != lst.cend(); it2++)
+                    for (ds.it2 = lst.cbegin(); ds.it2 != lst.cend(); ds.it2++)
                     {
-                        u = (*it2);
-                        ui = graph.vpos[u];
-                        sigma_u = graph.m_graph[si]->shortestPaths(u);
-                        sigma_w = graph.m_graph[si]->shortestPaths(w);
-                        delta_u = graph.m_graph[ui]->delta();
-                        delta_w = graph.m_graph[wi]->delta();
+                        ds.u = (*ds.it2);
+                        ds.ui = graph.vpos[ds.u];
+                        cs.sigma_u = graph.m_graph[ds.si]->shortestPaths(ds.u);
+                        cs.sigma_w = graph.m_graph[ds.si]->shortestPaths(ds.w);
+                        cs.delta_u = graph.m_graph[ds.ui]->delta();
+                        cs.delta_w = graph.m_graph[ds.wi]->delta();
 
                         qDebug() << "***** PHASE 2 (BC/ACCUMULATION): "
                                     "Selecting Ps[w] element u"
-                                 << u
-                                 << "with delta_u" << delta_u
-                                 << "sigma(s,u)" << sigma_u
-                                 << "sigma(s,w)" << sigma_w
-                                 << "delta_w" << delta_w;
+                                 << ds.u
+                                 << "with delta_u" << cs.delta_u
+                                 << "sigma(s,u)" << cs.sigma_u
+                                 << "sigma(s,w)" << cs.sigma_w
+                                 << "delta_w" << cs.delta_w;
 
-                        if (graph.m_graph[si]->shortestPaths(w) > 0)
+                        if (graph.m_graph[ds.si]->shortestPaths(ds.w) > 0)
                         {
                             // delta[u]=delta[u]+(1+delta[w])*(sigma[u]/sigma[w]) ;
-                            d_su = delta_u + (1.0 + delta_w) * ((qreal)sigma_u / (qreal)sigma_w);
+                            cs.d_su = cs.delta_u + (1.0 + cs.delta_w) * ((qreal)cs.sigma_u / (qreal)cs.sigma_w);
                         }
                         else
                         {
-                            d_su = delta_u;
+                            cs.d_su = cs.delta_u;
                             qDebug() << "***** PHASE 2 (BC/ACCUMULATION): "
                                         "zero shortest paths from s to w - "
                                         "using SAME DELTA for vertex u";
                         }
                         qDebug() << "***** PHASE 2 (BC/ACCUMULATION): "
                                     "Assigning new delta d_su"
-                                 << d_su
-                                 << " to u" << u;
+                                 << cs.d_su
+                                 << " to u" << ds.u;
 
-                        graph.m_graph[ui]->setDelta(d_su);
+                        graph.m_graph[ds.ui]->setDelta(cs.d_su);
 
                     } // end for
 
                 qDebug() << "***** PHASE 2 (BC/ACCUMULATION): "
                             "Adding delta_w to BC of w";
 
-                if (w != s)
+                if (ds.w != ds.s)
                 {
                     qDebug() << "***** PHASE 2 (BC/ACCUMULATION): "
                                 "w!=s. For this furthest vertex we need to add its new delta"
-                             << delta_w
+                             << cs.delta_w
                              << "to old BC index:"
-                             << graph.m_graph[wi]->BC();
+                             << graph.m_graph[ds.wi]->BC();
 
-                    d_sw = graph.m_graph[wi]->BC() + delta_w;
+                    cs.d_sw = graph.m_graph[ds.wi]->BC() + cs.delta_w;
 
                     qDebug() << "***** PHASE 2 (BC/ACCUMULATION): "
                                 "s"
-                             << s << "vpos" << si << "BC = d_sw" << d_sw;
+                             << ds.s << "vpos" << ds.si << "BC = d_sw" << cs.d_sw;
 
-                    graph.m_graph[wi]->setBC(d_sw);
+                    graph.m_graph[ds.wi]->setBC(cs.d_sw);
 
                 } // END if
             } // END while stack
@@ -845,31 +666,15 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
     qDebug() << "*********** MAIN LOOP (SSSP problem): FINISHED.";
 }
 
+// Updated for Step C.1 (scratch structs). KEEP DEBUG. NO LOGIC CHANGES.
 
 void DistanceEngine::finalize(const bool computeCentralities,
                               const bool dropIsolates,
-                              const int N,
-                              VList::const_iterator &it,
-                              VList::const_iterator &it1,
-                              qreal &pairDistance,
-                              qreal &eccentricity,
-                              qreal &EC,
-                              qreal &CC,
-                              qreal &BC,
-                              qreal &SC,
-                              qreal &SCC,
-                              qreal &SBC,
-                              qreal &SSC,
-                              qreal &SEC,
-                              qreal &SPC,
-                              qreal &tempVarianceBC,
-                              qreal &tempVarianceSC,
-                              qreal &tempVarianceEC,
-                              qreal &tempVarianceCC,
-                              qreal &tempVariancePC)
+                              DistanceScratch &ds,
+                              CentralityScratch &cs)
 {
-    Q_UNUSED(SEC);
-    Q_UNUSED(tempVariancePC);
+    Q_UNUSED(cs.SEC);
+    Q_UNUSED(cs.tempVariancePC);
 
     // check if there are disconnected nodes
     // and get the distance sums
@@ -877,94 +682,94 @@ void DistanceEngine::finalize(const bool computeCentralities,
 
     graph.m_graphIsConnected = true;
 
-    for (it = graph.m_graph.cbegin(); it != graph.m_graph.cend(); ++it)
+    for (ds.it = graph.m_graph.cbegin(); ds.it != graph.m_graph.cend(); ++ds.it)
     {
-        if (!(*it)->isEnabled())
+        if (!(*ds.it)->isEnabled())
         {
-            qDebug() << "actor i" << (*it)->number() << "disabled. SKIP/CONTINUE";
+            qDebug() << "actor i" << (*ds.it)->number() << "disabled. SKIP/CONTINUE";
             continue;
         }
 
-        pairDistance = 0;
+        ds.pairDistance = 0;
 
-        for (it1 = graph.m_graph.cbegin(); it1 != graph.m_graph.cend(); ++it1)
+        for (ds.it1 = graph.m_graph.cbegin(); ds.it1 != graph.m_graph.cend(); ++ds.it1)
         {
-            if (!(*it1)->isEnabled())
+            if (!(*ds.it1)->isEnabled())
             {
-                qDebug() << "   actor j" << (*it1)->number() << "disabled. SKIP/CONTINUE";
+                qDebug() << "   actor j" << (*ds.it1)->number() << "disabled. SKIP/CONTINUE";
                 continue;
             }
-            if ((*it1)->number() == (*it)->number())
+            if ((*ds.it1)->number() == (*ds.it)->number())
             {
-                qDebug() << "   == actor j" << (*it1)->number() << "SKIP/CONTINUE";
+                qDebug() << "   == actor j" << (*ds.it1)->number() << "SKIP/CONTINUE";
                 continue;
             }
 
-            pairDistance = (*it)->distance((*it1)->number());
+            ds.pairDistance = (*ds.it)->distance((*ds.it1)->number());
 
-            if (pairDistance == RAND_MAX)
+            if (ds.pairDistance == RAND_MAX)
             {
-                graph.m_vertexPairsNotConnected.insert((*it)->number(), (*it1)->number());
-                (*it)->setEccentricity(RAND_MAX);
+                graph.m_vertexPairsNotConnected.insert((*ds.it)->number(), (*ds.it1)->number());
+                (*ds.it)->setEccentricity(RAND_MAX);
                 graph.m_graphIsConnected = false;
 
-                qDebug() << "actor i" << (*it)->number()
+                qDebug() << "actor i" << (*ds.it)->number()
                          << "has infinite eccentricity. "
                             "There is no path from it to actor j"
-                         << (*it1)->number();
+                         << (*ds.it1)->number();
             }
             else
             {
-                qDebug() << "actor i" << (*it)->number()
-                         << "distanceSum" << (*it)->distanceSum();
-                (*it)->setDistanceSum((*it)->distanceSum() + pairDistance);
+                qDebug() << "actor i" << (*ds.it)->number()
+                         << "distanceSum" << (*ds.it)->distanceSum();
+                (*ds.it)->setDistanceSum((*ds.it)->distanceSum() + ds.pairDistance);
             }
         } // end for
 
-        qDebug() << "actor i" << (*it)->number()
-                 << "Final distanceSum" << (*it)->distanceSum();
+        qDebug() << "actor i" << (*ds.it)->number()
+                 << "Final distanceSum" << (*ds.it)->distanceSum();
 
         if (computeCentralities)
         {
             // Compute Eccentricity (max geodesic distance)
-            eccentricity = (*it)->eccentricity();
+            cs.eccentricity = (*ds.it)->eccentricity();
 
             qDebug() << "actor"
-                     << (*it)->number()
-                     << "eccentricity" << eccentricity;
+                     << (*ds.it)->number()
+                     << "eccentricity" << cs.eccentricity;
 
-            if (eccentricity != RAND_MAX)
+            if (cs.eccentricity != RAND_MAX)
             {
                 // Find min/max Eccentricity
-                graph.minmax(eccentricity, (*it),
+                graph.minmax(cs.eccentricity, (*ds.it),
                              graph.maxEccentricity,
                              graph.minEccentricity,
                              graph.maxNodeEccentricity,
                              graph.minNodeEccentricity);
 
-                graph.resolveClasses(eccentricity,
+                graph.resolveClasses(cs.eccentricity,
                                      graph.discreteEccentricities,
                                      graph.classesEccentricity,
-                                     (*it)->number());
+                                     (*ds.it)->number());
 
                 // Eccentricity Centrality is the inverted Eccentricity
-                EC = 1.0 / eccentricity;
-                (*it)->setEC(EC);  // Set Eccentricity Centrality
-                (*it)->setSEC(EC); // Set std EC = EC
-                graph.sumEC += EC; // set sum EC
+                cs.EC = 1.0 / cs.eccentricity;
+                (*ds.it)->setEC(cs.EC);  // Set Eccentricity Centrality
+                (*ds.it)->setSEC(cs.EC); // Set std EC = EC
+                graph.sumEC += cs.EC;    // set sum EC
 
-                qDebug() << "actor i" << (*it)->number()
+                qDebug() << "actor i" << (*ds.it)->number()
                          << "EC"
-                         << EC;
+                         << cs.EC;
             }
             else
             {
-                EC = 0;
-                (*it)->setEC(EC);  // Set Eccentricity Centrality
-                (*it)->setSEC(EC); // Set std EC = EC
-                graph.sumEC += EC; // set sum EC
+                cs.EC = 0;
+                (*ds.it)->setEC(cs.EC);  // Set Eccentricity Centrality
+                (*ds.it)->setSEC(cs.EC); // Set std EC = EC
+                graph.sumEC += cs.EC;    // set sum EC
 
-                qDebug() << "actor i" << (*it)->number()
+                qDebug() << "actor i" << (*ds.it)->number()
                          << "EC=0 (disconnected graph)";
             }
 
@@ -975,7 +780,7 @@ void DistanceEngine::finalize(const bool computeCentralities,
     // Compute average path length...
     if (graph.m_vertexPairsNotConnected.size() == 0)
     {
-        graph.m_graphAverageDistance = graph.m_graphSumDistance / (N * (N - 1.0));
+        graph.m_graphAverageDistance = graph.m_graphSumDistance / (ds.N * (ds.N - 1.0));
         qDebug() << "Graph::graphDistancesGeodesic() - Average distance:"
                  << graph.m_graphAverageDistance;
     }
@@ -992,185 +797,184 @@ void DistanceEngine::finalize(const bool computeCentralities,
     {
         qDebug() << "Graph: graphDistancesGeodesic() - "
                     "Computing centralities...";
-        for (it = graph.m_graph.cbegin(); it != graph.m_graph.cend(); ++it)
+        for (ds.it = graph.m_graph.cbegin(); ds.it != graph.m_graph.cend(); ++ds.it)
         {
-            if (dropIsolates && (*it)->isIsolated())
+            if (dropIsolates && (*ds.it)->isIsolated())
             {
-                qDebug() << "vertex " << (*it)->number()
+                qDebug() << "vertex " << (*ds.it)->number()
                          << " isolated, continue. ";
                 continue;
             }
 
             // Compute classes and min/maxEC
-            SEC = (*it)->SEC();
-            graph.resolveClasses(SEC, graph.discreteECs, graph.classesEC, (*it)->number());
-            graph.minmax(SEC, (*it), graph.maxEC, graph.minEC, graph.maxNodeEC, graph.minNodeEC);
+            cs.SEC = (*ds.it)->SEC();
+            graph.resolveClasses(cs.SEC, graph.discreteECs, graph.classesEC, (*ds.it)->number());
+            graph.minmax(cs.SEC, (*ds.it), graph.maxEC, graph.minEC, graph.maxNodeEC, graph.minNodeEC);
 
             // Compute classes and min/maxSPC
-            SPC = (*it)->SPC(); // same as PC
-            graph.resolveClasses(SPC, graph.discretePCs, graph.classesSPC, (*it)->number());
-            graph.minmax(SPC, (*it), graph.maxSPC, graph.minSPC, graph.maxNodeSPC, graph.minNodeSPC);
+            cs.SPC = (*ds.it)->SPC(); // same as PC
+            graph.resolveClasses(cs.SPC, graph.discretePCs, graph.classesSPC, (*ds.it)->number());
+            graph.minmax(cs.SPC, (*ds.it), graph.maxSPC, graph.minSPC, graph.maxNodeSPC, graph.minNodeSPC);
 
             // Compute std BC, classes and min/maxSBC
             if (graph.m_graphIsSymmetric)
             {
                 qDebug() << "Betweenness centrality must be divided by"
                          << " two if the graph is undirected";
-                (*it)->setBC((*it)->BC() / 2.0);
+                (*ds.it)->setBC((*ds.it)->BC() / 2.0);
             }
-            BC = (*it)->BC();
-            graph.sumBC += BC;
-            SBC = BC / graph.maxIndexBC;
-            (*it)->setSBC(SBC);
-            graph.resolveClasses(SBC, graph.discreteBCs, graph.classesSBC);
-            graph.sumSBC += SBC;
-            graph.minmax(SBC, (*it), graph.maxSBC, graph.minSBC, graph.maxNodeSBC, graph.minNodeSBC);
+            cs.BC = (*ds.it)->BC();
+            graph.sumBC += cs.BC;
+            cs.SBC = cs.BC / graph.maxIndexBC;
+            (*ds.it)->setSBC(cs.SBC);
+            graph.resolveClasses(cs.SBC, graph.discreteBCs, graph.classesSBC);
+            graph.sumSBC += cs.SBC;
+            graph.minmax(cs.SBC, (*ds.it), graph.maxSBC, graph.minSBC, graph.maxNodeSBC, graph.minNodeSBC);
 
             // Compute std CC, classes and min/maxSCC
-            CC = (*it)->CC();
-            graph.sumCC += CC;
-            SCC = graph.maxIndexCC * CC;
-            (*it)->setSCC(SCC);
-            graph.resolveClasses(SCC, graph.discreteCCs, graph.classesSCC, (*it)->number());
-            graph.sumSCC += SCC;
-            graph.minmax(SCC, (*it), graph.maxSCC, graph.minSCC, graph.maxNodeSCC, graph.minNodeSCC);
+            cs.CC = (*ds.it)->CC();
+            graph.sumCC += cs.CC;
+            cs.SCC = graph.maxIndexCC * cs.CC;
+            (*ds.it)->setSCC(cs.SCC);
+            graph.resolveClasses(cs.SCC, graph.discreteCCs, graph.classesSCC, (*ds.it)->number());
+            graph.sumSCC += cs.SCC;
+            graph.minmax(cs.SCC, (*ds.it), graph.maxSCC, graph.minSCC, graph.maxNodeSCC, graph.minNodeSCC);
 
             // prepare to compute stdSC
-            SC = (*it)->SC();
+            cs.SC = (*ds.it)->SC();
             if (graph.m_graphIsSymmetric)
             {
-                (*it)->setSC(SC / 2.0);
-                SC = (*it)->SC();
-                qDebug() << "SC of " << (*it)->number()
+                (*ds.it)->setSC(cs.SC / 2.0);
+                cs.SC = (*ds.it)->SC();
+                qDebug() << "SC of " << (*ds.it)->number()
                          << "  divided by 2 (because the graph is symmetric) "
-                         << (*it)->SC();
+                         << (*ds.it)->SC();
             }
-            graph.sumSC += SC;
+            graph.sumSC += cs.SC;
 
-            qDebug() << "vertex " << (*it)->number() << " - "
-                     << " EC: " << (*it)->EC()
-                     << " CC: " << (*it)->CC()
-                     << " BC: " << (*it)->BC()
-                     << " SC: " << (*it)->SC()
-                     << " PC: " << (*it)->PC();
+            qDebug() << "vertex " << (*ds.it)->number() << " - "
+                     << " EC: " << (*ds.it)->EC()
+                     << " CC: " << (*ds.it)->CC()
+                     << " BC: " << (*ds.it)->BC()
+                     << " SC: " << (*ds.it)->SC()
+                     << " PC: " << (*ds.it)->PC();
         } // end for
 
         qDebug() << "Graph: graphDistancesGeodesic() -"
                     "Computing mean centrality values...";
 
         // Compute mean values and prepare to compute variances
-        graph.meanSBC = graph.sumSBC / (qreal)N;
+        graph.meanSBC = graph.sumSBC / (qreal)ds.N;
         graph.varianceSBC = 0;
-        tempVarianceBC = 0;
+        cs.tempVarianceBC = 0;
 
-        graph.meanSCC = graph.sumSCC / (qreal)N;
+        graph.meanSCC = graph.sumSCC / (qreal)ds.N;
         graph.varianceSCC = 0;
-        tempVarianceCC = 0;
+        cs.tempVarianceCC = 0;
 
-        graph.meanSPC = graph.sumSPC / (qreal)N;
+        graph.meanSPC = graph.sumSPC / (qreal)ds.N;
         graph.varianceSPC = 0;
-        tempVariancePC = 0;
+        cs.tempVariancePC = 0;
 
-        graph.meanEC = graph.sumEC / (qreal)N;
+        graph.meanEC = graph.sumEC / (qreal)ds.N;
         graph.varianceEC = 0;
-        tempVarianceEC = 0;
+        cs.tempVarianceEC = 0;
 
         qDebug() << "Graph: graphDistancesGeodesic() - "
                     "Computing std centralities ...";
 
-        for (it = graph.m_graph.cbegin(); it != graph.m_graph.cend(); ++it)
+        for (ds.it = graph.m_graph.cbegin(); ds.it != graph.m_graph.cend(); ++ds.it)
         {
-            if (dropIsolates && (*it)->isIsolated())
+            if (dropIsolates && (*ds.it)->isIsolated())
             {
                 continue;
             }
             // Compute std SC, classes and min/maxSSC
-            SC = (*it)->SC();
-            SSC = SC / graph.sumSC;
-            (*it)->setSSC(SSC);
-            graph.resolveClasses(SSC, graph.discreteSCs, graph.classesSSC);
-            graph.sumSSC += SSC;
-            graph.minmax(SSC, (*it), graph.maxSSC, graph.minSSC, graph.maxNodeSSC, graph.minNodeSSC);
+            cs.SC = (*ds.it)->SC();
+            cs.SSC = cs.SC / graph.sumSC;
+            (*ds.it)->setSSC(cs.SSC);
+            graph.resolveClasses(cs.SSC, graph.discreteSCs, graph.classesSSC);
+            graph.sumSSC += cs.SSC;
+            graph.minmax(cs.SSC, (*ds.it), graph.maxSSC, graph.minSSC, graph.maxNodeSSC, graph.minNodeSSC);
 
             // Compute numerator of groupSBC
-            SBC = (*it)->SBC();
-            graph.nomSBC += (graph.maxSBC - SBC);
+            cs.SBC = (*ds.it)->SBC();
+            graph.nomSBC += (graph.maxSBC - cs.SBC);
 
             // calculate BC variance
-            tempVarianceBC = (SBC - graph.meanSBC);
-            tempVarianceBC *= tempVarianceBC;
-            graph.varianceSBC += tempVarianceBC;
+            cs.tempVarianceBC = (cs.SBC - graph.meanSBC);
+            cs.tempVarianceBC *= cs.tempVarianceBC;
+            graph.varianceSBC += cs.tempVarianceBC;
 
             // Compute numerator of groupCC
-            graph.nomSCC += graph.maxSCC - (*it)->SCC();
+            graph.nomSCC += graph.maxSCC - (*ds.it)->SCC();
 
             // calculate CC variance
-            tempVarianceCC = ((*it)->SCC() - graph.meanSCC);
-            tempVarianceCC *= tempVarianceCC;
-            graph.varianceSCC += tempVarianceCC;
+            cs.tempVarianceCC = ((*ds.it)->SCC() - graph.meanSCC);
+            cs.tempVarianceCC *= cs.tempVarianceCC;
+            graph.varianceSCC += cs.tempVarianceCC;
 
             // Compute numerator of groupSPC
-            SPC = (*it)->SPC();
-            graph.nomSPC += (graph.maxSPC - SPC);
+            cs.SPC = (*ds.it)->SPC();
+            graph.nomSPC += (graph.maxSPC - cs.SPC);
 
             // calculate PC variance
-            tempVariancePC = ((*it)->SPC() - graph.meanSPC);
-            tempVariancePC *= tempVariancePC;
-            graph.varianceSPC += tempVariancePC;
+            cs.tempVariancePC = ((*ds.it)->SPC() - graph.meanSPC);
+            cs.tempVariancePC *= cs.tempVariancePC;
+            graph.varianceSPC += cs.tempVariancePC;
 
             // calculate EC variance
-            tempVarianceEC = ((*it)->EC() - graph.meanEC);
-            tempVarianceEC *= tempVarianceEC;
-            graph.varianceEC += tempVarianceEC;
+            cs.tempVarianceEC = ((*ds.it)->EC() - graph.meanEC);
+            cs.tempVarianceEC *= cs.tempVarianceEC;
+            graph.varianceEC += cs.tempVarianceEC;
 
         } // end for
 
         // compute final variances
-        graph.varianceSBC /= (qreal)N;
-        graph.varianceSCC /= (qreal)N;
-        graph.varianceSPC /= (qreal)N;
+        graph.varianceSBC /= (qreal)ds.N;
+        graph.varianceSCC /= (qreal)ds.N;
+        graph.varianceSPC /= (qreal)ds.N;
 
-        graph.varianceEC /= (qreal)N;
+        graph.varianceEC /= (qreal)ds.N;
 
         // calculate SC mean value and prepare to compute variance
-        graph.meanSSC = graph.sumSSC / (qreal)N;
+        graph.meanSSC = graph.sumSSC / (qreal)ds.N;
         graph.varianceSSC = 0;
-        tempVarianceSC = 0;
-        for (it = graph.m_graph.cbegin(); it != graph.m_graph.cend(); ++it)
+        cs.tempVarianceSC = 0;
+        for (ds.it = graph.m_graph.cbegin(); ds.it != graph.m_graph.cend(); ++ds.it)
         {
-            if (dropIsolates && (*it)->isIsolated())
+            if (dropIsolates && (*ds.it)->isIsolated())
             {
                 continue;
             }
-            tempVarianceSC = ((*it)->SSC() - graph.meanSSC);
-            tempVarianceSC *= tempVarianceSC;
-            graph.varianceSSC += tempVarianceSC;
+            cs.tempVarianceSC = ((*ds.it)->SSC() - graph.meanSSC);
+            cs.tempVarianceSC *= cs.tempVarianceSC;
+            graph.varianceSSC += cs.tempVarianceSC;
         }
         // calculate final SC variance
-        graph.varianceSSC /= (qreal)N;
+        graph.varianceSSC /= (qreal)ds.N;
 
-        graph.denomSPC = ((N - 2.0)) / (2.0); // only for connected nets
-        if (N < 3)
-            graph.denomSPC = N - 1.0;
+        graph.denomSPC = ((ds.N - 2.0)) / (2.0); // only for connected nets
+        if (ds.N < 3)
+            graph.denomSPC = ds.N - 1.0;
         // what if the net is disconnected (isolates exist) ?
         graph.groupSPC = graph.nomSPC / graph.denomSPC;
 
-        graph.denomSCC = ((N - 1.0) * (N - 2.0)) / (2.0 * N - 3.0);
-        if (N < 3)
-            graph.denomSCC = N - 1.0;
+        graph.denomSCC = ((ds.N - 1.0) * (ds.N - 2.0)) / (2.0 * ds.N - 3.0);
+        if (ds.N < 3)
+            graph.denomSCC = ds.N - 1.0;
 
         graph.groupCC = graph.nomSCC / graph.denomSCC; // Calculate group Closeness centrality
 
         // nomSBC*=2.0;
         //             denomSBC =   (N-1.0) *  (N-1.0) * (N-2.0);
-        graph.denomSBC = (N - 1.0);                     // Wasserman&Faust - formula 5.14
+        graph.denomSBC = (ds.N - 1.0);                  // Wasserman&Faust - formula 5.14
         graph.groupSBC = graph.nomSBC / graph.denomSBC; // Calculate group Betweenness centrality
 
         graph.calculatedCentralities = true;
 
     } // END if computeCentralities
 }
-
 
 /**
  * @brief Constructs a Graph
