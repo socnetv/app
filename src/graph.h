@@ -922,6 +922,27 @@ public:
                                 const bool &inverseWeights=true,
                                 const bool &dropIsolates=false);
 
+    // --- SSSP/Brandes stack helpers (DistanceEngine should not touch Stack directly) ---
+    void ssspStackClear();
+    bool ssspStackEmpty() const;
+    int  ssspStackTop() const;
+    void ssspStackPop();
+    int  ssspStackSize() const;
+    // --- SSSP nth-order neighborhood (for Power Centrality) ---
+    void ssspNthOrderClear();
+    // Stores the number of vertices at distance n from a given vertex
+    H_f_i sizeOfNthOrderNeighborhood;    
+    H_f_i::const_iterator ssspNthOrderBegin() const;
+    H_f_i::const_iterator ssspNthOrderEnd() const;
+    // --- SSSP component size accumulator ---
+    void ssspComponentReset(int value = 1);
+    void ssspComponentAdd(int delta);
+    int  ssspComponentSize() const;
+    // --- Connectivity bookkeeping ---
+    void notConnectedPairsClear();
+    void notConnectedPairsInsert(int from, int to);
+    int  notConnectedPairsSize() const;
+
     void graphMatrixDistanceGeodesicCreate(const bool &considerWeights=false,
                                      const bool &inverseWeights=true,
                                      const bool &dropIsolates=false);
@@ -970,6 +991,9 @@ public:
                            const bool inverseWeights=false,
                            const bool dropIsolates=false);
 
+
+
+    
 
     /* REACHABILITY AND WALKS */
 
@@ -1141,12 +1165,6 @@ public:
      *   or removing many vertices
      */
     H_Int vpos;
-
-    // Stores the number of vertices at distance n from a given vertex
-    H_f_i sizeOfNthOrderNeighborhood;
-
-    /* maps have O(logN) lookup complexity */
-    /* Consider using tr1::hashmap which has O(1) lookup, but this is not ISO C++ yet :(   */
 
 
 
