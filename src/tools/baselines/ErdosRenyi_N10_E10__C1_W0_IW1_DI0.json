@@ -1,0 +1,34 @@
+{
+    "counts": {
+        "links_sna": 10,
+        "nodes": 10,
+        "ties_graph": 10
+    },
+    "dataset": {
+        "filetype": 1,
+        "name": "ErdosRenyi_N10_E10.graphml",
+        "path": "src/data/ErdosRenyi_N10_E10.graphml"
+    },
+    "graph": {
+        "directed": true,
+        "weighted": false
+    },
+    "load_report": {
+        "fileType_signal": 1,
+        "load_ms": 1,
+        "load_msg": "",
+        "net_name": "erdos-renyi",
+        "ok": true
+    },
+    "metrics": {
+        "avg_distance": "1.5789473684210527",
+        "diameter": 3
+    },
+    "run": {
+        "computeCentralities": true,
+        "considerWeights": false,
+        "dropIsolates": false,
+        "inverseWeights": true
+    },
+    "schema_version": 1
+}

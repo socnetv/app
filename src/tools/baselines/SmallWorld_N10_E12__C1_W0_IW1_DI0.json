@@ -1,0 +1,34 @@
+{
+    "counts": {
+        "links_sna": 12,
+        "nodes": 10,
+        "ties_graph": 12
+    },
+    "dataset": {
+        "filetype": 1,
+        "name": "SmallWorld_N10_E12.graphml",
+        "path": "src/data/SmallWorld_N10_E12.graphml"
+    },
+    "graph": {
+        "directed": false,
+        "weighted": false
+    },
+    "load_report": {
+        "fileType_signal": 1,
+        "load_ms": 3,
+        "load_msg": "",
+        "net_name": "small-world",
+        "ok": true
+    },
+    "metrics": {
+        "avg_distance": "2.3999999999999999",
+        "diameter": 6
+    },
+    "run": {
+        "computeCentralities": true,
+        "considerWeights": false,
+        "dropIsolates": false,
+        "inverseWeights": true
+    },
+    "schema_version": 1
+}

@@ -20,6 +20,9 @@ HeadlessLoadResult loadGraphHeadless(
     HeadlessLoadResult out;
     out.ok = false;
     out.fileType = -1;
+    out.totalNodes = 0;
+    out.totalLinks = 0;
+    out.elapsedTime = 0;
 
     qDebug() << "[CLI] loadGraphHeadless() begin:" << fileName;
 
@@ -121,24 +124,27 @@ HeadlessLoadResult loadGraphHeadless(
     const QString initEdgeColor = "#000000";
     const int canvasWidth = 700;
     const int canvasHeight = 600;
+
     // Queue Parser::load to run in parserThread *after* the event loop spins.
     QMetaObject::invokeMethod(parser, [=]()
-                              { parser->load(fileName,
-                                             codecName,
-                                             initVertexSize,
-                                             initVertexColor,
-                                             initVertexShape,
-                                             initVertexNumberColor,
-                                             initVertexNumberSize,
-                                             initVertexLabelColor,
-                                             initVertexLabelSize,
-                                             initEdgeColor,
-                                             canvasWidth,
-                                             canvasHeight,
-                                             fileFormat,
-                                             delimiter,
-                                             sm_two_mode,
-                                             sm_has_labels); }, Qt::QueuedConnection);
+                              {
+                                  parser->load(fileName,
+                                               codecName,
+                                               initVertexSize,
+                                               initVertexColor,
+                                               initVertexShape,
+                                               initVertexNumberColor,
+                                               initVertexNumberSize,
+                                               initVertexLabelColor,
+                                               initVertexLabelSize,
+                                               initEdgeColor,
+                                               canvasWidth,
+                                               canvasHeight,
+                                               fileFormat,
+                                               delimiter,
+                                               sm_two_mode,
+                                               sm_has_labels);
+                              }, Qt::QueuedConnection);
 
     qDebug() << "[CLI] entering loop.exec()";
     loop.exec();
@@ -146,7 +152,7 @@ HeadlessLoadResult loadGraphHeadless(
 
     parserThread.quit();
     parserThread.wait();
-    
+
     qDebug() << "[CLI] loadGraphHeadless() end:" << out.ok;
 
     return out;
