@@ -1,0 +1,153 @@
+#include "headless_graph_loader.h"
+
+#include <QEventLoop>
+#include <QThread>
+#include <QMetaObject>
+#include <QDebug>
+
+#include "../graph.h"
+#include "../parser.h"
+
+HeadlessLoadResult loadGraphHeadless(
+    Graph &graph,
+    const QString &fileName,
+    const QString &codecName,
+    int fileFormat,
+    const QString &delimiter,
+    int sm_two_mode,
+    bool sm_has_labels)
+{
+    HeadlessLoadResult out;
+    out.ok = false;
+    out.fileType = -1;
+
+    qDebug() << "[CLI] loadGraphHeadless() begin:" << fileName;
+
+    // Same semantics as Graph::loadFile()
+    graph.relationsClear();
+
+    // Local parser + local thread (no Graph::file_parser involvement)
+    auto *parser = new Parser();
+    QThread parserThread;
+
+    parser->moveToThread(&parserThread);
+
+    QObject::connect(&parserThread, &QThread::finished,
+                     parser, &QObject::deleteLater);
+
+    // ---- Mirror Graph::loadFile() signal wiring ----
+    QObject::connect(parser, &Parser::signalAddNewRelation,
+                     &graph, &Graph::relationAdd);
+
+    QObject::connect(parser, &Parser::signalSetRelation,
+                     &graph, &Graph::relationSet);
+
+    QObject::connect(parser, &Parser::signalCreateNode,
+                     &graph, &Graph::vertexCreate);
+
+    QObject::connect(parser, &Parser::signalCreateNodeAtPosRandom,
+                     &graph, &Graph::vertexCreateAtPosRandom);
+
+    QObject::connect(parser, &Parser::signalCreateNodeAtPosRandomWithLabel,
+                     &graph, &Graph::vertexCreateAtPosRandomWithLabel);
+
+    QObject::connect(parser, &Parser::signalCreateEdge,
+                     &graph, &Graph::edgeCreate);
+
+    QObject::connect(parser, &Parser::signalFileLoaded,
+                     &graph, &Graph::graphFileLoaded);
+
+    QObject::connect(parser, SIGNAL(removeDummyNode(int)),
+                     &graph, SLOT(vertexRemoveDummyNode(int)));
+
+    // We'll block until Graph emits signalGraphLoaded
+    QEventLoop loop;
+
+    QObject::connect(&graph, &Graph::signalGraphLoaded,
+                     &loop,
+                     [&](const int &loadedFileType,
+                         const QString &loadedFileName,
+                         const QString &netName,
+                         const int &totalNodes,
+                         const int &totalLinks,
+                         const int & /*density*/,
+                         const qint64 &elapsedTime,
+                         const QString &message)
+                     {
+                         out.fileType = loadedFileType;
+                         out.fileName = loadedFileName;
+                         out.netName = netName;
+                         out.totalNodes = totalNodes;
+                         out.totalLinks = totalLinks;
+                         out.elapsedTime = elapsedTime;
+                         out.message = message;
+                         out.ok = (loadedFileType != FileType::UNRECOGNIZED);
+
+                         qDebug() << "[CLI] signalGraphLoaded:"
+                                  << "ok" << out.ok
+                                  << "nodes" << out.totalNodes
+                                  << "links" << out.totalLinks
+                                  << "msg" << out.message;
+
+                         loop.quit();
+                     });
+
+    // Also quit when parser finishes (belt-and-suspenders)
+    QObject::connect(parser, &Parser::finished,
+                     &loop,
+                     [&](const QString &reason)
+                     {
+                         qDebug() << "[CLI] Parser finished:" << reason;
+
+                         // If graph didn't emit signalGraphLoaded for some reason, still quit.
+                         if (out.fileType == -1)
+                         {
+                             out.ok = false;
+                             out.message = reason;
+                         }
+                         loop.quit();
+                     });
+
+    parserThread.start();
+
+    // --- Headless defaults (visual-only, do not affect distances/centralities) ---
+    const int initVertexSize = 10;
+    const QString initVertexColor = "#ffffff";
+    const QString initVertexShape = "circle";
+    const QString initVertexNumberColor = "#000000";
+    const int initVertexNumberSize = 10;
+    const QString initVertexLabelColor = "#000000";
+    const int initVertexLabelSize = 10;
+    const QString initEdgeColor = "#000000";
+    const int canvasWidth = 700;
+    const int canvasHeight = 600;
+    // Queue Parser::load to run in parserThread *after* the event loop spins.
+    QMetaObject::invokeMethod(parser, [=]()
+                              { parser->load(fileName,
+                                             codecName,
+                                             initVertexSize,
+                                             initVertexColor,
+                                             initVertexShape,
+                                             initVertexNumberColor,
+                                             initVertexNumberSize,
+                                             initVertexLabelColor,
+                                             initVertexLabelSize,
+                                             initEdgeColor,
+                                             canvasWidth,
+                                             canvasHeight,
+                                             fileFormat,
+                                             delimiter,
+                                             sm_two_mode,
+                                             sm_has_labels); }, Qt::QueuedConnection);
+
+    qDebug() << "[CLI] entering loop.exec()";
+    loop.exec();
+    qDebug() << "[CLI] left loop.exec()";
+
+    parserThread.quit();
+    parserThread.wait();
+    
+    qDebug() << "[CLI] loadGraphHeadless() end:" << out.ok;
+
+    return out;
+}

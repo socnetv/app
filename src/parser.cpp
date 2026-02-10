@@ -99,9 +99,11 @@ void Parser::load(const QString &fileName,
                   const bool &sm_has_labels)
 {
 
-    qDebug() << "Parser loading file:" << fileName
-             << "codecName" << codecName
-             << "- Running On thread " << this->thread();
+
+    qDebug() << "Parser::load() current thread:" << QThread::currentThread()
+         << " affinity thread:" << this->thread()
+         << "loading file:" << fileName
+        << "codecName" << codecName;
 
     initNodeSize = defNodeSize;
     initNodeColor = defNodeColor;

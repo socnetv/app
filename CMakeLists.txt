@@ -43,6 +43,8 @@
 
 cmake_minimum_required(VERSION 3.16) # 3.21 or 3.22 for better features and compatibility with modern tools.
 
+option(BUILD_CLI "Build headless regression CLI" ON)
+
 # ==============================================================================
 # 1. Project Setup
 # ==============================================================================
@@ -93,6 +95,16 @@ configure_file(${CMAKE_SOURCE_DIR}/COPYING
                ${CMAKE_BINARY_DIR}/LICENSE.txt
                COPYONLY)
 
+set(ENGINE_SOURCES
+    src/engine/graph_distance_progress_sink.cpp
+)
+
+set(CLI_SOURCES
+    src/tools/cli_regression_main.cpp
+    src/tools/headless_graph_loader.cpp
+)
+
+
 # Define sources and headers
 set (FORMS 
     src/forms/dialogfilteredgesbyweight.ui 
@@ -122,7 +134,7 @@ set(SOURCES
     src/main.cpp 
     src/mainwindow.cpp 
     src/texteditor.cpp
-    src/engine/graph_distance_progress_sink.cpp
+    ${ENGINE_SOURCES}
     src/graph.cpp 
     src/graphvertex.cpp 
     src/matrix.cpp 
@@ -250,6 +262,7 @@ target_link_libraries(${TARGET_NAME} PRIVATE
 
 
 
+
 # ==============================================================================
 # 6. Installation and Packaging
 # ==============================================================================
@@ -367,9 +380,47 @@ message(STATUS "CMAKE_INSTALL_DATADIR: "  ${CMAKE_INSTALL_DATADIR})
 message(STATUS "CMAKE_INSTALL_PREFIX: "  ${CMAKE_INSTALL_PREFIX})
 
 
+
+if(BUILD_CLI)
+    set(CLI_TARGET socnetv-cli)
+
+    qt_add_executable(${CLI_TARGET}
+        MANUAL_FINALIZATION
+        ${CLI_SOURCES}
+        ${ENGINE_SOURCES}
+        src/graph.cpp
+        src/graphvertex.cpp
+        src/matrix.cpp
+        src/parser.cpp
+        src/webcrawler.cpp
+        src/chart.cpp
+    )
+
+    target_include_directories(${CLI_TARGET} PUBLIC
+        "${CMAKE_SOURCE_DIR}/src"
+    )
+
+    target_link_libraries(${CLI_TARGET} PRIVATE
+        Qt6::Core
+        Qt6::Core5Compat
+        Qt6::Network
+        Qt6::Xml
+        Qt6::Widgets
+        Qt6::Gui
+        Qt6::Charts
+    )
+
+    set_target_properties(${CLI_TARGET} PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON
+        AUTOMOC ON
+        AUTOUIC OFF
+        AUTORCC OFF
+    )
+
+    qt_finalize_executable(${CLI_TARGET})
+endif()
+
+
 # Finalize the executable
 qt_finalize_executable(${TARGET_NAME})
-
-
-
-
