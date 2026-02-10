@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+ <!-- Created by SocNetV 3.2 -->
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns"       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance "       xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns       http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <key id="d0" for="node" attr.name="label" attr.type="string"> 
+    <default></default> 
+  </key> 
+  <key id="d1" for="node" attr.name="x_coordinate" attr.type="double"> 
+    <default>0.0</default> 
+  </key> 
+  <key id="d2" for="node" attr.name="y_coordinate" attr.type="double"> 
+    <default>0.0</default> 
+  </key> 
+  <key id="d3" for="node" attr.name="size" attr.type="double"> 
+    <default>10</default> 
+  </key> 
+  <key id="d4" for="node" attr.name="color" attr.type="string"> 
+    <default>red</default> 
+  </key> 
+  <key id="d5" for="node" attr.name="shape" attr.type="string"> 
+    <default>circle</default> 
+  </key> 
+  <key id="d6" for="node" attr.name="label.color" attr.type="string"> 
+    <default>#8d8d8d</default> 
+  </key> 
+  <key id="d7" for="node" attr.name="label.size" attr.type="string"> 
+    <default>8</default> 
+  </key> 
+  <key id="d8" for="edge" attr.name="weight" attr.type="double"> 
+    <default>1.0</default> 
+  </key> 
+  <key id="d9" for="edge" attr.name="color" attr.type="string"> 
+    <default>#666666</default> 
+  </key> 
+  <key id="d10" for="edge" attr.name="label" attr.type="string"> 
+    <default></default> 
+  </key> 
+  <graph id="erdos-renyi" edgedefault="directed"> 
+    <node id="1"> 
+      <data key="d0">1</data>
+      <data key="d1">0.504425</data>
+      <data key="d2">0.863711</data>
+      <data key="d5">circle</data>
+    </node>
+    <node id="2"> 
+      <data key="d0">2</data>
+      <data key="d1">0.798673</data>
+      <data key="d2">0.162562</data>
+      <data key="d5">circle</data>
+    </node>
+    <node id="3"> 
+      <data key="d0">3</data>
+      <data key="d1">0.110619</data>
+      <data key="d2">0.7422</data>
+      <data key="d5">circle</data>
+    </node>
+    <node id="4"> 
+      <data key="d0">4</data>
+      <data key="d1">0.737832</data>
+      <data key="d2">0.579639</data>
+      <data key="d5">circle</data>
+    </node>
+    <node id="5"> 
+      <data key="d0">5</data>
+      <data key="d1">0.299779</data>
+      <data key="d2">0.7422</data>
+      <data key="d5">circle</data>
+    </node>
+    <node id="6"> 
+      <data key="d0">6</data>
+      <data key="d1">0.747788</data>
+      <data key="d2">0.487685</data>
+      <data key="d5">circle</data>
+    </node>
+    <node id="7"> 
+      <data key="d0">7</data>
+      <data key="d1">0.227876</data>
+      <data key="d2">0.220033</data>
+      <data key="d5">circle</data>
+    </node>
+    <node id="8"> 
+      <data key="d0">8</data>
+      <data key="d1">0.456858</data>
+      <data key="d2">0.254516</data>
+      <data key="d5">circle</data>
+    </node>
+    <node id="9"> 
+      <data key="d0">9</data>
+      <data key="d1">0.382743</data>
+      <data key="d2">0.486043</data>
+      <data key="d5">circle</data>
+    </node>
+    <node id="10"> 
+      <data key="d0">10</data>
+      <data key="d1">0.525442</data>
+      <data key="d2">0.536946</data>
+      <data key="d5">circle</data>
+    </node>
+    <edge id="e1" directed="true" source="1" target="3"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e2" directed="true" source="1" target="6"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e3" directed="true" source="1" target="10"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e4" directed="true" source="5" target="10"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e5" directed="true" source="6" target="10"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e6" directed="true" source="7" target="5"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e7" directed="true" source="8" target="3"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e8" directed="true" source="8" target="4"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e9" directed="true" source="10" target="2"> 
+      <data key="d8">1</data> 
+    </edge>
+    <edge id="e10" directed="true" source="10" target="9"> 
+      <data key="d8">1</data> 
+    </edge>
+  </graph>
+</graphml>
