@@ -3,10 +3,10 @@
 This folder documents the **current architecture** of SocNetV and the **ongoing modernization/refactor** effort.
 
 If you are new to the codebase, start here, then read the high-level roadmap:
-- `docs/ARCHITECTURAL_REFACTORING_ROADMAP.md`
+- [`ARCHITECTURAL_REFACTORING_ROADMAP.md`](ARCHITECTURAL_REFACTORING_ROADMAP.md)
 
 For work-in-progress refactors (with detailed steps and status), see:
-- `docs/roadmaps/`
+- `docs/roadmaps`
 
 
 ## Project Snapshot

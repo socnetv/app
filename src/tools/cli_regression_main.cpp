@@ -7,6 +7,9 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
+#include <cmath>
+#include <algorithm>
+
 #include "../graph.h"
 #include "../graphvertex.h"
 #include "headless_graph_loader.h"
@@ -35,7 +38,8 @@ static bool writeJsonFile(const QString &path, const QJsonObject &obj, QString *
     QFile f(path);
     if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate))
     {
-        if (err) *err = QString("Could not open for write: %1").arg(path);
+        if (err)
+            *err = QString("Could not open for write: %1").arg(path);
         return false;
     }
     const QJsonDocument doc(obj);
@@ -48,7 +52,8 @@ static bool readJsonFile(const QString &path, QJsonObject *outObj, QString *err)
     QFile f(path);
     if (!f.open(QIODevice::ReadOnly))
     {
-        if (err) *err = QString("Could not open for read: %1").arg(path);
+        if (err)
+            *err = QString("Could not open for read: %1").arg(path);
         return false;
     }
     const QByteArray data = f.readAll();
@@ -56,7 +61,8 @@ static bool readJsonFile(const QString &path, QJsonObject *outObj, QString *err)
     const QJsonDocument doc = QJsonDocument::fromJson(data, &pe);
     if (doc.isNull() || !doc.isObject())
     {
-        if (err) *err = QString("Invalid JSON (%1) in %2").arg(pe.errorString(), path);
+        if (err)
+            *err = QString("Invalid JSON (%1) in %2").arg(pe.errorString(), path);
         return false;
     }
     *outObj = doc.object();
@@ -80,19 +86,19 @@ static QJsonArray buildPerNodeArray(Graph &g)
         o["label"] = gv->label();
 
         // Core outputs requested: CC/BC/SC/EC/PC + standardized variants
-        o["CC"]  = d2s(gv->CC());
+        o["CC"] = d2s(gv->CC());
         o["SCC"] = d2s(gv->SCC());
 
-        o["BC"]  = d2s(gv->BC());
+        o["BC"] = d2s(gv->BC());
         o["SBC"] = d2s(gv->SBC());
 
-        o["SC"]  = d2s(gv->SC());
+        o["SC"] = d2s(gv->SC());
         o["SSC"] = d2s(gv->SSC());
 
-        o["EC"]  = d2s(gv->EC());
+        o["EC"] = d2s(gv->EC());
         o["SEC"] = d2s(gv->SEC());
 
-        o["PC"]  = d2s(gv->PC());
+        o["PC"] = d2s(gv->PC());
         o["SPC"] = d2s(gv->SPC());
 
         // Useful distance-kernel side values (helps catch subtle regressions)
@@ -138,8 +144,8 @@ static QJsonObject buildGoldenJsonV1(
 
     QJsonObject counts;
     counts["nodes"] = load.totalNodes;
-    counts["links_sna"] = load.totalLinks;     // SNA links as reported by GraphLoaded
-    counts["ties_graph"] = g.edgesEnabled();   // canonical model ties: edges if undirected, arcs if directed
+    counts["links_sna"] = load.totalLinks;   // SNA links as reported by GraphLoaded
+    counts["ties_graph"] = g.edgesEnabled(); // canonical model ties: edges if undirected, arcs if directed
     root["counts"] = counts;
 
     QJsonObject graph;
@@ -208,6 +214,42 @@ static bool cmpBool(const QJsonObject &e, const QJsonObject &a, const QString &k
     return true;
 }
 
+static bool almostEqual(double a, double b, double rel = 1e-15, double abs = 0.0)
+{
+    const double diff = std::abs(a - b);
+    if (diff <= abs)
+        return true;
+    const double scale = std::max(std::abs(a), std::abs(b));
+    return diff <= rel * scale;
+}
+
+static bool cmpNumStrTol(const QJsonObject &e, const QJsonObject &a,
+                         const QString &k, QTextStream &err,
+                         double rel = 1e-15, double abs = 0.0)
+{
+    const QString es = e.value(k).toString();
+    const QString as = a.value(k).toString();
+
+    bool ok1 = false, ok2 = false;
+    const double ev = es.toDouble(&ok1);
+    const double av = as.toDouble(&ok2);
+
+    if (!ok1 || !ok2)
+    {
+        err << "MISMATCH " << k << " non-numeric expected=" << es << " got=" << as << "\n";
+        return false;
+    }
+
+    if (!almostEqual(ev, av, rel, abs))
+    {
+        err << "MISMATCH " << k << " expected=" << es << " got=" << as
+            << " (diff=" << d2s(std::abs(ev - av)) << ")\n";
+        return false;
+    }
+
+    return true;
+}
+
 static bool cmpPerNodeArray(const QJsonArray &eArr, const QJsonArray &aArr, QTextStream &err)
 {
     if (eArr.size() != aArr.size())
@@ -218,7 +260,8 @@ static bool cmpPerNodeArray(const QJsonArray &eArr, const QJsonArray &aArr, QTex
 
     bool ok = true;
 
-    auto cmpNodeFieldStr = [&](const QJsonObject &e, const QJsonObject &a, const QString &k, int id) {
+    auto cmpNodeFieldStrictStr = [&](const QJsonObject &e, const QJsonObject &a, const QString &k, int id)
+    {
         const QString ev = e.value(k).toString();
         const QString av = a.value(k).toString();
         if (ev != av)
@@ -228,7 +271,33 @@ static bool cmpPerNodeArray(const QJsonArray &eArr, const QJsonArray &aArr, QTex
         }
     };
 
-    auto cmpNodeFieldInt = [&](const QJsonObject &e, const QJsonObject &a, const QString &k, int id) {
+    auto cmpNodeFieldNumStrTol = [&](const QJsonObject &e, const QJsonObject &a, const QString &k, int id)
+    {
+        // same epsilon as graph-level
+        const QString es = e.value(k).toString();
+        const QString as = a.value(k).toString();
+        bool ok1 = false, ok2 = false;
+        const double ev = es.toDouble(&ok1);
+        const double av = as.toDouble(&ok2);
+
+        if (!ok1 || !ok2)
+        {
+            err << "MISMATCH per_node id=" << id << " field=" << k
+                << " non-numeric expected=" << es << " got=" << as << "\n";
+            ok = false;
+            return;
+        }
+        if (!almostEqual(ev, av, 1e-15))
+        {
+            err << "MISMATCH per_node id=" << id << " field=" << k
+                << " expected=" << es << " got=" << as
+                << " (diff=" << d2s(std::abs(ev - av)) << ")\n";
+            ok = false;
+        }
+    };
+
+    auto cmpNodeFieldInt = [&](const QJsonObject &e, const QJsonObject &a, const QString &k, int id)
+    {
         const int ev = e.value(k).toInt();
         const int av = a.value(k).toInt();
         if (ev != av)
@@ -254,15 +323,14 @@ static bool cmpPerNodeArray(const QJsonArray &eArr, const QJsonArray &aArr, QTex
         }
 
         cmpNodeFieldInt(e, a, "id", eid);
-        cmpNodeFieldStr(e, a, "label", eid);
+        cmpNodeFieldStrictStr(e, a, "label", eid);
 
         // Centralities + standardized
         const QStringList fields = {
-            "CC","SCC","BC","SBC","SC","SSC","EC","SEC","PC","SPC",
-            "distance_sum","eccentricity"
-        };
+            "CC", "SCC", "BC", "SBC", "SC", "SSC", "EC", "SEC", "PC", "SPC",
+            "distance_sum", "eccentricity"};
         for (const QString &f : fields)
-            cmpNodeFieldStr(e, a, f, eid);
+            cmpNodeFieldNumStrTol(e, a, f, eid);
     }
 
     return ok;
@@ -305,7 +373,7 @@ static int compareGoldenV1(const QJsonObject &expected, const QJsonObject &actua
 
     const QJsonObject eMetrics = expected.value("metrics").toObject();
     const QJsonObject aMetrics = actual.value("metrics").toObject();
-    ok &= cmpStr(eMetrics, aMetrics, "avg_distance", err);
+    ok &= cmpNumStrTol(eMetrics, aMetrics, "avg_distance", err, 1e-15);
     ok &= cmpInt(eMetrics, aMetrics, "diameter", err);
     ok &= cmpInt(eMetrics, aMetrics, "disconnected_pairs", err);
     ok &= cmpBool(eMetrics, aMetrics, "connected", err);
@@ -371,12 +439,11 @@ int main(int argc, char *argv[])
     {
         // Kill qDebug/qInfo output from Qt + your code (keeps warnings/criticals)
         qInstallMessageHandler([](QtMsgType type, const QMessageLogContext &, const QString &msg)
-        {
+                               {
             if (type == QtWarningMsg || type == QtCriticalMsg || type == QtFatalMsg)
             {
                 QTextStream(stderr) << msg << "\n";
-            }
-        });
+            } });
     }
 
     const QString fileName = cli.value(fileOpt);

@@ -148,30 +148,48 @@ This establishes a **repeatable, scriptable execution path** for analytics.
 
 ---
 
-### D.3.3 — Golden output regression (PARTIAL, graph-level)
+### D.3.3 — Golden output regression (COMPLETED — graph + per-node)
 
 ✔ Headless CLI extended to:
+
 - load datasets deterministically (no UI)
-- compute distance metrics via DistanceEngine-backed Graph API
+- compute via `DistanceEngine` (through Graph API)
 - emit deterministic JSON output
 
-✔ Golden JSON includes:
-- dataset metadata
-- run flags (weights, inverse weights, isolates)
-- graph-level metrics:
-  - N (nodes)
-  - LINKS_SNA (loader/SNA semantics)
-  - TIES_GRAPH (canonical model ties via Graph::edgesEnabled)
-  - directed / weighted
-  - average geodesic distance
-  - diameter
+✔ Golden JSON now includes:
 
-✔ Comparison mode implemented:
-- strict JSON comparison
-- fails on mismatch
-- suitable for CI / refactor safety
+### Dataset & run metadata
+- file path / name
+- file type
+- run flags (centralities, weights, inverse weights, isolates)
 
-✔ Baselines committed for GraphML datasets:
+### Graph-level metrics
+- N (nodes)
+- LINKS_SNA (loader semantics)
+- TIES_GRAPH (Graph::edgesEnabled)
+- directed / weighted
+- average geodesic distance
+- diameter
+- disconnected_pairs
+- connected
+
+### Per-node vectors (deterministic order)
+- CC / SCC
+- BC / SBC
+- SC / SSC
+- EC / SEC
+- PC / SPC
+- distance_sum
+- eccentricity
+
+✔ Deterministic guarantees:
+
+- vertex order sorted by id
+- floating-point serialized as strings
+- strict JSON comparison (field-by-field)
+- CI-safe non-zero exit on mismatch
+
+✔ Baselines committed (GraphML)
 - Erdos–Rényi N=10
 - Small-world N=10
 
@@ -210,29 +228,27 @@ DistanceEngine::compute(
 
 ## NEXT STEPS (WHAT WE DO NEXT)
 
-### D.3.4 — Golden per-node metrics (NEXT)
+
+### D.3.4 — Extend coverage beyond GraphML (NEXT)
 
 **Goal**
-Extend regression coverage to per-actor correctness, enabling safe extraction
-of DistanceEngine out of Graph.
+Protect loader + model semantics across formats.
 
 **Deliverable**
-- Extend CLI JSON to include per-node vectors:
-  - closeness (CC)
-  - betweenness (BC)
-  - stress (SC)
-  - eccentricity / EC
-  - power centrality (PC), if enabled
-  - standardized variants where applicable
-- Deterministic ordering by vertex id
-- Floating-point values serialized as strings for exact comparison
-- Update existing baselines
-- Add at least one non-GraphML baseline (Pajek or UCINET)
+- Add at least one baseline for:
+  - Pajek (.paj)
+  - UCINET (.dl)
+  - Adjacency (.sm/.csv)
+- Verify:
+  - LINKS_SNA consistency
+  - TIES_GRAPH consistency
+  - directed / undirected semantics
+  - per-node centrality vectors
 
 **Rationale**
-Graph-level metrics alone are insufficient to detect subtle algorithmic
-regressions (e.g. stack ordering, Brandes dependency accumulation).
-Per-node vectors provide full coverage.
+GraphML currently behaves correctly for ties.
+Non-GraphML formats historically had inconsistencies in link counting.
+Golden regression must cover those.
 
 ---
 
