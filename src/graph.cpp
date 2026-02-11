@@ -4255,6 +4255,21 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
     emit signalProgressBoxKill();
 }
 
+
+GraphVertex* Graph::vertexPtr(const int v)
+{
+    if (!vpos.contains(v))
+        return nullptr;
+
+    const int idx = vpos.value(v);
+    if (idx < 0 || idx >= m_graph.size())
+        return nullptr;
+
+    return m_graph.at(idx);
+}
+
+
+
 /**
  * @brief Returns true if the current graph has no vertices at all
  */
@@ -5737,7 +5752,6 @@ int Graph::getGeodesicsCount()
 /**
  * @brief Checks if the graph is connected, in the sense of a topological space,
  * i.e., there is a path from any vertex to any other vertex in the graph.
- * Called from MW::slotConnectedness()
  * @return bool
  */
 bool Graph::isConnected()
@@ -5756,6 +5770,12 @@ bool Graph::isConnected()
 
     return m_graphIsConnected;
 }
+
+// Read-only "cached" accessors
+qreal Graph::graphDistanceGeodesicAverageCached() const { return m_graphAverageDistance; }
+int   Graph::graphDiameterCached() const { return m_graphDiameter; }
+bool  Graph::isConnectedCached() const { return m_graphIsConnected; }
+
 
 /**
  * @brief Creates the matrix SIGMA of shortest paths (geodesics) between vertices

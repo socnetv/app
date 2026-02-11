@@ -596,8 +596,9 @@ public:
                                 const int &type = SUBGRAPH_CLIQUE,
                                 const int &center = 0);
 
-
-
+    // Regression/testing helper: access a vertex object by its number.
+    // Returns nullptr if not found.
+    GraphVertex *vertexPtr(const int v);
 
     /* EDGES */
 
@@ -704,6 +705,8 @@ public:
     bool isUndirected();
 
     bool isConnected();
+    
+    bool isConnectedCached() const;
 
     void createMatrixAdjacency(const bool dropIsolates=false,
                                     const bool considerWeights=true,
@@ -908,6 +911,8 @@ public:
 
     int graphDiameter(const bool considerWeights, const bool inverseWeights);
 
+    int graphDiameterCached() const;
+
     int graphDistanceGeodesic(const int &v1,
                               const int &v2,
                               const bool &considerWeights=false,
@@ -916,6 +921,8 @@ public:
     qreal graphDistanceGeodesicAverage(const bool considerWeights,
                                        const bool inverseWeights,
                                        const bool dropIsolates);
+
+    qreal graphDistanceGeodesicAverageCached() const;
 
     void graphDistancesGeodesic(const bool &computeCentralities=false,
                                 const bool &considerWeights=false,

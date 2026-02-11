@@ -5,8 +5,10 @@
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonArray>
 
 #include "../graph.h"
+#include "../graphvertex.h"
 #include "headless_graph_loader.h"
 
 static void printKV(const QString &k, const QString &v)
@@ -26,6 +28,84 @@ static QString d2s(double v)
 {
     // Deterministic string for golden compare (avoid float parse/format differences).
     return QString::number(v, 'g', 17);
+}
+
+static bool writeJsonFile(const QString &path, const QJsonObject &obj, QString *err)
+{
+    QFile f(path);
+    if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    {
+        if (err) *err = QString("Could not open for write: %1").arg(path);
+        return false;
+    }
+    const QJsonDocument doc(obj);
+    f.write(doc.toJson(QJsonDocument::Indented));
+    return true;
+}
+
+static bool readJsonFile(const QString &path, QJsonObject *outObj, QString *err)
+{
+    QFile f(path);
+    if (!f.open(QIODevice::ReadOnly))
+    {
+        if (err) *err = QString("Could not open for read: %1").arg(path);
+        return false;
+    }
+    const QByteArray data = f.readAll();
+    QJsonParseError pe;
+    const QJsonDocument doc = QJsonDocument::fromJson(data, &pe);
+    if (doc.isNull() || !doc.isObject())
+    {
+        if (err) *err = QString("Invalid JSON (%1) in %2").arg(pe.errorString(), path);
+        return false;
+    }
+    *outObj = doc.object();
+    return true;
+}
+
+static QJsonArray buildPerNodeArray(Graph &g)
+{
+    QJsonArray arr;
+
+    // Deterministic order: vertex numbers ascending
+    const QList<int> verts = g.verticesList();
+    for (int v : verts)
+    {
+        GraphVertex *gv = g.vertexPtr(v);
+        if (!gv)
+            continue;
+
+        QJsonObject o;
+        o["id"] = v;
+        o["label"] = gv->label();
+
+        // Core outputs requested: CC/BC/SC/EC/PC + standardized variants
+        o["CC"]  = d2s(gv->CC());
+        o["SCC"] = d2s(gv->SCC());
+
+        o["BC"]  = d2s(gv->BC());
+        o["SBC"] = d2s(gv->SBC());
+
+        o["SC"]  = d2s(gv->SC());
+        o["SSC"] = d2s(gv->SSC());
+
+        o["EC"]  = d2s(gv->EC());
+        o["SEC"] = d2s(gv->SEC());
+
+        o["PC"]  = d2s(gv->PC());
+        o["SPC"] = d2s(gv->SPC());
+
+        // Useful distance-kernel side values (helps catch subtle regressions)
+        o["distance_sum"] = d2s(gv->distanceSum());
+
+        const qreal ecc = gv->eccentricity();
+        o["eccentricity"] = d2s(ecc);
+        o["eccentricity_inf"] = (ecc >= 2147483647.0);
+
+        arr.append(o);
+    }
+
+    return arr;
 }
 
 static QJsonObject buildGoldenJsonV1(
@@ -70,7 +150,13 @@ static QJsonObject buildGoldenJsonV1(
     QJsonObject metrics;
     metrics["avg_distance"] = d2s(avgDist);
     metrics["diameter"] = diameter;
+    metrics["disconnected_pairs"] = g.notConnectedPairsSize();
+    metrics["connected"] = g.isConnectedCached();
     root["metrics"] = metrics;
+
+    // Per-node vectors (only meaningful if centralities computed)
+    if (computeCentralities)
+        root["per_node"] = buildPerNodeArray(g);
 
     QJsonObject loadReport;
     loadReport["ok"] = load.ok;
@@ -83,38 +169,7 @@ static QJsonObject buildGoldenJsonV1(
     return root;
 }
 
-static bool writeJsonFile(const QString &path, const QJsonObject &obj, QString *err)
-{
-    QFile f(path);
-    if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate))
-    {
-        if (err) *err = QString("Could not open for write: %1").arg(path);
-        return false;
-    }
-    const QJsonDocument doc(obj);
-    f.write(doc.toJson(QJsonDocument::Indented));
-    return true;
-}
-
-static bool readJsonFile(const QString &path, QJsonObject *outObj, QString *err)
-{
-    QFile f(path);
-    if (!f.open(QIODevice::ReadOnly))
-    {
-        if (err) *err = QString("Could not open for read: %1").arg(path);
-        return false;
-    }
-    const QByteArray data = f.readAll();
-    QJsonParseError pe;
-    const QJsonDocument doc = QJsonDocument::fromJson(data, &pe);
-    if (doc.isNull() || !doc.isObject())
-    {
-        if (err) *err = QString("Invalid JSON (%1) in %2").arg(pe.errorString(), path);
-        return false;
-    }
-    *outObj = doc.object();
-    return true;
-}
+// ---------- Compare helpers ----------
 
 static bool cmpStr(const QJsonObject &e, const QJsonObject &a, const QString &k, QTextStream &err)
 {
@@ -151,6 +206,66 @@ static bool cmpBool(const QJsonObject &e, const QJsonObject &a, const QString &k
         return false;
     }
     return true;
+}
+
+static bool cmpPerNodeArray(const QJsonArray &eArr, const QJsonArray &aArr, QTextStream &err)
+{
+    if (eArr.size() != aArr.size())
+    {
+        err << "MISMATCH per_node.size expected=" << eArr.size() << " got=" << aArr.size() << "\n";
+        return false;
+    }
+
+    bool ok = true;
+
+    auto cmpNodeFieldStr = [&](const QJsonObject &e, const QJsonObject &a, const QString &k, int id) {
+        const QString ev = e.value(k).toString();
+        const QString av = a.value(k).toString();
+        if (ev != av)
+        {
+            err << "MISMATCH per_node id=" << id << " field=" << k << " expected=" << ev << " got=" << av << "\n";
+            ok = false;
+        }
+    };
+
+    auto cmpNodeFieldInt = [&](const QJsonObject &e, const QJsonObject &a, const QString &k, int id) {
+        const int ev = e.value(k).toInt();
+        const int av = a.value(k).toInt();
+        if (ev != av)
+        {
+            err << "MISMATCH per_node id=" << id << " field=" << k << " expected=" << ev << " got=" << av << "\n";
+            ok = false;
+        }
+    };
+
+    for (int i = 0; i < eArr.size(); ++i)
+    {
+        const QJsonObject e = eArr.at(i).toObject();
+        const QJsonObject a = aArr.at(i).toObject();
+
+        const int eid = e.value("id").toInt();
+        const int aid = a.value("id").toInt();
+        if (eid != aid)
+        {
+            err << "MISMATCH per_node ordering at index=" << i
+                << " expected_id=" << eid << " got_id=" << aid << "\n";
+            ok = false;
+            continue;
+        }
+
+        cmpNodeFieldInt(e, a, "id", eid);
+        cmpNodeFieldStr(e, a, "label", eid);
+
+        // Centralities + standardized
+        const QStringList fields = {
+            "CC","SCC","BC","SBC","SC","SSC","EC","SEC","PC","SPC",
+            "distance_sum","eccentricity"
+        };
+        for (const QString &f : fields)
+            cmpNodeFieldStr(e, a, f, eid);
+    }
+
+    return ok;
 }
 
 static int compareGoldenV1(const QJsonObject &expected, const QJsonObject &actual)
@@ -192,6 +307,17 @@ static int compareGoldenV1(const QJsonObject &expected, const QJsonObject &actua
     const QJsonObject aMetrics = actual.value("metrics").toObject();
     ok &= cmpStr(eMetrics, aMetrics, "avg_distance", err);
     ok &= cmpInt(eMetrics, aMetrics, "diameter", err);
+    ok &= cmpInt(eMetrics, aMetrics, "disconnected_pairs", err);
+    ok &= cmpBool(eMetrics, aMetrics, "connected", err);
+
+    // Per-node vectors (only if computeCentralities==true in expected)
+    const bool wantPerNode = expected.value("run").toObject().value("computeCentralities").toBool();
+    if (wantPerNode)
+    {
+        const QJsonArray ePN = expected.value("per_node").toArray();
+        const QJsonArray aPN = actual.value("per_node").toArray();
+        ok &= cmpPerNodeArray(ePN, aPN, err);
+    }
 
     if (!ok)
         return 1;
@@ -295,15 +421,24 @@ int main(int argc, char *argv[])
 
     printKV("DIRECTED", g.isDirected() ? 1 : 0);
     printKV("WEIGHTED", g.isWeighted() ? 1 : 0);
-
-    // Canonical model ties count (edges if undirected, arcs if directed)
     printKV("TIES_GRAPH", g.edgesEnabled());
 
-    const qreal avgDist = g.graphDistanceGeodesicAverage(considerWeights, inverseWeights, dropIsolates);
-    const int diameter = g.graphDiameter(considerWeights, inverseWeights);
+    // Ensure centralities are actually computed before we read per-node values.
+    // This is the canonical entry point for the refactor target.
+    g.graphDistancesGeodesic(computeCentralities, considerWeights, inverseWeights, dropIsolates);
+
+    const qreal avgDist = g.graphDistanceGeodesicAverageCached();
+    const int diameter = g.graphDiameterCached();
+    const int discPairs = g.notConnectedPairsSize();
+    const bool connected = g.isConnectedCached();
 
     printKV("AVG_DIST", QString::number(avgDist, 'g', 12));
     printKV("DIAMETER", diameter);
+    printKV("DISC_PAIRS", discPairs);
+    printKV("CONNECTED", connected ? 1 : 0);
+
+    if (computeCentralities)
+        printKV("PER_NODE", g.verticesList().size());
 
     const QJsonObject actual = buildGoldenJsonV1(
         fileName,

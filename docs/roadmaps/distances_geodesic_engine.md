@@ -148,6 +148,35 @@ This establishes a **repeatable, scriptable execution path** for analytics.
 
 ---
 
+### D.3.3 — Golden output regression (PARTIAL, graph-level)
+
+✔ Headless CLI extended to:
+- load datasets deterministically (no UI)
+- compute distance metrics via DistanceEngine-backed Graph API
+- emit deterministic JSON output
+
+✔ Golden JSON includes:
+- dataset metadata
+- run flags (weights, inverse weights, isolates)
+- graph-level metrics:
+  - N (nodes)
+  - LINKS_SNA (loader/SNA semantics)
+  - TIES_GRAPH (canonical model ties via Graph::edgesEnabled)
+  - directed / weighted
+  - average geodesic distance
+  - diameter
+
+✔ Comparison mode implemented:
+- strict JSON comparison
+- fails on mismatch
+- suitable for CI / refactor safety
+
+✔ Baselines committed for GraphML datasets:
+- Erdos–Rényi N=10
+- Small-world N=10
+
+---
+
 ## CURRENT SHAPE (REFERENCE)
 
 ### Engine API
@@ -181,19 +210,29 @@ DistanceEngine::compute(
 
 ## NEXT STEPS (WHAT WE DO NEXT)
 
-### D.3.3 — Golden output comparison (NEXT)
+### D.3.4 — Golden per-node metrics (NEXT)
 
 **Goal**
-Lock correctness while continuing refactors.
+Extend regression coverage to per-actor correctness, enabling safe extraction
+of DistanceEngine out of Graph.
 
 **Deliverable**
+- Extend CLI JSON to include per-node vectors:
+  - closeness (CC)
+  - betweenness (BC)
+  - stress (SC)
+  - eccentricity / EC
+  - power centrality (PC), if enabled
+  - standardized variants where applicable
+- Deterministic ordering by vertex id
+- Floating-point values serialized as strings for exact comparison
+- Update existing baselines
+- Add at least one non-GraphML baseline (Pajek or UCINET)
 
-* Extend CLI to dump deterministic output (JSON or CSV):
-
-  * graph-level metrics (avg distance, diameter, disconnected pairs)
-  * per-node centralities (CC/BC/SC/EC/PC + standardized)
-* Commit golden outputs
-* Add comparison mode (diff + fail on mismatch)
+**Rationale**
+Graph-level metrics alone are insufficient to detect subtle algorithmic
+regressions (e.g. stack ordering, Brandes dependency accumulation).
+Per-node vectors provide full coverage.
 
 ---
 
