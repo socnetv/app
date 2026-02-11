@@ -216,12 +216,20 @@ static bool cmpBool(const QJsonObject &e, const QJsonObject &a, const QString &k
 
 static bool almostEqual(double a, double b, double rel = 1e-15, double abs = 0.0)
 {
-    const double diff = std::abs(a - b);
-    if (diff <= abs)
+    // Treat NaN==NaN as equal for regression purposes
+    if (std::isnan(a) && std::isnan(b))
         return true;
+
+    // Treat +Inf==+Inf and -Inf==-Inf as equal
+    if (std::isinf(a) || std::isinf(b))
+        return a == b;
+
+    const double diff = std::abs(a - b);
+    if (diff <= abs) return true;
     const double scale = std::max(std::abs(a), std::abs(b));
     return diff <= rel * scale;
 }
+
 
 static bool cmpNumStrTol(const QJsonObject &e, const QJsonObject &a,
                          const QString &k, QTextStream &err,

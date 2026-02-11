@@ -90,7 +90,7 @@ DI0 = dropIsolates=0
 Strict comparison against a baseline:
 
 ```bash
-./socnetv-cli \
+./build/socnetv-cli \
   -i src/data/SmallWorld_N10_E12.graphml \
   -f 1 \
   --compare-json src/tools/baselines/SmallWorld_N10_E12__C1_W0_IW1_DI0.json
@@ -160,6 +160,71 @@ These are committed to the repository and represent
 “known good” outputs from the refactor target.
 
 If a baseline changes, it must be justified in a commit message.
+
+### Pajek Baselines
+
+#### Topology baseline (ignore weights in kernel)
+./build/socnetv-cli \
+  -i src/data/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj \
+  -f 2 \
+  -c 1 -w 0 -x 1 -k 0 \
+  --dump-json src/tools/baselines/DunbarGelada_H22a__FT2__C1_W0_IW1_DI0.json
+
+./build/socnetv-cli \
+  -i src/data/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj \
+  -f 2 \
+  -c 1 -w 0 -x 1 -k 0 \
+  --compare-json src/tools/baselines/DunbarGelada_H22a__FT2__C1_W0_IW1_DI0.json
+
+
+#### Weighted + inverse weights baselin
+
+./build/socnetv-cli \
+  -i src/data/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj \
+  -f 2 \
+  -c 1 -w 1 -x 1 -k 0 \
+  --dump-json src/tools/baselines/DunbarGelada_H22a__FT2__C1_W1_IW1_DI0.json
+
+
+./build/socnetv-cli \
+  -i src/data/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj \
+  -f 2 \
+  -c 1 -w 1 -x 1 -k 0 \
+  --compare-json src/tools/baselines/DunbarGelada_H22a__FT2__C1_W1_IW1_DI0.json
+  
+
+### UCINET baselines
+
+#### Binary (non-weighted)
+
+./build/socnetv-cli \
+  -i src/data/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl \
+  -f 5 \
+  -c 1 -w 0 -x 1 -k 0 \
+  --dump-json src/tools/baselines/StokmanZiegler_Netherlands__FT5__C1_W0_IW1_DI0.json
+
+
+./build/socnetv-cli \
+  -i src/data/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl \
+  -f 5 \
+  -c 1 -w 0 -x 1 -k 0 \
+  --compare-json src/tools/baselines/StokmanZiegler_Netherlands__FT5__C1_W0_IW1_DI0.json
+
+
+#### Weighted
+
+   ./build/socnetv-cli \
+  -i src/data/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl \
+  -f 5 \
+  -c 1 -w 1 -x 1 -k 0 \
+  --dump-json src/tools/baselines/StokmanZiegler_Netherlands__FT5__C1_W1_IW1_DI0.json
+
+
+ ./build/socnetv-cli \
+  -i src/data/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl \
+  -f 5 \
+  -c 1 -w 1 -x 1 -k 0 \
+  --compare-json src/tools/baselines/StokmanZiegler_Netherlands__FT5__C1_W1_IW1_DI0.json
 
 ---
 

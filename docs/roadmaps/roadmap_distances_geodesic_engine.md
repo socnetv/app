@@ -126,72 +126,125 @@ int  notConnectedPairsSize() const;
 
 ---
 
-### ✅ D.3 Headless execution & verification harness (COMPLETED — D3.1–D3.2)
+### ✅ D.3 — Golden Regression Harness (COMPLETED — multi-format, graph + per-node)
 
-**What was done**
+Phase D.3 establishes a deterministic, format-agnostic regression harness
+that protects the DistanceEngine refactor against semantic and numeric drift.
 
-* Added `headless_graph_loader.*` to load datasets without UI/MainWindow.
-* Added CLI regression entry point:
-
-  * loads dataset headlessly
-  * runs DistanceEngine
-  * prints deterministic key/value metrics
-
-**Verified**
-
-* Petersen GraphML (N=10, E=15)
-* avg distance = 5/3
-* diameter = 2
-* directed/weighted flags correct
-
-This establishes a **repeatable, scriptable execution path** for analytics.
+This phase elevates the headless CLI into a **full safety net**.
 
 ---
 
-### D.3.3 — Golden output regression (COMPLETED — graph + per-node)
+#### What Was Implemented
 
-✔ Headless CLI extended to:
+✔ Headless CLI execution path
+✔ Deterministic JSON output
+✔ Strict comparison mode (CI-ready)
+✔ Multi-format baseline coverage
 
-- load datasets deterministically (no UI)
-- compute via `DistanceEngine` (through Graph API)
-- emit deterministic JSON output
+DistanceEngine is now verifiable independently of UI and MainWindow.
 
-✔ Golden JSON now includes:
+---
 
-### Dataset & run metadata
-- file path / name
-- file type
-- run flags (centralities, weights, inverse weights, isolates)
+#### JSON Regression Schema (v1)
 
-### Graph-level metrics
-- N (nodes)
-- LINKS_SNA (loader semantics)
-- TIES_GRAPH (Graph::edgesEnabled)
-- directed / weighted
-- average geodesic distance
-- diameter
-- disconnected_pairs
-- connected
+##### Dataset & Run Metadata
 
-### Per-node vectors (deterministic order)
-- CC / SCC
-- BC / SBC
-- SC / SSC
-- EC / SEC
-- PC / SPC
-- distance_sum
-- eccentricity
+* file path / name
+* file type
+* run flags:
 
-✔ Deterministic guarantees:
+  * computeCentralities
+  * considerWeights
+  * inverseWeights
+  * dropIsolates
 
-- vertex order sorted by id
-- floating-point serialized as strings
-- strict JSON comparison (field-by-field)
-- CI-safe non-zero exit on mismatch
+##### Graph-Level Metrics
 
-✔ Baselines committed (GraphML)
-- Erdos–Rényi N=10
-- Small-world N=10
+* `nodes` (N)
+* `LINKS_SNA` (loader semantics)
+* `TIES_GRAPH` (Graph::edgesEnabled canonical ties/arcs)
+* directed / weighted flags
+* average geodesic distance
+* diameter
+* disconnected_pairs
+* connected
+
+##### Per-Node Vectors (deterministic order by id)
+
+* CC / SCC
+* BC / SBC
+* SC / SSC
+* EC / SEC
+* PC / SPC
+* distance_sum
+* eccentricity
+
+---
+
+#### Determinism Guarantees
+
+* Vertex order strictly sorted by id
+* Floating-point values serialized as strings
+* NaN values handled explicitly
+* Field-by-field JSON comparison
+* Non-zero exit on mismatch (CI-safe)
+
+This ensures even subtle algorithmic drift (e.g., stack ordering,
+Brandes accumulation changes, loader semantics differences) is detected.
+
+---
+
+#### Baseline Coverage
+
+##### GraphML
+
+* Erdos–Rényi N=10
+* Small-world N=10
+
+##### UCINET (.dl)
+
+* Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl
+
+  * weighted / unweighted runs
+  * directed semantics verified
+  * disconnected_pairs validated
+
+##### Pajek (.paj)
+
+* Dunbar Gelada baboon colony (H22a)
+
+  * undirected valued edges
+  * weighted + unweighted runs
+  * connectedness verified
+
+---
+
+#### Why This Matters
+
+GraphML behaved correctly for ties.
+
+Historically:
+
+* Pajek and DL imports had subtle tie-count differences
+* Weighted flags were sometimes ambiguous
+* Loader semantics varied across formats
+
+D.3 guarantees:
+
+* Loader correctness
+* Canonical tie semantics
+* Connectivity bookkeeping
+* Full per-node centrality correctness
+* Multi-format parity
+
+DistanceEngine refactors are now protected across:
+
+* directed vs undirected
+* weighted vs unweighted
+* connected vs disconnected
+* sparse vs dense
+* multi-format imports
 
 ---
 
@@ -228,31 +281,27 @@ DistanceEngine::compute(
 
 ## NEXT STEPS (WHAT WE DO NEXT)
 
+### D.4 — Document engine boundary (NEXT)
 
-### D.3.4 — Extend coverage beyond GraphML (NEXT)
+Formalize responsibilities:
 
-**Goal**
-Protect loader + model semantics across formats.
-
-**Deliverable**
-- Add at least one baseline for:
-  - Pajek (.paj)
-  - UCINET (.dl)
-  - Adjacency (.sm/.csv)
-- Verify:
-  - LINKS_SNA consistency
-  - TIES_GRAPH consistency
-  - directed / undirected semantics
-  - per-node centrality vectors
-
-**Rationale**
-GraphML currently behaves correctly for ties.
-Non-GraphML formats historically had inconsistencies in link counting.
-Golden regression must cover those.
+* DistanceEngine → algorithm flow + scratch
+* Graph → storage + traversal primitives
+* UI → progress via ProgressSink
 
 ---
 
-### D.4 — Micro-benchmarking (NEXT)
+### D.5 — Physically extract DistanceEngine from `graph.cpp` (NEX))
+
+**Zero-risk move**
+
+* No logic changes
+* Same headers, same behavior
+* Enables cleaner compilation units and future modularization
+
+---
+
+### D.6 — Micro-benchmarking
 
 * Same datasets, same toggles:
 
@@ -268,25 +317,6 @@ Golden regression must cover those.
 
 ---
 
-### D.5 — Document engine boundary (NEXT)
-
-Formalize responsibilities:
-
-* DistanceEngine → algorithm flow + scratch
-* Graph → storage + traversal primitives
-* UI → progress via ProgressSink
-
----
-
-### D.6 — Physically extract DistanceEngine from `graph.cpp` (PLANNED)
-
-**Zero-risk move**
-
-* No logic changes
-* Same headers, same behavior
-* Enables cleaner compilation units and future modularization
-
----
 
 ## Phase E — Regression Guardrails
 
