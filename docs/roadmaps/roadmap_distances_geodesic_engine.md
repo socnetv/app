@@ -53,7 +53,7 @@ while preserving exact behavior and results.
 
 ---
 
-### Phase D — Engine Decoupling & Testability
+### Phase D — Engine Decoupling & Testability ✅
 
 Phase D transitions from “code movement” to **structural safety and testability**
 without changing UI behavior.
