@@ -137,6 +137,8 @@ This phase elevates the headless CLI into a **full safety net**.
 
 ##### What Was Implemented
 
+See script: [scripts/run_golden_compares.sh](../../scripts/run_golden_compares.sh)
+
 ✔ Headless CLI execution path
 ✔ Deterministic JSON output
 ✔ Strict comparison mode (CI-ready)
@@ -319,6 +321,16 @@ After it’s safely compiled and baselines pass:
 * (optionally) split scratch structs if they’re better colocated
 
 
+
+#### ✅ D.6 — Micro-benchmarking
+
+**Deliverable**
+
+* Timing output (ms, N, E)
+* Performance regression guardrail vs v3.2
+
+see [scripts/run_benchmarks.sh](../../scripts/run_benchmarks.sh)
+
 ## CURRENT SHAPE (REFERENCE)
 
 ### Engine API
@@ -351,25 +363,6 @@ DistanceEngine::compute(
 ---
 
 ## NEXT STEPS (WHAT WE DO NEXT)
-
----
-
-### D.6 — Micro-benchmarking (NEXT)
-
-* Same datasets, same toggles:
-
-  * weighted / unweighted
-  * inverse weights
-  * isolates on/off
-  * directed vs undirected
-
-**Deliverable**
-
-* Timing output (ms, N, E)
-* Performance regression guardrail vs v3.2
-
----
-
 
 ## Phase E — Regression Guardrails
 
