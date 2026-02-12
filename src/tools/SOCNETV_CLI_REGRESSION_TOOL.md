@@ -306,10 +306,84 @@ These benchmarks are used to detect performance regressions in:
 
 
 
-
 ---
 
 
+### Automated Performance Regression Script
+
+For repeatable performance checks before tagging a release, a helper script is provided:
+
+```
+scripts/run_benchmarks.sh
+```
+
+This script:
+
+* Runs a predefined benchmark ladder (Small / Medium / Large)
+* Extracts `COMPUTE_MS_MEDIAN`
+* Compares against expected medians stored in:
+
+```
+scripts/perf_expected.env
+```
+
+* Emits a **warning if runtime exceeds +10%** of the expected median
+* Supports strict mode (non-zero exit on regression)
+
+---
+
+#### Usage
+
+Run all benchmarks:
+
+```bash
+./scripts/run_benchmarks.sh
+```
+
+Strict mode (fail if >10% slower):
+
+```bash
+./scripts/run_benchmarks.sh --strict
+```
+
+If the CLI binary is in a different build directory:
+
+```bash
+SOCNETV_CLI=./builds/__unspec__/Debug/socnetv-cli \
+./scripts/run_benchmarks.sh
+```
+
+---
+
+#### Performance Rule
+
+A regression warning is triggered if:
+
+```
+actual_median > expected_median × 1.10
+```
+
+This rule:
+
+* Ignores small OS scheduling noise
+* Detects meaningful slowdowns
+* Keeps refactors honest without being brittle
+
+---
+
+#### Design Intent
+
+The script is:
+
+* Lightweight (pure bash)
+* Deterministic (median-based comparison)
+* Independent of JSON regression logic
+* Suitable for manual pre-release checks
+* CI-ready
+
+It complements correctness baselines by adding a **performance safety net** for `DistanceEngine`.
+
+---
 
 ## Baselines
 
