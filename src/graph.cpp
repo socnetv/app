@@ -5143,7 +5143,11 @@ int Graph::notConnectedPairsSize() const
 {
     return m_vertexPairsNotConnected.size();
 }
-
+void Graph::resetDistanceCentralityCacheFlags()
+{
+    calculatedDistances = false;
+    calculatedCentralities = false;
+}
 
 
 /**

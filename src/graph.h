@@ -950,6 +950,11 @@ public:
     void notConnectedPairsInsert(int from, int to);
     int  notConnectedPairsSize() const;
 
+    // --- Distance centrality cache flags ---
+    // CLI/benchmark helper: allows repeated runs by clearing the computed flags only.
+    // Does not modify graph structure or results.
+    void resetDistanceCentralityCacheFlags();
+
     void graphMatrixDistanceGeodesicCreate(const bool &considerWeights=false,
                                      const bool &inverseWeights=true,
                                      const bool &dropIsolates=false);
