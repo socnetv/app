@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+CLI="${ROOT_DIR}/build/socnetv-cli"
+BASE="${ROOT_DIR}/src/tools/baselines"
+DATA="${ROOT_DIR}/src/data"
+
+if [[ ! -x "$CLI" ]]; then
+  echo "[ERROR] socnetv-cli not found/executable at: $CLI"
+  echo "Build it first (e.g. cmake --build build -j)."
+  exit 2
+fi
+
+run_case() {
+  local input="$1"
+  local ftype="$2"
+  local flags=("${@:3:${#}-3}")   # all but last arg
+  local baseline="${@: -1}"       # last arg
+
+  echo "==> $(basename "$baseline")"
+  "$CLI" -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"
+}
+
+# --- Cases (extend this list as Phase E grows) ---
+
+run_case \
+  "${DATA}/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj" \
+  2 \
+  -c 1 -w 0 -x 1 -k 0 \
+  "${BASE}/DunbarGelada_H22a__FT2__C1_W0_IW1_DI0.json"
+
+run_case \
+  "${DATA}/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj" \
+  2 \
+  -c 1 -w 1 -x 1 -k 0 \
+  "${BASE}/DunbarGelada_H22a__FT2__C1_W1_IW1_DI0.json"
+
+run_case \
+  "${DATA}/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl" \
+  5 \
+  -c 1 -w 0 -x 1 -k 0 \
+  "${BASE}/StokmanZiegler_Netherlands__FT5__C1_W0_IW1_DI0.json"
+
+run_case \
+  "${DATA}/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl" \
+  5 \
+  -c 1 -w 1 -x 1 -k 0 \
+  "${BASE}/StokmanZiegler_Netherlands__FT5__C1_W1_IW1_DI0.json"
+
+echo
+echo "[OK] All golden comparisons passed."
+
