@@ -6,13 +6,20 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
-
-#include <cmath>
+#include <QElapsedTimer>
+#include <vector>
 #include <algorithm>
+#include <numeric>
+#include <cmath>
 
 #include "../graph.h"
 #include "../graphvertex.h"
 #include "headless_graph_loader.h"
+
+static void printKV(const QString &k, double v)
+{
+    QTextStream(stdout) << k << "=" << QString::number(v, 'f', 3) << "\n";
+}
 
 static void printKV(const QString &k, const QString &v)
 {
@@ -225,11 +232,11 @@ static bool almostEqual(double a, double b, double rel = 1e-15, double abs = 0.0
         return a == b;
 
     const double diff = std::abs(a - b);
-    if (diff <= abs) return true;
+    if (diff <= abs)
+        return true;
     const double scale = std::max(std::abs(a), std::abs(b));
     return diff <= rel * scale;
 }
-
 
 static bool cmpNumStrTol(const QJsonObject &e, const QJsonObject &a,
                          const QString &k, QTextStream &err,
@@ -427,6 +434,11 @@ int main(int argc, char *argv[])
     QCommandLineOption compareJsonOpt(QStringList() << "p" << "compare-json",
                                       "Compare output against baseline JSON at path.", "path");
 
+    QCommandLineOption benchOpt(QStringList() << "bench",
+                                "Benchmark compute kernel: warmup once, then run N measured times. "
+                                "Prints COMPUTE_MS_* stats. Disables JSON dump/compare.",
+                                "N", "0");
+
     cli.addOption(verboseOpt);
     cli.addOption(fileOpt);
     cli.addOption(typeOpt);
@@ -439,6 +451,7 @@ int main(int argc, char *argv[])
     cli.addOption(dropIsoOpt);
     cli.addOption(dumpJsonOpt);
     cli.addOption(compareJsonOpt);
+    cli.addOption(benchOpt);
 
     cli.process(app);
 
@@ -474,10 +487,20 @@ int main(int argc, char *argv[])
     const QString dumpJsonPath = cli.value(dumpJsonOpt);
     const QString compareJsonPath = cli.value(compareJsonOpt);
 
+    const int benchRunsRaw = cli.value(benchOpt).toInt();
+    const int benchRuns = (benchRunsRaw > 0) ? benchRunsRaw : 0;
+
+    if (benchRuns > 0 && (!dumpJsonPath.isEmpty() || !compareJsonPath.isEmpty()))
+    {
+        QTextStream(stderr) << "ERROR: --bench cannot be combined with --dump-json or --compare-json\n";
+        return 2;
+    }
+
     Graph g;
     const QString codecName = "UTF-8";
 
     const auto load = loadGraphHeadless(g, fileName, codecName, fileFormat, delimiter, sm_two_mode, sm_has_labels);
+
     QTextStream(stderr) << "[CLI] after loadGraphHeadless()\n";
 
     printKV("OK", load.ok ? "1" : "0");
@@ -499,8 +522,58 @@ int main(int argc, char *argv[])
     printKV("TIES_GRAPH", g.edgesEnabled());
 
     // Ensure centralities are actually computed before we read per-node values.
-    // This is the canonical entry point for the refactor target.
-    g.graphDistancesGeodesic(computeCentralities, considerWeights, inverseWeights, dropIsolates);
+    auto run_compute_once_ms = [&]() -> qint64
+    {
+        // Prevent early-return in DistanceEngine::compute()
+        g.resetDistanceCentralityCacheFlags();
+
+        QElapsedTimer t;
+        t.start();
+
+        // Canonical entry point (refactor target)
+        g.graphDistancesGeodesic(computeCentralities,
+                                 considerWeights,
+                                 inverseWeights,
+                                 dropIsolates);
+
+        return t.elapsed();
+    };
+
+    if (benchRuns > 0)
+    {
+        // warmup (not measured)
+        (void)run_compute_once_ms();
+
+        std::vector<qint64> ms;
+        ms.reserve(static_cast<size_t>(benchRuns));
+
+        for (int r = 0; r < benchRuns; ++r)
+            ms.push_back(run_compute_once_ms());
+
+        std::sort(ms.begin(), ms.end());
+
+        const qint64 minMs = ms.front();
+        const qint64 maxMs = ms.back();
+
+        const double meanMs =
+            std::accumulate(ms.begin(), ms.end(), 0.0) / static_cast<double>(ms.size());
+
+        const qint64 medianMs =
+            (ms.size() % 2 == 1)
+                ? ms[ms.size() / 2]
+                : (ms[ms.size() / 2 - 1] + ms[ms.size() / 2]) / 2;
+
+        printKV("COMPUTE_RUNS", benchRuns);
+        printKV("COMPUTE_MS_MIN", minMs);
+        printKV("COMPUTE_MS_MEDIAN", medianMs);
+        printKV("COMPUTE_MS_MEAN", meanMs);
+        printKV("COMPUTE_MS_MAX", maxMs);
+
+        return 0;
+    }
+
+    const qint64 computeMs = run_compute_once_ms();
+    printKV("COMPUTE_MS", computeMs);
 
     const qreal avgDist = g.graphDistanceGeodesicAverageCached();
     const int diameter = g.graphDiameterCached();
