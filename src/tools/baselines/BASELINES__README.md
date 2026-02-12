@@ -43,7 +43,7 @@ Before tagging a release:
 Recommended command:
 
 ```
-src/tools/run_golden_compares.sh
+scripts/run_golden_compares.sh
 ```
 
 Manual example:
