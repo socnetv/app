@@ -7,7 +7,7 @@ SocNetV.
 The tool provides deterministic execution of the distance / centrality
 kernel without loading any UI components.
 
-It is specifically designed to protect the refactor of:
+It was originally designed to protect the refactor of:
 
     Graph::graphDistancesGeodesic()
     → DistanceEngine
@@ -30,6 +30,20 @@ This ensures that refactors preserve:
 - connectivity bookkeeping
 - centrality vectors
 - directed/weighted semantics
+
+---
+
+
+## Design Principles
+
+* No UI involvement
+* No graphics dependency
+* Deterministic ordering
+* Deterministic float formatting
+* Zero semantic modification of Graph
+
+The CLI is a safety harness, not a new analytics engine.
+
 
 ---
 
@@ -136,17 +150,91 @@ double-format inconsistencies.
 
 ---
 
-## Design Principles
+## Micro-Benchmarking Mode
 
-* No UI involvement
-* No graphics dependency
-* Deterministic ordering
-* Deterministic float formatting
-* Zero semantic modification of Graph
+The CLI also provides a lightweight benchmarking mode to measure
+DistanceEngine compute performance during refactors.
 
-The CLI is a safety harness, not a new analytics engine.
+This mode does **not** modify algorithmic behavior and does not
+generate or compare JSON output.
+
+It is intended to:
+
+* Detect performance regressions
+* Track kernel timing across refactor phases
+* Provide repeatable compute-only measurements
 
 ---
+
+### Usage
+
+```bash
+./build/socnetv-cli \
+  -i src/data/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj \
+  -f 2 \
+  -c 1 -w 1 -x 1 -k 0 \
+  --bench 10
+```
+
+Where:
+
+* `--bench N` runs:
+
+  * 1 warmup execution (not measured)
+  * N measured executions of the compute kernel
+
+---
+
+### Output
+
+Example:
+
+```
+COMPUTE_RUNS=10
+COMPUTE_MS_MIN=4
+COMPUTE_MS_MEDIAN=4
+COMPUTE_MS_MEAN=4.200
+COMPUTE_MS_MAX=5
+```
+
+Metrics:
+
+* `COMPUTE_RUNS` → number of measured runs
+* `COMPUTE_MS_MIN` → fastest run
+* `COMPUTE_MS_MEDIAN` → median time
+* `COMPUTE_MS_MEAN` → arithmetic mean (ms)
+* `COMPUTE_MS_MAX` → slowest run
+
+In normal (non-bench) mode, a single run prints:
+
+```
+COMPUTE_MS=7
+```
+
+---
+
+### Constraints
+
+* `--bench` cannot be combined with:
+
+  * `--dump-json`
+  * `--compare-json`
+
+* Bench mode measures **only** the distance / centrality compute kernel.
+
+* Dataset loading time is reported separately via `LOAD_MS`.
+
+---
+
+### Design Notes
+
+* Each measured run resets internal cache flags before execution to avoid early-return short-circuiting.
+* No algorithmic paths are modified.
+* Bench mode does not affect JSON schema or regression comparison logic.
+* Intended for developer use, not end-user profiling.
+
+---
+
 
 ## Baselines
 
@@ -159,80 +247,4 @@ src/tools/baselines/
 These are committed to the repository and represent
 “known good” outputs from the refactor target.
 
-If a baseline changes, it must be justified in a commit message.
-
-### Pajek Baselines
-
-#### Topology baseline (ignore weights in kernel)
-./build/socnetv-cli \
-  -i src/data/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj \
-  -f 2 \
-  -c 1 -w 0 -x 1 -k 0 \
-  --dump-json src/tools/baselines/DunbarGelada_H22a__FT2__C1_W0_IW1_DI0.json
-
-./build/socnetv-cli \
-  -i src/data/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj \
-  -f 2 \
-  -c 1 -w 0 -x 1 -k 0 \
-  --compare-json src/tools/baselines/DunbarGelada_H22a__FT2__C1_W0_IW1_DI0.json
-
-
-#### Weighted + inverse weights baselin
-
-./build/socnetv-cli \
-  -i src/data/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj \
-  -f 2 \
-  -c 1 -w 1 -x 1 -k 0 \
-  --dump-json src/tools/baselines/DunbarGelada_H22a__FT2__C1_W1_IW1_DI0.json
-
-
-./build/socnetv-cli \
-  -i src/data/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj \
-  -f 2 \
-  -c 1 -w 1 -x 1 -k 0 \
-  --compare-json src/tools/baselines/DunbarGelada_H22a__FT2__C1_W1_IW1_DI0.json
-  
-
-### UCINET baselines
-
-#### Binary (non-weighted)
-
-./build/socnetv-cli \
-  -i src/data/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl \
-  -f 5 \
-  -c 1 -w 0 -x 1 -k 0 \
-  --dump-json src/tools/baselines/StokmanZiegler_Netherlands__FT5__C1_W0_IW1_DI0.json
-
-
-./build/socnetv-cli \
-  -i src/data/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl \
-  -f 5 \
-  -c 1 -w 0 -x 1 -k 0 \
-  --compare-json src/tools/baselines/StokmanZiegler_Netherlands__FT5__C1_W0_IW1_DI0.json
-
-
-#### Weighted
-
-   ./build/socnetv-cli \
-  -i src/data/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl \
-  -f 5 \
-  -c 1 -w 1 -x 1 -k 0 \
-  --dump-json src/tools/baselines/StokmanZiegler_Netherlands__FT5__C1_W1_IW1_DI0.json
-
-
- ./build/socnetv-cli \
-  -i src/data/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl \
-  -f 5 \
-  -c 1 -w 1 -x 1 -k 0 \
-  --compare-json src/tools/baselines/StokmanZiegler_Netherlands__FT5__C1_W1_IW1_DI0.json
-
----
-
-## Non-Goals
-
-* This tool does not replace the UI.
-* This tool does not introduce new analytics.
-* This tool does not optimize performance.
-
-It exists purely to protect correctness during refactor.
-
+See [BASELINES__README.md](./baselines/BASELINES__README.md)
