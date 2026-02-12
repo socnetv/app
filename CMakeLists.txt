@@ -136,7 +136,8 @@ set(SOURCES
     src/texteditor.cpp
     ${ENGINE_SOURCES}
     src/graph.cpp 
-    src/graphvertex.cpp 
+    src/graphvertex.cpp
+    src/distance_engine.cpp 
     src/matrix.cpp 
     src/parser.cpp 
     src/webcrawler.cpp 
