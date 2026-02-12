@@ -235,6 +235,81 @@ COMPUTE_MS=7
 
 ---
 
+### Recommended benchmark cases
+
+These cases are used to spot performance regressions during refactors.
+
+Medium (UCINET, 48 actors):
+
+```bash
+./build/socnetv-cli \
+  -i src/data/Freeman_EIES_network_48actors_Acquaintanceship_at_time_1.dl \
+  -f 5 \
+  -c 1 -w 1 -x 1 -k 0 \
+  --bench 10
+```
+
+
+| Class  | Dataset | N   | Approx cost |
+| ------ | ------- | --- | ----------- |
+| Small  | Dunbar  | 12  | ~4 ms       |
+| Medium | EIES 48 | 48  | ~105 ms     |
+| Large  | BA 500  | 500 | ~420 ms     |
+
+That’s a **proper performance ladder**.
+
+
+---
+
+### Large Scale-Free Benchmark (BA model)
+
+Generated with SocNetV 3.2:
+
+* Model: Barabási–Albert
+* n = 500
+* m = 3
+* Directed
+* No loops
+* Exported as Pajek
+
+File:
+
+```
+src/data/Benchmark_BA_Directed_N500_m3.paj
+```
+
+Centralities ON:
+
+```bash
+./build/socnetv-cli \
+  -i src/data/Benchmark_BA_Directed_N500_m3.paj \
+  -f 2 \
+  -c 1 -w 0 -x 1 -k 0 \
+  --bench 20
+```
+
+Distances only:
+
+```bash
+./build/socnetv-cli \
+  -i src/data/Benchmark_BA_Directed_N500_m3.paj \
+  -f 2 \
+  -c 0 -w 0 -x 1 -k 0 \
+  --bench 20
+```
+
+These benchmarks are used to detect performance regressions in:
+
+* SSSP (BFS/Dijkstra)
+* Brandes dependency accumulation
+* Centrality aggregation
+
+
+
+
+---
+
+
 
 ## Baselines
 
