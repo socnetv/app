@@ -1,4 +1,13 @@
-#include "../graph.h"
+#include "engine/distance_engine.h"
+
+#include "graph.h"
+#include "engine/graph_distance_progress_sink.h"
+
+#include <QDebug>
+#include <cstdlib>
+#include <queue>
+
+
 
 struct DistanceScratch
 {
@@ -57,43 +66,10 @@ struct CentralityScratchFinalize
     qreal tempVarianceCC = 0, tempVariancePC = 0;
 };
 
-class DistanceEngine
-{
-public:
-    explicit DistanceEngine(Graph &g)
-        : graph(g) {}
+DistanceEngine::DistanceEngine(Graph &g)
+    : graph(g)
+{}
 
-    void compute(const bool computeCentralities,
-                 const bool considerWeights,
-                 const bool inverseWeights,
-                 const bool dropIsolates);
-
-private:
-    Graph &graph;
-
-    void initRun(const bool computeCentralities,
-                 const bool considerWeights,
-                 const bool inverseWeights,
-                 const bool dropIsolates,
-                 DistanceScratch &ds,
-                 CentralityScratchSSSP &csssp,
-                 CentralityScratchFinalize &csfin,
-                 IDistanceProgressSink &sink);
-
-    void runAllSources(const bool computeCentralities,
-                       const bool considerWeights,
-                       const bool inverseWeights,
-                       const bool dropIsolates,
-                       DistanceScratch &ds,
-                       CentralityScratchSSSP &csssp,
-                       IDistanceProgressSink &sink);
-
-    void finalize(const bool computeCentralities,
-                  const bool dropIsolates,
-                  DistanceScratch &ds,
-                  CentralityScratchFinalize &csfin,
-                  IDistanceProgressSink &sink);
-};
 
 void DistanceEngine::compute(const bool computeCentralities,
                              const bool considerWeights,

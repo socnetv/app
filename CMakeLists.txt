@@ -97,6 +97,7 @@ configure_file(${CMAKE_SOURCE_DIR}/COPYING
 
 set(ENGINE_SOURCES
     src/engine/graph_distance_progress_sink.cpp
+    src/engine/distance_engine.cpp
 )
 
 set(CLI_SOURCES
@@ -137,7 +138,6 @@ set(SOURCES
     ${ENGINE_SOURCES}
     src/graph.cpp 
     src/graphvertex.cpp
-    src/distance_engine.cpp 
     src/matrix.cpp 
     src/parser.cpp 
     src/webcrawler.cpp 

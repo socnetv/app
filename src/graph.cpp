@@ -46,6 +46,7 @@
 #include <queue> //for BFS queue Q
 #include <ctime> // for randomizeThings
 
+#include "engine/distance_engine.h"
 #include "engine/graph_distance_progress_sink.h"
 
 /**
