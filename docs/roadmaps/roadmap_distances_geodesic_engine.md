@@ -248,6 +248,36 @@ DistanceEngine refactors are now protected across:
 
 ---
 
+
+### ✅ D.4 — Document engine boundary
+
+
+#### DistanceEngine owns
+
+* Algorithm flow: `initRun`, `runAllSources`, `finalize`
+* Scratch lifetime + invariants
+* Use of Graph traversal primitives / accessors only
+* Progress reporting **only** via `IDistanceProgressSink`
+
+#### Graph owns
+
+* Storage and access to:
+
+  * vertices/edges (enabled/disabled)
+  * per-vertex metric storage (CC/BC/…)
+  * connectivity bookkeeping container (notConnectedPairs…)
+* “Narrow” algorithm support primitives (already done: stack, nth-order, component counter)
+* Cached results exposure (your new `*Cached()` accessors are perfect here)
+
+#### UI owns
+
+* Creating the sink used by DistanceEngine (`GraphDistanceProgressSink`)
+* Translating progress to Qt widgets/signals
+* Nothing algorithmic
+
+
+--- 
+
 ## CURRENT SHAPE (REFERENCE)
 
 ### Engine API
@@ -281,23 +311,49 @@ DistanceEngine::compute(
 
 ## NEXT STEPS (WHAT WE DO NEXT)
 
-### D.4 — Document engine boundary (NEXT)
 
-Formalize responsibilities:
+## D.5 — Physical extraction from `graph.cpp` (NEXT)
 
-* DistanceEngine → algorithm flow + scratch
-* Graph → storage + traversal primitives
-* UI → progress via ProgressSink
+Here’s the safest extraction sequence that won’t change behavior:
 
----
+### Step 1: Create files, don’t change logic
 
-### D.5 — Physically extract DistanceEngine from `graph.cpp` (NEX))
+* Add:
 
-**Zero-risk move**
+  * `src/engine/distance_engine.h`
+  * `src/engine/distance_engine.cpp`
+* Move the **DistanceEngine class** and implementation from `graph.cpp` into these.
+* Keep **exact same code**, just relocated.
 
-* No logic changes
-* Same headers, same behavior
-* Enables cleaner compilation units and future modularization
+### Step 2: Keep access unchanged (transitional)
+
+* Keep `friend class DistanceEngine;` in `Graph`
+* Keep any “Graph scratch structs” where they are for now (or move with DistanceEngine if they’re private to it).
+* Use forward declarations to avoid include explosions:
+
+  * `class Graph;`
+  * `class IDistanceProgressSink;`
+* Only include `graph.h` inside `distance_engine.cpp`, not in the header (unless absolutely required).
+
+### Step 3: Wire it back
+
+In `graph.cpp`, replace the inlined engine body with:
+
+* `#include "engine/distance_engine.h"`
+* `DistanceEngine engine(*this, sink); engine.compute(...);` (whatever your current call shape is)
+
+### Step 4: Build + run golden compares
+
+* `socnetv-cli --compare-json ...` on *all* baselines
+* Ensure **no diffs** in JSON
+
+### Step 5: Only then do cleanup
+
+After it’s safely compiled and baselines pass:
+
+* reduce includes
+* tidy headers
+* (optionally) split scratch structs if they’re better colocated
 
 ---
 
