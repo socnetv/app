@@ -49,8 +49,8 @@ Status (summary):
 - DistanceEngine extracted and parity verified
 - UI progress decoupled via sink interface
 - Headless CLI exists and prints deterministic metrics
-- Next: golden output comparison + split engine out of graph.cpp safely
-
+- Golden output comparison + split engine out of graph.cpp safely
+- Next: micro-benchmarking + expand guardrail coverage (Phase E)
 
 ### WS2 — IO / Parser refactor (SKELETON)
 Goal: move file loading toward a clean IO layer and reduce Qt signal entanglement.
