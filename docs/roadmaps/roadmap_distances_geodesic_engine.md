@@ -53,14 +53,14 @@ while preserving exact behavior and results.
 
 ---
 
-## Phase D — Engine Decoupling & Testability
+### Phase D — Engine Decoupling & Testability
 
 Phase D transitions from “code movement” to **structural safety and testability**
 without changing UI behavior.
 
 ---
 
-### ✅ D.1 Progress / UI Decoupling (COMPLETED)
+#### ✅ D.1 Progress / UI Decoupling (COMPLETED)
 
 **What was done**
 - Introduced `IDistanceProgressSink`.
@@ -77,13 +77,13 @@ without changing UI behavior.
 
 ---
 
-### ✅ D.2 Reduce unnecessary Graph internals access (COMPLETED)
+#### ✅ D.2 Reduce unnecessary Graph internals access (COMPLETED)
 
 **What was done**
 DistanceEngine no longer mutates Graph internals directly.
 Instead, intent-revealing Graph APIs encapsulate transient SSSP / Brandes state.
 
-#### 1. Stack encapsulation (SSSP / Brandes)
+##### 1. Stack encapsulation (SSSP / Brandes)
 ```cpp
 void ssspStackClear();
 bool ssspStackEmpty() const;
@@ -92,7 +92,7 @@ void ssspStackPop();
 int  ssspStackSize() const;
 ````
 
-#### 2. Nth-order neighborhood (Power Centrality)
+##### 2. Nth-order neighborhood (Power Centrality)
 
 ```cpp
 void ssspNthOrderClear();
@@ -101,7 +101,7 @@ H_f_i::const_iterator ssspNthOrderBegin() const;
 H_f_i::const_iterator ssspNthOrderEnd() const;
 ```
 
-#### 3. Component size accumulator
+##### 3. Component size accumulator
 
 ```cpp
 void ssspComponentReset(int value = 1);
@@ -109,7 +109,7 @@ void ssspComponentAdd(int delta);
 int  ssspComponentSize() const;
 ```
 
-#### 4. Connectivity bookkeeping
+##### 4. Connectivity bookkeeping
 
 ```cpp
 void notConnectedPairsClear();
@@ -126,7 +126,7 @@ int  notConnectedPairsSize() const;
 
 ---
 
-### ✅ D.3 — Golden Regression Harness (COMPLETED — multi-format, graph + per-node)
+#### ✅ D.3 — Golden Regression Harness (COMPLETED — multi-format, graph + per-node)
 
 Phase D.3 establishes a deterministic, format-agnostic regression harness
 that protects the DistanceEngine refactor against semantic and numeric drift.
@@ -135,7 +135,7 @@ This phase elevates the headless CLI into a **full safety net**.
 
 ---
 
-#### What Was Implemented
+##### What Was Implemented
 
 ✔ Headless CLI execution path
 ✔ Deterministic JSON output
@@ -146,9 +146,9 @@ DistanceEngine is now verifiable independently of UI and MainWindow.
 
 ---
 
-#### JSON Regression Schema (v1)
+##### JSON Regression Schema (v1)
 
-##### Dataset & Run Metadata
+###### Dataset & Run Metadata
 
 * file path / name
 * file type
@@ -159,7 +159,7 @@ DistanceEngine is now verifiable independently of UI and MainWindow.
   * inverseWeights
   * dropIsolates
 
-##### Graph-Level Metrics
+###### Graph-Level Metrics
 
 * `nodes` (N)
 * `LINKS_SNA` (loader semantics)
@@ -170,7 +170,7 @@ DistanceEngine is now verifiable independently of UI and MainWindow.
 * disconnected_pairs
 * connected
 
-##### Per-Node Vectors (deterministic order by id)
+###### Per-Node Vectors (deterministic order by id)
 
 * CC / SCC
 * BC / SBC
@@ -182,7 +182,7 @@ DistanceEngine is now verifiable independently of UI and MainWindow.
 
 ---
 
-#### Determinism Guarantees
+##### Determinism Guarantees
 
 * Vertex order strictly sorted by id
 * Floating-point values serialized as strings
@@ -195,14 +195,14 @@ Brandes accumulation changes, loader semantics differences) is detected.
 
 ---
 
-#### Baseline Coverage
+##### Baseline Coverage
 
-##### GraphML
+###### GraphML
 
 * Erdos–Rényi N=10
 * Small-world N=10
 
-##### UCINET (.dl)
+###### UCINET (.dl)
 
 * Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl
 
@@ -210,7 +210,7 @@ Brandes accumulation changes, loader semantics differences) is detected.
   * directed semantics verified
   * disconnected_pairs validated
 
-##### Pajek (.paj)
+###### Pajek (.paj)
 
 * Dunbar Gelada baboon colony (H22a)
 
@@ -220,7 +220,7 @@ Brandes accumulation changes, loader semantics differences) is detected.
 
 ---
 
-#### Why This Matters
+##### Why This Matters
 
 GraphML behaved correctly for ties.
 
@@ -249,17 +249,16 @@ DistanceEngine refactors are now protected across:
 ---
 
 
-### ✅ D.4 — Document engine boundary
+#### ✅ D.4 — Document engine boundary
 
-
-#### DistanceEngine owns
+##### DistanceEngine owns
 
 * Algorithm flow: `initRun`, `runAllSources`, `finalize`
 * Scratch lifetime + invariants
 * Use of Graph traversal primitives / accessors only
 * Progress reporting **only** via `IDistanceProgressSink`
 
-#### Graph owns
+##### Graph owns
 
 * Storage and access to:
 
@@ -269,7 +268,7 @@ DistanceEngine refactors are now protected across:
 * “Narrow” algorithm support primitives (already done: stack, nth-order, component counter)
 * Cached results exposure (your new `*Cached()` accessors are perfect here)
 
-#### UI owns
+##### UI owns
 
 * Creating the sink used by DistanceEngine (`GraphDistanceProgressSink`)
 * Translating progress to Qt widgets/signals
@@ -277,6 +276,48 @@ DistanceEngine refactors are now protected across:
 
 
 --- 
+
+#### ✅ D.5 — Physical extraction from `graph.cpp` (COMPLETED)
+
+##### Step 1: Create files
+
+* Add:
+
+  * `src/engine/distance_engine.h`
+  * `src/engine/distance_engine.cpp`
+* Move the **DistanceEngine class** and implementation from `graph.cpp` into these.
+* Keep **exact same code**, just relocated.
+
+##### Step 2: Keep access unchanged (transitional)
+
+* Keep `friend class DistanceEngine;` in `Graph`
+* Keep any “Graph scratch structs” where they are for now (or move with DistanceEngine if they’re private to it).
+* Use forward declarations to avoid include explosions:
+
+  * `class Graph;`
+  * `class IDistanceProgressSink;`
+* Only include `graph.h` inside `distance_engine.cpp`, not in the header (unless absolutely required).
+
+##### Step 3: Wire it back
+
+In `graph.cpp`, replace the inlined engine body with:
+
+* `#include "engine/distance_engine.h"`
+* `DistanceEngine engine(*this, sink); engine.compute(...);` (whatever your current call shape is)
+
+##### Step 4: Build + run golden compares
+
+* `socnetv-cli --compare-json ...` on *all* baselines
+* Ensure **no diffs** in JSON
+
+##### Step 5: Only then do cleanup
+
+After it’s safely compiled and baselines pass:
+
+* reduce includes
+* tidy headers
+* (optionally) split scratch structs if they’re better colocated
+
 
 ## CURRENT SHAPE (REFERENCE)
 
@@ -311,53 +352,9 @@ DistanceEngine::compute(
 
 ## NEXT STEPS (WHAT WE DO NEXT)
 
-
-## D.5 — Physical extraction from `graph.cpp` (NEXT)
-
-Here’s the safest extraction sequence that won’t change behavior:
-
-### Step 1: Create files, don’t change logic
-
-* Add:
-
-  * `src/engine/distance_engine.h`
-  * `src/engine/distance_engine.cpp`
-* Move the **DistanceEngine class** and implementation from `graph.cpp` into these.
-* Keep **exact same code**, just relocated.
-
-### Step 2: Keep access unchanged (transitional)
-
-* Keep `friend class DistanceEngine;` in `Graph`
-* Keep any “Graph scratch structs” where they are for now (or move with DistanceEngine if they’re private to it).
-* Use forward declarations to avoid include explosions:
-
-  * `class Graph;`
-  * `class IDistanceProgressSink;`
-* Only include `graph.h` inside `distance_engine.cpp`, not in the header (unless absolutely required).
-
-### Step 3: Wire it back
-
-In `graph.cpp`, replace the inlined engine body with:
-
-* `#include "engine/distance_engine.h"`
-* `DistanceEngine engine(*this, sink); engine.compute(...);` (whatever your current call shape is)
-
-### Step 4: Build + run golden compares
-
-* `socnetv-cli --compare-json ...` on *all* baselines
-* Ensure **no diffs** in JSON
-
-### Step 5: Only then do cleanup
-
-After it’s safely compiled and baselines pass:
-
-* reduce includes
-* tidy headers
-* (optionally) split scratch structs if they’re better colocated
-
 ---
 
-### D.6 — Micro-benchmarking
+### D.6 — Micro-benchmarking (NEXT)
 
 * Same datasets, same toggles:
 
