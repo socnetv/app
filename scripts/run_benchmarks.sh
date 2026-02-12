@@ -3,27 +3,23 @@ set -euo pipefail
 
 # SocNetV performance micro-benchmark runner (macOS/Linux)
 #
-# Default behavior:
-# - runs benchmark cases
-# - compares COMPUTE_MS_MEDIAN against expected medians
-# - warns if >10% slower
-#
 # Usage:
-#   ./src/tools/run_benchmarks.sh
-#   ./src/tools/run_benchmarks.sh --strict
-#   SOCNETV_CLI=./build/socnetv-cli ./src/tools/run_benchmarks.sh
-#   PERF_EXPECTED_FILE=src/tools/perf_expected.env ./src/tools/run_benchmarks.sh
+#   ./scripts/run_benchmarks.sh
+#   ./scripts/run_benchmarks.sh --strict
+#   SOCNETV_CLI=./build/socnetv-cli ./scripts/run_benchmarks.sh
 
 STRICT=0
 if [[ "${1:-}" == "--strict" ]]; then
   STRICT=1
 fi
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+# Root = repo root (script lives in scripts/)
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
 DEFAULT_CLI="$ROOT_DIR/build/socnetv-cli"
 SOCNETV_CLI="${SOCNETV_CLI:-$DEFAULT_CLI}"
 
-PERF_EXPECTED_FILE="${PERF_EXPECTED_FILE:-$ROOT_DIR/src/tools/perf_expected.env}"
+PERF_EXPECTED_FILE="${PERF_EXPECTED_FILE:-$ROOT_DIR/scripts/perf_expected.env}"
 
 if [[ ! -x "$SOCNETV_CLI" ]]; then
   echo "ERROR: socnetv-cli not found or not executable: $SOCNETV_CLI" >&2
@@ -33,27 +29,26 @@ fi
 
 if [[ ! -f "$PERF_EXPECTED_FILE" ]]; then
   echo "ERROR: expected perf file missing: $PERF_EXPECTED_FILE" >&2
-  echo "Create it (see template in this script output below)." >&2
   exit 2
 fi
 
 # shellcheck disable=SC1090
 source "$PERF_EXPECTED_FILE"
 
-# --- helpers ---
+# ---------------- helpers ----------------
 
 extract_kv_int() {
-  # $1 = key, reads from stdin
   local key="$1"
   awk -F= -v k="$key" '$1==k { print $2 }'
 }
 
 pct_slower_than() {
-  # returns 0 if (actual <= expected * 1.10), else 1
-  # integer math: actual > expected*110/100  <=> 100*actual > 110*expected
+  # returns 0 if actual <= expected * 1.10
   local actual="$1"
   local expected="$2"
+
   [[ -z "$actual" || -z "$expected" ]] && return 1
+
   if (( 100 * actual > 110 * expected )); then
     return 1
   fi
@@ -65,17 +60,14 @@ run_case() {
   shift
 
   echo "=== $tag ==="
-  echo "CMD: $SOCNETV_CLI $*"
   local out
   out="$("$SOCNETV_CLI" "$@" 2>/dev/null || true)"
 
-  local ok n ties median
+  local ok median
   ok="$(printf '%s\n' "$out" | extract_kv_int OK | tail -n1)"
-  n="$(printf '%s\n' "$out" | extract_kv_int N | tail -n1)"
-  ties="$(printf '%s\n' "$out" | extract_kv_int TIES_GRAPH | tail -n1)"
   median="$(printf '%s\n' "$out" | extract_kv_int COMPUTE_MS_MEDIAN | tail -n1)"
 
-  echo "OK=$ok N=$n TIES_GRAPH=$ties MEDIAN_MS=$median"
+  echo "OK=$ok MEDIAN_MS=$median"
 
   if [[ "$ok" != "1" || -z "$median" ]]; then
     echo "ERROR: benchmark did not produce valid output for $tag" >&2
@@ -83,48 +75,43 @@ run_case() {
   fi
 
   local expected_var="EXP_${tag}_MEDIAN_MS"
-  # indirect expansion: value of variable named in $expected_var
   local expected="${!expected_var:-}"
 
   if [[ -z "$expected" ]]; then
-    echo "WARN: no expected median configured for $tag ($expected_var not set)."
-    echo "      add it to: $PERF_EXPECTED_FILE"
+    echo "WARN: no expected median configured for $tag"
     return 0
   fi
 
   if pct_slower_than "$median" "$expected"; then
-    echo "OK: median ${median}ms <= expected ${expected}ms (+10%)"
+    echo "OK: ${median}ms <= ${expected}ms (+10%)"
     return 0
   else
-    echo "WARN: median ${median}ms > expected ${expected}ms (+10%)"
-    if [[ "$STRICT" == "1" ]]; then
-      return 1
-    fi
+    echo "WARN: ${median}ms > ${expected}ms (+10%)"
+    [[ "$STRICT" == "1" ]] && return 1
     return 0
   fi
 }
 
 fail=0
 
-# ---- Cases ----
-# NOTE: all are --bench 20 and read COMPUTE_MS_MEDIAN
+# ---------------- benchmark cases ----------------
 
-# Medium weighted (UCINET, time_1)
+# Medium (UCINET time_1)
 run_case "EIES48_T1_C1_W1" \
   -i "$ROOT_DIR/src/data/Freeman_EIES_network_48actors_Acquaintanceship_at_time_1.dl" \
   -f 5 -c 1 -w 1 -x 1 -k 0 --bench 20 || fail=1
 
-# Medium weighted (UCINET, time_2)
+# Medium (UCINET time_2)
 run_case "EIES48_T2_C1_W1" \
   -i "$ROOT_DIR/src/data/Freeman_EIES_network_48actors_Acquaintanceship_at_time_2.dl" \
   -f 5 -c 1 -w 1 -x 1 -k 0 --bench 20 || fail=1
 
-# Large BA (Pajek), centralities ON
+# Large BA (500, m=3), centralities ON
 run_case "BA500_M3_C1_W0" \
   -i "$ROOT_DIR/src/data/Benchmark_BA_Directed_N500_m3.paj" \
   -f 2 -c 1 -w 0 -x 1 -k 0 --bench 20 || fail=1
 
-# Large BA (Pajek), distances only
+# Large BA (500, m=3), distances only
 run_case "BA500_M3_C0_W0" \
   -i "$ROOT_DIR/src/data/Benchmark_BA_Directed_N500_m3.paj" \
   -f 2 -c 0 -w 0 -x 1 -k 0 --bench 20 || fail=1
@@ -134,5 +121,6 @@ if [[ "$fail" == "1" ]]; then
   echo "RESULT=FAIL"
   exit 1
 fi
+
 echo "RESULT=OK"
 exit 0
