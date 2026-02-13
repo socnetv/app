@@ -520,7 +520,7 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
             qDebug() << "***** PHASE 2 (BC/ACCUMULATION): "
                         "Visit all vertices in reverse order of their discovery (from s = "
                      << ds.s
-                     << " ) to sum dependencies. Initial Stack size " << graph.Stack.size();
+                     << " ) to sum dependencies. Initial Stack size " << graph.ssspStackSize();
 
             while (!graph.ssspStackEmpty())
             {
@@ -532,7 +532,7 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
                          << ds.w
                          << "This is the furthest vertex from s. Popping it.";
 
-                graph.Stack.pop();
+                graph.ssspStackPop();
                 QList<int> lst = graph.m_graph[ds.wi]->Ps();
 
                 qDebug() << "***** PHASE 2 (BC/ACCUMULATION): "
