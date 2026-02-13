@@ -57,31 +57,31 @@ Status (summary):
 ### WS2 — Graph as façade / coordinator (ACTIVE)
 Goal: Graph becomes orchestration glue rather than algorithm host and state container.
 
-- Plan: `docs/roadmaps/ui_graph_facade.md`
+- Plan: `docs/roadmaps/roadmap_ui_graph_facade.md`
 
 
 ### WS3 — Domain model split (SKELETON)
 Goal: establish a domain model that does not depend on Qt UI concerns.
 
-- Plan: `docs/roadmaps/domain_model_split.md`
+- Plan: `docs/roadmaps/roadmap_domain_model_split.md`
 
 
 ### WS4 — IO / Parser refactor (SKELETON)
 Goal: move file loading toward a clean IO layer and reduce Qt signal entanglement.
 
-- Plan: `docs/roadmaps/io_parser_refactor.md`
+- Plan: `docs/roadmaps/roadmap_io_parser_refactor.md`
 
 
 ### WS5 — Matrices / linear algebra modernization (SKELETON)
 Goal: isolate matrix constructs and computations into a coherent module.
 
-- Plan: `docs/roadmaps/matrices_modernization.md`
+- Plan: `docs/roadmaps/roadmap_matrices_modernization.md`
 
 
 ### WS6 — Testing + CI + regression baselines (SKELETON)
 Goal: make it hard to regress outputs silently.
 
-- Plan: `docs/roadmaps/testing_ci_regression.md`
+- Plan: `docs/roadmaps/roadmap_testing_ci_regression.md`
 
 
 ## Suggested Target Folder Layout (End State)
