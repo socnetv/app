@@ -518,6 +518,11 @@ public:
     // --------------------------------------------------------------------------
     
     int vertexIndexByNumber(int v) const;
+    // LEGACY/INTERNAL (ENGINE SUPPORT):
+    // Access a vertex by internal storage index (vpos result).
+    // No bounds checks: preserves existing behavior of direct m_graph[idx] usage.
+    GraphVertex* vertexAtIndex(int idx);
+    const GraphVertex* vertexAtIndex(int idx) const;
 
     int vertexNumberMax();
 
@@ -995,12 +1000,11 @@ public:
     void ssspStackPush(int v);
     // --- SSSP nth-order neighborhood (for Power Centrality) ---
     void ssspNthOrderClear();
-    // Stores the number of vertices at distance n from a given vertex
-    H_f_i sizeOfNthOrderNeighborhood;
     //
     // LEGACY/INTERNAL: transitional storage.
     // DistanceEngine may use this via the accessors below.
     // (Later WS2/F1 may hide this field and keep only accessors.)
+    // Stores the number of vertices at distance n from a given vertex, for n=0,1,2,... during SSSP traversal.    
     H_f_i sizeOfNthOrderNeighborhood; 
     H_f_i::const_iterator ssspNthOrderBegin() const;
     H_f_i::const_iterator ssspNthOrderEnd() const;

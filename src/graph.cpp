@@ -965,6 +965,26 @@ int Graph::vertexIndexByNumber(int v) const {
     return vpos.value(v, -1); 
 }
 
+/**
+ * @brief Returns the vertex at a given index
+ * @param idx
+ * @return GraphVertex*
+ */
+GraphVertex* Graph::vertexAtIndex(int idx)
+{
+    return m_graph[idx];
+}
+
+/**
+ * @brief Returns the vertex at a given index
+ * @param idx
+ * @return GraphVertex*
+ */
+const GraphVertex* Graph::vertexAtIndex(int idx) const
+{
+    return m_graph[idx];
+}
+
 
 /**
  * @brief Returns the number of the last vertex in the graph.
