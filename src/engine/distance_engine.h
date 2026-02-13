@@ -56,7 +56,12 @@ private:
                   IDistanceProgressSink &sink);
 
     void bfsSSSP(const int &s, const int &si, const bool &computeCentralities,
-                const bool &dropIsolates);
+                 const bool &dropIsolates);
+                 
+    void dijkstraSSSP(const int &s, const int &si,
+                      const bool &computeCentralities,
+                      const bool &inverseWeights,
+                      const bool &dropIsolates);
 };
 
 #endif // SOCNETV_DISTANCE_ENGINE_H

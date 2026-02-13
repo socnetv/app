@@ -942,7 +942,9 @@ public:
     H_f_i sizeOfNthOrderNeighborhood;    
     H_f_i::const_iterator ssspNthOrderBegin() const;
     H_f_i::const_iterator ssspNthOrderEnd() const;
+    int ssspNthOrderValue(qreal dist) const;
     void ssspNthOrderIncrement(int dist);
+    void ssspNthOrderIncrement(qreal dist);
     // --- SSSP component size accumulator ---
     void ssspComponentReset(int value = 1);
     void ssspComponentAdd(int delta);
