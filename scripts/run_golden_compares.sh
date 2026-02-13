@@ -3,6 +3,9 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CLI="${ROOT_DIR}/build/socnetv-cli"
+if [[ ! -x "$CLI" ]]; then
+  CLI="$ROOT_DIR/builds/__unspec__/Debug/socnetv-cli"
+fi
 BASE="${ROOT_DIR}/src/tools/baselines"
 DATA="${ROOT_DIR}/src/data"
 

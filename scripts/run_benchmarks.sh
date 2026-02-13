@@ -17,6 +17,9 @@ fi
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 DEFAULT_CLI="$ROOT_DIR/build/socnetv-cli"
+if [[ ! -x "$DEFAULT_CLI" ]]; then
+  DEFAULT_CLI="$ROOT_DIR/builds/__unspec__/Debug/socnetv-cli"
+fi
 SOCNETV_CLI="${SOCNETV_CLI:-$DEFAULT_CLI}"
 
 PERF_EXPECTED_FILE="${PERF_EXPECTED_FILE:-$ROOT_DIR/scripts/perf_expected.env}"
