@@ -523,6 +523,9 @@ public:
     // No bounds checks: preserves existing behavior of direct m_graph[idx] usage.
     GraphVertex* vertexAtIndex(int idx);
     const GraphVertex* vertexAtIndex(int idx) const;
+    
+    VList::const_iterator verticesBegin() const;
+    VList::const_iterator verticesEnd() const;
 
     int vertexNumberMax();
 

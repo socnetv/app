@@ -171,9 +171,9 @@ void DistanceEngine::initRun(const bool computeCentralities,
 
     if (ds.E == 0)
     {
-        for (ds.it = graph.m_graph.cbegin(); ds.it != graph.m_graph.cend(); ++ds.it)
+        for (ds.it = graph.verticesBegin(); ds.it != graph.verticesEnd(); ++ds.it)
         {
-            for (ds.it1 = graph.m_graph.cbegin(); ds.it1 != graph.m_graph.cend(); ++ds.it1)
+            for (ds.it1 = graph.verticesBegin(); ds.it1 != graph.verticesEnd(); ++ds.it1)
             {
                 // Set all pair-wise distances to RAND_MAX
                 (*ds.it)->setDistance((*ds.it1)->number(), RAND_MAX);
@@ -311,9 +311,9 @@ void DistanceEngine::initRun(const bool computeCentralities,
         // Zero Closeness Centrality
         graph.notConnectedPairsClear();
 
-        for (ds.it = graph.m_graph.cbegin(); ds.it != graph.m_graph.cend(); ++ds.it)
+        for (ds.it = graph.verticesBegin(); ds.it != graph.verticesEnd(); ++ds.it)
         {
-            for (ds.it1 = graph.m_graph.cbegin(); ds.it1 != graph.m_graph.cend(); ++ds.it1)
+            for (ds.it1 = graph.verticesBegin(); ds.it1 != graph.verticesEnd(); ++ds.it1)
             {
                 // All pair-wise distances are set to RAND_MAX by default
                 // inside GraphVertex::distance()
@@ -381,10 +381,10 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
 {
     qDebug() << "*********** MAIN LOOP: "
                 "for every s in V solve the Single Source Shortest Path (SSSP) problem...";
-    for (ds.it = graph.m_graph.cbegin(); ds.it != graph.m_graph.cend(); ++ds.it)
+    for (ds.it = graph.verticesBegin(); ds.it != graph.verticesEnd(); ++ds.it)
     {
         ds.s = (*ds.it)->number();
-        ds.si = graph.vpos[ds.s];
+        ds.si = graph.vertexIndexByNumber(ds.s);
         ds.distances_sum_for_s = 0;
 
         qDebug() << "***** PHASE 1 (SSSP): "
@@ -408,7 +408,7 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
 
             qDebug() << "***** PHASE 1 (SSSP): "
                         "...and for each vertex: empty list Ps of predecessors";
-            for (ds.it1 = graph.m_graph.cbegin(); ds.it1 != graph.m_graph.cend(); ++ds.it1)
+            for (ds.it1 = graph.verticesBegin(); ds.it1 != graph.verticesEnd(); ++ds.it1)
             {
                 (*ds.it1)->clearPs();
             }
@@ -479,7 +479,7 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
                         "Start back propagation of dependencies."
                      << "Set dependency delta[u]=0 on each vertex";
 
-            for (ds.it1 = graph.m_graph.cbegin(); ds.it1 != graph.m_graph.cend(); ++ds.it1)
+            for (ds.it1 = graph.verticesBegin(); ds.it1 != graph.verticesEnd(); ++ds.it1)
             {
                 (*ds.it1)->setDelta(0.0);
 
@@ -622,7 +622,7 @@ void DistanceEngine::finalize(const bool computeCentralities,
 
     graph.m_graphIsConnected = true;
 
-    for (ds.it = graph.m_graph.cbegin(); ds.it != graph.m_graph.cend(); ++ds.it)
+    for (ds.it = graph.verticesBegin(); ds.it != graph.verticesEnd(); ++ds.it)
     {
         if (!(*ds.it)->isEnabled())
         {
@@ -632,7 +632,7 @@ void DistanceEngine::finalize(const bool computeCentralities,
 
         ds.pairDistance = 0;
 
-        for (ds.it1 = graph.m_graph.cbegin(); ds.it1 != graph.m_graph.cend(); ++ds.it1)
+        for (ds.it1 = graph.verticesBegin(); ds.it1 != graph.verticesEnd(); ++ds.it1)
         {
             if (!(*ds.it1)->isEnabled())
             {
@@ -737,7 +737,7 @@ void DistanceEngine::finalize(const bool computeCentralities,
     {
         qDebug() << "Graph: graphDistancesGeodesic() - "
                     "Computing centralities...";
-        for (ds.it = graph.m_graph.cbegin(); ds.it != graph.m_graph.cend(); ++ds.it)
+        for (ds.it = graph.verticesBegin(); ds.it != graph.verticesEnd(); ++ds.it)
         {
             if (dropIsolates && (*ds.it)->isIsolated())
             {
@@ -823,7 +823,7 @@ void DistanceEngine::finalize(const bool computeCentralities,
         qDebug() << "Graph: graphDistancesGeodesic() - "
                     "Computing std centralities ...";
 
-        for (ds.it = graph.m_graph.cbegin(); ds.it != graph.m_graph.cend(); ++ds.it)
+        for (ds.it = graph.verticesBegin(); ds.it != graph.verticesEnd(); ++ds.it)
         {
             if (dropIsolates && (*ds.it)->isIsolated())
             {
@@ -881,7 +881,7 @@ void DistanceEngine::finalize(const bool computeCentralities,
         graph.meanSSC = graph.sumSSC / (qreal)ds.N;
         graph.varianceSSC = 0;
         csf.tempVarianceSC = 0;
-        for (ds.it = graph.m_graph.cbegin(); ds.it != graph.m_graph.cend(); ++ds.it)
+        for (ds.it = graph.verticesBegin(); ds.it != graph.verticesEnd(); ++ds.it)
         {
             if (dropIsolates && (*ds.it)->isIsolated())
             {
@@ -968,8 +968,8 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si, const bool &computeCen
 
         u = Q.front();
         Q.pop();
-        ui = graph.vpos[u];
-        qDebug() << "BFS: Dequeue: first element of Q is u" << u << "graph.vpos" << ui;
+        ui = graph.vertexIndexByNumber(u);
+        qDebug() << "BFS: Dequeue: first element of Q is u" << u << "graph.vertexIndexByNumber" << ui;
 
         if (!graph.vertexAtIndex(ui)->isEnabled())
         {
@@ -1000,8 +1000,8 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si, const bool &computeCen
             }
             w = it1.key();
             //  weight = it1.value().second.first;
-            wi = graph.vpos[w];
-            qDebug("BFS: u=%i is connected with node w=%i of graph.vpos wi=%i. ", u, w, wi);
+            wi = graph.vertexIndexByNumber(w);
+            qDebug("BFS: u=%i is connected with node w=%i of graph.vertexIndexByNumber wi=%i. ", u, w, wi);
 
             qDebug("BFS: Start path discovery");
 
@@ -1145,9 +1145,9 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
     // set sp ( s , s ) = 1
     graph.vertexAtIndex(si)->setShortestPaths(s, 1);
 
-    for (it = graph.m_graph.cbegin(); it != graph.m_graph.cend(); ++it)
+    for (it = graph.verticesBegin(); it != graph.verticesEnd(); ++it)
     {
-        v = graph.vpos[(*it)->number()];
+        v = graph.vertexIndexByNumber((*it)->number());
         if (v != s)
         {
             // NOTE: d(i,j) init to RAND_MAX already done in graphDistancesGeodesic
@@ -1171,10 +1171,10 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
         // Get the first vertex in the priority queue
         u = prQ.top().target;
         // Get the vertex index
-        ui = graph.vpos[u];
+        ui = graph.vertexIndexByNumber(u);
 
         // Pop it
-        qDebug() << "    *** dijkstra: first vertex in prQ is u" << u << "graph.vpos" << ui
+        qDebug() << "    *** dijkstra: first vertex in prQ is u" << u << "graph.vertexIndexByNumber" << ui
                  << ". It has minimum distance from s " << s << "=" << prQ.top().distance << " Popping it from the queue.";
         prQ.pop();
 
@@ -1227,7 +1227,7 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
 
             // Get the target vertex of this edge and its index
             w = it1.key();
-            wi = graph.vpos[w];
+            wi = graph.vertexIndexByNumber(w);
 
             // Get the edge weight
             weight = it1.value().second.first;

@@ -984,6 +984,12 @@ const GraphVertex* Graph::vertexAtIndex(int idx) const
 {
     return m_graph[idx];
 }
+/**
+ * @brief iterator helpers
+ */
+VList::const_iterator Graph::verticesBegin() const { return m_graph.cbegin(); }
+
+VList::const_iterator Graph::verticesEnd() const { return m_graph.cend(); }
 
 
 /**
