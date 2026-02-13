@@ -40,7 +40,7 @@ Preferred sequencing:
 
 ## Workstreams
 
-### WS1 — Distances + Centralities Kernel Extraction (ACTIVE)
+### WS1 — Distances + Centralities Kernel Extraction (DONE)
 Goal: make the distance/shortest-path + centrality core testable and maintainable.
 
 - Detailed plan: `docs/roadmaps/distances_geodesic_engine.md`
@@ -50,12 +50,14 @@ Status (summary):
 - UI progress decoupled via sink interface
 - Headless CLI exists and prints deterministic metrics
 - Golden output comparison + split engine out of graph.cpp safely
-- Next: micro-benchmarking + expand guardrail coverage (Phase E)
+- Micro-benchmarking 
+- Expand guardrail coverage (Phase E). This is ongoing/optional.
 
-### WS2 — IO / Parser refactor (SKELETON)
-Goal: move file loading toward a clean IO layer and reduce Qt signal entanglement.
 
-- Plan: `docs/roadmaps/io_parser_refactor.md`
+### WS2 — Graph as façade / coordinator (ACTIVE)
+Goal: Graph becomes orchestration glue rather than algorithm host and state container.
+
+- Plan: `docs/roadmaps/ui_graph_facade.md`
 
 
 ### WS3 — Domain model split (SKELETON)
@@ -64,10 +66,10 @@ Goal: establish a domain model that does not depend on Qt UI concerns.
 - Plan: `docs/roadmaps/domain_model_split.md`
 
 
-### WS4 — Graph as façade / coordinator (SKELETON)
-Goal: Graph becomes orchestration glue rather than algorithm host and state container.
+### WS4 — IO / Parser refactor (SKELETON)
+Goal: move file loading toward a clean IO layer and reduce Qt signal entanglement.
 
-- Plan: `docs/roadmaps/ui_graph_facade.md`
+- Plan: `docs/roadmaps/io_parser_refactor.md`
 
 
 ### WS5 — Matrices / linear algebra modernization (SKELETON)
