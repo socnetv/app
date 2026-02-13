@@ -935,12 +935,14 @@ public:
     int  ssspStackTop() const;
     void ssspStackPop();
     int  ssspStackSize() const;
+    void ssspStackPush(int v);
     // --- SSSP nth-order neighborhood (for Power Centrality) ---
     void ssspNthOrderClear();
     // Stores the number of vertices at distance n from a given vertex
     H_f_i sizeOfNthOrderNeighborhood;    
     H_f_i::const_iterator ssspNthOrderBegin() const;
     H_f_i::const_iterator ssspNthOrderEnd() const;
+    void ssspNthOrderIncrement(int dist);
     // --- SSSP component size accumulator ---
     void ssspComponentReset(int value = 1);
     void ssspComponentAdd(int delta);
@@ -1193,11 +1195,6 @@ private:
                   );
 
     /** methods used by graphDistancesGeodesic()  */
-    void BFS(const int &s,
-             const int &si,
-             const bool &computeCentralities=false,
-             const bool &dropIsolates=false);
-
     void dijkstra(const int &s,
                   const int &si,
                   const bool &computeCentralities=false,
