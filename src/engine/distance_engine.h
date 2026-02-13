@@ -32,8 +32,6 @@ public:
 private:
     Graph &graph;
 
-    // Keep helpers private; implemented in .cpp
-
     void initRun(const bool computeCentralities,
                  const bool considerWeights,
                  const bool inverseWeights,
