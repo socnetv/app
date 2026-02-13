@@ -17,6 +17,7 @@
 #define GRAPH_H
 
 
+
 #include <QObject>
 #include <QList>
 #include <QQueue>
@@ -103,7 +104,14 @@ class Graph:  public QObject{
     friend class DistanceEngine;
     
 public slots:
-
+    // ============================================================================
+    // LEGACY/INTERNAL (UI / IO WIRING)
+    // ----------------------------------------------------------------------------
+    // NOTE (WS2/F0):
+    // Slots are part of Graph's coordinator role (signals/threads/UI wiring).
+    // Engines/services should not depend on these directly.
+    // ============================================================================
+ 
     int relationCurrent();
 
     QString relationCurrentName() const;
@@ -225,6 +233,13 @@ public slots:
 signals:
 
     void signalWebCrawlParse(QNetworkReply *reply);
+
+    // ============================================================================
+    // LEGACY/INTERNAL (UI SIGNAL SURFACE)
+    // ----------------------------------------------------------------------------
+    // NOTE (WS2/F0): Signals are a UI orchestration mechanism. Engines/services
+    // must not emit/call UI-facing behavior directly.
+    // ============================================================================  
 
     /** Signals to MainWindow */
 
@@ -372,6 +387,20 @@ signals:
 
 
 public:
+    // ============================================================================
+    // GRAPH FACADE CONTRACT (WS2 / F0)
+    // ----------------------------------------------------------------------------
+    // This section defines the *supported* API surface that UI and CLI code may
+    // call going forward.
+    //
+    // Rules:
+    // - New UI features MUST use only the "FACADE API (SUPPORTED)" surface.
+    // - Engines/services MUST NOT call UI-oriented slots/signals.
+    // - Anything explicitly marked LEGACY/INTERNAL is not allowed for new code,
+    //   even if it remains public for historical reasons.
+    //
+    // IMPORTANT: F0 is documentation-only. No behavior changes implied.
+    // ============================================================================
 
     enum ModStatus {
         NewNet          = -1,
@@ -396,6 +425,9 @@ public:
     };
 
     /* INIT AND CLEAR*/
+    // --------------------------------------------------------------------------
+    // FACADE API (SUPPORTED): Lifecycle
+    // --------------------------------------------------------------------------
     Graph(const int &reserveVerticesSize = 5000, const int &reserveEdgesPerVertexSize = 500);
     ~Graph();
 
@@ -403,7 +435,10 @@ public:
     void clear(const QString &reason="");
 
     /*FILES (READ AND WRITE)*/
-
+    // --------------------------------------------------------------------------
+    // FACADE API (SUPPORTED): File identity / load-save
+    // --------------------------------------------------------------------------
+ 
     QString getFileName() const;
 
     void setFileName(const QString &fileName);
@@ -466,6 +501,10 @@ public:
 
 
     /* RELATIONS */
+    // --------------------------------------------------------------------------
+    // FACADE API (SUPPORTED): Relations
+    // --------------------------------------------------------------------------
+
     int relations();
 
     void relationsClear();
@@ -474,6 +513,10 @@ public:
 
 
     /* VERTICES */
+    // --------------------------------------------------------------------------
+    // FACADE API (SUPPORTED): Vertex queries + edits
+    // --------------------------------------------------------------------------
+
     int vertexNumberMax();
 
     int vertexNumberMin();
@@ -601,7 +644,10 @@ public:
     GraphVertex *vertexPtr(const int v);
 
     /* EDGES */
-
+    // --------------------------------------------------------------------------
+    // FACADE API (SUPPORTED): Edge queries + edits
+    // --------------------------------------------------------------------------
+ 
     int edgesEnabled();
 
     MyEdge edgeClicked();
@@ -661,7 +707,10 @@ public:
 
 
     /* GRAPH methods */
-
+    // --------------------------------------------------------------------------
+    // FACADE API (SUPPORTED): Graph facts + settings used by UI/CLI
+    // --------------------------------------------------------------------------
+ 
     bool isEmpty() const;
 
     QList<int> getSelectedVertices() const;
@@ -929,6 +978,12 @@ public:
                                 const bool &inverseWeights=true,
                                 const bool &dropIsolates=false);
 
+    // ============================================================================
+    // LEGACY/INTERNAL (ENGINE SUPPORT PRIMITIVES)
+    // ----------------------------------------------------------------------------
+    // NOTE (WS2/F0): These exist to support DistanceEngine during transition.
+    // UI code must not call these. Prefer keeping them engine-only.
+    // ============================================================================
     // --- SSSP/Brandes stack helpers (DistanceEngine should not touch Stack directly) ---
     void ssspStackClear();
     bool ssspStackEmpty() const;
@@ -939,7 +994,12 @@ public:
     // --- SSSP nth-order neighborhood (for Power Centrality) ---
     void ssspNthOrderClear();
     // Stores the number of vertices at distance n from a given vertex
-    H_f_i sizeOfNthOrderNeighborhood;    
+    H_f_i sizeOfNthOrderNeighborhood;
+    //
+    // LEGACY/INTERNAL: transitional storage.
+    // DistanceEngine may use this via the accessors below.
+    // (Later WS2/F1 may hide this field and keep only accessors.)
+    H_f_i sizeOfNthOrderNeighborhood; 
     H_f_i::const_iterator ssspNthOrderBegin() const;
     H_f_i::const_iterator ssspNthOrderEnd() const;
     int ssspNthOrderValue(qreal dist) const;
@@ -1180,6 +1240,10 @@ public:
      *   We need to know the place of a vertex inside m_graph after adding
      *   or removing many vertices
      */
+    //
+    // LEGACY/INTERNAL: storage bookkeeping.
+    // Do not use from UI/engines. (Later WS2 will likely privatize this and
+    // expose intent-revealing helpers if needed.)
     H_Int vpos;
 
 
