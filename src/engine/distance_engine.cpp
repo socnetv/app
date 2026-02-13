@@ -167,7 +167,7 @@ void DistanceEngine::initRun(const bool computeCentralities,
     sink.statusMessage(ds.pMsg);
     sink.progressCreate(ds.N, ds.pMsg);
 
-    graph.m_graphIsSymmetric = graph.isSymmetric();
+    graph.setSymmetricCached(graph.isSymmetric());
 
     if (ds.E == 0)
     {
@@ -185,12 +185,12 @@ void DistanceEngine::initRun(const bool computeCentralities,
         {
             // singleton graph consisting of a single isolated node
             // is considered connected
-            graph.m_graphIsConnected = true;
+            graph.setConnectedCached(true);
         }
         else
         {
             // any non-empty and non-singleton graph with zero edges is disconnected
-            graph.m_graphIsConnected = false;
+            graph.setConnectedCached(false);
         }
     }
     else
@@ -232,7 +232,7 @@ void DistanceEngine::initRun(const bool computeCentralities,
 
         ds.pairDistance = 0;
 
-        graph.m_graphIsConnected = true;
+        graph.setConnectedCached(true);
 
         graph.maxSCC = 0;
         graph.minSCC = RAND_MAX;
@@ -298,11 +298,8 @@ void DistanceEngine::initRun(const bool computeCentralities,
         graph.discreteECs.clear();
         graph.classesEC = 0;
 
-        graph.m_graphDiameter = 0;
         graph.calculatedDistances = false;
-        graph.m_graphAverageDistance = 0;
-        graph.m_graphSumDistance = 0;
-        graph.m_graphGeodesicsCount = 0;
+        graph.resetDistanceAggregates();
 
         // Stores vertex pairs not connected
         // Vertices in keys have
@@ -349,7 +346,7 @@ void DistanceEngine::initRun(const bool computeCentralities,
             }
         }
 
-        if (graph.m_graphIsSymmetric)
+        if (graph.symmetricCached())
         {
             graph.maxIndexBC = (ds.N == 2) ? 1 : (ds.N - 1.0) * (ds.N - 2.0) / 2.0;
             graph.maxIndexSC = (ds.N == 2) ? 1 : (ds.N - 1.0) * (ds.N - 2.0) / 2.0;
@@ -495,7 +492,7 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
                         "For CC: total sum of distances for s ="
                      << ds.distances_sum_for_s;
 
-            graph.m_graphSumDistance += ds.distances_sum_for_s;
+            graph.addToDistanceSum(ds.distances_sum_for_s);
 
             // Compute Closeness Centrality
             if (ds.distances_sum_for_s != 0 && ds.distances_sum_for_s < RAND_MAX)
@@ -620,7 +617,7 @@ void DistanceEngine::finalize(const bool computeCentralities,
     // and get the distance sums
     qDebug() << "Checking if there are disconnected nodes";
 
-    graph.m_graphIsConnected = true;
+    graph.setConnectedCached(true);
 
     for (ds.it = graph.verticesBegin(); ds.it != graph.verticesEnd(); ++ds.it)
     {
@@ -651,7 +648,7 @@ void DistanceEngine::finalize(const bool computeCentralities,
             {
                 graph.notConnectedPairsInsert((*ds.it)->number(), (*ds.it1)->number());
                 (*ds.it)->setEccentricity(RAND_MAX);
-                graph.m_graphIsConnected = false;
+                graph.setConnectedCached(false);
 
                 qDebug() << "actor i" << (*ds.it)->number()
                          << "has infinite eccentricity. "
@@ -720,17 +717,17 @@ void DistanceEngine::finalize(const bool computeCentralities,
     // Compute average path length...
     if (graph.notConnectedPairsSize() == 0)
     {
-        graph.m_graphAverageDistance = graph.m_graphSumDistance / (ds.N * (ds.N - 1.0));
+        graph.setAverageDistanceCached(graph.graphSumDistanceCached() / (ds.N * (ds.N - 1.0)));
         qDebug() << "Graph::graphDistancesGeodesic() - Average distance:"
-                 << graph.m_graphAverageDistance;
+                 << graph.graphDistanceGeodesicAverageCached();
     }
     else
     {
         // TODO In not connected nets, it would be nice to ask the user what to do
         //  with unconnected pairs (make M or drop (default?)
         qDebug() << "Graph::graphDistancesGeodesic() - Average distance:"
-                 << graph.m_graphAverageDistance;
-        graph.m_graphAverageDistance = graph.m_graphSumDistance / graph.m_graphGeodesicsCount;
+                 << graph.graphDistanceGeodesicAverageCached();
+        graph.setAverageDistanceCached(graph.graphSumDistanceCached() / graph.graphGeodesicsCountCached());
     }
 
     if (computeCentralities)
@@ -757,7 +754,7 @@ void DistanceEngine::finalize(const bool computeCentralities,
             graph.minmax(csf.SPC, (*ds.it), graph.maxSPC, graph.minSPC, graph.maxNodeSPC, graph.minNodeSPC);
 
             // Compute std BC, classes and min/maxSBC
-            if (graph.m_graphIsSymmetric)
+            if (graph.symmetricCached())
             {
                 qDebug() << "Betweenness centrality must be divided by"
                          << " two if the graph is undirected";
@@ -782,7 +779,7 @@ void DistanceEngine::finalize(const bool computeCentralities,
 
             // prepare to compute stdSC
             csf.SC = (*ds.it)->SC();
-            if (graph.m_graphIsSymmetric)
+            if (graph.symmetricCached())
             {
                 (*ds.it)->setSC(csf.SC / 2.0);
                 csf.SC = (*ds.it)->SC();
@@ -1023,8 +1020,8 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si, const bool &computeCen
                 ;
                 graph.vertexAtIndex(si)->setDistance(w, dist_w);
 
-                graph.m_graphSumDistance += dist_w;
-                graph.m_graphGeodesicsCount++;
+                graph.addToDistanceSum(dist_w);
+                graph.incGeodesicsCount();
 
                 qDebug() << "== BFS  - d("
                          << s << "," << w
@@ -1044,9 +1041,9 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si, const bool &computeCen
                         graph.vertexAtIndex(si)->setEccentricity(dist_w);
                 }
                 //                qDebug("BFS: Checking m_graphDiameter");
-                if (dist_w > graph.m_graphDiameter)
+                if (dist_w > graph.graphDiameterCached())
                 {
-                    graph.m_graphDiameter = dist_w;
+                    graph.setDiameterCached(dist_w);
                     //                    qDebug() << "BFS: new m_graphDiameter = " <<  m_graphDiameter ;
                 }
             }
@@ -1332,19 +1329,20 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
 
                 graph.vertexAtIndex(si)->setDistance(w, dist_w);
 
-                graph.m_graphGeodesicsCount++;
+                graph.incGeodesicsCount();
 
                 qDebug() << "    --- dijkstra: "
                             "Set d ( s="
                          << s << ", w=" << w
                          << " ) = " << dist_w << "=" << graph.vertexAtIndex(si)->distance(w);
 
-                if (dist_w > graph.m_graphDiameter)
+                if (dist_w > graph.graphDiameterCached())
                 {
-                    graph.m_graphDiameter = dist_w;
+                    graph.setDiameterCached(dist_w);
+                    
                     qDebug() << "    --- dijkstra: "
                                 "New graph diameter ="
-                             << graph.m_graphDiameter;
+                             << graph.graphDiameterCached();
                 }
 
                 if (s != w)

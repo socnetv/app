@@ -971,6 +971,10 @@ public:
     int graphDiameter(const bool considerWeights, const bool inverseWeights);
 
     int graphDiameterCached() const;
+   
+    qreal graphSumDistanceCached() const;
+
+    qreal graphGeodesicsCountCached() const;
 
     int graphDistanceGeodesic(const int &v1,
                               const int &v2,
@@ -1027,6 +1031,19 @@ public:
     // CLI/benchmark helper: allows repeated runs by clearing the computed flags only.
     // Does not modify graph structure or results.
     void resetDistanceCentralityCacheFlags();
+
+    // LEGACY/INTERNAL (ENGINE SUPPORT): cached results written by DistanceEngine
+    void setSymmetricCached(bool v);
+    bool symmetricCached() const;
+
+    void setConnectedCached(bool v);
+    void setDiameterCached(int v);
+
+    void resetDistanceAggregates();          // sets avg/sum/geodesics/diameter to 0
+    void addToDistanceSum(qreal delta);
+    void incGeodesicsCount();
+    void setAverageDistanceCached(qreal v);
+
 
     void graphMatrixDistanceGeodesicCreate(const bool &considerWeights=false,
                                      const bool &inverseWeights=true,

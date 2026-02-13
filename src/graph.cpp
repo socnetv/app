@@ -4886,10 +4886,47 @@ bool Graph::isConnected()
     return m_graphIsConnected;
 }
 
-// Read-only "cached" accessors
-qreal Graph::graphDistanceGeodesicAverageCached() const { return m_graphAverageDistance; }
-int   Graph::graphDiameterCached() const { return m_graphDiameter; }
-bool  Graph::isConnectedCached() const { return m_graphIsConnected; }
+
+/**
+ * @brief Returns the average geodesic distance of the graph, without recalculating it.
+ * @return qreal
+ */
+qreal Graph::graphDistanceGeodesicAverageCached() const { 
+    return m_graphAverageDistance; 
+}
+/**
+ * @brief Returns the number of geodesics (shortest paths) in the graph, without recalculating it.
+ * @return int
+ */
+int   Graph::graphDiameterCached() const { 
+    return m_graphDiameter;
+}
+
+/**
+ * @brief Returns true if the graph is connected, without recalculating it.
+ * @return bool
+ */
+bool  Graph::isConnectedCached() const { 
+    return m_graphIsConnected; 
+}
+
+/**
+ * @brief Returns the sum of all finite geodesic distances accumulated by DistanceEngine,
+ * without recalculating anything.
+ */
+qreal Graph::graphSumDistanceCached() const
+{
+    return m_graphSumDistance;
+}
+
+/**
+ * @brief Returns the number of geodesics (shortest paths) accumulated by DistanceEngine,
+ * without recalculating anything.
+ */
+qreal Graph::graphGeodesicsCountCached() const
+{
+    return m_graphGeodesicsCount;
+}
 
 
 /**
@@ -5209,6 +5246,25 @@ void Graph::resetDistanceCentralityCacheFlags()
     calculatedDistances = false;
     calculatedCentralities = false;
 }
+
+void Graph::setSymmetricCached(bool v) { m_graphIsSymmetric = v; }
+bool Graph::symmetricCached() const { return m_graphIsSymmetric; }
+
+void Graph::setConnectedCached(bool v) { m_graphIsConnected = v; }
+void Graph::setDiameterCached(int v) { m_graphDiameter = v; }
+
+void Graph::resetDistanceAggregates()
+{
+    m_graphDiameter = 0;
+    m_graphAverageDistance = 0;
+    m_graphSumDistance = 0;
+    m_graphGeodesicsCount = 0;
+}
+
+void Graph::addToDistanceSum(qreal delta) { m_graphSumDistance += delta; }
+void Graph::incGeodesicsCount() { ++m_graphGeodesicsCount; }
+void Graph::setAverageDistanceCached(qreal v) { m_graphAverageDistance = v; }
+
 
 
 /**
