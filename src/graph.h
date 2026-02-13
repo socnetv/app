@@ -516,6 +516,8 @@ public:
     // --------------------------------------------------------------------------
     // FACADE API (SUPPORTED): Vertex queries + edits
     // --------------------------------------------------------------------------
+    
+    int vertexIndexByNumber(int v) const;
 
     int vertexNumberMax();
 

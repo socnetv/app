@@ -952,6 +952,21 @@ void Graph::vertexRemoveDummyNode(int i)
 }
 
 /**
+ * @brief Returns the index of a vertex by its number
+ *
+ * Returns the vpos or -1
+ *
+ * Complexity: O(logN) for vpos retrieval
+ *
+ * @param vertex number
+ * @return vertex pos or -1
+ */
+int Graph::vertexIndexByNumber(int v) const { 
+    return vpos.value(v, -1); 
+}
+
+
+/**
  * @brief Returns the number of the last vertex in the graph.
  *
  * @return  int

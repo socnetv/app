@@ -525,7 +525,7 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
             while (!graph.ssspStackEmpty())
             {
                 ds.w = graph.ssspStackTop();
-                ds.wi = graph.vpos[ds.w];
+                ds.wi = graph.vertexIndexByNumber(ds.w);
 
                 qDebug() << "***** PHASE 2 (BC/ACCUMULATION): "
                             "Stack top is vertex w "
@@ -547,7 +547,7 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
                     for (ds.it2 = lst.cbegin(); ds.it2 != lst.cend(); ds.it2++)
                     {
                         ds.u = (*ds.it2);
-                        ds.ui = graph.vpos[ds.u];
+                        ds.ui = graph.vertexIndexByNumber(ds.u);
                         csssp.sigma_u = graph.m_graph[ds.si]->shortestPaths(ds.u);
                         csssp.sigma_w = graph.m_graph[ds.si]->shortestPaths(ds.w);
                         csssp.delta_u = graph.m_graph[ds.ui]->delta();
