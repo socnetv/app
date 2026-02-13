@@ -424,7 +424,7 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
 
         if (!considerWeights)
         {
-            graph.BFS(ds.s, ds.si, computeCentralities, dropIsolates);
+            bfsSSSP(ds.s, ds.si, computeCentralities, dropIsolates);
         }
         else
         {
@@ -918,3 +918,180 @@ void DistanceEngine::finalize(const bool computeCentralities,
     } // END if computeCentralities
 }
 
+
+
+
+/**
+*	Breadth-First Search (BFS) method for unweighted graphs (directed or not)
+
+    INPUT:
+        a 'source' vertex with vpos s and a boolean computeCentralities.
+        (Implicitly, BFS uses the m_graph structure)
+
+    OUTPUT:
+        For every vertex t: d(s, t) is set to the distance of each t from s
+        For every vertex t: s(s, t) is set to the number of shortest paths between s and t
+
+        Also, if computeCentralities is true then BFS does extra operations:
+            a) For source vertex s:
+                it calculates CC(s) as the sum of its distances from every other vertex.
+                it calculates eccentricity(s) as the maximum distance from all other vertices.
+                it increases sizeOfNthOrderNeighborhood [ N ] by one, to store the number of nodes at distance n from source s
+            b) For every vertex u:
+                it increases SC(u) by one, when it finds a new shor. path from s to t through u.
+                appends each neighbor y of u to the list , thus Ps stores all predecessors of y on all all shortest paths from s
+            c) Each vertex u popped from Q is pushed to a stack Stack
+
+*/
+void DistanceEngine::bfsSSSP(const int &s, const int &si, const bool &computeCentralities,
+                const bool &dropIsolates)
+{
+    Q_UNUSED(dropIsolates);
+
+    qDebug() << "BFS:";
+    int u = 0, ui = 0, w = 0, wi = 0;
+    int dist_u = 0, temp = 0, dist_w = 0;
+    int relation = 0;
+    // int  weight=0;
+    bool edgeStatus = false;
+    H_edges::const_iterator it1;
+
+    // set distance of s from s equal to 0
+    graph.m_graph[si]->setDistance(s, 0);
+
+    // set sigma of s from s equal to 1
+    graph.m_graph[si]->setShortestPaths(s, 1);
+
+    //    qDebug("BFS: Construct a queue Q of integers and push source vertex s=%i to Q as initial vertex", s);
+    std::queue<int> Q;
+
+    Q.push(s);
+
+    qDebug() << "BFS: LOOP: While Q not empty ";
+    while (!Q.empty())
+    {
+
+        u = Q.front();
+        Q.pop();
+        ui = graph.vpos[u];
+        qDebug() << "BFS: Dequeue: first element of Q is u" << u << "graph.vpos" << ui;
+
+        if (!graph.m_graph[ui]->isEnabled())
+        {
+            continue;
+        }
+
+        if (computeCentralities)
+        {
+            qDebug() << "BFS: Compute centralities: Pushing u" << u
+                     << "to global Stack ";
+            graph.ssspStackPush(u);
+        }
+        qDebug() << "BFS: LOOP over every edge (u,w) e E, that is all neighbors w of vertex u";
+        it1 = graph.m_graph[ui]->outEdges().cbegin();
+        while (it1 != graph.m_graph[ui]->outEdges().cend())
+        {
+            relation = it1.value().first;
+            if (relation != graph.relationCurrent())
+            {
+                ++it1;
+                continue;
+            }
+            edgeStatus = it1.value().second.second;
+            if (edgeStatus != true)
+            {
+                ++it1;
+                continue;
+            }
+            w = it1.key();
+            //  weight = it1.value().second.first;
+            wi = graph.vpos[w];
+            qDebug("BFS: u=%i is connected with node w=%i of graph.vpos wi=%i. ", u, w, wi);
+
+            qDebug("BFS: Start path discovery");
+
+            // if distance (s,w) is infinite, w found for the first time.
+            if (graph.m_graph[si]->distance(w) == RAND_MAX)
+            {
+
+                qDebug("BFS: First time visiting w=%i. Enqueuing w to the end of Q", w);
+
+                Q.push(w);
+
+                qDebug() << "BFS: First check if distance(s,u) = infinite and set it to zero";
+
+                dist_u = graph.m_graph[si]->distance(u);
+                dist_w = dist_u + 1;
+
+                qDebug() << "BFS: Setting dist_w = d ( s" << s << ", w" << w
+                         << ") equal to dist_u=d(s,u) plus 1. New dist_w" << dist_w;
+                ;
+                graph.m_graph[si]->setDistance(w, dist_w);
+
+                graph.m_graphSumDistance += dist_w;
+                graph.m_graphGeodesicsCount++;
+
+                qDebug() << "== BFS  - d("
+                         << s << "," << w
+                         << ")=" << graph.m_graph[si]->distance(w);
+
+                if (computeCentralities)
+                {
+                    qDebug() << "BFS: Calculate PC: store the number of nodes at distance "
+                             << dist_w << "from s";
+
+                    graph.ssspNthOrderIncrement(dist_w);
+                    qDebug() << "BFS: Calculate CC: the sum of distances (will invert it l8r)";
+                    graph.m_graph[si]->setCC(graph.m_graph[si]->CC() + dist_w);
+
+                    qDebug() << "BFS: Calculate Eccentricity: the maximum distance ";
+                    if (graph.m_graph[si]->eccentricity() < dist_w)
+                        graph.m_graph[si]->setEccentricity(dist_w);
+                }
+                //                qDebug("BFS: Checking m_graphDiameter");
+                if (dist_w > graph.m_graphDiameter)
+                {
+                    graph.m_graphDiameter = dist_w;
+                    //                    qDebug() << "BFS: new m_graphDiameter = " <<  m_graphDiameter ;
+                }
+            }
+
+            qDebug() << "BFS: Start path counting";
+
+            // Is edge (u,w) on a shortest path from s to w via u?
+
+            if (graph.m_graph[si]->distance(w) == graph.m_graph[si]->distance(u) + 1)
+            {
+
+                temp = graph.m_graph[si]->shortestPaths(w) + graph.m_graph[si]->shortestPaths(u);
+
+                qDebug() << "BFS: Found a NEW SHORTEST PATH from s" << s
+                         << "to w" << w << "via u" << u
+                         << "Setting Sigma(s, w)" << temp;
+                if (s != w)
+                {
+                    graph.m_graph[si]->setShortestPaths(w, temp);
+                }
+                if (computeCentralities)
+                {
+                    qDebug() << "BFS/SC: Computing centralities: Computing SC ";
+                    if (s != w && s != u && u != w)
+                    {
+                        qDebug() << "BFS: setSC of u=" << u << " to " << graph.m_graph[ui]->SC() + 1;
+                        graph.m_graph[ui]->setSC(graph.m_graph[ui]->SC() + 1);
+                    }
+                    else
+                    {
+                        //                        qDebug() << "BFS/SC: skipping setSC of u, because s="
+                        //                                 <<s<<" w="<< w << " u="<< u;
+                    }
+                    //                    qDebug() << "BFS/SC: SC is " << graph.m_graph[u]->SC();
+                    qDebug() << "BFS: appending u" << u << " to list Ps[w=" << w
+                             << "] with the predecessors of w on all shortest paths from s ";
+                    graph.m_graph[wi]->appendToPs(u);
+                }
+            }
+            ++it1;
+        } // end while (it1...)
+    }  // end while (!Q.empty())
+} // end bfsSSSP()

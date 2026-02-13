@@ -54,6 +54,9 @@ private:
                   struct DistanceScratch &ds,
                   struct CentralityScratchFinalize &csfin,
                   IDistanceProgressSink &sink);
+
+    void bfsSSSP(const int &s, const int &si, const bool &computeCentralities,
+                const bool &dropIsolates);
 };
 
 #endif // SOCNETV_DISTANCE_ENGINE_H
