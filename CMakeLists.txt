@@ -136,6 +136,7 @@ set(SOURCES
     src/mainwindow.cpp 
     src/texteditor.cpp
     ${ENGINE_SOURCES}
+    src/graph/reporting/graph_reports.cpp
     src/graph.cpp 
     src/graphvertex.cpp
     src/matrix.cpp 
@@ -389,6 +390,7 @@ if(BUILD_CLI)
         MANUAL_FINALIZATION
         ${CLI_SOURCES}
         ${ENGINE_SOURCES}
+        src/graph/reporting/graph_reports.cpp
         src/graph.cpp
         src/graphvertex.cpp
         src/matrix.cpp
