@@ -1,7 +1,8 @@
 #include "graph.h"
 
 #include <QNetworkReply>
-
+#include <QDebug>
+#include <QUrl>
 
 
 /**
