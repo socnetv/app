@@ -3,7 +3,7 @@
 #include <QNetworkReply>
 #include <QDebug>
 #include <QUrl>
-
+#include <QThread>
 
 /**
  * @brief called from Graph, when closing network, to terminate all crawler processes
