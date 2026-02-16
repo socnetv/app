@@ -140,6 +140,7 @@ set(SOURCES
     src/graph/generators/graph_random_networks.cpp
     src/graph/crawler/graph_crawler.cpp
     src/graph/layouts/graph_layouts_basic.cpp
+    src/graph/layouts/graph_layouts_force.cpp
     src/graph.cpp 
     src/graphvertex.cpp
     src/matrix.cpp 
@@ -397,6 +398,7 @@ if(BUILD_CLI)
         src/graph/generators/graph_random_networks.cpp
         src/graph/crawler/graph_crawler.cpp
         src/graph/layouts/graph_layouts_basic.cpp
+        src/graph/layouts/graph_layouts_force.cpp
         src/graph.cpp
         src/graphvertex.cpp
         src/matrix.cpp
