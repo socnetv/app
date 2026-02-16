@@ -137,6 +137,7 @@ set(SOURCES
     src/texteditor.cpp
     ${ENGINE_SOURCES}
     src/graph/reporting/graph_reports.cpp
+    src/graph/generators/graph_random_networks.cpp
     src/graph.cpp 
     src/graphvertex.cpp
     src/matrix.cpp 
@@ -391,6 +392,7 @@ if(BUILD_CLI)
         ${CLI_SOURCES}
         ${ENGINE_SOURCES}
         src/graph/reporting/graph_reports.cpp
+        src/graph/generators/graph_random_networks.cpp
         src/graph.cpp
         src/graphvertex.cpp
         src/matrix.cpp
