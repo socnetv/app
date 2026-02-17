@@ -4633,7 +4633,7 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
 
 /**
  * @brief Writes Hierarchical Clustering results to given output stream
- * Before running this methos, the method Graph::graphClusteringHierarchical()
+ * Before running this method, the method Graph::graphClusteringHierarchical()
  * must execute and return true. Otherwise, the result is unpredictable...
  * @param outText
  * @param N

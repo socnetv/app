@@ -107,6 +107,11 @@ set(GRAPH_SOURCES
     src/graph/layouts/graph_layouts_basic.cpp
     src/graph/layouts/graph_layouts_force.cpp
     src/graph/reachability/graph_reachability_walks.cpp
+    src/graph/cohesion/graph_cliques.cpp
+    src/graph/clustering/graph_triad_census.cpp
+    src/graph/clustering/graph_clustering_coefficients.cpp
+    src/graph/clustering/graph_clustering_hierarchical.cpp
+    src/graph/similarity/graph_similarity_matrices.cpp
 )
 
 set(CLI_SOURCES
