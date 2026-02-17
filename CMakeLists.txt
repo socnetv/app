@@ -100,6 +100,15 @@ set(ENGINE_SOURCES
     src/engine/distance_engine.cpp
 )
 
+set(GRAPH_SOURCES
+    src/graph/reporting/graph_reports.cpp
+    src/graph/generators/graph_random_networks.cpp
+    src/graph/crawler/graph_crawler.cpp
+    src/graph/layouts/graph_layouts_basic.cpp
+    src/graph/layouts/graph_layouts_force.cpp
+    src/graph/reachability/graph_reachability_walks.cpp
+)
+
 set(CLI_SOURCES
     src/tools/cli_regression_main.cpp
     src/tools/headless_graph_loader.cpp
@@ -136,11 +145,7 @@ set(SOURCES
     src/mainwindow.cpp 
     src/texteditor.cpp
     ${ENGINE_SOURCES}
-    src/graph/reporting/graph_reports.cpp
-    src/graph/generators/graph_random_networks.cpp
-    src/graph/crawler/graph_crawler.cpp
-    src/graph/layouts/graph_layouts_basic.cpp
-    src/graph/layouts/graph_layouts_force.cpp
+    ${GRAPH_SOURCES}
     src/graph.cpp 
     src/graphvertex.cpp
     src/matrix.cpp 
@@ -394,11 +399,7 @@ if(BUILD_CLI)
         MANUAL_FINALIZATION
         ${CLI_SOURCES}
         ${ENGINE_SOURCES}
-        src/graph/reporting/graph_reports.cpp
-        src/graph/generators/graph_random_networks.cpp
-        src/graph/crawler/graph_crawler.cpp
-        src/graph/layouts/graph_layouts_basic.cpp
-        src/graph/layouts/graph_layouts_force.cpp
+        ${GRAPH_SOURCES}
         src/graph.cpp
         src/graphvertex.cpp
         src/matrix.cpp
