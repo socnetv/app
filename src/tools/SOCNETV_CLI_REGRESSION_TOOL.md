@@ -1,12 +1,9 @@
 # SocNetV CLI Regression Tool
 
-This is a headless regression tool used to verify
-algorithmic correctness during the ongoing architectural refactor of
-SocNetV.
+`socnetv-cli` is a headless regression tool used to verify algorithmic correctness
+during the ongoing architectural refactor of SocNetV.
 
-The tool provides deterministic execution of the distance / centrality
-kernel without loading any UI components.
-
+It provides deterministic execution of compute kernels without loading any UI components.
 It was originally designed to protect the refactor of:
 
     Graph::graphDistancesGeodesic()
@@ -19,12 +16,12 @@ It was originally designed to protect the refactor of:
 The CLI enables:
 
 - Headless dataset loading (no MainWindow / GraphicsWidget)
-- Deterministic execution of DistanceEngine
+- Deterministic kernel execution
 - Golden-output JSON generation
 - Strict regression comparison against committed baselines
 - CI integration (fail-fast on mismatch)
 
-This ensures that refactors preserve:
+This ensures refactors preserve:
 
 - numeric results
 - connectivity bookkeeping
@@ -33,17 +30,15 @@ This ensures that refactors preserve:
 
 ---
 
-
 ## Design Principles
 
-* No UI involvement
-* No graphics dependency
-* Deterministic ordering
-* Deterministic float formatting
-* Zero semantic modification of Graph
+- No UI involvement
+- No graphics dependency
+- Deterministic ordering
+- Deterministic float formatting
+- Zero semantic modification of Graph
 
 The CLI is a safety harness, not a new analytics engine.
-
 
 ---
 
@@ -57,15 +52,43 @@ It is compiled alongside the main application via CMake.
 
 ---
 
+## Kernels and JSON Schemas
+
+The CLI supports multiple kernels selected by `--kernel`.
+
+### 1) Distance / Centrality Kernel (default)
+
+- Kernel: `distance` (default)
+- JSON schema: `schema_version = 1`
+
+This kernel runs geodesic distances and (optionally) centralities, then emits:
+- text KV output (always)
+- JSON output (optional dump/compare)
+
+### 2) Reachability Kernel
+
+- Kernel: `reachability`
+- JSON schema: `schema_version = 2`
+
+This kernel computes the full NxN reachability matrix derived from geodesic distances:
+
+- R(i,j) = 1 if a walk exists from i to j
+- R(i,j) = 0 otherwise
+- Diagonal convention: **R(i,i) = 1**
+
+A pair is reachable iff its geodesic distance is finite.
+
+---
+
 ## Basic Usage
 
-Load a dataset and print summary metrics:
+Load a dataset and print summary metrics (distance kernel):
 
 ```bash
 ./socnetv-cli \
   -i src/data/SmallWorld_N10_E12.graphml \
   -f 1
-```
+````
 
 Common file types (see `global.h`):
 
@@ -79,6 +102,8 @@ Common file types (see `global.h`):
 
 ## Golden Output Dump
 
+### Distance kernel (schema v1)
+
 Generate a deterministic JSON baseline:
 
 ```bash
@@ -88,13 +113,25 @@ Generate a deterministic JSON baseline:
   --dump-json src/tools/baselines/SmallWorld_N10_E12__C1_W0_IW1_DI0.json
 ```
 
-The filename convention encodes run flags:
+Filename convention encodes run flags:
 
 ```
-C1 = computeCentralities=1
-W0 = considerWeights=0
+C1  = computeCentralities=1
+W0  = considerWeights=0
 IW1 = inverseWeights=1
 DI0 = dropIsolates=0
+```
+
+### Reachability kernel (schema v2)
+
+Generate a deterministic reachability baseline:
+
+```bash
+./socnetv-cli \
+  --kernel reachability \
+  -i src/data/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl \
+  -f 5 -w 1 -x 1 -k 0 \
+  --dump-json src/tools/baselines/reachability/StokmanZiegler_Netherlands__REACH__V2.json
 ```
 
 ---
@@ -103,26 +140,34 @@ DI0 = dropIsolates=0
 
 Strict comparison against a baseline:
 
+### Distance kernel (schema v1)
+
 ```bash
-./build/socnetv-cli \
+./socnetv-cli \
   -i src/data/SmallWorld_N10_E12.graphml \
   -f 1 \
   --compare-json src/tools/baselines/SmallWorld_N10_E12__C1_W0_IW1_DI0.json
 ```
 
+### Reachability kernel (schema v2)
+
+```bash
+./socnetv-cli \
+  --kernel reachability \
+  -i src/data/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl \
+  -f 5 -w 1 -x 1 -k 0 \
+  --compare-json src/tools/baselines/reachability/StokmanZiegler_Netherlands__REACH__V2.json
+```
+
 On mismatch, the tool prints exact field differences and exits non-zero.
-
-This makes it suitable for:
-
-* CI pipelines
-* pre-merge validation
-* refactor checkpoints
 
 ---
 
 ## What Is Verified
 
-### Graph-level metrics
+### Distance kernel (schema v1)
+
+Graph-level metrics:
 
 * nodes
 * links_sna (loader semantics)
@@ -133,9 +178,7 @@ This makes it suitable for:
 * disconnected_pairs
 * connected
 
-### Per-node vectors (when centralities enabled)
-
-For each vertex (deterministic ascending id order):
+Per-node vectors (when centralities enabled), for each vertex (deterministic ascending id order):
 
 * CC / SCC
 * BC / SBC
@@ -145,45 +188,36 @@ For each vertex (deterministic ascending id order):
 * distance_sum
 * eccentricity
 
-Floating-point values are serialized as strings to avoid JSON
-double-format inconsistencies.
+Floating-point values are serialized as strings to avoid JSON double-format inconsistencies.
+
+### Reachability kernel (schema v2)
+
+* `reachability.nodes` → deterministic ascending vertex ids (order)
+* `reachability.matrix` → NxN array of 0/1 integers
+* `reachability.reachable_pairs` → number of reachable pairs (including diagonal)
+
+Schema v2 is separate from schema v1 to avoid modifying existing baselines.
 
 ---
 
-## Micro-Benchmarking Mode
+## Micro-Benchmarking Mode (Distance Kernel Only)
 
-The CLI also provides a lightweight benchmarking mode to measure
-DistanceEngine compute performance during refactors.
+The CLI provides a lightweight benchmarking mode to measure DistanceEngine compute performance.
 
-This mode does **not** modify algorithmic behavior and does not
-generate or compare JSON output.
+This mode:
 
-It is intended to:
-
-* Detect performance regressions
-* Track kernel timing across refactor phases
-* Provide repeatable compute-only measurements
-
----
+* does **not** modify algorithmic behavior
+* does **not** generate or compare JSON output
 
 ### Usage
 
 ```bash
-./build/socnetv-cli \
+./socnetv-cli \
   -i src/data/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj \
   -f 2 \
   -c 1 -w 1 -x 1 -k 0 \
   --bench 10
 ```
-
-Where:
-
-* `--bench N` runs:
-
-  * 1 warmup execution (not measured)
-  * N measured executions of the compute kernel
-
----
 
 ### Output
 
@@ -197,22 +231,6 @@ COMPUTE_MS_MEAN=4.200
 COMPUTE_MS_MAX=5
 ```
 
-Metrics:
-
-* `COMPUTE_RUNS` → number of measured runs
-* `COMPUTE_MS_MIN` → fastest run
-* `COMPUTE_MS_MEDIAN` → median time
-* `COMPUTE_MS_MEAN` → arithmetic mean (ms)
-* `COMPUTE_MS_MAX` → slowest run
-
-In normal (non-bench) mode, a single run prints:
-
-```
-COMPUTE_MS=7
-```
-
----
-
 ### Constraints
 
 * `--bench` cannot be combined with:
@@ -220,180 +238,50 @@ COMPUTE_MS=7
   * `--dump-json`
   * `--compare-json`
 
-* Bench mode measures **only** the distance / centrality compute kernel.
+* Bench mode is supported **only** with:
+
+  * `--kernel distance` (default)
 
 * Dataset loading time is reported separately via `LOAD_MS`.
 
 ---
 
-### Design Notes
+## Automated Regression Scripts
 
-* Each measured run resets internal cache flags before execution to avoid early-return short-circuiting.
-* No algorithmic paths are modified.
-* Bench mode does not affect JSON schema or regression comparison logic.
-* Intended for developer use, not end-user profiling.
-
----
-
-### Recommended benchmark cases
-
-These cases are used to spot performance regressions during refactors.
-
-Medium (UCINET, 48 actors):
-
-```bash
-./build/socnetv-cli \
-  -i src/data/Freeman_EIES_network_48actors_Acquaintanceship_at_time_1.dl \
-  -f 5 \
-  -c 1 -w 1 -x 1 -k 0 \
-  --bench 10
-```
-
-
-| Class  | Dataset | N   | Approx cost |
-| ------ | ------- | --- | ----------- |
-| Small  | Dunbar  | 12  | ~4 ms       |
-| Medium | EIES 48 | 48  | ~105 ms     |
-| Large  | BA 500  | 500 | ~420 ms     |
-
-That’s a **proper performance ladder**.
-
-
----
-
-### Large Scale-Free Benchmark (BA model)
-
-Generated with SocNetV 3.2:
-
-* Model: Barabási–Albert
-* n = 500
-* m = 3
-* Directed
-* No loops
-* Exported as Pajek
-
-File:
+### Golden comparisons
 
 ```
-src/data/Benchmark_BA_Directed_N500_m3.paj
+scripts/run_golden_compares.sh
 ```
 
-Centralities ON:
+Runs the CLI against committed baselines and fails on mismatch.
 
-```bash
-./build/socnetv-cli \
-  -i src/data/Benchmark_BA_Directed_N500_m3.paj \
-  -f 2 \
-  -c 1 -w 0 -x 1 -k 0 \
-  --bench 20
-```
-
-Distances only:
-
-```bash
-./build/socnetv-cli \
-  -i src/data/Benchmark_BA_Directed_N500_m3.paj \
-  -f 2 \
-  -c 0 -w 0 -x 1 -k 0 \
-  --bench 20
-```
-
-These benchmarks are used to detect performance regressions in:
-
-* SSSP (BFS/Dijkstra)
-* Brandes dependency accumulation
-* Centrality aggregation
-
-
-
----
-
-
-### Automated Performance Regression Script
-
-For repeatable performance checks before tagging a release, a helper script is provided:
+### Performance benchmarks (DistanceEngine)
 
 ```
 scripts/run_benchmarks.sh
 ```
 
-This script:
-
-* Runs a predefined benchmark ladder (Small / Medium / Large)
-* Extracts `COMPUTE_MS_MEDIAN`
-* Compares against expected medians stored in:
-
-```
-scripts/perf_expected.env
-```
-
-* Emits a **warning if runtime exceeds +10%** of the expected median
-* Supports strict mode (non-zero exit on regression)
-
----
-
-#### Usage
-
-Run all benchmarks:
-
-```bash
-./scripts/run_benchmarks.sh
-```
-
-Strict mode (fail if >10% slower):
-
-```bash
-./scripts/run_benchmarks.sh --strict
-```
-
-If the CLI binary is in a different build directory:
-
-```bash
-SOCNETV_CLI=./builds/__unspec__/Debug/socnetv-cli \
-./scripts/run_benchmarks.sh
-```
-
----
-
-#### Performance Rule
-
-A regression warning is triggered if:
-
-```
-actual_median > expected_median × 1.10
-```
-
-This rule:
-
-* Ignores small OS scheduling noise
-* Detects meaningful slowdowns
-* Keeps refactors honest without being brittle
-
----
-
-#### Design Intent
-
-The script is:
-
-* Lightweight (pure bash)
-* Deterministic (median-based comparison)
-* Independent of JSON regression logic
-* Suitable for manual pre-release checks
-* CI-ready
-
-It complements correctness baselines by adding a **performance safety net** for `DistanceEngine`.
+Runs a benchmark ladder (Small / Medium / Large), extracts `COMPUTE_MS_MEDIAN`,
+and compares against expected medians (per-host baselines supported).
 
 ---
 
 ## Baselines
 
-Baselines live in:
+Distance kernel baselines:
 
 ```
 src/tools/baselines/
 ```
 
-These are committed to the repository and represent
-“known good” outputs from the refactor target.
+Reachability baselines:
 
-See [BASELINES__README.md](./baselines/BASELINES__README.md)
+```
+src/tools/baselines/reachability/
+```
+
+See:
+
+* `src/tools/baselines/BASELINES__README.md`
+

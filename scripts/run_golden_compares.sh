@@ -63,13 +63,13 @@ run_case \
 run_case_reachability \
   "${DATA}/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj" \
   2 \
-  -w 1 -x 1 -k 0 \
+  -w 1 -x 1 -k 0 -c 0 \
   "${BASE_REACH}/DunbarGelada_H22a__REACH__V2.json"
 
 run_case_reachability \
   "${DATA}/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl" \
   5 \
-  -w 1 -x 1 -k 0 \
+  -w 1 -x 1 -k 0 -c 0 \
   "${BASE_REACH}/StokmanZiegler_Netherlands__REACH__V2.json"
 
 echo

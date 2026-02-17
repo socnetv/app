@@ -226,9 +226,12 @@ static QJsonObject buildGoldenJsonV2Reachability(
     QJsonArray ord;
     for (int id : order)
         ord.append(id);
-    reach["order"] = ord;
-    reach["ones"] = onesCount;
+    reach["nodes"] = ord;
+    reach["reachable_pairs"] = onesCount;
     reach["matrix"] = matrix;
+    const int n = order.size();
+    const double density = (n > 0) ? double(onesCount) / double(n * n) : 0.0;
+    reach["reachable_density"] = d2s(density); // as string, consistent with your float policy
     root["reachability"] = reach;
 
     QJsonObject loadReport;
@@ -527,11 +530,12 @@ static int compareGoldenV2Reachability(const QJsonObject &expected, const QJsonO
     const QJsonObject eR = expected.value("reachability").toObject();
     const QJsonObject aR = actual.value("reachability").toObject();
 
-    ok &= cmpInt(eR, aR, "ones", err);
+    ok &= cmpInt(eR, aR, "reachable_pairs", err);
 
-    const QJsonArray eOrder = eR.value("order").toArray();
-    const QJsonArray aOrder = aR.value("order").toArray();
-    ok &= cmpIntArray(eOrder, aOrder, err, "reachability.order");
+    const QJsonArray eOrder = eR.value("nodes").toArray();
+    const QJsonArray aOrder = aR.value("nodes").toArray();
+    ok &= cmpIntArray(eOrder, aOrder, err, "reachability.nodes");
+    ok &= cmpNumStrTol(eR, aR, "reachable_density", err, 0.0, 0.0);
 
     const QJsonArray eM = eR.value("matrix").toArray();
     const QJsonArray aM = aR.value("matrix").toArray();
@@ -684,6 +688,12 @@ int main(int argc, char *argv[])
 
     if (kernel == "reachability")
     {
+        if (computeCentralities)
+        {
+            QTextStream(stderr) << "ERROR: --centralities is not applicable to --kernel reachability\n";
+            return 2;
+        }
+
         // Compute geodesic distances once (centralities must be false here)
         g.resetDistanceCentralityCacheFlags();
         QElapsedTimer t;
