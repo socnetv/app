@@ -110,7 +110,7 @@ set(GRAPH_SOURCES
 )
 
 set(CLI_SOURCES
-    src/tools/cli_regression_main.cpp
+    src/tools/socnetv_cli.cpp
     src/tools/headless_graph_loader.cpp
 )
 
