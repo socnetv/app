@@ -12,7 +12,8 @@ For work-in-progress refactors (with detailed steps and status), see:
 ## Project Snapshot
 
 SocNetV is a Qt-based desktop application for social network analysis and visualization.
-Historically, most functionality flows through a central `Graph` object which acts as:
+
+Historically, most functionality flowed through a central `Graph` object (this is being incrementally decomposed under WS2) which acts as:
 - domain model (network storage)
 - algorithm host (distances, centralities, clustering, etc.)
 - UI bridge (signals/progress)
@@ -21,7 +22,7 @@ Historically, most functionality flows through a central `Graph` object which ac
 This worked, but makes testing and incremental modernization hard.
 
 
-## Current Code Shape (Today)
+## Code Shape
 
 ### Main high-level pieces
 
@@ -32,7 +33,7 @@ This worked, but makes testing and incremental modernization hard.
 - Data structures:
   - `GraphVertex` / edges as storage and (importantly) **cache/state** for analysis results
 - Algorithms:
-  - Many analytics use `Graph::graphDistancesGeodesic()` as a hub (distances + centralities)
+  - Many analytics use `Graph::graphDistancesGeodesic()` (now backed by DistanceEngine) as a hub (distances + centralities)
 - I/O:
   - `Parser` loads datasets and emits signals that `Graph` consumes
 
@@ -67,10 +68,28 @@ Domain model + services (algorithms, IO, matrices, caches)
 
 ## Current Refactor Strategy
 
-We’re doing an **incremental architectural refactor** based on detailed roadmaps.
+We’re doing an [**incremental architectural refactor**](./ARCHITECTURAL_REFACTORING_ROADMAP.md) based on detailed roadmaps.
 
-The active refactor currently underway is:
+The active refactor currently underway is WS2 detailed at:
 - `docs/roadmaps/roadmap_ui_graph_facade.md`
+
+### WS2 Status (Current)
+
+The following subsystems have been mechanically extracted from `graph.cpp`
+into dedicated translation units (no behavior changes):
+
+- Reporting (exports)
+- Layouts (basic + force-directed)
+- Random network generators
+- Web crawler
+- Reachability & walks
+
+The extracted subsystems now live under `src/graph/` in dedicated folders
+(reporting, layouts, generators, crawler, reachability).
+
+`Graph` now acts increasingly as a coordinator.
+
+### History
 
 Previously, we implemented the refactor detailed in:
 - `docs/roadmaps/distances_geodesic_engine.md`

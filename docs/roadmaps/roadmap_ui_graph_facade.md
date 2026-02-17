@@ -77,7 +77,7 @@ You already started this style.
 **Definition of done**
 
 * `DistanceEngine` compiles with **no direct field access** except through these narrow helpers.
-* Remaining `friend` use is justified and tracked.
+* Any remaining `friend` use must be justified and explicitly documented.
 
 ---
 
@@ -114,6 +114,10 @@ This is the actual WS2 “Graph becomes glue” work.
 * Guardrails: golden compares + benchmarks run after every slice.
 * No behavior change (golden compares identical to baseline).
 
+Current state:
+- graph.cpp reduced materially (now ~9–10k LOC post-extraction).
+- All slices compile independently.
+- Golden compares identical.
 
 ---
 
