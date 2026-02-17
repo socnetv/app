@@ -88,7 +88,7 @@ This is the actual WS2 “Graph becomes glue” work.
 **Work strategy**
 
 * Do not refactor logic yet.
-* Just move blocks into new compilation units and call them from `Graph`.
+* Just move blocks into new compilation units. Methods remain `Graph::` members (no logic or ownership change).
 
 **Slices based on your `graph.h` grouping**
 
@@ -97,19 +97,23 @@ This is the actual WS2 “Graph becomes glue” work.
    * `graph.h/.cpp` (thin public methods only)
 2. Extract into new modules (no logic changes):
 
-   * `src/graph_exports.{h,cpp}`  ← from **REPORT EXPORTS**
-   * `src/graph_layouts.{h,cpp}`  ← from **LAYOUTS**
-   * `src/graph_reachability.{h,cpp}` ← from **REACHABILITY AND WALKS**
-   * `src/graph_random.{h,cpp}` ← from **RANDOM NETWORKS**
-   * `src/graph_crawler.{h,cpp}` ← from **CRAWLER**
+   ✅ `src/graph/reporting/graph_reports.cpp`  ← from **REPORT EXPORTS**
+   ✅ `src/graph/layouts/graph_layouts_basic.cpp`  ← from **LAYOUTS**
+   ✅ `src/graph/layouts/graph_layouts_force.cpp`  ← from **LAYOUTS** (force-directed + helpers)
+   ✅ `src/graph/reachability/...` ← from **REACHABILITY AND WALKS**
+   ✅ `src/graph/generators/graph_random_networks.cpp` ← from **RANDOM NETWORKS**
+   ✅ `src/graph/crawler/graph_crawler.cpp` ← from **CRAWLER**
 3. Leave storage/invariants inside `Graph` for now:
 
    * **RELATIONS / VERTICES / EDGES / INIT AND CLEAR**
 
 **Definition of done**
 
-* `graph.cpp` drops materially (each slice moved wholesale).
-* No behavior change, golden compares still pass.
+* `graph.cpp` shrinks materially as slices move out.
+* Extracted slices compile as independent translation units.
+* Guardrails: golden compares + benchmarks run after every slice.
+* No behavior change (golden compares identical to baseline).
+
 
 ---
 
