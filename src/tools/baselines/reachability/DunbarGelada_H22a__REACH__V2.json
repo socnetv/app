@@ -1,0 +1,218 @@
+{
+    "counts": {
+        "links_sna": 48,
+        "nodes": 12,
+        "ties_graph": 24
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj",
+        "path": "src/data/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj"
+    },
+    "graph": {
+        "directed": false,
+        "weighted": true
+    },
+    "kernel": "reachability",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 1,
+        "load_msg": "",
+        "net_name": "Dunbar&Dunbar_Gelada_baboon_colony_H22a",
+        "ok": true
+    },
+    "reachability": {
+        "matrix": [
+            [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+            ],
+            [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+            ],
+            [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+            ],
+            [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+            ],
+            [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+            ],
+            [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+            ],
+            [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+            ],
+            [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+            ],
+            [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+            ],
+            [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+            ],
+            [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+            ],
+            [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+            ]
+        ],
+        "ones": 144,
+        "order": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+        ]
+    },
+    "run": {
+        "considerWeights": true,
+        "dropIsolates": false,
+        "inverseWeights": true,
+        "operation": "reachability_matrix"
+    },
+    "schema_version": 2
+}

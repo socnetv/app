@@ -182,6 +182,66 @@ static QJsonObject buildGoldenJsonV1(
     return root;
 }
 
+static QJsonObject buildGoldenJsonV2Reachability(
+    const QString &inputPath,
+    int fileFormat,
+    const HeadlessLoadResult &load,
+    Graph &g,
+    bool considerWeights,
+    bool inverseWeights,
+    bool dropIsolates,
+    const QList<int> &order,
+    const QJsonArray &matrix,
+    int onesCount)
+{
+    QJsonObject root;
+    root["schema_version"] = 2;
+    root["kernel"] = "reachability";
+
+    QJsonObject dataset;
+    dataset["path"] = inputPath;
+    dataset["name"] = QFileInfo(inputPath).fileName();
+    dataset["filetype"] = fileFormat;
+    root["dataset"] = dataset;
+
+    QJsonObject run;
+    run["considerWeights"] = considerWeights;
+    run["inverseWeights"] = inverseWeights;
+    run["dropIsolates"] = dropIsolates;
+    run["operation"] = "reachability_matrix";
+    root["run"] = run;
+
+    QJsonObject counts;
+    counts["nodes"] = load.totalNodes;
+    counts["links_sna"] = load.totalLinks;
+    counts["ties_graph"] = g.edgesEnabled();
+    root["counts"] = counts;
+
+    QJsonObject graph;
+    graph["directed"] = g.isDirected();
+    graph["weighted"] = g.isWeighted();
+    root["graph"] = graph;
+
+    QJsonObject reach;
+    QJsonArray ord;
+    for (int id : order)
+        ord.append(id);
+    reach["order"] = ord;
+    reach["ones"] = onesCount;
+    reach["matrix"] = matrix;
+    root["reachability"] = reach;
+
+    QJsonObject loadReport;
+    loadReport["ok"] = load.ok;
+    loadReport["fileType_signal"] = load.fileType;
+    loadReport["load_ms"] = static_cast<qint64>(load.elapsedTime);
+    loadReport["load_msg"] = load.message;
+    loadReport["net_name"] = load.netName;
+    root["load_report"] = loadReport;
+
+    return root;
+}
+
 // ---------- Compare helpers ----------
 
 static bool cmpStr(const QJsonObject &e, const QJsonObject &a, const QString &k, QTextStream &err)
@@ -409,6 +469,96 @@ static int compareGoldenV1(const QJsonObject &expected, const QJsonObject &actua
     return 0;
 }
 
+static bool cmpIntArray(const QJsonArray &e, const QJsonArray &a, QTextStream &err, const QString &what)
+{
+    if (e.size() != a.size())
+    {
+        err << "MISMATCH " << what << ".size expected=" << e.size() << " got=" << a.size() << "\n";
+        return false;
+    }
+    for (int i = 0; i < e.size(); ++i)
+    {
+        const int ev = e.at(i).toInt();
+        const int av = a.at(i).toInt();
+        if (ev != av)
+        {
+            err << "MISMATCH " << what << "[" << i << "] expected=" << ev << " got=" << av << "\n";
+            return false;
+        }
+    }
+    return true;
+}
+
+static int compareGoldenV2Reachability(const QJsonObject &expected, const QJsonObject &actual)
+{
+    QTextStream err(stderr);
+
+    if (expected.value("schema_version").toInt() != 2 || actual.value("schema_version").toInt() != 2)
+    {
+        err << "ERROR: schema_version mismatch or unsupported\n";
+        return 2;
+    }
+    if (expected.value("kernel").toString() != "reachability" || actual.value("kernel").toString() != "reachability")
+    {
+        err << "ERROR: kernel mismatch or unsupported\n";
+        return 2;
+    }
+
+    bool ok = true;
+
+    // Basic invariants (same checks as v1 where applicable)
+    ok &= cmpInt(expected.value("dataset").toObject(), actual.value("dataset").toObject(), "filetype", err);
+    ok &= cmpStr(expected.value("dataset").toObject(), actual.value("dataset").toObject(), "name", err);
+
+    const QJsonObject eRun = expected.value("run").toObject();
+    const QJsonObject aRun = actual.value("run").toObject();
+    ok &= cmpBool(eRun, aRun, "considerWeights", err);
+    ok &= cmpBool(eRun, aRun, "inverseWeights", err);
+    ok &= cmpBool(eRun, aRun, "dropIsolates", err);
+    ok &= cmpStr(eRun, aRun, "operation", err);
+
+    ok &= cmpInt(expected.value("counts").toObject(), actual.value("counts").toObject(), "nodes", err);
+    ok &= cmpInt(expected.value("counts").toObject(), actual.value("counts").toObject(), "links_sna", err);
+    ok &= cmpInt(expected.value("counts").toObject(), actual.value("counts").toObject(), "ties_graph", err);
+
+    ok &= cmpBool(expected.value("graph").toObject(), actual.value("graph").toObject(), "directed", err);
+    ok &= cmpBool(expected.value("graph").toObject(), actual.value("graph").toObject(), "weighted", err);
+
+    const QJsonObject eR = expected.value("reachability").toObject();
+    const QJsonObject aR = actual.value("reachability").toObject();
+
+    ok &= cmpInt(eR, aR, "ones", err);
+
+    const QJsonArray eOrder = eR.value("order").toArray();
+    const QJsonArray aOrder = aR.value("order").toArray();
+    ok &= cmpIntArray(eOrder, aOrder, err, "reachability.order");
+
+    const QJsonArray eM = eR.value("matrix").toArray();
+    const QJsonArray aM = aR.value("matrix").toArray();
+    if (eM.size() != aM.size())
+    {
+        err << "MISMATCH reachability.matrix.rows expected=" << eM.size() << " got=" << aM.size() << "\n";
+        ok = false;
+    }
+    else
+    {
+        for (int r = 0; r < eM.size(); ++r)
+        {
+            const QJsonArray eRow = eM.at(r).toArray();
+            const QJsonArray aRow = aM.at(r).toArray();
+            if (!cmpIntArray(eRow, aRow, err, QString("reachability.matrix[%1]").arg(r)))
+            {
+                ok = false;
+            }
+        }
+    }
+
+    if (!ok)
+        return 1;
+    err << "OK: baseline match\n";
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
@@ -438,6 +588,10 @@ int main(int argc, char *argv[])
                                 "Benchmark compute kernel: warmup once, then run N measured times. "
                                 "Prints COMPUTE_MS_* stats. Disables JSON dump/compare.",
                                 "N", "0");
+    QCommandLineOption kernelOpt(QStringList() << "kernel",
+                                 "Kernel to run: distance|reachability",
+                                 "name", "distance");
+    cli.addOption(kernelOpt);
 
     cli.addOption(verboseOpt);
     cli.addOption(fileOpt);
@@ -496,6 +650,13 @@ int main(int argc, char *argv[])
         return 2;
     }
 
+    const QString kernel = cli.value(kernelOpt).trimmed().toLower();
+    if (benchRuns > 0 && kernel != "distance")
+    {
+        QTextStream(stderr) << "ERROR: --bench is only supported with --kernel distance\n";
+        return 2;
+    }
+
     Graph g;
     const QString codecName = "UTF-8";
 
@@ -520,6 +681,88 @@ int main(int argc, char *argv[])
     printKV("DIRECTED", g.isDirected() ? 1 : 0);
     printKV("WEIGHTED", g.isWeighted() ? 1 : 0);
     printKV("TIES_GRAPH", g.edgesEnabled());
+
+    if (kernel == "reachability")
+    {
+        // Compute geodesic distances once (centralities must be false here)
+        g.resetDistanceCentralityCacheFlags();
+        QElapsedTimer t;
+        t.start();
+        g.graphDistancesGeodesic(false, considerWeights, inverseWeights, dropIsolates);
+        const qint64 computeMs = t.elapsed();
+
+        // Deterministic vertex order
+        QList<int> order = g.verticesList(); // should already be deterministic
+        std::sort(order.begin(), order.end());
+
+        // Build reachability matrix (0/1) using the same semantics as graphReachable()
+        QJsonArray matrix;
+
+        int ones = 0;
+
+        for (int src : order)
+        {
+            GraphVertex *gv = g.vertexPtr(src);
+            if (!gv)
+            {
+                QTextStream(stderr) << "ERROR: null vertex for id=" << src << "\n";
+                return 2;
+            }
+
+            QJsonArray row;
+
+            for (int dst : order)
+            {
+                const bool reachable = (gv->distance(dst) != RAND_MAX);
+                row.append(reachable ? 1 : 0);
+                if (reachable)
+                    ++ones;
+            }
+            matrix.append(row);
+        }
+
+        printKV("COMPUTE_MS", computeMs);
+        printKV("REACH_NODES", order.size());
+        printKV("REACHABLE_PAIRS", ones);
+        const int n = order.size();
+        const double density = (n > 0) ? (double)ones / (double)(n * n) : 0.0;
+        printKV("REACHABLE_DENSITY", QString::number(density, 'g', 17));
+
+        const QJsonObject actual = buildGoldenJsonV2Reachability(
+            fileName, fileFormat, load, g,
+            considerWeights, inverseWeights, dropIsolates,
+            order, matrix, ones);
+
+        if (!dumpJsonPath.isEmpty())
+        {
+            QString err;
+            if (!writeJsonFile(dumpJsonPath, actual, &err))
+            {
+                QTextStream(stderr) << "ERROR: " << err << "\n";
+                return 2;
+            }
+            QTextStream(stderr) << "WROTE_JSON=" << dumpJsonPath << "\n";
+        }
+
+        if (!compareJsonPath.isEmpty())
+        {
+            QJsonObject expected;
+            QString err;
+            if (!readJsonFile(compareJsonPath, &expected, &err))
+            {
+                QTextStream(stderr) << "ERROR: " << err << "\n";
+                return 2;
+            }
+            return compareGoldenV2Reachability(expected, actual);
+        }
+
+        return 0;
+    }
+    else if (kernel != "distance")
+    {
+        QTextStream(stderr) << "ERROR: unsupported --kernel: " << kernel << "\n";
+        return 2;
+    }
 
     // Ensure centralities are actually computed before we read per-node values.
     auto run_compute_once_ms = [&]() -> qint64

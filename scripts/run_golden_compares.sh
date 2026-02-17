@@ -7,6 +7,7 @@ if [[ ! -x "$CLI" ]]; then
   CLI="$ROOT_DIR/builds/__unspec__/Debug/socnetv-cli"
 fi
 BASE="${ROOT_DIR}/src/tools/baselines"
+BASE_REACH="${ROOT_DIR}/src/tools/baselines/reachability"
 DATA="${ROOT_DIR}/src/data"
 
 if [[ ! -x "$CLI" ]]; then
@@ -23,6 +24,15 @@ run_case() {
 
   echo "==> $(basename "$baseline")"
   "$CLI" -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"
+}
+run_case_reachability() {
+  local input="$1"
+  local ftype="$2"
+  local flags=("${@:3:${#}-3}")   # all but last arg
+  local baseline="${@: -1}"       # last arg
+
+  echo "==> $(basename "$baseline")"
+  "$CLI" --kernel reachability -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"
 }
 
 # --- Cases (extend this list as Phase E grows) ---
@@ -50,6 +60,17 @@ run_case \
   5 \
   -c 1 -w 1 -x 1 -k 0 \
   "${BASE}/StokmanZiegler_Netherlands__FT5__C1_W1_IW1_DI0.json"
+run_case_reachability \
+  "${DATA}/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj" \
+  2 \
+  -w 1 -x 1 -k 0 \
+  "${BASE_REACH}/DunbarGelada_H22a__REACH__V2.json"
+
+run_case_reachability \
+  "${DATA}/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl" \
+  5 \
+  -w 1 -x 1 -k 0 \
+  "${BASE_REACH}/StokmanZiegler_Netherlands__REACH__V2.json"
 
 echo
 echo "[OK] All golden comparisons passed."
