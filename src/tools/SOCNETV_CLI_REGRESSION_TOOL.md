@@ -54,29 +54,29 @@ It is compiled alongside the main application via CMake.
 
 ## Kernels and JSON Schemas
 
-The CLI supports multiple kernels selected by `--kernel`.
+Kernels are selected with `--kernel`.
 
-### 1) Distance / Centrality Kernel (default)
+### Distance / Centrality Kernel (default)
 
 - Kernel: `distance` (default)
 - JSON schema: `schema_version = 1`
 
-This kernel runs geodesic distances and (optionally) centralities, then emits:
-- text KV output (always)
-- JSON output (optional dump/compare)
-
-### 2) Reachability Kernel
+### Reachability Kernel
 
 - Kernel: `reachability`
 - JSON schema: `schema_version = 2`
 
-This kernel computes the full NxN reachability matrix derived from geodesic distances:
+Reachability semantics:
 
 - R(i,j) = 1 if a walk exists from i to j
 - R(i,j) = 0 otherwise
 - Diagonal convention: **R(i,i) = 1**
 
-A pair is reachable iff its geodesic distance is finite.
+Reachability is derived from the distance kernel:
+a pair is reachable iff its geodesic distance is finite.
+
+Note: `--centralities` is not applicable to the reachability kernel.
+Use `-c 0` with `--kernel reachability`.
 
 ---
 
@@ -130,7 +130,7 @@ Generate a deterministic reachability baseline:
 ./socnetv-cli \
   --kernel reachability \
   -i src/data/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl \
-  -f 5 -w 1 -x 1 -k 0 \
+  -f 5 -c 0 -w 1 -x 1 -k 0 \
   --dump-json src/tools/baselines/reachability/StokmanZiegler_Netherlands__REACH__V2.json
 ```
 
@@ -155,7 +155,7 @@ Strict comparison against a baseline:
 ./socnetv-cli \
   --kernel reachability \
   -i src/data/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl \
-  -f 5 -w 1 -x 1 -k 0 \
+  -f 5 -c 0 -w 1 -x 1 -k 0 \
   --compare-json src/tools/baselines/reachability/StokmanZiegler_Netherlands__REACH__V2.json
 ```
 
@@ -192,11 +192,14 @@ Floating-point values are serialized as strings to avoid JSON double-format inco
 
 ### Reachability kernel (schema v2)
 
-* `reachability.nodes` → deterministic ascending vertex ids (order)
+The reachability payload contains:
+
+* `reachability.nodes` → deterministic ascending vertex ids
 * `reachability.matrix` → NxN array of 0/1 integers
 * `reachability.reachable_pairs` → number of reachable pairs (including diagonal)
+* `reachability.reachable_density` → reachable_pairs / (N*N), serialized as a deterministic string
 
-Schema v2 is separate from schema v1 to avoid modifying existing baselines.
+Schema v2 is separate from schema v1 to avoid modifying existing distance baselines.
 
 ---
 
@@ -254,7 +257,7 @@ COMPUTE_MS_MAX=5
 scripts/run_golden_compares.sh
 ```
 
-Runs the CLI against committed baselines and fails on mismatch.
+Runs the CLI against committed baselines (distance + reachability) and fails on mismatch.
 
 ### Performance benchmarks (DistanceEngine)
 
