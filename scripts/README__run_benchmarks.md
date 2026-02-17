@@ -1,12 +1,8 @@
-# Scripts
-
-This directory contains developer/CI helper scripts.
-
-## Benchmarks
+# Benchmarks
 
 `run_benchmarks.sh` runs socnetv-cli micro-benchmarks and compares medians against stored baselines.
 
-### Baseline selection (machine-aware)
+## Baseline selection (machine-aware)
 
 Priority order for choosing the expected baseline file:
 
@@ -17,7 +13,7 @@ Priority order for choosing the expected baseline file:
 
 The script prints an INFO line to stderr showing which baseline file is in use.
 
-### Recording a new baseline set
+## Recording a new baseline set
 
 Record a baseline for the current machine (auto set name):
 
@@ -37,13 +33,13 @@ This writes:
 scripts/perf_baselines/<set>/perf_expected.env
 ```
 
-### Running with strict regression detection
+## Running with strict regression detection
 
 ```bash
 ./scripts/run_benchmarks.sh --strict
 ```
 
-### Build type / binary selection
+## Build type / binary selection
 
 The script does not build; it executes `socnetv-cli`.
 
@@ -55,7 +51,7 @@ SOCNETV_CLI=/path/to/socnetv-cli ./scripts/run_benchmarks.sh
 
 `BENCH_BUILD_TYPE=Debug|Release` is a hint used only for default binary path discovery.
 
-### Rollback
+## Rollback
 
 To revert to legacy single-baseline behavior:
 
