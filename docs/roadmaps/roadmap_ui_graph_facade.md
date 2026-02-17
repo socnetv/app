@@ -113,11 +113,33 @@ This is the actual WS2 “Graph becomes glue” work.
 * Extracted slices compile as independent translation units.
 * Guardrails: golden compares + benchmarks run after every slice.
 * No behavior change (golden compares identical to baseline).
+* Major analysis domains extracted (cohesion, clustering, similarity).
 
-Current state:
-- graph.cpp reduced materially (now ~9–10k LOC post-extraction).
-- All slices compile independently.
-- Golden compares identical.
+#### Current state:
+
+Extracted slices (all mechanical, no behavior change):
+
+- reporting/
+- layouts/basic
+- layouts/force-directed
+- reachability/
+- generators/
+- crawler/
+- cohesion/ (cliques)
+- clustering/
+  - triad census
+  - clustering coefficients
+  - hierarchical clustering
+- similarity/ (matrix builders)
+
+All slices:
+- compile as independent translation units
+- are included via GRAPH_SOURCES in CMake
+- pass golden comparisons
+- remain within benchmark guardrails
+
+`graph.cpp` has been materially reduced and now trends toward a façade/coordinator role.
+
 
 ---
 

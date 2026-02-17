@@ -73,21 +73,20 @@ We’re doing an [**incremental architectural refactor**](./ARCHITECTURAL_REFACT
 The active refactor currently underway is WS2 detailed at:
 - `docs/roadmaps/roadmap_ui_graph_facade.md`
 
+
 ### WS2 Status (Current)
 
-The following subsystems have been mechanically extracted from `graph.cpp`
-into dedicated translation units (no behavior changes):
+WS2 (Graph as façade / coordinator) is actively reducing the size and
+responsibility surface of `graph.cpp` via mechanical extraction of
+algorithmic subsystems into dedicated translation units under `src/graph/`.
 
-- Reporting (exports)
-- Layouts (basic + force-directed)
-- Random network generators
-- Web crawler
-- Reachability & walks
+These extractions preserve exact behavior and are validated through
+golden comparisons and benchmark guardrails.
 
-The extracted subsystems now live under `src/graph/` in dedicated folders
-(reporting, layouts, generators, crawler, reachability).
+See:
+- `ARCHITECTURAL_REFACTORING_ROADMAP.md` (high-level plan)
+- `docs/roadmaps/roadmap_ui_graph_facade.md` (detailed WS2 progress)
 
-`Graph` now acts increasingly as a coordinator.
 
 ### History
 

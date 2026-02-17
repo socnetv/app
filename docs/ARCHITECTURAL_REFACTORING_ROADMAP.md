@@ -59,6 +59,26 @@ Goal: Graph becomes orchestration glue rather than algorithm host and state cont
 
 - Plan: `docs/roadmaps/roadmap_ui_graph_facade.md`
 
+Status (current progress):
+
+- Major subsystems mechanically extracted from graph.cpp:
+  - reporting
+  - layouts (basic + force-directed)
+  - random generators
+  - crawler
+  - reachability & walks
+  - cliques
+  - triad census
+  - clustering coefficients
+  - hierarchical clustering
+  - similarity / dissimilarity matrices
+
+- graph.cpp significantly reduced in size.
+- Each slice verified via golden comparisons.
+- Benchmarks within guardrails.
+
+WS2 is progressing as planned: Graph is steadily becoming orchestration glue.
+
 
 ### WS3 — Domain model split (SKELETON)
 Goal: establish a domain model that does not depend on Qt UI concerns.
