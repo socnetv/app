@@ -192,8 +192,7 @@
                 1
             ]
         ],
-        "ones": 144,
-        "order": [
+        "nodes": [
             1,
             2,
             3,
@@ -206,7 +205,9 @@
             10,
             11,
             12
-        ]
+        ],
+        "reachable_density": "1",
+        "reachable_pairs": 144
     },
     "run": {
         "considerWeights": true,
