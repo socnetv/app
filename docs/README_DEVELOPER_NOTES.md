@@ -67,19 +67,21 @@ Domain model + services (algorithms, IO, matrices, caches)
 
 ## Current Refactor Strategy
 
-We’re doing an **incremental architectural refactor** with strict safety rules:
+We’re doing an **incremental architectural refactor** based on detailed roadmaps.
 
-- preserve behavior and numeric results
-- keep changes small and verifiable
-- add headless tooling and regression baselines early
-- decouple UI progress signaling from algorithm logic
+The active refactor currently underway is:
+- `docs/roadmaps/roadmap_ui_graph_facade.md`
 
-The active, detailed refactor currently underway is:
+Previously, we implemented the refactor detailed in:
 - `docs/roadmaps/distances_geodesic_engine.md`
 
 This extracted the monolithic `Graph::graphDistancesGeodesic()` into a testable `DistanceEngine`
 while preserving exact behavior. It also introduced a headless CLI that loads datasets and prints metrics.
-
+Main results: 
+- preserve behavior and numeric results
+- keep changes small and verifiable
+- add headless tooling and regression baselines early
+- decouple UI progress signaling from algorithm logic
 
 ## Development Workflow Notes
 
@@ -96,4 +98,4 @@ while preserving exact behavior. It also introduced a headless CLI that loads da
 
 ### Where to look next
 - High-level plan: `docs/ARCHITECTURAL_REFACTORING_ROADMAP.md`
-- Detailed current work: `docs/roadmaps/distances_geodesic_engine.md`
+- Detailed current work: `docs/roadmaps/roadmap_ui_graph_facade.md`
