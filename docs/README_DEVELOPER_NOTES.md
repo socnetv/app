@@ -71,7 +71,7 @@ Domain model + services (algorithms, IO, matrices, caches)
 We’re doing an [**incremental architectural refactor**](./ARCHITECTURAL_REFACTORING_ROADMAP.md) based on detailed roadmaps.
 
 The active refactor currently underway is WS2 detailed at:
-- `docs/roadmaps/roadmap_ui_graph_facade.md`
+- [`./roadmaps/roadmap_ui_graph_facade.md`](./roadmaps/roadmap_ui_graph_facade.md)
 
 
 ### WS2 Status (Current)

@@ -72,7 +72,10 @@ Status (current progress):
   - clustering coefficients
   - hierarchical clustering
   - similarity / dissimilarity matrices
-
+  - distances (Graph distance façade + SSSP/cache helpers)
+  - centrality
+  - prestige
+  
 - graph.cpp significantly reduced in size.
 - Each slice verified via golden comparisons.
 - Benchmarks within guardrails.
