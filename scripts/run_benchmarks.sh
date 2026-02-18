@@ -110,7 +110,7 @@ if [[ "${RECORD}" != "1" ]]; then
   source "$EXPECTED_FILE"
 fi
 
-declare -A REC_MEDIANS
+REC_LINES=()
 
 # ---------------- helpers ----------------
 
@@ -136,7 +136,7 @@ record_expected_var() {
   local tag="$1"
   local median="$2"
   local expected_var="EXP_${tag}_MEDIAN_MS"
-  REC_MEDIANS["$expected_var"]="$median"
+  REC_LINES+=("${expected_var}=${median}")
 }
 
 write_record_file() {
@@ -146,11 +146,10 @@ write_record_file() {
     echo "# BASELINE_SET=$(sanitize_id "${BASELINE_SET_USED}")"
     echo "# BUILD_TYPE=${BENCH_BUILD_TYPE}"
     echo
-    for k in "${!REC_MEDIANS[@]}"; do
-      echo "${k}=${REC_MEDIANS[$k]}"
-    done | LC_ALL=C sort
+    printf '%s\n' "${REC_LINES[@]}" | LC_ALL=C sort
   } > "$out_file"
 }
+
 
 run_case() {
   local tag="$1"
