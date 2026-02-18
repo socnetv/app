@@ -104,6 +104,8 @@ set(GRAPH_SOURCES
     src/graph/distances/graph_distance_facade.cpp
     src/graph/distances/graph_distance_cache.cpp
     src/graph/centrality/graph_centrality.cpp
+    src/graph/centrality/graph_prestige.cpp
+    src/graph/prominence/graph_prominence_distribution.cpp
     src/graph/reporting/graph_reports.cpp
     src/graph/generators/graph_random_networks.cpp
     src/graph/crawler/graph_crawler.cpp
