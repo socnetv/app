@@ -55,6 +55,7 @@ class QString;
 class QAbstractSeries;
 class QAbstractAxis;
 class QTextCodec;
+class QUrl;
 QT_END_NAMESPACE
 
 using namespace std;

@@ -45,6 +45,7 @@
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <QTextCodec>
+#include <QUrl>
 
 #include "mainwindow.h"
 #include "graph.h"
