@@ -1,6 +1,22 @@
+/**
+ * @file graph_reports.cpp
+ * @brief Implements reporting, export, and analytical output generation
+ *        for the Graph class.
+ * @author Dimitris B. Kalamaras
+ * @copyright
+ *   Copyright (C) 2005-2026 by Dimitris B. Kalamaras.
+ *   This file is part of SocNetV (Social Network Visualizer).
+ * @license
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, version 3 or later.
+ *   For more details, see <http://www.gnu.org/licenses/>.
+ * @see https://socnetv.org
+ */
+
+
 #include "graph.h"
 
-// Keep includes minimal at first; add only if compiler asks.
 #include <QFile>
 #include <QTextStream>
 #include <QElapsedTimer>
