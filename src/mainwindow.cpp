@@ -14979,7 +14979,7 @@ void MainWindow::slotHelpAbout(){
 
                 tr("<p>Website: <a href=\"https://socnetv.org\">https://socnetv.org</a></p>")+
 
-                tr("<p>(C) 2005-2023 by Dimitris B. Kalamaras</p>")+
+                tr("<p>(C) 2005-2026 by Dimitris B. Kalamaras</p>")+
                 tr("<p><a href=\"https://socnetv.org/contact\">Have questions? Contact us!</a></p>")+
 
                 tr("<p><b>Fortune cookie: </b><br> \"")  + fortuneCookie[randomCookie]  + "\"" +
