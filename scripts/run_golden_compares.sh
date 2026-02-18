@@ -98,6 +98,13 @@ run_case_walks \
   -w 1 -x 1 -k 0 -c 0 \
   "${BASE_WALKS}/StokmanZiegler_Netherlands__WALKS_K6__V3.json"
 
+run_case_walks \
+  "${DATA}/TinyPath_N3_E2.paj" \
+  2 \
+  2 \
+  -w 1 -x 1 -k 0 -c 0 \
+  "${BASE_WALKS}/TinyPath_N3_E2__WALKS_K2__V3.json"
+  
 echo
 echo "[OK] All golden comparisons passed."
 

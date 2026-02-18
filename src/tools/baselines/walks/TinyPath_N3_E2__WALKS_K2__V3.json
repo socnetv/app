@@ -1,0 +1,57 @@
+{
+    "counts": {
+        "links_sna": 4,
+        "nodes": 3,
+        "ties_graph": 2
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "TinyPath_N3_E2.paj",
+        "path": "src/data/TinyPath_N3_E2.paj"
+    },
+    "graph": {
+        "directed": false,
+        "weighted": false
+    },
+    "kernel": "walks_matrix",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 1,
+        "load_msg": "",
+        "net_name": "TinyPath_N3_E2.paj",
+        "ok": true
+    },
+    "run": {
+        "considerWeights": true,
+        "dropIsolates": false,
+        "inverseWeights": true,
+        "operation": "walks_matrix_exact_length",
+        "walks_length": 2
+    },
+    "schema_version": 3,
+    "walks": {
+        "matrix": [
+            [
+                "1",
+                "0",
+                "1"
+            ],
+            [
+                "0",
+                "2",
+                "0"
+            ],
+            [
+                "1",
+                "0",
+                "1"
+            ]
+        ],
+        "nodes": [
+            1,
+            2,
+            3
+        ],
+        "total_walks": "6"
+    }
+}

@@ -180,6 +180,10 @@ int runKernelWalksV3(const CliConfig &cfg,
     // Deterministic vertex order
     QList<int> order = g.verticesList();
     std::sort(order.begin(), order.end());
+    // QTextStream(stderr) << "WALKS_ORDER=";
+    // for (int id : order)
+    //     QTextStream(stderr) << id << ",";
+    // QTextStream(stderr) << "\n";
 
     QElapsedTimer t;
     t.start();
