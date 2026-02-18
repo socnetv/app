@@ -21,7 +21,6 @@
 #include <QObject>
 #include <QList>
 #include <QQueue>
-#include <QUrl>
 #include <QHash>
 #include <QSet>
 #include <QMultiHash>
@@ -46,7 +45,7 @@
 class QDateTime;
 class QPointF;
 class QNetworkReply;
-
+class QUrl;
 class QAbstractSeries;
 class QAbstractAxis;
 class QSplineSeries;

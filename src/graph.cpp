@@ -31,8 +31,6 @@
 #include <QElapsedTimer>
 #include <QStringEncoder>
 
-#include <QNetworkReply>
-
 #include <cstdlib> //allows the use of RAND_MAX macro
 
 #include <queue> //for BFS queue Q
