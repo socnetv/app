@@ -48,16 +48,13 @@ We have already completed the most important move: **SSSP kernel ownership moved
 * Engines/services must not call Graph signals/slots or UI wiring.
 * New engines must use a narrow “read-only / controlled-write” surface.
 
-
 **Definition of done**
 
 * Comment blocks in `graph.h` marks the façade region.
 
 ---
 
-### F1 — Tighten Engine Boundary (Style A: minimal-risk) ✅ (continue)
-
-You already started this style.
+### ✅ F1 — Tighten Engine Boundary (Style A: minimal-risk) (DONE)
 
 **Pattern**
 
@@ -81,47 +78,29 @@ You already started this style.
 
 ---
 
-### F2 — Split Graph.cpp into “Coordinator vs Services” (mechanical, safe)
+### F2 — Split Graph.cpp into “Coordinator vs Services” (mechanical, safe) (ACTIVE)
 
-This is the actual WS2 “Graph becomes glue” work.
+This is the core WS2 work: progressively turning `Graph` into orchestration glue.
 
 **Work strategy**
 
-* Do not refactor logic yet.
-* Just move blocks into new compilation units. Methods remain `Graph::` members (no logic or ownership change).
+* No logic refactoring.
+* No signature changes.
+* Methods remain `Graph::` members.
+* Purely mechanical extraction into new compilation units.
+* Golden comparisons + benchmarks after every slice.
 
-**Slices based on your `graph.h` grouping**
+---
 
-1. `GraphFacade` layer stays in:
+### Extracted domains (so far)
 
-   * `graph.h/.cpp` (thin public methods only)
-2. Extract into new modules (no logic changes):
-
-   ✅ `src/graph/reporting/graph_reports.cpp`  ← from **REPORT EXPORTS**
-   ✅ `src/graph/layouts/graph_layouts_basic.cpp`  ← from **LAYOUTS**
-   ✅ `src/graph/layouts/graph_layouts_force.cpp`  ← from **LAYOUTS** (force-directed + helpers)
-   ✅ `src/graph/reachability/...` ← from **REACHABILITY AND WALKS**
-   ✅ `src/graph/generators/graph_random_networks.cpp` ← from **RANDOM NETWORKS**
-   ✅ `src/graph/crawler/graph_crawler.cpp` ← from **CRAWLER**
-3. Leave storage/invariants inside `Graph` for now:
-
-   * **RELATIONS / VERTICES / EDGES / INIT AND CLEAR**
-
-**Definition of done**
-
-* `graph.cpp` shrinks materially as slices move out.
-* Extracted slices compile as independent translation units.
-* Guardrails: golden compares + benchmarks run after every slice.
-* No behavior change (golden compares identical to baseline).
-* Major analysis domains extracted (cohesion, clustering, similarity).
-
-#### Current state:
-
-Extracted slices (all mechanical, no behavior change):
+The following subsystems have been mechanically extracted from `graph.cpp`
+into dedicated translation units under `src/graph/`:
 
 - reporting/
-- layouts/basic
-- layouts/force-directed
+- layouts/
+  - basic
+  - force-directed
 - reachability/
 - generators/
 - crawler/
@@ -130,22 +109,60 @@ Extracted slices (all mechanical, no behavior change):
   - triad census
   - clustering coefficients
   - hierarchical clustering
-- similarity/ (matrix builders)
+- similarity/ (similarity & dissimilarity matrix builders)
 - distances/
   - distance façade
-  - distance cache/SSSP helpers
-centrality/
+  - distance cache / SSSP helpers
+- prominence/
   - centrality
   - prestige
+  - prominence distributions
+- matrices/
+  - adjacency matrix builders
+  - adjacency inverse builders
+- util/
+  - matrix/metric/clustering type ↔ string helpers
+  - htmlEscaped()
 
-All slices:
-- compile as independent translation units
-- are included via GRAPH_SOURCES in CMake
-- pass golden comparisons
-- remain within benchmark guardrails
+---
 
-`graph.cpp` has been materially reduced and now trends toward a façade/coordinator role.
+### What remains inside Graph.cpp (intentionally)
 
+For now, the following remain in `graph.cpp`:
+
+- storage & invariants
+  - vertices
+  - edges
+  - relations
+  - enable/disable logic
+- UI wiring
+  - signals/slots
+  - MainWindow / GraphicsWidget coordination
+- file IO
+  - load/save formats
+- graph-level state flags
+  - modified/loaded/saved
+- basic structural queries
+  - density
+  - reciprocity
+  - symmetry
+  - directed/undirected toggles
+
+These are expected to remain until WS3 (domain separation) and WS4 (IO separation).
+
+---
+
+### Definition of done (ongoing for F2)
+
+- `graph.cpp` continues to shrink materially.
+- Extracted slices:
+  - compile as independent translation units
+  - are listed in `GRAPH_SOURCES` in CMake
+  - pass golden comparisons
+  - remain within benchmark guardrails
+- No behavioral changes introduced.
+
+`Graph` now clearly trends toward a façade/coordinator role rather than an algorithm host.
 
 ---
 
