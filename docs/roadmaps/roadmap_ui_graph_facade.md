@@ -131,6 +131,12 @@ Extracted slices (all mechanical, no behavior change):
   - clustering coefficients
   - hierarchical clustering
 - similarity/ (matrix builders)
+- distances/
+  - distance façade
+  - distance cache/SSSP helpers
+centrality/
+  - centrality
+  - prestige
 
 All slices:
 - compile as independent translation units
