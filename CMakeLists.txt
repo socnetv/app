@@ -101,6 +101,11 @@ set(ENGINE_SOURCES
 )
 
 set(GRAPH_SOURCES
+    src/graph.cpp
+    src/graph/storage/graph_vertices.cpp
+    src/graph/ui/graph_canvas.cpp
+    src/graph/relations/graph_relations.cpp
+    src/graph/ui/graph_selection.cpp
     src/graph/distances/graph_distance_facade.cpp
     src/graph/distances/graph_distance_cache.cpp
     src/graph/centrality/graph_centrality.cpp
@@ -158,7 +163,6 @@ set(SOURCES
     src/texteditor.cpp
     ${ENGINE_SOURCES}
     ${GRAPH_SOURCES}
-    src/graph.cpp 
     src/graphvertex.cpp
     src/matrix.cpp 
     src/parser.cpp 
@@ -412,7 +416,6 @@ if(BUILD_CLI)
         ${CLI_SOURCES}
         ${ENGINE_SOURCES}
         ${GRAPH_SOURCES}
-        src/graph.cpp
         src/graphvertex.cpp
         src/matrix.cpp
         src/parser.cpp
