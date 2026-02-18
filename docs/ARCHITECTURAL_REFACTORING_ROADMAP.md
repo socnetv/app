@@ -81,12 +81,17 @@ Status (current progress):
     - prominence distributions
   - adjacency matrix builders
   - type/string mapping helpers
-  
-- graph.cpp significantly reduced in size.
+  - canvas geometry helpers
+  - relation management
+  - selection & clicked-state helpers
+  - vertex storage & CRUD
+
+- graph.cpp significantly reduced in size (~19K LOC → substantially smaller coordinator-focused unit).
 - Each slice verified via golden comparisons.
 - Benchmarks within guardrails.
 
 WS2 is progressing as planned: Graph is steadily becoming orchestration glue.
+
 
 
 ### WS3 — Domain model split (SKELETON)

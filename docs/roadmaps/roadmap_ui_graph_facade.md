@@ -77,7 +77,6 @@ We have already completed the most important move: **SSSP kernel ownership moved
 * Any remaining `friend` use must be justified and explicitly documented.
 
 ---
-
 ### F2 — Split Graph.cpp into “Coordinator vs Services” (mechanical, safe) (ACTIVE)
 
 This is the core WS2 work: progressively turning `Graph` into orchestration glue.
@@ -123,46 +122,53 @@ into dedicated translation units under `src/graph/`:
 - util/
   - matrix/metric/clustering type ↔ string helpers
   - htmlEscaped()
+- ui/
+  - canvas geometry helpers
+  - selection & clicked-state helpers
+- relations/
+  - relation management
+- storage/
+  - vertex storage & CRUD
+
+All slices:
+- compile as independent translation units
+- are listed in `GRAPH_SOURCES` in CMake
+- pass golden comparisons
+- remain within benchmark guardrails
 
 ---
 
-### What remains inside Graph.cpp (intentionally)
+### What remains inside Graph.cpp (intentionally, shrinking)
 
-For now, the following remain in `graph.cpp`:
+At this stage, the following categories remain in `graph.cpp`:
 
-- storage & invariants
-  - vertices
-  - edges
-  - relations
-  - enable/disable logic
-- UI wiring
-  - signals/slots
-  - MainWindow / GraphicsWidget coordination
-- file IO
-  - load/save formats
+- constructor & global reset logic
+- edge storage & CRUD
+- enable/disable logic
 - graph-level state flags
-  - modified/loaded/saved
-- basic structural queries
+  - modified / loaded / saved
+  - directed / undirected / weighted / symmetric
+- structural metrics
   - density
   - reciprocity
   - symmetry
-  - directed/undirected toggles
+  - degree / neighborhood helpers
+- file IO wrappers
+  - load/save formats
+  - parser coordination
 
-These are expected to remain until WS3 (domain separation) and WS4 (IO separation).
+These will continue to be mechanically reduced where safe under F2.
+Parser/format separation remains WS4 work.
 
 ---
 
 ### Definition of done (ongoing for F2)
 
-- `graph.cpp` continues to shrink materially.
-- Extracted slices:
-  - compile as independent translation units
-  - are listed in `GRAPH_SOURCES` in CMake
-  - pass golden comparisons
-  - remain within benchmark guardrails
+- `graph.cpp` materially reduced from original ~19K LOC and continues shrinking.
+- Remaining content trends toward coordination rather than algorithm hosting.
 - No behavioral changes introduced.
 
-`Graph` now clearly trends toward a façade/coordinator role rather than an algorithm host.
+`Graph` is steadily converging toward a façade/coordinator role.
 
 ---
 
