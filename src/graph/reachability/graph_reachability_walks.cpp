@@ -110,7 +110,14 @@ void Graph::createMatrixReachability()
  */
 int Graph::walksBetween(int v1, int v2, int length)
 {
-    graphWalksMatrixCreate(length);
+    const bool updateProgress = false;
+    const bool considerWeights = false;   // counting walks, not weight-products
+    const bool inverseWeights = false;
+    const bool dropIsolates = false;
+    const bool symmetrize = false;
+    graphWalksMatrixCreate(vertices(), length, updateProgress,
+                           considerWeights, inverseWeights,
+                           dropIsolates, symmetrize);
     return XM.item(v1 - 1, v2 - 1);
 }
 
@@ -123,19 +130,21 @@ int Graph::walksBetween(int v1, int v2, int length)
  * NOTE: In the latter case, this function is VERY SLOW on large networks (n>50),
  * since it will calculate all powers of the sociomatrix up to n-1 in order to find out all
  * possible walks.
- * @param length
+ * @param N - dimension of the sociomatrix (number of vertices). Default is 0, in which case it will be calculated as the number of vertices in the graph.
+ * @param length - the length of walks to be calculated. Default is 0, in which case all walks of any length will be calculated.
  * @param updateProgress
  */
+// src/graph/reachability/graph_reachability_walks.cpp
+
 void Graph::graphWalksMatrixCreate(const int &N,
                                    const int &length,
-                                   const bool &updateProgress)
+                                   const bool &updateProgress,
+                                   const bool &dropIsolates,
+                                   const bool &considerWeights,
+                                   const bool &inverseWeights,
+                                   const bool &symmetrize)
 {
-
-    bool dropIsolates = false;
-    bool considerWeights = true;
-    bool inverseWeights = false;
-    bool symmetrize = false;
-
+    // Build adjacency matrix with explicit policy (BUGFIX: do not force weights)
     createMatrixAdjacency(dropIsolates, considerWeights, inverseWeights, symmetrize);
 
     if (length > 0)
@@ -147,16 +156,12 @@ void Graph::graphWalksMatrixCreate(const int &N,
         QString pMsg = tr("Computing walks of length %1. \nPlease wait...").arg(length);
         emit statusMessage(pMsg);
         if (updateProgress)
-        {
             emit signalProgressBoxCreate(length, pMsg);
-        }
 
         XM = AM.pow(length, false);
 
         if (updateProgress)
-        {
             emit signalProgressBoxUpdate(length);
-        }
     }
     else
     {
@@ -164,64 +169,36 @@ void Graph::graphWalksMatrixCreate(const int &N,
                     "Calculating all sociomatrix powers up to"
                  << N - 1;
 
-        XM = AM; // XM will be the product matrix
-
-        XSM = AM; // XSM is the sum of product matrices
+        XM = AM;   // product matrix
+        XSM = AM;  // sum of product matrices
 
         QString pMsg = tr("Computing sociomatrix powers up to %1. \nPlease wait...").arg(N - 1);
         emit statusMessage(pMsg);
         if (updateProgress)
-        {
             emit signalProgressBoxCreate(N - 1, pMsg);
-        }
 
         for (int i = 2; i <= (N - 1); ++i)
         {
-
             emit statusMessage(tr("Computing all sociomatrix powers up to %1. "
                                   "Now computing A^%2. Please wait...")
                                    .arg(N - 1)
                                    .arg(i));
 
             XM *= AM;
-            //           qDebug() << "Graph::graphWalksMatrixCreate() i"<<i <<"XM=AM^i";
-            //           XM.printMatrixConsole();
-
-            XSM += XM; // XSM becomes XSM+XM
-            //           qDebug() << "Graph::graphWalksMatrixCreate() i"<<i <<"XSM=";
-            //           XSM.printMatrixConsole();
+            XSM += XM;
 
             if (updateProgress)
-            {
                 emit signalProgressBoxUpdate(i);
-            }
         }
 
         if (updateProgress)
-        {
             emit signalProgressBoxUpdate(N - 1);
-        }
     }
 
     if (updateProgress)
-    {
         emit signalProgressBoxKill();
-    }
-    //    qDebug()<< "AM + AM = ";
-    //    (AM+AM).printMatrixConsole(true);
-
-    //    qDebug()<< "AM += AM = ";
-    //    AM+=AM;
-    //    (AM).printMatrixConsole(true);
-
-    //    qDebug()<< "XSM.product (AM,AM) ";
-    //    XSM.product (AM, AM);
-    //    (XSM).printMatrixConsole(true);
-
-    //    qDebug()<< "XSM = AM * AM ";
-    //    XSM = AM * AM;
-    //    (XSM).printMatrixConsole(true);
 }
+
 
 /**
  * @brief Returns the influence range of vertex v1, namely the set of nodes who are

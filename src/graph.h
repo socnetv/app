@@ -1100,9 +1100,13 @@ public:
 
     int walksBetween(int v1, int v2,int length);
 
-    void graphWalksMatrixCreate(const int &N=0,
-                                const int &length=0,
-                                const bool &updateProgress=false);
+    void graphWalksMatrixCreate(const int &N = 0,
+                                const int &length = 0,
+                                const bool &updateProgress = false,
+                                const bool &dropIsolates = false,
+                                const bool &considerWeights = false,
+                                const bool &inverseWeights = false,
+                                const bool &symmetrize = false);
 
     void writeWalksTotalMatrixPlainText(const QString &fn);
 
