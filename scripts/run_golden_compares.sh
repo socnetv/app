@@ -8,6 +8,7 @@ if [[ ! -x "$CLI" ]]; then
 fi
 BASE="${ROOT_DIR}/src/tools/baselines"
 BASE_REACH="${ROOT_DIR}/src/tools/baselines/reachability"
+BASE_WALKS="${ROOT_DIR}/src/tools/baselines/walks"
 DATA="${ROOT_DIR}/src/data"
 
 if [[ ! -x "$CLI" ]]; then
@@ -33,6 +34,17 @@ run_case_reachability() {
 
   echo "==> $(basename "$baseline")"
   "$CLI" --kernel reachability -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"
+}
+
+run_case_walks() {
+  local input="$1"
+  local ftype="$2"
+  local walks_len="$3"
+  local flags=("${@:4:${#}-4}")   # all but last arg
+  local baseline="${@: -1}"       # last arg
+
+  echo "==> $(basename "$baseline")"
+  "$CLI" --kernel walks_matrix --walks-length "$walks_len" -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"
 }
 
 # --- Cases (extend this list as Phase E grows) ---
@@ -71,6 +83,20 @@ run_case_reachability \
   5 \
   -w 1 -x 1 -k 0 -c 0 \
   "${BASE_REACH}/StokmanZiegler_Netherlands__REACH__V2.json"
+
+run_case_walks \
+  "${DATA}/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj" \
+  2 \
+  6 \
+  -w 1 -x 1 -k 0 -c 0 \
+  "${BASE_WALKS}/DunbarGelada_H22a__WALKS_K6__V3.json"
+
+run_case_walks \
+  "${DATA}/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl" \
+  5 \
+  6 \
+  -w 1 -x 1 -k 0 -c 0 \
+  "${BASE_WALKS}/StokmanZiegler_Netherlands__WALKS_K6__V3.json"
 
 echo
 echo "[OK] All golden comparisons passed."
