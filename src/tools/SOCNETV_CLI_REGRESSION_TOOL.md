@@ -4,14 +4,21 @@
 during the ongoing architectural refactor of SocNetV.
 
 It provides deterministic execution of compute kernels without loading any UI components.
-It was originally designed to protect the refactor of:
 
-    Graph::graphDistancesGeodesic()
-    → DistanceEngine
+Originally introduced to protect the refactor of:
+
+```
+
+Graph::graphDistancesGeodesic()
+→ DistanceEngine
+
+```
+
+It has since evolved into a modular regression harness for multiple algorithm families.
 
 ---
 
-## Purpose
+# Purpose
 
 The CLI enables:
 
@@ -19,6 +26,7 @@ The CLI enables:
 - Deterministic kernel execution
 - Golden-output JSON generation
 - Strict regression comparison against committed baselines
+- Performance benchmarking (distance kernel)
 - CI integration (fail-fast on mismatch)
 
 This ensures refactors preserve:
@@ -27,62 +35,131 @@ This ensures refactors preserve:
 - connectivity bookkeeping
 - centrality vectors
 - directed/weighted semantics
+- matrix-based computations (walks, reachability)
 
 ---
 
-## Design Principles
+# Architecture
 
-- No UI involvement
-- No graphics dependency
-- Deterministic ordering
-- Deterministic float formatting
-- Zero semantic modification of Graph
+The CLI is modular.
+
+- `socnetv_cli.cpp` → façade (argument parsing, dispatch)
+- `cli/cli_common.cpp` → shared utilities
+- `cli/kernels/kernel_distance_v1.cpp`
+- `cli/kernels/kernel_reachability_v2.cpp`
+- `cli/kernels/kernel_walks_v3.cpp`
+
+Each kernel owns:
+
+- Its execution logic
+- Its JSON schema builder
+- Its comparison routine
 
 The CLI is a safety harness, not a new analytics engine.
 
 ---
 
-## Build
+# Design Principles
+
+- No UI involvement
+- No graphics dependency
+- Deterministic vertex ordering
+- Deterministic float formatting
+- Schema isolation per algorithm family
+- Zero silent semantic modification of Graph
+
+Each kernel has its own schema version.
+
+Existing schemas are **never modified**.
+
+---
+
+# Build
 
 The tool is built as:
 
-    socnetv-cli
+```
+
+socnetv-cli
+
+```
 
 It is compiled alongside the main application via CMake.
 
 ---
 
-## Kernels and JSON Schemas
+# Kernels and JSON Schemas
 
 Kernels are selected with `--kernel`.
 
-### Distance / Centrality Kernel (default)
+---
+
+## Distance / Centrality Kernel
 
 - Kernel: `distance` (default)
 - JSON schema: `schema_version = 1`
 
-### Reachability Kernel
+Protects:
+
+- DistanceEngine
+- Centrality vectors
+- Connectivity semantics
+
+---
+
+## Reachability Kernel
 
 - Kernel: `reachability`
 - JSON schema: `schema_version = 2`
 
 Reachability semantics:
 
-- R(i,j) = 1 if a walk exists from i to j
+- R(i,j) = 1 if geodesic distance is finite
 - R(i,j) = 0 otherwise
 - Diagonal convention: **R(i,i) = 1**
 
-Reachability is derived from the distance kernel:
-a pair is reachable iff its geodesic distance is finite.
+Derived from the distance kernel.
 
-Note: `--centralities` is not applicable to the reachability kernel.
-Use `-c 0` with `--kernel reachability`.
+Constraints:
+
+- `--centralities` not applicable
+- Must use `-c 0`
+- `--bench` not supported
 
 ---
 
-## Basic Usage
+## Walks Matrix Kernel
 
-Load a dataset and print summary metrics (distance kernel):
+- Kernel: `walks_matrix`
+- JSON schema: `schema_version = 3`
+- Required option: `--walks-length K`
+
+Computes:
+
+```
+
+XM = A^K
+
+```
+
+Each element:
+
+```
+
+XM(i,j) = number of walks of exact length K from i to j
+
+```
+
+Output includes:
+
+- `walks.nodes` → deterministic vertex order
+- `walks.matrix` → integer NxN matrix
+- `walks.length`
+- `walks.total_walks`
+
+# Basic Usage
+
+Distance kernel:
 
 ```bash
 ./socnetv-cli \
@@ -96,15 +173,12 @@ Common file types (see `global.h`):
 * 2 → PAJEK
 * 3 → ADJACENCY
 * 5 → UCINET
-* etc.
 
 ---
 
-## Golden Output Dump
+# Golden Output Dump
 
-### Distance kernel (schema v1)
-
-Generate a deterministic JSON baseline:
+## Distance (schema v1)
 
 ```bash
 ./socnetv-cli \
@@ -113,7 +187,7 @@ Generate a deterministic JSON baseline:
   --dump-json src/tools/baselines/SmallWorld_N10_E12__C1_W0_IW1_DI0.json
 ```
 
-Filename convention encodes run flags:
+Flag encoding:
 
 ```
 C1  = computeCentralities=1
@@ -122,9 +196,9 @@ IW1 = inverseWeights=1
 DI0 = dropIsolates=0
 ```
 
-### Reachability kernel (schema v2)
+---
 
-Generate a deterministic reachability baseline:
+## Reachability (schema v2)
 
 ```bash
 ./socnetv-cli \
@@ -136,49 +210,51 @@ Generate a deterministic reachability baseline:
 
 ---
 
-## Golden Output Compare
-
-Strict comparison against a baseline:
-
-### Distance kernel (schema v1)
+## Walks Matrix (schema v3)
 
 ```bash
 ./socnetv-cli \
-  -i src/data/SmallWorld_N10_E12.graphml \
-  -f 1 \
-  --compare-json src/tools/baselines/SmallWorld_N10_E12__C1_W0_IW1_DI0.json
+  --kernel walks_matrix \
+  --walks-length 6 \
+  -i src/data/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj \
+  -f 2 -c 0 -w 1 -x 1 -k 0 \
+  --dump-json src/tools/baselines/walks/DunbarGelada_H22a__WALKS_K6__V3.json
 ```
-
-### Reachability kernel (schema v2)
-
-```bash
-./socnetv-cli \
-  --kernel reachability \
-  -i src/data/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl \
-  -f 5 -c 0 -w 1 -x 1 -k 0 \
-  --compare-json src/tools/baselines/reachability/StokmanZiegler_Netherlands__REACH__V2.json
-```
-
-On mismatch, the tool prints exact field differences and exits non-zero.
 
 ---
 
-## What Is Verified
+# Golden Output Compare
 
-### Distance kernel (schema v1)
+```bash
+./socnetv-cli \
+  --compare-json <baseline.json>
+```
 
-Graph-level metrics:
+On mismatch:
+
+* Exact field differences printed
+* Non-zero exit code returned
+
+Schemas are strictly compared per version.
+
+---
+
+# What Is Verified
+
+## Distance Kernel (v1)
+
+Graph-level:
 
 * nodes
-* links_sna (loader semantics)
-* ties_graph (canonical Graph model)
+* links_sna
+* ties_graph
 * directed / weighted
-* average geodesic distance
+* avg_distance
 * diameter
 * disconnected_pairs
 * connected
 
-Per-node vectors (when centralities enabled), for each vertex (deterministic ascending id order):
+Per-node (deterministic ascending order):
 
 * CC / SCC
 * BC / SBC
@@ -188,91 +264,91 @@ Per-node vectors (when centralities enabled), for each vertex (deterministic asc
 * distance_sum
 * eccentricity
 
-Floating-point values are serialized as strings to avoid JSON double-format inconsistencies.
-
-### Reachability kernel (schema v2)
-
-The reachability payload contains:
-
-* `reachability.nodes` → deterministic ascending vertex ids
-* `reachability.matrix` → NxN array of 0/1 integers
-* `reachability.reachable_pairs` → number of reachable pairs (including diagonal)
-* `reachability.reachable_density` → reachable_pairs / (N*N), serialized as a deterministic string
-
-Schema v2 is separate from schema v1 to avoid modifying existing distance baselines.
+Floating-point values are serialized as strings.
 
 ---
 
-## Micro-Benchmarking Mode (Distance Kernel Only)
+## Reachability Kernel (v2)
 
-The CLI provides a lightweight benchmarking mode to measure DistanceEngine compute performance.
+* nodes
+* matrix (0/1)
+* reachable_pairs
+* reachable_density
 
-This mode:
+---
 
-* does **not** modify algorithmic behavior
-* does **not** generate or compare JSON output
+## Walks Kernel (v3)
 
-### Usage
+* nodes
+* matrix (integer counts)
+* walks.length
+* walks.total_walks
+
+---
+
+# Micro-Benchmarking Mode (Distance Kernel Only)
+
+The CLI provides benchmarking for DistanceEngine.
 
 ```bash
 ./socnetv-cli \
-  -i src/data/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj \
-  -f 2 \
+  -i dataset \
+  -f type \
   -c 1 -w 1 -x 1 -k 0 \
-  --bench 10
+  --bench 20
 ```
 
-### Output
-
-Example:
+Outputs:
 
 ```
-COMPUTE_RUNS=10
-COMPUTE_MS_MIN=4
-COMPUTE_MS_MEDIAN=4
-COMPUTE_MS_MEAN=4.200
-COMPUTE_MS_MAX=5
+COMPUTE_RUNS
+COMPUTE_MS_MIN
+COMPUTE_MS_MEDIAN
+COMPUTE_MS_MEAN
+COMPUTE_MS_MAX
 ```
 
-### Constraints
+Constraints:
 
-* `--bench` cannot be combined with:
-
-  * `--dump-json`
-  * `--compare-json`
-
-* Bench mode is supported **only** with:
-
-  * `--kernel distance` (default)
-
-* Dataset loading time is reported separately via `LOAD_MS`.
+* Cannot combine with `--dump-json`
+* Cannot combine with `--compare-json`
+* Only supported with `--kernel distance`
 
 ---
 
-## Automated Regression Scripts
+# Automated Regression Scripts
 
-### Golden comparisons
+## Golden Comparisons
 
 ```
 scripts/run_golden_compares.sh
 ```
 
-Runs the CLI against committed baselines (distance + reachability) and fails on mismatch.
+Validates:
 
-### Performance benchmarks (DistanceEngine)
+* Distance (v1)
+* Reachability (v2)
+* Walks (v3)
+
+Fails on any mismatch.
+
+---
+
+## Performance Benchmarks
 
 ```
 scripts/run_benchmarks.sh
 ```
 
-Runs a benchmark ladder (Small / Medium / Large), extracts `COMPUTE_MS_MEDIAN`,
-and compares against expected medians (per-host baselines supported).
+Validates median compute times for distance kernel only.
+
+Machine-aware baseline sets supported.
 
 ---
 
-## Baselines
+# Baselines
 
-Distance kernel baselines:
+Distance baselines:
 
 ```
 src/tools/baselines/
@@ -284,7 +360,33 @@ Reachability baselines:
 src/tools/baselines/reachability/
 ```
 
+Walks baselines:
+
+```
+src/tools/baselines/walks/
+```
+
 See:
 
-* `src/tools/baselines/BASELINES__README.md`
+```
+src/tools/baselines/BASELINES__README.md
+```
+
+---
+
+# Regression Discipline
+
+Rules:
+
+* Never modify schema v1 or v2 structures
+* New kernel → new schema version
+* Deterministic ordering always
+* Explicit failure on mismatch
+* Baselines are updated only for deliberate semantic fixes
+
+The CLI is the architectural safety harness of SocNetV.
+
+```
+
+---
 
