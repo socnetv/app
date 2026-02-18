@@ -106,6 +106,8 @@ set(GRAPH_SOURCES
     src/graph/centrality/graph_centrality.cpp
     src/graph/centrality/graph_prestige.cpp
     src/graph/prominence/graph_prominence_distribution.cpp
+    src/graph/matrices/graph_matrix_adjacency.cpp
+    src/graph/util/graph_type_strings.cpp
     src/graph/reporting/graph_reports.cpp
     src/graph/generators/graph_random_networks.cpp
     src/graph/crawler/graph_crawler.cpp
