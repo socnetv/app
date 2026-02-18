@@ -1,6 +1,8 @@
 #include "graph.h"
 #include <QDebug>   
 
+// PUBLIC DISTANCE API FACADE
+
 /**
  * @brief Returns the geodesic distance (length of shortest path)
  * from vertex v1 to vertex v2
@@ -94,6 +96,8 @@ bool Graph::isConnected()
     return m_graphIsConnected;
 }
 
+// DISTANCE CACHE GETTERS - these return cached values without recalculating anything. 
+// They are used by the UI and reporting engines to get distance metrics without triggering recalculations.
 
 /**
  * @brief Returns the average geodesic distance of the graph, without recalculating it.
