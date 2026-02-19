@@ -102,12 +102,16 @@ set(ENGINE_SOURCES
 
 set(GRAPH_SOURCES
     src/graph.cpp
+    src/graph/util/graph_type_strings.cpp
     src/graph/core/graph_structure_metrics.cpp
+    src/graph/core/graph_state_flags.cpp
+    src/graph/core/graph_metadata.cpp
     src/graph/storage/graph_vertices.cpp
     src/graph/storage/graph_edges.cpp
-    src/graph/ui/graph_canvas.cpp
+    src/graph/io/graph_io.cpp
     src/graph/relations/graph_relations.cpp
     src/graph/filters/graph_edge_filters.cpp
+    src/graph/ui/graph_canvas.cpp
     src/graph/ui/graph_selection.cpp
     src/graph/ui/graph_vertex_style.cpp
     src/graph/ui/graph_edge_style.cpp
@@ -117,7 +121,6 @@ set(GRAPH_SOURCES
     src/graph/centrality/graph_prestige.cpp
     src/graph/prominence/graph_prominence_distribution.cpp
     src/graph/matrices/graph_matrix_adjacency.cpp
-    src/graph/util/graph_type_strings.cpp
     src/graph/reporting/graph_reports.cpp
     src/graph/generators/graph_random_networks.cpp
     src/graph/crawler/graph_crawler.cpp
