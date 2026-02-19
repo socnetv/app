@@ -19,18 +19,7 @@
 #include <queue>  // std::priority_queue
 #include <vector> // std::vector (used as the container in priority_queue)
 
-// Qt Charts types used here
-#include <QtCharts/QChart>
-#include <QtCharts/QChartGlobal>
-#include <QtCharts/QChartView>
-#include <QtCharts/QLineSeries>
-#include <QtCharts/QValueAxis>
-#include <QtCharts/QBarSeries>
-#include <QtCharts/QBarSet>
-#include <QtCharts/QBarCategoryAxis>
-#include <QAbstractSeries>
-#include <QSplineSeries>
-#include <QAreaSeries>
+
 
 namespace {
 
@@ -287,11 +276,21 @@ void Graph::prominenceDistribution(const int &index,
 
 
 /**
- * @brief Computes the distribution of a centrality index scores.
- * The distribution data are returned as QSplineSeries series to MW
- * which in turn displays them on a Spline Chart
- * @param index
- * @param series
+ * @brief Computes prominence distribution data and delegates Spline chart rendering.
+ *
+ * Performs the algorithmic portion only:
+ *  - Orders (value, frequency) pairs derived from @p discreteClasses
+ *  - Computes min/max value and min/max frequency
+ *
+ * UI construction (Qt Charts series/axes), optional PNG export, and emission of
+ * signalPromininenceDistributionChartUpdate(...) are delegated to the UI façade
+ * implementation in graph_ui_prominence_distribution.cpp (WS2/F4).
+ *
+ * Behavior and output semantics are preserved.
+ *
+ * @param discreteClasses    Map of value (string) -> frequency.
+ * @param seriesName         Display name of the series.
+ * @param distImageFileName  If non-empty, export chart to this PNG file.
  */
 void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
                                          const QString &seriesName,
@@ -310,333 +309,85 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
         distImageFileName);
 }
 
+
 /**
- * @brief Computes the distribution of a centrality index scores.
- * The distribution data are returned as QAreaSeries series to MW
- * which in turn displays them on a Area Chart
- * @param index
- * @param series
+ * @brief Computes prominence distribution data and delegates Area chart rendering.
+ *
+ * Performs the algorithmic portion only:
+ *  - Orders (value, frequency) pairs derived from @p discreteClasses
+ *  - Computes min/max value and min/max frequency
+ *
+ * UI construction (Qt Charts series/axes), optional PNG export, and emission of
+ * signalPromininenceDistributionChartUpdate(...) are delegated to the UI façade
+ * implementation in graph_ui_prominence_distribution.cpp (WS2/F4).
+ *
+ * Behavior and output semantics are preserved.
+ *
+ * @param discreteClasses    Map of value (string) -> frequency.
+ * @param name               Display name of the series.
+ * @param distImageFileName  If non-empty, export chart to this PNG file.
  */
 void Graph::prominenceDistributionArea(const H_StrToInt &discreteClasses,
                                        const QString &name,
                                        const QString &distImageFileName)
 {
-
     qDebug() << "Computing prominence distribution as area chart...";
 
-    QAreaSeries *series = new QAreaSeries();
-    series->setName(name);
-    QLineSeries *upperSeries = new QLineSeries();
-    QValueAxis *axisX = new QValueAxis();
-    QValueAxis *axisY = new QValueAxis();
+    const PromDistData data = computePromDistData(discreteClasses);
 
-    // Used only for the large chart exported to PNG for the HTML report
-    QAreaSeries *series1 = new QAreaSeries();
-    series1->setName(name);
-    QValueAxis *axisX1 = new QValueAxis();
-    QValueAxis *axisY1 = new QValueAxis();
-
-    // The seriesPQ is a priority queue which will hold
-    // the (value,frequency) pairs ordered from smallest to larger value
-    // This is used further below to insert pairs to the series in an ordered way
-    priority_queue<PairVF, vector<PairVF>, PairVFCompare> seriesPQ;
-
-    QHash<QString, int>::const_iterator i;
-
-    for (i = discreteClasses.constBegin(); i != discreteClasses.constEnd(); ++i)
-    {
-
-        qDebug() << "discreteClasses: " << i.key() << ": " << i.value() << "\n";
-
-        seriesPQ.push(PairVF(i.key().toDouble(), i.value()));
-    }
-
-    unsigned int initialSize = seriesPQ.size();
-    qreal min = 0;
-    qreal max = 0;
-    qreal value = 0;
-
-    qreal frequency = 0;
-    qreal minF = RAND_MAX;
-    qreal maxF = 0;
-
-    while (!seriesPQ.empty())
-    {
-
-        qDebug() << seriesPQ.top().value << " : "
-                 << seriesPQ.top().frequency << "\n";
-
-        value = seriesPQ.top().value;
-        frequency = seriesPQ.top().frequency;
-
-        upperSeries->append(value, frequency);
-
-        if (frequency < minF)
-        {
-            minF = frequency;
-        }
-        if (frequency > maxF)
-        {
-            maxF = frequency;
-        }
-
-        if (initialSize == seriesPQ.size())
-        {
-            min = value;
-        }
-        if (seriesPQ.size() == 1)
-        {
-            max = value;
-        }
-
-        seriesPQ.pop();
-    }
-
-    axisX->setMin(min);
-    axisX->setMax(max);
-
-    axisY->setMin(minF);
-    axisY->setMax(maxF + 1.0);
-
-    series->setUpperSeries(upperSeries);
-
-    QPen sPen(QColor("#666"));
-    sPen.setWidthF(0.2);
-    QBrush sBrush(QColor("#209fdf"));
-
-    series->setBrush(sBrush);
-    series->setPen(sPen);
-
-    if (!distImageFileName.isEmpty())
-    {
-        // Filename given. Need to save the chart to an image file.
-
-        qDebug() << "saving distribution image to" << distImageFileName;
-
-        axisX1->setMin(min);
-        axisX1->setMax(max);
-
-        axisY1->setMin(minF);
-        axisY1->setMax(maxF + 1.0);
-
-        series1->setUpperSeries(upperSeries);
-
-        QChart *chart = new QChart();
-        QChartView *chartView = new QChartView(chart);
-
-        // Not needed?
-        // If we do show it, then it will show a brief flash of the window to the user!
-        // chartView->show();
-
-        chart->addSeries(series1);
-
-        chart->setTitle(series->name() + " distribution");
-        chart->setTitleFont(QFont("Times", 12));
-
-        chart->legend()->hide();
-
-        // chart->createDefaultAxes();
-
-        chart->addAxis(axisX1, Qt::AlignBottom);
-        series1->attachAxis(axisX1);
-        chart->addAxis(axisY1, Qt::AlignLeft);
-        series1->attachAxis(axisY1);
-
-        chart->axes(Qt::Vertical).first()->setMin(0);
-        chart->axes(Qt::Horizontal).first()->setMin(0);
-        chart->axes(Qt::Horizontal).first()->setLabelsAngle(-90);
-
-        //        m_chart->axes(Qt::Horizontal).first()->setShadesVisible(false);
-
-        chart->resize(2560, 1440);
-        chartView->resize(2561, 1441);
-
-        QPixmap p = chartView->grab();
-
-        p.save(distImageFileName, "PNG");
-
-        chartView->hide();
-
-        // Do not delete the ChartView
-        // If we do delete it, then it will also delete the axes
-        // which we have sent to MW to be displayed on the miniChart.
-        // The result will be app crash...
-        //        chartView->deleteLater();
-        delete chartView;
-    }
-
-    qDebug() << "emitting signal to MW update the prominence distribution area chart";
-    emit signalPromininenceDistributionChartUpdate(series, axisX, min, max, axisY, minF, maxF);
+    // UI-only: builds QAreaSeries/QAxes, exports PNG if requested,
+    // emits signalPromininenceDistributionChartUpdate(...)
+    uiProminenceDistributionArea(toQPoints(data.points),
+                                 data.min, data.max,
+                                 data.minF, data.maxF,
+                                 name,
+                                 distImageFileName);
 }
 
 /**
- * @brief Computes the distribution of a centrality index scores.
- * The distribution data are returned as QBarSeries series (with a QBarSet attached)
- * to MW  which in turn displays them on a Bar Chart
- * @param index
- * @param series
- * @param set
- * @param strX
+ * @brief Computes the prominence distribution and delegates Bar chart rendering.
+ *
+ * This method performs only the algorithmic portion:
+ * it derives ordered category labels (centrality values formatted with 6 decimals),
+ * the matching frequencies, and computes basic range statistics:
+ *  - min/max value (numeric)
+ *  - min/max frequency
+ *
+ * UI construction (Qt Charts objects, axes, optional PNG export) and emission
+ * of the update signal to MainWindow are delegated to the UI façade layer
+ * (graph_ui_prominence_distribution.cpp), following WS2/F4 rules.
+ *
+ * Behavior, rendering semantics, and export output remain unchanged.
+ *
+ * @param discreteClasses   A map of centrality value (as string) to frequency.
+ * @param name              The display name of the distribution series.
+ * @param distImageFileName If non-empty, the chart is exported to this PNG file.
  */
 void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
                                        const QString &name,
                                        const QString &distImageFileName)
 {
-
     qDebug() << "Computing prominence distribution as bar chart...";
 
-    QBarSeries *series = new QBarSeries();
-    series->setName(name);
-    QBarSet *barSet = new QBarSet("");
-    QValueAxis *axisY = new QValueAxis;
-    QBarCategoryAxis *axisX = new QBarCategoryAxis();
+    const PromDistData data = computePromDistData(discreteClasses);
 
-    // Used only for the large chart exported to PNG for the HTML report
-    QBarSeries *series1 = new QBarSeries();
-    series1->setName(name);
-    QBarSet *barSet1 = new QBarSet("");
-    QValueAxis *axisY1 = new QValueAxis;
-    QBarCategoryAxis *axisX1 = new QBarCategoryAxis();
+    // Bars need string categories (old code used QString::number(value, 'f', 6))
+    QStringList categories;
+    QVector<qreal> freqs;
+    categories.reserve(static_cast<int>(data.points.size()));
+    freqs.reserve(static_cast<int>(data.points.size()));
 
-    // The seriesPQ is a priority queue which will hold
-    // the (value,frequency) pairs ordered from smallest to larger value
-    // This is used further below to insert pairs to the series in an ordered way
-    priority_queue<PairVF, vector<PairVF>, PairVFCompare> seriesPQ;
-
-    QHash<QString, int>::const_iterator i;
-
-    for (i = discreteClasses.constBegin(); i != discreteClasses.constEnd(); ++i)
-    {
-
-        qDebug() << "discreteClasses: " << i.key() << ": " << i.value() << "\n";
-
-        seriesPQ.push(PairVF(i.key().toDouble(), i.value()));
+    for (const auto &p : data.points) {
+        categories.append(QString::number(p.first, 'f', 6));
+        freqs.append(static_cast<qreal>(p.second));
     }
 
-    unsigned int initialSize = seriesPQ.size();
-
-    QString min = QString();
-    QString max = QString();
-    QString value = QString();
-
-    qreal frequency = 0;
-    qreal minF = RAND_MAX;
-    qreal maxF = 0;
-
-    while (!seriesPQ.empty())
-    {
-
-        value = QString::number(seriesPQ.top().value, 'f', 6);
-
-        frequency = seriesPQ.top().frequency;
-
-        qDebug() << "value:" << value << " : "
-                 << "frequency:" << frequency << "\n";
-
-        axisX->append(value);
-        barSet->append(frequency);
-
-        if (!distImageFileName.isEmpty())
-        {
-            axisX1->append(value);
-            barSet1->append(frequency);
-        }
-
-        if (frequency < minF)
-        {
-            minF = frequency;
-        }
-        if (frequency > maxF)
-        {
-            maxF = frequency;
-        }
-
-        if (initialSize == seriesPQ.size())
-        {
-            min = value;
-        }
-        if (seriesPQ.size() == 1)
-        {
-            max = value;
-        }
-
-        seriesPQ.pop();
-
-    } // end while
-
-    axisX->setMin(min);
-    axisX->setMax(max);
-
-    axisY->setMin(minF);
-    axisY->setMax(maxF + 1.0);
-
-    qDebug() << "axisX min: " << axisX->min() << " max: " << axisX->max();
-
-    series->append(barSet);
-
-    QPen sPen(QColor("#666"));
-    sPen.setWidthF(0.2);
-    QBrush sBrush(QColor("#209fdf"));
-
-    barSet->setBrush(sBrush);
-    barSet->setPen(sPen);
-
-    if (!distImageFileName.isEmpty())
-    {
-        // Filename given. Need to save the chart to an image file.
-
-        qDebug() << "saving distribution image to" << distImageFileName;
-
-        series1->append(barSet1);
-
-        axisX1->setMin(min);
-        axisX1->setMax(max);
-
-        axisY1->setMin(minF);
-        axisY1->setMax(maxF + 1.0);
-
-        QChart *chart = new QChart();
-        QChartView *chartView = new QChartView(chart);
-
-        // Not needed?
-        // If we do show it, then it will show a brief flash of the window to the user!
-        // chartView->show();
-
-        chart->addSeries(series1);
-
-        chart->setTitle(series->name() + " distribution");
-        chart->setTitleFont(QFont("Times", 12));
-
-        chart->legend()->hide();
-
-        chart->addAxis(axisX1, Qt::AlignBottom);
-        series1->attachAxis(axisX1);
-        chart->addAxis(axisY1, Qt::AlignLeft);
-        series1->attachAxis(axisY1);
-
-        chart->axes(Qt::Vertical).first()->setMin(0);
-        chart->axes(Qt::Horizontal).first()->setMin(0);
-        chart->axes(Qt::Horizontal).first()->setLabelsAngle(-90);
-
-        //        m_chart->axes(Qt::Horizontal).first()->setShadesVisible(false);
-
-        chart->resize(2560, 1440);
-        chartView->resize(2561, 1441);
-
-        QPixmap p = chartView->grab();
-
-        p.save(distImageFileName, "PNG");
-
-        chartView->hide();
-        // Do not delete the ChartView if the axes / series are the same!
-        // If we do delete it, then it will also delete the axes
-        // which we have sent to MW to be displayed on the miniChart.
-        // The result will be app crash...
-        delete chartView;
-    }
-
-    qDebug() << "emitting signal to MW update the prominence distribution bar chart";
-    emit signalPromininenceDistributionChartUpdate(series,
-                                                   axisX, min.toDouble(), max.toDouble(),
-                                                   axisY, minF, maxF);
+    uiProminenceDistributionBars(categories,
+                                freqs,
+                                static_cast<qreal>(data.min),
+                                static_cast<qreal>(data.max),
+                                static_cast<qreal>(data.minF),
+                                static_cast<qreal>(data.maxF),
+                                name,
+                                distImageFileName);
 }

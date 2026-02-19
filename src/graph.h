@@ -46,11 +46,6 @@ class QNetworkReply;
 class QUrl;
 class QAbstractSeries;
 class QAbstractAxis;
-class QSplineSeries;
-class QBarSeries;
-class QAreaSeries;
-class QBarSet;
-class QBarCategoryAxis;
 
 using namespace std;
 
@@ -368,7 +363,6 @@ signals:
     void addGuideHLine(const double &y0);
 
 public:
-
     // ============================================================================
     // GRAPH FACADE CONTRACT (WS2 / F0)
     // ----------------------------------------------------------------------------
@@ -1244,6 +1238,21 @@ protected:
                                         qreal minF, qreal maxF,
                                         const QString &seriesName,
                                         const QString &distImageFileName);
+    void uiProminenceDistributionArea(const QVector<QPair<qreal, qreal>> &points,
+                                      const qreal min,
+                                      const qreal max,
+                                      const qreal minF,
+                                      const qreal maxF,
+                                      const QString &name,
+                                      const QString &distImageFileName);
+    void uiProminenceDistributionBars(const QStringList &categories,
+                                     const QVector<qreal> &frequencies,
+                                     const qreal min,
+                                     const qreal max,
+                                     const qreal minF,
+                                     const qreal maxF,
+                                     const QString &name,
+                                     const QString &distImageFileName);                                      
 
 private:
     /** private member functions */
