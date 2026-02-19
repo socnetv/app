@@ -16,9 +16,10 @@
 
 #include "graph.h"
 
-// Add only if compiler asks:
-// #include <QColor>
-// #include <QDebug>
+
+// 
+// Vertex size
+// 
 
 /**
  * @brief Sets the initial vertex size
@@ -77,6 +78,10 @@ int Graph::vertexSize(const int &v) const
 {
     return m_graph[vpos[v]]->size();
 }
+
+// 
+// Vertex shape + icons
+// 
 
 /**
  * @brief Sets the default vertex shape and iconPath
@@ -169,6 +174,10 @@ bool Graph::graphHasVertexCustomIcons() const
     return false;
 }
 
+// 
+// Vertex Custom attributes
+// 
+
 /**
  * @brief Returns true if at least one vertex has a 'custom' attribute
  * @return bool
@@ -196,6 +205,22 @@ QStringList Graph::graphHasVertexCustomAttributes() const
     return m_customAttributesNames;
 }
 
+/**
+ * @brief Calls the customAttributes method for a specific vertex in the graph.
+ *
+ * This function retrieves the vertex at the position specified by the index `v1`
+ * from the `vpos` map and calls its `customAttributes` method.
+ *
+ * @param v1 The index of the vertex whose custom attributes are to be accessed.
+ */
+QHash<QString, QString> Graph::vertexCustomAttributes(const int &v1) const
+{
+    return m_graph[vpos[v1]]->customAttributes();
+}
+
+//
+// Vertex color
+// 
 /**
  * @brief Changes the color of vertex v1
  * @param v1
@@ -252,6 +277,10 @@ void Graph::vertexColorInit(const QString &color)
 {
     initVertexColor = color;
 }
+
+// 
+// Vertex number styling (font/color/distance)
+// 
 
 /**
  * @brief Changes the initial color of the vertex numbers
@@ -391,6 +420,10 @@ void Graph::vertexNumberDistanceSet(const int &v, const int &newDistance)
     }
     setModStatus(ModStatus::MinorOptions);
 }
+
+// 
+// Vertex label styling (font/color/distance)
+// 
 
 /**
  * @brief Changes the label of a vertex v1
@@ -586,15 +619,3 @@ void Graph::vertexCustomAttributesSet(const int &v1, const QHash<QString, QStrin
     setModStatus(ModStatus::VertexMetadata);
 }
 
-/**
- * @brief Calls the customAttributes method for a specific vertex in the graph.
- *
- * This function retrieves the vertex at the position specified by the index `v1`
- * from the `vpos` map and calls its `customAttributes` method.
- *
- * @param v1 The index of the vertex whose custom attributes are to be accessed.
- */
-QHash<QString, QString> Graph::vertexCustomAttributes(const int &v1) const
-{
-    return m_graph[vpos[v1]]->customAttributes();
-}
