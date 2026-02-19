@@ -121,7 +121,6 @@ set(GRAPH_SOURCES
     src/graph/centrality/graph_prestige.cpp
     src/graph/prominence/graph_prominence_distribution.cpp
     src/graph/matrices/graph_matrix_adjacency.cpp
-    src/graph/reporting/graph_reports.cpp
     src/graph/generators/graph_random_networks.cpp
     src/graph/crawler/graph_crawler.cpp
     src/graph/layouts/graph_layouts_basic.cpp
@@ -132,6 +131,9 @@ set(GRAPH_SOURCES
     src/graph/clustering/graph_clustering_coefficients.cpp
     src/graph/clustering/graph_clustering_hierarchical.cpp
     src/graph/similarity/graph_similarity_matrices.cpp
+    src/graph/reporting/graph_reports.cpp
+    src/graph/reporting/graph_reports_settings.cpp
+
 )
 
 set(CLI_SOURCES
