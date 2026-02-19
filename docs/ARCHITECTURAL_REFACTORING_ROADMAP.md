@@ -113,6 +113,10 @@ Goal: establish a domain model that does not depend on Qt UI concerns.
 
 - Plan: `docs/roadmaps/roadmap_domain_model_split.md`
 
+Note on sequencing:
+- WS3 (domain model split) depends on `Graph` being a stable façade (WS2/F3/F4).
+- Before starting WS3, we may perform light WS4 preparation work to clarify IO/parser boundaries
+  (mechanical isolation only, no parser logic changes) so the domain split does not inherit Qt-signal entanglement
 
 ### WS4 — IO / Parser refactor (SKELETON)
 Goal: move file loading toward a clean IO layer and reduce Qt signal entanglement.
