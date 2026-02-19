@@ -106,6 +106,7 @@ set(GRAPH_SOURCES
     src/graph/ui/graph_canvas.cpp
     src/graph/relations/graph_relations.cpp
     src/graph/ui/graph_selection.cpp
+    src/graph/ui/graph_vertex_style.cpp
     src/graph/distances/graph_distance_facade.cpp
     src/graph/distances/graph_distance_cache.cpp
     src/graph/centrality/graph_centrality.cpp
