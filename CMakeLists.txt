@@ -112,6 +112,7 @@ set(GRAPH_SOURCES
     src/graph/relations/graph_relations.cpp
     src/graph/filters/graph_edge_filters.cpp
     src/graph/ui/graph_ui_facade.cpp
+    src/graph/ui/graph_ui_prominence_distribution.cpp
     src/graph/ui/graph_canvas.cpp
     src/graph/ui/graph_selection.cpp
     src/graph/ui/graph_vertex_style.cpp
@@ -134,6 +135,7 @@ set(GRAPH_SOURCES
     src/graph/similarity/graph_similarity_matrices.cpp
     src/graph/reporting/graph_reports.cpp
     src/graph/reporting/graph_reports_settings.cpp
+    
 
 )
 

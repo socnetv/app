@@ -32,6 +32,68 @@
 #include <QSplineSeries>
 #include <QAreaSeries>
 
+namespace {
+
+struct PromDistData {
+    std::vector<std::pair<double,double>> points; // (value, frequency)
+    double min  = 0.0;
+    double max  = 0.0;
+    double minF = 0.0;
+    double maxF = 0.0;
+};
+
+static PromDistData computePromDistData(const H_StrToInt &discreteClasses) {
+    // priority queue (value, frequency) ordered ascending by value
+    priority_queue<PairVF, vector<PairVF>, PairVFCompare> seriesPQ;
+
+    for (auto it = discreteClasses.constBegin(); it != discreteClasses.constEnd(); ++it) {
+        seriesPQ.push(PairVF(it.key().toDouble(), it.value()));
+    }
+
+    PromDistData out;
+    const size_t initialSize = seriesPQ.size();
+
+    if (initialSize == 0) {
+        out.minF = 0.0;
+        out.maxF = 0.0;
+        return out;
+    }
+
+    out.minF = static_cast<double>(RAND_MAX);
+    out.maxF = 0.0;
+
+    size_t idx = 0;
+    while (!seriesPQ.empty()) {
+        const double value = seriesPQ.top().value;
+        const double freq  = seriesPQ.top().frequency;
+
+        out.points.emplace_back(value, freq);
+
+        if (freq < out.minF) out.minF = freq;
+        if (freq > out.maxF) out.maxF = freq;
+
+        if (idx == 0) out.min = value;
+        if (seriesPQ.size() == 1) out.max = value;
+
+        seriesPQ.pop();
+        ++idx;
+    }
+
+    return out;
+}
+
+static QVector<QPair<qreal,qreal>> toQPoints(const std::vector<std::pair<double,double>> &pts) {
+    QVector<QPair<qreal,qreal>> out;
+    out.reserve(static_cast<int>(pts.size()));
+    for (const auto &p : pts) {
+        out.append(qMakePair(static_cast<qreal>(p.first), static_cast<qreal>(p.second)));
+    }
+    return out;
+}
+
+} // namespace
+
+
 /**
  * @brief Returns the IndexType of the given prominence index name
  * Called from MW::slotEditNodeFind, MW::slotLayoutRadialByProminenceIndex etc
@@ -222,6 +284,8 @@ void Graph::prominenceDistribution(const int &index,
     }
 }
 
+
+
 /**
  * @brief Computes the distribution of a centrality index scores.
  * The distribution data are returned as QSplineSeries series to MW
@@ -233,148 +297,17 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
                                          const QString &seriesName,
                                          const QString &distImageFileName)
 {
-
     qDebug() << "Computing prominence distribution as spline chart...";
 
-    QLineSeries *series = new QLineSeries();
-    series->setName(seriesName);
-    QValueAxis *axisX = new QValueAxis();
-    QValueAxis *axisY = new QValueAxis();
-
-    // Used only for the large chart exported to PNG for the HTML report
-    QLineSeries *series1 = new QLineSeries();
-    series1->setName(seriesName);
-    QValueAxis *axisX1 = new QValueAxis();
-    QValueAxis *axisY1 = new QValueAxis();
-
-    // The seriesPQ is a priority queue which will hold
-    // the (value,frequency) pairs ordered from smallest to larger value
-    // This is used further below to insert pairs to the series in an ordered way
-    priority_queue<PairVF, vector<PairVF>, PairVFCompare> seriesPQ;
-
-    QHash<QString, int>::const_iterator i;
-
-    for (i = discreteClasses.constBegin(); i != discreteClasses.constEnd(); ++i)
-    {
-
-        qDebug() << "discreteClasses: "
-                 << i.key() << ": " << i.value();
-
-        seriesPQ.push(PairVF(i.key().toDouble(), i.value()));
-    }
-
-    unsigned int initialSize = seriesPQ.size();
-    qreal min = 0;
-    qreal max = 0;
-    qreal value = 0;
-
-    qreal frequency = 0;
-    qreal minF = RAND_MAX;
-    qreal maxF = 0;
-
-    while (!seriesPQ.empty())
-    {
-        qDebug() << "seriesPQ top is:"
-                 << seriesPQ.top().value << " : "
-                 << seriesPQ.top().frequency;
-
-        value = seriesPQ.top().value;
-        frequency = seriesPQ.top().frequency;
-
-        series->append(value, frequency);
-        series1->append(value, frequency);
-
-        if (frequency < minF)
-        {
-            minF = frequency;
-        }
-        if (frequency > maxF)
-        {
-            maxF = frequency;
-        }
-
-        if (initialSize == seriesPQ.size())
-        {
-            min = value;
-        }
-        if (seriesPQ.size() == 1)
-        {
-            max = value;
-        }
-
-        seriesPQ.pop();
-    }
-
-    axisX->setMin(min);
-    axisX->setMax(max);
-
-    axisY->setMin(minF);
-    axisY->setMax(maxF + 1.0);
-
-    QPen sPen(QColor("#209fdf"));
-    sPen.setWidthF(0.9);
-    QBrush sBrush(QColor("#ff0000"));
-
-    series->setBrush(sBrush);
-    series->setPen(sPen);
-
-    if (!distImageFileName.isEmpty())
-    {
-        // Filename given. Need to save the chart to an image file.
-
-        qDebug() << "saving prominence distribution image to" << distImageFileName;
-
-        axisX1->setMin(min);
-        axisX1->setMax(max);
-
-        axisY1->setMin(minF);
-        axisY1->setMax(maxF + 1.0);
-
-        QChart *chart = new QChart();
-        QChartView *chartView = new QChartView(chart);
-
-        // Not needed?
-        // If we do show it, then it will show a brief flash of the window to the user!
-        // chartView->show();
-
-        chart->addSeries(series1);
-
-        chart->setTitle(series1->name() + " distribution");
-        chart->setTitleFont(QFont("Times", 12));
-
-        chart->legend()->hide();
-
-        // chart->createDefaultAxes();
-
-        chart->addAxis(axisX1, Qt::AlignBottom);
-        series1->attachAxis(axisX1);
-        chart->addAxis(axisY1, Qt::AlignLeft);
-        series1->attachAxis(axisY1);
-
-        chart->axes(Qt::Vertical).first()->setMin(0);
-        chart->axes(Qt::Horizontal).first()->setMin(0);
-        chart->axes(Qt::Horizontal).first()->setLabelsAngle(-90);
-
-        //        m_chart->axes(Qt::Horizontal).first()->setShadesVisible(false);
-
-        chart->resize(2560, 1440);
-        chartView->resize(2561, 1441);
-
-        QPixmap p = chartView->grab();
-
-        p.save(distImageFileName, "PNG");
-
-        chartView->hide();
-        // Do not delete the ChartView
-        // If we do delete it, then it will also delete the axes
-        // which we have sent to MW to be displayed on the miniChart.
-        // The result will be app crash...
-        //        chartView->deleteLater();
-        delete chartView;
-    }
-
-    qDebug() << "emitting signal to MW update the prominence distribution spline chart";
-    emit signalPromininenceDistributionChartUpdate(series, axisX, min, max, axisY, minF, maxF);
+    const PromDistData data = computePromDistData(discreteClasses);
+    uiProminenceDistributionSpline(
+        toQPoints(data.points),
+        static_cast<qreal>(data.min),
+        static_cast<qreal>(data.max),
+        static_cast<qreal>(data.minF),
+        static_cast<qreal>(data.maxF),
+        seriesName,
+        distImageFileName);
 }
 
 /**
