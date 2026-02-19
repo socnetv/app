@@ -61,52 +61,25 @@ Goal: Graph becomes orchestration glue rather than algorithm host and state cont
 
 Status (current progress):
 
-- Major subsystems mechanically extracted from graph.cpp:
-  - reporting
-  - layouts (basic + force-directed)
-  - random generators
-  - crawler
-  - reachability & walks
-  - cliques
-  - triad census
-  - clustering coefficients
-  - hierarchical clustering
-  - similarity / dissimilarity matrices
-  - distances
-    - distance façade
-    - SSSP/cache helpers
-  - prominence
-    - centrality
-    - prestige
-    - prominence distributions
-  - adjacency matrix builders
-  - type/string mapping helpers
-  - canvas geometry helpers
-  - relation management
-  - selection & clicked-state helpers
-  - vertex storage & CRUD
-  - edge storage & CRUD
-  - edge styling
-  - edge filtering
-  - structural metrics
-  - graph state flags (weighted/symmetric/directed)
-  - metadata & modification state
-  - file IO wrappers
-  - reporting configuration setters
+* ✅ F0 — Façade contract defined
+* ✅ F1 — Engine boundary tightened (DistanceEngine isolated)
+* ✅ F2 — Mechanical extraction of `graph.cpp`
+* ✅ F3 — UI boundary tightening (completed)
 
-- `graph.cpp` reduced to:
-  - `Graph::Graph(...)`
-  - `Graph::clear(...)`
+`Graph` now acts as:
 
-- All slices:
-  - are purely mechanical (no logic changes)
-  - are listed in `GRAPH_SOURCES`
-  - pass golden comparisons
-  - remain within benchmark guardrails
+* State holder + invariants guardian
+* Explicit façade API for UI and CLI
+* Delegator to algorithm engines
+* UI signal coordinator
 
-WS2/F2 structural extraction is effectively complete.
-Next focus: tighten UI boundaries (WS2/F3) and prepare deeper IO separation (WS4).
+UI no longer relies on incidental Graph internals.
 
+Thread affinity operations are now routed through façade wrappers, eliminating direct UI access to QObject internals.
+
+Golden comparisons confirm full behavioral parity.
+
+Next Focus: WS2/F4 — Strengthen algorithm/UI separation
 
 ### WS3 — Domain model split (SKELETON)
 Goal: establish a domain model that does not depend on Qt UI concerns.

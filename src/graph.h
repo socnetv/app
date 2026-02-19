@@ -398,7 +398,6 @@ public:
     // - Anything explicitly marked LEGACY/INTERNAL is not allowed for new code,
     //   even if it remains public for historical reasons.
     //
-    // IMPORTANT: F0 is documentation-only. No behavior changes implied.
     // ============================================================================
 
     enum ModStatus {
@@ -429,6 +428,9 @@ public:
     // --------------------------------------------------------------------------
     Graph(const int &reserveVerticesSize = 5000, const int &reserveEdgesPerVertexSize = 500);
     ~Graph();
+
+    QThread* getThread() const;
+    void moveToThreadFacade(QThread *thread);
 
 
     void clear(const QString &reason="");

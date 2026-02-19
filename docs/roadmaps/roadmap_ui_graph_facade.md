@@ -124,23 +124,48 @@ F2 structural extraction is complete.
 
 ---
 
-### F3 — Kill UI-to-internals access paths (incremental)
+### ✅ F3 — Eliminate UI-to-internal access paths (COMPLETED)
 
-**Goal**
+Objective:
 
-* UI code should stop depending on “Graph internals by accident”.
+Ensure UI interacts with `Graph` strictly through façade-supported methods.
 
-**Actions**
+What was audited:
 
-* Introduce façade calls where UI currently reads/writes deep state.
-* Replace “public member-ish” patterns with getters/setters.
-* Start marking internal-only methods `private` or moving them behind services.
+* `MainWindow`
+* `GraphicsWidget`
+* Graphics items
+* Dialog forms
 
-**Definition of done**
+Findings:
 
-* UI code compiles without needing incidental Graph internals.
-* “Façade Contract” is enforced socially + by structure (headers).
+* All Graph interactions are centralized in `MainWindow`.
+* Graphics and dialog layers do not directly access Graph internals.
+* No UI component accessed Graph storage containers or helper internals.
+* Thread-affinity operations (`thread()`, `moveToThread`) were the only non-façade access pattern.
 
+Actions taken:
+
+* Introduced façade wrappers for thread-affinity management.
+* Removed direct UI calls to QObject internals on `Graph`.
+* Verified compilation stability.
+* Verified golden parity.
+
+Outcome:
+
+* UI layer is now structurally constrained to façade API.
+* Internal-only helpers can be progressively reduced in visibility in future steps.
+* Graph public surface is now intentional rather than incidental.
+
+Key insight:
+
+Mechanical extraction (F2) made F3 straightforward. Once responsibilities are sliced, façade enforcement becomes an audit task rather than a refactor task.
+
+Note on sequencing:
+- WS3 (domain model split) depends on `Graph` being a stable façade (WS2/F3/F4).
+- Before starting WS3, we may perform light WS4 preparation work to clarify IO/parser boundaries
+  (mechanical isolation only, no parser logic changes) so the domain split does not inherit Qt-signal entanglement
+  
 ---
 
 ### F4 — Reduce “god-object” coupling (signals/slots cleanup boundary)

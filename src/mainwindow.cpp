@@ -972,17 +972,18 @@ void MainWindow::initGraph() {
 
     activeGraph = new Graph(nodesEstimatedSize, edgesPerNodeEstimatedSize);
 
-    qDebug() << "activeGraph created on thread:" << activeGraph->thread()
+    qDebug() << "activeGraph created on thread:" << activeGraph->getThread()
              << "moving it to new thread ";
 
-    activeGraph->moveToThread(&graphThread);
+    activeGraph->moveToThreadFacade(&graphThread);
 
-    qDebug() << "activeGraph moved to thread:" << activeGraph->thread()
+    qDebug() << "activeGraph moved to thread:" << activeGraph->getThread()
              << "starting new activeGraph thread...";
 
     graphThread.start();
 
-    qDebug() << "activeGraph thread now:" << activeGraph->thread();
+    qDebug() << "activeGraph thread now:" << activeGraph->getThread()
+             << "Finished initialization of graph.";
 
 }
 
