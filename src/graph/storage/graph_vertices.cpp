@@ -16,6 +16,10 @@
 
 #include "graph.h"
 
+//
+// Vertex CRUD operations
+//
+
 /**
  * @brief Creates a new vertex
  *
@@ -187,6 +191,88 @@ void Graph::vertexCreateAtPosRandomWithLabel(const int &i,
 }
 
 /**
+ * @brief Removes the vertex v1 from the graph
+ * First, it removes all edges to doomed from other vertices
+ * Then it changes the vpos of all subsequent vertices inside m_graph
+ * Finally, it removes the vertex.
+ * @param int v1
+ */
+void Graph::vertexRemove(const int &v1)
+{
+    qDebug() << "Removing vertex:"
+             << m_graph[vpos[v1]]->number()
+             << "vpos:" << vpos[v1]
+             << "Removing all inbound and outbound edges ";
+    int doomedPos = vpos[v1];
+
+    // Remove links to v1 from each other vertex
+    VList::const_iterator it;
+    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    {
+        if (qAbs((*it)->hasEdgeTo(v1)) > 0)
+        {
+            qDebug() << "another vertex" << (*it)->number()
+                     << " has outbound Edge to " << v1 << ". Removing it.";
+            (*it)->removeOutEdge(v1);
+        }
+        if (qAbs((*it)->hasEdgeFrom(v1)) > 0)
+        {
+            qDebug() << "another vertex" << (*it)->number()
+                     << " has inbound Edge from " << v1 << ". Removing it.";
+            (*it)->removeInEdge(v1);
+        }
+    }
+
+    qDebug() << "Finished with vertices. "
+                "Update the vpos which maps vertices inside m_graph ";
+    int prevIndex = doomedPos;
+
+    qDebug() << "Updating vpos of all subsequent vertices ";
+    H_Int::const_iterator it1 = vpos.cbegin();
+    while (it1 != vpos.cend())
+    {
+        if (it1.value() > doomedPos)
+        {
+            prevIndex = it1.value();
+            qDebug() << "vertex" << it1.key()
+                     << "had prevIndex:" << prevIndex
+                     << " > doomedPos" << doomedPos
+                     << "Setting new vpos. vpos size was: " << vpos.size();
+            vpos.insert(it1.key(), --prevIndex);
+            qDebug() << "vertex" << it1.key()
+                     << "new vpos:" << vpos.value(it1.key(), -666)
+                     << "vpos size now:" << vpos.size();
+        }
+        else
+        {
+            qDebug() << "vertex" << it1.key() << "with vpos"
+                     << it1.value() << " =< doomedPos. CONTINUE";
+        }
+        ++it1;
+    }
+
+    // Now remove vertex Doomed from m_graph
+    qDebug() << "graph vertices=size=" << vertices() << "="
+             << m_graph.size() << "removing vertex at vpos " << doomedPos;
+    m_graph.removeAt(doomedPos);
+    m_totalVertices--;
+    qDebug() << "Now graph vertices=size=" << vertices() << "="
+             << m_graph.size();
+
+    order = false;
+
+    // Check if this was the clicked vertex and unset it
+    if (vertexClicked() == v1)
+    {
+        vertexClickedSet(0, QPointF(0, 0));
+    }
+
+    setModStatus(ModStatus::VertexCount);
+
+    emit signalRemoveNode(v1);
+}
+
+/**
  * @brief Deletes a dummy node
  *
  * This is called from Parser (as pajek) to delete any redundant (dummy) nodes.
@@ -199,6 +285,10 @@ void Graph::vertexRemoveDummyNode(int i)
     vertexRemove(i);
 }
 
+//
+// Vertex access and retrieval
+//
+
 /**
  * @brief Returns the index of a vertex by its number
  *
@@ -209,8 +299,9 @@ void Graph::vertexRemoveDummyNode(int i)
  * @param vertex number
  * @return vertex pos or -1
  */
-int Graph::vertexIndexByNumber(int v) const { 
-    return vpos.value(v, -1); 
+int Graph::vertexIndexByNumber(int v) const
+{
+    return vpos.value(v, -1);
 }
 
 /**
@@ -218,7 +309,7 @@ int Graph::vertexIndexByNumber(int v) const {
  * @param idx
  * @return GraphVertex*
  */
-GraphVertex* Graph::vertexAtIndex(int idx)
+GraphVertex *Graph::vertexAtIndex(int idx)
 {
     return m_graph[idx];
 }
@@ -228,17 +319,21 @@ GraphVertex* Graph::vertexAtIndex(int idx)
  * @param idx
  * @return GraphVertex*
  */
-const GraphVertex* Graph::vertexAtIndex(int idx) const
+const GraphVertex *Graph::vertexAtIndex(int idx) const
 {
     return m_graph[idx];
 }
+
+//
+// Vertex iterators and positions
+//
+
 /**
  * @brief iterator helpers
  */
 VList::const_iterator Graph::verticesBegin() const { return m_graph.cbegin(); }
 
 VList::const_iterator Graph::verticesEnd() const { return m_graph.cend(); }
-
 
 /**
  * @brief Returns the number of the last vertex in the graph.
@@ -264,6 +359,18 @@ int Graph::vertexNumberMin()
         return m_graph.front()->number();
     else
         return 0;
+}
+
+//
+// Vertex existence and find operations
+//
+
+/**
+ * @brief Returns true if the current graph has no vertices at all
+ */
+bool Graph::isEmpty() const
+{
+    return m_graph.isEmpty();
 }
 
 /**
@@ -685,88 +792,9 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
     return searchResult;
 }
 
-/**
- * @brief Removes the vertex v1 from the graph
- * First, it removes all edges to doomed from other vertices
- * Then it changes the vpos of all subsequent vertices inside m_graph
- * Finally, it removes the vertex.
- * @param int v1
- */
-void Graph::vertexRemove(const int &v1)
-{
-    qDebug() << "Removing vertex:"
-             << m_graph[vpos[v1]]->number()
-             << "vpos:" << vpos[v1]
-             << "Removing all inbound and outbound edges ";
-    int doomedPos = vpos[v1];
-
-    // Remove links to v1 from each other vertex
-    VList::const_iterator it;
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-        if (qAbs((*it)->hasEdgeTo(v1)) > 0)
-        {
-            qDebug() << "another vertex" << (*it)->number()
-                     << " has outbound Edge to " << v1 << ". Removing it.";
-            (*it)->removeOutEdge(v1);
-        }
-        if (qAbs((*it)->hasEdgeFrom(v1)) > 0)
-        {
-            qDebug() << "another vertex" << (*it)->number()
-                     << " has inbound Edge from " << v1 << ". Removing it.";
-            (*it)->removeInEdge(v1);
-        }
-    }
-
-    qDebug() << "Finished with vertices. "
-                "Update the vpos which maps vertices inside m_graph ";
-    int prevIndex = doomedPos;
-
-    qDebug() << "Updating vpos of all subsequent vertices ";
-    H_Int::const_iterator it1 = vpos.cbegin();
-    while (it1 != vpos.cend())
-    {
-        if (it1.value() > doomedPos)
-        {
-            prevIndex = it1.value();
-            qDebug() << "vertex" << it1.key()
-                     << "had prevIndex:" << prevIndex
-                     << " > doomedPos" << doomedPos
-                     << "Setting new vpos. vpos size was: " << vpos.size();
-            vpos.insert(it1.key(), --prevIndex);
-            qDebug() << "vertex" << it1.key()
-                     << "new vpos:" << vpos.value(it1.key(), -666)
-                     << "vpos size now:" << vpos.size();
-        }
-        else
-        {
-            qDebug() << "vertex" << it1.key() << "with vpos"
-                     << it1.value() << " =< doomedPos. CONTINUE";
-        }
-        ++it1;
-    }
-
-    // Now remove vertex Doomed from m_graph
-    qDebug() << "graph vertices=size=" << vertices() << "="
-             << m_graph.size() << "removing vertex at vpos " << doomedPos;
-    m_graph.removeAt(doomedPos);
-    m_totalVertices--;
-    qDebug() << "Now graph vertices=size=" << vertices() << "="
-             << m_graph.size();
-
-    order = false;
-
-    // Check if this was the clicked vertex and unset it
-    if (vertexClicked() == v1)
-    {
-        vertexClickedSet(0, QPointF(0, 0));
-    }
-
-    setModStatus(ModStatus::VertexCount);
-
-    emit signalRemoveNode(v1);
-}
-
+//
+// Vertex isolation
+//
 /**
  * @brief Toggles the status of all isolated vertices (thos without links)
  *
@@ -814,6 +842,9 @@ bool Graph::vertexIsolated(const int &v1) const
     return false;
 }
 
+//
+// Vertex positions
+//
 /**
  * @brief Changes the position of the given vertex
  *
@@ -841,8 +872,7 @@ QPointF Graph::vertexPos(const int &v1) const
     return m_graph[vpos[v1]]->pos();
 }
 
-
-GraphVertex* Graph::vertexPtr(const int v)
+GraphVertex *Graph::vertexPtr(const int v)
 {
     if (!vpos.contains(v))
         return nullptr;
@@ -852,14 +882,4 @@ GraphVertex* Graph::vertexPtr(const int v)
         return nullptr;
 
     return m_graph.at(idx);
-}
-
-
-
-/**
- * @brief Returns true if the current graph has no vertices at all
- */
-bool Graph::isEmpty() const
-{
-    return m_graph.isEmpty();
 }

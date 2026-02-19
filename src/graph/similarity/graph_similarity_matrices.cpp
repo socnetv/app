@@ -14,7 +14,6 @@
  * @see https://socnetv.org
  */
 
- 
 #include "graph.h"
 
 #include <QDebug>
@@ -112,4 +111,3 @@ void Graph::createMatrixSimilarityPearson(Matrix &AM,
     qDebug() << "Graph::createMatrixSimilarityPearson() - matrix PCC";
     // PCC.printMatrixConsole(true);
 }
-

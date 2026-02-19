@@ -182,4 +182,3 @@ bool Graph::createMatrixAdjacencyInverse(const QString &method)
 
     return !isSingular;
 }
-

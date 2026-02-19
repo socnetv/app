@@ -13,7 +13,6 @@
  * @see https://socnetv.org
  */
 
-
 #include "graph.h"
 #include <QDebug>
 
@@ -387,5 +386,3 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
         break;
     }
 }
-
-

@@ -13,11 +13,8 @@
  * @see https://socnetv.org
  */
 
-
 #include "graph.h"
 #include <cmath>
-
-
 
 /**
  * @brief Adds a little universal randomness :)
@@ -896,7 +893,6 @@ void Graph::randomNetLatticeCreate(const int &N,
 
     setModStatus(ModStatus::VertexEdgeCount);
 }
-
 
 /**
     Calculates and returns x! factorial...

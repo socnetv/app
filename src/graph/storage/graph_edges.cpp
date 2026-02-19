@@ -16,10 +16,9 @@
 
 #include "graph.h"
 
-
-// 
+//
 // Create/add/remove
-// 
+//
 
 /**
  * @brief Checks a) if edge exists and b) if the reverse edge exists
@@ -280,10 +279,9 @@ void Graph::edgeRemoveSelectedAll()
     }
 }
 
-// 
+//
 // Existence / symmetry / counts
-// 
-
+//
 
 /**
  * @brief Checks if there is an edge from v1 to v2 and returns the weight, if the edge exists.
@@ -424,7 +422,7 @@ int Graph::vertexEdgesInbound(int v1)
     return m_graph[vpos[v1]]->inEdgesCount();
 }
 
-// 
+//
 // Weight core
 //
 

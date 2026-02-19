@@ -231,4 +231,3 @@ void Graph::slotHandleCrawlerRequestReply()
     // Emit signal to web crawler to parse the reply
     emit signalWebCrawlParse(reply);
 }
-

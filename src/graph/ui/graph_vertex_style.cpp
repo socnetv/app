@@ -16,10 +16,9 @@
 
 #include "graph.h"
 
-
-// 
+//
 // Vertex size
-// 
+//
 
 /**
  * @brief Sets the initial vertex size
@@ -79,9 +78,9 @@ int Graph::vertexSize(const int &v) const
     return m_graph[vpos[v]]->size();
 }
 
-// 
+//
 // Vertex shape + icons
-// 
+//
 
 /**
  * @brief Sets the default vertex shape and iconPath
@@ -174,9 +173,9 @@ bool Graph::graphHasVertexCustomIcons() const
     return false;
 }
 
-// 
+//
 // Vertex Custom attributes
-// 
+//
 
 /**
  * @brief Returns true if at least one vertex has a 'custom' attribute
@@ -220,7 +219,7 @@ QHash<QString, QString> Graph::vertexCustomAttributes(const int &v1) const
 
 //
 // Vertex color
-// 
+//
 /**
  * @brief Changes the color of vertex v1
  * @param v1
@@ -278,9 +277,9 @@ void Graph::vertexColorInit(const QString &color)
     initVertexColor = color;
 }
 
-// 
+//
 // Vertex number styling (font/color/distance)
-// 
+//
 
 /**
  * @brief Changes the initial color of the vertex numbers
@@ -421,9 +420,9 @@ void Graph::vertexNumberDistanceSet(const int &v, const int &newDistance)
     setModStatus(ModStatus::MinorOptions);
 }
 
-// 
+//
 // Vertex label styling (font/color/distance)
-// 
+//
 
 /**
  * @brief Changes the label of a vertex v1
@@ -618,4 +617,3 @@ void Graph::vertexCustomAttributesSet(const int &v1, const QHash<QString, QStrin
     m_graph[vpos[v1]]->setCustomAttributes(customAttributes);
     setModStatus(ModStatus::VertexMetadata);
 }
-

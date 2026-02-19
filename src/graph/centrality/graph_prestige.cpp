@@ -577,4 +577,3 @@ void Graph::prestigePageRank(const bool &dropIsolates)
 
     return;
 }
-

@@ -14,13 +14,12 @@
  * @see https://socnetv.org
  */
 
- 
 #include "graph.h"
 #include <QDebug>
-#include <queue>      // std::priority_queue
-#include <vector>     // std::vector (used as the container in priority_queue)
+#include <queue>  // std::priority_queue
+#include <vector> // std::vector (used as the container in priority_queue)
 
-// Qt Charts types used here 
+// Qt Charts types used here
 #include <QtCharts/QChart>
 #include <QtCharts/QChartGlobal>
 #include <QtCharts/QChartView>
@@ -708,4 +707,3 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
                                                    axisX, min.toDouble(), max.toDouble(),
                                                    axisY, minF, maxF);
 }
-

@@ -13,12 +13,10 @@
  * @see https://socnetv.org
  */
 
- 
 #include "graph.h"
 
 #include <QDebug>
 #include <cmath>
-
 
 /**
  * @brief Embeds a Force Directed Placement layout according to the initial Spring Embedder model proposed by Eades.
@@ -962,4 +960,3 @@ void Graph::layoutForceDirected_FR_moveNodes(const qreal &temperature)
         emit setNodePos((*v1)->number(), newPos.x(), newPos.y());
     }
 }
-

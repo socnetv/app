@@ -13,13 +13,11 @@
  * @see https://socnetv.org
  */
 
-
 #include "graph.h"
 
 #include <QDebug>
 #include <QtMath>
 #include <cmath>
-
 
 /**
  * @brief Repositions all nodes on random positions
@@ -603,4 +601,3 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
 
     prominenceDistribution(prominenceIndex, m_reportsChartType);
 }
-

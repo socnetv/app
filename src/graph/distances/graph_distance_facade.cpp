@@ -13,9 +13,8 @@
  * @see https://socnetv.org
  */
 
- 
 #include "graph.h"
-#include <QDebug>   
+#include <QDebug>
 
 // PUBLIC DISTANCE API FACADE
 
@@ -112,21 +111,23 @@ bool Graph::isConnected()
     return m_graphIsConnected;
 }
 
-// DISTANCE CACHE GETTERS - these return cached values without recalculating anything. 
+// DISTANCE CACHE GETTERS - these return cached values without recalculating anything.
 // They are used by the UI and reporting engines to get distance metrics without triggering recalculations.
 
 /**
  * @brief Returns the average geodesic distance of the graph, without recalculating it.
  * @return qreal
  */
-qreal Graph::graphDistanceGeodesicAverageCached() const { 
-    return m_graphAverageDistance; 
+qreal Graph::graphDistanceGeodesicAverageCached() const
+{
+    return m_graphAverageDistance;
 }
 /**
  * @brief Returns the number of geodesics (shortest paths) in the graph, without recalculating it.
  * @return int
  */
-int   Graph::graphDiameterCached() const { 
+int Graph::graphDiameterCached() const
+{
     return m_graphDiameter;
 }
 
@@ -134,8 +135,9 @@ int   Graph::graphDiameterCached() const {
  * @brief Returns true if the graph is connected, without recalculating it.
  * @return bool
  */
-bool  Graph::isConnectedCached() const { 
-    return m_graphIsConnected; 
+bool Graph::isConnectedCached() const
+{
+    return m_graphIsConnected;
 }
 
 /**

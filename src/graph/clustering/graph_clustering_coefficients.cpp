@@ -16,7 +16,6 @@
 #include "graph.h"
 #include <QDebug>
 
-
 /**
  * @brief  Returns the local clustering coefficient (CLUCOF) of a vertex v1
  * @param v1
@@ -261,4 +260,3 @@ qreal Graph::clusteringCoefficient(const bool updateProgress)
 
     return averageCLC;
 }
-

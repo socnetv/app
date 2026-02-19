@@ -549,8 +549,6 @@ void Graph::centralityClosenessIR(const bool considerWeights,
     emit signalProgressBoxKill();
 }
 
-
-
 /**
  * @brief Computes minimum and maximum centralities during graphDistancesGeodesic()
  * @param C
@@ -625,4 +623,3 @@ void Graph::resolveClasses(qreal C, H_StrToInt &discreteClasses, int &classes, i
         discreteClasses.insert(QString::number(C), frq + 1);
     }
 }
-

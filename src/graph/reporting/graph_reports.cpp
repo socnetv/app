@@ -14,7 +14,6 @@
  * @see https://socnetv.org
  */
 
-
 #include "graph.h"
 
 #include <QFile>
@@ -23,7 +22,6 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QDebug>
-
 
 /**
  * @brief Writes reciprocity report to filename
@@ -270,8 +268,6 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
 
     emit signalProgressBoxKill();
 }
-
-
 
 /**
  * @brief
@@ -535,8 +531,6 @@ void Graph::writeEccentricity(const QString fileName, const bool considerWeights
 
     emit signalProgressBoxKill();
 }
-
-
 
 /**
  * @brief Writes the information centralities to file
@@ -1044,7 +1038,6 @@ void Graph::writeCentralityEigenvector(const QString fileName,
 
     emit signalProgressBoxKill();
 }
-
 
 /**
  * @brief Writes the Degree Centrality to a file
@@ -2846,7 +2839,6 @@ void Graph::writeCentralityPower(const QString fileName,
 
     emit signalProgressBoxKill();
 }
-
 
 /**
  * @brief Writes the Degree Prestige of each node to a file

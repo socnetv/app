@@ -13,10 +13,8 @@
  * @see https://socnetv.org
  */
 
- 
 #include "graph.h"
 #include <QDebug>
-
 
 /**
  * @brief Called from Graph::graphCliques to add a new clique (list of vertices)
@@ -281,4 +279,3 @@ int Graph::graphCliquesOfSize(const int &size)
 
     return m_cliques.values(size).size();
 }
-

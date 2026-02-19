@@ -382,4 +382,3 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
 
     return true;
 }
-

@@ -14,11 +14,9 @@
  * @see https://socnetv.org
  */
 
-
 #include "graph.h"
 
 #include <QDebug>
-
 
 /**
  * @brief Returns true if vertices v1 and v2 are reachable.
@@ -111,7 +109,7 @@ void Graph::createMatrixReachability()
 int Graph::walksBetween(int v1, int v2, int length)
 {
     const bool updateProgress = false;
-    const bool considerWeights = false;   // counting walks, not weight-products
+    const bool considerWeights = false; // counting walks, not weight-products
     const bool inverseWeights = false;
     const bool dropIsolates = false;
     const bool symmetrize = false;
@@ -169,8 +167,8 @@ void Graph::graphWalksMatrixCreate(const int &N,
                     "Calculating all sociomatrix powers up to"
                  << N - 1;
 
-        XM = AM;   // product matrix
-        XSM = AM;  // sum of product matrices
+        XM = AM;  // product matrix
+        XSM = AM; // sum of product matrices
 
         QString pMsg = tr("Computing sociomatrix powers up to %1. \nPlease wait...").arg(N - 1);
         emit statusMessage(pMsg);
@@ -198,7 +196,6 @@ void Graph::graphWalksMatrixCreate(const int &N,
     if (updateProgress)
         emit signalProgressBoxKill();
 }
-
 
 /**
  * @brief Returns the influence range of vertex v1, namely the set of nodes who are
@@ -310,7 +307,6 @@ QList<int> Graph::vertexinfluenceDomain(int v1)
 
     return influenceDomains.values(v1);
 }
-
 
 /**
     Returns the number of triples of vertex v1

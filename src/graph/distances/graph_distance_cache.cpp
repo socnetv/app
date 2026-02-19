@@ -13,7 +13,6 @@
  * @see https://socnetv.org
  */
 
- 
 #include "graph.h"
 #include "engine/distance_engine.h"
 #include <QDebug>
@@ -273,10 +272,10 @@ int Graph::ssspStackSize() const
     return static_cast<int>(Stack.size());
 }
 
-void Graph::ssspStackPush(int v) { 
-    Stack.push(v); 
+void Graph::ssspStackPush(int v)
+{
+    Stack.push(v);
 }
-
 
 void Graph::ssspNthOrderClear()
 {
@@ -326,9 +325,9 @@ int Graph::ssspComponentSize() const
 //
 // DISCONNECTED PAIRS CACHE
 // During SSSP, we may find pairs of vertices that are not connected.
-// We store these in a hash for quick lookup, so that if we encounter the same pair again, 
+// We store these in a hash for quick lookup, so that if we encounter the same pair again,
 // we can immediately return "not connected" without recalculating.
-// 
+//
 void Graph::notConnectedPairsClear()
 {
     m_vertexPairsNotConnected.clear();

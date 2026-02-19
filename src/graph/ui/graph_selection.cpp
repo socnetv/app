@@ -207,4 +207,3 @@ MyEdge Graph::edgeClicked()
 {
     return m_clickedEdge;
 }
-
