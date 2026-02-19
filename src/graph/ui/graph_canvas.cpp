@@ -44,7 +44,7 @@ void Graph::canvasSizeSet(const int &width, const int &height)
     }
     canvasWidth = width;
     canvasHeight = height;
-    //    emit statusMessage(tr("Canvas size: (%1, %2)px")
+    //    progressStatus(tr("Canvas size: (%1, %2)px")
     //                       .arg(QString::number(canvasWidth))
     //                       .arg(QString::number(canvasHeight))
     //                       );

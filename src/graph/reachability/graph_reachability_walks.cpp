@@ -53,15 +53,15 @@ void Graph::createMatrixReachability()
     XRM.resize(N, N);
 
     QString pMsg = tr("Creating reachability matrix. \nPlease wait ");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N, pMsg);
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
 
     qDebug() << "Writing Reachability matrix...";
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
-        emit signalProgressBoxUpdate(++progressCounter);
+        progressUpdate(++progressCounter);
 
         source = (*it)->number();
 
@@ -96,7 +96,7 @@ void Graph::createMatrixReachability()
         i++;
     }
 
-    emit signalProgressBoxKill();
+    progressFinish();
 }
 
 /**
@@ -152,14 +152,14 @@ void Graph::graphWalksMatrixCreate(const int &N,
                  << length;
 
         QString pMsg = tr("Computing walks of length %1. \nPlease wait...").arg(length);
-        emit statusMessage(pMsg);
+        progressStatus(pMsg);
         if (updateProgress)
-            emit signalProgressBoxCreate(length, pMsg);
+            progressCreate(length, pMsg);
 
         XM = AM.pow(length, false);
 
         if (updateProgress)
-            emit signalProgressBoxUpdate(length);
+            progressUpdate(length);
     }
     else
     {
@@ -171,13 +171,13 @@ void Graph::graphWalksMatrixCreate(const int &N,
         XSM = AM; // sum of product matrices
 
         QString pMsg = tr("Computing sociomatrix powers up to %1. \nPlease wait...").arg(N - 1);
-        emit statusMessage(pMsg);
+        progressStatus(pMsg);
         if (updateProgress)
-            emit signalProgressBoxCreate(N - 1, pMsg);
+            progressCreate(N - 1, pMsg);
 
         for (int i = 2; i <= (N - 1); ++i)
         {
-            emit statusMessage(tr("Computing all sociomatrix powers up to %1. "
+            progressStatus(tr("Computing all sociomatrix powers up to %1. "
                                   "Now computing A^%2. Please wait...")
                                    .arg(N - 1)
                                    .arg(i));
@@ -186,15 +186,15 @@ void Graph::graphWalksMatrixCreate(const int &N,
             XSM += XM;
 
             if (updateProgress)
-                emit signalProgressBoxUpdate(i);
+                progressUpdate(i);
         }
 
         if (updateProgress)
-            emit signalProgressBoxUpdate(N - 1);
+            progressUpdate(N - 1);
     }
 
     if (updateProgress)
-        emit signalProgressBoxKill();
+        progressFinish();
 }
 
 /**
@@ -224,13 +224,13 @@ QList<int> Graph::vertexinfluenceRange(int v1)
     influenceRanges.reserve(N);
 
     QString pMsg = tr("Creating Influence Range List. \nPlease wait ");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N, pMsg);
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
 
     for (jt = m_graph.cbegin(); jt != m_graph.cend(); ++jt)
     {
 
-        emit signalProgressBoxUpdate(++progressCounter);
+        progressUpdate(++progressCounter);
 
         target = (*jt)->number();
 
@@ -248,7 +248,7 @@ QList<int> Graph::vertexinfluenceRange(int v1)
         }
     }
 
-    emit signalProgressBoxKill();
+    progressFinish();
 
     return influenceRanges.values(v1);
 }
@@ -279,13 +279,13 @@ QList<int> Graph::vertexinfluenceDomain(int v1)
     influenceDomains.reserve(N);
 
     QString pMsg = tr("Creating Influence Domain List. \nPlease wait ");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N, pMsg);
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
-        emit signalProgressBoxUpdate(++progressCounter);
+        progressUpdate(++progressCounter);
 
         source = (*it)->number();
 
@@ -303,7 +303,7 @@ QList<int> Graph::vertexinfluenceDomain(int v1)
         }
     }
 
-    emit signalProgressBoxKill();
+    progressFinish();
 
     return influenceDomains.values(v1);
 }

@@ -45,15 +45,15 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
     AM.resize(N, N);
 
     QString pMsg = tr("Creating Adjacency Matrix. \nPlease wait...");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N, pMsg);
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
         qDebug() << "Graph::createMatrixAdjacency() - i" << i << "name" << (*it)->number();
 
-        emit signalProgressBoxUpdate(++progressCounter);
+        progressUpdate(++progressCounter);
 
         if (!(*it)->isEnabled() || ((*it)->isIsolated() && dropIsolates))
         {
@@ -130,7 +130,7 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
 
     calculatedAdjacencyMatrix = true;
 
-    emit signalProgressBoxKill();
+    progressFinish();
 }
 
 /**

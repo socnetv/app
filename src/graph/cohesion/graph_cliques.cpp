@@ -205,8 +205,8 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X)
 
         if (csRecDepth == 1)
         {
-            emit signalProgressBoxUpdate(counter);
-            emit statusMessage(tr("Finding cliques: Recursive backtracking for actor ") + QString::number(v));
+            progressUpdate(counter);
+            progressStatus(tr("Finding cliques: Recursive backtracking for actor ") + QString::number(v));
         }
 
         // find all clique extensions of R that contain v

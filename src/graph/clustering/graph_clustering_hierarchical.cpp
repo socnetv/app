@@ -120,7 +120,7 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
     {
         //        DSM.clear();
         //        STR_EQUIV.clear();
-        emit statusMessage("ERROR computing dissimilarities matrix");
+        progressStatus("ERROR computing dissimilarities matrix");
         return false;
     }
 
@@ -172,13 +172,13 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
     }
 
     QString pMsg = tr("Computing Hierarchical Clustering. \nPlease wait...");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N, pMsg);
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
 
     while (clustersLeft > 1)
     {
 
-        emit signalProgressBoxUpdate(seq);
+        progressUpdate(seq);
 
         qDebug() << "matrix DSM contents now:";
         // DSM.printMatrixConsole();
@@ -378,7 +378,7 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
 
     qDebug() << "m_clustersByName" << m_clustersByName;
 
-    emit signalProgressBoxKill();
+    progressFinish();
 
     return true;
 }

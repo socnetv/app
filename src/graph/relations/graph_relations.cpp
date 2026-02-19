@@ -160,7 +160,7 @@ void Graph::relationAdd(const QString &relName, const bool &changeRelation)
         relationSet();
     }
 
-    emit statusMessage((tr("Added a new relation named: %1."))
+    progressStatus((tr("Added a new relation named: %1."))
                            .arg(relName));
 }
 

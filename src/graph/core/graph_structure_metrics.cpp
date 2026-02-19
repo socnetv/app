@@ -147,7 +147,7 @@ qreal Graph::graphReciprocity()
 
     qDebug() << "Graph::graphReciprocity() - Computing...";
 
-    emit statusMessage((tr("Calculating the Arc Reciprocity of the graph...")));
+    progressStatus((tr("Calculating the Arc Reciprocity of the graph...")));
 
     m_graphReciprocityArc = 0;
     m_graphReciprocityDyad = 0;

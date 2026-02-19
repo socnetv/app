@@ -49,15 +49,15 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
     SIGMA.resize(N, N);
 
     QString pMsg = tr("Creating shortest paths matrix. \nPlease wait ");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N, pMsg);
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
 
     qDebug() << "Graph::graphMatrixShortestPathsCreate() - Writing shortest paths matrix...";
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
-        emit signalProgressBoxUpdate(++progressCounter);
+        progressUpdate(++progressCounter);
 
         source = (*it)->number();
 
@@ -110,7 +110,7 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
         i++;
     }
 
-    emit signalProgressBoxKill();
+    progressFinish();
 }
 
 /**
@@ -142,15 +142,15 @@ void Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
     DM.resize(N, N);
 
     QString pMsg = tr("Creating geodesic distances matrix. \nPlease wait ");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N, pMsg);
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
 
     qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() - Writing distances matrix...";
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
-        emit signalProgressBoxUpdate(++progressCounter);
+        progressUpdate(++progressCounter);
 
         source = (*it)->number();
 
@@ -204,7 +204,7 @@ void Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
         i++;
     }
 
-    emit signalProgressBoxKill();
+    progressFinish();
 }
 
 /**

@@ -62,8 +62,8 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations)
 
     QString pMsg = tr("Embedding Eades Spring-Gravitational model. \n"
                       "Please wait ....");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(maxIterations, pMsg);
+    progressStatus(pMsg);
+    progressCreate(maxIterations, pMsg);
 
     for (iteration = 1; iteration <= maxIterations; iteration++)
     {
@@ -159,11 +159,11 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations)
 
         layoutForceDirected_Eades_moveNodes(c4);
 
-        emit signalProgressBoxUpdate(++progressCounter);
+        progressUpdate(++progressCounter);
 
     } // end iterations
 
-    emit signalProgressBoxKill();
+    progressFinish();
 }
 
 /**
@@ -205,9 +205,9 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations)
 
     QString pMsg = tr("Embedding Fruchterman & Reingold forces model. \n"
                       "Please wait ...");
-    emit statusMessage(pMsg);
+    progressStatus(pMsg);
 
-    emit signalProgressBoxCreate(maxIterations, pMsg);
+    progressCreate(maxIterations, pMsg);
 
     for (iteration = 1; iteration <= maxIterations; iteration++)
     {
@@ -292,10 +292,10 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations)
         // prevent placement outside of the frame/canvas
         layoutForceDirected_FR_moveNodes(layoutForceDirected_FR_temperature(iteration));
 
-        emit signalProgressBoxUpdate(++progressCounter);
+        progressUpdate(++progressCounter);
     }
 
-    emit signalProgressBoxKill();
+    progressFinish();
 }
 
 /**
@@ -432,8 +432,8 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
 
     QString pMsg = tr("Embedding Kamada & Kawai spring model.\n"
                       "Please wait...");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(maxIterations, pMsg);
+    progressStatus(pMsg);
+    progressCreate(maxIterations, pMsg);
 
     // while ( max_D_i > e )
     while (Delta_max > epsilon)
@@ -441,7 +441,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
 
         progressCounter++;
 
-        emit signalProgressBoxUpdate(progressCounter);
+        progressUpdate(progressCounter);
 
         if (progressCounter == maxIterations)
         {
@@ -682,7 +682,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
 
         emit setNodePos((*v1)->number(), (*v1)->pos().x(), (*v1)->pos().y());
     }
-    emit signalProgressBoxKill();
+    progressFinish();
 
     setModStatus(ModStatus::VertexPositions);
 }

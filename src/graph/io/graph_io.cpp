@@ -299,7 +299,7 @@ bool Graph::saveToPajekFormat(const QString &fileName,
     if (!f.open(QIODevice::WriteOnly | QIODevice::Text))
     {
         qDebug() << "Could not open (for writing) file:" << fileName;
-        emit statusMessage(tr("Error. Could not write to ") + fileName);
+        progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
     QTextStream t(&f);
@@ -365,7 +365,7 @@ bool Graph::saveToPajekFormat(const QString &fileName,
     // Store the file format
     setFileFormat(FileType::PAJEK);
 
-    emit statusMessage(tr("File %1 saved").arg(fileNameNoPath));
+    progressStatus(tr("File %1 saved").arg(fileNameNoPath));
     return true;
 }
 
@@ -386,7 +386,7 @@ bool Graph::saveToAdjacencyFormat(const QString &fileName,
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
         qDebug() << "Could not open (for writing) file:" << fileName;
-        emit statusMessage(tr("Error. Could not write to ") + fileName);
+        progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
     QTextStream outText(&file);
@@ -402,7 +402,7 @@ bool Graph::saveToAdjacencyFormat(const QString &fileName,
     setFileFormat(FileType::ADJACENCY);
 
     QString fileNameNoPath = fileName.split("/").last();
-    emit statusMessage(QString(tr("Adjacency matrix-formatted network saved into file %1")).arg(fileNameNoPath));
+    progressStatus(QString(tr("Adjacency matrix-formatted network saved into file %1")).arg(fileNameNoPath));
     return true;
 }
 
@@ -498,7 +498,7 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
     if (!f.open(QIODevice::WriteOnly | QIODevice::Text))
     {
         qDebug() << "Could not open (for writing) file:" << fileName;
-        emit statusMessage(tr("Error. Could not write to ") + fileName);
+        progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
     QTextStream outText(&f);
@@ -871,7 +871,7 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
     // Store the file format
     setFileFormat(FileType::GRAPHML);
 
-    emit statusMessage(tr("File %1 saved").arg(fileNameNoPath));
+    progressStatus(tr("File %1 saved").arg(fileNameNoPath));
 
     return true;
 }

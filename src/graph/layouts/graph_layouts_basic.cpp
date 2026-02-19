@@ -36,12 +36,12 @@ void Graph::layoutRandom()
 
     QString pMsg = tr("Embedding Random Layout. \n"
                       "Please wait...");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N, pMsg);
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-        emit signalProgressBoxUpdate(++progressCounter);
+        progressUpdate(++progressCounter);
         new_x = canvasRandomX();
         new_y = canvasRandomY();
         (*it)->setX(new_x);
@@ -52,7 +52,7 @@ void Graph::layoutRandom()
         emit setNodePos((*it)->number(), new_x, new_y);
     }
 
-    emit signalProgressBoxKill();
+    progressFinish();
 
     setModStatus(ModStatus::VertexPositions);
 }
@@ -83,13 +83,13 @@ void Graph::layoutRadialRandom(const bool &guides)
 
     QString pMsg = tr("Embedding Random Radial layout. \n"
                       "Please wait ....");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N, pMsg);
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
-        emit signalProgressBoxUpdate(++progressCounter);
+        progressUpdate(++progressCounter);
 
         randomDecimal = (qreal)(rand() % 100) / 100.0;
         new_radius = (maxRadius - (randomDecimal - offset) * maxRadius);
@@ -117,7 +117,7 @@ void Graph::layoutRadialRandom(const bool &guides)
         }
     }
 
-    emit signalProgressBoxKill();
+    progressFinish();
     setModStatus(ModStatus::VertexPositions);
 }
 
@@ -138,13 +138,13 @@ void Graph::layoutCircular(const double &x0, const double &y0,
     int progressCounter = 0;
 
     QString pMsg = tr("Applying circular layout. \nPlease wait...");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N, pMsg);
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
-        emit signalProgressBoxUpdate(++progressCounter);
+        progressUpdate(++progressCounter);
 
         if (!(*it)->isEnabled())
         {
@@ -169,7 +169,7 @@ void Graph::layoutCircular(const double &x0, const double &y0,
         }
     }
 
-    emit signalProgressBoxKill();
+    progressFinish();
 
     setModStatus(ModStatus::VertexPositions);
 }
@@ -251,7 +251,7 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
     }
     };
 
-    emit statusMessage(tr("Computing centrality/prestige scores. Please wait..."));
+    progressStatus(tr("Computing centrality/prestige scores. Please wait..."));
 
     // first compute centrality indices if needed
 
@@ -317,8 +317,8 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
         break;
     }
     }
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N, pMsg);
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
@@ -419,7 +419,7 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
 
         norm = std / maxC;
 
-        emit signalProgressBoxUpdate(++progressCounter);
+        progressUpdate(++progressCounter);
 
         switch (layoutType)
         {
@@ -595,7 +595,7 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
         };
     }
 
-    emit signalProgressBoxKill();
+    progressFinish();
 
     setModStatus(ModStatus::VertexPositions);
 

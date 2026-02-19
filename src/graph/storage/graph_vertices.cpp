@@ -134,7 +134,7 @@ void Graph::vertexCreateAtPos(const QPointF &p)
                  p, initVertexShape, initVertexIconPath,
                  true);
 
-    emit statusMessage(tr("New node (numbered %1) added at position (%2,%3). Double-click on it to start a new edge from it.")
+    progressStatus(tr("New node (numbered %1) added at position (%2,%3). Double-click on it to start a new edge from it.")
                            .arg(vertexNumberMax())
                            .arg(p.x())
                            .arg(p.y()));
@@ -443,8 +443,8 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
 
     int progressCounter = 0;
     QString pMsg = tr("Creating subgraph. \nPlease wait...");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(vList.size(), pMsg);
+    progressStatus(pMsg);
+    progressCreate(vList.size(), pMsg);
 
     qreal weight;
 
@@ -457,7 +457,7 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
         for (int i = 0; i < vList.size(); ++i)
         {
 
-            emit signalProgressBoxUpdate(++progressCounter);
+            progressUpdate(++progressCounter);
 
             for (int j = i + 1; j < vList.size(); ++j)
             {
@@ -493,7 +493,7 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
         for (int j = 0; j < vList.size(); ++j)
         {
 
-            emit signalProgressBoxUpdate(++progressCounter);
+            progressUpdate(++progressCounter);
 
             if (!(weight = edgeExists(center, vList.value(j))))
             {
@@ -527,7 +527,7 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
         for (int i = 0; i < vList.size(); ++i)
         {
 
-            emit signalProgressBoxUpdate(++progressCounter);
+            progressUpdate(++progressCounter);
 
             j = (i == vList.size() - 1) ? 0 : i + 1;
             if (!(weight = edgeExists(vList.value(i), vList.value(j))))
@@ -560,7 +560,7 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
         for (int i = 0; i < vList.size(); ++i)
         {
 
-            emit signalProgressBoxUpdate(++progressCounter);
+            progressUpdate(++progressCounter);
 
             if (i == vList.size() - 1)
                 break;
@@ -591,10 +591,10 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
     }
     else
     {
-        emit signalProgressBoxKill();
+        progressFinish();
         return;
     }
-    emit signalProgressBoxKill();
+    progressFinish();
 }
 
 
@@ -786,13 +786,13 @@ bool Graph::vertexFindByNumber(const QStringList &numList)
     {
         searchResult = true;
         qDebug() << "One or more matching nodes found. Signaling to GW to highlight them...";
-        emit statusMessage(tr("Found %1 matching nodes.").arg(foundList.size()));
+        progressStatus(tr("Found %1 matching nodes.").arg(foundList.size()));
         emit signalNodesFound(foundList);
     }
     else
     {
         qDebug() << "No matching nodes found. Return.";
-        emit statusMessage(tr("Could not find any nodes matching your choices."));
+        progressStatus(tr("Could not find any nodes matching your choices."));
     }
 
     return searchResult;
@@ -834,13 +834,13 @@ bool Graph::vertexFindByLabel(const QStringList &labelList)
     {
         searchResult = true;
         qDebug() << "One or more matchin nodes found. Signaling to GW to highlight them...";
-        emit statusMessage(tr("Found %1 matching nodes.").arg(foundList.size()));
+        progressStatus(tr("Found %1 matching nodes.").arg(foundList.size()));
         emit signalNodesFound(foundList);
     }
     else
     {
         qDebug() << "No matching nodes found. Return.";
-        emit statusMessage(tr("Could not find any nodes matching your choices."));
+        progressStatus(tr("Could not find any nodes matching your choices."));
     }
 
     return searchResult;
@@ -1096,13 +1096,13 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
     {
         searchResult = true;
         qDebug() << "One or more matching nodes found. Signaling to GW to highlight them...";
-        emit statusMessage(tr("Found %1 matching nodes.").arg(foundList.size()));
+        progressStatus(tr("Found %1 matching nodes.").arg(foundList.size()));
         emit signalNodesFound(foundList);
     }
     else
     {
         qDebug() << "No matching nodes found. Return.";
-        emit statusMessage(tr("Could not find any nodes matching your choices."));
+        progressStatus(tr("Could not find any nodes matching your choices."));
     }
 
     return searchResult;

@@ -214,15 +214,15 @@ qreal Graph::clusteringCoefficient(const bool updateProgress)
 
     QString pMsg = tr("Computing Clustering Coefficient. \n"
                       "Please wait...");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N, pMsg);
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
 
     for (vertex = m_graph.cbegin(); vertex != m_graph.cend(); ++vertex)
     {
 
         if (updateProgress)
         {
-            emit signalProgressBoxUpdate(++progressCounter);
+            progressUpdate(++progressCounter);
         }
 
         temp = clusteringCoefficientLocal((*vertex)->number());
@@ -255,7 +255,7 @@ qreal Graph::clusteringCoefficient(const bool updateProgress)
 
     if (updateProgress)
     {
-        emit signalProgressBoxKill();
+        progressFinish();
     }
 
     return averageCLC;

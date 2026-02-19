@@ -139,7 +139,7 @@ void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold
     // Update graph mod status
     setModStatus(ModStatus::EdgeCount);
     // Emit a status message
-    emit statusMessage(tr("Edges with weight %1 %2 have been filtered.").arg(words).arg(m_threshold));
+    progressStatus(tr("Edges with weight %1 %2 have been filtered.").arg(words).arg(m_threshold));
 }
 
 /**
@@ -182,6 +182,6 @@ void Graph::edgeFilterUnilateral(const bool &toggle)
         (*it)->setEnabledUnilateralEdges(toggle);
     }
     setModStatus(ModStatus::EdgeCount);
-    emit statusMessage(tr("Unilateral edges have been temporarily disabled."));
+    progressStatus(tr("Unilateral edges have been temporarily disabled."));
 }
 

@@ -67,7 +67,7 @@ void Graph::randomNetErdosCreate(const int &N,
     QString pMsg = tr("Creating Erdos-Renyi Random Network. \n"
                       " Please wait...");
 
-    emit signalProgressBoxCreate((m != 0 ? m : N), pMsg);
+    progressCreate((m != 0 ? m : N), pMsg);
 
     for (int i = 0; i < N; i++)
     {
@@ -124,7 +124,7 @@ void Graph::randomNetErdosCreate(const int &N,
                 //                    qDebug() << "do not create Edge";
             }
 
-            emit signalProgressBoxUpdate(++progressCounter);
+            progressUpdate(++progressCounter);
         }
     }
     else
@@ -161,14 +161,14 @@ void Graph::randomNetErdosCreate(const int &N,
                            EdgeType::Directed, true, false,
                            QString(), false);
             }
-            emit signalProgressBoxUpdate(++progressCounter);
+            progressUpdate(++progressCounter);
         } while (edgeCount != m);
     }
 
     relationCurrentRename(tr("erdos-renyi"), true);
 
-    emit signalProgressBoxUpdate((m != 0 ? m : N));
-    emit signalProgressBoxKill();
+    progressUpdate((m != 0 ? m : N));
+    progressFinish();
 
     setModStatus(ModStatus::VertexEdgeCount);
 }
@@ -221,8 +221,8 @@ void Graph::randomNetScaleFreeCreate(const int &N,
 
     QString pMsg = tr("Creating Scale-Free Random Network. \n"
                       "Please wait...");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N, pMsg);
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
 
     for (int i = 0; i < m0; ++i)
     {
@@ -251,7 +251,7 @@ void Graph::randomNetScaleFreeCreate(const int &N,
                        EdgeType::Undirected, false, false,
                        QString(), false);
         }
-        emit signalProgressBoxUpdate(++progressCounter);
+        progressUpdate(++progressCounter);
     }
 
     qDebug() << "Graph::randomNetScaleFreeCreate() - @@@@ "
@@ -274,7 +274,7 @@ void Graph::randomNetScaleFreeCreate(const int &N,
             QString::number(i + 1), initVertexLabelColor, initVertexLabelSize,
             QPoint(x, y), initVertexShape, initVertexIconPath, false);
 
-        emit signalProgressBoxUpdate(++progressCounter);
+        progressUpdate(++progressCounter);
 
         // need to multiply by 2, since we have a undirected graph
         // and edgesEnabled reports edges/2
@@ -352,7 +352,7 @@ void Graph::randomNetScaleFreeCreate(const int &N,
 
     setModStatus(ModStatus::VertexEdgeCount);
 
-    emit signalProgressBoxKill();
+    progressFinish();
 
     layoutVertexSizeByIndegree();
 }
@@ -381,8 +381,8 @@ void Graph::randomNetSmallWorldCreate(const int &N, const int &degree,
 
     QString pMsg = tr("Creating Small-World Random Network. \n"
                       "Please wait ...");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N, pMsg);
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
 
     qDebug("******** Graph: REWIRING starts...");
 
@@ -428,12 +428,12 @@ void Graph::randomNetSmallWorldCreate(const int &N, const int &degree,
                     qDebug("Will not break link!");
             }
         }
-        emit signalProgressBoxUpdate(++progressCounter);
+        progressUpdate(++progressCounter);
     }
 
     relationCurrentRename(tr("small-world"), true);
 
-    emit signalProgressBoxKill();
+    progressFinish();
 
     layoutVertexSizeByIndegree();
 
@@ -472,8 +472,8 @@ void Graph::randomNetRegularCreate(const int &N,
 
     QString pMsg = tr("Creating pseudo-random d-regular network. \n"
                       "Please wait...");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N, pMsg);
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
 
     qDebug() << " creating vertices";
 
@@ -603,13 +603,13 @@ void Graph::randomNetRegularCreate(const int &N,
 
         if (fmod(progressCounter, 1.0) == 0)
         {
-            emit signalProgressBoxUpdate((int)progressCounter);
+            progressUpdate((int)progressCounter);
         }
     }
 
     relationCurrentRename(tr("d-regular"), true);
 
-    emit signalProgressBoxKill();
+    progressFinish();
 
     setModStatus(ModStatus::VertexEdgeCount);
 }
@@ -644,8 +644,8 @@ void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
 
     QString pMsg = tr("Creating ring-lattice network. \n"
                       "Please wait...");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N, pMsg);
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
 
     for (int i = 0; i < N; i++)
     {
@@ -673,14 +673,14 @@ void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
         }
         if (updateProgress)
         {
-            emit signalProgressBoxUpdate(++progressCounter);
+            progressUpdate(++progressCounter);
         }
     }
 
     if (updateProgress)
     {
         relationCurrentRename(tr("ring-lattice"), true);
-        emit signalProgressBoxKill();
+        progressFinish();
     }
 
     setModStatus(ModStatus::VertexEdgeCount, updateProgress);
@@ -732,8 +732,8 @@ void Graph::randomNetLatticeCreate(const int &N,
 
     QString pMsg = tr("Creating lattice network. \n"
                       "Please wait...");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N, pMsg);
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
 
     // create vertices
 
@@ -889,7 +889,7 @@ void Graph::randomNetLatticeCreate(const int &N,
 
     relationCurrentRename(tr("lattice"), true);
 
-    emit signalProgressBoxKill();
+    progressFinish();
 
     setModStatus(ModStatus::VertexEdgeCount);
 }

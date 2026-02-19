@@ -38,13 +38,13 @@ bool Graph::isWeighted()
     int progressCounter = 0;
 
     QString pMsg = tr("Checking if the graph edges are valued. \nPlease wait...");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N, pMsg);
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
-        emit signalProgressBoxUpdate(++progressCounter);
+        progressUpdate(++progressCounter);
 
         for (it1 = m_graph.cbegin(); it1 != m_graph.cend(); ++it1)
         {
@@ -63,7 +63,7 @@ bool Graph::isWeighted()
     calculatedGraphWeighted = true;
     qDebug() << "graph is weighted:" << m_graphIsWeighted;
 
-    emit signalProgressBoxKill();
+    progressFinish();
 
     return m_graphIsWeighted;
 }

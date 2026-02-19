@@ -49,13 +49,13 @@ bool Graph::graphTriadCensus()
     }
 
     QString pMsg = tr("Computing Triad Census. \nPlease wait...");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N, pMsg);
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
 
     for (v1 = m_graph.cbegin(); v1 != m_graph.cend(); v1++)
     {
 
-        emit signalProgressBoxUpdate(++progressCounter);
+        progressUpdate(++progressCounter);
 
         for (v2 = (v1 + 1); v2 != m_graph.cend(); v2++)
         {
@@ -127,7 +127,7 @@ bool Graph::graphTriadCensus()
 
     calculatedTriad = true;
 
-    emit signalProgressBoxKill();
+    progressFinish();
 
     return true;
 }

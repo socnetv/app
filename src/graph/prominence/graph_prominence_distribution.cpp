@@ -114,7 +114,7 @@ void Graph::prominenceDistribution(const int &index,
              << "distImageFileName" << distImageFileName;
 
     QString pMsg = tr("Computing Centrality Distribution. \nPlease wait...");
-    emit statusMessage(pMsg);
+    progressStatus(pMsg);
 
     H_StrToInt discreteClasses;
 
@@ -208,15 +208,15 @@ void Graph::prominenceDistribution(const int &index,
         emit signalPromininenceDistributionChartUpdate(Q_NULLPTR, Q_NULLPTR);
         break;
     case ChartType::Spline:
-        emit statusMessage(tr("Creating prominence index distribution line chart..."));
+        progressStatus(tr("Creating prominence index distribution line chart..."));
         prominenceDistributionSpline(discreteClasses, seriesName, distImageFileName);
         break;
     case ChartType::Area:
-        emit statusMessage(tr("Creating prominence index distribution area chart..."));
+        progressStatus(tr("Creating prominence index distribution area chart..."));
         prominenceDistributionArea(discreteClasses, seriesName, distImageFileName);
         break;
     case ChartType::Bars:
-        emit statusMessage(tr("Creating prominence index distribution bar chart..."));
+        progressStatus(tr("Creating prominence index distribution bar chart..."));
         prominenceDistributionBars(discreteClasses, seriesName, distImageFileName);
         break;
     }
