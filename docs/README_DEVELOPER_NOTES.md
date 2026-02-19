@@ -76,16 +76,21 @@ The active refactor currently underway is WS2 detailed at:
 
 ### WS2 Status (Current)
 
-WS2 (Graph as façade / coordinator) is actively reducing the size and
-responsibility surface of `graph.cpp` via mechanical extraction of
-algorithmic subsystems into dedicated translation units under `src/graph/`.
+WS2 (Graph as façade / coordinator) has completed the structural extraction phase (F2).
 
-These extractions preserve exact behavior and are validated through
-golden comparisons and benchmark guardrails.
+`graph.cpp` now contains only:
+- `Graph::Graph(...)`
+- `Graph::clear(...)`
+
+All other responsibilities have been mechanically extracted into
+dedicated translation units under `src/graph/`.
+
+All changes preserve behavior and are verified via golden comparisons
+and benchmark guardrails.
 
 See:
-- `ARCHITECTURAL_REFACTORING_ROADMAP.md` (high-level plan)
-- `docs/roadmaps/roadmap_ui_graph_facade.md` (detailed WS2 progress)
+- `ARCHITECTURAL_REFACTORING_ROADMAP.md`
+- `docs/roadmaps/roadmap_ui_graph_facade.md`
 
 
 ### History

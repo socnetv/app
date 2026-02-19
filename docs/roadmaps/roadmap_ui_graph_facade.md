@@ -77,11 +77,12 @@ We have already completed the most important move: **SSSP kernel ownership moved
 * Any remaining `friend` use must be justified and explicitly documented.
 
 ---
-### F2 — Split Graph.cpp into “Coordinator vs Services” (mechanical, safe) (ACTIVE)
 
-This is the core WS2 work: progressively turning `Graph` into orchestration glue.
+### ✅ F2 — Split Graph.cpp into “Coordinator vs Services” (mechanical, safe) (DONE)
 
-**Work strategy**
+This was the core WS2 structural work: turning `Graph` into orchestration glue.
+
+**Work strategy (applied)**
 
 * No logic refactoring.
 * No signature changes.
@@ -91,84 +92,35 @@ This is the core WS2 work: progressively turning `Graph` into orchestration glue
 
 ---
 
-### Extracted domains (so far)
+### Result
 
-The following subsystems have been mechanically extracted from `graph.cpp`
-into dedicated translation units under `src/graph/`:
+All major subsystems have been mechanically extracted from `graph.cpp`
+into dedicated translation units under `src/graph/`, including:
 
-- reporting/
-- layouts/
-  - basic
-  - force-directed
-- reachability/
-- generators/
-- crawler/
-- cohesion/ (cliques)
-- clustering/
-  - triad census
-  - clustering coefficients
-  - hierarchical clustering
-- similarity/ (similarity & dissimilarity matrix builders)
-- distances/
-  - distance façade
-  - distance cache / SSSP helpers
-- prominence/
-  - centrality
-  - prestige
-  - prominence distributions
-- matrices/
-  - adjacency matrix builders
-  - adjacency inverse builders
-- util/
-  - matrix/metric/clustering type ↔ string helpers
-  - htmlEscaped()
-- ui/
-  - canvas geometry helpers
-  - selection & clicked-state helpers
-- relations/
-  - relation management
-- storage/
-  - vertex storage & CRUD
+- algorithms (distances, clustering, cohesion, similarity, prominence)
+- layouts and generators
+- crawler
+- reporting
+- vertex storage & styling
+- edge storage, styling, and filtering
+- structural metrics
+- graph state flags
+- metadata & modification state
+- file IO wrappers
+- reporting configuration setters
+
+`graph.cpp` now contains only:
+
+- `Graph::Graph(...)`
+- `Graph::clear(...)`
 
 All slices:
 - compile as independent translation units
-- are listed in `GRAPH_SOURCES` in CMake
+- are listed in `GRAPH_SOURCES`
 - pass golden comparisons
 - remain within benchmark guardrails
 
----
-
-### What remains inside Graph.cpp (intentionally, shrinking)
-
-At this stage, the following categories remain in `graph.cpp`:
-
-- constructor & global reset logic
-- edge storage & CRUD
-- enable/disable logic
-- graph-level state flags
-  - modified / loaded / saved
-  - directed / undirected / weighted / symmetric
-- structural metrics
-  - density
-  - reciprocity
-  - symmetry
-  - degree / neighborhood helpers
-- file IO wrappers
-  - load/save formats
-  - parser coordination
-
-These will continue to be mechanically reduced where safe under F2.
-Parser/format separation remains WS4 work.
-
----
-
-### Definition of done (ongoing for F2)
-
-- `graph.cpp` materially reduced from original ~19K LOC and continues shrinking.
-- Remaining content trends toward coordination rather than algorithm hosting.
-- No behavioral changes introduced.
-
-`Graph` is steadily converging toward a façade/coordinator role.
+F2 structural extraction is complete.
 
 ---
 

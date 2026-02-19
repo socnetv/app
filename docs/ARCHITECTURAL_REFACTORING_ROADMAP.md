@@ -85,13 +85,27 @@ Status (current progress):
   - relation management
   - selection & clicked-state helpers
   - vertex storage & CRUD
+  - edge storage & CRUD
+  - edge styling
+  - edge filtering
+  - structural metrics
+  - graph state flags (weighted/symmetric/directed)
+  - metadata & modification state
+  - file IO wrappers
+  - reporting configuration setters
 
-- graph.cpp significantly reduced in size (~19K LOC → substantially smaller coordinator-focused unit).
-- Each slice verified via golden comparisons.
-- Benchmarks within guardrails.
+- `graph.cpp` reduced to:
+  - `Graph::Graph(...)`
+  - `Graph::clear(...)`
 
-WS2 is progressing as planned: Graph is steadily becoming orchestration glue.
+- All slices:
+  - are purely mechanical (no logic changes)
+  - are listed in `GRAPH_SOURCES`
+  - pass golden comparisons
+  - remain within benchmark guardrails
 
+WS2/F2 structural extraction is effectively complete.
+Next focus: tighten UI boundaries (WS2/F3) and prepare deeper IO separation (WS4).
 
 
 ### WS3 — Domain model split (SKELETON)
