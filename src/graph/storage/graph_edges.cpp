@@ -459,3 +459,55 @@ qreal Graph::edgeWeight(const int &v1, const int &v2) const
 {
     return m_graph[vpos[v1]]->hasEdgeTo(v2);
 }
+
+/**
+ * @brief Changes the direction type of an existing edge
+ *
+ * @param v1
+ * @param v2
+ * @param weight
+ */
+void Graph::edgeTypeSet(const int &v1,
+                        const int &v2,
+                        const qreal &weight,
+                        const int &dirType)
+{
+
+    qDebug() << "Changing the direction type of edge: " << v1
+             << "->" << v2 << "new edgeType:" << dirType;
+
+    if (dirType != EdgeType::Directed)
+    {
+
+        // check if reverse edge exists
+        qreal revEdgeWeight = edgeExists(v2, v1);
+
+        if (revEdgeWeight == 0)
+        {
+            // Reverse edge does not exist, add it
+            qDebug() << "reverse  edge" << v1 << " <- " << v2 << " does not exist - Adding it...";
+            // Note: Even if dirType=EdgeType::Undirected we add the opposite edge as EdgeType::Reciprocated
+            edgeAdd(v2, v1, weight, EdgeType::Reciprocated, "", initEdgeColor);
+        }
+        else
+        {
+            // Reverse edge does exist
+            if (dirType == EdgeType::Undirected)
+            {
+                // Make the edge weights equal
+                // TOFIX: how do we decide which of the two weights to keep?
+                qDebug() << "Graph::edgeTypeSet(): opposite  " << v1
+                         << " <- " << v2 << " exists - equaling weights.";
+                if (weight != revEdgeWeight)
+                {
+                    edgeWeightSet(v2, v1, weight);
+                }
+            }
+            else
+            {
+                // if dirType is EdgeType::Reciprocated we don't need  to equalize weights
+            }
+        }
+        emit signalEdgeType(v1, v2, dirType);
+    }
+}
