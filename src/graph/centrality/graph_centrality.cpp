@@ -58,8 +58,8 @@ void Graph::centralityInformation(const bool considerWeights,
     createMatrixAdjacency(dropIsolates, considerWeights, inverseWeights, symmetrize);
 
     QString pMsg = tr("Computing Information Centralities. \nPlease wait...");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(n, pMsg);
+    progressStatus(pMsg);
+    progressCreate(n, pMsg);
 
     WM.resize(n, n);
     invM.resize(n, n);
@@ -78,14 +78,14 @@ void Graph::centralityInformation(const bool considerWeights,
         WM.setItem(i, i, weightSum);
     }
 
-    emit signalProgressBoxUpdate(n / 3);
-    emit statusMessage(tr("Computing inverse adjacency matrix. Please wait..."));
+    progressUpdate(n / 3);
+    progressStatus(tr("Computing inverse adjacency matrix. Please wait..."));
 
     invM.inverse(WM);
 
-    emit statusMessage(tr("Computing IC scores. Please wait..."));
+    progressStatus(tr("Computing IC scores. Please wait..."));
 
-    emit signalProgressBoxUpdate(2 * n / 3);
+    progressUpdate(2 * n / 3);
 
     diagonalEntriesSum = 0;
     rowSum = 0;
@@ -139,8 +139,8 @@ void Graph::centralityInformation(const bool considerWeights,
 
     WM.clear();
 
-    emit signalProgressBoxUpdate(n);
-    emit signalProgressBoxKill();
+    progressUpdate(n);
+    progressFinish();
 }
 
 /**
@@ -161,7 +161,7 @@ void Graph::centralityEigenvector(const bool &considerWeights,
 
     qDebug() << "(Re)Computing Eigenvector centrality scores...";
 
-    emit statusMessage((tr("Calculating EVC scores...")));
+    progressStatus((tr("Calculating EVC scores...")));
 
     classesEVC = 0;
     discreteEVCs.clear();
@@ -185,15 +185,15 @@ void Graph::centralityEigenvector(const bool &considerWeights,
                           inverseWeights, symmetrize);
 
     QString pMsg = tr("Computing Eigenvector Centrality scores. \nPlease wait...");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N, pMsg);
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
 
     if (useDegrees)
     {
 
         qDebug() << "Using outDegree for initial EVC vector";
 
-        emit statusMessage(tr("Computing outDegrees. Please wait..."));
+        progressStatus(tr("Computing outDegrees. Please wait..."));
 
         for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
         {
@@ -217,15 +217,15 @@ void Graph::centralityEigenvector(const bool &considerWeights,
         }
     }
 
-    emit signalProgressBoxUpdate(N / 3);
+    progressUpdate(N / 3);
 
     AM.powerIteration(EVC, sumEVC, maxEVC, maxNodeEVC,
                       minEVC, minNodeEVC,
                       0.0000001, 500);
 
-    emit signalProgressBoxUpdate(2 * N / 3);
+    progressUpdate(2 * N / 3);
 
-    emit statusMessage(tr("Leading eigenvector computed. "
+    progressStatus(tr("Leading eigenvector computed. "
                           "Analysing centralities. Please wait..."));
 
     i = 0;
@@ -269,8 +269,8 @@ void Graph::centralityEigenvector(const bool &considerWeights,
 
     delete[] EVC;
 
-    emit signalProgressBoxUpdate(N);
-    emit signalProgressBoxKill();
+    progressUpdate(N);
+    progressFinish();
 }
 
 /**
@@ -302,10 +302,10 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
 
     QString pMsg = tr("Computing out-Degree Centralities for %1 nodes. \nPlease wait...").arg(N);
     qDebug() << pMsg;
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N, pMsg);
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
 
-    emit signalProgressBoxUpdate(N / 3);
+    progressUpdate(N / 3);
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
@@ -343,7 +343,7 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
         sumDC += DC; // store sumDC (for std calc below)
     }
 
-    emit signalProgressBoxUpdate(2 * N / 3);
+    progressUpdate(2 * N / 3);
 
     // Calculate std Out-Degree, min, max, classes and sumSDC
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
@@ -416,8 +416,8 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
 
     calculatedDC = true;
 
-    emit signalProgressBoxUpdate(N);
-    emit signalProgressBoxKill();
+    progressUpdate(N);
+    progressFinish();
 }
 
 /**
@@ -466,8 +466,8 @@ void Graph::centralityClosenessIR(const bool considerWeights,
 
     QString pMsg = tr("Computing Influence Range Centrality scores. \n"
                       "Please wait");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N, pMsg);
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
 
     qDebug() << "dropIsolates" << dropIsolates;
     qDebug() << "computing scores for actors: " << N;
@@ -475,7 +475,7 @@ void Graph::centralityClosenessIR(const bool considerWeights,
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
-        emit signalProgressBoxUpdate(++progressCounter);
+        progressUpdate(++progressCounter);
 
         IRCC = 0;
         sumD = 0;
@@ -546,7 +546,7 @@ void Graph::centralityClosenessIR(const bool considerWeights,
 
     calculatedIRCC = true;
 
-    emit signalProgressBoxKill();
+    progressFinish();
 }
 
 /**

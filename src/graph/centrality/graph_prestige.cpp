@@ -56,8 +56,8 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
     m_graphIsSymmetric = true;
 
     QString pMsg = tr("Computing Degree Prestige (in-Degree). \n Please wait ...");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N, pMsg);
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
 
     qDebug() << "vertices"
              << N
@@ -66,7 +66,7 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
-        emit signalProgressBoxUpdate(++progressCounter);
+        progressUpdate(++progressCounter);
 
         v1 = (*it)->number();
         qDebug() << "computing DP for vertex" << v1;
@@ -198,7 +198,7 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
     delete enabledInEdges;
     calculatedDP = true;
 
-    emit signalProgressBoxKill();
+    progressFinish();
 }
 
 /**
@@ -236,13 +236,13 @@ void Graph::prestigeProximity(const bool considerWeights,
     int progressCounter = 0;
 
     QString pMsg = tr("Computing Proximity Prestige scores. \nPlease wait ...");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(V, pMsg);
+    progressStatus(pMsg);
+    progressCreate(V, pMsg);
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
-        emit signalProgressBoxUpdate(++progressCounter);
+        progressUpdate(++progressCounter);
 
         PP = 0;
         Ii = 0;
@@ -332,7 +332,7 @@ void Graph::prestigeProximity(const bool considerWeights,
 
     calculatedPP = true;
 
-    emit signalProgressBoxKill();
+    progressFinish();
 }
 
 /**
@@ -381,8 +381,8 @@ void Graph::prestigePageRank(const bool &dropIsolates)
     bool edgeStatus = false;
 
     QString pMsg = tr("Computing PageRank Prestige scores. \nPlease wait ...");
-    emit statusMessage(pMsg);
-    emit signalProgressBoxCreate(N, pMsg);
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
@@ -406,7 +406,7 @@ void Graph::prestigePageRank(const bool &dropIsolates)
         return;
     }
 
-    emit signalProgressBoxUpdate(N / 3);
+    progressUpdate(N / 3);
 
     // begin iteration - continue until we reach our desired delta
     while (maxDelta > delta)
@@ -526,7 +526,7 @@ void Graph::prestigePageRank(const bool &dropIsolates)
         iterations++;
     }
 
-    emit signalProgressBoxUpdate(2 * N / 3);
+    progressUpdate(2 * N / 3);
 
     if (N != 0)
     {
@@ -572,8 +572,8 @@ void Graph::prestigePageRank(const bool &dropIsolates)
 
     calculatedPRP = true;
 
-    emit signalProgressBoxUpdate(N);
-    emit signalProgressBoxKill();
+    progressUpdate(N);
+    progressFinish();
 
     return;
 }

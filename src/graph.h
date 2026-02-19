@@ -386,6 +386,7 @@ signals:
 
 
 public:
+
     // ============================================================================
     // GRAPH FACADE CONTRACT (WS2 / F0)
     // ----------------------------------------------------------------------------
@@ -1278,7 +1279,17 @@ public:
     H_Int vpos;
 
 
+// --------------------------------------------------------------------------
+// INTERNAL PROGRESS FACADE (WS2/F4)
+// Algorithm slices must not emit signals directly.
+// --------------------------------------------------------------------------
+protected:
+    void progressStatus(const QString &msg);
+    void progressCreate(int max, const QString &msg);
+    void progressUpdate(int value);
+    void progressFinish();
 
+    
 private:
 
     /** private member functions */
