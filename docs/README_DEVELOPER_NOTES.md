@@ -1,124 +1,174 @@
 # SocNetV Developer Notes
 
-This folder documents the **current architecture** of SocNetV and the **ongoing modernization/refactor** effort.
+This folder documents the **current architecture** of SocNetV and the **ongoing modernization effort**.
 
-If you are new to the codebase, start here, then read the high-level roadmap:
-- [`ARCHITECTURAL_REFACTORING_ROADMAP.md`](ARCHITECTURAL_REFACTORING_ROADMAP.md)
+If you are new to the codebase, start here, then read the high-level refactoring roadmap:
 
-For work-in-progress refactors (with detailed steps and status), see:
-- `docs/roadmaps`
+* [`ARCHITECTURAL_REFACTORING_ROADMAP.md`](ARCHITECTURAL_REFACTORING_ROADMAP.md)
 
+Detailed execution plans live under:
+
+* `docs/roadmaps/`
+
+---
 
 ## Project Snapshot
 
 SocNetV is a Qt-based desktop application for social network analysis and visualization.
 
-Historically, most functionality flowed through a central `Graph` object (this is being incrementally decomposed under WS2) which acts as:
-- domain model (network storage)
-- algorithm host (distances, centralities, clustering, etc.)
-- UI bridge (signals/progress)
-- I/O coordinator (loading datasets)
+Historically, most functionality flowed through a central `Graph` object which acted as:
 
-This worked, but makes testing and incremental modernization hard.
+* domain model (network storage)
+* algorithm host (distances, centralities, clustering, etc.)
+* UI bridge (signals/progress)
+* I/O coordinator (loading datasets)
 
+This design worked but made testing, modularization, and safe refactoring difficult.
 
-## Code Shape
+---
 
-### Main high-level pieces
+## Current Architectural State
 
-- UI layer (Qt Widgets):
-  - `MainWindow`, dialogs, graphics widgets/items
-- Core “god object”:
-  - `Graph` (data + algorithms + UI signaling)
-- Data structures:
-  - `GraphVertex` / edges as storage and (importantly) **cache/state** for analysis results
-- Algorithms:
-  - Many analytics use `Graph::graphDistancesGeodesic()` (now backed by DistanceEngine) as a hub (distances + centralities)
-- I/O:
-  - `Parser` loads datasets and emits signals that `Graph` consumes
+Refactoring workstreams WS1 and WS2 are complete.
 
-### Where work happens
-The historical flow:
-UI → Graph → (everything)
+### Graph as Façade
 
-The target flow:
-UI
- ↓
-Graph (thin façade / coordinator)
- ↓
-Domain model + services (algorithms, IO, matrices, caches)
+`Graph` now acts primarily as:
 
+* state holder and invariants guardian
+* explicit façade API for UI and CLI
+* delegator to algorithm slices
+* central UI signal coordinator
 
-## What’s Good (Pros)
+`graph.cpp` contains only:
 
-- Mature functionality with years of real-world usage
-- Efficient “one-pass” distance + centrality kernel (Brandes-style approach)
-- Lots of debug output and UI progress signaling already in place
-- GraphML and multiple formats supported
+* `Graph::Graph(...)`
+* `Graph::clear(...)`
 
+All other functionality lives under:
 
-## Pain Points (Cons)
+```
+src/graph/
+```
 
-- `Graph` is a monolith: data, UI, algorithms, I/O, caches
-- Algorithms are hard to test headlessly
-- Stateful caches live inside `GraphVertex` and internal Graph containers
-- Refactoring risk is high without a regression harness
-- Threading / signals are tightly intertwined with analytics
+organized by responsibility (distances, centrality, clustering, prominence, layouts, io, ui, etc.).
 
+---
 
-## Current Refactor Strategy
+## Structural Boundary Inside `src/graph/`
 
-We’re doing an [**incremental architectural refactor**](./ARCHITECTURAL_REFACTORING_ROADMAP.md) based on detailed roadmaps.
+A strict separation is now enforced:
 
-The active refactor currently underway is WS2 detailed at:
-- [`./roadmaps/roadmap_ui_graph_facade.md`](./roadmaps/roadmap_ui_graph_facade.md)
+### Algorithm slices
 
+* Compute data only
+* May use QtCore
+* Do **not** construct QtWidgets / QtCharts objects
+* Do **not** emit UI signals directly
 
-### WS2 Status (Current)
+### UI façade layer (`src/graph/ui/`)
 
-WS2 (Graph as façade / coordinator) has completed the structural extraction phase (F2).
+* Constructs QtCharts / QtWidgets objects
+* Handles PNG exports
+* Emits signals to `MainWindow`
 
-`graph.cpp` now contains only:
-- `Graph::Graph(...)`
-- `Graph::clear(...)`
+If you add new analytics:
 
-All other responsibilities have been mechanically extracted into
-dedicated translation units under `src/graph/`.
+* Keep computation in algorithm slices
+* Delegate rendering and signal emission to the UI façade
 
-All changes preserve behavior and are verified via golden comparisons
-and benchmark guardrails.
+This rule is mandatory for new code.
 
-See:
-- `ARCHITECTURAL_REFACTORING_ROADMAP.md`
-- `docs/roadmaps/roadmap_ui_graph_facade.md`
+---
 
+## Code Shape (High-Level)
 
-### History
+### UI Layer
 
-Previously, we implemented the refactor detailed in:
-- `docs/roadmaps/distances_geodesic_engine.md`
+* `MainWindow`
+* dialogs
+* graphics widgets/items
 
-This extracted the monolithic `Graph::graphDistancesGeodesic()` into a testable `DistanceEngine`
-while preserving exact behavior. It also introduced a headless CLI that loads datasets and prints metrics.
-Main results: 
-- preserve behavior and numeric results
-- keep changes small and verifiable
-- add headless tooling and regression baselines early
-- decouple UI progress signaling from algorithm logic
+### Core Coordinator
+
+* `Graph` (façade)
+
+### Data Structures
+
+* `GraphVertex`
+* edge storage
+* analysis caches
+
+### Engines / Slices
+
+* DistanceEngine
+* centrality
+* clustering
+* prominence
+* similarity
+* layouts
+* generators
+* reporting
+* io wrappers
+
+### I/O
+
+* `Parser` (next major refactor target — WS4)
+
+---
+
+## Current Refactor Direction
+
+High-level plan:
+
+* `ARCHITECTURAL_REFACTORING_ROADMAP.md`
+
+WS2 (Graph façade) is complete.
+
+Next focus:
+
+* WS4 — IO / Parser boundary cleanup
+
+The goal is to clarify loading flow and reduce Qt signal entanglement before attempting a domain model split (WS3).
+
+---
 
 ## Development Workflow Notes
 
 ### Build
-- CMake + Qt 6 (macOS/Linux/Windows)
-- Keep refactors incremental: compile/run/compare at every step.
 
-### Debug output
-- Debug output is treated as part of current behavior during refactor phases unless explicitly changed.
+* CMake + Qt 6 (macOS/Linux/Windows)
+* Refactors must be incremental and verifiable.
 
-### Regression mindset
-- Each refactor phase should produce measurable outputs (metrics and/or per-node vectors)
-  and compare them against known good baselines.
+### Regression Discipline
 
-### Where to look next
-- High-level plan: `docs/ARCHITECTURAL_REFACTORING_ROADMAP.md`
-- Detailed current work: `docs/roadmaps/roadmap_ui_graph_facade.md`
+* Golden comparisons must pass. See scripts/run_golden_compares.sh
+* Performance must remain within benchmark guardrails. See scripts/run_benchmark.sh
+* Behavior preservation is mandatory.
+
+### Debug Output
+
+* Considered part of observable behavior during refactors unless explicitly changed.
+
+---
+
+## Mental Model for Contributors
+
+Current runtime flow:
+
+```
+UI
+↓
+Graph (façade)
+↓
+Algorithm slice / engine
+↓
+UI façade (if rendering required)
+↓
+Signal to MainWindow
+```
+
+Do not bypass this flow.
+
+If you are unsure whether something belongs in an algorithm slice or in the UI façade layer, prefer separation.
+
