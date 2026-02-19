@@ -103,6 +103,7 @@ set(ENGINE_SOURCES
 set(GRAPH_SOURCES
     src/graph.cpp
     src/graph/storage/graph_vertices.cpp
+    src/graph/storage/graph_edges.cpp
     src/graph/ui/graph_canvas.cpp
     src/graph/relations/graph_relations.cpp
     src/graph/ui/graph_selection.cpp
