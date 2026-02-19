@@ -335,6 +335,272 @@ VList::const_iterator Graph::verticesBegin() const { return m_graph.cbegin(); }
 
 VList::const_iterator Graph::verticesEnd() const { return m_graph.cend(); }
 
+
+/**
+ * @brief Returns a list of all isolated vertices inside the graph
+ *
+ * @return QList<int>
+ */
+QList<int> Graph::verticesListIsolated()
+{
+    if (calculatedIsolates)
+    {
+        qDebug() << "Graph::verticesListIsolated() - graph not modified and "
+                    "already calculated isolates. Returning list as is:"
+                 << m_verticesIsolatedList;
+        return m_verticesIsolatedList;
+    }
+
+    VList::const_iterator it;
+    m_verticesIsolatedList.clear();
+    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    {
+        //        if ( ! (*it)->isEnabled() )
+        //            continue;
+        if ((*it)->isIsolated())
+        {
+            m_verticesIsolatedList << (*it)->number();
+            qDebug() << "Graph::verticesListIsolated() - node " << (*it)->number()
+                     << " is isolated. Marking it.";
+        }
+    }
+    qDebug() << "Graph::verticesListIsolated() - isolated vertices list:"
+             << m_verticesIsolatedList;
+    calculatedIsolates = true;
+    return m_verticesIsolatedList;
+}
+
+/**
+ * @brief Returns a list of all vertices numbers inside the graph
+ *
+ * @return QList<int>
+ */
+QList<int> Graph::verticesList()
+{
+    qDebug() << "Graph::verticesList()";
+    if (!m_verticesList.isEmpty() && calculatedVerticesList)
+    {
+        return m_verticesList;
+    }
+    VList::const_iterator it;
+    m_verticesList.clear();
+    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    {
+        if (!(*it)->isEnabled())
+            continue;
+        m_verticesList << (*it)->number();
+    }
+    calculatedVerticesList = true;
+    return m_verticesList;
+}
+
+/**
+ * @brief Returns a QSet of all vertices numbers inside the graph
+ * @return
+ */
+QSet<int> Graph::verticesSet()
+{
+    qDebug() << "Graph::verticesSet()";
+    if (!m_verticesSet.isEmpty() && calculatedVerticesSet)
+    {
+        return m_verticesSet;
+    }
+    VList::const_iterator it;
+    m_verticesSet.clear();
+    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    {
+        if (!(*it)->isEnabled())
+            continue;
+        m_verticesSet << (*it)->number();
+    }
+    calculatedVerticesSet = true;
+    return m_verticesSet;
+}
+
+/**
+ * @brief Creates a subgraph (clique, star, cycle, line) with vertices in vList
+ * Iff vList is empty, then fallbacks to the m_verticesSelected.
+ * @param vList
+ */
+void Graph::verticesCreateSubgraph(QList<int> vList,
+                                   const int &type,
+                                   const int &center)
+{
+
+    if (relations() == 1 && edgesEnabled() == 0)
+    {
+        QString newRelationName = QString::number(vList.size()) + tr("-clique");
+        relationCurrentRename(newRelationName, true);
+    }
+
+    if (vList.isEmpty())
+    {
+        vList = m_verticesSelected;
+    }
+
+    qDebug() << "Graph::verticesCreateSubgraph() - type:" << type
+             << "vList:" << vList;
+
+    int progressCounter = 0;
+    QString pMsg = tr("Creating subgraph. \nPlease wait...");
+    emit statusMessage(pMsg);
+    emit signalProgressBoxCreate(vList.size(), pMsg);
+
+    qreal weight;
+
+    bool drawArrows = isDirected();
+    int edgeType = (isUndirected()) ? EdgeType::Undirected : EdgeType::Reciprocated;
+
+    if (type == SUBGRAPH_CLIQUE)
+    {
+
+        for (int i = 0; i < vList.size(); ++i)
+        {
+
+            emit signalProgressBoxUpdate(++progressCounter);
+
+            for (int j = i + 1; j < vList.size(); ++j)
+            {
+
+                if (!(weight = edgeExists(vList.value(i), vList.value(j))))
+                {
+
+                    if ((weight = edgeExists(vList.value(j), vList.value(i))))
+                    {
+                        edgeTypeSet(vList.value(j), vList.value(i), weight, edgeType);
+                    }
+                    else
+                    {
+                        edgeCreate(vList.value(i),
+                                   vList.value(j),
+                                   1.0,
+                                   initEdgeColor,
+                                   EdgeType::Undirected,
+                                   drawArrows);
+                        edgeTypeSet(vList.value(i), vList.value(j), weight, edgeType);
+                    }
+                }
+                else
+                {
+                    edgeTypeSet(vList.value(i), vList.value(j), weight, edgeType);
+                }
+            }
+        }
+    }
+    else if (type == SUBGRAPH_STAR)
+    {
+
+        for (int j = 0; j < vList.size(); ++j)
+        {
+
+            emit signalProgressBoxUpdate(++progressCounter);
+
+            if (!(weight = edgeExists(center, vList.value(j))))
+            {
+                if (center == vList.value(j))
+                    continue;
+
+                if ((weight = edgeExists(vList.value(j), center)))
+                {
+                    edgeTypeSet(vList.value(j), center, weight, edgeType);
+                }
+                else
+                {
+                    edgeCreate(center,
+                               vList.value(j),
+                               1.0,
+                               initEdgeColor,
+                               EdgeType::Undirected,
+                               drawArrows);
+                    edgeTypeSet(center, vList.value(j), weight, edgeType);
+                }
+            }
+            else
+            {
+                edgeTypeSet(center, vList.value(j), weight, edgeType);
+            }
+        }
+    }
+    else if (type == SUBGRAPH_CYCLE)
+    {
+        int j = 0;
+        for (int i = 0; i < vList.size(); ++i)
+        {
+
+            emit signalProgressBoxUpdate(++progressCounter);
+
+            j = (i == vList.size() - 1) ? 0 : i + 1;
+            if (!(weight = edgeExists(vList.value(i), vList.value(j))))
+            {
+
+                if ((weight = edgeExists(vList.value(j), vList.value(i))))
+                {
+                    edgeTypeSet(vList.value(j), vList.value(i), weight, edgeType);
+                }
+                else
+                {
+                    edgeCreate(vList.value(i),
+                               vList.value(j),
+                               1.0,
+                               initEdgeColor,
+                               EdgeType::Undirected,
+                               drawArrows);
+                    edgeTypeSet(vList.value(i), vList.value(j), weight, edgeType);
+                }
+            }
+            else
+            {
+                edgeTypeSet(vList.value(i), vList.value(j), weight, edgeType);
+            }
+        }
+    }
+    else if (type == SUBGRAPH_LINE)
+    {
+        int j = 0;
+        for (int i = 0; i < vList.size(); ++i)
+        {
+
+            emit signalProgressBoxUpdate(++progressCounter);
+
+            if (i == vList.size() - 1)
+                break;
+            j = i + 1;
+            if (!(weight = edgeExists(vList.value(i), vList.value(j))))
+            {
+
+                if ((weight = edgeExists(vList.value(j), vList.value(i))))
+                {
+                    edgeTypeSet(vList.value(j), vList.value(i), weight, edgeType);
+                }
+                else
+                {
+                    edgeCreate(vList.value(i),
+                               vList.value(j),
+                               1.0,
+                               initEdgeColor,
+                               EdgeType::Undirected,
+                               drawArrows);
+                    edgeTypeSet(vList.value(i), vList.value(j), weight, edgeType);
+                }
+            }
+            else
+            {
+                edgeTypeSet(vList.value(i), vList.value(j), weight, edgeType);
+            }
+        }
+    }
+    else
+    {
+        emit signalProgressBoxKill();
+        return;
+    }
+    emit signalProgressBoxKill();
+}
+
+
+// 
+// Vertex numbers
+// 
 /**
  * @brief Returns the number of the last vertex in the graph.
  *
@@ -364,6 +630,56 @@ int Graph::vertexNumberMin()
 //
 // Vertex existence and find operations
 //
+
+
+/**
+ * @brief Gets the number of vertices in the graph
+ *
+ * If countAll = true, returns |V| where V the set of all (enabled or not) vertices
+ * If countAll = false, it skips disabled vertices
+ * If countAll = false and dropIsolates = true, it skips both disabled and isolated vertices
+ *
+ * @param dropIsolates
+ * @param countAll
+ * @return
+ */
+int Graph::vertices(const bool &dropIsolates, const bool &countAll, const bool &recount)
+{
+
+    if (m_totalVertices != 0 && calculatedVertices && !recount)
+    {
+        qDebug() << "Graph not modified, returning static number: "
+                 << m_totalVertices;
+        return m_totalVertices;
+    }
+    m_totalVertices = 0;
+    VList::const_iterator it;
+    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    {
+        if (countAll)
+        {
+            ++m_totalVertices;
+        }
+        else
+        {
+            if (dropIsolates && (*it)->isIsolated())
+            {
+                qDebug() << "Skipping isolated vertex:" << (*it)->number();
+                continue;
+            }
+            if (!(*it)->isEnabled())
+            {
+                qDebug() << "Skipping disabled vertex:" << (*it)->number();
+                continue;
+            }
+            ++m_totalVertices;
+        }
+    }
+    qDebug() << "Graph size:" << m_graph.size() << "vertices" << m_totalVertices;
+    calculatedVertices = true;
+    return m_totalVertices;
+}
+
 
 /**
  * @brief Returns true if the current graph has no vertices at all

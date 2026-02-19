@@ -102,6 +102,7 @@ set(ENGINE_SOURCES
 
 set(GRAPH_SOURCES
     src/graph.cpp
+    src/graph/core/graph_structure_metrics.cpp
     src/graph/storage/graph_vertices.cpp
     src/graph/storage/graph_edges.cpp
     src/graph/ui/graph_canvas.cpp
