@@ -6,11 +6,12 @@ XSBC-Original-Maintainer: Dimitris B. Kalamaras <dimitris.kalamaras@gmail.com>
 Build-Depends: debhelper-compat (= 12),
                qt6-base-dev,
                qt6-base-dev-tools,
+               qt6-tools-dev-tools,
+               qt6-l10n-tools,
                qt6-charts-dev,
                qt6-svg-dev,
                qt6-5compat-dev,
                libqt6opengl6-dev
-
 Standards-Version: 4.5.1
 Homepage: https://socnetv.org
 Vcs-Git: https://github.com/socnetv/app.git

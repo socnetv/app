@@ -1,10 +1,22 @@
 #!/usr/bin/make -f
 
 %:
-	QT_SELECT=5 dh $@
+	dh $@ --buildsystem=qmake
 
 override_dh_auto_configure:
-	dh_auto_configure -- INSTALLS+=doc
+	qmake6 PREFIX=/usr
+
+override_dh_auto_build:
+	# Generate translations (.qm) from .ts (Qt6)
+	LRELEASE_BIN=$$(command -v lrelease-qt6 || command -v lrelease6 || command -v lrelease || echo /usr/lib/qt6/bin/lrelease); \
+	test -x "$$LRELEASE_BIN"; \
+	"$$LRELEASE_BIN" socnetv.pro
+	dh_auto_build
 
 override_dh_auto_install:
-	$(MAKE) INSTALL_ROOT=$$(pwd)/debian/socnetv install
+	# Let debhelper handle stripping; prevent qmake from stripping during install
+	$(MAKE) INSTALL_ROOT=$$(pwd)/debian/socnetv QMAKE_STRIP=: install
+
+override_dh_dwz:
+	# socnetv is often stripped by upstream/qmake install; dwz is not useful here
+	true

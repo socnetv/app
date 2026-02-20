@@ -20,6 +20,7 @@
 #include <QFileInfo>
 #include <QTextStream>
 #include <QDir>
+#include <QStringEncoder>
 
 /**
  * @brief Loads a graph from a given file.

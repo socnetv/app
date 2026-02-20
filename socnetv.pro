@@ -212,6 +212,7 @@ unix:!macx{
 # make INSTALL_ROOT=<folder> install;
 
   PREFIX = /usr
+  QMAKE_STRIP = :
   target.path = $${PREFIX}/bin
   TARGET = socnetv
 
