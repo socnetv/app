@@ -1,17 +1,14 @@
 # SocNetV CLI Regression Tool
 
-`socnetv-cli` is a headless regression tool used to verify algorithmic correctness
-during the ongoing architectural refactor of SocNetV.
+`socnetv-cli` is a headless regression tool used to verify algorithmic correctness during the ongoing architectural refactor of SocNetV.
 
 It provides deterministic execution of compute kernels without loading any UI components.
 
 Originally introduced to protect the refactor of:
 
 ```
-
 Graph::graphDistancesGeodesic()
 → DistanceEngine
-
 ```
 
 It has since evolved into a modular regression harness for multiple algorithm families.
@@ -22,20 +19,21 @@ It has since evolved into a modular regression harness for multiple algorithm fa
 
 The CLI enables:
 
-- Headless dataset loading (no MainWindow / GraphicsWidget)
-- Deterministic kernel execution
-- Golden-output JSON generation
-- Strict regression comparison against committed baselines
-- Performance benchmarking (distance kernel)
-- CI integration (fail-fast on mismatch)
+* Headless dataset loading (no MainWindow / GraphicsWidget)
+* Deterministic kernel execution
+* Golden-output JSON generation
+* Strict regression comparison against committed baselines
+* Performance benchmarking (distance kernel only)
+* CI integration (fail-fast on mismatch)
 
 This ensures refactors preserve:
 
-- numeric results
-- connectivity bookkeeping
-- centrality vectors
-- directed/weighted semantics
-- matrix-based computations (walks, reachability)
+* numeric results
+* connectivity bookkeeping
+* centrality vectors
+* prestige vectors
+* directed/weighted semantics
+* matrix-based computations (walks, reachability)
 
 ---
 
@@ -43,17 +41,18 @@ This ensures refactors preserve:
 
 The CLI is modular.
 
-- `socnetv_cli.cpp` → façade (argument parsing, dispatch)
-- `cli/cli_common.cpp` → shared utilities
-- `cli/kernels/kernel_distance_v1.cpp`
-- `cli/kernels/kernel_reachability_v2.cpp`
-- `cli/kernels/kernel_walks_v3.cpp`
+* `socnetv_cli.cpp` → façade (argument parsing, dispatch)
+* `cli/cli_common.cpp` → shared utilities
+* `cli/kernels/kernel_distance_v1.cpp`
+* `cli/kernels/kernel_reachability_v2.cpp`
+* `cli/kernels/kernel_walks_v3.cpp`
+* `cli/kernels/kernel_prominence_v4.cpp`
 
 Each kernel owns:
 
-- Its execution logic
-- Its JSON schema builder
-- Its comparison routine
+* Its execution logic
+* Its JSON schema builder
+* Its comparison routine
 
 The CLI is a safety harness, not a new analytics engine.
 
@@ -61,12 +60,12 @@ The CLI is a safety harness, not a new analytics engine.
 
 # Design Principles
 
-- No UI involvement
-- No graphics dependency
-- Deterministic vertex ordering
-- Deterministic float formatting
-- Schema isolation per algorithm family
-- Zero silent semantic modification of Graph
+* No UI involvement
+* No graphics dependency
+* Deterministic vertex ordering
+* Deterministic float formatting (floats serialized as strings)
+* Schema isolation per algorithm family
+* Zero silent semantic modification of Graph
 
 Each kernel has its own schema version.
 
@@ -79,9 +78,7 @@ Existing schemas are **never modified**.
 The tool is built as:
 
 ```
-
 socnetv-cli
-
 ```
 
 It is compiled alongside the main application via CMake.
@@ -96,66 +93,104 @@ Kernels are selected with `--kernel`.
 
 ## Distance / Centrality Kernel
 
-- Kernel: `distance` (default)
-- JSON schema: `schema_version = 1`
+* Kernel: `distance` (default)
+* JSON schema: `schema_version = 1`
 
 Protects:
 
-- DistanceEngine
-- Centrality vectors
-- Connectivity semantics
+* DistanceEngine
+* Geodesic-based centralities
+* Connectivity semantics
 
 ---
 
 ## Reachability Kernel
 
-- Kernel: `reachability`
-- JSON schema: `schema_version = 2`
+* Kernel: `reachability`
+* JSON schema: `schema_version = 2`
 
 Reachability semantics:
 
-- R(i,j) = 1 if geodesic distance is finite
-- R(i,j) = 0 otherwise
-- Diagonal convention: **R(i,i) = 1**
+* R(i,j) = 1 if geodesic distance is finite
+* R(i,j) = 0 otherwise
+* Diagonal convention: **R(i,i) = 1**
 
 Derived from the distance kernel.
 
 Constraints:
 
-- `--centralities` not applicable
-- Must use `-c 0`
-- `--bench` not supported
+* `--centralities` not applicable
+* Must use `-c 0`
+* `--bench` not supported
 
 ---
 
 ## Walks Matrix Kernel
 
-- Kernel: `walks_matrix`
-- JSON schema: `schema_version = 3`
-- Required option: `--walks-length K`
+* Kernel: `walks_matrix`
+* JSON schema: `schema_version = 3`
+* Required option: `--walks-length K`
 
 Computes:
 
 ```
-
 XM = A^K
-
 ```
 
 Each element:
 
 ```
-
 XM(i,j) = number of walks of exact length K from i to j
-
 ```
 
 Output includes:
 
-- `walks.nodes` → deterministic vertex order
-- `walks.matrix` → integer NxN matrix
-- `walks.length`
-- `walks.total_walks`
+* `walks.nodes`
+* `walks.matrix`
+* `walks.length`
+* `walks.total_walks`
+
+---
+
+## Prominence Kernel
+
+* Kernel: `prominence`
+* JSON schema: `schema_version = 4`
+
+Protects all node-level prominence indices.
+
+### Centrality
+
+* DC / SDC
+* CC / SCC (classic closeness)
+* IRCC / SIRCC (influence-range closeness)
+* BC / SBC
+* SC / SSC
+* PC / SPC
+* IC / SIC
+* EVC / SEVC
+* eccentricity (+ eccentricity_inf)
+
+### Prestige
+
+* DP / SDP (degree prestige)
+* PP / SPP (proximity prestige)
+* PRP / SPRP (PageRank)
+
+Characteristics:
+
+* Deterministic vertex ordering
+* Deterministic float serialization
+* Strict per-field comparison
+* No UI involvement
+
+This kernel combines:
+
+* DistanceEngine-based indices
+* Standalone centrality functions
+* Prestige functions
+
+---
 
 # Basic Usage
 
@@ -165,12 +200,12 @@ Distance kernel:
 ./socnetv-cli \
   -i src/data/SmallWorld_N10_E12.graphml \
   -f 1
-````
+```
 
 Common file types (see `global.h`):
 
 * 1 → GRAPHML
-* 2 → PAJEK
+* 2 → PAJEK (.paj / .net)
 * 3 → ADJACENCY
 * 5 → UCINET
 
@@ -223,10 +258,31 @@ DI0 = dropIsolates=0
 
 ---
 
+## Prominence (schema v4)
+
+```bash
+./socnetv-cli \
+  --kernel prominence \
+  -i src/data/Krackhardt_Kite_N10.paj \
+  -f 2 -w 0 -x 1 -k 0 \
+  --dump-json src/tools/baselines/prominence/Krackhardt_Kite_N10__PROM__V4__FT2__W0_IW1_DI0.json
+```
+
+Flag encoding:
+
+```
+W0  = considerWeights=0
+IW1 = inverseWeights=1
+DI0 = dropIsolates=0
+```
+
+---
+
 # Golden Output Compare
 
 ```bash
 ./socnetv-cli \
+  --kernel <kernel> \
   --compare-json <baseline.json>
 ```
 
@@ -254,7 +310,7 @@ Graph-level:
 * disconnected_pairs
 * connected
 
-Per-node (deterministic ascending order):
+Per-node:
 
 * CC / SCC
 * BC / SBC
@@ -263,8 +319,6 @@ Per-node (deterministic ascending order):
 * PC / SPC
 * distance_sum
 * eccentricity
-
-Floating-point values are serialized as strings.
 
 ---
 
@@ -283,6 +337,39 @@ Floating-point values are serialized as strings.
 * matrix (integer counts)
 * walks.length
 * walks.total_walks
+
+---
+
+## Prominence Kernel (v4)
+
+Graph-level:
+
+* nodes
+* links_sna
+* ties_graph
+* directed / weighted
+
+Per-node:
+
+Centrality:
+
+* DC / SDC
+* CC / SCC
+* IRCC / SIRCC
+* BC / SBC
+* SC / SSC
+* PC / SPC
+* IC / SIC
+* EVC / SEVC
+* eccentricity (+ eccentricity_inf)
+
+Prestige:
+
+* DP / SDP
+* PP / SPP
+* PRP / SPRP
+
+Floating-point values are serialized as strings.
 
 ---
 
@@ -329,6 +416,7 @@ Validates:
 * Distance (v1)
 * Reachability (v2)
 * Walks (v3)
+* Prominence (v4)
 
 Fails on any mismatch.
 
@@ -340,7 +428,7 @@ Fails on any mismatch.
 scripts/run_benchmarks.sh
 ```
 
-Validates median compute times for distance kernel only.
+Validates median compute times for the distance kernel only.
 
 Machine-aware baseline sets supported.
 
@@ -366,6 +454,12 @@ Walks baselines:
 src/tools/baselines/walks/
 ```
 
+Prominence baselines:
+
+```
+src/tools/baselines/prominence/
+```
+
 See:
 
 ```
@@ -378,15 +472,11 @@ src/tools/baselines/BASELINES__README.md
 
 Rules:
 
-* Never modify schema v1 or v2 structures
+* Never modify existing schema structures
 * New kernel → new schema version
 * Deterministic ordering always
 * Explicit failure on mismatch
 * Baselines are updated only for deliberate semantic fixes
 
 The CLI is the architectural safety harness of SocNetV.
-
-```
-
----
 
