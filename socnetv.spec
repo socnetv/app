@@ -65,11 +65,13 @@ BuildRequires:  pkgconfig(Qt6Widgets)
 BuildRequires:  pkgconfig(Qt6Network)
 BuildRequires:  pkgconfig(Qt6Xml)
 BuildRequires:  pkgconfig(Qt6OpenGL)
+BuildRequires:  pkgconfig(Qt6OpenGLWidgets)
 
 # qt6-qtsvg-devel
 BuildRequires:  pkgconfig(Qt6Svg)
 # qt6-qtcharts-devel
 BuildRequires:  pkgconfig(Qt6Charts)
+BuildRequires:  pkgconfig(Qt6Core5Compat)
 
 
 %description
@@ -139,7 +141,7 @@ pwd
 %defattr(-,root,root)
 %dir /usr/share/socnetv
 %license COPYING
-%doc AUTHORS CHANGELOG.md README.md CHANGELOG.md
+%doc AUTHORS CHANGELOG.md README.md
 %{_bindir}/%{name}
 %{_datadir}/%{name}/%{name}_*.qm
 %{_datadir}/applications/%{name}.desktop
