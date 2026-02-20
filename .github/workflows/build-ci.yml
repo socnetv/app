@@ -307,7 +307,7 @@ jobs:
           chmod a+x linuxdeploy-x86_64.AppImage linuxdeploy-plugin-qt-x86_64.AppImage
           echo "🚀 Creating AppImage using linuxdeploy..."
           QMAKE=$(which qmake) \
-          LINUXDEPLOY_OUTPUT_VERSION="linuxdeploy-out" \
+          LINUXDEPLOY_OUTPUT_VERSION="tmp-out" \
           ./linuxdeploy-x86_64.AppImage \
             --appdir AppDir \
             --plugin qt \
