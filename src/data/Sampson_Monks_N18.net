@@ -1,0 +1,62 @@
+*Vertices 18
+1 "JohnBosco"
+2 "Gregory"
+3 "Basil"
+4 "Peter"
+5 "Bonaventure"
+6 "Berthold"
+7 "Mark"
+8 "Victor"
+9 "Ambrose"
+10 "Romuald"
+11 "Louis"
+12 "Winifrid"
+13 "Amand"
+14 "Hugh"
+15 "Boniface"
+16 "Albert"
+17 "Elias"
+18 "Simplicius"
+*Arcs
+2 1 1
+3 13 1
+4 11 1
+6 5 1
+6 9 1
+8 4 1
+8 6 1
+9 12 1
+10 4 1
+10 5 1
+10 9 1
+10 13 1
+11 8 1
+11 14 1
+13 5 1
+13 7 1
+13 18 1
+14 15 1
+15 2 1
+15 7 1
+15 12 1
+16 2 1
+16 15 1
+17 2 1
+18 2 1
+*Edges
+1 3 1
+1 12 1
+2 7 1
+2 12 1
+3 17 1
+4 5 1
+4 6 1
+5 9 1
+5 11 1
+7 12 1
+8 9 1
+12 14 1
+1 14 1
+7 16 1
+3 18 1
+17 18 1
