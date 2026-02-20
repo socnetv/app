@@ -16,6 +16,8 @@
 
 #include "graph.h"
 
+#include <QColor>
+
 //
 // Vertex size
 //

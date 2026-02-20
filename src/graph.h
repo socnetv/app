@@ -26,9 +26,6 @@
 #include <QTextStream>
 #include <QThread>
 
-// Allows to use QT_CHARTS namespace directives (see below)
-#include <QtCharts/QChartGlobal>
-
 // stack is a wrapper around <deque> in C++
 // see: www.cplusplus.com/reference/stl/stack
 #include <stack>
@@ -38,7 +35,6 @@
 #include "matrix.h"
 #include "parser.h"
 #include "webcrawler.h"
-#include "graphicswidget.h"
 
 class QDateTime;
 class QPointF;
@@ -64,16 +60,7 @@ typedef QList<int> L_int;
 typedef QList<int> V_int;
 typedef QList<QString> V_str;
 
-/**
-  KNOWN BUGS:
 
-  \bug wontfix Cannot read Graphml files where nodes are not declared before edges (i.e. nets/killer.graphml)
-  \bug wontfix Pajek files with no ic / labels without quotes are displayed without colors
-
-  \todo Group edge editing: i.e. change weight or color.
-  \todo Subgroups / Communities: clans, path distance MDS, Components, Blocks and Cutpoints.
-  \todo Structural Equivalence: MDS, Block modelling, CONCOR
-  */
 
 /**
  * @brief The Graph class

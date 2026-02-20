@@ -16,6 +16,7 @@
 #include "graph.h"
 
 #include <QDebug>
+#include <QColor>
 #include <QtMath>
 #include <cmath>
 
