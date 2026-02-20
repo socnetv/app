@@ -10,9 +10,9 @@ set -euo pipefail
 #   SOCNETV_CLI=./build/socnetv-cli ./scripts/run_benchmarks.sh
 #
 # Baseline selection priority:
-#   1) BENCH_BASELINE=/path/to/perf_expected.env            (explicit file)
-#   2) BENCH_BASELINE_SET=<name>                            (scripts/perf_baselines/<name>/perf_expected.env)
-#   3) auto: <OS>-<ARCH>-<HOST>                             (scripts/perf_baselines/<auto>/perf_expected.env)
+#   1) BENCH_BASELINE=/path/to/perf_expected.env
+#   2) BENCH_BASELINE_SET=<name> (scripts/perf_baselines/<name>/perf_expected.env)
+#   3) auto: <OS>-<ARCH>-<HOST> (scripts/perf_baselines/<auto>/perf_expected.env)
 #   4) legacy PERF_EXPECTED_FILE (defaults to scripts/perf_expected.env)
 
 RECORD=0
@@ -26,32 +26,25 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Root = repo root (script lives in scripts/)
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-# Optional: informational + helps default binary path
-BENCH_BUILD_TYPE="${BENCH_BUILD_TYPE:-Debug}"  # Debug|Release (hint only unless you rely on default paths)
+BENCH_BUILD_TYPE="${BENCH_BUILD_TYPE:-Debug}"  # Debug|Release (hint only)
 
 DEFAULT_CLI="$ROOT_DIR/build/socnetv-cli"
 if [[ ! -x "$DEFAULT_CLI" ]]; then
-  # prefer builds/__unspec__/<type>/socnetv-cli if present
   DEFAULT_CLI="$ROOT_DIR/builds/__unspec__/${BENCH_BUILD_TYPE}/socnetv-cli"
   if [[ ! -x "$DEFAULT_CLI" ]]; then
-    # legacy fallback
     DEFAULT_CLI="$ROOT_DIR/builds/__unspec__/Debug/socnetv-cli"
   fi
 fi
 SOCNETV_CLI="${SOCNETV_CLI:-$DEFAULT_CLI}"
 
-# Legacy single-file baseline (keep intact!)
 PERF_EXPECTED_FILE="${PERF_EXPECTED_FILE:-$ROOT_DIR/scripts/perf_expected.env}"
 
-# New machine-aware baseline sets
 BASELINE_ROOT="$ROOT_DIR/scripts/perf_baselines"
 LEGACY_BASELINE="$PERF_EXPECTED_FILE"
 
 sanitize_id() {
-  # keep alnum, dot, underscore, dash
   echo "$1" | tr -cd '[:alnum:]._-' | sed 's/^\.*//; s/\.*$//'
 }
 
@@ -64,11 +57,6 @@ auto_baseline_set() {
 }
 
 resolve_expected_file() {
-  # Priority:
-  # 1) BENCH_BASELINE (explicit file path)
-  # 2) BENCH_BASELINE_SET (dir under scripts/perf_baselines/)
-  # 3) auto set (OS-ARCH-HOST)
-  # 4) legacy PERF_EXPECTED_FILE
   if [[ -n "${BENCH_BASELINE:-}" ]]; then
     echo "${BENCH_BASELINE}"
     return 0
@@ -112,20 +100,15 @@ fi
 
 REC_LINES=()
 
-# ---------------- helpers ----------------
-
 extract_kv_int() {
   local key="$1"
   awk -F= -v k="$key" '$1==k { print $2 }'
 }
 
 pct_slower_than() {
-  # returns 0 if actual <= expected * 1.10
   local actual="$1"
   local expected="$2"
-
   [[ -z "$actual" || -z "$expected" ]] && return 1
-
   if (( 100 * actual > 110 * expected )); then
     return 1
   fi
@@ -150,14 +133,18 @@ write_record_file() {
   } > "$out_file"
 }
 
-
 run_case() {
   local tag="$1"
   shift
 
   echo "=== $tag ==="
+
+  # We want stable output (suppress stderr), but still detect failures.
   local out
-  out="$("$SOCNETV_CLI" "$@" 2>/dev/null || true)"
+  if ! out="$("$SOCNETV_CLI" "$@" 2>/dev/null)"; then
+    echo "ERROR: socnetv-cli failed for $tag" >&2
+    return 2
+  fi
 
   local ok median
   ok="$(printf '%s\n' "$out" | extract_kv_int OK | tail -n1)"
@@ -197,6 +184,7 @@ run_case() {
 fail=0
 
 # ---------------- benchmark cases ----------------
+# NOTE: CLI enforces --bench only for --kernel distance (default kernel is distance).
 
 # Medium (UCINET time_1)
 run_case "EIES48_T1_C1_W1" \
@@ -221,10 +209,6 @@ run_case "BA500_M3_C0_W0" \
 echo "=== DONE ==="
 
 if [[ "${RECORD}" == "1" ]]; then
-  # Decide output file:
-  # - If BENCH_BASELINE is set: write exactly there.
-  # - Else: write to scripts/perf_baselines/<set>/perf_expected.env
-  #   (never overwrite legacy baseline by accident).
   if [[ -n "${BENCH_BASELINE:-}" ]]; then
     OUT_FILE="${BENCH_BASELINE}"
   else
@@ -245,4 +229,3 @@ fi
 
 echo "RESULT=OK"
 exit 0
-tem
