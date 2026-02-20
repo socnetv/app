@@ -1,3 +1,9 @@
+socnetv (3.3-1) noble; urgency=medium
+
+  * Upstream release 3.3
+
+ -- Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>  Fri, 20 Feb 2026 15:11:08 +0200
+
 socnetv (3.2-1) focal; urgency=medium
 
   *  New upstream v3.2

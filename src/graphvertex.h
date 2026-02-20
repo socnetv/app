@@ -158,8 +158,11 @@ public:
     void setIsolated(bool isolated);
     bool isIsolated();
 
+    const H_edges& outEdges() const { return m_outEdges; }
     QHash<int, qreal> outEdgesEnabledHash(const bool &allRelations=false);
     QHash<int,qreal>* outEdgesAllRelationsUniqueHash();
+
+    const H_edges& inEdges() const { return m_inEdges; }
     QHash<int,qreal>* inEdgesEnabledHash();
     QHash<int,qreal> reciprocalEdgesHash();
     QList<int> neighborhoodList();

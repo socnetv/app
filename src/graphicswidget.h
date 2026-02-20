@@ -20,6 +20,9 @@
 
 #include <QGraphicsView>
 #include <QHash>
+#include "global.h"
+
+SOCNETV_USE_NAMESPACE 
 
 class MainWindow;
 class GraphicsNode;
@@ -33,10 +36,6 @@ class GraphicsEdgeLabel;
 typedef QHash<QString, GraphicsEdge*> H_StrToEdge;
 typedef QHash <int, GraphicsNode*> H_NumToNode;
 
-
-typedef QPair<int, int> SelectedEdge;
-
-Q_DECLARE_METATYPE(SelectedEdge)
 
 
 class GraphicsWidget : public QGraphicsView {

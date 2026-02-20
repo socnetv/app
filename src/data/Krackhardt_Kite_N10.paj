@@ -1,0 +1,30 @@
+*Vertices 10
+1 "Andre"
+2 "Beverley"
+3 "Carol"
+4 "Diane"
+5 "Ed"
+6 "Fernando"
+7 "Garth"
+8 "Heather"
+9 "Ike"
+10 "Jane"
+*Edges 18
+1 2 1
+1 3 1
+1 4 1
+1 6 1
+2 4 1
+2 5 1
+2 7 1
+3 4 1
+3 6 1
+4 5 1
+4 6 1
+4 7 1
+5 7 1
+6 7 1
+6 8 1
+7 8 1
+8 9 1
+9 10 1

@@ -1,4 +1,5 @@
-socnetv usr/bin/
 socnetv.desktop usr/share/applications/
-src/images/socnetv.xpm usr/share/pixmaps/
+socnetv.appdata.xml usr/share/metainfo/
 src/images/socnetv.png usr/share/pixmaps/
+man/socnetv.1 usr/share/man/man1/
+translations/socnetv_*.qm usr/share/socnetv/

@@ -43,6 +43,8 @@
 
 cmake_minimum_required(VERSION 3.16) # 3.21 or 3.22 for better features and compatibility with modern tools.
 
+option(BUILD_CLI "Build headless regression CLI" ON)
+
 # ==============================================================================
 # 1. Project Setup
 # ==============================================================================
@@ -93,6 +95,61 @@ configure_file(${CMAKE_SOURCE_DIR}/COPYING
                ${CMAKE_BINARY_DIR}/LICENSE.txt
                COPYONLY)
 
+set(ENGINE_SOURCES
+    src/engine/graph_distance_progress_sink.cpp
+    src/engine/distance_engine.cpp
+)
+
+set(GRAPH_SOURCES
+    src/graph.cpp
+    src/graph/util/graph_type_strings.cpp
+    src/graph/core/graph_structure_metrics.cpp
+    src/graph/core/graph_state_flags.cpp
+    src/graph/core/graph_metadata.cpp
+    src/graph/storage/graph_vertices.cpp
+    src/graph/storage/graph_edges.cpp
+    src/graph/io/graph_io.cpp
+    src/graph/relations/graph_relations.cpp
+    src/graph/filters/graph_edge_filters.cpp
+    src/graph/ui/graph_ui_facade.cpp
+    src/graph/ui/graph_ui_prominence_distribution.cpp
+    src/graph/ui/graph_canvas.cpp
+    src/graph/ui/graph_selection.cpp
+    src/graph/ui/graph_vertex_style.cpp
+    src/graph/ui/graph_edge_style.cpp
+    src/graph/distances/graph_distance_facade.cpp
+    src/graph/distances/graph_distance_cache.cpp
+    src/graph/centrality/graph_centrality.cpp
+    src/graph/centrality/graph_prestige.cpp
+    src/graph/prominence/graph_prominence_distribution.cpp
+    src/graph/matrices/graph_matrix_adjacency.cpp
+    src/graph/generators/graph_random_networks.cpp
+    src/graph/crawler/graph_crawler.cpp
+    src/graph/layouts/graph_layouts_basic.cpp
+    src/graph/layouts/graph_layouts_force.cpp
+    src/graph/reachability/graph_reachability_walks.cpp
+    src/graph/cohesion/graph_cliques.cpp
+    src/graph/clustering/graph_triad_census.cpp
+    src/graph/clustering/graph_clustering_coefficients.cpp
+    src/graph/clustering/graph_clustering_hierarchical.cpp
+    src/graph/similarity/graph_similarity_matrices.cpp
+    src/graph/reporting/graph_reports.cpp
+    src/graph/reporting/graph_reports_settings.cpp
+    
+
+)
+
+set(CLI_SOURCES
+    src/tools/socnetv_cli.cpp
+    src/tools/cli/cli_common.cpp
+    src/tools/cli/kernels/kernel_distance_v1.cpp
+    src/tools/cli/kernels/kernel_reachability_v2.cpp
+    src/tools/cli/kernels/kernel_walks_v3.cpp
+    src/tools/cli/kernels/kernel_prominence_v4.cpp
+    src/tools/headless_graph_loader.cpp
+)
+
+
 # Define sources and headers
 set (FORMS 
     src/forms/dialogfilteredgesbyweight.ui 
@@ -121,9 +178,10 @@ set (FORMS
 set(SOURCES
     src/main.cpp 
     src/mainwindow.cpp 
-    src/texteditor.cpp 
-    src/graph.cpp 
-    src/graphvertex.cpp 
+    src/texteditor.cpp
+    ${ENGINE_SOURCES}
+    ${GRAPH_SOURCES}
+    src/graphvertex.cpp
     src/matrix.cpp 
     src/parser.cpp 
     src/webcrawler.cpp 
@@ -249,6 +307,7 @@ target_link_libraries(${TARGET_NAME} PRIVATE
 
 
 
+
 # ==============================================================================
 # 6. Installation and Packaging
 # ==============================================================================
@@ -366,9 +425,46 @@ message(STATUS "CMAKE_INSTALL_DATADIR: "  ${CMAKE_INSTALL_DATADIR})
 message(STATUS "CMAKE_INSTALL_PREFIX: "  ${CMAKE_INSTALL_PREFIX})
 
 
+
+if(BUILD_CLI)
+    set(CLI_TARGET socnetv-cli)
+
+    qt_add_executable(${CLI_TARGET}
+        MANUAL_FINALIZATION
+        ${CLI_SOURCES}
+        ${ENGINE_SOURCES}
+        ${GRAPH_SOURCES}
+        src/graphvertex.cpp
+        src/matrix.cpp
+        src/parser.cpp
+        src/webcrawler.cpp
+    )
+
+    target_include_directories(${CLI_TARGET} PUBLIC
+        "${CMAKE_SOURCE_DIR}/src"
+    )
+
+    target_link_libraries(${CLI_TARGET} PRIVATE
+        Qt6::Core
+        Qt6::Core5Compat
+        Qt6::Network
+        Qt6::Xml
+        Qt6::Widgets
+        Qt6::Gui
+        Qt6::Charts
+    )
+
+    set_target_properties(${CLI_TARGET} PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON
+        AUTOMOC ON
+        AUTOUIC OFF
+        AUTORCC OFF
+    )
+
+    qt_finalize_executable(${CLI_TARGET})
+endif()
+
+
 # Finalize the executable
 qt_finalize_executable(${TARGET_NAME})
-
-
-
-

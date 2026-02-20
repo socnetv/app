@@ -45,6 +45,7 @@
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <QTextCodec>
+#include <QUrl>
 
 #include "mainwindow.h"
 #include "graph.h"
@@ -971,17 +972,18 @@ void MainWindow::initGraph() {
 
     activeGraph = new Graph(nodesEstimatedSize, edgesPerNodeEstimatedSize);
 
-    qDebug() << "activeGraph created on thread:" << activeGraph->thread()
+    qDebug() << "activeGraph created on thread:" << activeGraph->getThread()
              << "moving it to new thread ";
 
-    activeGraph->moveToThread(&graphThread);
+    activeGraph->moveToThreadFacade(&graphThread);
 
-    qDebug() << "activeGraph moved to thread:" << activeGraph->thread()
+    qDebug() << "activeGraph moved to thread:" << activeGraph->getThread()
              << "starting new activeGraph thread...";
 
     graphThread.start();
 
-    qDebug() << "activeGraph thread now:" << activeGraph->thread();
+    qDebug() << "activeGraph thread now:" << activeGraph->getThread()
+             << "Finished initialization of graph.";
 
 }
 
@@ -14979,7 +14981,7 @@ void MainWindow::slotHelpAbout(){
 
                 tr("<p>Website: <a href=\"https://socnetv.org\">https://socnetv.org</a></p>")+
 
-                tr("<p>(C) 2005-2023 by Dimitris B. Kalamaras</p>")+
+                tr("<p>(C) 2005-2026 by Dimitris B. Kalamaras</p>")+
                 tr("<p><a href=\"https://socnetv.org/contact\">Have questions? Contact us!</a></p>")+
 
                 tr("<p><b>Fortune cookie: </b><br> \"")  + fortuneCookie[randomCookie]  + "\"" +

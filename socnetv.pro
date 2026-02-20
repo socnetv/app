@@ -10,6 +10,7 @@ ALLOW_WARNINGS = warn_off
 
 TEMPLATE = app
 CONFIG  += qt thread $${ALLOW_WARNINGS} $${MY_TARGET_BUILD}
+CONFIG  += c++17
 TARGET = socnetv
 VERSION=3.3
 LANGUAGE = C++
@@ -17,10 +18,12 @@ LANGUAGE = C++
 
 # add Qt module support
 QT += core
-QT += xml 
+QT += gui
+QT += xml
 QT += network
 QT += widgets
-QT += printsupport 
+QT += openglwidgets
+QT += printsupport
 QT += charts
 QT += svg
 QT += core5compat
@@ -41,7 +44,7 @@ FORMS += src/forms/dialogfilteredgesbyweight.ui \
     src/forms/dialogsimilaritypearson.ui \
     src/forms/dialogsimilaritymatches.ui \
     src/forms/dialogdissimilarities.ui \
-    src/forms/dialogclusteringhierarchical.ui \  
+    src/forms/dialogclusteringhierarchical.ui \
     src/forms/dialognodeedit.ui \
     src/forms/dialognodefind.ui \
     src/forms/dialogedgedichotomization.ui \
@@ -79,7 +82,7 @@ HEADERS += src/mainwindow.h \
     src/forms/dialogsimilaritypearson.h \
     src/forms/dialogsimilaritymatches.h \
     src/forms/dialogdissimilarities.h \
-    src/forms/dialogclusteringhierarchical.h \ 
+    src/forms/dialogclusteringhierarchical.h \
     src/forms/dialograndlattice.h \
     src/forms/dialognodefind.h \
     src/forms/dialogexportpdf.h \
@@ -90,7 +93,42 @@ HEADERS += src/mainwindow.h \
 SOURCES += src/main.cpp \
     src/mainwindow.cpp \
     src/texteditor.cpp \
+    src/engine/graph_distance_progress_sink.cpp \
+    src/engine/distance_engine.cpp \
     src/graph.cpp \
+    src/graph/util/graph_type_strings.cpp \
+    src/graph/core/graph_structure_metrics.cpp \
+    src/graph/core/graph_state_flags.cpp \
+    src/graph/core/graph_metadata.cpp \
+    src/graph/storage/graph_vertices.cpp \
+    src/graph/storage/graph_edges.cpp \
+    src/graph/io/graph_io.cpp \
+    src/graph/relations/graph_relations.cpp \
+    src/graph/filters/graph_edge_filters.cpp \
+    src/graph/ui/graph_ui_facade.cpp \
+    src/graph/ui/graph_ui_prominence_distribution.cpp \
+    src/graph/ui/graph_canvas.cpp \
+    src/graph/ui/graph_selection.cpp \
+    src/graph/ui/graph_vertex_style.cpp \
+    src/graph/ui/graph_edge_style.cpp \
+    src/graph/distances/graph_distance_facade.cpp \
+    src/graph/distances/graph_distance_cache.cpp \
+    src/graph/centrality/graph_centrality.cpp \
+    src/graph/centrality/graph_prestige.cpp \
+    src/graph/prominence/graph_prominence_distribution.cpp \
+    src/graph/matrices/graph_matrix_adjacency.cpp \
+    src/graph/generators/graph_random_networks.cpp \
+    src/graph/crawler/graph_crawler.cpp \
+    src/graph/layouts/graph_layouts_basic.cpp \
+    src/graph/layouts/graph_layouts_force.cpp \
+    src/graph/reachability/graph_reachability_walks.cpp \
+    src/graph/cohesion/graph_cliques.cpp \
+    src/graph/clustering/graph_triad_census.cpp \
+    src/graph/clustering/graph_clustering_coefficients.cpp \
+    src/graph/clustering/graph_clustering_hierarchical.cpp \
+    src/graph/similarity/graph_similarity_matrices.cpp \
+    src/graph/reporting/graph_reports.cpp \
+    src/graph/reporting/graph_reports_settings.cpp \
     src/graphvertex.cpp \
     src/matrix.cpp \
     src/parser.cpp \
@@ -117,9 +155,9 @@ SOURCES += src/main.cpp \
     src/forms/dialograndscalefree.cpp \
     src/forms/dialogsettings.cpp \
     src/forms/dialogsimilaritypearson.cpp \
-    src/forms/dialogsimilaritymatches.cpp \ 
+    src/forms/dialogsimilaritymatches.cpp \
     src/forms/dialogdissimilarities.cpp \
-    src/forms/dialogclusteringhierarchical.cpp \ 
+    src/forms/dialogclusteringhierarchical.cpp \
     src/forms/dialograndlattice.cpp \
     src/forms/dialognodefind.cpp \
     src/forms/dialogexportpdf.cpp \
@@ -129,7 +167,7 @@ SOURCES += src/main.cpp \
 
 RESOURCES = src/src.qrc \
     src/data.qrc
-    
+
 
 # This is Windows only
 win32 {
@@ -167,13 +205,14 @@ unix:!macx{
 
 # No matter what PREFIX the user enters when
 # executing qmake to create the Makefile,
-# we always set it to be /usr because 
+# we always set it to be /usr because
 # it simplifies the .travis CI and .deb creation
 # The user may still install to a different folder
 # with the command:
-# make INSTALL_ROOT=<folder> install; 
+# make INSTALL_ROOT=<folder> install;
 
   PREFIX = /usr
+  QMAKE_STRIP = :
   target.path = $${PREFIX}/bin
   TARGET = socnetv
 
@@ -182,7 +221,7 @@ unix:!macx{
 
   desktop.path = $${PREFIX}/share/applications
   desktop.files = socnetv.desktop
-  
+
   manpage.path = $${PREFIX}/share/man/man1
   manpage.files = man/socnetv.1
 
@@ -214,7 +253,5 @@ macx {
 INSTALLS += target
 
 
-TRANSLATIONS    = translations/socnetv_es.ts \ 
-                  translations/socnetv_de.ts
-
-
+TRANSLATIONS = translations/socnetv_es.ts \
+               translations/socnetv_de.ts
