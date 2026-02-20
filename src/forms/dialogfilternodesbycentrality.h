@@ -16,25 +16,29 @@
 #ifndef DIALOGFILTERNODESBYCENTRALITY_H
 #define DIALOGFILTERNODESBYCENTRALITY_H
 
-
-#include <QDialog>
-
 #include "ui_dialogfilternodesbycentrality.h"
+#include <QDialog>
+#include <QStringList>
 
+#include "global.h" // for IndexType
 
-class DialogFilterNodesByCentrality : public QDialog
-{
+SOCNETV_USE_NAMESPACE
+
+class DialogFilterNodesByCentrality : public QDialog {
     Q_OBJECT
 public:
-    explicit DialogFilterNodesByCentrality (QWidget *parent = Q_NULLPTR);
+    explicit DialogFilterNodesByCentrality(const QStringList &indexNames,
+                                           QWidget *parent = nullptr);
 public slots:
-    void getUserChoices ();
+    void getUserChoices();
+
 signals:
-    void userChoices(const qreal, const bool);
+    void userChoices(const float threshold,
+                     const bool overThreshold,
+                     const IndexType centralityIndex);
+
 private:
     Ui::DialogFilterNodesByCentrality ui;
-
 };
 
-
-#endif
+#endif // DIALOGFILTERNODESBYCENTRALITY_H

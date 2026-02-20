@@ -174,6 +174,10 @@ public slots:
 
     void edgeClickedSet(const int &v1, const int &v2, const bool &openMenu = false);
 
+    void vertexFilterByCentrality(const float threshold,
+                                  const bool overThreshold,
+                                  const IndexType centralityIndex);
+
     void edgeFilterByWeight(const qreal, const bool);
 
     void edgeFilterByRelation(int relation, bool status);
@@ -1042,6 +1046,8 @@ public:
     void prestigeProximity(const bool considerWeights = false,
                            const bool inverseWeights = false,
                            const bool dropIsolates = false);
+
+    bool isCentralityIndexComputed(const IndexType index) const;
 
     /* REACHABILITY AND WALKS */
 

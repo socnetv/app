@@ -11253,11 +11253,15 @@ void MainWindow::slotFilterNodesDialogByCentrality() {
     }
 
     // Create a new node filtering dialog
-    m_DialogNodeFilterByCentrality = new DialogFilterNodesByCentrality(this);
+    //@TODO - prominenceIndexList should be either
+    // the list of all computes indices
+    // or the last computed indice
+    // or empty if the user has not computed any index yet.
+    m_DialogNodeFilterByCentrality = new DialogFilterNodesByCentrality(prominenceIndexList, this);
 
     // Connect dialog signal to the graph
     connect( m_DialogNodeFilterByCentrality, &DialogFilterNodesByCentrality::userChoices,
-             activeGraph, &Graph::edgeFilterByWeight);      // PLACEHOLDER -- TODO :)
+         activeGraph, &Graph::vertexFilterByCentrality);
 
     // Show the dialog
     m_DialogNodeFilterByCentrality->exec() ;

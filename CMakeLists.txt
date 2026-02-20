@@ -111,6 +111,7 @@ set(GRAPH_SOURCES
     src/graph/io/graph_io.cpp
     src/graph/relations/graph_relations.cpp
     src/graph/filters/graph_edge_filters.cpp
+    src/graph/filters/graph_node_filters.cpp
     src/graph/ui/graph_ui_facade.cpp
     src/graph/ui/graph_ui_prominence_distribution.cpp
     src/graph/ui/graph_canvas.cpp

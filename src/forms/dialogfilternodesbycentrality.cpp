@@ -17,28 +17,35 @@
 #include <QPushButton>
 #include <QDebug>
 
-DialogFilterNodesByCentrality::DialogFilterNodesByCentrality(QWidget *parent) : QDialog(parent)
+
+DialogFilterNodesByCentrality::DialogFilterNodesByCentrality(const QStringList &indexNames,
+                                                             QWidget *parent)
+    : QDialog(parent)
 {
-	ui.setupUi(this);
-	connect(ui.buttonBox, SIGNAL(accepted()), this, SLOT(getUserChoices()));
+    ui.setupUi(this);
 
-	(ui.buttonBox)->button(QDialogButtonBox::Ok)->setDefault(true);
+    ui.indexComboBox->addItems(indexNames);
 
-	(ui.overThresholdBt)->setChecked(true);
+    connect(ui.buttonBox, SIGNAL(accepted()), this, SLOT(getUserChoices()));
+    ui.buttonBox->button(QDialogButtonBox::Ok)->setDefault(true);
+    ui.overThresholdBt->setChecked(true);
 }
 
-void DialogFilterNodesByCentrality::getUserChoices(){
-	qDebug()<< "Dialog: gathering Data!...";
-	bool overThreshold=false;
-	float my_threshold = static_cast <float> ( (ui.weightThreshold)->value() );
-	if ( ui.overThresholdBt->isChecked() ) {
-        qDebug()<< "Dialog: We will filter nodes with index score more than threshold: " << my_threshold;
-		overThreshold = true;
-	}
-	else {
-        qDebug()<< "Dialog: We will filter nodes with index score less than threshold: " << my_threshold;
-		overThreshold = false;
-	}	
-	qDebug()<< "Dialog: emitting userChoices" ;
-	emit userChoices( my_threshold, overThreshold );		
+
+void DialogFilterNodesByCentrality::getUserChoices()
+{
+    const float threshold     = static_cast<float>(ui.weightThreshold->value());
+    const bool overThreshold  = ui.overThresholdBt->isChecked();
+
+    // prominenceIndexList is 0-based but IndexType starts at 1
+    const IndexType centralityIndex =
+        static_cast<IndexType>(ui.indexComboBox->currentIndex() + 1);
+
+    qDebug() << "DialogFilterNodesByCentrality:"
+             << "index:" << ui.indexComboBox->currentText()
+             << "(" << static_cast<int>(centralityIndex) << ")"
+             << "threshold:" << threshold
+             << "overThreshold:" << overThreshold;
+
+    emit userChoices(threshold, overThreshold, centralityIndex);
 }

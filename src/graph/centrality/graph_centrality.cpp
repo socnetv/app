@@ -623,3 +623,36 @@ void Graph::resolveClasses(qreal C, H_StrToInt &discreteClasses, int &classes, i
         discreteClasses.insert(QString::number(C), frq + 1);
     }
 }
+
+/**
+ * @brief Returns true if the given centrality/prestige index has been computed.
+ *
+ * Uses the per-index calculated* flags set by each analysis method.
+ * Matches the IndexType enum defined in global.h.
+ */
+bool Graph::isCentralityIndexComputed(const IndexType index) const
+{
+    switch (index) {
+    case IndexType::DC:
+        return calculatedDC;
+    case IndexType::CC:   // CC, IRCC, BC, SC, EC, PC are all
+    case IndexType::IRCC: // byproducts of graphDistancesGeodesic
+    case IndexType::BC:
+    case IndexType::SC:
+    case IndexType::EC:
+    case IndexType::PC:
+        return calculatedCentralities;
+    case IndexType::IC:
+        return calculatedIC;
+    case IndexType::EVC:
+        return calculatedEVC;
+    case IndexType::DP:
+        return calculatedDP;
+    case IndexType::PRP:
+        return calculatedPRP;
+    case IndexType::PP:
+        return calculatedPP;
+    default:
+        return false;
+    }
+}

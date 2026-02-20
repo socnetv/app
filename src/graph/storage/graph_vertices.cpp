@@ -1112,7 +1112,7 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
 // Vertex isolation
 //
 /**
- * @brief Toggles the status of all isolated vertices (thos without links)
+ * @brief Toggles the status of all isolated vertices (those without links)
  *
  * For each isolate vertex in the Graph, emits the setVertexVisibility signal
  *
