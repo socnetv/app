@@ -3,7 +3,7 @@
  * @brief Declares the DialogPreviewFile class used for displaying a preview of network files before importing them into SocNetV.
  * @author Dimitris B. Kalamaras
  * @copyright
- *   Copyright (C) 2005-2025 by Dimitris B. Kalamaras.
+ *   Copyright (C) 2005-2026 by Dimitris B. Kalamaras.
  *   This file is part of SocNetV (Social Network Visualizer).
  * @license
  *   This program is free software: you can redistribute it and/or modify
