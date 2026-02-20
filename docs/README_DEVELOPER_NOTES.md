@@ -25,6 +25,13 @@ Historically, most functionality flowed through a central `Graph` object which a
 
 This design worked but made testing, modularization, and safe refactoring difficult.
 
+To safeguard our modernization effort, we have a harness tool, called `socnetv-cli`.
+The tool supports golden compares and benchmarking. 
+See [SOCNETV_CLI_REGRESSION_TOOL.md](../src/tools/SOCNETV_CLI_REGRESSION_TOOL.md)
+Also, there are automated scripts to run:
+-  [golden compares](../scripts/run_golden_compares.sh) 
+-  [benchmarks](../scripts/run_benchmarks.sh).
+
 ---
 
 ## Current Architectural State

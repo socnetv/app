@@ -139,6 +139,49 @@ Goal: make it hard to regress outputs silently.
 
 ---
 
+---
+
+### WS7 — MainWindow Decomposition (SKELETON)
+
+Goal: reduce `MainWindow` from a ~15,000-line monolith to a thin coordinator
+that delegates to focused sub-controllers and panel widgets.
+
+* Plan: `docs/roadmaps/roadmap_mainwindow_decomposition.md`
+
+Current state:
+
+* `MainWindow` owns all menus, toolbars, dialogs, canvas interactions,
+  settings persistence, and analysis result display.
+* No behavior or UX changes are planned — pure structural decomposition.
+
+Target sub-components:
+
+* `AppMenuController`, `AppToolbarController`, `StatusBarController`
+* `CanvasPanel`, `DialogManager`, `AppSettingsController`
+
+Sequencing note:
+WS7 depends on WS2 (façade stable, ✅) and benefits from WS4/P2 (headless
+baseline for regression anchoring). It is otherwise independent of WS3/WS4/WS5
+and can proceed in parallel.
+
+---
+
+## Workstream Dependency Graph
+
+WS1 (Distances/Centralities Engine)
+  └─► WS2 (Graph as Façade)
+        ├─► WS4 (IO / Parser Refactor)
+        │     └─► WS3 (Domain Model Split)
+        │               └─► WS5 (Matrices Modernization)
+        │
+        └─► WS6 (Testing / CI / Regression Baselines)  ← feeds into all WSes
+              (parallel, ongoing)
+
+WS7 (MainWindow Decomposition)
+  depends on: WS2 stable ✓, benefits from WS3 progress
+  can begin: after WS4/P2 (headless parse mode exists)
+
+--- 
 ## Suggested Target Folder Layout (End State)
 
 Conceptual target, not an immediate rewrite:
