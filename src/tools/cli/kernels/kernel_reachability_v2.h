@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tools/cli/kernels/kernel_distance_v1.h" // for cli::CliConfig
+#include "tools/cli/cli_common.h" // for cli::CliConfig
 
 class Graph;
 struct HeadlessLoadResult;

@@ -5,40 +5,63 @@
 #include <QTextStream>
 #include <QString>
 
-namespace cli {
+namespace cli
+{
 
-// ---------------- printing ----------------
+    struct CliConfig
+    {
+        bool verbose = false;
 
-void printKV(const QString &k, double v);
-void printKV(const QString &k, const QString &v);
-void printKV(const QString &k, int v);
-void printKV(const QString &k, qint64 v);
+        QString inputPath;
+        int fileFormat = 0;
+        QString delimiter;
+        int twoMode = 0;
+        bool hasLabels = false;
 
-// ---------------- deterministic formatting ----------------
+        bool computeCentralities = true;
+        bool considerWeights = false;
+        bool inverseWeights = true;
+        bool dropIsolates = false;
 
-QString d2s(double v);
+        QString dumpJsonPath;
+        QString compareJsonPath;
 
-// ---------------- JSON I/O ----------------
+        int benchRuns = 0; // 0 = off
+        QString kernel;    // "distance", etc.
+    };
 
-bool writeJsonFile(const QString &path, const QJsonObject &obj, QString *err);
-bool readJsonFile(const QString &path, QJsonObject *outObj, QString *err);
+    // ---------------- printing ----------------
 
-// ---------------- compare helpers ----------------
+    void printKV(const QString &k, double v);
+    void printKV(const QString &k, const QString &v);
+    void printKV(const QString &k, int v);
+    void printKV(const QString &k, qint64 v);
 
-bool cmpStr(const QJsonObject &e, const QJsonObject &a, const QString &k, QTextStream &err);
-bool cmpInt(const QJsonObject &e, const QJsonObject &a, const QString &k, QTextStream &err);
-bool cmpBool(const QJsonObject &e, const QJsonObject &a, const QString &k, QTextStream &err);
+    // ---------------- deterministic formatting ----------------
 
-bool almostEqual(double a, double b, double rel = 1e-15, double abs = 0.0);
+    QString d2s(double v);
 
-bool cmpNumStrTol(const QJsonObject &e, const QJsonObject &a,
-                  const QString &k, QTextStream &err,
-                  double rel = 1e-15, double abs = 0.0);
+    // ---------------- JSON I/O ----------------
 
-bool cmpIntArray(const QJsonArray &e, const QJsonArray &a,
-                 QTextStream &err, const QString &what);
+    bool writeJsonFile(const QString &path, const QJsonObject &obj, QString *err);
+    bool readJsonFile(const QString &path, QJsonObject *outObj, QString *err);
 
-bool cmpStrArray(const QJsonArray &e, const QJsonArray &a,
-                 QTextStream &err, const QString &what);
+    // ---------------- compare helpers ----------------
+
+    bool cmpStr(const QJsonObject &e, const QJsonObject &a, const QString &k, QTextStream &err);
+    bool cmpInt(const QJsonObject &e, const QJsonObject &a, const QString &k, QTextStream &err);
+    bool cmpBool(const QJsonObject &e, const QJsonObject &a, const QString &k, QTextStream &err);
+
+    bool almostEqual(double a, double b, double rel = 1e-15, double abs = 0.0);
+
+    bool cmpNumStrTol(const QJsonObject &e, const QJsonObject &a,
+                      const QString &k, QTextStream &err,
+                      double rel = 1e-15, double abs = 0.0);
+
+    bool cmpIntArray(const QJsonArray &e, const QJsonArray &a,
+                     QTextStream &err, const QString &what);
+
+    bool cmpStrArray(const QJsonArray &e, const QJsonArray &a,
+                     QTextStream &err, const QString &what);
 
 } // namespace cli

@@ -17,6 +17,7 @@
 #include "tools/cli/kernels/kernel_distance_v1.h"
 #include "tools/cli/kernels/kernel_reachability_v2.h"
 #include "tools/cli/kernels/kernel_walks_v3.h"
+#include "tools/cli/kernels/kernel_prominence_v4.h"
 
 int main(int argc, char *argv[])
 {
@@ -46,7 +47,7 @@ int main(int argc, char *argv[])
                                 "N", "0");
 
     QCommandLineOption kernelOpt(QStringList() << "kernel",
-                                 "Kernel: distance|reachability|walks_matrix",
+                                 "Kernel: distance|reachability|walks_matrix|prominence",
                                  "name", "distance");
 
     QCommandLineOption walksLenOpt(QStringList() << "walks-length",
@@ -150,6 +151,9 @@ int main(int argc, char *argv[])
 
     if (cfg.kernel == "walks_matrix")
         return cli::runKernelWalksV3(cfg, load, g, walksLength);
+    
+    if (cfg.kernel == "prominence")
+        return cli::runKernelProminenceV4(cfg, load, g);
 
     QTextStream(stderr) << "ERROR: unsupported --kernel: " << cfg.kernel << "\n";
     return 2;
