@@ -437,7 +437,6 @@ if(BUILD_CLI)
         src/matrix.cpp
         src/parser.cpp
         src/webcrawler.cpp
-        src/chart.cpp
     )
 
     target_include_directories(${CLI_TARGET} PUBLIC
