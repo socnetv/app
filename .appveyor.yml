@@ -1,32 +1,22 @@
-# Build SocNetV for Windows x86_64 using Qt/MinGW/VS2019 platforms
+# Build SocNetV for Windows x86_64 using Qt/MSVC2019 platform
 # https://socnetv.org
-# Last Update: Nov 28, 2024
-# Copyright (c) 2024 by Dimitris Kalamaras
+# Last Update: Feb 2026
+# Copyright (c) 2026 by Dimitris Kalamaras
 #
-
-#
-# This script builds SocNetV Windows installers ONLY on tags i.e. 3.0 or 3.0-beta* created by the developer
-# as well when the 'continuous' tag is recreated.
-# The latter happens each time the uploadtool in travis uploads continuous builds (on a commit containing [ci] or [travis]).
-#
+# This script builds SocNetV Windows installers ONLY on tags i.e. 3.0 or 3.0-beta*
+# created by the developer, as well when the 'continuous' tag is recreated.
 #
 # NOTE:
 # To avoid possible cycles with creating new tags on regular commits or overwriting tags, we
-# specify tag: $(APPVEYOR_REPO_TAG_NAME) in deployment settings (without having to set skip_tags = true)
-# and use the on: key to conditionally build and deploy only on tags we create manually.
-# This way, the manually created tag will be updated instead of a new one being created.
+# specify tag: $(APPVEYOR_REPO_TAG_NAME) in deployment settings and use the on: key to
+# conditionally build and deploy only on tags we create manually.
 # See: https://www.appveyor.com/docs/deployment/github/#promoting-selected-tag-to-github-release
 
-
-version:  'continuous.{build}'
-
+version: 'continuous.{build}'
 
 #---------------------------------#
 #   conditional building config   #
 #---------------------------------#
-
-# whitelist branches
-# also whitelist tags, as per https://www.appveyor.com/docs/branches/#white--and-blacklisting
 branches:
   only:
     - master
@@ -35,51 +25,20 @@ branches:
     - /v\d+\.\d+\.\d+/
     - /v\d+\.\d+\-\w+/
 
-
-# Do not build on tags (GitHub and BitBucket)
-# skip_tags: true
-
-# Start builds on tags only (GitHub and BitBucket)
-# skip_non_tags: true
-
-
-## Skipping commits affecting specific files (GitHub only).
-#skip_commits:
-#  files:
-#   - socnetv.spec
-#   - debian/**/*
-#   - socnetv.appdata.xml
-#   - CHANGELOG.md
-#   - README.md
-#   - TODO
-#   - AUTHORS
-#   - COPYING
-#   - NEWS
-##   - .travis*.yml
-
-
-# Including commits with particular message or from specific user
-# At the moment, only commits from developer are allowed for building.
 only_commits:
-  message: /\[appveyor\]/   # Start a new build if message contains '[appveyor]' or '[ci]'
-  author: dimitris.kalamaras@gmail.com      # Start a new build for commit of user with my email
-
-
+  message: /\[appveyor\]/
+  author: dimitris.kalamaras@gmail.com
 
 #---------------------------------#
 #    environment configuration    #
 #---------------------------------#
-
-# Build worker image (VM template)
 image: Visual Studio 2019
 
-# clone directory
 clone_folder: c:\projects\socnetv
 
 matrix:
-  fast_finish: true # set this flag to immediately finish build once one of the jobs fails.
+  fast_finish: true
 
-# Scripts that run after cloning repository
 install:
   - ps: Write-Host $env:APPVEYOR_PROJECT_NAME
   - ps: Write-Host $env:APPVEYOR_PROJECT_SLUG
@@ -88,24 +47,19 @@ install:
   - ps: Write-Host $env:APPVEYOR_REPO_COMMIT
   - ps: Write-Host $env:APPVEYOR_REPO_TAG
   - ps: Write-Host $env:APPVEYOR_REPO_TAG_NAME
-
   - cmd: echo "Setting last commit short id"
   - cmd: git rev-parse --short HEAD > MYVER.txt
   - cmd: set /p LAST_COMMIT_SHORT= < MYVER.txt
   - cmd: echo %LAST_COMMIT_SHORT%
   - cmd: del MYVER.txt
-
   - cmd: echo %APPVEYOR_REPO_COMMIT:~0,7%
-
   - cmd: echo "Setting SocNetV current version..."
   # NOTE: This is changed by our update version bash script
   - cmd: set SOCNETV_VERSION=3.3
   - cmd: echo %SOCNETV_VERSION%
-
   - cmd: echo "Setting build type"
-  - cmd: set BUILD_TYPE=release
+  - cmd: set BUILD_TYPE=Release
   - cmd: echo %BUILD_TYPE%
-
   - cmd: echo "Checking if this is a prerelease deployment..."
   - cmd: set SOCNETV_PRERELEASE=false
   - cmd: if "%APPVEYOR_REPO_TAG%"=="true" if "%APPVEYOR_REPO_TAG_NAME%"=="continuous" set SOCNETV_PRERELEASE=true
@@ -116,115 +70,108 @@ install:
   - ps: if ( $env:APPVEYOR_REPO_TAG_NAME -ne $null ) { if ($env:APPVEYOR_REPO_TAG_NAME.Contains("-rc")) { $env:SOCNETV_PRERELEASE = "true" } }
   - ps: Write-Host $env:SOCNETV_PRERELEASE
   - cmd: if "%SOCNETV_PRERELEASE%"=="true" echo "This is a prerelease"
-
-  - cmd: echo "Setting BUILDNAME" 
+  - cmd: echo "Setting BUILDNAME"
   - set BUILDNAME=%SOCNETV_VERSION%-%LAST_COMMIT_SHORT%
   - cmd: echo %BUILDNAME%
-
-  - cmd: echo "Setting Qt environment..."
+  - cmd: echo "Setting Qt + MSVC environment..."
   - cmd: echo "Check Qt folders (debug)..."
   - cmd: dir C:\Qt
-  - cmd: dir C:\Qt\6.2.4
-  - cmd: dir C:\Qt\Tools
-  - set QTDIR=C:\Qt\6.2.4\mingw_64
-
-  - cmd: echo "Check project folder..."        
-  - cmd: dir C:\projects\socnetv  
-  - cmd: echo "Installing Innosetup..."  
+  # Qt 6.8.0 with MSVC2022 64-bit (preinstalled on Appveyor VS2019 image via aqtinstall or preinstalled)
+  # NOTE: Appveyor's VS2019 image ships Qt 6.x via aqtinstall.
+  # Check available versions at: https://www.appveyor.com/docs/windows-images-software/#qt
+  # Adjust path below if Appveyor's preinstalled Qt version differs.
+  - set QTDIR=C:\Qt\6.8.0\msvc2022_64
+  - cmd: echo "Check project folder..."
+  - cmd: dir C:\projects\socnetv
+  - cmd: echo "Installing Innosetup..."
   - choco install -y InnoSetup
-  - cmd: echo "Setting paths..."    
-  - set PATH=%QTDIR%\bin;C:\Qt\Tools\mingw1120_64\bin;%PATH%;"C:\Program Files (x86)\Inno Setup 6"
-
-
+  - cmd: echo "Setting paths..."
+  - set PATH=%QTDIR%\bin;%PATH%;"C:\Program Files (x86)\Inno Setup 6"
+  - cmd: echo "Verify qmake and cmake..."
+  - cmd: where qmake
+  - cmd: where cmake
+  - cmd: qmake -v
+  - cmd: cmake --version
 
 #---------------------------------#
 #    app building starts here     #
 #---------------------------------#
-
-
 build_script:
-  - cmd: echo "Running qmake..."
-  - qmake "CONFIG+=%BUILD_TYPE%" socnetv.pro
-  - cmd: echo "BUILDING %BUILD_TYPE% starts here with mingw_64..."
-  - mingw32-make
+  - cmd: echo "Configuring project with cmake..."
+  - cmd: cmake -S . -B build -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DBUILD_CLI=OFF
+  - cmd: echo "Building %BUILD_TYPE% with cmake..."
+  - cmd: cmake --build build -j4 --config %BUILD_TYPE% -v
 
 after_build:
-  - cmd: echo "check folder contents"
-  - cmd: dir C:\projects\socnetv
-  - cmd: dir C:\projects\socnetv\%BUILD_TYPE%
-
-  - cmd: echo "Executing windeployqt"
-  - windeployqt %BUILD_TYPE%/socnetv.exe
-
-  - cmd: echo "check folder contents again..."
-  - cmd: dir C:\projects\socnetv\%BUILD_TYPE%
-
-  - cmd: echo "Deleting *.o and *.cpp..."  
-  - cmd: del C:\projects\socnetv\%BUILD_TYPE%\*.cpp
-  - cmd: del C:\projects\socnetv\%BUILD_TYPE%\*.o
-
-  - cmd: echo "check folder contents again..."
-  - cmd: dir C:\projects\socnetv\%BUILD_TYPE%
-
-  - cmd: echo "copy COPYING to LICENCE.txt..."
-  - cmd: cp COPYING %BUILD_TYPE%/LICENSE.txt
-
+  - cmd: echo "Check build folder contents"
+  - cmd: dir C:\projects\socnetv\build
+  - cmd: dir C:\projects\socnetv\build\%BUILD_TYPE%
+  - cmd: echo "Executing windeployqt..."
+  - cmd: windeployqt build\%BUILD_TYPE%\socnetv.exe --release --compiler-runtime
+  - cmd: echo "Copying MSVC runtime DLLs..."
+  - cmd: copy "C:\Windows\System32\MSVCP140.dll" build\%BUILD_TYPE%\
+  - cmd: copy "C:\Windows\System32\MSVCP140_1.dll" build\%BUILD_TYPE%\
+  - cmd: copy "C:\Windows\System32\MSVCP140_2.dll" build\%BUILD_TYPE%\
+  - cmd: copy "C:\Windows\System32\VCRUNTIME140.dll" build\%BUILD_TYPE%\
+  - cmd: copy "C:\Windows\System32\VCRUNTIME140_1.dll" build\%BUILD_TYPE%\
+  - cmd: copy "C:\Windows\System32\CONCRT140.dll" build\%BUILD_TYPE%\
+  - cmd: echo "check build folder contents again..."
+  - cmd: dir C:\projects\socnetv\build\%BUILD_TYPE%
+  - cmd: echo "copy COPYING to LICENSE.txt..."
+  - cmd: copy COPYING build\%BUILD_TYPE%\LICENSE.txt
   - cmd: echo "Running Innosetup..."
-  - cmd: cp C:\projects\socnetv\scripts\innosetup.iss innosetup.iss
+  - cmd: copy C:\projects\socnetv\scripts\innosetup.iss build\innosetup.iss
+  - cmd: echo "Updating RELEASEFOLDER in innosetup.iss..."
+  - ps: |
+      $content = Get-Content "build\innosetup.iss"
+      $content = $content -replace '#define RELEASEFOLDER "release\\"', "#define RELEASEFOLDER `"$env:BUILD_TYPE\\`""
+      Set-Content "build\innosetup.iss" $content
   - cmd: echo "Available Innosetup languages:"
   - cmd: dir "C:\Program Files (x86)\Inno Setup 6\Languages"
-  - iscc innosetup.iss
-  - cmd: type Setup-Manifest.txt
-
-  - cmd: dir SocNetV*.exe
-
-  - cmd: echo "Renaming file"
-  - cmd: rename SocNetV-*installer.exe SocNetV-%BUILDNAME%-windows-installer.exe
-  - cmd: dir SocNetV*.exe  
-  - cmd: dir
+  - cmd: cd build && iscc innosetup.iss
+  - cmd: type build\Setup-Manifest.txt
+  - cmd: dir build\SocNetV*.exe
+  - cmd: echo "Renaming installer..."
+  - ps: Get-ChildItem -Path "build\SocNetV-*installer.exe" | Move-Item -Destination "build\SocNetV-$env:BUILDNAME-windows-installer.exe"
+  - cmd: dir build\SocNetV*.exe
 
 artifacts:
-  - path: SocNetV-*-installer.exe
-
-
+  - path: build\SocNetV-*-installer.exe
 
 #---------------------------------#
 #    Deploy to GitHub Releases    #
 #---------------------------------#
-
-deploy: 
+deploy:
   - provider: GitHub
-    tag: continuous 
+    tag: continuous
     description: 'SocNetV continuous integration prereleases from commit ${APPVEYOR_REPO_COMMIT}'
     artifact: /SocNetV.*installer\.exe/
     auth_token:
-      secure: rWpgp9XYDS/Tqr6dsQ2CK1x/vgE4nMyQ3W7oyQlG2L3oF4tecU8CEDW1EY5Us0mZ # encrypted token from GitHub
+      secure: rWpgp9XYDS/Tqr6dsQ2CK1x/vgE4nMyQ3W7oyQlG2L3oF4tecU8CEDW1EY5Us0mZ
     draft: false
     prerelease: true
     force_update: true
     on:
-      branch: $(APPVEYOR_REPO_BRANCH)        # deploy on same branch
-      # APPVEYOR_REPO_TAG: true                # deploy on tag push only -- omitted for annotated tags, see https://www.appveyor.com/docs/branches/#build-on-tags-github-bitbucket-gitlab-gitea
-      SOCNETV_PRERELEASE: true               # deploy only if continuous
+      branch: $(APPVEYOR_REPO_BRANCH)
+      SOCNETV_PRERELEASE: true
   - provider: GitHub
     tag: $(APPVEYOR_REPO_TAG_NAME)
     description: 'SocNetV release for $(APPVEYOR_REPO_TAG_NAME)'
     artifact: /SocNetV.*installer\.exe/
     auth_token:
-      secure: rWpgp9XYDS/Tqr6dsQ2CK1x/vgE4nMyQ3W7oyQlG2L3oF4tecU8CEDW1EY5Us0mZ # encrypted token from GitHub
+      secure: rWpgp9XYDS/Tqr6dsQ2CK1x/vgE4nMyQ3W7oyQlG2L3oF4tecU8CEDW1EY5Us0mZ
     draft: false
     prerelease: false
     force_update: true
     on:
-     branch: $(APPVEYOR_REPO_BRANCH)      # deploy on same branch
-     APPVEYOR_REPO_TAG: true              # deploy on tag push only -- omitted for annotated tags, see https://www.appveyor.com/docs/branches/#build-on-tags-github-bitbucket-gitlab-gitea
-     SOCNETV_PRERELEASE: false            # deploy only if not continuous
+      branch: $(APPVEYOR_REPO_BRANCH)
+      APPVEYOR_REPO_TAG: true
+      SOCNETV_PRERELEASE: false
 
 # Notify developer on any change
 notifications:
-  # Email
   - provider: Email
     to:
       - dimitris.kalamaras@gmail.com
-    subject: '[socnetv/app] build {{status}}'                  # optional
+    subject: '[socnetv/app] build {{status}}'
     on_build_status_changed: true

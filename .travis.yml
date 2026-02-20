@@ -1,99 +1,58 @@
 # Build SocNetV images for Linux and macOS
 # https://socnetv.org
-# Last Update: Nov 28, 2024
-# Copyright (c) 2024 by Dimitris Kalamaras
+# Last Update: Feb 2026
+# Copyright (c) 2026 by Dimitris Kalamaras
 #
-
-
+# This script builds SocNetV binaries ONLY when the commit message contains [travis]
 #
-# This script builds SocNetV binaries ONLY on tags (i.e. 3.0 or 3.0-beta1).
-# It will also build binaries if the commit message contains [travis] or [ci]
-#
-
-# legacy setting, we use it only to exclude (re)building each time
-# uploadtool creates the continuous tag (when uploading)
-# see: https://github.com/probonopd/uploadtool#usage
+# Exclude the continuous tag to avoid rebuild loops when uploadtool pushes it
 branches:
   except:
-    - # Do not build tags that we create when we upload to GitHub Releases
     - /^(?i:continuous)$/
 
 language: cpp
 
-
 env:
   global:
-    - SOCNETV_VERSION=3.3 # We use it to name packages on non-tagged commits
-    # Set this variable to be read by uploadtool, which will only use it to mark continuous releases are prerelease.
+    - SOCNETV_VERSION=3.3
     - UPLOADTOOL_ISPRERELEASE=true
 
-
-# Build matrix definitions explicitly define our build
-# maybe add a linux/clang pair ?
 jobs:
   include:
     - os: linux
       compiler: gcc
-      dist: focal
+      dist: jammy          # Ubuntu 22.04 — replaces focal (20.04)
       env: FAILURES=true
-      # if: tag IS present OR commit_message =~ /\[travis\]|\[ci\]/ AND commit_message !~ /\[skip linux\]/
       if: commit_message =~ /\[travis\]/ AND commit_message !~ /\[skip linux\]/
     - os: osx
       compiler: clang
       env: FAILURES=true
-      osx_image: xcode14.2
-      # if: tag IS present OR commit_message =~ /\[travis\]|\[ci\]/ AND commit_message !~ /\[skip osx\]/
+      osx_image: xcode15.2  # replaces xcode14.2
       if: commit_message =~ /\[travis\]/ AND commit_message !~ /\[skip osx\]/
       cache:
         directories:
           - /usr/local/Homebrew
-          - /Users/travis/Library/Caches/Homebrew      
-      # addons:
-      #   homebrew:
-      #     packages:
-      #     - qt
-      #     - cmake
-      #     - p7zip
-      #     - wget
-      #     - create-dmg
-      #     update: true
+          - /Users/travis/Library/Caches/Homebrew
   exclude:
     - os: osx
       compiler: gcc
   allow_failures:
-    #  define rows that are allowed to fail in the build matrix.
     - env: FAILURES=TRUE
 
-
-
-
 before_install:
-  # Run preparation script, before installing our dependencies, to add repos etc.
   - chmod +x scripts/travis_before.sh
   - ./scripts/travis_before.sh
 
-
-
-
 install:
-  # Run script to install our dependencies.
   - chmod +x scripts/travis_install_deps.sh
   - ./scripts/travis_install_deps.sh
 
-
-
-
 script:
-  # Run script to build our app.
-  -  if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then chmod +x scripts/travis_make_build_linux.sh; fi
+  - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then chmod +x scripts/travis_make_build_linux.sh; fi
   - '[ "$TRAVIS_OS_NAME" != linux ] || ./scripts/travis_make_build_linux.sh'
-  -  if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then chmod +x scripts/travis_make_build_macos.sh; fi
+  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then chmod +x scripts/travis_make_build_macos.sh; fi
   - '[ "$TRAVIS_OS_NAME" != osx ] || ./scripts/travis_make_build_macos.sh'
 
-
 after_success:
-  # Run script to upload our packages
   - chmod +x scripts/travis_upload_packages.sh
   - ./scripts/travis_upload_packages.sh
-
-

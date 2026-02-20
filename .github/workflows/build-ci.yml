@@ -24,6 +24,7 @@ env:
   APPDIR_PREFIX: "/usr"
   WINDOWS_ARTIFACT: ""
   UPLOAD_URL: ''
+  BUILD_CLI: "OFF"   # Set to ON to also build the headless regression CLI (socnetv-cli)
 
 
 jobs:
@@ -33,7 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-latest, macos-latest, windows-2019]
+        os: [ubuntu-22.04, ubuntu-latest, macos-latest, windows-2019]
         # NOTE:
         # - We will CI build only for Qt6 LTS releases, see: https://doc.qt.io/qt-6/qt-releases.html
         # - For the Qt Versions supported by aqtinstall, see: https://ddalcino.github.io/aqt-list-server/
@@ -49,7 +50,7 @@ jobs:
         #   - os: macos-latest
         #     qt-version: '6.6.3'
         #   # Snapcraft
-        #   - os: ubuntu-20.04
+        #   - os: ubuntu-22.04
         #     qt-version: '6.5.3'
     runs-on: ${{ matrix.os }}
     if: contains(github.event.head_commit.message, '[ci]') || contains(github.event.head_commit.message, '[gha]')
@@ -161,10 +162,13 @@ jobs:
         name: 🐧 Prepare for building on ${{matrix.os}}
         run: |
           echo '⚙️ Install dependencies for building....'
-          sudo apt install -y build-essential libssl-dev cmake ninja-build \
+          sudo apt-get update
+          sudo apt-get install -y --fix-missing build-essential libssl-dev cmake ninja-build \
             libxkbcommon-x11-dev libxcb-cursor-dev zlib1g-dev libcups2-dev libvulkan-dev \
             desktop-file-utils patchelf libglu1-mesa-dev libfontconfig1 libfreetype6 libx11-dev libxext-dev \
-            libxrandr-dev libxrender-dev libxcb1-dev libx11-xcb-dev libxcb-glx0-dev libfuse2
+            libxrandr-dev libxrender-dev libxcb1-dev libx11-xcb-dev libxcb-glx0-dev
+          # libfuse2 was renamed to libfuse2t64 on Ubuntu 24.04 (noble)
+          sudo apt-get install -y libfuse2t64 2>/dev/null || sudo apt install -y libfuse2 2>/dev/null || true
           # DONT NEED IT. FOR DEBUG ONLY
           # pip install aqtinstall
           # aqt list-qt linux desktop --long-modules ${{ matrix.qt-version }} win64_mingw
@@ -218,7 +222,7 @@ jobs:
       # Build SocNetV
       #
       # Test building with qmake and Qt 6.5
-      - if: matrix.os == 'ubuntu-20.04' && matrix.qt-version == '6.5.3'
+      - if: matrix.os == 'ubuntu-22.04' && matrix.qt-version == '6.5.3'
         name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt${{matrix.qt-version}} using qmake
         run: |
           echo "🔎 Check openssl version:"
@@ -234,7 +238,7 @@ jobs:
           echo "👉 Building finished. Listing current directory with find for verification:"
           find .
       # Test building with cmake and all other versions of Qt
-      - if: matrix.os == 'ubuntu-20.04' && matrix.qt-version != '6.5.3'
+      - if: matrix.os == 'ubuntu-22.04' && matrix.qt-version != '6.5.3'
         name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt${{matrix.qt-version}} using cmake
         run: |
 
@@ -250,8 +254,11 @@ jobs:
           echo "💡 Deleting old build subdirectory..."
           rm -rf build
 
-          echo "🔧 Configuring project using 'cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}}' ..."
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}}
+          echo "🔧 Configuring project using 'cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}} -DBUILD_CLI=${{env.BUILD_CLI}}' ..."
+          cmake -S . -B build \
+          -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} \
+          -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}} \
+          -DBUILD_CLI=${{env.BUILD_CLI}}
 
           echo "🔎 Verifying ./build directory (before compiling)..."
           if [[ -d "./build" ]]; then
@@ -274,58 +281,49 @@ jobs:
             echo "🎉 executable found!"
             ls -ls "${{env.UNIXNAME}}"
           else
-              echo "❌ Error! ./build directory was not created!"
+              echo "❌ Error! Executable was not created!"
               exit 1
           fi
-      # We build appImage on Ubuntu 20.04 and Qt 6.8 (latest LTS)
-      - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version == '6.8.0'
+      # Build AppImage on ubuntu-22.04 with Qt 6.8 (latest LTS)
+      # Uses linuxdeploy + linuxdeploy-plugin-qt (supports Ubuntu 22.04+)
+      - if: matrix.os == 'ubuntu-22.04' && matrix.qt-version == '6.8.0'
         name: Create AppImage ${{ env.VERSION }} for ${{matrix.os}} with Qt${{matrix.qt-version}}
         run: |
-
           echo "💡 Checking current directory..."
           pwd
-
-          echo "🔎 Check where we are..."
-          if [[ -d "./build" ]]; then
-              echo "We are outside of ./build directory! Entering..."
-              cd ./build/
-          fi
-
+          cd ./build/
           echo "💡 List current directory (./build)..."
-          ls
-
-          echo "🔧 Installing the application into a new 'AppDir' directory..."
-          make install DESTDIR=AppDir
-
-          if [[ -d "./AppDir" ]]; then
-              echo "🎉 SocNetv Installed in AppDir successfully!"
-          else
-              echo "❌ Error: AppDir was not created!"
-              exit 1
+          ls -lh .
+          echo "🔧 Installing the application into AppDir..."
+          cmake --install . --prefix AppDir/usr
+          if [[ ! -f "./AppDir/usr/bin/${{env.UNIXNAME}}" ]]; then
+            echo "❌ Error: Installation failed, binary not found in AppDir!"
+            exit 1
           fi
-
-          echo "🔧 Installing linuxdeployqt..."
-          wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
-          chmod a+x linuxdeployqt-continuous-x86_64.AppImage
-
-          # NOTE: linuxdeployqt supports up to Ubuntu Focal Fossa
-          echo "🚀 Creating the AppImage using linuxdeployqt..."
-          ./linuxdeployqt-continuous-x86_64.AppImage AppDir/${{env.APPDIR_PREFIX}}/share/applications/*.desktop \
-            -appimage -extra-plugins=iconengines,imageformats
-
-          ARTIFACT_FN="${{env.APP_NAME}}-${{env.VERSION}}-$(uname -i).AppImage"
-
-          if [[ -f ${ARTIFACT_FN} ]]; then
-              echo "🎉 AppImage created! Listing files in current directory..."
-              ls -lh ./*.AppImage
-              echo "...Exporting LINUX_ARTIFACT=${ARTIFACT_FN}"
-              echo "LINUX_ARTIFACT=${ARTIFACT_FN}" >> $GITHUB_ENV
-          else
-              echo "❌ AppImage creation failed!"
-              exit 1
+          echo "🎉 SocNetV installed into AppDir successfully!"
+          echo "🔧 Downloading linuxdeploy and Qt plugin..."
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget -q https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod a+x linuxdeploy-x86_64.AppImage linuxdeploy-plugin-qt-x86_64.AppImage
+          echo "🚀 Creating AppImage using linuxdeploy..."
+          QMAKE=$(which qmake) \
+          ./linuxdeploy-x86_64.AppImage \
+            --appdir AppDir \
+            --plugin qt \
+            --output appimage
+          ARTIFACT_FN="${{env.APP_NAME}}-${{env.VERSION}}-x86_64.AppImage"
+          # linuxdeploy names the output with the app name from the .desktop file
+          CREATED_APPIMAGE=$(ls ./*.AppImage 2>/dev/null | grep -v linuxdeploy | head -1)
+          if [[ -z "$CREATED_APPIMAGE" ]]; then
+            echo "❌ AppImage creation failed! No AppImage found."
+            exit 1
           fi
+          mv "$CREATED_APPIMAGE" "$ARTIFACT_FN"
+          echo "🎉 AppImage created: $ARTIFACT_FN"
+          ls -lh ./*.AppImage
+          echo "LINUX_ARTIFACT=${ARTIFACT_FN}" >> $GITHUB_ENV
 
-      - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version == '6.8.0' && env.LINUX_ARTIFACT != ''
+      - if: contains( matrix.os, 'ubuntu-22.04') && matrix.qt-version == '6.8.0' && env.LINUX_ARTIFACT != ''
         name: 📤 Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
         run: |
           echo "🔍 Verifying artifact: ${{ env.LINUX_ARTIFACT }}"
@@ -342,7 +340,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # - if: contains( matrix.os, 'ubuntu-20.04') && matrix.qt-version == '6.8.0' && env.LINUX_ARTIFACT != ''
+      # - if: contains( matrix.os, 'ubuntu-22.04') && matrix.qt-version == '6.8.0' && env.LINUX_ARTIFACT != ''
       #   name: Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
       #   uses: actions/upload-release-asset@v1
       #   with:
@@ -368,8 +366,8 @@ jobs:
           echo "💡 Deleting old build subdirectory..."
           rm -rf build
 
-          echo "🔧 Configuring project using 'cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}}' ..."
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}}
+          echo "🔧 Configuring project using 'cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}} -DBUILD_CLI=${{env.BUILD_CLI}}' ..."
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}} -DBUILD_CLI=${{env.BUILD_CLI}}
 
           echo "🔎 Verifying ./build directory (before compiling)..."
           if [[ -d "./build" ]]; then
@@ -392,7 +390,7 @@ jobs:
             echo "🎉 executable found!"
             ls -ls "${{env.UNIXNAME}}"
           else
-              echo "❌ Error! ./build directory was not created!"
+              echo "❌ Error! Executable not found in build directory!"
               exit 1
           fi
 
@@ -480,8 +478,8 @@ jobs:
           echo "💡 Deleting old build subdirectory..."
           rm -rf build
 
-          echo "🔧 Configuring project using 'cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}}' ..."
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}}
+          echo "🔧 Configuring project using 'cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}} -DBUILD_CLI=${{env.BUILD_CLI}}' ..."
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}} -DBUILD_CLI=${{env.BUILD_CLI}}
 
           echo "🔎 Verifying ./build directory (before compiling)..."
           if [[ -d "./build" ]]; then
@@ -715,7 +713,7 @@ jobs:
           echo "💡 Creating build dir"
           mkdir build
           echo "🔧 Running 'cmake -S . -B build' to configure the project..."
-          cmake -S . -B build
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DBUILD_CLI=${{env.BUILD_CLI}}
           echo "🚧 🛠️ Compiling into build/ with 'cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}}'. Please wait..."
           cmake --build build -j${{env.CORES}} --config ${{env.CMAKE_CONFIG}} -v
           echo "👉 Building finished. Entering build/ and listing it for verification: "
