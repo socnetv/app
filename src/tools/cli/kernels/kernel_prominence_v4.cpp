@@ -305,31 +305,6 @@ namespace cli
         err << "OK: baseline match\n";
         return 0;
     }
-    // ------------------------------
-    // Compare wrapper
-    // ------------------------------
-
-    static int compareGoldenV4(const QJsonObject &expected,
-                               const QJsonObject &actual)
-    {
-        QTextStream err(stderr);
-
-        if (expected.value("schema_version").toInt() != 4 ||
-            actual.value("schema_version").toInt() != 4)
-        {
-            err << "ERROR: schema_version mismatch\n";
-            return 2;
-        }
-
-        const QJsonArray ePN = expected.value("per_node").toArray();
-        const QJsonArray aPN = actual.value("per_node").toArray();
-
-        if (!cmpPerNodeArrayV4(ePN, aPN, err))
-            return 1;
-
-        err << "OK: baseline match\n";
-        return 0;
-    }
 
     // ------------------------------
     // Runner
