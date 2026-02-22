@@ -9,31 +9,9 @@
  * Apply to all widgets, including the main window, dialogs, labels, buttons, etc.
  */
 
- /* Let the OS theme decide base colors; only set typography */
 QWidget {
     font-size: 100%;
 }
-
-/* Keep your own look for specific containers if you want */
-QMainWindow, QMenuBar, QToolBar, QStatusBar, QMenu, QDialog {
-    /* If you hardcode here, you still override the OS for these. Consider using palette() (below) */
-}
-/* QWidget {
-    background: palette(window);
-    color: palette(window-text);
-}
-
-QMenuBar, QMenu, QToolBar, QStatusBar, QDialog {
-    background: palette(window);
-    color: palette(window-text);
-}
-
-QLineEdit, QTextEdit, QPlainTextEdit, QTableWidget, QListView, QComboBox {
-    background: palette(base);
-    color: palette(text);
-    selection-background-color: palette(highlight);
-    selection-color: palette(highlighted-text);
-} */
 
 QMainWindow,
 QWidget,
@@ -84,7 +62,6 @@ QMenuBar::item {
 }
 
 QMenuBar::item:selected { /* when selected using mouse or keyboard */
-    color: #fff;
     background: #03a9f4;
     color: #000;
 }
@@ -629,8 +606,7 @@ QCheckBox:disabled {
     color: #787878;
 }
 QCheckBox::indicator:disabled {
-    /* keep it readable; you can also add dedicated *_disabled.svg if you want */
-    opacity: 0.6; /* if this doesn't work on your target styles, drop it */
+    opacity: 0.6; 
 }
 
 /* RadioButton states */
@@ -653,9 +629,11 @@ QRadioButton::indicator:checked:hover {
 QRadioButton::indicator:checked:pressed {
     image: url(:/images/controls/radio_checked_pressed.svg);
 }
-
 QRadioButton:disabled {
     color: #787878;
+}
+QRadioButton::indicator:disabled {
+    opacity: 0.6; 
 }
 
 
@@ -687,7 +665,7 @@ QTableWidget:focus,QToolButton:focus,
 QDoubleSpinBox:focus, QDoubleSpinBox:hover,
 QSpinBox:focus, QSpinBox:hover,
 QLineEdit:focus, QLineEdit:hover,
-QPlainTextEdit:focus, QPlainTextEdit:hover
+QPlainTextEdit:focus, QPlainTextEdit:hover,
 QTextEdit:focus, QTextEdit:hover{
     border: 1px solid #babdbe;
 }
@@ -698,7 +676,10 @@ QPlainTextEdit:hover, QDoubleSpinBox:hover,QSpinBox:hover, QCheckBox:hover {
     background-color: #e2e2e2;
 }
 
-
+QSpinBox:disabled,
+QDoubleSpinBox:disabled,
+QTextEdit:disabled,
+QPlainTextEdit:disabled,
 QLineEdit:disabled {
     background-color: #eee;
     color: #787878;
