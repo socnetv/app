@@ -27,7 +27,6 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-    Q_INIT_RESOURCE(src);
 
     //
     // Set the global default surface format to enable multisampling
@@ -42,6 +41,8 @@ int main(int argc, char *argv[])
     //
     QApplication app(argc, argv);
 
+    // Check that the default stylesheet is available in the resources
+    Q_ASSERT(QFile(":/qss/default.qss").exists());
 
     //
     // Setup app translations
@@ -54,8 +55,11 @@ int main(int argc, char *argv[])
     // for development, use "/" to use the english original as
     // .qm files are stored in the base project directory.
 
-    tor.load( QString("socnetv.") + locale.name(), "." );
-    app.installTranslator( &tor );
+    if (!tor.load(QString("socnetv.") + locale.name(), ".")) {
+        qWarning() << "Translation file not found for locale" << locale.name() << "- continuing with defaults.";
+    } else {
+        app.installTranslator(&tor);
+    }
 
     //
     // Set application basic info
