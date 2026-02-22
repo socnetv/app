@@ -221,7 +221,7 @@ set(SOURCES
 
 
 set(RESOURCES
-    src/src.qrc
+    src/images.qrc
     src/data.qrc
 )
 

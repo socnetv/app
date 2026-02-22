@@ -137,7 +137,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../src.qrc">
+        <iconset resource="../images.qrc">
          <normaloff>:/images/box.png</normaloff>:/images/box.png</iconset>
        </property>
       </widget>
@@ -153,7 +153,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../src.qrc">
+        <iconset resource="../images.qrc">
          <normaloff>:/images/circle.png</normaloff>:/images/circle.png</iconset>
        </property>
       </widget>
@@ -169,7 +169,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../src.qrc">
+        <iconset resource="../images.qrc">
          <normaloff>:/images/diamond.png</normaloff>:/images/diamond.png</iconset>
        </property>
       </widget>
@@ -185,7 +185,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../src.qrc">
+        <iconset resource="../images.qrc">
          <normaloff>:/images/ellipse.png</normaloff>:/images/ellipse.png</iconset>
        </property>
       </widget>
@@ -201,7 +201,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../src.qrc">
+        <iconset resource="../images.qrc">
          <normaloff>:/images/triangle.png</normaloff>:/images/triangle.png</iconset>
        </property>
       </widget>
@@ -330,7 +330,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../src.qrc"/>
+  <include location="../images.qrc"/>
  </resources>
  <connections>
   <connection>

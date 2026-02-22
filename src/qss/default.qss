@@ -1,8 +1,40 @@
-/**
-* For Style Sheet Syntax see: https://doc.qt.io/qt-6/stylesheet-syntax.html
+/*
+* SocNetV Style Sheet 
+* See: https://doc.qt.io/qt-6/stylesheet-syntax.html
 */
 
-/* Customize any plain widget that is a child of a QMainWindow. */
+
+/* 
+ * General Styles
+ * Apply to all widgets, including the main window, dialogs, labels, buttons, etc.
+ */
+
+ /* Let the OS theme decide base colors; only set typography */
+QWidget {
+    font-size: 100%;
+}
+
+/* Keep your own look for specific containers if you want */
+QMainWindow, QMenuBar, QToolBar, QStatusBar, QMenu, QDialog {
+    /* If you hardcode here, you still override the OS for these. Consider using palette() (below) */
+}
+/* QWidget {
+    background: palette(window);
+    color: palette(window-text);
+}
+
+QMenuBar, QMenu, QToolBar, QStatusBar, QDialog {
+    background: palette(window);
+    color: palette(window-text);
+}
+
+QLineEdit, QTextEdit, QPlainTextEdit, QTableWidget, QListView, QComboBox {
+    background: palette(base);
+    color: palette(text);
+    selection-background-color: palette(highlight);
+    selection-color: palette(highlighted-text);
+} */
+
 QMainWindow,
 QWidget,
 QMenuBar,
@@ -10,17 +42,10 @@ QMenu,
 QDialog,
 QToolBar,
 QGroupBox,
-QRadioButton,
 QLabel,
 QPushButton,
-QComboBox,
-QLineEdit,
-QSpinBox,
-QTextEdit,
-QListView,
 QStatusBar {
-    background-color: #eceff1;  /* blue-gray */
-    background-color: #edecec; /* red-gray */
+    background-color: #edecec;
     color: #222;
     font-size: 100%;
 }
@@ -39,6 +64,10 @@ QGridLayout {
     margin:0;
     padding:0;
 }
+
+/*
+ * Menu Bar and Menus
+ */
 QMenuBar {
     background-color: #edecec;
     padding: 5px 0;
@@ -89,7 +118,9 @@ QMenu::separator {
 }
 
 
-
+/* 
+ * Tool Bar and Status Bar
+ */
 QToolBar {
     background-color: #edecec;
     opacity: 200;
@@ -98,13 +129,10 @@ QToolBar {
     color: #666;
     padding: 0px 5px;
 }
-
-
 QToolBar::separator{
     height: 5px;
     width: 15px;
 }
-
 
 QStatusBar {
     background-color: #edecec;
@@ -112,7 +140,9 @@ QStatusBar {
     border: 1px solid #ddd;
 }
 
-
+/**
+* Frames and Labels
+*/ 
 QFrame {
 }
 QFrame#graphicsWidget {
@@ -129,7 +159,6 @@ QLabel {
     background: none;
 }
 
-
 /* A QToolTip is a QLabel ... */
 QToolTip {
     border: 1px solid rgba(0, 0, 0, 0.1);
@@ -143,6 +172,9 @@ QToolTip {
     color: #333;
 }
 
+/*
+* Progress Dialog and Progress Bar
+*/
 QProgressDialog {
     min-width: 400px;
 }
@@ -157,6 +189,9 @@ QProgressBar::chunk {
     width: 20px;
 }
 
+/* 
+ * Charts
+ */
 QChart,
 QChartView {
     background-color:transparent;
@@ -165,6 +200,9 @@ QChartView {
 }
 
 
+/* 
+* Group Boxes 
+*/
 QGroupBox {
     border: 0 none;
     border-top: 1px solid rgba(0, 0, 0, 0.1);
@@ -191,8 +229,9 @@ QGroupBox#leftPanel {
 }
 
 
-/* We provide a min-width and min-height for push buttons
-   so that they look elegant regardless of the width of the text. */
+/* 
+ * Buttons   
+ */
 QPushButton {
     background: #fff;
     color: #222;
@@ -284,7 +323,6 @@ QToolButton {
     min-width: 20px;
 }
 
-
 QToolBar QToolButton {
     border:0 none;
     min-width: 20px;
@@ -306,44 +344,18 @@ QToolButton:pressed {
 QToolButton:checked{
     background-color: #d2d2d2;
 }
-QTableWidget,QSpinBox, QComboBox, QLineEdit, QTextEdit,QPlainTextEdit, QListView  {
-    background-color: #fafafa;
-    color: #333;
-
-}
-
-QTableWidget,QComboBox, QLineEdit, QTextEdit,QPlainTextEdit, QListView {
-    selection-color: #fff;
-    selection-background-color: #0277BD;
-    /* selection-border: 0 none; */
-    border: 0 none;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+QToolButton:disabled{ 
+    background-color: #eee;
+    color: #787878;
 }
 
 
-QLineEdit, QTextEdit {
-    min-height: 20px;
-}
 
-QTableWidget:focus,
-QToolButton:focus,
-QComboBox:focus,
-QComboBox:hover,
-QLineEdit:focus, QLineEdit:hover,
-QPlainTextEdit:focus, QPlainTextEdit:hover
-QTextEdit:focus, QTextEdit:hover{
-    border: 1px solid #babdbe;
-}
-
-
-/* Nice to have the background color change when hovered. */
-QSpinBox:hover, QRadioButton:hover, QCheckBox:hover {
-    background-color: #e2e2e2;
-}
-
-
+/**
+* Combo Boxes
+*/
 QComboBox {
+    background-color: #fafafa;
     border: 1px solid #ddd;
     border-radius: 4px;
     selection-background-color: #67daff;
@@ -354,16 +366,16 @@ QComboBox {
     padding-right: 4px;
 }
 
+QComboBox:focus, QComboBox:hover {
+    border: 1px solid #babdbe;
+}
 QComboBox:hover {
     background-color: #eaeaea;
 }
 /* shift the text when the popup opens */
 QComboBox:on {
-
 }
-QCheckBox:disabled,
-QToolButton:disabled,
-QLineEdit:disabled,
+
 QComboBox:disabled {
     background-color: #eee;
     color: #787878;
@@ -389,7 +401,6 @@ QComboBox::down-arrow {
     color: #ddd;
 }
 
-
 QComboBox QAbstractItemView {
     border: 0 none;
     padding: 0;
@@ -399,9 +410,11 @@ QComboBox QAbstractItemView {
 }
 
 
+/* 
+ *   Scroll Bars
+ */
 QScrollBar {
 }
-
 
 QScrollBar:horizontal {
     height: 10px;
@@ -494,10 +507,9 @@ QScrollBar::add-line:vertical {
 }
 
 
-
-QSlider {
-}
-
+/* 
+ *   Sliders 
+ */
 QSlider::groove:horizontal {
     border: 1px solid #999999;
     height: 2px; /* auto expands to the size of the slider by default */
@@ -538,7 +550,9 @@ QSlider::handle:horizontal:hover{
 }
 
 
-
+/* 
+ *   Tab Widgets
+ */
 QTabWidget::pane { /* The tab widget frame */
     border:0 none;
     border-top: 1px solid #babdbe;
@@ -579,3 +593,113 @@ QTabBar::tab:!selected {
 }
 
 
+/* === Checkboxes / RadioButtons (SVG indicators) === */
+
+QCheckBox, QRadioButton {
+    spacing: 6px;
+}
+
+QCheckBox::indicator, QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+}
+
+/* CheckBox states */
+QCheckBox::indicator:unchecked {
+    image: url(:/images/controls/checkbox_unchecked.svg);
+}
+QCheckBox::indicator:unchecked:hover {
+    image: url(:/images/controls/checkbox_unchecked_hover.svg);
+}
+QCheckBox::indicator:unchecked:pressed {
+    image: url(:/images/controls/checkbox_unchecked_pressed.svg);
+}
+
+QCheckBox::indicator:checked {
+    image: url(:/images/controls/checkbox_checked.svg);
+}
+QCheckBox::indicator:checked:hover {
+    image: url(:/images/controls/checkbox_checked_hover.svg);
+}
+QCheckBox::indicator:checked:pressed {
+    image: url(:/images/controls/checkbox_checked_pressed.svg);
+}
+
+QCheckBox:disabled {
+    color: #787878;
+}
+QCheckBox::indicator:disabled {
+    /* keep it readable; you can also add dedicated *_disabled.svg if you want */
+    opacity: 0.6; /* if this doesn't work on your target styles, drop it */
+}
+
+/* RadioButton states */
+QRadioButton::indicator:unchecked {
+    image: url(:/images/controls/radio_unchecked.svg);
+}
+QRadioButton::indicator:unchecked:hover {
+    image: url(:/images/controls/radio_unchecked_hover.svg);
+}
+QRadioButton::indicator:unchecked:pressed {
+    image: url(:/images/controls/radio_unchecked_pressed.svg);
+}
+
+QRadioButton::indicator:checked {
+    image: url(:/images/controls/radio_checked.svg);
+}
+QRadioButton::indicator:checked:hover {
+    image: url(:/images/controls/radio_checked_hover.svg);
+}
+QRadioButton::indicator:checked:pressed {
+    image: url(:/images/controls/radio_checked_pressed.svg);
+}
+
+QRadioButton:disabled {
+    color: #787878;
+}
+
+
+/* 
+ * Line Edits, Spin Boxes, Text Edits, List Views, Plain Text Edits, Double Spin Boxes, and Table Widgets
+ */
+
+QLineEdit,
+QSpinBox,
+QTextEdit,
+QListView,
+QPlainTextEdit,
+QDoubleSpinBox,
+QTableWidget {
+    background-color: #fafafa;
+    color: #333;
+    selection-color: #fff;
+    selection-background-color: #0277BD;
+    border: 0 none;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+QLineEdit, QTextEdit {
+    min-height: 20px;
+}
+
+QTableWidget:focus,QToolButton:focus,
+QDoubleSpinBox:focus, QDoubleSpinBox:hover,
+QSpinBox:focus, QSpinBox:hover,
+QLineEdit:focus, QLineEdit:hover,
+QPlainTextEdit:focus, QPlainTextEdit:hover
+QTextEdit:focus, QTextEdit:hover{
+    border: 1px solid #babdbe;
+}
+
+
+/* Nice to have the background color change when hovered. */
+QPlainTextEdit:hover, QDoubleSpinBox:hover,QSpinBox:hover, QCheckBox:hover {
+    background-color: #e2e2e2;
+}
+
+
+QLineEdit:disabled {
+    background-color: #eee;
+    color: #787878;
+}

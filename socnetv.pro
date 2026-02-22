@@ -166,7 +166,7 @@ SOURCES += src/main.cpp \
     src/forms/dialogsysteminfo.cpp
 
 
-RESOURCES = src/src.qrc \
+RESOURCES = src/images.qrc \
     src/data.qrc
 
 
