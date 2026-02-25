@@ -412,7 +412,7 @@ message(STATUS "Building ${PROJECT_NAME} (${TARGET_NAME}) ${PROJECT_VERSION}")
 # 1. Install the extensions: Qt Extension Pack and CMake Tools 
 # 2. Open Command Palette and select "Open User Settings". 
 # 3. Search for "cmake.configureSettings", click on "Edit in settings.json" and in the file add a line with your 'CMAKE_PREFIX_PATH'. 
-# i.e. "CMAKE_PREFIX_PATH": "/home/dimitris/Qt/6.8.3/gcc_64"
+# i.e. "CMAKE_PREFIX_PATH": "/home/<user>/Qt/6.8.3/gcc_64"
 message(STATUS "CMAKE_PREFIX_PATH: "  ${CMAKE_PREFIX_PATH})
 message(STATUS "CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
 message(STATUS "CMAKE_SOURCE_DIR: "  ${CMAKE_SOURCE_DIR})
