@@ -211,7 +211,7 @@ jobs:
           modules: ${{env.QT_MODULES}}
           cache: true
       #
-      # Build SocNetV
+      # BUILD FOR LINUX
       #
       # Test building with qmake and Qt 6.5
       - if: matrix.os == 'ubuntu-22.04' && matrix.qt-version == '6.5.3'
@@ -229,7 +229,7 @@ jobs:
           make -j${{env.CORES}}
           echo "👉 Building finished. Listing current directory with find for verification:"
           find .
-      # Test building with cmake and all other versions of Qt
+      # Test building with cmake and newer versions of Qt
       - if: matrix.os == 'ubuntu-22.04' && matrix.qt-version != '6.5.3'
         name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt${{matrix.qt-version}} using cmake
         run: |
@@ -306,6 +306,7 @@ jobs:
           echo "🎉 AppImage created: $ARTIFACT_FN"
           ls -lh ./*.AppImage
           echo "LINUX_ARTIFACT=${ARTIFACT_FN}" >> $GITHUB_ENV
+      # Upload the AppImage artifact for Linux if it was created successfully
       - if: matrix.os == 'ubuntu-22.04' && matrix.qt-version == '6.8.0' && env.LINUX_ARTIFACT != ''
         name: 📤 Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
         run: |
@@ -321,6 +322,7 @@ jobs:
             --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # In latest ubuntu, we are test building with cmake. We do not upload the artifact.
       - if: matrix.os == 'ubuntu-latest'
         name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}} using cmake
         run: |
@@ -355,7 +357,12 @@ jobs:
               echo "❌ Error! Executable not found in build directory!"
               exit 1
           fi
+      # 
       # BUILD FOR MACOS
+      # 
+      # We test both qmake and cmake builds:
+      # In older Qt, we use qmake but we do not upload the artifact.
+      # We only upload the artifact for Qt 6.8.0, which is the latest LTS and the one we will use for the next release.
       - if: contains( matrix.os, 'macos') && matrix.qt-version == '6.5.3'
         name: Build ${{env.APP_NAME}} ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}} using qmake
         run: |
@@ -412,6 +419,7 @@ jobs:
             echo "Error: DMG creation failed. No DMG file found. Skipping upload."
             exit 1
           fi
+      # For the latest Qt 6.8.0, we build with cmake and upload the DMG artifact if it was created successfully.
       - if: contains( matrix.os, 'macos') && matrix.qt-version != '6.5.3'
         name: Build ${{env.APP_NAME}} ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}} using cmake
         timeout-minutes: 360  # 6 hours maximum
@@ -464,36 +472,30 @@ jobs:
           security import certificate.p12 -k build.keychain -P "${{ secrets.MACOS_CERTIFICATE_PASSWORD }}" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple: -k "" build.keychain
           rm -f certificate.p12
-
           echo "🛠️ Store Apple ID Credentials for Notarization"
           xcrun notarytool store-credentials "AC_PASSWORD" \
           --apple-id "${{ secrets.AC_APPLE_ID }}" \
           --team-id "${{ secrets.AC_TEAM_ID }}" \
           --password "${{ secrets.AC_PASSWORD }}"
-
           echo "🔧 Checking bundle structure before packaging..."
           # Remove any PkgInfo file in the root of the app bundle
           if [[ -f "${{env.APP_NAME}}.app/PkgInfo" ]]; then
               echo "⚠️ Found PkgInfo in root directory - removing it"
               rm "${{env.APP_NAME}}.app/PkgInfo"
           fi
-
           # Ensure PkgInfo exists in the Contents directory
           if [[ ! -f "${{env.APP_NAME}}.app/Contents/PkgInfo" ]]; then
               echo "Creating PkgInfo in Contents directory"
               echo "APPL????" > "${{env.APP_NAME}}.app/Contents/PkgInfo"
           fi
-
           # Clear extended attributes that could interfere with signing
           find "${{env.APP_NAME}}.app" -type f -exec xattr -c {} \;
-
           # First run macdeployqt WITHOUT creating DMG yet
           echo "🚀 Running macdeployqt to bundle required libraries..."
           macdeployqt "${{env.APP_NAME}}.app" -verbose=3 || {
             echo "Error: macdeployqt failed."
             exit 1
           }
-
           # Now sign the .app bundle AFTER macdeployqt has added all dependencies
           echo "🔏 Sign the application bundle"
           codesign --deep --force --verbose \
@@ -501,43 +503,33 @@ jobs:
           --entitlements ../scripts/entitlements.plist \
           --sign "Developer ID Application: Dimitris Kalamaras (${{ secrets.AC_TEAM_ID }})" \
           "${{env.APP_NAME}}.app"
-
           # Verify the signature
           echo "🔍 Verifying signature..."
           codesign --verify --verbose "${{env.APP_NAME}}.app"
-
           # Create the DMG from the signed app
           echo "📦 Creating DMG from signed application..."
           hdiutil create -volname "${{env.APP_NAME}}" -srcfolder "${{env.APP_NAME}}.app" -ov -format UDZO "${{env.APP_NAME}}.dmg"
-
           # Sign the DMG
           echo "🔏 Signing the DMG..."
           codesign --force --sign "Developer ID Application: Dimitris Kalamaras (${{ secrets.AC_TEAM_ID }})" "${{env.APP_NAME}}.dmg"
-
           # Before starting notarization, set keychain to not timeout
           echo "🔐 Setting keychain to not timeout..."
           security set-keychain-settings -t 72000 -l build.keychain
-
           # Notarize the signed DMG
           echo "📜 Notarize the DMG"
           SUBMIT_OUTPUT=$(xcrun notarytool submit "${{env.APP_NAME}}.dmg" --keychain-profile "AC_PASSWORD")
           NOTARY_SUBMISSION_ID=$(echo "$SUBMIT_OUTPUT" | grep "id:" | head -1 | awk '{print $2}')
           echo "Notarization submission ID: $NOTARY_SUBMISSION_ID"
-
           if [[ -z "$NOTARY_SUBMISSION_ID" ]]; then
             echo "❌ Error: Notarization submission ID is empty!"
             exit 1
           fi
-
           # Store the submission id
           echo "NOTARY_SUBMISSION_ID=$NOTARY_SUBMISSION_ID" >> $GITHUB_ENV
-
           echo "🕒 Waiting for notarization to complete (with timeout)..."
           START_TIME=$(date +%s)
           TIMEOUT_SECONDS=1800  # 30 minutes timeout
-
           while true; do
-
             # Check if we've exceeded the timeout
             CURRENT_TIME=$(date +%s)
             ELAPSED_TIME=$((CURRENT_TIME - START_TIME))
@@ -545,26 +537,20 @@ jobs:
               echo "⚠️ Notarization timeout after $(($TIMEOUT_SECONDS / 60)) minutes"
               break
             fi
-
             # Explicitly unlock the keychain again before checking status
             echo "🔓 Unlocking keychain before checking notarization status..."
             security unlock-keychain -p "" build.keychain
-
             # Check notarization status
             echo "🔍 Checking notarization status..."
             NOTARY_INFO=$(xcrun notarytool info --keychain-profile "AC_PASSWORD" "$NOTARY_SUBMISSION_ID" 2>&1)
             echo "$NOTARY_INFO"
-
             # Extract status
             NOTARY_STATUS=$(echo "$NOTARY_INFO" | grep -i "status:" | awk '{print $2}' | tr -d '[:space:]')
-
             if [[ "$NOTARY_STATUS" == "Accepted" ]]; then
               echo "✅ Notarization successful!"
-
               # Staple the notarization ticket to the DMG
               echo "📌 Stapling notarization ticket to DMG..."
               xcrun stapler staple "${{env.APP_NAME}}.dmg"
-
               # Rename DMG file after successful notarization and stapling
               DMG_NAME="${{env.APP_NAME}}-${{env.VERSION}}.dmg"
               mv "${{env.APP_NAME}}.dmg" "${DMG_NAME}"
@@ -575,10 +561,8 @@ jobs:
             elif [[ "$NOTARY_STATUS" == "Invalid" || "$NOTARY_STATUS" == "Rejected" ]]; then
               echo "❌ Notarization failed. Details:"
               echo "$notarization_info"
-
               # Get logs for failure details
               xcrun notarytool log --keychain-profile "AC_PASSWORD" "$NOTARY_SUBMISSION_ID"
-
               # Still create the artifact, but with a different name to indicate it's not notarized
               DMG_NAME="${{env.APP_NAME}}-${{env.VERSION}}-unsigned.dmg"
               mv "${{env.APP_NAME}}.dmg" "${DMG_NAME}"
@@ -593,12 +577,10 @@ jobs:
               echo "⚠️ Unexpected status: $NOTARY_STATUS"
               echo "$NOTARY_INFO"
             fi
-
             echo "⏳ Still waiting for notarization... ($(($ELAPSED_TIME / 60)) minutes elapsed)"
             sleep 60  # Check every minute
-
           done
-
+      # Upload artifact for macOS if it was created
       - if: contains( matrix.os, 'macos') && matrix.qt-version == '6.8.0' && env.MAC_ARTIFACT != ''
         name: 📤 Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
         run: |
@@ -609,26 +591,17 @@ jobs:
             echo "❌ Error: Artifact not found!"
             exit 1
           fi
-
           echo "📤 Uploading artifact to GitHub release..."
           gh release upload continuous "./build/${{ env.MAC_ARTIFACT }}" --repo "${{ github.repository }}" \
             --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Upload artifacts from macOS build to 'continuous' pre-release tag
-      # - if: contains( matrix.os, 'macos') && matrix.qt-version == '6.8.0' && env.MAC_ARTIFACT != ''
-      #   name: Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
-      #   uses: actions/upload-release-asset@v1
-      #   with:
-      #     upload_url: ${{ env.UPLOAD_URL }}
-      #     asset_path: ./${{ env.MAC_ARTIFACT }}
-      #     asset_name: "${{ env.MAC_ARTIFACT }}"
-      #     asset_content_type: "application/octet-stream"
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+      #
       # BUILD FOR WINDOWS
+      #
+      # Again we test build for both cmake and qmake.
+      # 
+      # Test build with qmake for Qt 6.5.3
       - if: contains( matrix.os, 'windows') && matrix.qt-version == '6.5.3'
         name: Build ${{env.APP_NAME}} ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}} using qmake.
         run: |
@@ -640,17 +613,18 @@ jobs:
           nmake
           echo "👉 Building finished. Listing  directory ${{env.QMAKE_CONFIG}} for verification:"
           dir ${{env.QMAKE_CONFIG}}
-
+      #
+      # Build with cmake and newer LTS version of Qt (currently 6.8.0)
+      # Then, create installer with Inno Setup.
+      #
       - if: contains( matrix.os, 'windows') && matrix.qt-version != '6.5.3'
         name: Build ${{env.APP_NAME}} ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}} using cmake.
         run: |
           echo "🔎 Listing some directories"
           dir D:\a\app\Qt\
-
           echo "🔎 Verifying Qt installation path..."
           where qmake
           where windeployqt
-
           echo "💡 Creating build dir"
           mkdir build
           echo "🔧 Running 'cmake -S . -B build' to configure the project..."
@@ -660,10 +634,8 @@ jobs:
           echo "👉 Building finished. Entering build/ and listing it for verification: "
           cd build
           dir
-
           echo "🔧 Running windeployqt on built executable (and ensuring required .dlls are copied into the folder)..."
           windeployqt ${{env.CMAKE_CONFIG}}\socnetv.exe --release --compiler-runtime
-
           echo "🔧 Manually copying MSVC runtime DLLs..."
           if (!(Test-Path "C:\Windows\System32\MSVCP140_1.dll")) {
               echo "❌ MSVCP140_1.dll NOT FOUND in System32! This may cause runtime errors."
@@ -679,39 +651,30 @@ jobs:
           copy "C:\Windows\System32\VCRUNTIME140.dll" ${{env.CMAKE_CONFIG}}\
           copy "C:\Windows\System32\VCRUNTIME140_1.dll" ${{env.CMAKE_CONFIG}}\
           copy "C:\Windows\System32\CONCRT140.dll" ${{env.CMAKE_CONFIG}}\
-
           echo "🔧 Copying license file to build directory..."
           copy ..\COPYING ${{env.CMAKE_CONFIG}}\LICENSE.txt
-
           echo "👉 Checking deployed DLLs..."
           dir ${{env.CMAKE_CONFIG}}
-
           if (!(Get-Command "iscc.exe" -ErrorAction SilentlyContinue)) {
             echo "🔧 Installing Inno Setup..."
             choco install -y InnoSetup
           } else {
             echo "Inno Setup is already installed. Skipping installation."
           }
-
           echo "🔧 Adding Inno Setup to PATH..."
           $env:PATH += ";C:\Program Files (x86)\Inno Setup 6\"
-
           echo "🔧 Verifying Inno Setup Installation..."
           iscc.exe /?
-
           echo "🔧 Copying InnoSetup script..."
           copy ..\scripts\innosetup.iss innosetup.iss
-
           echo "Updating RELEASEFOLDER in innosetup.iss with ${{env.CMAKE_CONFIG}}..."
           $config = "${{env.CMAKE_CONFIG}}"
           $replacement = "#define RELEASEFOLDER `"$config\\`""
           (Get-Content innosetup.iss) -replace '#define RELEASEFOLDER "release\\"', $replacement | Set-Content innosetup.iss
           echo "Updated innosetup.iss:"
           type innosetup.iss
-
           echo "🔧 Running Inno Setup to create installer..."
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "innosetup.iss"
-
           echo "👉 Checking if installer exists in current directory ..."
           dir
           $originalInstaller = Get-ChildItem -Path "SocNetV-*installer.exe" -ErrorAction SilentlyContinue
@@ -719,32 +682,30 @@ jobs:
             echo "❌ Error: Installer file not found!"
             exit 1
           }
-
           echo "🔧 Renaming installer..."
           $installerName = "SocNetV-${{env.VERSION}}-windows-installer.exe"
           Get-ChildItem -Path "SocNetV-*installer.exe" | Move-Item -Destination $installerName
           dir
-
           echo "🎉 Exporting installer name to environment variable..."
           echo "WINDOWS_ARTIFACT=$installerName" >> $env:GITHUB_ENV
-
           echo "🎉 Windows build complete. Artifacts are ready!"
-
+      #
+      # Upload artifacts from Windows build to 'continuous' pre-release tag 
+      # NOTE: We only upload from Windows when building with Qt 6.8, 
+      # to avoid uploading too many artifacts for every commit 
+      #
       - if: contains( matrix.os, 'windows') && matrix.qt-version == '6.8.0' && env.WINDOWS_ARTIFACT != ''
         name: 📤 Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
         run: |
           echo "🔍 Verifying artifact: ${{ env.WINDOWS_ARTIFACT }}"
           echo "Current working directory:"
           pwd
-
           echo "Contents of build directory:"
           Get-ChildItem -Path build
-
           if (!(Test-Path -Path "./build/${{ env.WINDOWS_ARTIFACT }}")) {
             echo "❌ Error: Artifact not found!"
             exit 1
           }
-
           echo "📤 Uploading artifact to GitHub release..."
           gh release upload continuous "./build/${{ env.WINDOWS_ARTIFACT }}" `
             --repo "${{ github.repository }}" `
@@ -752,8 +713,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
-
+      #
       # Update the continuous release description (only once, from ubuntu)
+      #
       - if: matrix.os == 'ubuntu-latest' && matrix.qt-version == '6.8.0'
         name: 🔄 Update continuous release description
         uses: actions/github-script@v6
@@ -762,17 +724,13 @@ jobs:
             const commitSha = context.sha;
             const shortSha = commitSha.slice(0, 7);
             const commitDate = new Date().toISOString().split('T')[0];
-
             const { data: commit } = await github.rest.git.getCommit({
               owner: context.repo.owner,
               repo: context.repo.repo,
               commit_sha: commitSha
             });
-
             const commitMessage = commit.message.split('\n')[0];
-
             const newDescription = `Latest Continuous Build. Built from commit \`${shortSha}\` on ${commitDate}. This is an automated continuous build. These builds are generated automatically from the latest \`develop\` code and are intended for testing purposes.`;
-
             try {
               // Find the continuous release
               const { data: releases } = await github.rest.repos.listReleases({
@@ -780,7 +738,6 @@ jobs:
                 repo: context.repo.repo,
               });
               const release = releases.find(r => r.tag_name === "continuous");
-
               if (release) {
                 // Update the release description
                 await github.rest.repos.updateRelease({
