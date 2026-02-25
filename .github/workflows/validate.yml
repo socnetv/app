@@ -5,10 +5,20 @@ on:
     branches: [main, develop]
 
 jobs:
-  validate-yaml:
+  validate-yamls:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Validate YAML file
-        run:
-          yamllint -c ${{ github.workspace }}/.github/workflows/yamlint.conf  ${{ github.workspace }}/.github/workflows/*.yml
+      - name: 📂 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🐍 Install yamllint
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install yamllint
+
+      - name: ✅ Lint workflow YAML files
+        run: |
+          yamllint \
+            -c "${{ github.workspace }}/.github/workflows/yamlint.conf" \
+            "${{ github.workspace }}/.github/workflows/"*.yml

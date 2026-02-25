@@ -511,4 +511,5 @@ jobs:
           gh release upload "$TagName" "./build/${{ env.WINDOWS_ARTIFACT }}" --repo "${{ github.repository }}" --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+      - run: echo "Job status is ${{ job.status }}."
+
