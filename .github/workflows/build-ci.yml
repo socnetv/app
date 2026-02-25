@@ -34,6 +34,7 @@ jobs:
       contents: write
     if: contains(github.event.head_commit.message, '[ci]') || contains(github.event.head_commit.message, '[gha]')
     steps:
+      - uses: actions/checkout@v4 # Checkout the repository to access the code and use gh CLI
       - name: 🗑️ Delete old continuous assets
         run: |
           ASSETS=$(gh release view continuous --json assets -q '.assets[].name')
