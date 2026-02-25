@@ -22,16 +22,16 @@ jobs:
     - os: linux
       compiler: gcc
       dist: jammy          # Ubuntu 22.04 — replaces focal (20.04)
-      env: FAILURES=true
+      env: FAILURES=TRUE
       if: commit_message =~ /\[travis\]/ AND commit_message !~ /\[skip linux\]/
     - os: osx
       compiler: clang
-      env: FAILURES=true
+      env: FAILURES=TRUE
       osx_image: xcode15.2  # replaces xcode14.2
       if: commit_message =~ /\[travis\]/ AND commit_message !~ /\[skip osx\]/
       cache:
         directories:
-          - /usr/local/Homebrew
+          - /opt/homebrew
           - /Users/travis/Library/Caches/Homebrew
   exclude:
     - os: osx

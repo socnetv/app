@@ -15,7 +15,7 @@ env:
   VERSION: "3.3"              # WILL BE UPDATED DYNAMICALLY BELOW
   QMAKE_PROJECT: "socnetv.pro"
   PUBLISHER: "Dimitris Kalamaras"
-  QT_MODULES: "qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d"
+  QT_MODULES: "qtimageformats qt5compat qtcharts qtwebview"
   QMAKE_CONFIG: release  ## debug  # Never use debug. Windows builds will break.
   CMAKE_CONFIG: Release  ## Debug
   CORES: 16
@@ -28,7 +28,28 @@ env:
 
 
 jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: contains(github.event.head_commit.message, '[ci]') || contains(github.event.head_commit.message, '[gha]')
+    steps:
+      - name: 🗑️ Delete old continuous assets
+        run: |
+          ASSETS=$(gh release view continuous --json assets -q '.assets[].name')
+          if [[ -z "$ASSETS" ]]; then
+            echo "✅ No previous assets found."
+          else
+            for ASSET in $ASSETS; do
+              echo "❌ Removing $ASSET..."
+              gh release delete-asset continuous "$ASSET" --yes
+            done
+            echo "✅ Old assets deleted."
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   ci_build:
+    needs: cleanup
     permissions:
       contents: write  # Required to upload release assets
     strategy:
@@ -123,25 +144,6 @@ jobs:
           UPLOAD_URL=$(echo "$RELEASE_INFO" | jq -r '.upload_url' | sed 's/{?name,label}//')
           echo "UPLOAD_URL=${UPLOAD_URL}" >> $GITHUB_ENV
           echo "UPLOAD_URL=${UPLOAD_URL}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 🗑️ Delete old assets from 'continuous' release (only once, from ubuntu)
-        if: matrix.os == 'ubuntu-latest' && matrix.qt-version == '6.8.0'
-        run: |
-          echo "🔍 Fetching existing assets from the 'continuous' release..."
-          ASSETS=$(gh release view continuous --json assets -q '.assets[].name')
-
-          if [[ -z "$ASSETS" ]]; then
-            echo "✅ No previous assets found in 'continuous' release."
-          else
-            echo "🗑️ Deleting old assets..."
-            for ASSET in $ASSETS; do
-              echo "❌ Removing $ASSET..."
-              gh release delete-asset continuous "$ASSET" --yes
-            done
-            echo "✅ Old assets deleted."
-          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -341,7 +343,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - if: contains( matrix.os, 'ubuntu-latest')
+      - if: matrix.os == 'ubuntu-latest'
         name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}} using cmake
         run: |
           echo "🔎 Check openssl version:"

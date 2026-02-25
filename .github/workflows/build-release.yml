@@ -5,14 +5,12 @@ on:
   push:
     tags:
       - 'v*'
-    branches:
-      - master  # This ensures it only runs on tags pushed to master
 env:
   APP_NAME: "SocNetV"
   UNIXNAME: "socnetv"
   QMAKE_PROJECT: "socnetv.pro"
   PUBLISHER: "Dimitris Kalamaras"
-  QT_MODULES: "qtwebsockets qtimageformats qt5compat qtcharts qtdatavis3d qtwebview qt3d"
+  QT_MODULES: "qtimageformats qt5compat qtcharts qtwebview"
   QMAKE_CONFIG: release  # Never use debug. Windows builds will break.
   CMAKE_CONFIG: Release
   CORES: 16
@@ -20,7 +18,6 @@ env:
   LINUX_ARTIFACT: ""
   APPDIR_PREFIX: "/usr"
   WINDOWS_ARTIFACT: ""
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   BUILD_CLI: "OFF"   # Set to ON to also build the headless regression CLI (socnetv-cli)
 jobs:
   release_build:
@@ -42,18 +39,26 @@ jobs:
           echo "🐧 This job is now running on a ${{ runner.os }} server"
       - name: 📂 Check out repository ${{ github.repository }}
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # We need the full history to create source code archives and verify tags
       - name: 💡 Set version from tag
         shell: bash
         id: set_version
         run: |
           # Extract version from tag (removes the 'v' prefix if present)
-          VERSION=${GITHUB_REF#refs/tags/v}
-          # Also handle tags without 'v' prefix
-          if [[ "${GITHUB_REF}" == refs/tags/* && ! "${GITHUB_REF}" == refs/tags/v* ]]; then
-            VERSION=${GITHUB_REF#refs/tags/}
-          fi
+          VERSION=${GITHUB_REF#refs/tags/}
+          VERSION=${VERSION#v}  # strip leading 'v' if present
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "Set VERSION to ${VERSION}"
+      - name: 🔒 Verify tag is on master
+        shell: bash
+        run: |
+          git fetch origin master
+          if ! git merge-base --is-ancestor ${{ github.sha }} origin/master; then
+            echo "❌ This tag was not pushed on master. Aborting."
+            exit 1
+          fi
+          echo "✅ Tag is on master. Proceeding."        
       - name: 🏷️ Create GitHub Release if it doesn't exist
         id: create_release
         uses: actions/github-script@v6
@@ -61,34 +66,32 @@ jobs:
           script: |
             const tagName = context.ref.replace('refs/tags/', '');
             try {
-              // Check if release exists
-              const { data: releases } = await github.rest.repos.listReleases({
+              const { data: release } = await github.rest.repos.getReleaseByTag({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
+                tag: tagName,
               });
-              const release = releases.find(r => r.tag_name === tagName);
-              if (release) {
-                console.log(`Release for tag ${tagName} already exists.`);
-                return { upload_url: release.upload_url, id: release.id };
+              console.log(`Release for tag ${tagName} already exists.`);
+            } catch (e) {
+              if (e.status !== 404 && e.status !== 422) throw e;
+              if (e.status === 404) {
+                console.log(`Creating new release for tag ${tagName}`);
+                await github.rest.repos.createRelease({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  tag_name: tagName,
+                  name: `SocNetV ${tagName.replace(/^v/, '')}`,
+                  draft: false,
+                  prerelease: false,
+                  generate_release_notes: true,
+                  make_latest: "true"
+                });
+              } else {
+                console.log(`Release already exists or was just created by another runner (422).`);
               }
-              // Create a new release
-              console.log(`Creating new release for tag ${tagName}`);
-              const { data: newRelease } = await github.rest.repos.createRelease({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                tag_name: tagName,
-                name: `SocNetV ${tagName.replace(/^v/, '')}`,
-                draft: false,
-                prerelease: false,
-                generate_release_notes: true,
-                make_latest: "true"
-              });
-              return { upload_url: newRelease.upload_url, id: newRelease.id };
-            } catch (error) {
-              console.error(`Error handling release: ${error}`);
-              throw error;
             }
           result-encoding: string
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       #
       # Install dependencies (build tools, cmake, etc)
       #
@@ -512,4 +515,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: echo "Job status is ${{ job.status }}."
-

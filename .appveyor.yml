@@ -129,14 +129,14 @@ after_build:
   - cmd: echo "Available Innosetup languages:"
   - cmd: dir "C:\Program Files (x86)\Inno Setup 6\Languages"
   - cmd: cd build && iscc innosetup.iss
-  - cmd: type build\Setup-Manifest.txt
-  - cmd: dir build\SocNetV*.exe
+  - cmd: type Setup-Manifest.txt
+  - cmd: dir SocNetV*.exe
   - cmd: echo "Renaming installer..."
-  - ps: Get-ChildItem -Path "build\SocNetV-*installer.exe" | Move-Item -Destination "build\SocNetV-$env:BUILDNAME-windows-installer.exe"
-  - cmd: dir build\SocNetV*.exe
+  - ps: Get-ChildItem -Path "SocNetV-*installer.exe" | Move-Item -Destination "SocNetV-$env:BUILDNAME-windows-installer.exe"
+  - cmd: dir SocNetV*.exe
 
 artifacts:
-  - path: build\SocNetV-*-installer.exe
+  - path: SocNetV-*-installer.exe
 
 #---------------------------------#
 #    Deploy to GitHub Releases    #
