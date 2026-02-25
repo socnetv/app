@@ -31,7 +31,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, macos-latest, windows-2019]
+        os: [ubuntu-22.04, macos-latest, windows-2022]
         # Use only the latest Qt LTS version for release builds
         qt-version: ['6.8.0']
     runs-on: ${{ matrix.os }}

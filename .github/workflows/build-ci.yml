@@ -34,7 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, ubuntu-latest, macos-latest, windows-2019]
+        os: [ubuntu-22.04, ubuntu-latest, macos-latest, windows-2022]
         # NOTE:
         # - We will CI build only for Qt6 LTS releases, see: https://doc.qt.io/qt-6/qt-releases.html
         # - For the Qt Versions supported by aqtinstall, see: https://ddalcino.github.io/aqt-list-server/
@@ -42,7 +42,7 @@ jobs:
         # exclude:
         #   - os: ubuntu-latest
         #     qt-version: '6.6.3'
-        #   - os: windows-2019
+        #   - os: windows-2022
         #     qt-version: '6.6.3'
         #   - os: macos-latest
         #     qt-version: '6.6.3'
