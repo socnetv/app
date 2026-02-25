@@ -77,10 +77,13 @@
         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
        </property>
        <property name="decimals">
-        <number>1</number>
+        <number>3</number>
        </property>
        <property name="minimum">
         <double>-100.000000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>10000.000000000000000</double>
        </property>
       </widget>
      </item>
