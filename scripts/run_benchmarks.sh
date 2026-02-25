@@ -12,7 +12,7 @@ set -euo pipefail
 # Baseline selection priority:
 #   1) BENCH_BASELINE=/path/to/perf_expected.env
 #   2) BENCH_BASELINE_SET=<name> (scripts/perf_baselines/<name>/perf_expected.env)
-#   3) auto: <OS>-<ARCH>-<HOST> (scripts/perf_baselines/<auto>/perf_expected.env)
+#   3) auto: <OS>-<ARCH> (scripts/perf_baselines/<auto>/perf_expected.env)
 #   4) legacy PERF_EXPECTED_FILE (defaults to scripts/perf_expected.env)
 
 RECORD=0
@@ -49,11 +49,18 @@ sanitize_id() {
 }
 
 auto_baseline_set() {
-  local os arch host
+  local os arch
   os="$(uname -s 2>/dev/null || echo unknownOS)"
   arch="$(uname -m 2>/dev/null || echo unknownARCH)"
-  host="$(hostname -s 2>/dev/null || hostname 2>/dev/null || echo unknownHOST)"
-  sanitize_id "${os}-${arch}-${host}"
+
+  # Normalize OS naming a bit
+  case "$os" in
+    Darwin) os="macos" ;;
+    Linux)  os="linux" ;;
+    *)      os="$(echo "$os" | tr '[:upper:]' '[:lower:]')" ;;
+  esac
+
+  sanitize_id "${os}-${arch}"
 }
 
 resolve_expected_file() {
@@ -79,7 +86,16 @@ resolve_expected_file() {
 }
 
 EXPECTED_FILE="$(resolve_expected_file)"
-BASELINE_SET_USED="${BENCH_BASELINE_SET:-$(auto_baseline_set)}"
+
+if [[ -n "${BENCH_BASELINE_SET:-}" ]]; then
+  BASELINE_SET_USED="$(sanitize_id "${BENCH_BASELINE_SET}")"
+else
+  BASELINE_SET_USED="$(auto_baseline_set)"
+fi
+
+if [[ "$EXPECTED_FILE" == "$LEGACY_BASELINE" ]]; then
+  BASELINE_SET_USED="legacy"
+fi
 
 echo "INFO: BENCH_BASELINE_SET=${BASELINE_SET_USED} EXPECTED_FILE=${EXPECTED_FILE} BUILD_TYPE=${BENCH_BUILD_TYPE} RECORD=${RECORD}" >&2
 
