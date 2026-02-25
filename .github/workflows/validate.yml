@@ -1,21 +1,17 @@
 name: Validate-YAMLs
-
 on:
   push:
     branches: [master, develop]
-
 jobs:
   validate-yamls:
     runs-on: ubuntu-latest
     steps:
       - name: 📂 Checkout repository
         uses: actions/checkout@v4
-
       - name: 🐍 Install yamllint
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install yamllint
-
       - name: ✅ Lint workflow YAML files
         run: |
           yamllint \
