@@ -158,54 +158,59 @@ void Graph::graphFileLoaded(const int &fileType,
 {
     if (fileType == FileType::UNRECOGNIZED)
     {
-        qDebug() << "Could not load file. Signaling to MW the error message...";
-        // Emit with error message.
-        emit signalGraphLoaded(fileType,
-                               QString(),
-                               QString(),
-                               0,
-                               0,
-                               0,
-                               elapsedTime,
-                               message);
+        emit signalGraphLoaded(fileType, QString(), QString(), 0, 0, 0, elapsedTime, message);
         return;
     }
 
-    qDebug() << "Loaded file OK. "
+    qDebug() << "Loaded file OK."
              << "type:" << fileType
              << "filename:" << fileName
              << "nodes:" << totalNodes
-             << "links:" << totalLinks
-             << "edgeDirType:" << edgeDirType
-             << "setting graph as saved/unchanged...";
+             << "links (parser count):" << totalLinks
+             << "edgeDirType:" << edgeDirType;
 
     setFileName(fileName);
-
     if (!netName.isEmpty())
         setName(netName);
     else
         setName((fileName.split("/").last()).split("/").first());
 
     if (edgeDirType == EdgeType::Directed)
-    {
         this->setDirected(true);
-    }
     else
-    {
         this->setDirected(false);
-    }
 
     setFileFormat(fileType);
-
     setModStatus(ModStatus::SavedUnchanged);
 
-    qDebug() << "Signaling to MW...";
+    // Do not trust totalLinks from the parser.
+    //
+    // The parser accumulates totalLinks naively per section: each *Arcs line
+    // adds 1, each *Edges line adds 2. In mixed Pajek files where the same
+    // node pair appears in both *Arcs and *Edges sections, those pairs are
+    // counted twice, inflating the total. (See issue #183.)
+    //
+    // edgesEnabled() counts from the actual adjacency (outEdgesCount() per
+    // vertex) which is always correct regardless of file format or section
+    // overlap. calculatedEdges is false at this point (invalidated by each
+    // edgeCreate() call during parsing via setModStatus(EdgeCount)), so
+    // edgesEnabled() will perform a fresh recount here.
+    int actualEdgeCount = edgesEnabled();
+
+    if (actualEdgeCount != totalLinks)
+    {
+        qDebug() << "WARNING: Parser totalLinks" << totalLinks
+                 << "differs from actual adjacency count" << actualEdgeCount
+                 << "- using actual count."
+                 << "This typically indicates overlapping *Arcs/*Edges pairs"
+                 << "in a mixed Pajek file (see issue #183).";
+    }
 
     emit signalGraphLoaded(fileType,
                            fileName,
                            getName(),
                            totalNodes,
-                           totalLinks,
+                           actualEdgeCount,
                            graphDensity(),
                            elapsedTime,
                            message);
