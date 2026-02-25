@@ -195,12 +195,12 @@ void Graph::graphFileLoaded(const int &fileType,
     // overlap. calculatedEdges is false at this point (invalidated by each
     // edgeCreate() call during parsing via setModStatus(EdgeCount)), so
     // edgesEnabled() will perform a fresh recount here.
-    int actualEdgeCount = edgesEnabled();
+    int actualLinks = edgesEnabled();
 
-    if (actualEdgeCount != totalLinks)
+    if (actualLinks != totalLinks)
     {
         qDebug() << "WARNING: Parser totalLinks" << totalLinks
-                 << "differs from actual adjacency count" << actualEdgeCount
+                 << "differs from actual adjacency count" << actualLinks
                  << "- using actual count."
                  << "This typically indicates overlapping *Arcs/*Edges pairs"
                  << "in a mixed Pajek file (see issue #183).";
