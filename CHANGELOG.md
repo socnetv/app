@@ -2,6 +2,22 @@
 
 All notable changes to this project are documented in this file. 
 
+## [3.3] – February 2026
+
+  - Major internal refactor: `Graph` is now a façade/coordinator; functionality has been split into focused `src/graph/*` modules.
+  - Extracted and stabilized DistanceEngine; added deterministic golden regression outputs and performance benchmark guardrails.
+  - New headless regression harness `socnetv-cli` (modular kernels + schema-versioned JSON):
+    - distance (v1), reachability (v2), walks_matrix (v3), prominence (v4)
+    - strict JSON dump/compare mode with committed baselines.
+  - New feature: filter vertices by centrality and prestige indices.
+  - Fixed Pajek parsing edge cases (mixed files with overlapping *Arcs/*Edges blocks).
+  - Fixed UCINET/DL import edge cases (line wrapping, diagonal handling).
+  - Fixed walks computation (`walksBetween()` / walks matrix parameter issues).
+  - Improved tie/link counting semantics on load (canonical ties + derived SNA links; density exposed in regression JSON).
+  - UI polish: improved disabled widget styling and custom SVG checkbox/radio styling.
+  - Cross-platform build & packaging fixes (Qt6/CMake, Debian packaging updates, openSUSE spec fixes, macOS arm64 linker fix).
+  - Many bugfixes, see: [GitHub Issues](https://github.com/socnetv/app/issues?q=is%3Aissue%20state%3Aclosed%20milestone%3A3.3).
+
 ## [3.2] – April 2025
 
   - Support custom attributes (metadata) in nodes (via the Node Properties dialog).
