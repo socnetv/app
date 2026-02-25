@@ -2,8 +2,6 @@
 
 [![version](https://img.shields.io/github/release/socnetv/app.svg?logo=c%2B%2B)](https://github.com/socnetv/app/releases)
 [![Build Status GitHub Actions](https://github.com/socnetv/app/actions/workflows/build-ci.yml/badge.svg)](https://github.com/socnetv/app/actions/workflows/build-ci.yml)
-<!-- [![Build Status in Travis (.com)](https://img.shields.io/travis/com/socnetv/app/master?logo=travis)](https://travis-ci.com/github/socnetv/app) -->
-<!-- [![Build Status in Appveyor](https://img.shields.io/appveyor/ci/oxy86/app.svg?logo=appveyor)](https://ci.appveyor.com/project/oxy86/app) -->
 [![langs](https://img.shields.io/github/languages/top/socnetv/app.svg)](https://github.com/socnetv/app.git)
 [![downloads](https://img.shields.io/github/downloads/socnetv/app/total.svg?logo=github)](https://socnetv.org/downloads)
 [![license](https://img.shields.io/github/license/socnetv/app.svg)](https://github.com/socnetv/app/blob/master/COPYING)
@@ -32,7 +30,9 @@ field data from a file in a supported format (GraphML, GraphViz, EdgeList, GML, 
 
 - Matrix routines: Adjacency plot, Laplacian matrix, Degree matrix, Cocitation, etc.
 
-- Advanced structural measures for social network analysis such as centrality and prestige indices (i.e. eigenvector and closeness centrality, betweenness centrality, information centrality, power centrality, proximity and pagerank prestige), 
+- Advanced structural measures for social network analysis such as centrality and prestige indices (i.e. eigenvector and closeness centrality, betweenness centrality, information centrality, power centrality, proximity and pagerank prestige).
+
+- Vertex filtering by centrality: hide nodes above or below a centrality threshold to focus your analysis on the most (or least) prominent actors in the network.
 
 - Community detection algorithms such as triad census, clique census, etc.
 
@@ -96,7 +96,7 @@ Follow the instructions below to install it in your system.
 To install SocNetV in Windows, download the latest SocNetV Windows installer from
 the [Downloads](https://socnetv.org/downloads) page, and double-click on the executable to start the installation.
 
-Note: You might see a Windows pop up about unknown software origin/publisher. Please ignore it and proceed, as we do not sign our released packages with any code signing certificates (which are not free by the way). 
+Note: You might see a Windows pop up about unknown software origin/publisher. Please ignore it and proceed, as we do not sign our Windows packages with a commercial code signing certificate.
 
 Click Next and Accept the License (GPL) to install the program.
 
@@ -110,16 +110,16 @@ Afterwards you can run the application from your Start menu.
 To install SocNetV in macOS, download the latest SocNetV macOS package from
 the [Downloads](https://socnetv.org/downloads) page. Then right-click on it and select Open.
 
-If the package is an installer, the installation will start immediately and the application 
+If the package is an installer, the installation will start immediately and the application
 will be installed automatically in your Applications.
 
-Otherwise, if the package is just an macOS image disk (a file with a .dmg extension), then double-click on it to open it. 
-You will see a new window with the SocNetV executable icon inside. Right-click on it and select Open to run the application. 
+Otherwise, if the package is just a macOS disk image (a file with a .dmg extension), then double-click on it to open it.
+You will see a new window with the SocNetV executable icon inside. Right-click on it and select Open to run the application.
 
-Note: The first time you will run SocNetV, macOS may tell you that it cannot verify the software developer/publisher. That's because we do not sign our released packages with any code signing certificates (which are not free by the way). 
-Please press Cancel, not Move to Bin! Then, right-click again on SocNetV app and select Open to run the application normally.  
+Note: On some macOS versions, the system may warn you that it cannot verify the software publisher the first time you open it.
+If that happens, press Cancel (not Move to Bin!), then right-click the SocNetV app again and select Open to proceed normally.
 
-After that, in order to permanently install SocNetV in your macOS, you can simply drag the SocNetV executable icon into your Applications.
+After that, to permanently install SocNetV, simply drag the SocNetV icon into your Applications folder.
 
 Alternatively, there is a SocNetV port in MacPorts (thanks to Szabolcs Horvát!). It can be installed with `port install socnetv`.
 
@@ -128,9 +128,14 @@ Alternatively, there is a SocNetV port in MacPorts (thanks to Szabolcs Horvát!)
 To run the latest and greatest version of SocNetV in Linux, download the latest Linux AppImage from
 the project's [Downloads](https://socnetv.org/downloads) page.
 
-Then, make the .AppImage file executable and double-click on it to run SocNetV. That's it! Note, however, that your system needs to have libfuse2 installed. On latest Ubuntu releases, you need to instal it with `sudo apt install libfuse2t64`
+Then, make the .AppImage file executable and double-click on it to run SocNetV. That's it!
 
-> SocNetV is also available in the [repositories of most Linux distributions](https://repology.org/project/socnetv/versions). 
+Note: Your system needs to have `libfuse2` installed for AppImages to work:
+
+- On **Ubuntu 24.04+**: `sudo apt install libfuse2t64`
+- On **Ubuntu 22.04 and earlier**: `sudo apt install libfuse2`
+
+> SocNetV is also available in the [repositories of most Linux distributions](https://repology.org/project/socnetv/versions).
 However, that is not always the most recent version. We urge you to use the AppImage of the latest version available from our website instead.
 
 Alternatively, users of openSUSE, Fedora and Ubuntu/Debian can install SocNetV from our own repositories.
@@ -143,8 +148,8 @@ sudo apt-get update
 sudo apt-get install socnetv
 ```
 
-In Fedora and openSUSE, choose and add the correct repository for your distro version 
-from here: https://software.opensuse.org/download.html?project=home%3Aoxy86&package=socnetv 
+In Fedora and openSUSE, choose and add the correct repository for your distro version
+from here: https://software.opensuse.org/download.html?project=home%3Aoxy86&package=socnetv
 
 Once you add the repo, install SocNetV using the command (Fedora):
 
@@ -160,62 +165,67 @@ sudo zypper in socnetv
 
 ### b. Compile from Source Code
 
-To compile and install SocNetV from source you need the Qt toolkit
-development libraries, version 6.
+To compile and install SocNetV from source you need the Qt toolkit development libraries, version 6.2 or later (tested with Qt 6.8).
 
-Qt is an open source C++ toolkit, for Windows, Linux and MacOS.
+Qt is an open source C++ toolkit, for Windows, Linux and macOS.
 
-Windows and MacOS users should download and install Qt6 from <https://www.qt.io/developers>
+Windows and macOS users should download and install Qt6 from <https://www.qt.io/developers>
 
 Linux users need to install the following packages:
 
-openSUSE: libqt6-qtbase, libqt6-qtbase-devel, libQt6Charts6-devel, qt6-tools
+openSUSE: `libqt6-qtbase`, `libqt6-qtbase-devel`, `libQt6Charts6-devel`, `qt6-tools`
 
-Fedora: qt6-qtbase, qt6-qtbase-devel, qt6-qtcharts-devel, qt6-linguist, qt6-qt5compat
+Fedora: `qt6-qtbase`, `qt6-qtbase-devel`, `qt6-qtcharts-devel`, `qt6-linguist`, `qt6-qt5compat`
 
-Debian: qt6-base-dev, qt6-base-dev-tools, qt6-charts-dev, qt6-svg-dev, qt6-5compat-dev, libqt6opengl6-dev
+Debian/Ubuntu: `qt6-base-dev`, `qt6-base-dev-tools`, `qt6-charts-dev`, `qt6-svg-dev`, `qt6-5compat-dev`, `libqt6opengl6-dev`
 
 Once you have Qt installed, you are ready to compile SocNetV from source.
 
 Download the archive with the source code of the latest version from
-<https://github.com/socnetv/app/releases/latest>. You will get a compressed file like app-3.0.tar.gz
+<https://github.com/socnetv/app/releases/latest>. You will get a compressed file like `app-3.3.tar.gz`.
 
-Then type in the following commands in order to decompress the
-SocNetV source code, configure and build it into a executable binary. The commands require that the command `qmake` is in your PATH, otherwise you will not be able to configure the build and it will fail. Replace 3.X with the version you downloaded.
+#### Build with CMake (recommended)
+
+CMake is the recommended build system for SocNetV 3.3. Replace `3.X` with the version you downloaded.
 
 ```bash
-untar zxfv app-3.X.tar.gz
+tar zxfv app-3.X.tar.gz
+cd app-3.X
+cmake -S . -B build -DCMAKE_PREFIX_PATH=/path/to/Qt/6.x/gcc_64/lib/cmake
+cmake --build build
+```
+
+The executable `socnetv` will be placed inside the `build` folder. To install system-wide:
+
+```bash
+sudo cmake --install build
+```
+
+#### Build with qmake (legacy)
+
+If you prefer qmake, ensure the `qmake` (or `qmake6`) command is in your PATH:
+
+```bash
+tar zxfv app-3.X.tar.gz
 cd app-3.X
 qmake
 make
-sudo make install # or su -c 'make install'
+sudo make install  # or: su -c 'make install'
 ```
 
-Probably you have already done the first 2 steps, so just type in 'qmake' or 'qmake6'.
-When you finish compiling and installing, run the application typing:
+When you finish compiling and installing, run the application by typing:
 
 ```bash
 socnetv
 ```
 
-or go to Start Menu > Mathematics  > SocNetV.
-
-Alternatively, if you have `cmake` installed, you can use it like this:
-
-```bash
-untar zxfv app-3.X.tar.gz
-cd app-3.X
-cmake -S . -B build -DCMAKE_PREFIX_PATH=/path/to/Qt/ver/gcc_64/lib/cmake 
-cmake --build build
-```
-
-The executable `socnetv` will be placed inside the `build` folder.
+or go to Start Menu > Mathematics > SocNetV.
 
 ## 5. Command Line Options
 
 SocNetV is primarily a GUI program. Nevertheless, some command line options are available:
 
-```bash
+```
 Options:
   -h, --help           Displays this help.
   -v, --version        Displays version information.
@@ -241,6 +251,16 @@ For example, type:
 
 to start SocNetV and immediately load network file named 'net.graphml' (in current folder).
 
+### Headless CLI (socnetv_cli)
+
+Starting with version 3.3, SocNetV also ships a headless command-line tool, `socnetv_cli`, for batch network analysis without a graphical interface. It supports multiple analysis kernels (distances, reachability, walks, prominence centralities) and produces deterministic JSON output suitable for scripting and regression testing.
+
+```bash
+socnetv_cli --help
+```
+
+This tool is intended for power users, automated pipelines, and developers running regression test suites.
+
 ## 6. Usage & documentation
 
 To help you work with the application, there are tooltips and What's This help messages
@@ -257,4 +277,3 @@ If you have a bug report or a feature request, please file it in our GitHub issu
 https://github.com/socnetv/app/issues
 
 To contact us directly, send an email to: <info@socnetv.org>
-
