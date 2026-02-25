@@ -593,7 +593,6 @@ private:
     DialogExportImage *m_dialogExportImage;
     DialogNodeEdit *m_nodeEditDialog;
     DialogNodeFind *m_nodeFindDialog;
-    DialogFilterNodesByCentrality *m_DialogNodeFilterByCentrality;
     DialogEdgeDichotomization *m_edgeDichotomizationDialog;
     DialogFilterEdgesByWeight *m_DialogEdgeFilterByWeight;
     DialogRandErdosRenyi *m_randErdosRenyiDialog;

@@ -11245,28 +11245,36 @@ void MainWindow::slotEditEdgeMode(const int &mode){
  * @brief Shows a dialog where the user can specify criteria to filter nodes
  *
  */
-void MainWindow::slotFilterNodesDialogByCentrality() {
-
-    if ( !activeNodes() )  {
+void MainWindow::slotFilterNodesDialogByCentrality()
+{
+    if (!activeNodes())
+    {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
-    // Create a new node filtering dialog
-    //@TODO - prominenceIndexList should be either
-    // the list of all computes indices
-    // or the last computed indice
-    // or empty if the user has not computed any index yet.
-    m_DialogNodeFilterByCentrality = new DialogFilterNodesByCentrality(prominenceIndexList, this);
+    QVector<bool> computedMask;
 
-    // Connect dialog signal to the graph
-    connect( m_DialogNodeFilterByCentrality, &DialogFilterNodesByCentrality::userChoices,
-         activeGraph, &Graph::vertexFilterByCentrality);
+    const int count = prominenceIndexList.size();
+    computedMask.reserve(count);
 
-    // Show the dialog
-    m_DialogNodeFilterByCentrality->exec() ;
+    for (int i = 0; i < count; ++i)
+    {
+        const IndexType t = static_cast<IndexType>(i + 1);
+        computedMask.append(activeGraph->isCentralityIndexComputed(t));
+    }
+
+    DialogFilterNodesByCentrality dlg(prominenceIndexList,
+                                      computedMask,
+                                      this);
+
+    connect(&dlg,
+            &DialogFilterNodesByCentrality::userChoices,
+            activeGraph,
+            &Graph::vertexFilterByCentrality);
+
+    dlg.exec();
 }
-
 
 
 /**

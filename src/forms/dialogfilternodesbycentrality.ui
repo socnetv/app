@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
-    <height>425</height>
+    <width>689</width>
+    <height>487</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -20,52 +20,6 @@
    <string>Filter nodes</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>From this dialog, you can filter nodes according to their score on a centrality index of your choosing. Select the desired centrality or prestige index, and the score threshold, then click on one of the radio buttons further below to control what to do. By default, it will disable all nodes with scores below the given threshold.</string>
-     </property>
-     <property name="textFormat">
-      <enum>Qt::TextFormat::RichText</enum>
-     </property>
-     <property name="wordWrap">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
-      <widget class="QLabel" name="label_5">
-       <property name="text">
-        <string>Index:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="indexComboBox">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>130</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>300</width>
-         <height>16777215</height>
-        </size>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
    <item row="2" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <property name="spacing">
@@ -114,7 +68,7 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the hreshold to use while filtering.&lt;/p&gt;&lt;p&gt;By default, it filters nodes with scores equal or above the selected threshold. &lt;/p&gt;&lt;p&gt;You can control the behaviour with the radio boxes below. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the score threshold used for hiding nodes.&lt;br/&gt;Use the options below to hide nodes with scores &lt;span style=&quot; font-weight:700;&quot;&gt;≥&lt;/span&gt; or &lt;span style=&quot; font-weight:700;&quot;&gt;≤&lt;/span&gt; the threshold.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="statusTip">
         <string>Enter the threshold to use while filtering. </string>
@@ -132,6 +86,66 @@
      </item>
     </layout>
    </item>
+   <item row="1" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Index:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="indexComboBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>130</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>300</width>
+         <height>16777215</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="5" column="0">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_3">
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>This does not delete nodes; it only hides them in the current view.
+To undo, run this action again and choose a threshold that hides no nodes (for example, a very large threshold when hiding scores ≥ threshold, or a very small threshold when hiding scores ≤ threshold).
+If you save the network while nodes are hidden, only the visible nodes and their edges will be saved.</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
    <item row="3" column="0">
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
@@ -144,41 +158,29 @@
      <item>
       <widget class="QRadioButton" name="overThresholdBt">
        <property name="text">
-        <string>Filter nodes with scores equal or OVER the above threshold</string>
+        <string>Hide nodes with scores ≥ threshold</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QRadioButton" name="belowThresholdBt">
        <property name="text">
-        <string>Filter nodes with scores equal or BELOW the above threshold</string>
+        <string>Hide nodes with scores ≤ threshold</string>
        </property>
       </widget>
      </item>
     </layout>
    </item>
-   <item row="4" column="0">
-    <widget class="QLabel" name="label_3">
-     <property name="font">
-      <font>
-       <pointsize>10</pointsize>
-      </font>
-     </property>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>This action is not destructive, until you close the app/network. You can undo the filtering by running this action again and selecting a trivial score threshold of 0. Obviously, when you save a network with filtering applied, only the filtered nodes (and their edges) will be saved.</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Hide nodes based on a centrality/prestige score. &lt;/p&gt;&lt;p&gt;Choose an index and a score threshold, then choose whether to hide nodes with scores ≥ the threshold or ≤ the threshold. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Note: Indices must be computed before they can be used for filtering. Edges connected to hidden nodes will also be hidden. &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::TextFormat::RichText</enum>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Orientation::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
      </property>
     </widget>
    </item>

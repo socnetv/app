@@ -16,17 +16,72 @@
 #include "dialogfilternodesbycentrality.h"
 #include <QPushButton>
 #include <QDebug>
+#include <QStandardItemModel>
 
 
-DialogFilterNodesByCentrality::DialogFilterNodesByCentrality(const QStringList &indexNames,
-                                                             QWidget *parent)
+DialogFilterNodesByCentrality::DialogFilterNodesByCentrality(
+        const QStringList &indexNames,
+        const QVector<bool> &computedMask,
+        QWidget *parent)
     : QDialog(parent)
 {
     ui.setupUi(this);
 
     ui.indexComboBox->addItems(indexNames);
 
-    connect(ui.buttonBox, SIGNAL(accepted()), this, SLOT(getUserChoices()));
+    auto *model = qobject_cast<QStandardItemModel *>(ui.indexComboBox->model());
+
+    bool atLeastOneEnabled = false;
+
+    if (model)
+    {
+        const int count = ui.indexComboBox->count();
+
+        for (int i = 0; i < count; ++i)
+        {
+            const bool computed =
+                (i < computedMask.size()) ? computedMask[i] : false;
+
+            if (!computed)
+            {
+                if (auto *item = model->item(i))
+                {
+                    item->setEnabled(false);
+                    item->setToolTip(
+                        tr("Not computed yet. Run the analysis first."));
+                }
+            }
+            else
+            {
+                atLeastOneEnabled = true;
+            }
+        }
+    }
+
+    // Auto-select first enabled index
+    if (atLeastOneEnabled)
+    {
+        for (int i = 0; i < ui.indexComboBox->count(); ++i)
+        {
+            if (ui.indexComboBox->model()->index(i, 0)
+                    .flags()
+                    .testFlag(Qt::ItemIsEnabled))
+            {
+                ui.indexComboBox->setCurrentIndex(i);
+                break;
+            }
+        }
+    }
+    else
+    {
+        // No indices computed
+        ui.buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+        ui.indexComboBox->setEnabled(false);
+    }
+
+    connect(ui.buttonBox, SIGNAL(accepted()),
+            this, SLOT(getUserChoices()));
+
     ui.buttonBox->button(QDialogButtonBox::Ok)->setDefault(true);
     ui.overThresholdBt->setChecked(true);
 }

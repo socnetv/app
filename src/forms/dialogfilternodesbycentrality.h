@@ -24,11 +24,14 @@
 
 SOCNETV_USE_NAMESPACE
 
-class DialogFilterNodesByCentrality : public QDialog {
+class DialogFilterNodesByCentrality : public QDialog
+{
     Q_OBJECT
 public:
     explicit DialogFilterNodesByCentrality(const QStringList &indexNames,
+                                           const QVector<bool> &computedMask,
                                            QWidget *parent = nullptr);
+
 public slots:
     void getUserChoices();
 
