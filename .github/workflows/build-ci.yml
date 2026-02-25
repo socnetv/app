@@ -1,13 +1,10 @@
 # GitHub Action to CI build SocNetV for all 3 major OSes
 # Triggered only when the commit message contains [gha] or [ci]
-
 name: Build SocNetV (CI) 🚀
-
 on:
   push:
     branches:
       - develop
-
 env:
   APP_NAME: "SocNetV"
   UNIXNAME: "socnetv"
@@ -25,8 +22,6 @@ env:
   WINDOWS_ARTIFACT: ""
   UPLOAD_URL: ''
   BUILD_CLI: "OFF"   # Set to ON to also build the headless regression CLI (socnetv-cli)
-
-
 jobs:
   cleanup:
     runs-on: ubuntu-latest
@@ -100,7 +95,6 @@ jobs:
             LAST_COMMIT_SHORT=$(git rev-parse --short HEAD)
             VERSION="${SOCNETV_VERSION}-${LAST_COMMIT_SHORT}" # Use custom versioning for non-tagged commits
           fi
-
           # Export VERSION as an environment variable for subsequent steps
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
       - name: Determined build version ${{ env.VERSION }}
@@ -147,11 +141,9 @@ jobs:
           echo "UPLOAD_URL=${UPLOAD_URL}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       #
       # Install dependencies (build tools, cmake, etc)
       #
-
       - if: contains( matrix.os, 'windows')
         name: 🪟 Prepare for buiilding on ${{matrix.os}}
         run: |
@@ -183,7 +175,6 @@ jobs:
           # DONT NEED IT. FOR DEBUG ONLY
           # pip install aqtinstall
           # aqt list-qt mac desktop --modules ${{ matrix.qt-version }}
-
       #
       # Install Qt (using https://github.com/jurplel/install-qt-action)
       #
@@ -219,8 +210,6 @@ jobs:
           version: ${{ matrix.qt-version }}
           modules: ${{env.QT_MODULES}}
           cache: true
-
-
       #
       # Build SocNetV
       #
@@ -244,25 +233,19 @@ jobs:
       - if: matrix.os == 'ubuntu-22.04' && matrix.qt-version != '6.5.3'
         name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt${{matrix.qt-version}} using cmake
         run: |
-
           echo "🔎 Check openssl version:"
           echo `openssl version`
-
           echo "💡 Checking current directory..."
           pwd
-
           echo "💡 List current directory..."
           ls
-
           echo "💡 Deleting old build subdirectory..."
           rm -rf build
-
           echo "🔧 Configuring project using 'cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}} -DBUILD_CLI=${{env.BUILD_CLI}}' ..."
           cmake -S . -B build \
           -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} \
           -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}} \
           -DBUILD_CLI=${{env.BUILD_CLI}}
-
           echo "🔎 Verifying ./build directory (before compiling)..."
           if [[ -d "./build" ]]; then
               echo "🎉 ./build directory created! Contents:"
@@ -271,14 +254,11 @@ jobs:
               echo "❌ Error! ./build directory was not created!"
               exit 1
           fi
-
           echo "🚧 Compiling the project..."
           cmake --build build -j$(nproc)
-
           echo "🔎 Entering build directory..."
           cd build
           ls -lh .
-
           echo "🔎 Search for built executable ./${{env.UNIXNAME}}*..."
           if [[ -f "./${{env.UNIXNAME}}" ]]; then
             echo "🎉 executable found!"
@@ -326,7 +306,6 @@ jobs:
           echo "🎉 AppImage created: $ARTIFACT_FN"
           ls -lh ./*.AppImage
           echo "LINUX_ARTIFACT=${ARTIFACT_FN}" >> $GITHUB_ENV
-
       - if: matrix.os == 'ubuntu-22.04' && matrix.qt-version == '6.8.0' && env.LINUX_ARTIFACT != ''
         name: 📤 Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
         run: |
@@ -337,31 +316,24 @@ jobs:
             echo "❌ Error: Artifact not found!"
             exit 1
           fi
-
           echo "📤 Uploading artifact to GitHub release..."
           gh release upload continuous "./build/${{ env.LINUX_ARTIFACT }}" --repo "${{ github.repository }}" \
             --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - if: matrix.os == 'ubuntu-latest'
         name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}} using cmake
         run: |
           echo "🔎 Check openssl version:"
           echo `openssl version`
-
           echo "💡 Checking current directory..."
           pwd
-
           echo "💡 List current directory..."
           ls
-
           echo "💡 Deleting old build subdirectory..."
           rm -rf build
-
           echo "🔧 Configuring project using 'cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}} -DBUILD_CLI=${{env.BUILD_CLI}}' ..."
           cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}} -DBUILD_CLI=${{env.BUILD_CLI}}
-
           echo "🔎 Verifying ./build directory (before compiling)..."
           if [[ -d "./build" ]]; then
               echo "🎉 ./build directory created! Contents:"
@@ -370,14 +342,11 @@ jobs:
               echo "❌ Error! ./build directory was not created!"
               exit 1
           fi
-
           echo "🚧 Compiling the project..."
           cmake --build build -j$(nproc)
-
           echo "🔎 Entering build directory..."
           cd build
           ls -lh .
-
           echo "🔎 Search for built executable ./${{env.UNIXNAME}}*..."
           if [[ -f "./${{env.UNIXNAME}}" ]]; then
             echo "🎉 executable found!"
@@ -386,8 +355,6 @@ jobs:
               echo "❌ Error! Executable not found in build directory!"
               exit 1
           fi
-
-
       # BUILD FOR MACOS
       - if: contains( matrix.os, 'macos') && matrix.qt-version == '6.5.3'
         name: Build ${{env.APP_NAME}} ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}} using qmake
@@ -397,12 +364,10 @@ jobs:
           # Ensure Qt is installed and in PATH
           # export PATH="$(brew --prefix qt)/bin:$PATH"
           which qmake
-
           echo "🔧 Running 'qmake CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}}' to configure on macos..."
           qmake CONFIG+=${{env.QMAKE_CONFIG}} ${{env.QMAKE_PROJECT}}
           echo "🚧 🛠️ Compiling for macos with make. Please wait..."
           make
-
           echo "👉 Building finished! Searching for built ${{matrix.os}} bundle (DIRECTORY!)./${{env.APP_NAME}}.app ..."
           if [[ -d "./${{env.APP_NAME}}.app" ]]; then
             echo "🎉 ${{matrix.os}} bundle created! Bundle contents:"
@@ -411,8 +376,6 @@ jobs:
             echo "❌ Error! ${{matrix.os}} bundle not found !"
             exit 1
           fi
-
-
           # Verify the binary with lipo
           echo "🔎 Verifying architectures in the built binary..."
           if [[ -f "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}" ]]; then
@@ -421,17 +384,14 @@ jobs:
               echo "❌ Error: Binary file not found!"
               exit 1
           fi
-
           echo "🔧 Removing items we do not deploy from project dir ..."
           rm -rf moc obj qrc
-
           # Run macdeployqt to bundle the app
           echo "🚀 Running macdeployqt to create macOS bundle..."
           macdeployqt "${{env.APP_NAME}}.app" -dmg -verbose=3 || {
             echo "Error: macdeployqt failed."
             exit 1
           }
-
           # Verify the bundled libraries in the binary
           echo "🔎 Verify the bundled libraries in the built binary ..."
           if [[ -f "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}" ]]; then
@@ -440,7 +400,6 @@ jobs:
               echo "❌ Error: Binary file not found!"
               exit 1
           fi
-
           # Rename DMG file
           if [[ -f ${{env.APP_NAME}}.dmg ]]; then
             DMG_NAME="${{env.APP_NAME}}-${{env.VERSION}}.dmg"
@@ -458,22 +417,16 @@ jobs:
         timeout-minutes: 360  # 6 hours maximum
         run: |
           echo "🍎 Preparing macOS build..."
-
           echo "🔎 Check openssl version:"
           echo `openssl version`
-
           echo "💡 Checking current directory..."
           pwd
-
           echo "💡 List current directory..."
           ls
-
           echo "💡 Deleting old build subdirectory..."
           rm -rf build
-
           echo "🔧 Configuring project using 'cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}} -DBUILD_CLI=${{env.BUILD_CLI}}' ..."
           cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}} -DBUILD_CLI=${{env.BUILD_CLI}}
-
           echo "🔎 Verifying ./build directory (before compiling)..."
           if [[ -d "./build" ]]; then
               echo "🎉 ./build directory created! Contents:"
@@ -482,14 +435,11 @@ jobs:
               echo "❌ Error! ./build directory was not created!"
               exit 1
           fi
-
           echo "🚧 Compiling the project..."
           cmake --build build -j$(sysctl -n hw.ncpu)
-
           echo "🔎 Entering build directory..."
           cd build
           ls -lh .
-
           echo "🔎 Search for built ${{matrix.os}} bundle (DIRECTORY!)./${{env.APP_NAME}}.app ..."
           if [[ -d "./${{env.APP_NAME}}.app" ]]; then
             echo "🎉 ${{matrix.os}} bundle created! Bundle contents:"
@@ -498,7 +448,6 @@ jobs:
             echo "❌ Error! ${{matrix.os}} bundle not found !"
             exit 1
           fi
-
           # Verify the binary with lipo
           echo "🔎 Verifying architectures in the ${{matrix.os}} bundle..."
           if [[ -f "${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}}" ]]; then
@@ -507,7 +456,6 @@ jobs:
               echo "❌ Error: ${{env.APP_NAME}}.app/Contents/MacOS/${{env.APP_NAME}} file not found!"
               exit 1
           fi
-
           echo "🔑 Import macOS Developer Certificate"
           echo "${{ secrets.MACOS_CERTIFICATE }}" | base64 --decode > certificate.p12
           security create-keychain -p "" build.keychain

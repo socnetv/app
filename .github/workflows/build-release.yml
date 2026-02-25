@@ -53,12 +53,13 @@ jobs:
       - name: 🔒 Verify tag is on master
         shell: bash
         run: |
+          TAG_COMMIT=$(git rev-list -n 1 "${GITHUB_REF}")
           git fetch origin master
-          if ! git merge-base --is-ancestor ${{ github.sha }} origin/master; then
-            echo "❌ This tag was not pushed on master. Aborting."
+          if ! git merge-base --is-ancestor "$TAG_COMMIT" origin/master; then
+            echo "❌ Tag commit is not on master. Aborting."
             exit 1
           fi
-          echo "✅ Tag is on master. Proceeding."        
+          echo "✅ Tag commit is on master. Proceeding."    
       - name: 🏷️ Create GitHub Release if it doesn't exist
         id: create_release
         uses: actions/github-script@v6
