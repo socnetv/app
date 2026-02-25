@@ -11253,6 +11253,15 @@ void MainWindow::slotFilterNodesDialogByCentrality()
         return;
     }
 
+    // TODO (v3.4+ UX):
+    // Revisit centrality filtering workflow.
+    // Possible improvements:
+    //  - Add a "Compute missing indices" button directly in the dialog.
+    //  - Add a "Clear filtering / Enable all nodes" button.
+    //  - Consider auto-computing selected index if not yet computed.
+    //  - Consider persisting last-used index and threshold.
+    // Current v3.3 behavior: show all indices and disable those not computed.
+
     QVector<bool> computedMask;
 
     const int count = prominenceIndexList.size();
