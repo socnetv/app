@@ -210,7 +210,7 @@ void Graph::graphFileLoaded(const int &fileType,
                            fileName,
                            getName(),
                            totalNodes,
-                           actualEdgeCount,
+                           actualLinks,
                            graphDensity(),
                            elapsedTime,
                            message);
