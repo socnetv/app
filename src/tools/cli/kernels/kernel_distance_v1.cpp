@@ -88,12 +88,14 @@ static QJsonObject buildGoldenJsonV1(
     QJsonObject root;
     root["schema_version"] = 1;
 
+    // ---------------- Dataset ----------------
     QJsonObject dataset;
     dataset["path"] = inputPath;
     dataset["name"] = QFileInfo(inputPath).fileName();
     dataset["filetype"] = fileFormat;
     root["dataset"] = dataset;
 
+    // ---------------- Run config ----------------
     QJsonObject run;
     run["computeCentralities"] = computeCentralities;
     run["considerWeights"] = considerWeights;
@@ -101,28 +103,39 @@ static QJsonObject buildGoldenJsonV1(
     run["dropIsolates"] = dropIsolates;
     root["run"] = run;
 
+    // ---------------- Counts ----------------
+    const int ties_graph = load.tiesGraph; // canonical, already correct
+    const int links_sna  = g.isDirected() ? ties_graph : (2 * ties_graph);
+
     QJsonObject counts;
     counts["nodes"] = load.totalNodes;
-    counts["links_sna"] = load.totalLinks;   // SNA links as reported by GraphLoaded
-    counts["ties_graph"] = g.edgesEnabled(); // canonical model ties: edges if undirected, arcs if directed
+    counts["links_sna"] = links_sna;
+    counts["ties_graph"] = ties_graph;
     root["counts"] = counts;
 
+    // ---------------- Graph flags ----------------
     QJsonObject graph;
     graph["directed"] = g.isDirected();
     graph["weighted"] = g.isWeighted();
     root["graph"] = graph;
 
+    // ---------------- Metrics ----------------
     QJsonObject metrics;
     metrics["avg_distance"] = d2s(avgDist);
     metrics["diameter"] = diameter;
     metrics["disconnected_pairs"] = g.notConnectedPairsSize();
     metrics["connected"] = g.isConnectedCached();
+
+    // NEW: Density (relation-aware, cached, canonical)
+    metrics["density"] = d2s(g.graphDensity());
+
     root["metrics"] = metrics;
 
-    // Per-node vectors (only meaningful if centralities computed)
+    // ---------------- Per-node vectors ----------------
     if (computeCentralities)
         root["per_node"] = buildPerNodeArray(g);
 
+    // ---------------- Load report ----------------
     QJsonObject loadReport;
     loadReport["ok"] = load.ok;
     loadReport["fileType_signal"] = load.fileType;

@@ -68,32 +68,46 @@ QSet<int> Graph::vertexNeighborhoodSet(const int &v1)
 /**
  * @brief Gets the graph density (if computed) or computes it again.
  *
- * The graph density is the ratio of present edges to total possible edges
- * in the current relation.
+ * The graph density is the ratio of present ties to total possible ties
+ * for the current relation.
+ *
+ * IMPORTANT: edgesEnabled() semantics in SocNetV:
+ *  - If the graph is UNDIRECTED, edgesEnabled() returns E (undirected edges),
+ *    even though internally each undirected edge is stored as two symmetric arcs.
+ *  - If the graph is DIRECTED, edgesEnabled() returns A (directed arcs).
+ *
+ * Therefore:
+ *  - Undirected density: 2E / (V*(V-1))
+ *  - Directed   density:  A / (V*(V-1))
+ *
+ * TODO / THINK: Self-loops (v->v)
+ *  - The denominator V*(V-1) assumes loops are not allowed/considered.
+ *  - If self-loops can exist and be enabled, decide whether to:
+ *      (a) exclude loops from the numerator for density, or
+ *      (b) use a loop-aware denominator (e.g., V*V for directed with loops).
  *
  * @return qreal
  */
 qreal Graph::graphDensity()
 {
-
     if (calculatedGraphDensity)
     {
-        //        qDebug()<< "Graph not changed and density already computed:"
-        //                << m_graphDensity;
         return m_graphDensity;
     }
 
-    //    qDebug()<< "Computing graph density...";
-    int V = vertices();
+    const int V = vertices();
     if (V != 0 && V != 1)
     {
-        int enabledEdges = edgesEnabled();
-        m_graphDensity = (isUndirected()) ? (qreal)2 * enabledEdges / (qreal)(V * (V - 1.0)) : (qreal)enabledEdges / (qreal)(V * (V - 1.0));
+        const int enabledEdges = edgesEnabled(); // E (undirected) or A (directed)
+        m_graphDensity = (isUndirected())
+            ? (qreal)2 * enabledEdges / (qreal)(V * (V - 1.0))
+            : (qreal)enabledEdges / (qreal)(V * (V - 1.0));
     }
     else
     {
         m_graphDensity = 0;
     }
+
     calculatedGraphDensity = true;
     return m_graphDensity;
 }

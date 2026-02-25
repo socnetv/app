@@ -110,16 +110,25 @@ namespace cli
         run["dropIsolates"] = cfg.dropIsolates;
         root["run"] = run;
 
+        const int ties_graph = load.tiesGraph; // canonical, already correct
+        // links_sna is the SNA convention: undirected ties are counted as 2 arcs.
+        const int links_sna = g.isDirected() ? ties_graph : (2 * ties_graph);
+
         QJsonObject counts;
         counts["nodes"] = load.totalNodes;
-        counts["links_sna"] = load.totalLinks;
-        counts["ties_graph"] = g.edgesEnabled();
+        counts["links_sna"] = links_sna;
+        counts["ties_graph"] = ties_graph;
         root["counts"] = counts;
 
         QJsonObject graph;
         graph["directed"] = g.isDirected();
         graph["weighted"] = g.isWeighted();
         root["graph"] = graph;
+
+        // Metrics (add density so golden JSONs carry it)
+        QJsonObject metrics;
+        metrics["density"] = d2s(g.graphDensity());
+        root["metrics"] = metrics;
 
         root["per_node"] = buildPerNodeArrayV4(g);
 

@@ -132,16 +132,20 @@ int main(int argc, char *argv[])
     cli::printKV("FILE", QFileInfo(cfg.inputPath).fileName());
     cli::printKV("FILETYPE", load.fileType);
     cli::printKV("N", load.totalNodes);
-    cli::printKV("LINKS_SNA", load.totalLinks);
     cli::printKV("LOAD_MS", load.elapsedTime);
     cli::printKV("LOAD_MSG", load.message);
 
     if (!load.ok)
         return 1;
 
+    // now safe to derive from graph state
+    const int ties_graph = load.tiesGraph;
+    const int links_sna = g.isDirected() ? ties_graph : (2 * ties_graph);
+
     cli::printKV("DIRECTED", g.isDirected() ? 1 : 0);
     cli::printKV("WEIGHTED", g.isWeighted() ? 1 : 0);
-    cli::printKV("TIES_GRAPH", g.edgesEnabled());
+    cli::printKV("TIES_GRAPH", ties_graph);
+    cli::printKV("LINKS_SNA", links_sna);
 
     if (cfg.kernel == "distance")
         return cli::runKernelDistanceV1(cfg, load, g);

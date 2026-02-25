@@ -514,30 +514,55 @@ bool Graph::edgeSymmetric(const int &v1, const int &v2)
 }
 
 /**
- * @brief Returns the number |E| of graph - only the enabled edges
+ * @brief Returns the number of enabled ties in the current relation.
  *
- * @return
+ * IMPORTANT: Naming vs semantics
+ *  - Internally, SocNetV stores adjacency as directed arcs in each vertex's out-edges.
+ *  - For an UNDIRECTED graph, each undirected edge is represented as TWO symmetric arcs
+ *    (v1->v2 and v2->v1). Therefore, summing outEdgesCount() over all vertices yields
+ *    2*E, and we must divide by 2 to return the logical undirected edge count E.
+ *  - For a DIRECTED graph, summing outEdgesCount() over all vertices yields A (the arc
+ *    count), and we return it as-is.
+ *
+ * Caching:
+ *  - m_totalEdges caches the *internal* count (sum of enabled out-arcs).
+ *  - edgesEnabled() returns the *logical* count:
+ *      - E for undirected graphs
+ *      - A for directed graphs
+ *
+ * TODO / THINK: Self-loops (v->v)
+ *  - A self-loop contributes exactly 1 outbound arc in outEdgesCount().
+ *  - In an UNDIRECTED graph, dividing m_totalEdges by 2 assumes every tie is a symmetric pair.
+ *    A loop is NOT a symmetric pair, so it would be mishandled by the /2 rule.
+ *  - Decide on a loop policy:
+ *      (a) forbid loops in undirected graphs (and filter them out here), or
+ *      (b) count loops separately and adjust the formula to: E = (nonLoopArcs/2) + loopArcs
+ *          (where loopArcs is the number of enabled v->v arcs).
+ *
+ * @return int Logical enabled ties: E (undirected) or A (directed)
  */
 int Graph::edgesEnabled()
 {
-
     int enabledEdges = 0;
+
     if (calculatedEdges)
     {
-        enabledEdges = ((isUndirected()) ? m_totalEdges / 2 : m_totalEdges);
-        //        qDebug()<< "Graph unchanged. Returning current enabled edges count:" <<  enabledEdges;
+        enabledEdges = (isUndirected()) ? (m_totalEdges / 2) : m_totalEdges;
         return enabledEdges;
     }
-    // Compute the edge count from scratch
+
+    // Compute internal tie count from scratch: sum enabled outbound arcs for current relation.
     m_totalEdges = 0;
     VList::const_iterator it;
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
         m_totalEdges += (*it)->outEdgesCount();
     }
+
     calculatedEdges = true;
-    enabledEdges = ((isUndirected()) ? m_totalEdges / 2 : m_totalEdges);
-    //    qDebug()<< "Computed enabled edges new count:" <<  enabledEdges;
+
+    // Convert internal arc count to logical tie count.
+    enabledEdges = (isUndirected()) ? (m_totalEdges / 2) : m_totalEdges;
     return enabledEdges;
 }
 

@@ -22,7 +22,6 @@
 namespace cli {
 
 // ---- schema v3 builder ----
-
 static QJsonObject buildGoldenJsonV3WalksMatrix(
     const QString &inputPath,
     int fileFormat,
@@ -54,16 +53,25 @@ static QJsonObject buildGoldenJsonV3WalksMatrix(
     run["walks_length"] = walksLength;
     root["run"] = run;
 
+    const int ties_graph = load.tiesGraph; // canonical, already correct
+    const int links_sna  = g.isDirected() ? ties_graph : (2 * ties_graph);
+
     QJsonObject counts;
     counts["nodes"] = load.totalNodes;
-    counts["links_sna"] = load.totalLinks;
-    counts["ties_graph"] = g.edgesEnabled();
+    counts["links_sna"] = links_sna;
+    counts["ties_graph"] = ties_graph;
     root["counts"] = counts;
 
     QJsonObject graph;
     graph["directed"] = g.isDirected();
     graph["weighted"] = g.isWeighted();
     root["graph"] = graph;
+
+    // Metrics (add density so golden JSONs carry it)
+    QJsonObject metrics;
+    // Graph density (relation-aware). Not to be confused with any kernel-specific densities.
+    metrics["density"] = d2s(g.graphDensity());
+    root["metrics"] = metrics;
 
     QJsonObject walks;
     QJsonArray ord;

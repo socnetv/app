@@ -746,30 +746,44 @@ void GraphVertex::setInEdgeWeight(const int &source, const qreal &weight){
 
 
 
-
 /**
- * @brief Computes and returns the number of active outbound arcs (outEdges) for the current relation
+ * @brief Computes and returns the number of active outbound arcs (outEdges)
+ *        for the current relation.
+ *
+ * This counts enabled outbound adjacency entries in m_outEdges for m_curRelation.
+ * Graph::edgesEnabled() sums this over all vertices and then:
+ *  - divides by 2 if the graph is undirected (because undirected edges are stored
+ *    internally as symmetric arcs),
+ *  - leaves it as-is if the graph is directed.
+ *
+ * TODO / THINK: Self-loops (v->v)
+ *  - If loops are stored and enabled, they will be counted here.
+ *  - Decide if loops should be excluded from certain graph-level totals (e.g., density),
+ *    or supported consistently with loop-aware formulas.
  *
  * @return int
  */
-int GraphVertex::outEdgesCount() {
+int GraphVertex::outEdgesCount()
+{
     m_outEdgesCounter = 0;
-    int relation=0;
-    bool edgeStatus = false;
-    H_edges::const_iterator it1=m_outEdges.constBegin();
-    while (it1 != m_outEdges.constEnd() ) {
-        relation = it1.value().first;
-        if ( relation == m_curRelation ) {
-            edgeStatus=it1.value().second.second;
-            if ( edgeStatus == true) {
+
+    H_edges::const_iterator it1 = m_outEdges.constBegin();
+    while (it1 != m_outEdges.constEnd())
+    {
+        const int relation = it1.value().first;
+        if (relation == m_curRelation)
+        {
+            const bool edgeStatus = it1.value().second.second;
+            if (edgeStatus)
+            {
                 m_outEdgesCounter++;
             }
         }
         ++it1;
     }
+
     return m_outEdgesCounter;
 }
-
 
 
 /**

@@ -21,7 +21,6 @@
 namespace cli {
 
 // ---- schema v2 builder ----
-
 static QJsonObject buildGoldenJsonV2Reachability(
     const QString &inputPath,
     int fileFormat,
@@ -51,16 +50,24 @@ static QJsonObject buildGoldenJsonV2Reachability(
     run["operation"] = "reachability_matrix";
     root["run"] = run;
 
+    const int ties_graph = load.tiesGraph; // canonical, already correct
+    const int links_sna  = g.isDirected() ? ties_graph : (2 * ties_graph);
+
     QJsonObject counts;
     counts["nodes"] = load.totalNodes;
-    counts["links_sna"] = load.totalLinks;
-    counts["ties_graph"] = g.edgesEnabled();
+    counts["links_sna"] = links_sna;
+    counts["ties_graph"] = ties_graph;
     root["counts"] = counts;
 
     QJsonObject graph;
     graph["directed"] = g.isDirected();
     graph["weighted"] = g.isWeighted();
     root["graph"] = graph;
+
+    // Metrics (add density so golden JSONs carry it)
+    QJsonObject metrics;
+    metrics["density"] = d2s(g.graphDensity());
+    root["metrics"] = metrics;
 
     QJsonObject reach;
     QJsonArray ord;
@@ -72,6 +79,7 @@ static QJsonObject buildGoldenJsonV2Reachability(
 
     const int n = order.size();
     const double density = (n > 0) ? double(onesCount) / double(n * n) : 0.0;
+    // Reachability density is over n*n pairs (includes diagonal), distinct from graph density.
     reach["reachable_density"] = d2s(density); // as string
     root["reachability"] = reach;
 

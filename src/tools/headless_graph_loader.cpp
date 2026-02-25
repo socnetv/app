@@ -8,6 +8,10 @@
 #include "../graph.h"
 #include "../parser.h"
 
+/**
+ * @brief Loads a graph from a given file, without any UI.
+ * @returns a struct with load results (success, file type, node/link counts, etc.)
+ */
 HeadlessLoadResult loadGraphHeadless(
     Graph &graph,
     const QString &fileName,
@@ -21,7 +25,7 @@ HeadlessLoadResult loadGraphHeadless(
     out.ok = false;
     out.fileType = -1;
     out.totalNodes = 0;
-    out.totalLinks = 0;
+    out.tiesGraph = 0;
     out.elapsedTime = 0;
 
     qDebug() << "[CLI] loadGraphHeadless() begin:" << fileName;
@@ -72,7 +76,7 @@ HeadlessLoadResult loadGraphHeadless(
                          const QString &loadedFileName,
                          const QString &netName,
                          const int &totalNodes,
-                         const int &totalLinks,
+                         const int &tiesGraph,
                          const int & /*density*/,
                          const qint64 &elapsedTime,
                          const QString &message)
@@ -81,7 +85,7 @@ HeadlessLoadResult loadGraphHeadless(
                          out.fileName = loadedFileName;
                          out.netName = netName;
                          out.totalNodes = totalNodes;
-                         out.totalLinks = totalLinks;
+                         out.tiesGraph  = tiesGraph; // canonical, already correct
                          out.elapsedTime = elapsedTime;
                          out.message = message;
                          out.ok = (loadedFileType != FileType::UNRECOGNIZED);
@@ -89,7 +93,7 @@ HeadlessLoadResult loadGraphHeadless(
                          qDebug() << "[CLI] signalGraphLoaded:"
                                   << "ok" << out.ok
                                   << "nodes" << out.totalNodes
-                                  << "links" << out.totalLinks
+                                  << "tiesGraph" << out.tiesGraph
                                   << "msg" << out.message;
 
                          loop.quit();
