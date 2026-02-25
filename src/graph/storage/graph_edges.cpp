@@ -21,19 +21,54 @@
 //
 
 /**
- * @brief Checks a) if edge exists and b) if the reverse edge exists
- * Calls edgeAdd to add the new edge to the Graph,
- * then emits drawEdge() which calls GW::drawEdge() to draw the new edge.
- * Called from homonymous signal of Parser class.
- * Also called from MW when user clicks on the "add link" button
- * Also called (via MW) from GW when user middle-clicks on two nodes.
- * @param v1
- * @param v2
- * @param weight
- * @param color
- * @param reciprocal
- * @param drawArrows
- * @param bezier
+ * @brief Checks if edge (v1,v2) already exists, then creates it and signals the UI to draw it.
+ *
+ * This is the main entry point for edge creation, called from:
+ *   - Parser::signalCreateEdge (when loading a network file)
+ *   - MainWindow (when user clicks "add link" button)
+ *   - GraphicsWidget (when user middle-clicks two nodes)
+ *
+ * Edge type semantics:
+ *   - EdgeType::Undirected  : stores both v1->v2 and v2->v1 internally (via edgeAdd),
+ *                             draws a single undirected edge in the UI.
+ *   - EdgeType::Directed    : stores only v1->v2. If v2->v1 already exists,
+ *                             upgrades both to EdgeType::Reciprocated.
+ *   - EdgeType::Reciprocated: both directions exist with equal weight.
+ *
+ * Mixed-section Pajek files (*Arcs followed by *Edges):
+ *   Some Pajek files declare directed arcs in an *Arcs section AND undirected edges
+ *   in a subsequent *Edges section. The same node pair (v1,v2) may appear in both.
+ *   When *Arcs are processed first, v1->v2 is stored as a directed arc.
+ *   When *Edges is processed later, edgeExists(v1,v2) returns non-zero, so we must
+ *   NOT silently drop the request. If v2->v1 is still missing, we store the reverse
+ *   arc and upgrade the existing forward arc visual to Reciprocated.
+ *
+ *   In that special case:
+ *   - We store the reverse arc v2->v1 using the undirected edge's weight/color/label.
+ *     The forward arc (from *Arcs) is left untouched to preserve its original data.
+ *   - We emit signalDrawEdge(v2, v1, ..., Reciprocated) — note the swapped arguments.
+ *     GraphicsWidget::drawEdge() with Reciprocated looks up the existing arc via
+ *     createEdgeName(targetNum, sourceNum). Since createEdgeName() is order-sensitive
+ *     ("rel:v1>v2"), passing (v2,v1) makes targetNum=v1, sourceNum=v2, so the lookup
+ *     resolves to createEdgeName(v1,v2) which matches the key stored during *Arcs
+ *     processing. No new GraphicsEdge is created; setDirectionType() is called instead.
+ *   - drawArrows is forced true: a reciprocated edge always shows arrows on both ends
+ *     regardless of what the undirected request's drawArrows value was.
+ *   - We do NOT set m_graphIsDirected: adding the missing reverse makes the pair more
+ *     symmetric, not less. Directedness is determined by the overall graph state after
+ *     full import completes.
+ *   - We return true because a new arc was genuinely added to the graph.
+ *
+ * @param v1         Source node number
+ * @param v2         Target node number
+ * @param weight     Edge weight
+ * @param color      Edge color
+ * @param type       Edge type: EdgeType::Undirected, Directed, or Reciprocated
+ * @param drawArrows Whether to draw arrowheads in the UI
+ * @param bezier     Whether to draw the edge as a bezier curve
+ * @param label      Edge label (optional)
+ * @param signalMW   Whether to signal MainWindow after modifying graph state
+ * @return true if a new edge (or reverse arc) was created, false if fully skipped
  */
 bool Graph::edgeCreate(const int &v1,
                        const int &v2,
@@ -45,87 +80,147 @@ bool Graph::edgeCreate(const int &v1,
                        const QString &label,
                        const bool &signalMW)
 {
-
-    // check whether there is already such an edge
-    // (see #713617 - https://bugs.launchpad.net/socnetv/+bug/713617)
-
+    //
+    // GUARD: Check if v1->v2 already exists.
+    //
+    // This can legitimately happen in mixed Pajek files that have both an *Arcs
+    // section and an *Edges section. The *Arcs section is processed first,
+    // creating directed arcs. When the *Edges section is processed later,
+    // some pairs may already be present as directed arcs.
+    //
     if (edgeExists(v1, v2))
     {
-        //        qDebug() << "-- Edge " << v1 << "->" << v2
-        //                    << " declared previously (already exists) - nothing to do \n\n";
+        //
+        // Special case: caller wants an Undirected edge but v1->v2 was
+        // previously stored as a directed arc (e.g. from a *Arcs section in
+        // a mixed Pajek file). An undirected edge requires BOTH directions to
+        // be stored internally. Check if the reverse v2->v1 is also present.
+        //
+        if (type == EdgeType::Undirected && !edgeExists(v2, v1))
+        {
+            // v2->v1 is missing. Store it to complete the undirected pair.
+            //
+            // Weight/color/label policy:
+            //   We use the undirected edge's values for the reverse arc.
+            //   The forward arc (from *Arcs) is left untouched to preserve
+            //   its original explicitly declared data. The two directions may
+            //   therefore differ in metadata, which is acceptable: we prefer
+            //   not to silently overwrite explicitly declared arc data.
+            //
+            // Visual update:
+            //   We emit Reciprocated with swapped arguments (v2,v1) so that
+            //   drawEdge()'s internal lookup createEdgeName(targetNum,sourceNum)
+            //   resolves to createEdgeName(v1,v2), matching the key under which
+            //   the original forward arc was stored during *Arcs processing.
+            //   This upgrades the existing GraphicsEdge to bidirectional without
+            //   creating any duplicate visual object.
+            //   drawArrows is forced true since a reciprocated edge always
+            //   shows arrows on both ends.
+            //
+            // Directedness:
+            //   m_graphIsDirected is NOT set here. Adding the missing reverse
+            //   makes the pair more symmetric. Directedness is determined by
+            //   the overall graph state after full import completes.
+            //
+            // qDebug() << "edgeCreate(): v1->v2 exists as directed arc but request"
+            //             " is Undirected and reverse v2->v1 is missing."
+            //             " Storing reverse arc and upgrading visual to Reciprocated:"
+            //          << v1 << "<->" << v2;
 
+            // Store the reverse arc in the data model.
+            edgeAdd(v2, v1, weight, EdgeType::Directed, label,
+                    ((weight == 0) ? "blue" : color));
+
+            // Upgrade the existing forward arc visual to bidirectional.
+            // Arguments are swapped (v2,v1) intentionally — see comment above.
+            emit signalDrawEdge(v2, v1, weight, label,
+                                ((weight == 0) ? "blue" : color),
+                                EdgeType::Reciprocated,
+                                true, // force drawArrows for reciprocated
+                                bezier, initEdgeWeightNumbers);
+
+            // Update edge count and notify MainWindow since a new arc was added.
+            setModStatus(ModStatus::EdgeCount, signalMW);
+
+            // Return true: a new arc was genuinely added to the graph.
+            return true;
+        }
+
+        // v1->v2 exists and either:
+        //   a) the request is not Undirected, or
+        //   b) v2->v1 also already exists (pair is already complete).
+        // Nothing to do.
         return false;
     }
 
+    //
+    // v1->v2 does not exist yet. Proceed with normal edge creation.
+    //
+
     if (type == EdgeType::Undirected)
     {
+        // Undirected edge: edgeAdd stores BOTH v1->v2 and v2->v1 internally.
+        // The UI draws a single undirected edge between the two nodes.
+        // qDebug() << "edgeCreate(): Creating new UNDIRECTED edge:"
+        //          << v1 << "-" << v2
+        //          << "weight" << weight
+        //          << "label" << label;
 
-        //        qDebug() <<"-- Creating new UNDIRECTED edge:" << v1 << "-" << v2
-        //                 << "weight" << weight
-        //                 << "type" << type
-        //                 << "label" << label
-        //                 << "signalMW" << signalMW
-        //                 << "Signaling to GW...";
-
-        edgeAdd(v1, v2,
-                weight,
-                type,
-                label,
+        edgeAdd(v1, v2, weight, type, label,
                 ((weight == 0) ? "blue" : color));
 
-        emit signalDrawEdge(v1, v2, weight, label, ((weight == 0) ? "blue" : color), type,
+        emit signalDrawEdge(v1, v2, weight, label,
+                            ((weight == 0) ? "blue" : color),
+                            type,
                             drawArrows, bezier, initEdgeWeightNumbers);
     }
     else if (edgeExists(v2, v1))
     {
+        // v1->v2 does not exist, but v2->v1 already exists.
+        // Adding v1->v2 now makes the relationship reciprocal (bidirectional).
+        // Upgrade the edge type to Reciprocated so both the data model and
+        // the UI reflect the bidirectional relationship.
+        // qDebug() << "edgeCreate(): Creating new RECIPROCAL edge:"
+        //          << v1 << "->" << v2
+        //          << "weight" << weight
+        //          << "label" << label
+        //          << "(reverse v2->v1 already exists)";
 
-        //        qDebug() <<"-- Creating new RECIPROCAL edge:" << v1 << "->" << v2
-        //                 << "weight" << weight
-        //                 << "type" << type
-        //                 << "label" << label
-        //                 << "signalMW" << signalMW
-        //                 << "Reverse edge exists"
-        //                 << "Signaling to GW...";
+        edgeAdd(v1, v2, weight, EdgeType::Reciprocated, label, color);
 
-        edgeAdd(v1,
-                v2,
-                weight,
-                EdgeType::Reciprocated,
-                label,
-                color);
-
-        emit signalDrawEdge(v1, v2, weight, label, color, EdgeType::Reciprocated,
+        emit signalDrawEdge(v1, v2, weight, label, color,
+                            EdgeType::Reciprocated,
                             drawArrows, bezier, initEdgeWeightNumbers);
+
         m_graphIsDirected = true;
     }
     else
     {
+        // Neither v1->v2 nor v2->v1 exists.
+        // Create a plain directed arc from v1 to v2.
+        // qDebug() << "edgeCreate(): Creating new DIRECTED edge:"
+        //          << v1 << "->" << v2
+        //          << "weight" << weight
+        //          << "label" << label;
 
-        //        qDebug() <<"-- Creating new DIRECTED edge:" << v1 << "->" << v2
-        //                 << "weight" << weight
-        //                 << "type" << type
-        //                 << "label" << label
-        //                 << "signalMW" << signalMW
-        //                 << "Signaling to GW...";
-
-        edgeAdd(v1,
-                v2,
-                weight,
-                EdgeType::Directed,
-                label,
+        edgeAdd(v1, v2, weight, EdgeType::Directed, label,
                 ((weight == 0) ? "blue" : color));
 
-        emit signalDrawEdge(v1, v2, weight, label, ((weight == 0) ? "blue" : color), EdgeType::Directed,
+        emit signalDrawEdge(v1, v2, weight, label,
+                            ((weight == 0) ? "blue" : color),
+                            EdgeType::Directed,
                             drawArrows, bezier, initEdgeWeightNumbers);
 
         m_graphIsDirected = true;
         m_graphIsSymmetric = false;
     }
 
-    // save the edge color so that new edges created when user clicks on the canvas
-    // have the same color with those of the file loaded,
+    // Persist the color of the last created edge so that new edges drawn
+    // interactively by the user on the canvas inherit the same color
+    // as the edges loaded from the file.
     initEdgeColor = color;
 
+    // Update edge count and notify MainWindow if needed.
     setModStatus(ModStatus::EdgeCount, signalMW);
 
     return true;
@@ -148,43 +243,89 @@ void Graph::edgeCreateWebCrawler(const int &source, const int &target)
 }
 
 /**
- * @brief Adds a directed edge from v1 to v2
- * If type == EdgeType::Undirected then it also adds the directed edge v2->v1
- * @param v1
- * @param v2
- * @param weight
- * @param label
- * @param color
- * @param type
+ * @brief Adds a directed arc from v1 to v2 into the internal graph data structures.
+ *
+ * This is the low-level storage function. It does NOT signal the UI.
+ * All UI signaling is handled by the caller (edgeCreate / signalDrawEdge).
+ *
+ * Internally, each vertex maintains two adjacency lists:
+ *   - OutEdges: arcs going OUT from this vertex
+ *   - InEdges:  arcs coming IN to this vertex
+ *
+ * For a directed arc v1->v2:
+ *   - v1's OutEdges gains v2 (with weight, color, label)
+ *   - v2's InEdges  gains v1 (with weight)
+ *
+ * For an undirected edge (EdgeType::Undirected), the edge is stored as
+ * two symmetric directed arcs:
+ *   - v1->v2 (OutEdge of v1, InEdge of v2)
+ *   - v2->v1 (OutEdge of v2, InEdge of v1)
+ * This matches SocNetV's internal convention: undirected edges are always
+ * represented as a pair of reciprocal directed arcs in the adjacency structure.
+ *
+ * For EdgeType::Reciprocated, the reverse arc v2->v1 already exists in the
+ * data model (created earlier as a directed arc). No additional storage is
+ * needed here; the caller is responsible for updating type semantics if required.
+ *
+ * Weight handling:
+ *   If weight != 1 and weight != 0, the graph is marked as weighted.
+ *   Weight == 0 is treated as a special "null" edge (drawn in blue by convention).
+ *
+ * @param v1     Source node number (external node number, not internal index)
+ * @param v2     Target node number (external node number, not internal index)
+ * @param weight Edge weight
+ * @param type   EdgeType::Directed, Undirected, or Reciprocated
+ * @param label  Edge label (optional, stored on the out-arc of v1)
+ * @param color  Edge color (optional, stored on the out-arc of v1)
  */
-void Graph::edgeAdd(const int &v1, const int &v2,
+void Graph::edgeAdd(const int &v1,
+                    const int &v2,
                     const qreal &weight,
                     const int &type,
                     const QString &label,
                     const QString &color)
 {
-
+    // Resolve external node numbers to internal m_graph indices.
+    // vpos[] maps external node number -> index in m_graph vector.
     int source = vpos[v1];
     int target = vpos[v2];
 
-    //    qDebug()<< "Adding new edge from vertex "<< v1 << "["<< source
-    //            << "] to vertex "<< v2 << "["<< target << "] of weight "<<weight
-    //            << " and label " << label;
+    // qDebug() << "edgeAdd(): Adding arc from vertex" << v1 << "[idx" << source << "]"
+    //          << "to vertex" << v2 << "[idx" << target << "]"
+    //          << "weight" << weight << "type" << type << "label" << label;
 
+    // Store the forward arc v1->v2.
+    // OutEdge on v1: carries weight, color, and label (full arc metadata).
+    // InEdge  on v2: carries weight only (no label/color needed on the receiving end).
     m_graph[source]->addOutEdge(v2, weight, color, label);
     m_graph[target]->addInEdge(v1, weight);
 
+    // If weight is non-trivial (neither the default 1 nor the null-edge 0),
+    // mark the graph as weighted so algorithms use weight values.
     if (weight != 1 && weight != 0)
     {
         setWeighted(true);
     }
+
     if (type == EdgeType::Reciprocated)
     {
-        // make existing reverse edge reciprocal
+        // The reverse arc v2->v1 already exists in the data model
+        // (it was created in a prior edgeAdd call as a directed arc).
+        // Nothing additional needs to be stored here.
+        // The caller (edgeCreate) is responsible for any type-upgrade
+        // semantics at the GraphVertex level if needed in the future.
     }
     else if (type == EdgeType::Undirected)
     {
-        // edge undirected, add reverse edge too.
+        // Undirected edge: store the reverse arc v2->v1 as well,
+        // so that both vertices see each other in their adjacency lists.
+        // SocNetV represents undirected edges as two symmetric directed arcs.
+        //
+        // Note: only weight is stored on the reverse arc.
+        // Color and label are not duplicated on the reverse direction.
+        // qDebug() << "edgeAdd(): Edge is Undirected — also adding reverse arc"
+        //          << v2 << "->" << v1;
+
         m_graph[target]->addOutEdge(v1, weight);
         m_graph[source]->addInEdge(v2, weight);
     }
@@ -285,9 +426,9 @@ void Graph::edgeRemoveSelectedAll()
 
 /**
  * @brief Checks if there is an edge from v1 to v2 and returns the weight, if the edge exists.
- *
-   Complexity:  O(logN) for vpos retrieval + O(1) for QList index retrieval + O(logN) for checking edge(v2)
-
+ * 
+ * Complexity:  O(logN) for vpos retrieval + O(1) for QList index retrieval + O(logN) for checking edge(v2)
+ * 
  * @param v1
  * @param v2
  * @param reciprocated: if true, checks if the edge is reciprocated (v1<->v2) with the same weight

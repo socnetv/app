@@ -269,9 +269,6 @@ void GraphicsWidget::drawNode( const QPointF &p,
 }
 
 
-
-
-
 /**
  * @brief Draws a new edge in the scene, from node with sourceNum to node with targetNum.
  *
@@ -296,45 +293,47 @@ void GraphicsWidget::drawEdge(const int &sourceNum, const int &targetNum,
                               const int &type,
                               const bool &drawArrows,
                               const bool &bezier,
-                              const bool &weightNumbers){
-
+                              const bool &weightNumbers)
+{
     edgeName = createEdgeName(sourceNum, targetNum);
 
-//    qDebug()<<"Will draw new edge"<< edgeName
-//           << "weight:"<<weight
-//           << "label:" << label
-//           << "direction type:" << type
-//           << " - nodeHash reports "<< nodeHash.size()<<" nodes.";
-
-    if ( type != EdgeType::Reciprocated ) {
-
-        GraphicsEdge *edge=new GraphicsEdge (
-                    this,
-                    nodeHash.value(sourceNum), nodeHash.value(targetNum),
-                    weight, label, color,
-                    Qt::SolidLine,
-                    type,
-                    drawArrows,
-                    (sourceNum==targetNum) ? true: bezier,
-                    weightNumbers,
-                    m_edgeHighlighting);
-
+    if (type != EdgeType::Reciprocated)
+    {
+        GraphicsEdge *edge = new GraphicsEdge(
+            this,
+            nodeHash.value(sourceNum), nodeHash.value(targetNum),
+            weight, label, color,
+            Qt::SolidLine,
+            type,
+            drawArrows,
+            (sourceNum == targetNum) ? true : bezier,
+            weightNumbers,
+            m_edgeHighlighting);
         edgesHash.insert(edgeName, edge);
     }
-    else {
-        // if type is EdgeType::Reciprocated, we just need to change the direction type
-        // of the existing opposite edge.
-        edgeName = createEdgeName(targetNum,sourceNum);
-//        qDebug()<< "Reciprocating existing directed edge"<<edgeName;
-        edgesHash.value(edgeName)->setDirectionType(type);
+    else
+    {
+        // Reciprocated: do not create a new GraphicsEdge.
+        // Find the existing opposite arc and upgrade its direction type.
+        // The caller passes (newSource=v2, newTarget=v1) so that this lookup
+        // createEdgeName(targetNum, sourceNum) resolves to createEdgeName(v1,v2),
+        // matching the key under which the original forward arc was stored.
+        edgeName = createEdgeName(targetNum, sourceNum);
 
+        // Guard against a missing key. In normal flow this should not happen,
+        // but defensive check prevents a null dereference if there is any
+        // inconsistency between the data model and the visual state.
+        GraphicsEdge *e = edgesHash.value(edgeName, nullptr);
+        if (!e)
+        {
+            // qDebug() << "drawEdge(): WARNING - Reciprocated edge visual not found"
+            //          << "for key" << edgeName
+            //          << "- skipping visual upgrade.";
+            return;
+        }
+        e->setDirectionType(type);
     }
-
 }
-
-
-
-
 
 /**
  * @brief Handles double-clicks (or middle-clicks) on the given node, creating a new edge if needed.
