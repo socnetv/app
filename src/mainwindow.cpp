@@ -14851,127 +14851,103 @@ void MainWindow::slotHelpCheckUpdateDialog() {
 
 
 
+/**
+ * @brief Compares two version strings component-by-component.
+ *
+ * Handles versions with 1, 2, or 3 components (e.g. "3.3", "3.3.1", "3.10").
+ * Returns:
+ *   -1 if a < b
+ *    0 if a == b
+ *   +1 if a > b
+ */
+static int compareVersions(const QString &a, const QString &b)
+{
+    const QStringList aParts = a.split('.');
+    const QStringList bParts = b.split('.');
+    const int len = qMax(aParts.size(), bParts.size());
+    for (int i = 0; i < len; ++i) {
+        const int av = (i < aParts.size()) ? aParts[i].toInt() : 0;
+        const int bv = (i < bParts.size()) ? bParts[i].toInt() : 0;
+        if (av < bv) return -1;
+        if (av > bv) return +1;
+    }
+    return 0;
+}
 
 /**
  * @brief Parses the reply from the network request we do in slotHelpCheckUpdateDialog
- * @param reply
  */
-void MainWindow::slotHelpCheckUpdateParse() {
-
+void MainWindow::slotHelpCheckUpdateParse()
+{
     qDebug() << "MW::slotHelpCheckUpdateParse()";
 
-    // Get network reply from the sender
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
+    QByteArray ba = reply->readAll();
+    reply->deleteLater();
 
-    QByteArray ba = reply->readAll();       // read reply
+    QString replyContent = QString(ba).simplified();
 
-    reply->deleteLater();                   // schedule reply to be deleted
-
-    QString replyContent(ba);
-
-    // Simplify the reply
-    replyContent = replyContent.simplified();
-
-    // Check reply if empty
     if (replyContent.isEmpty()) {
-        slotHelpMessageToUserError("Empty response from https://socnetv.org. "
-                                   "Could not get the latest version number. Please try again later...");
+        slotHelpMessageToUserError(
+            "Empty response from https://socnetv.org. "
+            "Could not get the latest version number. Please try again later...");
         return;
     }
 
-    // Store the remote version string
-    QString remoteVersion = replyContent;
-
-    bool ok1=false;
-
-    // Remove . from reply content and convert it to integer
-    int remoteVersionInt = (replyContent.remove(".")).toInt(&ok1, 10);
-
-    qDebug() << "MW::slotHelpCheckUpdateParse() - remoteVersionInt:" << remoteVersionInt;
-
-    // Test if it has been converted
-    if (!ok1) {
-        slotHelpMessageToUserError("Could not understand the version number I got from https://socnetv.org. "
-                                   "Please, try again later...");
-        return;
-
-    }
-
-    // Get local version - we need this to compare the remote against it.
-    QString localVersionStr = VERSION;
-
-    // Check if we are on a beta/dev
-    if (localVersionStr.contains("beta")) {
-        localVersionStr.remove("beta");
-        localVersionStr.remove("-");
-    }
-    else if (localVersionStr.contains("rc")) {
-        localVersionStr.remove("rc");
-        localVersionStr.remove("-");
-    }
-    else if (localVersionStr.contains("dev")) {
-        localVersionStr.remove("dev");
-        localVersionStr.remove("-");
-    }
-
-    // Remove . from local version and convert it to integer
-    int localVersionInt = (localVersionStr.remove(".")).toInt(&ok1, 10);
-
-    qDebug() << "MW::slotHelpCheckUpdateParse() - localVersionInt:" << localVersionInt;
-
-    // Test if it has been converted
-    if (!ok1) {
-        slotHelpMessageToUserError("Error in current version string. "
-                                   "Please, contact our developer team.");
+    // Validate: remote version must look like digits and dots only
+    static const QRegularExpression versionRx(R"(^\d+(\.\d+){0,2}$)");
+    if (!versionRx.match(replyContent).hasMatch()) {
+        slotHelpMessageToUserError(
+            "Could not understand the version number I got from https://socnetv.org. "
+            "Please, try again later...");
         return;
     }
 
+    const QString remoteVersion = replyContent;
 
-    // Compare integer versions
-    if( remoteVersionInt > localVersionInt ) {
+    // Strip pre-release suffixes from local version (beta, rc, dev)
+    QString localVersion = VERSION;
+    static const QRegularExpression preReleaseSuffixRx(R"([-.]?(beta|rc|dev)\d*)", QRegularExpression::CaseInsensitiveOption);
+    localVersion.remove(preReleaseSuffixRx);
 
+    qDebug() << "MW::slotHelpCheckUpdateParse() - localVersion:"  << localVersion
+             << "remoteVersion:" << remoteVersion;
+
+    const int cmp = compareVersions(remoteVersion, localVersion);
+
+    if (cmp > 0) {
+        // Remote is newer
         switch( slotHelpMessageToUser(
                     USER_MSG_QUESTION,
                     tr("Newer SocNetV version available!"),
-                    tr("<p>Your version: ")+ VERSION+ "</p><p>" +
-                    tr("<p>Remote version: <b>")+replyContent + "</b></p>",
-                    tr("<p><b>There is a newer SocNetV version available! </b></p>"
-                       "<p>Do you want to download the latest version now? </p> "
+                    tr("<p>Your version: ") + VERSION + "</p>" +
+                    tr("<p>Remote version: <b>") + remoteVersion + "</b></p>",
+                    tr("<p><b>There is a newer SocNetV version available!</b></p>"
+                       "<p>Do you want to download the latest version now?</p>"
                        "<p>Press Yes, and I will open your default web browser for you "
                        "to download the latest SocNetV package...</p>"),
-                    QMessageBox::Yes|QMessageBox::No, QMessageBox::Yes
-                    ) )
-
+                    QMessageBox::Yes|QMessageBox::No, QMessageBox::Yes) )
         {
-        case QMessageBox::Yes:
-            statusMessage( tr("Opening SocNetV website in your default web browser....") );
-            QDesktopServices::openUrl(QUrl
-                                      ("https://socnetv.org/downloads"
-                                       "?utm_source=application&utm_medium=banner&utm_campaign=socnetv"+ VERSION
-                                       ));
-            break;
-        case QMessageBox::No:
-            break;
-        case QMessageBox::Cancel:
-            //userCancelled = true;
-            break;
-        case QMessageBox::NoButton:
-        default: // just for sanity
-            break;
+            case QMessageBox::Yes:
+                statusMessage(tr("Opening SocNetV website in your default web browser...."));
+                QDesktopServices::openUrl(QUrl(
+                    "https://socnetv.org/downloads"
+                    "?utm_source=application&utm_medium=banner&utm_campaign=socnetv" + VERSION));
+                break;
+            default:
+                break;
         }
     }
     else {
+        // Up to date (cmp == 0) or somehow ahead (cmp < 0, e.g. on a dev build)
         slotHelpMessageToUserInfo(
-                    tr("<p>Your version: ")+ VERSION+ "</p>" +
-                    tr("<p>Remote version: ")+remoteVersion + "</p>" +
-                    tr("<p>You are running the latest and greatest version of SocNetV. <br />"
-                       "Nothing to do!</p>")
-                    );
+            tr("<p>Your version: ")    + VERSION       + "</p>" +
+            tr("<p>Remote version: ")  + remoteVersion + "</p>" +
+            tr("<p>You are running the latest and greatest version of SocNetV.<br/>"
+               "Nothing to do!</p>")
+        );
     }
-
-
 }
-
 
 
 
