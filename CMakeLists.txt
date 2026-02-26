@@ -416,8 +416,19 @@ elseif(UNIX AND NOT APPLE)
     )
 
     # Install documentation
-    install(FILES CHANGELOG.md README.md TODO COPYING AUTHORS INSTALL
+    install(FILES README.md TODO AUTHORS
         DESTINATION "${CMAKE_INSTALL_DATADIR}/doc/socnetv"
+    )
+
+    # Install license
+    install(FILES COPYING
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/doc/socnetv"
+    )
+
+    # Install upstream changelog with Debian-friendly name
+    install(FILES CHANGELOG.md
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/doc/socnetv"
+        RENAME changelog
     )
 
 endif()

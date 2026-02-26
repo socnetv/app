@@ -1,5 +1,0 @@
-socnetv.desktop usr/share/applications/
-socnetv.appdata.xml usr/share/metainfo/
-src/images/socnetv.png usr/share/pixmaps/
-man/socnetv.1 usr/share/man/man1/
-translations/socnetv_*.qm usr/share/socnetv/
