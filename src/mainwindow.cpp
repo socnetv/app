@@ -14829,7 +14829,7 @@ void MainWindow::slotHelpCreateTips(){
  */
 void MainWindow::slotHelp(){
     statusMessage( tr("Opening the SocNetV Manual in your default web browser....") );
-    QDesktopServices::openUrl(QUrl("https://socnetv.org/docs/index.html"));
+    QDesktopServices::openUrl(QUrl("https://socnetv.org/manual/?utm_source=application&utm_medium=banner&utm_campaign=socnetv"+ VERSION));
 }
 
 
