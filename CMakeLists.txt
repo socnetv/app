@@ -247,14 +247,21 @@ endif()
 # ==============================================================================
 # 4. Qt Integration
 # ==============================================================================
-# Find Qt6
-find_package(Qt6 REQUIRED COMPONENTS Core OpenGLWidgets Gui Core5Compat Widgets PrintSupport Network Charts Svg Xml)
+# Find Qt6 packages
+find_package(Qt6 REQUIRED COMPONENTS Core OpenGLWidgets Gui Core5Compat Widgets PrintSupport Network Charts Svg Xml LinguistTools)
 # find_package_handle_standard_args(Qt6 DEFAULT_MSG Qt6_FOUND)
 
 # Check if Qt6 was found
 if (NOT Qt6_FOUND)
     message(FATAL_ERROR "Qt6 not found. Please install Qt6 and set the CMAKE_PREFIX_PATH.")
 endif()
+
+
+set(SOCNETV_TS
+    ${CMAKE_SOURCE_DIR}/translations/socnetv_de.ts
+    ${CMAKE_SOURCE_DIR}/translations/socnetv_es.ts
+)
+
 
 # The MANUAL_FINALIZATION option allows for additional 
 # configuration before finalization
@@ -265,6 +272,14 @@ qt_add_executable(${TARGET_NAME}
     ${RESOURCES}
     ${ICON_FILE}
 )
+
+qt_add_lrelease(${TARGET_NAME}
+    TS_FILES ${SOCNETV_TS}
+    QM_FILES_OUTPUT_VARIABLE SOCNETV_QM
+)
+
+# These are generated during the build
+set_source_files_properties(${SOCNETV_QM} PROPERTIES GENERATED TRUE)
 
 # Add include directories for headers (equivalent to INCLUDEPATH)
 target_include_directories(${TARGET_NAME}  PUBLIC
@@ -331,6 +346,10 @@ if(WIN32)
         RUNTIME DESTINATION release/  # Install to release/ folder
     )
 
+    install(FILES ${SOCNETV_QM}
+        DESTINATION release/
+    )
+
 elseif(APPLE AND NOT IOS)
     set_source_files_properties("${CMAKE_SOURCE_DIR}/src/images/socnetv.icns" PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
     target_sources(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src/images/socnetv.icns")
@@ -355,12 +374,14 @@ elseif(APPLE AND NOT IOS)
         BUNDLE DESTINATION "${CMAKE_INSTALL_PREFIX}/Applications"
     )
 
+    foreach(qm ${SOCNETV_QM})
+        set_source_files_properties(${qm} PROPERTIES
+            MACOSX_PACKAGE_LOCATION "Resources/translations"
+        )
+    endforeach()
+    target_sources(${TARGET_NAME} PRIVATE ${SOCNETV_QM})
 
-elseif(LINUX)
-
-    # Define the installation prefix (equivalent to qmake's PREFIX)
-    # By default, this is /usr/local, but we set it to /usr for compatibility
-    set(CMAKE_INSTALL_PREFIX "/usr" CACHE PATH "Installation prefix")
+elseif(UNIX AND NOT APPLE)
 
     # Set the installation paths and files
     install(TARGETS ${TARGET_NAME}
@@ -390,9 +411,9 @@ elseif(LINUX)
     )
 
     # Install translations
-    # install(FILES translations/socnetv_*.qm
-    #     DESTINATION "${CMAKE_INSTALL_DATADIR}/socnetv"
-    # )
+    install(FILES ${SOCNETV_QM}
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/socnetv"
+    )
 
     # Install documentation
     install(FILES CHANGELOG.md README.md TODO COPYING AUTHORS INSTALL

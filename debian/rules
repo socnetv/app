@@ -7,14 +7,3 @@ override_dh_auto_configure:
 	dh_auto_configure -- \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_INSTALL_PREFIX=/usr
-
-override_dh_auto_build:
-	# Build translations (only the real .ts files, not build-system artifacts)
-	LRELEASE_BIN=$$(command -v lrelease-qt6 || command -v lrelease6 || command -v lrelease || echo /usr/lib/qt6/bin/lrelease); \
-	if [ -x "$$LRELEASE_BIN" ] && ls translations/*.ts >/dev/null 2>&1; then \
-		"$$LRELEASE_BIN" translations/*.ts; \
-	fi
-	dh_auto_build
-
-override_dh_auto_install:
-	dh_auto_install
