@@ -173,7 +173,7 @@ RESOURCES = src/images.qrc \
 # This is Windows only
 win32 {
   VERSION = 3.3.1.1           # major.minor.patch.build
-  VERSION_PE_HEADER = 3.3.1
+  VERSION_PE_HEADER = 3.3     # MSVC link.exe option /VERSION:x.y expects two numeric components (major.minor)
 
   #RC_FILE = src/icon.rc
   RC_ICONS = src/images/socnetv.ico
