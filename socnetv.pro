@@ -12,7 +12,7 @@ TEMPLATE = app
 CONFIG  += qt thread $${ALLOW_WARNINGS} $${MY_TARGET_BUILD}
 CONFIG  += c++17
 TARGET = socnetv
-VERSION=3.3
+VERSION=3.3.1
 LANGUAGE = C++
 
 
@@ -172,8 +172,8 @@ RESOURCES = src/images.qrc \
 
 # This is Windows only
 win32 {
-  VERSION = 3.3.0.1           # major.minor.patch.build
-  VERSION_PE_HEADER = 3.3
+  VERSION = 3.3.1.1           # major.minor.patch.build
+  VERSION_PE_HEADER = 3.3     # MSVC link.exe option /VERSION:x.y expects two numeric components (major.minor)
 
   #RC_FILE = src/icon.rc
   RC_ICONS = src/images/socnetv.ico
