@@ -157,6 +157,15 @@ The goal is to clarify loading flow and reduce Qt signal entanglement before att
 
 * Considered part of observable behavior during refactors unless explicitly changed.
 
+
+### Launchpad PPA builds
+
+Launchpad PPA builds are officially supported for:
+- Ubuntu 22.04 LTS (Jammy)
+- Ubuntu 24.04 LTS (Noble)
+
+Other Ubuntu series are intentionally disabled to reduce maintenance surface and dependency drift.
+
 ---
 
 ## Mental Model for Contributors
