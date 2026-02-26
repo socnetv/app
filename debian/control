@@ -14,7 +14,10 @@ Build-Depends: debhelper-compat (= 12),
                qt6-charts-dev | libqt6charts6-dev,
                qt6-svg-dev    | libqt6svg6-dev,
                qt6-5compat-dev | libqt6core5compat6-dev,
-               libqt6opengl6-dev
+               libqt6opengl6-dev,
+               libgl1-mesa-dev,
+               libvulkan-dev,
+               libxkbcommon-dev
 Standards-Version: 4.5.1
 Homepage: https://socnetv.org
 Vcs-Git: https://github.com/socnetv/app.git
