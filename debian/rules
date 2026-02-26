@@ -1,22 +1,19 @@
 #!/usr/bin/make -f
 
 %:
-	dh $@ --buildsystem=qmake
+	dh $@ --buildsystem=cmake --builddirectory=build
 
 override_dh_auto_configure:
-	qmake6 PREFIX=/usr
+	dh_auto_configure -- \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr
 
 override_dh_auto_build:
-	# Generate translations (.qm) from .ts (Qt6)
+	# Build translations if your CMake does not already do it
 	LRELEASE_BIN=$$(command -v lrelease-qt6 || command -v lrelease6 || command -v lrelease || echo /usr/lib/qt6/bin/lrelease); \
 	test -x "$$LRELEASE_BIN"; \
-	"$$LRELEASE_BIN" socnetv.pro
+	find . -name '*.ts' -print0 | xargs -0 -r "$$LRELEASE_BIN"
 	dh_auto_build
 
 override_dh_auto_install:
-	# Let debhelper handle stripping; prevent qmake from stripping during install
-	$(MAKE) INSTALL_ROOT=$$(pwd)/debian/socnetv QMAKE_STRIP=: install
-
-override_dh_dwz:
-	# socnetv is often stripped by upstream/qmake install; dwz is not useful here
-	true
+	dh_auto_install
