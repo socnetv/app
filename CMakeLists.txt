@@ -145,11 +145,12 @@ set(GRAPH_SOURCES
 set(CLI_SOURCES
     src/tools/socnetv_cli.cpp
     src/tools/cli/cli_common.cpp
+    src/tools/headless_graph_loader.cpp
     src/tools/cli/kernels/kernel_distance_v1.cpp
     src/tools/cli/kernels/kernel_reachability_v2.cpp
     src/tools/cli/kernels/kernel_walks_v3.cpp
     src/tools/cli/kernels/kernel_prominence_v4.cpp
-    src/tools/headless_graph_loader.cpp
+    src/tools/cli/kernels/kernel_io_roundtrip_v5.cpp
 )
 
 
