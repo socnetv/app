@@ -5,10 +5,17 @@
 # Location: app/scripts/update_translations.sh
 #
 # Usage:
-#   ./update_translations.sh [--src <source_dir>] [--ts <ts_file> ...]
+#   ./update_translations.sh [OPTIONS]
+#
+# Options:
+#   --src <dir>       Source directory to scan (default: ../src)
+#   --ts <file>       Specific .ts file to update (repeatable)
+#   --no-obsolete     Remove obsolete entries (strings no longer in source)
+#   -h, --help        Show this help
 #
 # Examples:
-#   cd app/scripts && ./update_translations.sh
+#   ./update_translations.sh
+#   ./update_translations.sh --no-obsolete
 #   ./update_translations.sh --src ../src/ --ts ../translations/socnetv_de.ts
 #
 # What it does:
@@ -29,12 +36,14 @@ APP_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 SRC_DIR="$APP_DIR/src"
 TRANSLATIONS_DIR="$APP_DIR/translations"
 TS_FILES=()
+NO_OBSOLETE=false
 
 # --- Argument parsing --------------------------------------------------------
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --src)  SRC_DIR="$2";       shift 2 ;;
-        --ts)   TS_FILES+=("$2");   shift 2 ;;
+        --src)          SRC_DIR="$2";       shift 2 ;;
+        --ts)           TS_FILES+=("$2");   shift 2 ;;
+        --no-obsolete)  NO_OBSOLETE=true;   shift ;;
         -h|--help)
             grep '^#' "$0" | grep -v '#!/' | sed 's/^# \{0,1\}//'
             exit 0 ;;
@@ -81,10 +90,11 @@ if [[ -z "$LUPDATE" ]]; then
     exit 1
 fi
 
-echo "lupdate : $LUPDATE"
-echo "version : $("$LUPDATE" -version 2>&1 | head -1)"
-echo "app dir : $APP_DIR"
-echo "sources : $SRC_DIR"
+echo "lupdate      : $LUPDATE"
+echo "version      : $("$LUPDATE" -version 2>&1 | head -1)"
+echo "app dir      : $APP_DIR"
+echo "sources      : $SRC_DIR"
+echo "no-obsolete  : $NO_OBSOLETE"
 echo
 
 # --- Auto-detect .ts files if none given -------------------------------------
@@ -133,10 +143,16 @@ for ts in "${TS_FILES[@]}"; do
 done
 echo
 
+# --- Build lupdate command ---------------------------------------------------
+LUPDATE_ARGS=("$SRC_DIR" -ts "${TS_FILES[@]}")
+if [[ "$NO_OBSOLETE" == true ]]; then
+    LUPDATE_ARGS+=("-no-obsolete")
+fi
+
 # --- Run lupdate -------------------------------------------------------------
 echo "Running lupdate..."
 echo "------------------------------------------------------"
-"$LUPDATE" "$SRC_DIR" -ts "${TS_FILES[@]}"
+"$LUPDATE" "${LUPDATE_ARGS[@]}"
 echo "------------------------------------------------------"
 echo
 

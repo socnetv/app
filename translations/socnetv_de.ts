@@ -5802,110 +5802,11 @@ Please wait...</source>
     </message>
 </context>
 <context>
-    <name>HTMLViewer</name>
-    <message>
-        <source>&amp;File</source>
-        <translation type="obsolete">Datei</translation>
-    </message>
-    <message>
-        <source>&amp;Open</source>
-        <translation type="obsolete">Öffnen</translation>
-    </message>
-    <message>
-        <source>Ctrl+O</source>
-        <translation type="obsolete">Strg+O</translation>
-    </message>
-    <message>
-        <source>Opens another helpfile</source>
-        <translation type="obsolete">Öffnet andere Hilfequelle</translation>
-    </message>
-    <message>
-        <source>&amp;Print</source>
-        <translation type="obsolete">Drucken</translation>
-    </message>
-    <message>
-        <source>Ctrl+P</source>
-        <translation type="obsolete">Strg+P</translation>
-    </message>
-    <message>
-        <source>Prints out the actual network</source>
-        <translation type="obsolete">Druckt das aktuelle Netzwerk</translation>
-    </message>
-    <message>
-        <source>E&amp;xit</source>
-        <translation type="obsolete">Beenden</translation>
-    </message>
-    <message>
-        <source>Ctrl+X</source>
-        <translation type="obsolete">Strg+X</translation>
-    </message>
-    <message>
-        <source>Close Manual</source>
-        <translation type="obsolete">Schließe Handbuch</translation>
-    </message>
-    <message>
-        <source>&amp;Back</source>
-        <translation type="obsolete">Zurück</translation>
-    </message>
-    <message>
-        <source>Ctrl+B</source>
-        <translation type="obsolete">Strg+B</translation>
-    </message>
-    <message>
-        <source>&amp;Backward</source>
-        <translation type="obsolete">Rückwärts</translation>
-    </message>
-    <message>
-        <source>&amp;Forward</source>
-        <translation type="obsolete">Vorwärts</translation>
-    </message>
-    <message>
-        <source>Ctrl+F</source>
-        <translation type="obsolete">Strg+F</translation>
-    </message>
-    <message>
-        <source>&amp;Home</source>
-        <translation type="obsolete">Start</translation>
-    </message>
-    <message>
-        <source>Ctrl+H</source>
-        <translation type="obsolete">Strg+H</translation>
-    </message>
-    <message>
-        <source>&amp;Go</source>
-        <translation type="obsolete">Los</translation>
-    </message>
-</context>
-<context>
     <name>MainWindow</name>
-    <message>
-        <source>Welcome to Social Networks Visualiser, Version </source>
-        <translation type="obsolete">Willkommen zu Social Networks Visualiser, Version </translation>
-    </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="1003"/>
         <source>&amp;New</source>
         <translation type="unfinished">Neu</translation>
-    </message>
-    <message>
-        <source>Ctrl+N</source>
-        <translation type="obsolete">Strg+N</translation>
-    </message>
-    <message>
-        <source>Creates a new network</source>
-        <translation type="obsolete">Erstellt neues Netzwerk</translation>
-    </message>
-    <message>
-        <source>New network (Ctrl+N)</source>
-        <translation type="obsolete">Neues Netzwerk (Strg+N)</translation>
-    </message>
-    <message>
-        <source>New
-
-Creates a new network</source>
-        <translation type="obsolete">Neu
-
-Erstellt neues Netzwerk</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="1012"/>
@@ -5913,117 +5814,9 @@ Erstellt neues Netzwerk</translation>
         <translation type="unfinished">Öffnen</translation>
     </message>
     <message>
-        <source>Ctrl+O</source>
-        <translation type="obsolete">Strg+O</translation>
-    </message>
-    <message>
-        <source>Open network (Ctrl+O)</source>
-        <translation type="obsolete">Öffne Netzwerk (Strg+O)</translation>
-    </message>
-    <message>
-        <source>Opens a a file of an existing network</source>
-        <translation type="obsolete">Öffnet Datei mit existierendem Netzwerk</translation>
-    </message>
-    <message>
-        <source>Open
-
-Opens a file of an existing network</source>
-        <translation type="obsolete">Öffnen
-
-Öffnet Datei mit existierendem Netzwerk</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.cpp" line="1086"/>
         <source>&amp;Save</source>
         <translation type="unfinished">Speichern</translation>
-    </message>
-    <message>
-        <source>Ctrl+S</source>
-        <translation type="obsolete">Strg+S</translation>
-    </message>
-    <message>
-        <source>Save network (Ctrl+S)</source>
-        <translation type="obsolete">Speichere Netzwerk (Srtg+S)</translation>
-    </message>
-    <message>
-        <source>Saves the actual network to the current file</source>
-        <translation type="obsolete">Speichert aktuelles Netzwerk aktueller Datei</translation>
-    </message>
-    <message>
-        <source>Save.
-
-Saves the actual network</source>
-        <translation type="obsolete">Speichern
-
-Speichert aktuelles Netzwerk</translation>
-    </message>
-    <message>
-        <source>Save &amp;As...</source>
-        <translation type="obsolete">Speichern unter</translation>
-    </message>
-    <message>
-        <source>Ctrl+Shift+S</source>
-        <translation type="obsolete">Strg+Shift+S</translation>
-    </message>
-    <message>
-        <source>Saves the actual network under a new filename</source>
-        <translation type="obsolete">Speichere aktuelles Netzwerk unter neuer Datei</translation>
-    </message>
-    <message>
-        <source>Save As
-
-Saves the actual network under a new filename</source>
-        <translation type="obsolete">Speichern unter
-
-Speichert aktuelles Netzwerk unter neuer Datei</translation>
-    </message>
-    <message>
-        <source>&amp;BMP...</source>
-        <translation type="obsolete">BMP</translation>
-    </message>
-    <message>
-        <source>Export network to a BMP image</source>
-        <translation type="obsolete">Exportiere Netzwerk als BMP Bild</translation>
-    </message>
-    <message>
-        <source>Export BMP 
-
- Export network to a BMP image</source>
-        <translation type="obsolete">Export BMP
-
- Exportiere Netzwerk als BMP Bild</translation>
-    </message>
-    <message>
-        <source>&amp;PNG...</source>
-        <translation type="obsolete">PNG</translation>
-    </message>
-    <message>
-        <source>Export network to a PNG image</source>
-        <translation type="obsolete">Exportiere Netzwerk als PNG Bild</translation>
-    </message>
-    <message>
-        <source>Export PNG 
-
- Export network to a PNG image</source>
-        <translation type="obsolete">Export PNG
-
- Exportiert Netzwerk als PNG Bild</translation>
-    </message>
-    <message>
-        <source>&amp;PDF...</source>
-        <translation type="obsolete">PDF</translation>
-    </message>
-    <message>
-        <source>Export network to a PDF file</source>
-        <translation type="obsolete">Exportiere Netzwerk als PDF Datei</translation>
-    </message>
-    <message>
-        <source>Export PDF
-
- Export network to a PDF document</source>
-        <translation type="obsolete">Export PDF
-
- Exportiere Netzwerk als PDF Dokument</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="1042"/>
@@ -6032,34 +5825,10 @@ Speichert aktuelles Netzwerk unter neuer Datei</translation>
         <translation type="unfinished">Adjacency Matrix</translation>
     </message>
     <message>
-        <source>Export network to an adjacency matrix file</source>
-        <translation type="obsolete">Exportiere Netzwerk als Adjacency Matrix Datei</translation>
-    </message>
-    <message>
-        <source>Export Sociomatrix 
-
- Export network to a adjacency matrix-formatted file</source>
-        <translation type="obsolete">Export Sociomatrix
-
- Exportiere Netzwerk als Adjacency Matrix-formatierte Datei</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.cpp" line="1035"/>
         <location filename="../src/mainwindow.cpp" line="1119"/>
         <source>&amp;Pajek</source>
         <translation type="unfinished">Pajek</translation>
-    </message>
-    <message>
-        <source>Export network to a Pajek-formatted file</source>
-        <translation type="obsolete">Exportiere Netzwerk als Pajek-formatierte Datei</translation>
-    </message>
-    <message>
-        <source>Export Pajek 
-
- Export network to a Pajek-formatted file</source>
-        <translation type="obsolete">Export Pajek
-
- Exportiere Netzwerk als Pajek-formatierte Datei</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="1126"/>
@@ -6067,33 +5836,9 @@ Speichert aktuelles Netzwerk unter neuer Datei</translation>
         <translation type="unfinished">List</translation>
     </message>
     <message>
-        <source>Export network to a List-formatted file. </source>
-        <translation type="obsolete">Exportiere Netzwerk als List-formatierte Datei.</translation>
-    </message>
-    <message>
-        <source>Export List
-
-Export network to a List-formatted file</source>
-        <translation type="obsolete">Export List
-
-Exportiere Netzwerk als List-formatierte Datei</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.cpp" line="1132"/>
         <source>&amp;DL...</source>
         <translation type="unfinished">DL...</translation>
-    </message>
-    <message>
-        <source>Export network to a DL-formatted file</source>
-        <translation type="obsolete">Exportiere Netzwerk als DL-formatierte Datei</translation>
-    </message>
-    <message>
-        <source>Export DL
-
-Export network to a DL-formatted</source>
-        <translation type="obsolete">Export DL
-
-Exportiere Netzwerk als DL-formatierte Datei</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="1138"/>
@@ -6101,25 +5846,9 @@ Exportiere Netzwerk als DL-formatierte Datei</translation>
         <translation type="unfinished">GW...</translation>
     </message>
     <message>
-        <source>Export network to a GW-formatted file</source>
-        <translation type="obsolete">Exportiere Netzwerk als GW-formatierte Datei</translation>
-    </message>
-    <message>
-        <source>Export
-
-Export network to a GW formatted file</source>
-        <translation type="obsolete">Exportiere
-
-Exportiere Netzwerk als GW-formatierte Datei</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.cpp" line="1144"/>
         <source>&amp;Close</source>
         <translation type="unfinished">Schließen</translation>
-    </message>
-    <message>
-        <source>Closes the actual network</source>
-        <translation type="obsolete">Schließt das aktuelle Netzwerk</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="1147"/>
@@ -6136,35 +5865,9 @@ Schließt das aktuelle Netzwerk</translation>
         <translation type="unfinished">Drucken</translation>
     </message>
     <message>
-        <source>Ctrl+P</source>
-        <translation type="obsolete">Strg+P</translation>
-    </message>
-    <message>
-        <source>Prints whatever is viewable on the canvas.</source>
-        <translation type="obsolete">Druckt sichtbaren Bereich</translation>
-    </message>
-    <message>
-        <source>Printing 
-
- This function prints whatever is viewable on the canvas. 
-To print the whole network, you might want to zoom-out.</source>
-        <translation type="obsolete">Drucken
-
- Diese Funktion druckt den sichtbaren Bereich.
-Um das gesamte Netzwerk zu drucken ggf. herauszoomen</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.cpp" line="1160"/>
         <source>E&amp;xit</source>
         <translation type="unfinished">Beenden</translation>
-    </message>
-    <message>
-        <source>Ctrl+Q</source>
-        <translation type="obsolete">Strg+Q</translation>
-    </message>
-    <message>
-        <source>Quits the application</source>
-        <translation type="obsolete">Beendet die Anwendung</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="1163"/>
@@ -6176,126 +5879,14 @@ Quits the application</source>
 Beendet die Anwendung</translation>
     </message>
     <message>
-        <source>View Loaded File</source>
-        <translation type="obsolete">Betrachte geladene Datei</translation>
-    </message>
-    <message>
-        <source>F5</source>
-        <translation type="obsolete">F5</translation>
-    </message>
-    <message>
-        <source>Displays the loaded network file</source>
-        <translation type="obsolete">Zeigt geladene Netzwerk-Datei an</translation>
-    </message>
-    <message>
-        <source>View Loaded File
-
-Displays the file of the loaded network</source>
-        <translation type="obsolete">Betrachte geladene Datei
-
-Zeigt die geladene Netzwerk-Datei an</translation>
-    </message>
-    <message>
-        <source>View Adjacency Matrix</source>
-        <translation type="obsolete">Zeige Adjacency Matrix</translation>
-    </message>
-    <message>
-        <source>F6</source>
-        <translation type="obsolete">F6</translation>
-    </message>
-    <message>
-        <source>Displays the adjacency matrix of the active network</source>
-        <translation type="obsolete">Zeigt Adjacency Matrix des aktiven Netzwerkes</translation>
-    </message>
-    <message>
-        <source>View Network file
-
-Displays the adjacency matrix of the active network</source>
-        <translation type="obsolete">Zeige Netzwerk-Datei an
-
-Zeigt die Adjacency Matrix des aktiven Netzwerkes</translation>
-    </message>
-    <message>
-        <source>Erdos-Renyi G(n,p)</source>
-        <translation type="obsolete">Erdos-Renyi G(n,p)</translation>
-    </message>
-    <message>
-        <source>Shift+U</source>
-        <translation type="obsolete">Shift+U</translation>
-    </message>
-    <message>
-        <source>Creates a random network where each edge is included with a given probability</source>
-        <translation type="obsolete">Erschafft ein zufälliges Netzwerk in dem jede Kante mit gegebener Wahrscheinlichkeit eingeschlossen ist</translation>
-    </message>
-    <message>
-        <source>Uniform 
-
-Creates a random network of G(n, p) model by connecting nodes randomly. Each edge is included in the graph with equal probability p, independently of the other edges</source>
-        <translation type="obsolete">Uniform
-
-Erschafft ein zufälliges Netzwerk im G(n, p) Model durch zufälliges Verbinden der Knoten. Jede Kante ist mit gleicher Wahrscheinlichkeit p im Graphen eingschlossen, unabhängig von den anderen Kanten</translation>
-    </message>
-    <message>
-        <source>Connected</source>
-        <translation type="obsolete">Verbunden</translation>
-    </message>
-    <message>
-        <source>Creates a connected random network</source>
-        <translation type="obsolete">Erschafft ein verbundenes zufälliges Netzwerk</translation>
-    </message>
-    <message>
-        <source>Uniform Connected
-
-Creates a connected random network </source>
-        <translation type="obsolete">Uniform Connected
-
-Erschafft ein verbundenes zufälliges Netzwerk</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.cpp" line="1321"/>
         <source>Ring Lattice</source>
         <translation type="unfinished">Ring Lattice</translation>
     </message>
     <message>
-        <source>Shift+L</source>
-        <translation type="obsolete">Shift+L</translation>
-    </message>
-    <message>
-        <source>Creates a ring lattice random network</source>
-        <translation type="obsolete">Erschafft ein zufälliges Ring Lattice Netzwerk</translation>
-    </message>
-    <message>
-        <source>Ring Lattice 
-
-A ring lattice or a physicist&apos;s lattice is a graph with N nodes each connected to K neighbors, K / 2 on each side.</source>
-        <translation type="obsolete">Ring Lattice
-
-Ein Ring Lattice oder Physicist&apos; Lattice ist ein Graph mit N Knoten, jeder verbunden mit K Nachbarn, K / 2 auf jeder Seite.</translation>
-    </message>
-    <message>
-        <source>Same Degree</source>
-        <translation type="obsolete">Same Degree</translation>
-    </message>
-    <message>
-        <source>Creates a random network where all nodes have the same degree.</source>
-        <translation type="obsolete">Erschafft ein Netzwerk in dem alle Knoten den gleichen Grad besitzen.</translation>
-    </message>
-    <message>
-        <source>Same Degree 
-
-Creates a random network where all nodes have the same degree </source>
-        <translation type="obsolete">Same Degree
-
-Erschafft ein zufälliges Netzwerk in dem alle Knoten den selben Grad besitzen</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.cpp" line="1335"/>
         <source>Gaussian</source>
         <translation type="unfinished">Gaussian</translation>
-    </message>
-    <message>
-        <source>Creates a Gaussian distributed random network</source>
-        <translation type="obsolete">Erschafft ein zufälliges normalverteiltes Netzwerk</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="1340"/>
@@ -6312,61 +5903,9 @@ Erschafft ein zufälliges Netzwerk mit Gauß&apos;scher Verteilung</translation>
         <translation type="unfinished">Small World</translation>
     </message>
     <message>
-        <source>Shift+W</source>
-        <translation type="obsolete">Shift+W</translation>
-    </message>
-    <message>
-        <source>Creates a random network with small world properties</source>
-        <translation type="obsolete">Erschafft ein zufälliges Netzwerk mit Small World Eigenschaften</translation>
-    </message>
-    <message>
-        <source>Small World 
-
-A Small World, according to the Watts and Strogatz model, is a random network with short average path lengths and high clustering coefficient.</source>
-        <translation type="obsolete">Small World
-
-Eine Small World, nach Watts&apos; und Strogatz&apos; Model, ist ein zufälliges Netzwerk mit kurzen mittleren Pfadlängen und hohem Clustering Koeffizienten</translation>
-    </message>
-    <message>
-        <source>Find Node</source>
-        <translation type="obsolete">Finde Knoten</translation>
-    </message>
-    <message>
-        <source>Ctrl+F</source>
-        <translation type="obsolete">Strg+F</translation>
-    </message>
-    <message>
-        <source>Finds and highlights a node by number or label. Press Ctrl+F again to undo.</source>
-        <translation type="obsolete">Findet einen Knoten nach Nummer oder Label und hebt ihn hervor. Umschalten mit Strg+F</translation>
-    </message>
-    <message>
-        <source>Find Node
-
-Finds a node with a given number or label and doubles its size. Ctrl+F again resizes back the node</source>
-        <translation type="obsolete">Finde Knoten
-
-Findet einen Knoten mit gegebener Nummer oder Label und verdoppelt dessen Größe. Strg+F setzt die Skalierung wieder zurück</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.cpp" line="1500"/>
         <source>Add Node</source>
         <translation type="unfinished">Füge Knoten hinzu</translation>
-    </message>
-    <message>
-        <source>Ctrl+A</source>
-        <translation type="obsolete">Strg+A</translation>
-    </message>
-    <message>
-        <source>Adds a node</source>
-        <translation type="obsolete">Fügt einen Knoten hinzu</translation>
-    </message>
-    <message>
-        <source>Add Node
-
-Adds a node to the network</source>
-        <translation type="obsolete">Füge Knoten hinzu
-
-Fügt dem Netzwerk einen Knoten hinzu</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="1515"/>
@@ -6376,407 +5915,9 @@ Fügt dem Netzwerk einen Knoten hinzu</translation>
         <translation type="unfinished">Entferne Knoten</translation>
     </message>
     <message>
-        <source>Ctrl+Shift+A</source>
-        <translation type="obsolete">Strg+Shift+A</translation>
-    </message>
-    <message>
-        <source>Removes a node</source>
-        <translation type="obsolete">Entfernt einen Knoten</translation>
-    </message>
-    <message>
-        <source>Remove Node
-
-Removes a node from the network</source>
-        <translation type="obsolete">Entferne Knoten
-
-Entfernt einen Knoten des Netzwerkes</translation>
-    </message>
-    <message>
-        <source>Change Label</source>
-        <translation type="obsolete">Ändere Label</translation>
-    </message>
-    <message>
-        <source>Changes the Label of a node</source>
-        <translation type="obsolete">Ändert das Label eines Knotens</translation>
-    </message>
-    <message>
-        <source>Change Label
-
-Changes the label of a node</source>
-        <translation type="obsolete">Ändere Label
-
-Ändert das Label eines Knotens</translation>
-    </message>
-    <message>
-        <source>Change Color</source>
-        <translation type="obsolete">Ändere Farbe</translation>
-    </message>
-    <message>
-        <source>Changes the color of a node</source>
-        <translation type="obsolete">Ändert die Farbe eines Knotens</translation>
-    </message>
-    <message>
-        <source>Change Color
-
-Changes the Color of a node</source>
-        <translation type="obsolete">Ändere Farbe
-
-Ändert die Farbe eines Knotens</translation>
-    </message>
-    <message>
-        <source>Change Size</source>
-        <translation type="obsolete">Ändere Größe</translation>
-    </message>
-    <message>
-        <source>Changes the actual size of a node</source>
-        <translation type="obsolete">Ändert die Größe eines Knotens</translation>
-    </message>
-    <message>
-        <source>Change Size
-
-Changes the actual size of a node</source>
-        <translation type="obsolete">Ändere Größe
-
-Ändert die Größe eines Knotens</translation>
-    </message>
-    <message>
-        <source>Change Value</source>
-        <translation type="obsolete">Ändere Wert</translation>
-    </message>
-    <message>
-        <source>Changes the value of a node</source>
-        <translation type="obsolete">Ändert den Wert eines Knotens</translation>
-    </message>
-    <message>
-        <source>Change Value
-
-Changes the value of a node</source>
-        <translation type="obsolete">Ändere Wert
-
-Ändert den Wert eines Knotens</translation>
-    </message>
-    <message>
-        <source>Change all Nodes Size</source>
-        <translation type="obsolete">Ändere Größe aller Knoten</translation>
-    </message>
-    <message>
-        <source>This option lets you change the size of all nodes</source>
-        <translation type="obsolete">Diese Option erlaubt die Größe aller Knoten zu ändern</translation>
-    </message>
-    <message>
-        <source>Nodes Size
-
-This option lets you change the size of all nodes</source>
-        <translation type="obsolete">Knoten Größe
-
-Dies Option erlaubt die Größe aller Knoten zu ändern</translation>
-    </message>
-    <message>
-        <source>Change all Nodes Shape</source>
-        <translation type="obsolete">Ändere Form aller Knoten</translation>
-    </message>
-    <message>
-        <source>This option lets you change the shape of all nodes</source>
-        <translation type="obsolete">Diese Option erlaubt die Form aller Knoten zu ändern</translation>
-    </message>
-    <message>
-        <source>Nodes Shape
-
-This option lets you change the shape of all nodes</source>
-        <translation type="obsolete">Knoten Form
-
-Diese Option erlaubt die Form aller Knoten zu ändern</translation>
-    </message>
-    <message>
-        <source>Change Node Shape to Box</source>
-        <translation type="obsolete">Ändere Knotenform zu Box</translation>
-    </message>
-    <message>
-        <source>This option lets you change the shape of a node to a box</source>
-        <translation type="obsolete">Diese Option erlaubt die Form eines Knotens zu Box zu ändern</translation>
-    </message>
-    <message>
-        <source>Node as a box
-
-This option lets you change the shape of a node to a box</source>
-        <translation type="obsolete">Knoten als Box
-
-Diese Option erlaubt die Form eines Knotens zu Box zu ändern</translation>
-    </message>
-    <message>
-        <source>Change Node Shape to Triangle</source>
-        <translation type="obsolete">Ändere Knotenform zu Dreieck</translation>
-    </message>
-    <message>
-        <source>Change Node Shape to Circle</source>
-        <translation type="obsolete">Ändere Knotenform zu Kreis</translation>
-    </message>
-    <message>
-        <source>Change Node Shape to Diamond</source>
-        <translation type="obsolete">Ändere Knotenform zu Diamant</translation>
-    </message>
-    <message>
-        <source>Change Node Shape to Ellipse</source>
-        <translation type="obsolete">Ändere Knotenform zu Ellipse</translation>
-    </message>
-    <message>
-        <source>Change all Numbers Size</source>
-        <translation type="obsolete">Ändere Größe aller Nummern</translation>
-    </message>
-    <message>
-        <source>It lets you change the font size of the numbers of all nodes</source>
-        <translation type="obsolete">Erlaubt die Schrifftgröße der Nummern aller Knoten zu ändern</translation>
-    </message>
-    <message>
-        <source>Numbers Size
-
-Changes the size of the numbers of all nodes</source>
-        <translation type="obsolete">Nummern Größe
-
-Ändert die Größe der Nummern aller Knoten</translation>
-    </message>
-    <message>
-        <source>Change all Labels Size</source>
-        <translation type="obsolete">Ändere Größe aller Labels</translation>
-    </message>
-    <message>
-        <source>You can change the font size of the labels of all nodes</source>
-        <translation type="obsolete">Erlaubt die Schrifftgröße der Labels aller Knoten zu ändern</translation>
-    </message>
-    <message>
-        <source>Labels Size
-
-Change the fontsize of the labels of all nodes</source>
-        <translation type="obsolete">Label Größe
-
-Ändere die Schrifftgröße der Label aller Knoten</translation>
-    </message>
-    <message>
-        <source>Add Link</source>
-        <translation type="obsolete">Füge Link hinzu</translation>
-    </message>
-    <message>
-        <source>Ctrl+L</source>
-        <translation type="obsolete">Strg+L</translation>
-    </message>
-    <message>
-        <source>Adds a Link to a Node</source>
-        <translation type="obsolete">Fügt einem Knoten einen Link hinzu</translation>
-    </message>
-    <message>
-        <source>Add Link
-
-Adds a Link to the network</source>
-        <translation type="obsolete">Fügt dem Netzwerk einen Link hinzu</translation>
-    </message>
-    <message>
-        <source>Remove</source>
-        <translation type="obsolete">Entfernen</translation>
-    </message>
-    <message>
-        <source>Ctrl+Shift+L</source>
-        <translation type="obsolete">Strg+Shift+L</translation>
-    </message>
-    <message>
-        <source>Removes a Link</source>
-        <translation type="obsolete">Entfernt einen Link</translation>
-    </message>
-    <message>
-        <source>Remove Link
-
-Removes a Link from the network</source>
-        <translation type="obsolete">Entferne Link
-
-Entfernt einen Link vom Netzwerk</translation>
-    </message>
-    <message>
-        <source>Changes the Label of a Link</source>
-        <translation type="obsolete">Ändere Label eines Links</translation>
-    </message>
-    <message>
-        <source>Change Label
-
-Changes the label of a Link</source>
-        <translation type="obsolete">Ändere Label
-
-Ändert das Label eines Links</translation>
-    </message>
-    <message>
-        <source>Changes the Color of a Link</source>
-        <translation type="obsolete">Ändert die Farbe eines Links</translation>
-    </message>
-    <message>
-        <source>Change Color
-
-Changes the Color of a Link</source>
-        <translation type="obsolete">Ändere Farbe
-
-Ändert die Farbe eines Links</translation>
-    </message>
-    <message>
-        <source>Change Weight</source>
-        <translation type="obsolete">Ändere Gewichtung</translation>
-    </message>
-    <message>
-        <source>Changes the Weight of a Link</source>
-        <translation type="obsolete">Ändert die Gewichtung eines Links</translation>
-    </message>
-    <message>
-        <source>Change Value
-
-Changes the Weight of a Link</source>
-        <translation type="obsolete">Ändere Wert
-
-Ändert die Gewichtung eines Links</translation>
-    </message>
-    <message>
-        <source>Filter Nodes</source>
-        <translation type="obsolete">Filtere Knoten</translation>
-    </message>
-    <message>
-        <source>Filters Nodes of some value out of the network</source>
-        <translation type="obsolete">Filtert Knoten eines bestimmten Wertes aus dem Netzwerk</translation>
-    </message>
-    <message>
-        <source>Filter Nodes
-
-Filters Nodes of some value out of the network.</source>
-        <translation type="obsolete">Filter Knoten
-
-Filtert Knoten eines bestimmten Wertes aus dem Netzwerk</translation>
-    </message>
-    <message>
-        <source>Filter Links</source>
-        <translation type="obsolete">Filtere Links</translation>
-    </message>
-    <message>
-        <source>Filters Links of some weight out of the network</source>
-        <translation type="obsolete">Filtert Links einer bestimmten Gewichtung aus dem Netzwerk</translation>
-    </message>
-    <message>
-        <source>Filter Links
-
-Filters Link of some specific weight out of the network.</source>
-        <translation type="obsolete">Filter Links
-
-Filtert Links einer bestimmten Gewichtung aus dem Netzwerk</translation>
-    </message>
-    <message>
         <location filename="../src/mainwindow.cpp" line="3555"/>
         <source>Change Background Color</source>
         <translation type="unfinished">Ändere Hintergrundfarbe</translation>
-    </message>
-    <message>
-        <source>Click to change the background color</source>
-        <translation type="obsolete">Klicken um Hintergrundfarbe zu ändern</translation>
-    </message>
-    <message>
-        <source>Background
-
-Changes background color</source>
-        <translation type="obsolete">Hintergrund
-
-Ändert Hintergrundfarbe</translation>
-    </message>
-    <message>
-        <source>Change all Nodes Colors</source>
-        <translation type="obsolete">Ändere Farbe aller Knoten</translation>
-    </message>
-    <message>
-        <source>Click to choose a new color for all nodes.</source>
-        <translation type="obsolete">Klicken um neue Farbe für alle Knoten zu wählen</translation>
-    </message>
-    <message>
-        <source>All Nodes
-
-Changes all nodes color at once.</source>
-        <translation type="obsolete">Alle Knoten
-
-Ändert die Farbe aller Knoten.</translation>
-    </message>
-    <message>
-        <source>Change all Numbers Colors</source>
-        <translation type="obsolete">Ändere Farbe aller Nummern</translation>
-    </message>
-    <message>
-        <source>Click to change the color of all numbers.</source>
-        <translation type="obsolete">Klicken um Farbe aller Nummern zu ändern</translation>
-    </message>
-    <message>
-        <source>Numbers
-
-Changes the color of all numbers.</source>
-        <translation type="obsolete">Nummern
-
-Ändert die Farbe aller Nummern</translation>
-    </message>
-    <message>
-        <source>Change all Labels Colors</source>
-        <translation type="obsolete">Ändere Farbe aller Label</translation>
-    </message>
-    <message>
-        <source>Click to change the color of all node labels.</source>
-        <translation type="obsolete">Klicken um Farbe aller Labels zu ändern</translation>
-    </message>
-    <message>
-        <source>Numbers
-
-Changes the color of all node labels.</source>
-        <translation type="obsolete">Nummern
-
-Ändert die Farbe aller Label</translation>
-    </message>
-    <message>
-        <source>Change all Links Colors</source>
-        <translation type="obsolete">Ändere Farbe aller Links</translation>
-    </message>
-    <message>
-        <source>Click to change the color of all links.</source>
-        <translation type="obsolete">Klicken um Farbe aller Links zu ändern</translation>
-    </message>
-    <message>
-        <source>Background
-
-Changes all links color</source>
-        <translation type="obsolete">Hintergrund
-
-Ändert die Farbe aller Links</translation>
-    </message>
-    <message>
-        <source>Transform Nodes to Links</source>
-        <translation type="obsolete">Transformiere Knoten zu Link</translation>
-    </message>
-    <message>
-        <source>Transforms the network so that nodes become links and vice versa</source>
-        <translation type="obsolete">Transformiert das Netzwerk so dass Knoten zu Links werden und umgekehrt</translation>
-    </message>
-    <message>
-        <source>Transform Nodes LinksAct
-
-Transforms network so that nodes become links and vice versa</source>
-        <translation type="obsolete">Transformiere Knoten LinksAct
-
-Transformiert das Netzwerk so dass Knoten zu Links werden und umgekehrt</translation>
-    </message>
-    <message>
-        <source>Symmetrize Links</source>
-        <translation type="obsolete">Mache Links symmetrisch</translation>
-    </message>
-    <message>
-        <source>Shift+R</source>
-        <translation type="obsolete">Shift+R</translation>
-    </message>
-    <message>
-        <source>Makes all edges reciprocal (thus, a symmetric graph).</source>
-        <translation type="obsolete">Macht alle Kanten reziprok (d.h. einen symmetrischen Graphen)</translation>
-    </message>
-    <message>
-        <source>Symmetrize Edges
-
-Transforms all arcs to double links (edges). The result is a symmetric network</source>
-        <translation type="obsolete">Mache Kanten symmetrisch
-
-Transformiert alle Bögen zu doppelten Links (Kanten). Das Ergebnis ist ein symmetrisches Netzwerk</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="1865"/>
@@ -6812,42 +5953,6 @@ Transformiert alle Bögen zu doppelten Links (Kanten). Das Ergebnis ist ein symm
         <location filename="../src/mainwindow.cpp" line="1882"/>
         <source>Random</source>
         <translation type="unfinished">Random</translation>
-    </message>
-    <message>
-        <source>Repositions the nodes in random places</source>
-        <translation type="obsolete">Setzt die Knoten in zufälliger Verteilung zurück</translation>
-    </message>
-    <message>
-        <source>Random Layout
-
- Repositions the nodes in random places</source>
-        <translation type="obsolete">Zufälliges Layout
-
- Setzt die Knoten in zufälliger Verteilung zurück</translation>
-    </message>
-    <message>
-        <source>Random Circle</source>
-        <translation type="obsolete">Zufälliger Kreis</translation>
-    </message>
-    <message>
-        <source>Repositions the nodes randomly on a circle</source>
-        <translation type="obsolete">Verteilt die Knoten zufällig auf einen Kreis</translation>
-    </message>
-    <message>
-        <source>Random Circle Layout
-
- Repositions the nodes randomly on a circle</source>
-        <translation type="obsolete">Kreis Layout
-
- Verteilt die Knoten zufällig auf einen Kreis</translation>
-    </message>
-    <message>
-        <source>In-Degree</source>
-        <translation type="obsolete">In-Degree</translation>
-    </message>
-    <message>
-        <source>Ctrl+1</source>
-        <translation type="obsolete">Strg+1</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="2952"/>
