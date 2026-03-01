@@ -11,6 +11,7 @@ BASE="${ROOT_DIR}/src/tools/baselines"
 BASE_REACH="${ROOT_DIR}/src/tools/baselines/reachability"
 BASE_WALKS="${ROOT_DIR}/src/tools/baselines/walks"
 BASE_PROM="${ROOT_DIR}/src/tools/baselines/prominence"
+BASE_IO="${ROOT_DIR}/src/tools/baselines/io_roundtrip"
 DATA="${ROOT_DIR}/src/data"
 
 if [[ ! -x "$CLI" ]]; then
@@ -69,6 +70,19 @@ run_case_prominence() {
 
   echo "==> $(basename "$baseline")"
   if ! "$CLI" --kernel prominence -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
+    echo "[FAIL] $(basename "$baseline")"
+    FAILS=$((FAILS+1))
+  fi
+}
+
+run_case_io() {
+  local input="$1"
+  local ftype="$2"
+  local flags=("${@:3:${#}-3}")
+  local baseline="${@: -1}"
+
+  echo "==> $(basename "$baseline")"
+  if ! "$CLI" --kernel io_roundtrip -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
   fi
@@ -166,6 +180,18 @@ run_case_prominence \
   2 \
   -w 0 -x 1 -k 0 \
   "${BASE_PROM}/Sampson_Monks_N18__PROM__V4__FT2__W0_IW1_DI0.json"
+
+# IO ROUNDTRIP (schema v5)
+run_case_io "${DATA}/TinyAdj_Undir_N3.adj" 3 -d " " -l 0 "${BASE_IO}/TinyAdj_Undir_N3__FT3.json"
+run_case_io "${DATA}/TinyAdj_Weighted_Dir_N3.adj" 3 -d " " -l 0 "${BASE_IO}/TinyAdj_Weighted_Dir_N3__FT3.json"
+run_case_io "${DATA}/TinyGraphML_Weighted_Dir_N3.graphml" 1 "${BASE_IO}/TinyGraphML_Weighted_Dir_N3__FT1.json"
+run_case_io "${DATA}/Padgett_Florentine_Families.paj" 2 "${BASE_IO}/Padgett_Florentine_Families__FT2_multirel.json"
+run_case_io "${DATA}/Benchmark_BA_Directed_N500_m3.paj" 2 "${BASE_IO}/Benchmark_BA_Directed_N500_m3__FT2_big.json"
+
+# Skipped-export formats still get compared (they should remain skipped)
+run_case_io "${DATA}/TinyGraphviz_Dir_N3.dot" 4 "${BASE_IO}/TinyGraphviz_Dir_N3__FT4.json"
+run_case_io "${DATA}/TinyGML_Weighted_Dir_N3.gml" 6 "${BASE_IO}/TinyGML_Weighted_Dir_N3__FT6_weighted.json"
+run_case_io "${DATA}/TinyEdgeList_Weighted_Dir_N3.wlst" 7 "${BASE_IO}/TinyEdgeList_Weighted_Dir_N3__FT7.json"
 
 echo
 if [[ "$FAILS" -eq 0 ]]; then
