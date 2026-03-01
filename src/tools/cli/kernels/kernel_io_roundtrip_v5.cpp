@@ -1,15 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
 // IO Roundtrip kernel (schema v5) for socnetv-cli.
-// Protects WS4 IO/Parser refactor by validating that:
+// Multirelational support:
+//   - Build canonical signature PER RELATION
+//   - Roundtrip equivalence requires identical relations bundle
+//   - Reports relation count in JSON + harness prints RELATIONS in facade
 //
-//   load -> (save same-format) -> reload
-//
-// preserves graph semantics + metadata exactly.
-//
-// Canonical counts:
-//   ties_graph = HeadlessLoadResult::tiesGraph (from Graph model, not parser counters)
-//   links_sna  = directed ? ties_graph : 2*ties_graph
+// NOTE: For Pajek multirel matrices, roundtrip currently fails because exporter
+// likely writes only the current relation. This is a real IO regression signal.
 
 #include "kernel_io_roundtrip_v5.h"
 
@@ -47,7 +45,6 @@ namespace cli
 
         static QJsonObject hashToJsonObjectSorted(const QHash<QString, QString> &h)
         {
-            // Stable insertion order for JSON output.
             QMap<QString, QString> sorted;
             for (auto it = h.begin(); it != h.end(); ++it)
                 sorted.insert(it.key(), it.value());
@@ -58,26 +55,45 @@ namespace cli
             return o;
         }
 
-        // File suffix to avoid exporter/loader paths that depend on extension.
         static QString suffixForFileType(int ft)
         {
-            // IMPORTANT: adjust if your FileType numeric ids differ.
-            // Based on your usage: -f 2 for Pajek.
+            // Matches global.h enum
             switch (ft)
             {
-            case 1:
-                return ".graphml"; // GRAPHML
-            case 2:
-                return ".paj"; // PAJEK
-            case 3:
-                return ".adj"; // ADJACENCY (if you use ".txt", change accordingly)
-            case 4:
-                return ".dot"; // GRAPHVIZ
-            case 5:
-                return ".dl"; // UCINET
+            case FileType::GRAPHML:
+                return ".graphml";
+            case FileType::PAJEK:
+                return ".paj";
+            case FileType::ADJACENCY:
+                return ".adj";
+            case FileType::GRAPHVIZ:
+                return ".dot";
+            case FileType::UCINET:
+                return ".dl";
+            case FileType::GML:
+                return ".gml";
             default:
                 return ".tmp";
             }
+        }
+
+        struct EdgeRow
+        {
+            int u = 0;
+            int v = 0;
+            QString w;     // deterministic string
+            QString label; // may be empty
+        };
+
+        static bool edgeLess(const EdgeRow &a, const EdgeRow &b)
+        {
+            if (a.u != b.u)
+                return a.u < b.u;
+            if (a.v != b.v)
+                return a.v < b.v;
+            if (a.w != b.w)
+                return a.w < b.w;
+            return a.label < b.label;
         }
 
         static void printSigMismatchHint(const QJsonObject &sig1, const QJsonObject &sig2)
@@ -85,6 +101,29 @@ namespace cli
             QTextStream err(stderr);
             err << "SIG1_SHA256=" << sig1.value("hash_sha256").toString() << "\n";
             err << "SIG2_SHA256=" << sig2.value("hash_sha256").toString() << "\n";
+
+            const QJsonArray e1 = sig1.value("edge_list").toArray();
+            const QJsonArray e2 = sig2.value("edge_list").toArray();
+            if (e1 != e2)
+            {
+                err << "HINT=edge_list differ\n";
+                const int n = qMin(e1.size(), e2.size());
+                for (int i = 0; i < n; ++i)
+                {
+                    const QJsonObject o1 = e1.at(i).toObject();
+                    const QJsonObject o2 = e2.at(i).toObject();
+                    if (o1 != o2)
+                    {
+                        err << "FIRST_DIFF edge_list[" << i << "]\n";
+                        err << "EXPECTED=" << QJsonDocument(o1).toJson(QJsonDocument::Compact) << "\n";
+                        err << "GOT=" << QJsonDocument(o2).toJson(QJsonDocument::Compact) << "\n";
+                        return;
+                    }
+                }
+                err << "FIRST_DIFF edge_list size expected=" << e1.size()
+                    << " got=" << e2.size() << "\n";
+                return;
+            }
 
             const QJsonArray l1 = sig1.value("node_labels").toArray();
             const QJsonArray l2 = sig2.value("node_labels").toArray();
@@ -113,94 +152,33 @@ namespace cli
             if (a1 != a2)
             {
                 err << "HINT=node_custom_attributes differ\n";
-                const int n = qMin(a1.size(), a2.size());
-                for (int i = 0; i < n; ++i)
-                {
-                    const QJsonObject o1 = a1.at(i).toObject();
-                    const QJsonObject o2 = a2.at(i).toObject();
-                    if (o1 != o2)
-                    {
-                        err << "FIRST_DIFF node_custom_attributes[" << i << "]\n";
-                        err << "EXPECTED=" << QJsonDocument(o1).toJson(QJsonDocument::Compact) << "\n";
-                        err << "GOT=" << QJsonDocument(o2).toJson(QJsonDocument::Compact) << "\n";
-                        return;
-                    }
-                }
-                err << "FIRST_DIFF node_custom_attributes size expected=" << a1.size()
-                    << " got=" << a2.size() << "\n";
-                return;
-            }
-
-            const QJsonArray e1 = sig1.value("edge_list").toArray();
-            const QJsonArray e2 = sig2.value("edge_list").toArray();
-            if (e1 != e2)
-            {
-                err << "HINT=edge_list differ\n";
-                const int n = qMin(e1.size(), e2.size());
-                for (int i = 0; i < n; ++i)
-                {
-                    const QJsonObject o1 = e1.at(i).toObject();
-                    const QJsonObject o2 = e2.at(i).toObject();
-                    if (o1 != o2)
-                    {
-                        err << "FIRST_DIFF edge_list[" << i << "]\n";
-                        err << "EXPECTED=" << QJsonDocument(o1).toJson(QJsonDocument::Compact) << "\n";
-                        err << "GOT=" << QJsonDocument(o2).toJson(QJsonDocument::Compact) << "\n";
-                        return;
-                    }
-                }
-                err << "FIRST_DIFF edge_list size expected=" << e1.size()
-                    << " got=" << e2.size() << "\n";
+                err << "FIRST_DIFF node_custom_attributes differs (array mismatch)\n";
                 return;
             }
 
             err << "HINT=signature differs but no localized diff found (unexpected)\n";
         }
 
-        struct EdgeRow
-        {
-            int u = 0;
-            int v = 0;
-            QString w;     // deterministic numeric string (d2s)
-            QString label; // edge label metadata (may be empty)
-        };
-
-        static bool edgeLess(const EdgeRow &a, const EdgeRow &b)
-        {
-            if (a.u != b.u)
-                return a.u < b.u;
-            if (a.v != b.v)
-                return a.v < b.v;
-            if (a.w != b.w)
-                return a.w < b.w;
-            return a.label < b.label;
-        }
-
         // -------------------------------
-        // Canonical signature (Graph model)
+        // Signature for CURRENT relation
         // -------------------------------
 
-        static QJsonObject buildSignature(Graph &g)
+        static QJsonObject buildSignatureForCurrentRelation(Graph &g)
         {
-            // Deterministic vertex order.
             QList<int> order = g.verticesList();
             std::sort(order.begin(), order.end());
 
-            // Node labels (metadata)
             QJsonArray nodeLabels;
             for (int id : order)
                 nodeLabels.append(g.vertexLabel(id));
 
-            // Node custom attributes (metadata)
             QJsonArray nodeAttrs;
             for (int id : order)
                 nodeAttrs.append(hashToJsonObjectSorted(g.vertexCustomAttributes(id)));
 
-            // Canonical edge list (enabled edges only, current relation)
             QList<EdgeRow> edges;
             edges.reserve(g.edgesEnabled());
 
-            // For undirected de-duplication: store each (min,max) once.
             QSet<qulonglong> seenUndir;
 
             for (int u : order)
@@ -209,14 +187,14 @@ namespace cli
                 if (!gv)
                     continue;
 
-                const QHash<int, qreal> out = gv->outEdgesEnabledHash(false /* allRelations */);
+                // current relation only (as per GraphVertex state after relationSet)
+                const QHash<int, qreal> out = gv->outEdgesEnabledHash(false);
                 for (auto it = out.begin(); it != out.end(); ++it)
                 {
                     const int v = it.key();
                     const qreal w = it.value();
 
                     int uu = u, vv = v;
-
                     if (!g.isDirected())
                     {
                         uu = qMin(u, v);
@@ -235,8 +213,6 @@ namespace cli
                     row.u = uu;
                     row.v = vv;
                     row.w = d2s(static_cast<double>(w));
-
-                    // Use canonical pair for label lookup.
                     row.label = g.edgeLabel(uu, vv);
 
                     edges.push_back(row);
@@ -262,7 +238,6 @@ namespace cli
             sig["node_custom_attributes"] = nodeAttrs;
             sig["edge_list"] = edgeList;
 
-            // Hash only the signature content (stable).
             const QByteArray canon = QJsonDocument(sig).toJson(QJsonDocument::Compact);
             sig["hash_sha256"] = QString::fromLatin1(sha256(canon).toHex());
 
@@ -270,13 +245,95 @@ namespace cli
         }
 
         // -------------------------------
-        // Golden JSON builder + compare
+        // Per-relation bundle
+        // -------------------------------
+
+        static QJsonArray buildRelationsBundle(Graph &g)
+        {
+            QJsonArray arr;
+
+            const int relCount = g.relations();
+            const int originalRel = g.relationCurrent();
+
+            for (int r = 0; r < relCount; ++r)
+            {
+                g.relationSet(r, false /* updateUI */);
+
+                QJsonObject relObj;
+                relObj["index"] = r;
+                relObj["name"] = g.relationCurrentName();
+                relObj["ties_graph"] = g.edgesEnabled(); // canonical ties for this relation
+                relObj["signature"] = buildSignatureForCurrentRelation(g);
+
+                arr.append(relObj);
+            }
+
+            // restore
+            if (originalRel >= 0 && originalRel < relCount)
+                g.relationSet(originalRel, false);
+
+            return arr;
+        }
+
+        static bool compareRelationsBundle(const QJsonArray &expected,
+                                           const QJsonArray &actual,
+                                           QTextStream &err)
+        {
+            if (expected.size() != actual.size())
+            {
+                err << "MISMATCH roundtrip.relations.size expected=" << expected.size()
+                    << " got=" << actual.size() << "\n";
+                return false;
+            }
+
+            for (int i = 0; i < expected.size(); ++i)
+            {
+                const QJsonObject e = expected.at(i).toObject();
+                const QJsonObject a = actual.at(i).toObject();
+
+                if (e.value("index").toInt() != a.value("index").toInt())
+                {
+                    err << "MISMATCH relations[" << i << "].index expected="
+                        << e.value("index").toInt() << " got=" << a.value("index").toInt() << "\n";
+                    return false;
+                }
+
+                if (e.value("name").toString() != a.value("name").toString())
+                {
+                    err << "MISMATCH relations[" << i << "].name expected="
+                        << e.value("name").toString() << " got=" << a.value("name").toString() << "\n";
+                    return false;
+                }
+
+                if (e.value("ties_graph").toInt() != a.value("ties_graph").toInt())
+                {
+                    err << "MISMATCH relations[" << i << "].ties_graph expected="
+                        << e.value("ties_graph").toInt() << " got=" << a.value("ties_graph").toInt() << "\n";
+                    return false;
+                }
+
+                const QJsonObject es = e.value("signature").toObject();
+                const QJsonObject as = a.value("signature").toObject();
+                if (es != as)
+                {
+                    err << "MISMATCH relations[" << i << "].signature differs\n";
+                    printSigMismatchHint(es, as);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        // -------------------------------
+        // Golden JSON builder + compare (schema v5)
         // -------------------------------
 
         static QJsonObject buildGoldenJsonV5Io(const CliConfig &cfg,
                                                const HeadlessLoadResult &load,
                                                Graph &g,
-                                               const QJsonObject &sig,
+                                               const QJsonObject &sig_current_relation,
+                                               const QJsonArray &relations_bundle,
                                                bool performed,
                                                bool equivalent,
                                                qint64 saveMs,
@@ -300,6 +357,14 @@ namespace cli
             run["operation"] = "io_roundtrip_same_format";
             root["run"] = run;
 
+            QJsonObject graph;
+            graph["directed"] = g.isDirected();
+            graph["weighted"] = g.isWeighted();
+            graph["relations"] = g.relations();
+            root["graph"] = graph;
+
+            // For continuity with existing CLI semantics:
+            // counts are derived from the currently selected relation (usually relation 0 after load).
             const int ties_graph = load.tiesGraph;
             const int links_sna = g.isDirected() ? ties_graph : (2 * ties_graph);
 
@@ -308,11 +373,6 @@ namespace cli
             counts["links_sna"] = links_sna;
             counts["ties_graph"] = ties_graph;
             root["counts"] = counts;
-
-            QJsonObject graph;
-            graph["directed"] = g.isDirected();
-            graph["weighted"] = g.isWeighted();
-            root["graph"] = graph;
 
             QJsonObject metrics;
             metrics["density"] = d2s(g.graphDensity());
@@ -325,7 +385,11 @@ namespace cli
             timings["total_ms"] = static_cast<qint64>(totalMs);
             root["timings"] = timings;
 
-            root["signature"] = sig;
+            // v5 existing key (current relation signature)
+            root["signature"] = sig_current_relation;
+
+            // NEW in v5 (additive, no schema bump): multirel bundle
+            root["relations_bundle"] = relations_bundle;
 
             QJsonObject rt;
             rt["performed"] = performed;
@@ -361,13 +425,11 @@ namespace cli
 
             bool ok = true;
 
-            // dataset
             const QJsonObject eDs = expected.value("dataset").toObject();
             const QJsonObject aDs = actual.value("dataset").toObject();
             ok &= cmpInt(eDs, aDs, "filetype", err);
             ok &= cmpStr(eDs, aDs, "name", err);
 
-            // run
             const QJsonObject eRun = expected.value("run").toObject();
             const QJsonObject aRun = actual.value("run").toObject();
             ok &= cmpBool(eRun, aRun, "considerWeights", err);
@@ -375,55 +437,34 @@ namespace cli
             ok &= cmpBool(eRun, aRun, "dropIsolates", err);
             ok &= cmpStr(eRun, aRun, "operation", err);
 
-            // counts
+            const QJsonObject eG = expected.value("graph").toObject();
+            const QJsonObject aG = actual.value("graph").toObject();
+            ok &= cmpBool(eG, aG, "directed", err);
+            ok &= cmpBool(eG, aG, "weighted", err);
+            ok &= cmpInt(eG, aG, "relations", err);
+
             const QJsonObject eC = expected.value("counts").toObject();
             const QJsonObject aC = actual.value("counts").toObject();
             ok &= cmpInt(eC, aC, "nodes", err);
             ok &= cmpInt(eC, aC, "links_sna", err);
             ok &= cmpInt(eC, aC, "ties_graph", err);
 
-            // graph flags
-            const QJsonObject eG = expected.value("graph").toObject();
-            const QJsonObject aG = actual.value("graph").toObject();
-            ok &= cmpBool(eG, aG, "directed", err);
-            ok &= cmpBool(eG, aG, "weighted", err);
-
-            // metrics
             const QJsonObject eM = expected.value("metrics").toObject();
             const QJsonObject aM = actual.value("metrics").toObject();
             ok &= cmpNumStrTol(eM, aM, "density", err, 0.0, 0.0);
 
-            // signature
-            const QJsonObject eS = expected.value("signature").toObject();
-            const QJsonObject aS = actual.value("signature").toObject();
-
-            ok &= cmpStr(eS, aS, "hash_sha256", err);
-
-            ok &= cmpStrArray(eS.value("node_labels").toArray(),
-                              aS.value("node_labels").toArray(),
-                              err, "signature.node_labels");
-
-            // strict JSON equality for attributes arrays
-            if (eS.value("node_custom_attributes").toArray() != aS.value("node_custom_attributes").toArray())
-            {
-                err << "MISMATCH signature.node_custom_attributes differs\n";
-                ok = false;
-            }
-
-            // strict edge list equality (u,v,w,label)
-            if (eS.value("edge_list").toArray() != aS.value("edge_list").toArray())
-            {
-                err << "MISMATCH signature.edge_list differs\n";
-                ok = false;
-            }
-
-            // roundtrip_result
             const QJsonObject eRt = expected.value("roundtrip_result").toObject();
             const QJsonObject aRt = actual.value("roundtrip_result").toObject();
             ok &= cmpBool(eRt, aRt, "performed", err);
             ok &= cmpBool(eRt, aRt, "equivalent", err);
 
             if (!ok)
+                return 1;
+
+            // Compare multirel bundle strictly (always present in v5 output now).
+            const QJsonArray eRel = expected.value("relations_bundle").toArray();
+            const QJsonArray aRel = actual.value("relations_bundle").toArray();
+            if (!compareRelationsBundle(eRel, aRel, err))
                 return 1;
 
             err << "OK: baseline match\n";
@@ -435,10 +476,12 @@ namespace cli
     // -------------------------------
     // exported runner
     // -------------------------------
+
     int runKernelIoRoundtripV5(const CliConfig &cfg,
                                const HeadlessLoadResult &load,
                                Graph &g)
     {
+        // IO kernel must not mutate graph (drop isolates is a mutation).
         if (cfg.dropIsolates)
         {
             QTextStream(stderr) << "ERROR: --drop-isolates is not allowed for --kernel io_roundtrip\n";
@@ -460,11 +503,14 @@ namespace cli
         QElapsedTimer total;
         total.start();
 
-        const QJsonObject sig1 = buildSignature(g);
+        // Build multirel bundle from loaded model
+        const QJsonArray rel1 = buildRelationsBundle(g);
 
-        // These MUST live outside the if-block.
+        // Keep legacy single signature: current relation snapshot
+        const QJsonObject sig1_current = buildSignatureForCurrentRelation(g);
+
         bool performed = false;
-        bool equivalent = true; // vacuously true if roundtrip not performed
+        bool equivalent = true;
         qint64 saveMs = 0;
         qint64 reloadMs = 0;
 
@@ -482,11 +528,13 @@ namespace cli
             const QString outPath =
                 tmpDir.path() + "/socnetv_cli_roundtrip" + suffixForFileType(cfg.fileFormat);
 
+            // Save (timed)
             QElapsedTimer tSave;
             tSave.start();
             g.saveToFile(outPath, cfg.fileFormat, true /*saveEdgeWeights*/, false /*saveZeroWeightEdges*/);
             saveMs = tSave.elapsed();
 
+            // Reload into fresh graph (timed)
             Graph g2;
 
             QElapsedTimer tReload;
@@ -507,18 +555,24 @@ namespace cli
                 return 1;
             }
 
-            const QJsonObject sig2 = buildSignature(g2);
+            const QJsonArray rel2 = buildRelationsBundle(g2);
 
-            equivalent = (sig1 == sig2);
+            equivalent = (rel1 == rel2);
             if (!equivalent)
             {
-                QTextStream(stderr) << "MISMATCH_DETAIL:\n";
-                printSigMismatchHint(sig1, sig2);
+                QTextStream(stdout) << "ROUNDTRIP_EQUIV=0\n";
+                QTextStream(stderr) << "MISMATCH_DETAIL: relations bundle differs\n";
+                QTextStream err(stderr);
+                (void)compareRelationsBundle(rel1, rel2, err);
+            }
+            else {
+                QTextStream(stdout) << "ROUNDTRIP_EQUIV=1\n";
             }
         }
 
-        // Build JSON (performed may be false now)
-        const QJsonObject root = buildGoldenJsonV5Io(cfg, load, g, sig1,
+        const QJsonObject root = buildGoldenJsonV5Io(cfg, load, g,
+                                                     sig1_current,
+                                                     rel1,
                                                      performed, equivalent,
                                                      saveMs, reloadMs,
                                                      total.elapsed());
@@ -547,10 +601,9 @@ namespace cli
                 return rc;
         }
 
-        // Only fail on mismatch if roundtrip actually ran.
         if (performed && !equivalent)
         {
-            QTextStream(stderr) << "MISMATCH: roundtrip signature differs (schema v5)\n";
+            QTextStream(stderr) << "MISMATCH: roundtrip differs (schema v5, multirel)\n";
             return 1;
         }
 

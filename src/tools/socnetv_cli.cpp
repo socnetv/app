@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
         cfg.twoMode,
         cfg.hasLabels);
 
-    cli::printKV("OK", load.ok ? "1" : "0");
+    cli::printKV("LOAD_OK", load.ok ? "1" : "0");
     cli::printKV("FILE", QFileInfo(cfg.inputPath).fileName());
     cli::printKV("FILETYPE", load.fileType);
     cli::printKV("N", load.totalNodes);
@@ -145,8 +145,14 @@ int main(int argc, char *argv[])
 
     cli::printKV("DIRECTED", g.isDirected() ? 1 : 0);
     cli::printKV("WEIGHTED", g.isWeighted() ? 1 : 0);
+    cli::printKV("RELATIONS", g.relations());
     cli::printKV("TIES_GRAPH", ties_graph);
     cli::printKV("LINKS_SNA", links_sna);
+    if (cfg.kernel == "io_roundtrip")
+    {
+        cli::printKV("KERNEL_DESC",
+                     "io_roundtrip: load -> save(same-format) -> reload; compares per-relation signatures from the reloaded file");
+    }
 
     if (cfg.kernel == "distance")
         return cli::runKernelDistanceV1(cfg, load, g);
