@@ -99,11 +99,10 @@ void Parser::load(const QString &fileName,
                   const bool &sm_has_labels)
 {
 
-
     qDebug() << "Parser::load() current thread:" << QThread::currentThread()
-         << " affinity thread:" << this->thread()
-         << "loading file:" << fileName
-        << "codecName" << codecName;
+             << " affinity thread:" << this->thread()
+             << "loading file:" << fileName
+             << "codecName" << codecName;
 
     initNodeSize = defNodeSize;
     initNodeColor = defNodeColor;
@@ -299,6 +298,39 @@ void Parser::createRandomNodes(const int &fixedNum,
 }
 
 /**
+ * @brief Normalizes a quoted identifier from external network formats.
+ *
+ * Some formats (e.g. Pajek) use double quotes in headers as syntactic
+ * delimiters, such as:
+ *
+ *   *Matrix 1: "Marital"
+ *
+ * The quotes are part of the file syntax and must not become part of the
+ * internal relation name. This function:
+ *
+ *  - trims surrounding whitespace
+ *  - removes a single pair of wrapping double quotes, if present
+ *  - normalizes doubled quotes ("") inside quoted strings
+ *
+ * It does NOT collapse internal whitespace.
+ *
+ * @param s Raw identifier substring extracted from the file.
+ * @return Clean identifier suitable for internal storage.
+ */
+QString Parser::normalizeQuotedIdentifier(const QString &s)
+{
+    QString out = s.trimmed();
+
+    // Strip wrapping double quotes (used as format delimiters)
+    if (out.size() >= 2 && out.startsWith('"') && out.endsWith('"'))
+        out = out.mid(1, out.size() - 2);
+
+    // Normalize doubled quotes inside quoted strings
+    out.replace("\"\"", "\"");
+
+    return out.trimmed();
+}
+/**
  * @brief Parses the given raw data as DL formatted (UCINET) data.
  *
  * This function reads and interprets a DL formatted file, which is a format used by UCINET.
@@ -362,7 +394,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
 
     bool fullmatrixFormat = false;
     bool edgelist1Format = false;
-    bool diagonalPresent = false;  // Flag to handle diagonal elements (self-loops)
+    bool diagonalPresent = false; // Flag to handle diagonal elements (self-loops)
 
     bool intOK = false;
     bool conversionOK = false;
@@ -540,7 +572,8 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                     }
 
                     // Check if DIAGONAL PRESENT is specified
-                    if (value.contains("DIAGONAL", Qt::CaseInsensitive)) {
+                    if (value.contains("DIAGONAL", Qt::CaseInsensitive))
+                    {
                         diagonalPresent = true;
                         qDebug() << "✅ FORMAT: Found standalone DIAGONAL token";
                     }
@@ -804,9 +837,11 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                     lineElement = accumulatedLine.split(myRegExp, Qt::SkipEmptyParts);
                     qDebug() << "line elements " << lineElement.size();
 
-                    while (lineElement.size() < totalNodes && !ts.atEnd()) {
+                    while (lineElement.size() < totalNodes && !ts.atEnd())
+                    {
                         QString nextLine = ts.readLine().simplified();
-                        if (!nextLine.isEmpty() && !isComment(nextLine)) {
+                        if (!nextLine.isEmpty() && !isComment(nextLine))
+                        {
                             accumulatedLine += " " + nextLine;
                             lineElement = accumulatedLine.split(myRegExp, Qt::SkipEmptyParts);
                             fileLineNumber++; // Advance line count to keep error reporting consistent
@@ -1015,7 +1050,6 @@ bool Parser::parseAsDL(const QByteArray &rawData)
         // relationsList << defaultRelation;
         // emit signalAddNewRelation(defaultRelation);
         emit signalAddNewRelation("unnamed");
-
     }
 
     // The network has been loaded. Change to the first relation
@@ -1068,7 +1102,8 @@ bool Parser::readDLKeywords(QStringList &strList,
         qDebug() << "element:" << tempStr.toLatin1();
 
         // Check for standalone DIAGONAL token
-        if (tempStr.compare("DIAGONAL", Qt::CaseInsensitive) == 0) {
+        if (tempStr.compare("DIAGONAL", Qt::CaseInsensitive) == 0)
+        {
             qDebug() << "✅ Found standalone DIAGONAL token";
             diagonalPresent = true;
             continue;
@@ -1244,7 +1279,8 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
         str = ts.readLine();
         str = str.simplified();
 
-        if (isComment(str)) {
+        if (isComment(str))
+        {
             continue;
         }
 
@@ -1327,7 +1363,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
             if ((pos = str.indexOf(":")) != -1)
             {
                 relation = str.right(str.size() - pos - 1);
-                relation = relation.simplified();
+                relation = normalizeQuotedIdentifier(relation);
                 relationsList << relation;
                 qDebug() << "added new relation" << relation
                          << "to relationsList - signaling to add new relation";
@@ -1365,7 +1401,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
             if ((pos = str.indexOf(":")) != -1)
             {
                 relation = str.right(str.size() - pos - 1);
-                relation = relation.simplified();
+                relation = normalizeQuotedIdentifier(relation);
                 relationsList << relation;
                 qDebug() << "added new relation" << relation
                          << "to relationsList - signaling to add new relation";
@@ -1848,7 +1884,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
  * NOTE: Parsing is aborted if any invalid data is encountered.
  *
  * Example of a supported adjacency matrix file with node labels:
- * 
+ *
  *```
  * # Alice, Bob, Charlie
  * 0, 1, 1
@@ -2284,7 +2320,7 @@ bool Parser::parseAsGraphML(const QByteArray &rawData)
     key_name = "";
     key_type = "";
     key_value = "";
-    initNodeCustomIcon="";
+    initNodeCustomIcon = "";
     initEdgeWeight = 1;
     edgeWeight = 1;
     edgeColor = "black";
@@ -2607,7 +2643,8 @@ void Parser::readGraphMLElementDefaultValue(QXmlStreamReader &xml)
     qDebug() << "Reading default key values - key default value is"
              << key_value;
 
-    if ( keyFor.value(key_id) == "node" ) {
+    if (keyFor.value(key_id) == "node")
+    {
         if (key_name == "size")
         {
             qDebug() << "key default value" << key_value << "is for node size";
@@ -2657,8 +2694,9 @@ void Parser::readGraphMLElementDefaultValue(QXmlStreamReader &xml)
                 initNodeLabelSize = 8;
         }
     }
-    else if ( keyFor.value(key_id) == "edge" ) {
-        if (key_name == "weight" )
+    else if (keyFor.value(key_id) == "edge")
+    {
+        if (key_name == "weight")
         {
             qDebug() << "key default value" << key_value << "is for edges weight";
             conv_OK = false;
@@ -2666,14 +2704,12 @@ void Parser::readGraphMLElementDefaultValue(QXmlStreamReader &xml)
             if (!conv_OK)
                 initEdgeWeight = 1;
         }
-        if (key_name == "color" )
+        if (key_name == "color")
         {
             qDebug() << "key default value" << key_value << "is for edges color";
             initEdgeColor = key_value;
         }
     }
-
-
 }
 
 /**
@@ -2912,7 +2948,8 @@ void Parser::readGraphMLElementData(QXmlStreamReader &xml)
             return;
         }
     }
-    if ( keyFor.value(key_id) == "node" ) {
+    if (keyFor.value(key_id) == "node")
+    {
 
         if (key_name == "color")
         {
@@ -2920,14 +2957,14 @@ void Parser::readGraphMLElementData(QXmlStreamReader &xml)
                      << key_value << " for this node";
             nodeColor = key_value;
         }
-        else if (key_name == "label" )
+        else if (key_name == "label")
         {
             qDebug() << "Data found. Node label: "
                         ""
                      << key_value << " for this node";
             nodeLabel = key_value;
         }
-        else if (key_name == "x_coordinate" )
+        else if (key_name == "x_coordinate")
         {
             qDebug() << "Data found. Node x: "
                      << key_value << " for this node";
@@ -2939,7 +2976,7 @@ void Parser::readGraphMLElementData(QXmlStreamReader &xml)
                 randX = randX * gwWidth;
             qDebug() << "Using: " << randX;
         }
-        else if (key_name == "y_coordinate" )
+        else if (key_name == "y_coordinate")
         {
             qDebug() << "Data found. Node y: "
                      << key_value << " for this node";
@@ -2951,7 +2988,7 @@ void Parser::readGraphMLElementData(QXmlStreamReader &xml)
                 randY = randY * gwHeight;
             qDebug() << "Using: " << randY;
         }
-        else if (key_name == "size" )
+        else if (key_name == "size")
         {
             qDebug() << "Data found. Node size: "
                      << key_value << " for this node";
@@ -2961,7 +2998,7 @@ void Parser::readGraphMLElementData(QXmlStreamReader &xml)
                 nodeSize = initNodeSize;
             qDebug() << "Using: " << nodeSize;
         }
-        else if (key_name == "label.size" )
+        else if (key_name == "label.size")
         {
             qDebug() << "Data found. Node label size: "
                      << key_value << " for this node";
@@ -2971,19 +3008,19 @@ void Parser::readGraphMLElementData(QXmlStreamReader &xml)
                 nodeLabelSize = initNodeLabelSize;
             qDebug() << "Using: " << nodeSize;
         }
-        else if (key_name == "label.color" )
+        else if (key_name == "label.color")
         {
             qDebug() << "Data found. Node label Color: "
                      << key_value << " for this node";
             nodeLabelColor = key_value;
         }
-        else if (key_name == "shape" )
+        else if (key_name == "shape")
         {
             qDebug() << "Data found. Node shape: "
                      << key_value << " for this node";
             nodeShape = key_value;
         }
-        else if (key_name == "custom-icon" )
+        else if (key_name == "custom-icon")
         {
             qDebug() << "Data found. Node custom-icon path: "
                      << key_value << " for this node";
@@ -2995,13 +3032,13 @@ void Parser::readGraphMLElementData(QXmlStreamReader &xml)
         else
         {
             qDebug() << "Data found for custom attribute: "
-                     << key_name  << " of this node. Data: " << key_value;
+                     << key_name << " of this node. Data: " << key_value;
             nodeCustomAttributes.insert(key_name, key_value);
-
         }
     }
-    else if ( keyFor.value(key_id) == "edge" ) {
-        if (key_name == "color" )
+    else if (keyFor.value(key_id) == "edge")
+    {
+        if (key_name == "color")
         {
             qDebug() << "Data found. Edge color: "
                      << key_value << " for this edge";
@@ -3012,7 +3049,7 @@ void Parser::readGraphMLElementData(QXmlStreamReader &xml)
                                              QString::number(edgeWeight) + "|" + edgeColor + "|" + QString::number(edgeDirType));
             }
         }
-        else if ((key_name == "value" || key_name == "weight") )
+        else if ((key_name == "value" || key_name == "weight"))
         {
             conv_OK = false;
             edgeWeight = key_value.toDouble(&conv_OK);
@@ -3026,7 +3063,7 @@ void Parser::readGraphMLElementData(QXmlStreamReader &xml)
             qDebug() << "Data found. Edge value: "
                      << key_value << " Using " << edgeWeight << " for this edge";
         }
-        else if (key_name == "size of arrow" )
+        else if (key_name == "size of arrow")
         {
             conv_OK = false;
             qreal temp = key_value.toFloat(&conv_OK);
@@ -3049,7 +3086,6 @@ void Parser::readGraphMLElementData(QXmlStreamReader &xml)
                      << edgeLabel << " for this edge";
         }
     }
-
 }
 
 /**
@@ -3743,7 +3779,7 @@ bool Parser::parseAsDot(const QByteArray &rawData)
         errorMessage = tr("Invalid GraphViz (dot) file. The file does not contain 'digraph' or 'graph'.");
         return false;
     }
-    
+
     // Apply preprocessing to handle single-line DOT files properly
     decodedData = preprocessDotContent(decodedData);
 
@@ -3751,7 +3787,7 @@ bool Parser::parseAsDot(const QByteArray &rawData)
 
     totalNodes = 0;
     totalLinks = 0;
-    
+
     while (!ts.atEnd())
     {
 
@@ -3786,7 +3822,7 @@ bool Parser::parseAsDot(const QByteArray &rawData)
                                   "First non-comment line includes keywords reserved by other file formats  (i.e vertices, graphml, network, DL, xml).");
                 return false;
             }
-            
+
             if (str.contains("digraph", Qt::CaseInsensitive))
             {
                 lineElement = str.split(" ");
@@ -3822,20 +3858,9 @@ bool Parser::parseAsDot(const QByteArray &rawData)
             Q_UNUSED(netProperties);
         }
         else if (
-            str.startsWith("label", Qt::CaseInsensitive) 
-            || str.startsWith("mincross", Qt::CaseInsensitive) 
-            || str.startsWith("ratio", Qt::CaseInsensitive) 
-            || str.startsWith("name", Qt::CaseInsensitive) 
-            || str.startsWith("type", Qt::CaseInsensitive) 
-            || str.startsWith("loops", Qt::CaseInsensitive) 
-            || str.startsWith("rankdir", Qt::CaseInsensitive) 
-            || str.startsWith("splines", Qt::CaseInsensitive) 
-            || str.startsWith("overlap", Qt::CaseInsensitive) 
-            || str.startsWith("nodesep", Qt::CaseInsensitive) 
-            || str.startsWith("ranksep", Qt::CaseInsensitive) 
-            || str.startsWith("size", Qt::CaseInsensitive) // Handle size attribute
+            str.startsWith("label", Qt::CaseInsensitive) || str.startsWith("mincross", Qt::CaseInsensitive) || str.startsWith("ratio", Qt::CaseInsensitive) || str.startsWith("name", Qt::CaseInsensitive) || str.startsWith("type", Qt::CaseInsensitive) || str.startsWith("loops", Qt::CaseInsensitive) || str.startsWith("rankdir", Qt::CaseInsensitive) || str.startsWith("splines", Qt::CaseInsensitive) || str.startsWith("overlap", Qt::CaseInsensitive) || str.startsWith("nodesep", Qt::CaseInsensitive) || str.startsWith("ranksep", Qt::CaseInsensitive) || str.startsWith("size", Qt::CaseInsensitive) // Handle size attribute
         )
-        { 
+        {
             qDebug() << "🔵 Detected global graph settings. Parsing...";
             next = str.indexOf('=', 1);
             qDebug("Found next = at %i. Start is at %i", next, 1);
@@ -3954,11 +3979,11 @@ bool Parser::parseAsDot(const QByteArray &rawData)
             }
         }
         else if (
-            !str.contains('[', Qt::CaseInsensitive) && 
-            !str.contains("node", Qt::CaseInsensitive) && 
-            !str.contains(']', Qt::CaseInsensitive) && 
-            !str.contains("--", Qt::CaseInsensitive) && 
-            !str.contains("->", Qt::CaseInsensitive) && 
+            !str.contains('[', Qt::CaseInsensitive) &&
+            !str.contains("node", Qt::CaseInsensitive) &&
+            !str.contains(']', Qt::CaseInsensitive) &&
+            !str.contains("--", Qt::CaseInsensitive) &&
+            !str.contains("->", Qt::CaseInsensitive) &&
             !str.contains("=", Qt::CaseInsensitive) && !netProperties)
         {
             qDebug() << "🔵 A node definition without properties must be here ..." << str;
@@ -4090,7 +4115,6 @@ bool Parser::parseAsDot(const QByteArray &rawData)
                                  << source << "->" << target << "totalLinks:" << totalLinks;
                         emit signalCreateEdge(source, target, edgeWeight, edgeColor,
                                               edgeDirType, arrows, bezier);
-                        
                     }
                 }
                 source = target;
@@ -4156,7 +4180,6 @@ bool Parser::parseAsDot(const QByteArray &rawData)
     return true;
 }
 
-
 /**
  * @brief Preprocesses the content of a DOT file to normalize its formatting, improve parsing and readability.
  *
@@ -4173,90 +4196,95 @@ bool Parser::parseAsDot(const QByteArray &rawData)
  * @param dotContent The original content of the DOT file as a QString.
  * @return A QString containing the preprocessed DOT content.
  */
-QString Parser::preprocessDotContent(const QString &dotContent) {
+QString Parser::preprocessDotContent(const QString &dotContent)
+{
     QString processedData = dotContent;
-    
+
     // Convert escaped newlines (&#92;n) into actual newlines
     processedData.replace("&#92;n", "\\n");
-    
+
     // Add newline after opening brace `{`
     processedData.replace(QRegularExpression("\\{\\s*"), "{\n  ");
-    
+
     // Add newline after each closing bracket `]` (but don't add semicolon if one already exists)
     // This effectively splits node definitions into separate lines and ensures they end with a semicolon
     processedData.replace(QRegularExpression("\\](\\s*)(?!;)"), "];\n  ");
     processedData.replace(QRegularExpression("\\];(\\s*)"), "];\n  ");
-    
+
     // Add newline after each semicolon `;`
     processedData.replace(";", ";\n  ");
-    
+
     // Add newline before closing brace `}`
     processedData.replace(QRegularExpression("\\s*\\}"), "\n}");
-    
+
     // Normalize brackets - add spaces around them for better parsing
     processedData.replace("[", " [ ");
     processedData.replace("]", " ] ");
-    
+
     // Ensure there is a semicolon `;` between consecutive node definitions
     processedData.replace(QRegularExpression("(\\]\\s*)(struct\\d+)"), "];\n  \\2");
-    
+
     // Add spaces around edge definitions
     processedData.replace("->", " -> ");
     processedData.replace("--", " -- ");
-    
+
     // Handle node and edge attribute blocks more carefully
     processedData.replace(QRegularExpression("\\bnode\\s*\\["), "\nnode [");
     processedData.replace(QRegularExpression("\\bedge\\s*\\["), "\nedge [");
-    
+
     // Handle cases where an edge attribute is written on a separate line
     QStringList lines = processedData.split('\n');
     QStringList processedLines;
     bool previousLineWasEdge = false;
     QString previousLine;
-    
-    for (const QString &line : lines) {
+
+    for (const QString &line : lines)
+    {
         QString currentLine = line.trimmed();
-        
-        if (currentLine.isEmpty()) {
+
+        if (currentLine.isEmpty())
+        {
             continue; // Skip empty lines
         }
-        
+
         // Check if this line contains only attributes (starts with '[' but not a node/edge definition)
-        if (currentLine.startsWith('[') && 
-            !currentLine.contains("->") && 
-            !currentLine.contains("--") && 
-            !currentLine.startsWith("node") && 
+        if (currentLine.startsWith('[') &&
+            !currentLine.contains("->") &&
+            !currentLine.contains("--") &&
+            !currentLine.startsWith("node") &&
             !currentLine.startsWith("edge") &&
-            previousLineWasEdge) {
-            
+            previousLineWasEdge)
+        {
+
             // Merge edge attributes with previous edge definition
             QString combinedLine = previousLine;
-            if (combinedLine.endsWith(';')) {
+            if (combinedLine.endsWith(';'))
+            {
                 combinedLine.chop(1);
             }
-            
+
             combinedLine += " " + currentLine;
-            
+
             // Replace the previous line with the combined line
             processedLines.removeLast();
             processedLines.append(combinedLine);
-            
+
             previousLineWasEdge = false;
-        } else {
+        }
+        else
+        {
             // Check if this is an edge definition line
             previousLineWasEdge = (currentLine.contains("->") || currentLine.contains("--"));
             previousLine = currentLine;
-            
+
             // Add the current line as-is
             processedLines.append(currentLine);
         }
     }
-    
+
     // Return the processed data
     return processedLines.join('\n');
 }
-
-
 
 /**
  * @brief Reads the properties of a dot element with improved handling of quoted values

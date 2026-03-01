@@ -119,6 +119,7 @@ public:
     void createRandomNodes(const int &fixedNum=1,const QString &label=QString(),
                            const int &newNodes=1);
 
+    static QString normalizeQuotedIdentifier(const QString &s);
 
 signals:
 
