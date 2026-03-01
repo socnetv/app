@@ -1,0 +1,5 @@
+# Directed, No weights, no attributes
+digraph TinyGraphviz_Dir_N3 {
+    1 -> 2;
+    2 -> 3;
+}

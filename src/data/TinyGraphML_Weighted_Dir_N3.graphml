@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns
+         http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+
+  <key id="d0" for="edge" attr.name="weight" attr.type="double"/>
+
+  <graph id="TinyGraphML_Weighted_Dir_N3" edgedefault="directed">
+    <node id="1"/>
+    <node id="2"/>
+    <node id="3"/>
+
+    <edge source="1" target="2">
+      <data key="d0">2.5</data>
+    </edge>
+    <edge source="2" target="3">
+      <data key="d0">1.5</data>
+    </edge>
+    <edge source="3" target="1">
+      <data key="d0">3.0</data>
+    </edge>
+  </graph>
+</graphml>
