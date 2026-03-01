@@ -3355,16 +3355,267 @@ void Parser::createMissingNodeEdges()
 /**
  * @brief Parses the data as GML formatted network.
  *
- * @param rawData
- * @return bool
+ * This parser is line/state based. Many GML files are "compact" and place
+ * multiple attributes on the same line, e.g.:
+ *
+ *   node [ id 1 label "1" ]
+ *
+ * while others use the expanded form:
+ *
+ *   node [
+ *     id 1
+ *     label "1"
+ *   ]
+ *
+ * To support both forms, we preprocess the decoded input into a normalized
+ * stream where:
+ *   - '[' and ']' become standalone lines (outside quoted strings)
+ *   - each attribute becomes its own "key value" line (outside quoted strings),
+ *     e.g. 'id 1 label "1"' -> 'id 1' + 'label "1"'
+ *
+ * We then run the existing state machine unchanged (but now it receives
+ * one attribute per line).
+ *
+ * Also accepts both "weight" and "value" as edge weight keys.
+ *
+ * @param rawData Raw file bytes.
+ * @return bool True on success, false on parse error.
  */
 bool Parser::parseAsGML(const QByteArray &rawData)
 {
-
     qDebug() << "Parsing data as GML formatted...";
 
     QTextCodec *codec = QTextCodec::codecForName(m_textCodecName.toLatin1());
     QString decodedData = codec->toUnicode(rawData);
+
+    /**
+     * @brief Returns true if ch is whitespace (space/tab/etc).
+     */
+    auto isWS = [](QChar ch) -> bool
+    {
+        return ch.isSpace();
+    };
+
+    /**
+     * @brief Tokenizes a line into tokens while respecting quoted strings.
+     *
+     * Example:
+     *   id 1 label "John Doe"
+     * becomes tokens:
+     *   ["id","1","label","\"John Doe\""]
+     *
+     * Quotes are preserved as part of the token.
+     */
+    auto tokenizeRespectQuotes = [&](const QString &line) -> QStringList
+    {
+        QStringList tokens;
+        QString cur;
+        bool inQuotes = false;
+
+        auto flush = [&]()
+        {
+            const QString t = cur.trimmed();
+            if (!t.isEmpty())
+                tokens << t;
+            cur.clear();
+        };
+
+        for (int i = 0; i < line.size(); ++i)
+        {
+            const QChar ch = line.at(i);
+
+            if (ch == '"')
+            {
+                inQuotes = !inQuotes;
+                cur.append(ch);
+                continue;
+            }
+
+            if (!inQuotes && isWS(ch))
+            {
+                flush();
+                continue;
+            }
+
+            cur.append(ch);
+        }
+        flush();
+        return tokens;
+    };
+
+    /**
+     * @brief Normalizes GML text for a line-based parser.
+     *
+     * 1) Makes '[' and ']' standalone lines (outside quoted strings).
+     * 2) Splits compact attribute runs into "key value" lines using a known-key set.
+     *
+     * This is intentionally conservative: we only split on keys we know how
+     * to parse. Unknown tokens are left as-is.
+     */
+    auto normalizeGmlForLineParser = [&](const QString &in) -> QString
+    {
+        // Keys we want to split into separate "key value" lines.
+        const QSet<QString> keys = {
+            "directed", "isplanar",
+            "id", "label",
+            "source", "target",
+            "weight", "value",
+            "graphics", "center", "type", "fill",
+            "graph", "node", "edge"};
+
+        QString out;
+        out.reserve(in.size() + 256);
+
+        // Step 1: split brackets into their own lines (outside quotes).
+        {
+            bool inQuotes = false;
+            for (int i = 0; i < in.size(); ++i)
+            {
+                const QChar ch = in.at(i);
+
+                if (ch == '"')
+                {
+                    inQuotes = !inQuotes;
+                    out.append(ch);
+                    continue;
+                }
+
+                if (!inQuotes && (ch == '[' || ch == ']'))
+                {
+                    out.append('\n');
+                    out.append(ch);
+                    out.append('\n');
+                    continue;
+                }
+
+                out.append(ch);
+            }
+        }
+
+        // Step 2: for each line, split "id 1 label "1"" into "id 1" + "label "1"" etc.
+        QString normalized;
+        normalized.reserve(out.size() + 256);
+
+        QTextStream ts(&out);
+        while (!ts.atEnd())
+        {
+            QString line = ts.readLine().trimmed();
+            if (line.isEmpty())
+            {
+                normalized.append('\n');
+                continue;
+            }
+
+            // Keep standalone bracket/section lines intact.
+            if (line == "[" || line == "]")
+            {
+                normalized.append(line);
+                normalized.append('\n');
+                continue;
+            }
+
+            // Tokenize with quote awareness.
+            const QStringList toks = tokenizeRespectQuotes(line);
+            if (toks.size() <= 2)
+            {
+                // already "key value" or single keyword
+                normalized.append(line);
+                normalized.append('\n');
+                continue;
+            }
+
+            // If the line is a known section keyword (graph/node/edge/graphics), keep it alone.
+            const QString firstLower = toks.first().toLower();
+            if (firstLower == "graph" || firstLower == "node" || firstLower == "edge" || firstLower == "graphics")
+            {
+                normalized.append(toks.first());
+                normalized.append('\n');
+
+                // Remaining tokens may contain attributes on same line: split them.
+                int i = 1;
+                while (i < toks.size())
+                {
+                    const QString k = toks.at(i);
+                    const QString kLower = k.toLower();
+
+                    if (!keys.contains(kLower))
+                    {
+                        // Unknown token: keep as raw remainder and stop splitting.
+                        QString rest;
+                        for (int j = i; j < toks.size(); ++j)
+                        {
+                            if (!rest.isEmpty())
+                                rest += " ";
+                            rest += toks.at(j);
+                        }
+                        normalized.append(rest);
+                        normalized.append('\n');
+                        break;
+                    }
+
+                    // We expect "key value" pairs for attributes.
+                    if (i + 1 < toks.size())
+                    {
+                        normalized.append(k);
+                        normalized.append(' ');
+                        normalized.append(toks.at(i + 1));
+                        normalized.append('\n');
+                        i += 2;
+                    }
+                    else
+                    {
+                        // Dangling key with no value: keep as-is.
+                        normalized.append(k);
+                        normalized.append('\n');
+                        break;
+                    }
+                }
+                continue;
+            }
+
+            // Otherwise interpret as a sequence of key/value pairs: k v k v ...
+            int i = 0;
+            while (i < toks.size())
+            {
+                const QString k = toks.at(i);
+                const QString kLower = k.toLower();
+
+                if (!keys.contains(kLower))
+                {
+                    // Unknown token: keep remainder on one line.
+                    QString rest;
+                    for (int j = i; j < toks.size(); ++j)
+                    {
+                        if (!rest.isEmpty())
+                            rest += " ";
+                        rest += toks.at(j);
+                    }
+                    normalized.append(rest);
+                    normalized.append('\n');
+                    break;
+                }
+
+                if (i + 1 < toks.size())
+                {
+                    normalized.append(k);
+                    normalized.append(' ');
+                    normalized.append(toks.at(i + 1));
+                    normalized.append('\n');
+                    i += 2;
+                }
+                else
+                {
+                    normalized.append(k);
+                    normalized.append('\n');
+                    break;
+                }
+            }
+        }
+
+        return normalized;
+    };
+
+    decodedData = normalizeGmlForLineParser(decodedData);
     QTextStream ts(&decodedData);
 
     QRegularExpression onlyDigitsExp("^\\d+$");
@@ -3386,18 +3637,15 @@ bool Parser::parseAsGML(const QByteArray &rawData)
 
     while (!ts.atEnd())
     {
-
         floatOK = false;
         fileContainsNodeCoords = false;
         nodeShape = initNodeShape;
         nodeColor = initNodeColor;
 
         fileLine++;
-
         str = ts.readLine().simplified();
 
-        qDebug() << "line" << fileLine << ":"
-                 << str;
+        qDebug() << "line" << fileLine << ":" << str;
 
         if (isComment(str))
             continue;
@@ -3405,35 +3653,38 @@ bool Parser::parseAsGML(const QByteArray &rawData)
         actualLineNumber++;
 
         if (actualLineNumber == 1 &&
-            (str.contains("vertices", Qt::CaseInsensitive) || str.contains("network", Qt::CaseInsensitive) || str.contains("digraph", Qt::CaseInsensitive) || str.contains("DL n", Qt::CaseInsensitive) || str == "DL" || str == "dl" || str.contains("list", Qt::CaseInsensitive) || str.contains("graphml", Qt::CaseInsensitive) || str.contains("xml", Qt::CaseInsensitive)))
+            (str.contains("vertices", Qt::CaseInsensitive) ||
+             str.contains("network", Qt::CaseInsensitive) ||
+             str.contains("digraph", Qt::CaseInsensitive) ||
+             str.contains("DL n", Qt::CaseInsensitive) ||
+             str == "DL" || str == "dl" ||
+             str.contains("list", Qt::CaseInsensitive) ||
+             str.contains("graphml", Qt::CaseInsensitive) ||
+             str.contains("xml", Qt::CaseInsensitive)))
         {
             qDebug() << "*** Not a GML-formatted file. Aborting!!";
             errorMessage = tr("Not an GML-formatted file. "
-                              "Non-comment line %1 includes keywords reserved by other file formats  (i.e vertices, graphml, network, digraph, DL, xml)")
+                              "Non-comment line %1 includes keywords reserved by other file formats  "
+                              "(i.e vertices, graphml, network, digraph, DL, xml)")
                                .arg(fileLine);
-
             return false;
         }
 
         if (str.startsWith("comment", Qt::CaseInsensitive))
-        {
-            qDebug() << "This is a comment. Continue.";
             continue;
-        }
+
         if (str.startsWith("creator", Qt::CaseInsensitive))
-        {
-            qDebug() << "This is a creator description. Continue.";
             continue;
-        }
-        else if (str.startsWith("graph", Qt::CaseInsensitive))
+
+        if (str.startsWith("graph", Qt::CaseInsensitive))
         {
-            // describe a graph
             qDebug() << "graph description list start";
             graphKey = true;
+            continue;
         }
-        else if (str.startsWith("directed", Qt::CaseInsensitive))
+
+        if (str.startsWith("directed", Qt::CaseInsensitive))
         {
-            // graph attribute declarations
             if (graphKey)
             {
                 if (str.contains("1"))
@@ -3446,33 +3697,25 @@ bool Parser::parseAsGML(const QByteArray &rawData)
                     qDebug() << "graph directed 0. An undirected graph.";
                 }
             }
-        }
-        else if (str.startsWith("isPlanar", Qt::CaseInsensitive))
-        {
-            // key declarations
-            if (graphKey)
-            {
-                if (str.contains("1"))
-                {
-                    qDebug() << "graph isPlanar 1. Planar graph.";
-                    isPlanar = true;
-                }
-                else
-                {
-                    isPlanar = false;
-                }
-            }
+            continue;
         }
 
-        else if (str.startsWith("node", Qt::CaseInsensitive))
+        if (str.startsWith("isPlanar", Qt::CaseInsensitive))
         {
-            // node declarations
+            if (graphKey)
+                isPlanar = str.contains("1");
+            continue;
+        }
+
+        if (str.startsWith("node", Qt::CaseInsensitive))
+        {
             qDebug() << "node description list starts";
             nodeKey = true;
+            continue;
         }
-        else if (str.startsWith("id", Qt::CaseInsensitive))
+
+        if (str.startsWith("id", Qt::CaseInsensitive))
         {
-            // describes identification number for an object
             if (nodeKey)
             {
                 totalNodes++;
@@ -3488,11 +3731,11 @@ bool Parser::parseAsGML(const QByteArray &rawData)
                          << "This node" << totalNodes
                          << "id" << node_id;
             }
+            continue;
         }
 
-        else if (str.startsWith("label ", Qt::CaseInsensitive))
+        if (str.startsWith("label ", Qt::CaseInsensitive))
         {
-            // describes label
             if (nodeKey)
             {
                 nodeLabel = str.split(" ", Qt::SkipEmptyParts).last().remove("\"");
@@ -3500,8 +3743,6 @@ bool Parser::parseAsGML(const QByteArray &rawData)
                          << "node" << totalNodes
                          << "id" << node_id
                          << "label" << nodeLabel;
-
-                // FIXME REMOVE ANY "
             }
             else if (edgeKey)
             {
@@ -3510,25 +3751,25 @@ bool Parser::parseAsGML(const QByteArray &rawData)
                          << "edge" << totalLinks
                          << "label" << edgeLabel;
             }
+            continue;
         }
 
-        else if (str.startsWith("edge ", Qt::CaseInsensitive))
+        if (str.startsWith("edge ", Qt::CaseInsensitive) || str == "edge")
         {
-            // edge declarations
             qDebug() << "edge description list start";
             edgeKey = true;
             totalLinks++;
-            // Reset edge attributes
-            edgeWeight = 1.0; // Default weight
+            edgeWeight = 1.0;
             edgeColor = "black";
             edgeLabel.clear();
+            continue;
         }
-        else if (str.startsWith("source ", Qt::CaseInsensitive))
+
+        if (str.startsWith("source ", Qt::CaseInsensitive))
         {
             if (edgeKey)
             {
                 edge_source = str.split(" ", Qt::SkipEmptyParts).last();
-                // if edge_source
                 if (!edge_source.contains(onlyDigitsExp))
                 {
                     errorMessage = tr("Not a proper GML-formatted file. "
@@ -3536,17 +3777,21 @@ bool Parser::parseAsGML(const QByteArray &rawData)
                                        .arg(fileLine);
                     return false;
                 }
-                source = edge_source.toInt(0);
+                source = edge_source.toInt(nullptr, 10);
                 qDebug() << "edge source definition"
                          << "edge source" << edge_source;
             }
+            continue;
         }
-        else if (str.startsWith("target ", Qt::CaseInsensitive))
+
+        if (str.startsWith("target ", Qt::CaseInsensitive))
         {
             if (edgeKey)
             {
                 edge_target = str.split(" ", Qt::SkipEmptyParts).last();
-                if (!edge_source.contains(onlyDigitsExp))
+
+                // BUGFIX: validate edge_target, not edge_source
+                if (!edge_target.contains(onlyDigitsExp))
                 {
                     errorMessage = tr("Not a proper GML-formatted file. "
                                       "Edge target tag at line %1 has non-arithmetic value.")
@@ -3554,13 +3799,15 @@ bool Parser::parseAsGML(const QByteArray &rawData)
                     return false;
                 }
 
-                target = edge_target.toInt(0);
+                target = edge_target.toInt(nullptr, 10);
                 qDebug() << "edge target definition"
                          << "edge target" << edge_target;
             }
+            continue;
         }
 
-        else if (str.startsWith("weight ", Qt::CaseInsensitive))
+        if (str.startsWith("weight ", Qt::CaseInsensitive) ||
+            str.startsWith("value ", Qt::CaseInsensitive))
         {
             if (edgeKey)
             {
@@ -3575,26 +3822,19 @@ bool Parser::parseAsGML(const QByteArray &rawData)
                 qDebug() << "edge weight definition"
                          << "edge weight" << edgeWeight;
             }
+            continue;
         }
 
-        else if (str.startsWith("graphics", Qt::CaseInsensitive))
+        if (str.startsWith("graphics", Qt::CaseInsensitive))
         {
-            // Describes graphics which are used to draw a particular object.
-            if (nodeKey)
-            {
-                qDebug() << "node graphics description list start";
-            }
-            else if (edgeKey)
-            {
-                qDebug() << "edge graphics description list start";
-            }
             graphicsKey = true;
+            continue;
         }
-        else if (str.startsWith("center", Qt::CaseInsensitive))
+
+        if (str.startsWith("center", Qt::CaseInsensitive))
         {
             if (graphicsKey && nodeKey)
             {
-                qDebug() << "node graphics center start";
                 if (str.contains("[", Qt::CaseInsensitive))
                 {
                     if (str.contains("]", Qt::CaseInsensitive) &&
@@ -3622,9 +3862,6 @@ bool Parser::parseAsGML(const QByteArray &rawData)
                                                .arg(fileLine);
                             return false;
                         }
-                        qDebug() << "node graphics center"
-                                 << "x" << randX
-                                 << "y" << randY;
                         fileContainsNodeCoords = true;
                     }
                     else
@@ -3633,17 +3870,13 @@ bool Parser::parseAsGML(const QByteArray &rawData)
                     }
                 }
             }
+            continue;
         }
-        else if (str.startsWith("center", Qt::CaseInsensitive) &&
-                 nodeKey && graphicsKey && graphicsCenterKey)
-        {
-            // this is the case where the bracker [ is below the center tag
-        }
-        else if (str.startsWith("type", Qt::CaseInsensitive))
+
+        if (str.startsWith("type", Qt::CaseInsensitive))
         {
             if (graphicsKey && nodeKey)
             {
-                qDebug() << "node graphics type start";
                 nodeShape = str.split(" ", Qt::SkipEmptyParts).last();
                 if (nodeShape.isNull() || nodeShape.isEmpty())
                 {
@@ -3654,12 +3887,13 @@ bool Parser::parseAsGML(const QByteArray &rawData)
                 }
                 nodeShape.remove("\"");
             }
+            continue;
         }
-        else if (str.startsWith("fill", Qt::CaseInsensitive))
+
+        if (str.startsWith("fill", Qt::CaseInsensitive))
         {
             if (graphicsKey && nodeKey)
             {
-                qDebug() << "node graphics fill start";
                 nodeColor = str.split(" ", Qt::SkipEmptyParts).last();
                 if (nodeColor.isNull() || nodeColor.isEmpty())
                 {
@@ -3669,63 +3903,61 @@ bool Parser::parseAsGML(const QByteArray &rawData)
                     return false;
                 }
             }
+            continue;
         }
-        else if (str.startsWith("]", Qt::CaseInsensitive))
+
+        if (str.startsWith("]", Qt::CaseInsensitive))
         {
             if (nodeKey && graphicsKey && graphicsCenterKey)
             {
-                qDebug() << "node graphics center ends";
                 graphicsCenterKey = false;
+                continue;
             }
             else if (graphicsKey)
             {
-                qDebug() << "graphics list ends";
                 graphicsKey = false;
+                continue;
             }
             else if (nodeKey && !graphicsKey)
             {
-                qDebug() << "node description list ends";
                 nodeKey = false;
                 if (!fileContainsNodeCoords)
                 {
                     randX = rand() % gwWidth;
                     randY = rand() % gwHeight;
                 }
-                qDebug() << " *** Signaling to create new node " << node_id
-                         << " at " << randX << "," << randY
-                         << " label " << nodeLabel;
+
                 emit signalCreateNode(
-                    node_id.toInt(0), initNodeSize, nodeColor,
+                    node_id.toInt(nullptr, 10),
+                    initNodeSize, nodeColor,
                     initNodeNumberColor, initNodeNumberSize,
                     nodeLabel, initNodeLabelColor, initNodeLabelSize,
                     QPointF(randX, randY),
                     nodeShape, QString());
+
+                continue;
             }
             else if (edgeKey && !graphicsKey)
             {
-                qDebug() << "edge description list ends. signaling to create new edge.";
                 edgeKey = false;
 
                 if (edgeLabel == QString())
-                {
                     edgeLabel = edge_source + "->" + edge_target;
-                }
+
                 emit signalCreateEdge(source, target, edgeWeight, edgeColor,
                                       edgeDirType, arrows, bezier, edgeLabel);
+                continue;
             }
-
             else if (graphKey)
             {
-                qDebug() << "graph description list ends";
                 graphKey = false;
+                continue;
             }
         }
     }
 
     if (relationsList.size() == 0)
-    {
         emit signalAddNewRelation("unnamed");
-    }
 
     qDebug() << "Finished OK. Returning.";
     return true;
