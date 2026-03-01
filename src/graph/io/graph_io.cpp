@@ -286,7 +286,6 @@ bool Graph::saveToPajekFormat(const QString &fileName,
                               QString networkName,
                               int maxWidth, int maxHeight)
 {
-
     qDebug() << "Saving graph to Pajek-formatted file:" << fileName;
 
     qreal weight = 0;
@@ -294,9 +293,9 @@ bool Graph::saveToPajekFormat(const QString &fileName,
     QString fileNameNoPath = fileInfo.fileName();
 
     networkName = (networkName == "") ? getName().toHtmlEscaped() : networkName;
-    networkName = (networkName == "unnamed") ? fileNameNoPath.toHtmlEscaped().left(fileNameNoPath.lastIndexOf('.')) : networkName;
-
-    qDebug() << "networkName:" << networkName;
+    networkName = (networkName == "unnamed")
+        ? fileNameNoPath.toHtmlEscaped().left(fileNameNoPath.lastIndexOf('.'))
+        : networkName;
 
     maxWidth = (maxWidth == 0) ? canvasWidth : maxWidth;
     maxHeight = (maxHeight == 0) ? canvasHeight : maxHeight;
@@ -308,67 +307,129 @@ bool Graph::saveToPajekFormat(const QString &fileName,
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
+
+
+    auto pajekSafeRelationName = [](QString s) -> QString
+    {
+        s = s.trimmed();
+        // If already wrapped in quotes, strip them.
+        if (s.size() >= 2 && s.startsWith('"') && s.endsWith('"'))
+        {
+            s = s.mid(1, s.size() - 2);
+        }
+        // Avoid emitting raw quotes inside.
+        s.replace("\"", "'");
+        return s;
+    };
+
     QTextStream t(&f);
+    // Keep numeric output stable-ish across locales.
+    t.setLocale(QLocale::c());
+    t.setRealNumberNotation(QTextStream::SmartNotation);
+    t.setRealNumberPrecision(12);
 
     t << "*Network " << networkName << "\n";
 
+    // ---- Vertices (once) ----
     t << "*Vertices " << vertices() << "\n";
-    VList::const_iterator it;
-    VList::const_iterator jt;
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    for (VList::const_iterator it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-        qDebug() << " Name x " << (*it)->number();
         t << (*it)->number() << " " << "\"" << (*it)->label() << "\"";
-        t << " ic ";
-        t << (*it)->colorToPajek();
-        qDebug() << " Coordinates x " << (*it)->x() << " " << maxWidth << " y " << (*it)->y() << " " << maxHeight;
+        t << " ic " << (*it)->colorToPajek();
         t << "\t\t" << (*it)->x() / (maxWidth) << " \t" << (*it)->y() / (maxHeight);
         t << "\t" << (*it)->shape();
         t << "\n";
     }
 
-    t << "*Arcs \n";
-    qDebug() << "Graph::saveToPajekFormat: Arcs";
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    // ---- Relations ----
+    const int relCount = relations();
+    const int originalRel = relationCurrent();
+
+    // Multirelational: write Pajek *Matrix blocks per relation (like Padgett, etc.)
+    if (relCount > 1)
     {
-        for (jt = m_graph.begin(); jt != m_graph.end(); jt++)
+        for (int r = 0; r < relCount; ++r)
         {
-            qDebug() << "Graph::saveToPajekFormat:  it=" << (*it)->number() << ", jt=" << (*jt)->number();
-            if ((weight = edgeExists((*it)->number(), (*jt)->number())) != 0 && (edgeExists((*jt)->number(), (*it)->number())) != weight)
+            relationSet(r, false /*updateUI*/);
+
+            const QString relName = pajekSafeRelationName(relationCurrentName());
+
+            // Follow the shipped dataset convention:
+            // *Matrix k: "RelationName"
+            t << "*Matrix " << (r + 1) << ": " << "\"" << relName << "\"" << "\n";
+
+            // Emit N x N matrix
+            for (VList::const_iterator it = m_graph.cbegin(); it != m_graph.cend(); ++it)
             {
-                qDebug() << "Graph::saveToPajekFormat  weight " << weight
-                         << " color " << (*it)->outLinkColor((*jt)->number());
-                t << (*it)->number() << " " << (*jt)->number() << " " << weight;
-                // FIXME bug in outLinkColor() when we remove then add many nodes from the end
-                t << " c " << (*it)->outLinkColor((*jt)->number());
+                const int i = (*it)->number();
+
+                bool first = true;
+                for (VList::const_iterator jt = m_graph.cbegin(); jt != m_graph.cend(); ++jt)
+                {
+                    const int j = (*jt)->number();
+
+                    if (isDirected())
+                        weight = edgeExists(i, j);          // directed lookup
+                    else
+                        weight = edgeExists(i, j, true);    // undirected lookup
+
+                    // Pajek expects space-separated row entries
+                    if (!first) t << " ";
+                    first = false;
+
+                    // Print 0 for no edge. Otherwise print numeric weight.
+                    // (Unweighted relations usually store 1.)
+                    if (weight == 0)
+                        t << "0";
+                    else
+                        t << weight;
+                }
                 t << "\n";
+            }
+        }
+    }
+    else
+    {
+        // Single relation: keep existing arcs/edges output to minimize behavior change.
+        t << "*Arcs \n";
+        for (VList::const_iterator it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+        {
+            for (VList::const_iterator jt = m_graph.begin(); jt != m_graph.end(); jt++)
+            {
+                if ((weight = edgeExists((*it)->number(), (*jt)->number())) != 0 &&
+                    (edgeExists((*jt)->number(), (*it)->number())) != weight)
+                {
+                    t << (*it)->number() << " " << (*jt)->number() << " " << weight;
+                    t << " c " << (*it)->outLinkColor((*jt)->number());
+                    t << "\n";
+                }
+            }
+        }
+
+        t << "*Edges \n";
+        for (VList::const_iterator it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+        {
+            for (VList::const_iterator jt = m_graph.begin(); jt != m_graph.end(); jt++)
+            {
+                if ((weight = edgeExists((*it)->number(), (*jt)->number(), true)) != 0)
+                {
+                    if ((*it)->number() > (*jt)->number())
+                        continue;
+                    t << (*it)->number() << " " << (*jt)->number() << " " << weight;
+                    t << " c " << (*it)->outLinkColor((*jt)->number());
+                    t << "\n";
+                }
             }
         }
     }
 
-    t << "*Edges \n";
-    qDebug() << "Graph::saveToPajekFormat: Edges";
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-        for (jt = m_graph.begin(); jt != m_graph.end(); jt++)
-        {
-            qDebug() << "Graph::saveToPajekFormat:  it=" << (*it)->number() << ", jt=" << (*jt)->number();
-            if ((weight = edgeExists((*it)->number(), (*jt)->number(), true)) != 0)
-            {
-                if ((*it)->number() > (*jt)->number())
-                    continue;
-                t << (*it)->number() << " " << (*jt)->number() << " " << weight;
-                t << " c " << (*it)->outLinkColor((*jt)->number());
-                t << "\n";
-            }
-        }
-    }
+    // Restore original relation (important if caller expects it)
+    if (originalRel >= 0 && originalRel < relCount)
+        relationSet(originalRel, false);
+
     f.close();
 
-    // Store the filename
     setFileName(fileName);
-
-    // Store the file format
     setFileFormat(FileType::PAJEK);
 
     progressStatus(tr("File %1 saved").arg(fileNameNoPath));
