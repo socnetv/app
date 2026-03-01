@@ -144,6 +144,7 @@ int main(int argc, char *argv[])
     const int links_sna = g.isDirected() ? ties_graph : (2 * ties_graph);
 
     cli::printKV("DIRECTED", g.isDirected() ? 1 : 0);
+    cli::printKV("SYMMETRIC", g.isSymmetric() ? 1 : 0);
     cli::printKV("WEIGHTED", g.isWeighted() ? 1 : 0);
     cli::printKV("RELATIONS", g.relations());
     cli::printKV("TIES_GRAPH", ties_graph);
