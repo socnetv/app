@@ -1,0 +1,108 @@
+{
+    "counts": {
+        "links_sna": 8,
+        "nodes": 3,
+        "ties_graph": 4
+    },
+    "dataset": {
+        "filetype": 4,
+        "name": "TinyGraphviz_Undir_N3.dot",
+        "path": "src/data/TinyGraphviz_Undir_N3.dot"
+    },
+    "graph": {
+        "directed": false,
+        "relations": 1,
+        "weighted": false
+    },
+    "kernel": "io_roundtrip",
+    "load_report": {
+        "fileType_signal": 4,
+        "load_ms": 2,
+        "load_msg": "",
+        "net_name": "TinyGraphviz_Undir_N3",
+        "ok": true
+    },
+    "metrics": {
+        "density": "1.3333333333333333"
+    },
+    "relations_bundle": [
+        {
+            "index": 0,
+            "name": "TinyGraphviz_Undir_N3",
+            "signature": {
+                "edge_list": [
+                    {
+                        "u": 1,
+                        "v": 2,
+                        "w": "0"
+                    },
+                    {
+                        "u": 2,
+                        "v": 3,
+                        "w": "0"
+                    }
+                ],
+                "hash_sha256": "1e07656785a919cd85e1fac8aa9826513bda5a9ef8dc319a6700e106ced0b012",
+                "node_custom_attributes": [
+                    {
+                    },
+                    {
+                    },
+                    {
+                    }
+                ],
+                "node_labels": [
+                    "1",
+                    "2",
+                    "3"
+                ]
+            },
+            "ties_graph": 4
+        }
+    ],
+    "roundtrip_result": {
+        "equivalent": true,
+        "performed": false
+    },
+    "run": {
+        "considerWeights": false,
+        "dropIsolates": false,
+        "inverseWeights": true,
+        "operation": "io_roundtrip_same_format"
+    },
+    "schema_version": 5,
+    "signature": {
+        "edge_list": [
+            {
+                "u": 1,
+                "v": 2,
+                "w": "0"
+            },
+            {
+                "u": 2,
+                "v": 3,
+                "w": "0"
+            }
+        ],
+        "hash_sha256": "1e07656785a919cd85e1fac8aa9826513bda5a9ef8dc319a6700e106ced0b012",
+        "node_custom_attributes": [
+            {
+            },
+            {
+            },
+            {
+            }
+        ],
+        "node_labels": [
+            "1",
+            "2",
+            "3"
+        ]
+    },
+    "timings": {
+        "load_ms": 2,
+        "reload_ms": 0,
+        "save_ms": 0,
+        "total_ms": 0
+    }
+}
