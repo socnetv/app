@@ -1,0 +1,5 @@
+digraph TinyGraphviz_Weighted_Dir_N3 {
+    1 -> 2 [weight=2.5];
+    2 -> 3 [weight=1.5];
+    3 -> 1 [weight=3.0];
+}
