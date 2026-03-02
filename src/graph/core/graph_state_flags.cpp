@@ -192,27 +192,19 @@ void Graph::setSymmetric()
  */
 void Graph::setDirected(const bool &toggle, const bool &signalMW)
 {
-
     qDebug() << "Graph::setDirected - Setting graph directed to:" << toggle;
-
     if (!toggle)
     {
-        setUndirected(true);
+        setUndirected(true, signalMW);
+        return;
     }
-
     if (toggle == isDirected())
     {
-        qDebug() << "Graph::setDirected -  Same as now, nothing to do. Return";
+        qDebug() << "Graph::setDirected - Same as now, nothing to do.";
         return;
     }
-
     m_graphIsDirected = true;
-
-    if (m_graphIsDirected)
-    {
-        setModStatus(ModStatus::EdgeCount, signalMW);
-        return;
-    }
+    setModStatus(ModStatus::EdgeCount, signalMW);
 }
 
 /**
