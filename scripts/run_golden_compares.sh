@@ -26,7 +26,7 @@ run_case() {
   local input="$1"
   local ftype="$2"
   local flags=("${@:3:${#}-3}")   # all but last arg
-  local baseline="${@: -1}"       # last arg
+  local baseline="${!#}"       # last arg
 
   echo "==> $(basename "$baseline")"
   if ! "$CLI" -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
@@ -39,7 +39,7 @@ run_case_reachability() {
   local input="$1"
   local ftype="$2"
   local flags=("${@:3:${#}-3}")
-  local baseline="${@: -1}"
+  local baseline="${!#}"
 
   echo "==> $(basename "$baseline")"
   if ! "$CLI" --kernel reachability -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
@@ -53,7 +53,7 @@ run_case_walks() {
   local ftype="$2"
   local walks_len="$3"
   local flags=("${@:4:${#}-4}")
-  local baseline="${@: -1}"
+  local baseline="${!#}"
 
   echo "==> $(basename "$baseline")"
   if ! "$CLI" --kernel walks_matrix --walks-length "$walks_len" -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
@@ -66,7 +66,7 @@ run_case_prominence() {
   local input="$1"
   local ftype="$2"
   local flags=("${@:3:${#}-3}")
-  local baseline="${@: -1}"
+  local baseline="${!#}"
 
   echo "==> $(basename "$baseline")"
   if ! "$CLI" --kernel prominence -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
@@ -78,11 +78,17 @@ run_case_prominence() {
 run_case_io() {
   local input="$1"
   local ftype="$2"
-  local flags=("${@:3:${#}-3}")
-  local baseline="${@: -1}"
+  shift 2
+
+  local baseline="${!#}"
+  local flags=()
+  if (( $# > 1 )); then
+    flags=("${@:1:$#-1}")
+  fi
 
   echo "==> $(basename "$baseline")"
-  if ! "$CLI" --kernel io_roundtrip -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
+  if ! "$CLI" --kernel io_roundtrip -i "$input" -f "$ftype" \
+       ${flags[@]+"${flags[@]}"} --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
   fi
