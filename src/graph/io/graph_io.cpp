@@ -185,11 +185,10 @@ void Graph::graphFileLoaded(const int &fileType,
     setModStatus(ModStatus::SavedUnchanged);
 
     qDebug() << "graphFileLoaded: after setDirected/setUndirected:"
-         << "isDirected" << isDirected()
-         << "isUndirected" << isUndirected()
-         << "m_totalEdges" << m_totalEdges
-         << "calculatedEdges" << calculatedEdges;
-
+             << "isDirected" << isDirected()
+             << "isUndirected" << isUndirected()
+             << "m_totalEdges" << m_totalEdges
+             << "calculatedEdges" << calculatedEdges;
 
     // Do not trust totalLinks from the parser.
     //
@@ -279,20 +278,44 @@ void Graph::saveToFile(const QString &fileName,
 }
 
 /**
- * @brief Saves the active graph to a Pajek-formatted file
+ * @brief Save the current graph to a Pajek (.paj) file.
  *
- * Preserves node properties (positions, colours, etc)
+ * Writes:
+ *  - `*Network <name>`
+ *  - `*Vertices N` with labels, colors, positions, and shapes (as available)
+ *  - Edges either as:
+ *      - single-relation: `*Arcs` + `*Edges` sections (legacy behavior), or
+ *      - multi-relation: one `*Matrix` block per relation.
  *
- * @param fileName
- * @param networkName
- * @param maxWidth
- * @param maxHeight
+ * Relation header export (multi-relation):
+ *  - Canonical matrix header syntax:
+ *      - `*Matrix :k`
+ *      - `*Matrix :k "Label"`
+ *  - If the relation label is empty/unlabeled, no quotes are emitted.
+ *  - Labels are normalized to avoid polluted forms like `9 'star'`:
+ *      - strips wrapping quotes
+ *      - strips a leading index token (e.g. `9`, `9:`)
+ *      - escapes internal quotes per Pajek convention (`"` -> `""`)
  *
- * @return bool
+ * Notes:
+ *  - Numeric output is written using the C locale for stable decimal formatting.
+ *  - `maxWidth`/`maxHeight` are used to scale vertex coordinates to Pajek's
+ *    normalized coordinate space. If 0, current canvas dimensions are used.
+ *  - The active relation is restored before returning.
+ *  - On success, updates the graph’s file name and file format metadata.
+ *
+ * @param fileName Output file path (should end in .paj).
+ * @param networkName Optional exported network name. If empty, uses graph name.
+ *                    If "unnamed", derives from file name without extension.
+ * @param maxWidth  Canvas width used to normalize X coordinates (0 => use current).
+ * @param maxHeight Canvas height used to normalize Y coordinates (0 => use current).
+ *
+ * @return true on success, false if the file cannot be opened/written.
  */
 bool Graph::saveToPajekFormat(const QString &fileName,
                               QString networkName,
-                              int maxWidth, int maxHeight)
+                              int maxWidth,
+                              int maxHeight)
 {
     qDebug() << "Saving graph to Pajek-formatted file:" << fileName;
 
@@ -302,8 +325,8 @@ bool Graph::saveToPajekFormat(const QString &fileName,
 
     networkName = (networkName == "") ? getName().toHtmlEscaped() : networkName;
     networkName = (networkName == "unnamed")
-        ? fileNameNoPath.toHtmlEscaped().left(fileNameNoPath.lastIndexOf('.'))
-        : networkName;
+                      ? fileNameNoPath.toHtmlEscaped().left(fileNameNoPath.lastIndexOf('.'))
+                      : networkName;
 
     maxWidth = (maxWidth == 0) ? canvasWidth : maxWidth;
     maxHeight = (maxHeight == 0) ? canvasHeight : maxHeight;
@@ -316,19 +339,6 @@ bool Graph::saveToPajekFormat(const QString &fileName,
         return false;
     }
 
-
-    auto pajekSafeRelationName = [](QString s) -> QString
-    {
-        s = s.trimmed();
-        // If already wrapped in quotes, strip them.
-        if (s.size() >= 2 && s.startsWith('"') && s.endsWith('"'))
-        {
-            s = s.mid(1, s.size() - 2);
-        }
-        // Avoid emitting raw quotes inside.
-        s.replace("\"", "'");
-        return s;
-    };
 
     QTextStream t(&f);
     // Keep numeric output stable-ish across locales.
@@ -353,6 +363,75 @@ bool Graph::saveToPajekFormat(const QString &fileName,
     const int relCount = relations();
     const int originalRel = relationCurrent();
 
+    /**
+     *  @brief Returns a canonical label for Pajek *Matrix headers (no surrounding quotes).
+     * 
+     * Pajek *Matrix Header Export Contract
+     *
+     * EXPORT IS STRICT AND CANONICAL.
+     *
+     * Multirelational headers MUST be written in exactly one of these forms:
+     *
+     *   *Matrix :k
+     *   *Matrix :k "Label"
+     *
+     * Where:
+     *   - k is the 1-based relation index.
+     *   - No leading index is embedded in the label.
+     *   - No empty quotes are emitted.
+     *   - No alternate forms like "*Matrix k:", "*Matrix k: """, etc.
+     *
+     * Relation labels are normalized before export:
+     *   - Strip wrapping quotes.
+     *   - Strip leading index pollution (e.g. "9 'star'" → "star").
+     *   - Treat empty or index-only labels as unlabeled.
+     *   - Escape internal double quotes as "" (Pajek rule).
+     *
+     * IMPORT remains tolerant. EXPORT remains canonical.
+     */
+    auto canonicalPajekRelationName = [](QString s, int k) -> QString
+    {
+        s = s.trimmed();
+        const QString kStr = QString::number(k);
+
+        auto stripWrapQuotes = [](QString x) -> QString
+        {
+            x = x.trimmed();
+            if (x.size() >= 2)
+            {
+                const QChar a = x.front();
+                const QChar b = x.back();
+                if ((a == '"' && b == '"') || (a == '\'' && b == '\''))
+                    x = x.mid(1, x.size() - 2).trimmed();
+            }
+            return x;
+        };
+
+        s = stripWrapQuotes(s);
+
+        // Remove leading ":k"
+        if (s.startsWith(':'))
+            s = s.mid(1).trimmed();
+
+        // Remove leading "k" or "k:"
+        if (s.startsWith(kStr))
+        {
+            s = s.mid(kStr.size()).trimmed();
+            if (s.startsWith(':'))
+                s = s.mid(1).trimmed();
+            s = stripWrapQuotes(s);
+        }
+
+        // Unlabeled cases
+        if (s.isEmpty() || s == kStr)
+            return QString();
+
+        // Escape internal quotes per Pajek rules
+        s.replace("\"", "\"\"");
+
+        return s.trimmed();
+    };
+
     // Multirelational: write Pajek *Matrix blocks per relation (like Padgett, etc.)
     if (relCount > 1)
     {
@@ -360,11 +439,16 @@ bool Graph::saveToPajekFormat(const QString &fileName,
         {
             relationSet(r, false /*updateUI*/);
 
-            const QString relName = pajekSafeRelationName(relationCurrentName());
+            const int k = r + 1;
+            const QString relLabel = canonicalPajekRelationName(relationCurrentName(), k);
 
-            // Follow the shipped dataset convention:
-            // *Matrix k: "RelationName"
-            t << "*Matrix " << (r + 1) << ": " << "\"" << relName << "\"" << "\n";
+            // Canonical header:
+            //   *Matrix :k
+            //   *Matrix :k "label"
+            t << "*Matrix :" << k;
+            if (!relLabel.isEmpty())
+                t << " \"" << relLabel << "\"";
+            t << "\n";
 
             // Emit N x N matrix
             for (VList::const_iterator it = m_graph.cbegin(); it != m_graph.cend(); ++it)
@@ -377,12 +461,13 @@ bool Graph::saveToPajekFormat(const QString &fileName,
                     const int j = (*jt)->number();
 
                     if (isDirected())
-                        weight = edgeExists(i, j);          // directed lookup
+                        weight = edgeExists(i, j); // directed lookup
                     else
-                        weight = edgeExists(i, j, true);    // undirected lookup
+                        weight = edgeExists(i, j, true); // undirected lookup
 
                     // Pajek expects space-separated row entries
-                    if (!first) t << " ";
+                    if (!first)
+                        t << " ";
                     first = false;
 
                     // Print 0 for no edge. Otherwise print numeric weight.

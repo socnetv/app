@@ -1243,10 +1243,26 @@ bool Parser::readDLKeywords(QStringList &strList,
 }
 
 /**
- * @brief Parses the data as Pajek-formatted
+ * @brief Parse a Pajek-formatted network from raw bytes.
  *
- * @param rawData
- * @return
+ * Supported constructs include (depending on the file contents):
+ *  - `*Network` header
+ *  - `*Vertices N` (node definitions with optional attributes)
+ *  - Tie sections such as `*Arcs`, `*Edges`
+ *  - Matrix-based relations:
+ *      - `*Matrix :k`
+ *      - `*Matrix :k "Label"`
+ *      - `*Matrix k: "Label"`
+ *      - empty-label cases like `*Matrix :k` / `*Matrix k:`
+ *
+ * Behavior:
+ *  - Creates nodes/edges by emitting the standard Parser signals.
+ *  - Detects directedness and relation structure according to Pajek sections.
+ *  - Populates totals (nodes/links) used by the loader and CLI harness.
+ *  - On failure, sets @c errorMessage and returns false.
+ *
+ * @param rawData Entire file contents (as read from disk).
+ * @return true if parsing succeeds, false otherwise.
  */
 bool Parser::parseAsPajek(const QByteArray &rawData)
 {
@@ -1408,6 +1424,28 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
         }
         else if (str.contains("*matrix", Qt::CaseInsensitive))
         {
+            /*
+             * Pajek *Matrix Header Import Policy
+             *
+             * IMPORT IS TOLERANT.
+             *
+             * The parser must accept common real-world variants, including:
+             *
+             *   *Matrix :1
+             *   *Matrix :1 "Label"
+             *   *Matrix 1:
+             *   *Matrix 1: "Label"
+             *
+             * The parser must normalize the relation name so that:
+             *   - Leading ":k", "k", or "k:" tokens do not pollute the label.
+             *   - Wrapping quotes are removed.
+             *
+             * Export canonicalization is handled in Graph::saveToPajekFormat().
+             *
+             * Do NOT make the importer stricter to enforce canonical form.
+             * Canonicalization belongs to export, not import.
+             */
+
             qDebug() << str;
             arcs_flag = false;
             edges_flag = false;
