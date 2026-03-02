@@ -167,7 +167,8 @@ void Graph::graphFileLoaded(const int &fileType,
              << "filename:" << fileName
              << "nodes:" << totalNodes
              << "links (parser count):" << totalLinks
-             << "edgeDirType:" << edgeDirType;
+             << "edgeDirType:" << edgeDirType
+             << "isDirected (currently):" << isDirected();
 
     setFileName(fileName);
     if (!netName.isEmpty())
@@ -182,6 +183,13 @@ void Graph::graphFileLoaded(const int &fileType,
 
     setFileFormat(fileType);
     setModStatus(ModStatus::SavedUnchanged);
+
+    qDebug() << "graphFileLoaded: after setDirected/setUndirected:"
+         << "isDirected" << isDirected()
+         << "isUndirected" << isUndirected()
+         << "m_totalEdges" << m_totalEdges
+         << "calculatedEdges" << calculatedEdges;
+
 
     // Do not trust totalLinks from the parser.
     //

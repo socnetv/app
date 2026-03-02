@@ -246,6 +246,12 @@ void Parser::load(const QString &fileName,
 
     if (fileLoaded)
     {
+        qDebug() << "[PARSER] emit signalFileLoaded:"
+         << "fileFormat" << fileFormat
+         << "edgeDirType" << edgeDirType
+         << "totalLinks(parser)" << totalLinks
+         << "totalNodes" << totalNodes;
+
         emit signalFileLoaded(fileFormat,
                               fileName,
                               networkName,
@@ -3964,14 +3970,36 @@ bool Parser::parseAsGML(const QByteArray &rawData)
 }
 
 /**
- * @brief Parses the data as GraphViz (dot) formatted network.
+ * @brief Parses the data as GraphViz (DOT) formatted network.
  *
- * @param rawData
- * @return
+ * IMPORTANT CONTRACTS / INVARIANTS
+ * - DOT has two graph “kinds”:
+ *     1) digraph  => default directed, edges use "->"
+ *     2) graph    => default undirected, edges use "--"
+ *
+ * - SocNetV must report the *graph* directedness reliably via Parser::signalFileLoaded
+ *   (the Graph::graphFileLoaded slot uses this to set directedness before calling
+ *   edgesEnabled()).
+ *
+ * - Therefore we must NOT use a single variable for two meanings:
+ *     (a) the overall graph type (graph/digraph), AND
+ *     (b) the last edge’s operator ("--"/"->").
+ *
+ * Previous bug:
+ * - The parser used edgeDirType as both (a) and (b) and also treated any '-' as
+ *   an edge indicator. In some cases, this left edgeDirType as Directed even for
+ *   undirected files, so Graph::graphFileLoaded computed ties while the graph was
+ *   still considered directed, doubling counts in the CLI (issue #187).
+ *
+ * Fix:
+ * - Track graph-level directedness separately (graphDirType) and never overwrite it.
+ * - Parse edges only when the line contains "--" or "->" (not merely '-').
+ *
+ * @param rawData Raw file bytes.
+ * @return true on successful parse; false on format errors.
  */
 bool Parser::parseAsDot(const QByteArray &rawData)
 {
-
     qDebug() << "Parsing data as dot (Graphviz) formatted...";
 
     int fileLine = 0;
@@ -3980,22 +4008,31 @@ bool Parser::parseAsDot(const QByteArray &rawData)
     int start = 0;
     int end = 0;
     int next = 0;
-    QString label, node, nodeLabel, fontName, fontColor, edgeShape, edgeColor, edgeLabel, networkLabel;
+
+    QString label, node, nodeLabel, fontName, fontColor;
+    QString edgeShape, edgeColor, edgeLabel, networkLabel;
     QString str, temp, prop, value;
     QStringList lineElement;
+
     nodeColor = "red";
     edgeColor = "black";
     nodeShape = "";
     edgeWeight = 1.0;
     qreal nodeValue = 1.0;
+
     bool netProperties = false;
-    QStringList labels;
-    QList<QString> nodeSequence;    // holds edges
-    QList<QString> nodesDiscovered; // holds nodes;
+
+    QList<QString> nodeSequence;    // holds nodes in an edge chain: a -- b -- c ...
+    QList<QString> nodesDiscovered; // holds *raw* node identifiers encountered
 
     relationsList.clear();
 
-    edgeDirType = EdgeType::Directed;
+    // Graph-level directedness. Set ONCE from header (graph/digraph) and never overwritten.
+    int graphDirType = EdgeType::Directed;
+
+    // Per-edge directedness (derived from operator in each edge statement).
+    int edgeTypeThisLine = EdgeType::Directed;
+
     arrows = true;
     bezier = false;
     source = 0;
@@ -4004,15 +4041,16 @@ bool Parser::parseAsDot(const QByteArray &rawData)
     QTextCodec *codec = QTextCodec::codecForName(m_textCodecName.toLatin1());
     QString decodedData = codec->toUnicode(rawData).trimmed();
 
-    // Abort if the file does not contain any valid GraphViz (dot) data
-    if (!decodedData.contains("digraph", Qt::CaseInsensitive) && !decodedData.contains("graph", Qt::CaseInsensitive))
+    // Abort early if file does not even contain dot keywords.
+    if (!decodedData.contains("digraph", Qt::CaseInsensitive) &&
+        !decodedData.contains("graph", Qt::CaseInsensitive))
     {
         qDebug() << "Not a valid GraphViz (dot) file. Aborting!";
         errorMessage = tr("Invalid GraphViz (dot) file. The file does not contain 'digraph' or 'graph'.");
         return false;
     }
 
-    // Apply preprocessing to handle single-line DOT files properly
+    // Normalize to line-based format (single-line DOT etc).
     decodedData = preprocessDotContent(decodedData);
 
     QTextStream ts(&decodedData);
@@ -4022,12 +4060,10 @@ bool Parser::parseAsDot(const QByteArray &rawData)
 
     while (!ts.atEnd())
     {
-
         fileLine++;
         qDebug() << "🔎 Reading fileLine " << fileLine;
 
         str = ts.readLine().simplified().trimmed();
-
         qDebug() << str;
 
         if (isComment(str))
@@ -4035,378 +4071,339 @@ bool Parser::parseAsDot(const QByteArray &rawData)
 
         actualLineNumber++;
 
-        // Verify that:
-        // a) There is no reserved keyword from other formats in the first non-comment line
-        // b) The first non-comment line starts with "digraph" or "graph"
+        // Header: determine graph kind and optional graph name.
         if (actualLineNumber == 1)
         {
-            if (str.contains("vertices", Qt::CaseInsensitive)                              // Pajek
-                || str.contains("network", Qt::CaseInsensitive)                            // Pajek?
-                || str.contains("[", Qt::CaseInsensitive)                                  // GML
-                || str.contains("DL n", Qt::CaseInsensitive)                               // DL format
-                || str == "DL" || str == "dl" || str.contains("list", Qt::CaseInsensitive) // list
-                || str.startsWith("<graphml", Qt::CaseInsensitive)                         // GraphML
-                || str.startsWith("<?xml", Qt::CaseInsensitive))
+            // Reject obvious non-DOT formats
+            if (str.contains("vertices", Qt::CaseInsensitive) ||                           // Pajek
+                str.contains("network", Qt::CaseInsensitive) ||                            // Pajek?
+                str.contains("[", Qt::CaseInsensitive) ||                                  // GML
+                str.contains("DL n", Qt::CaseInsensitive) ||                               // UCINET DL
+                str == "DL" || str == "dl" || str.contains("list", Qt::CaseInsensitive) || // list
+                str.startsWith("<graphml", Qt::CaseInsensitive) ||                         // GraphML
+                str.startsWith("<?xml", Qt::CaseInsensitive))
             {
-                qDebug() << "*** Not an GraphViz -formatted file. Aborting";
-
+                qDebug() << "*** Not a GraphViz-formatted file. Aborting";
                 errorMessage = tr("Not a GraphViz-formatted file. "
-                                  "First non-comment line includes keywords reserved by other file formats  (i.e vertices, graphml, network, DL, xml).");
+                                  "First non-comment line includes keywords reserved by other file formats (i.e vertices, graphml, network, DL, xml).");
                 return false;
             }
 
+            lineElement = str.split(" ", Qt::SkipEmptyParts);
+
             if (str.contains("digraph", Qt::CaseInsensitive))
             {
-                lineElement = str.split(" ");
-                edgeDirType = EdgeType::Directed;
-                if (lineElement[1] != "{")
+                graphDirType = EdgeType::Directed;
+                if (lineElement.size() > 1 && lineElement[1] != "{")
                     networkName = lineElement[1];
                 qDebug() << "This is a DOT DIGRAPH named " << networkName;
                 continue;
             }
             else if (str.contains("graph", Qt::CaseInsensitive))
             {
-                lineElement = str.split(" ");
-                edgeDirType = EdgeType::Undirected;
-                if (lineElement[1] != "{")
+                graphDirType = EdgeType::Undirected;
+                if (lineElement.size() > 1 && lineElement[1] != "{")
                     networkName = lineElement[1];
                 qDebug() << "This is a DOT GRAPH named " << networkName;
                 continue;
             }
             else
             {
-                qDebug() << " *** Not a GraphViz file. "
-                            "Abort: dot format can only start with \" (di)graph netname {\"";
+                qDebug() << "*** Not a GraphViz file. "
+                            "Abort: dot format can only start with \"(di)graph netname {\"";
                 errorMessage = tr("Not properly GraphViz-formatted file. "
-                                  "First non-comment line should start with \" (di)graph netname {\"");
+                                  "First non-comment line should start with \"(di)graph netname {\"");
                 return false;
             }
         }
 
+        // Global graph settings block starts
         if (str.contains("graph [", Qt::CaseInsensitive))
         {
             netProperties = true;
             qDebug() << "🔵 Detected global graph settings. Skipping...";
-            Q_UNUSED(netProperties);
+            continue;
         }
-        else if (
-            str.startsWith("label", Qt::CaseInsensitive) || str.startsWith("mincross", Qt::CaseInsensitive) || str.startsWith("ratio", Qt::CaseInsensitive) || str.startsWith("name", Qt::CaseInsensitive) || str.startsWith("type", Qt::CaseInsensitive) || str.startsWith("loops", Qt::CaseInsensitive) || str.startsWith("rankdir", Qt::CaseInsensitive) || str.startsWith("splines", Qt::CaseInsensitive) || str.startsWith("overlap", Qt::CaseInsensitive) || str.startsWith("nodesep", Qt::CaseInsensitive) || str.startsWith("ranksep", Qt::CaseInsensitive) || str.startsWith("size", Qt::CaseInsensitive) // Handle size attribute
-        )
+
+        // Global graph settings (simple key=value)
+        if (str.startsWith("label", Qt::CaseInsensitive) ||
+            str.startsWith("mincross", Qt::CaseInsensitive) ||
+            str.startsWith("ratio", Qt::CaseInsensitive) ||
+            str.startsWith("name", Qt::CaseInsensitive) ||
+            str.startsWith("type", Qt::CaseInsensitive) ||
+            str.startsWith("loops", Qt::CaseInsensitive) ||
+            str.startsWith("rankdir", Qt::CaseInsensitive) ||
+            str.startsWith("splines", Qt::CaseInsensitive) ||
+            str.startsWith("overlap", Qt::CaseInsensitive) ||
+            str.startsWith("nodesep", Qt::CaseInsensitive) ||
+            str.startsWith("ranksep", Qt::CaseInsensitive) ||
+            str.startsWith("size", Qt::CaseInsensitive))
         {
             qDebug() << "🔵 Detected global graph settings. Parsing...";
             next = str.indexOf('=', 1);
-            qDebug("Found next = at %i. Start is at %i", next, 1);
             prop = str.mid(0, next).simplified();
-            qDebug() << "Prop: " << prop.toLatin1();
             value = str.right(str.size() - next - 1).simplified();
-            qDebug() << "Value " << value;
+
             if (prop == "label" || prop == "name")
-            {
                 networkLabel = value;
-            }
-            else if (prop == "ratio")
-            {
-            }
             else if (prop == "size")
-            {
-                qDebug() << "⚠️ Ignoring 'size' attribute: " << value;
-                // Graphviz size= controls graph scaling, but in SocNetV we don't use it.
-            }
-            else if (prop == "mincross")
-            {
-            }
+                qDebug() << "⚠️ Ignoring 'size' attribute:" << value;
+
+            continue;
         }
-        else if (netProperties && str.contains("]", Qt::CaseInsensitive))
+
+        // End of global graph settings block
+        if (netProperties && str.contains("]", Qt::CaseInsensitive))
         {
             netProperties = false;
+            continue;
         }
-        else if (str.startsWith("node [", Qt::CaseInsensitive))
+
+        // Global node defaults
+        if (str.startsWith("node [", Qt::CaseInsensitive))
         {
             qDebug() << "🔵 Detected global node settings...";
-            readDotProperties(str.mid(str.indexOf('[') + 1, str.indexOf(']') - str.indexOf('[') - 1),
-                              nodeValue, nodeLabel, initNodeShape, initNodeColor, fontName, fontColor);
-            qDebug() << "✅ Default node color set to: " << initNodeColor;
+            readDotProperties(
+                str.mid(str.indexOf('[') + 1, str.indexOf(']') - str.indexOf('[') - 1),
+                nodeValue, nodeLabel, initNodeShape, initNodeColor, fontName, fontColor);
+            qDebug() << "✅ Default node color set to:" << initNodeColor;
+            continue;
         }
-        else if (str.startsWith("edge [", Qt::CaseInsensitive))
+
+        // Global edge defaults
+        if (str.startsWith("edge [", Qt::CaseInsensitive))
         {
             qDebug() << "🔵 Detected global edge settings...";
-            readDotProperties(str.mid(str.indexOf('[') + 1, str.indexOf(']') - str.indexOf('[') - 1),
-                              edgeWeight, edgeLabel, edgeShape, initEdgeColor, fontName, fontColor);
-            qDebug() << "✅ Default edge color set to: " << initEdgeColor;
+            readDotProperties(
+                str.mid(str.indexOf('[') + 1, str.indexOf(']') - str.indexOf('[') - 1),
+                edgeWeight, edgeLabel, edgeShape, initEdgeColor, fontName, fontColor);
+            qDebug() << "✅ Default edge color set to:" << initEdgeColor;
+            continue;
         }
-        else if (!str.startsWith('[', Qt::CaseInsensitive) &&
-                 !str.contains("--", Qt::CaseInsensitive) &&
-                 !str.contains("->", Qt::CaseInsensitive) &&
-                 str.contains("[", Qt::CaseInsensitive) &&
-                 !netProperties)
+
+        // Node with properties:  nodeName [ ... ]
+        if (!str.startsWith('[', Qt::CaseInsensitive) &&
+            !str.contains("--", Qt::CaseInsensitive) &&
+            !str.contains("->", Qt::CaseInsensitive) &&
+            str.contains("[", Qt::CaseInsensitive) &&
+            !netProperties)
         {
-            qDebug() << "🔵 A single node definition must be here: \n"
+            qDebug() << "🔵 A single node definition must be here:\n"
                      << str;
-            // Node definitions in the format: nodeName [properties]
-            int start = str.indexOf('[');
-            if (start != -1)
+
+            start = str.indexOf('[');
+            if (start == -1)
             {
-                // Extract node name and properties
-                QString node = str.left(start).simplified();
-                node = node.remove('\"');
-                qDebug() << "node named " << node.toLatin1();
-
-                // Extract properties
-                int end = str.lastIndexOf(']');
-                QString temp;
-                if (end != -1)
-                {
-                    temp = str.mid(start + 1, end - start - 1);
-                    qDebug() << "node properties " << temp.toLatin1();
-
-                    // Set default label to node name
-                    nodeLabel = node;
-
-                    // Process properties
-                    readDotProperties(temp, nodeValue, nodeLabel, initNodeShape, initNodeColor, fontName, fontColor);
-
-                    // If no label was specified, use the node name
-                    if (nodeLabel.isEmpty())
-                        nodeLabel = node;
-
-                    totalNodes++;
-                    randX = rand() % gwWidth;
-                    randY = rand() % gwHeight;
-                    qDebug() << "🌟 Signaling to create new node " << totalNodes
-                             << "at " << randX << "," << randY
-                             << " label " << node.toLatin1()
-                             << " colored " << initNodeColor
-                             << "initNodeSize " << initNodeSize
-                             << "initNodeNumberColor " << initNodeNumberColor
-                             << "initNodeNumberSize " << initNodeNumberSize
-                             << "initNodeLabelColor " << initNodeLabelColor
-                             << "nodeShape" << initNodeShape;
-                    emit signalCreateNode(
-                        totalNodes, initNodeSize, initNodeColor,
-                        initNodeNumberColor, initNodeNumberSize,
-                        nodeLabel, initNodeLabelColor, initNodeLabelSize,
-                        QPointF(randX, randY),
-                        initNodeShape, QString());
-                    // Note that we push the numbered nodelabel whereas we create
-                    // the node with its file specified node label.
-                    nodesDiscovered.push_back(node);
-                    qDebug() << " * Total totalNodes " << totalNodes
-                             << " nodesDiscovered  " << nodesDiscovered.size();
-                    target = totalNodes;
-                }
-                else
-                {
-                    qDebug("* ERROR!");
-                    errorMessage = tr("Not properly GraphViz-formatted file. "
-                                      "Node definition without closing ]");
-                    return false;
-                }
-            }
-            else
-            {
-                qDebug("* ERROR!");
-                errorMessage = tr("Not properly GraphViz-formatted file. "
-                                  "Node definition without opening [");
+                errorMessage = tr("Not properly GraphViz-formatted file. Node definition without opening [");
                 return false;
             }
+
+            node = str.left(start).simplified().remove('\"');
+            qDebug() << "node named" << node;
+
+            end = str.lastIndexOf(']');
+            if (end == -1)
+            {
+                errorMessage = tr("Not properly GraphViz-formatted file. Node definition without closing ]");
+                return false;
+            }
+
+            temp = str.mid(start + 1, end - start - 1);
+            nodeLabel = node; // default label
+
+            readDotProperties(temp, nodeValue, nodeLabel, initNodeShape, initNodeColor, fontName, fontColor);
+            if (nodeLabel.isEmpty())
+                nodeLabel = node;
+
+            totalNodes++;
+            randX = rand() % gwWidth;
+            randY = rand() % gwHeight;
+
+            emit signalCreateNode(
+                totalNodes, initNodeSize, initNodeColor,
+                initNodeNumberColor, initNodeNumberSize,
+                nodeLabel, initNodeLabelColor, initNodeLabelSize,
+                QPointF(randX, randY),
+                initNodeShape, QString());
+
+            nodesDiscovered.push_back(node);
+            target = totalNodes;
+            continue;
         }
-        else if (
-            !str.contains('[', Qt::CaseInsensitive) &&
+
+        // Node without properties: nodeName;
+        if (!str.contains('[', Qt::CaseInsensitive) &&
             !str.contains("node", Qt::CaseInsensitive) &&
             !str.contains(']', Qt::CaseInsensitive) &&
             !str.contains("--", Qt::CaseInsensitive) &&
             !str.contains("->", Qt::CaseInsensitive) &&
-            !str.contains("=", Qt::CaseInsensitive) && !netProperties)
+            !str.contains("=", Qt::CaseInsensitive) &&
+            !netProperties)
         {
             qDebug() << "🔵 A node definition without properties must be here ..." << str;
+
             end = str.indexOf(';');
-            if (end != -1)
-            {
-                node = str.left(str.size() - end); // keep the properties
-                qDebug() << "node named " << node.toLatin1();
-                node = node.remove(']').remove(';').remove('\"');
-                qDebug() << "node named " << node.toLatin1();
-                nodeLabel = node;
-                totalNodes++;
-                randX = rand() % gwWidth;
-                randY = rand() % gwHeight;
-                qDebug() << " 🌟 Signaling to create new node " << totalNodes
-                         << " at " << randX << "," << randY
-                         << " label " << node.toLatin1()
-                         << " colored " << initNodeColor
-                         << "initNodeSize " << initNodeSize
-                         << "initNodeNumberColor " << initNodeNumberColor
-                         << "initNodeNumberSize " << initNodeNumberSize
-                         << "initNodeLabelColor " << initNodeLabelColor
-                         << "nodeShape" << initNodeShape;
-                emit signalCreateNode(
-                    totalNodes, initNodeSize, initNodeColor,
-                    initNodeNumberColor, initNodeNumberSize,
-                    nodeLabel, initNodeLabelColor, initNodeLabelSize,
-                    QPointF(randX, randY),
-                    initNodeShape, QString());
-                nodesDiscovered.push_back(node); // Note that we push the numbered nodelabel whereas we create the node with its file specified node label.
-                qDebug() << " * Total nodes" << totalNodes << " nodesDiscovered  " << nodesDiscovered.size();
-                target = totalNodes;
-            }
-            else
-                end = str.indexOf(';');
-            qDebug("* Finished node!");
+            if (end == -1)
+                continue;
+
+            node = str.left(end).remove(']').remove(';').remove('\"').trimmed();
+            nodeLabel = node;
+
+            totalNodes++;
+            randX = rand() % gwWidth;
+            randY = rand() % gwHeight;
+
+            emit signalCreateNode(
+                totalNodes, initNodeSize, initNodeColor,
+                initNodeNumberColor, initNodeNumberSize,
+                nodeLabel, initNodeLabelColor, initNodeLabelSize,
+                QPointF(randX, randY),
+                initNodeShape, QString());
+
+            nodesDiscovered.push_back(node);
+            target = totalNodes;
+            continue;
         }
 
-        else if (str.contains('-', Qt::CaseInsensitive))
+        // Edge statement: MUST contain either "--" (undirected) or "->" (directed).
+        // We do NOT treat any '-' as an edge indicator.
+        if (str.contains("--", Qt::CaseInsensitive) || str.contains("->", Qt::CaseInsensitive))
         {
             netProperties = false;
-            qDebug("🔵 Edge definition found ...");
+            qDebug() << "🔵 Edge definition found ...";
+
+            // Parse optional attribute block [...]
             end = str.indexOf('[');
             if (end != -1)
             {
-                temp = str.right(str.size() - end - 1); // keep the properties
-                qDebug("  Edge with properties - reading properties...");
-                temp = temp.remove(']');
-                temp = temp.remove(';');
-                qDebug() << "edge properties " << temp.toLatin1();
+                temp = str.right(str.size() - end - 1);
+                temp = temp.remove(']').remove(';');
                 readDotProperties(temp, edgeWeight, edgeLabel, edgeShape, edgeColor, fontName, fontColor);
                 initEdgeColor = edgeColor;
             }
             else
             {
-                qDebug("  Edge without properties...");
                 edgeLabel = "";
                 edgeColor = initEdgeColor;
                 edgeWeight = initEdgeWeight;
                 end = str.indexOf(';');
+                if (end == -1)
+                    end = str.size();
             }
 
-            // FIXME Cannot parse nodes named with '-' character
-            str = str.mid(0, end).remove('\"'); // keep only edges
+            // Keep only the edge chain part ("a -- b -- c" or "a -> b -> c")
+            // NOTE: Cannot parse nodes named with '-' character (existing FIXME)
+            QString edgeChain = str.mid(0, end).remove('\"').trimmed();
 
-            qDebug() << "edge " << str.toLatin1();
+            const bool isDirectedEdge = edgeChain.contains("->", Qt::CaseInsensitive);
+            const bool isUndirectedEdge = edgeChain.contains("--", Qt::CaseInsensitive);
 
-            if (!str.contains("->", Qt::CaseInsensitive))
-            { // non directed = symmetric links
-                if (str.contains("--", Qt::CaseInsensitive))
-                    nodeSequence = str.split("--");
-                else
-                    nodeSequence = str.split("-");
-                edgeDirType = EdgeType::Undirected;
+            if (isDirectedEdge && isUndirectedEdge)
+            {
+                // Mixed operator on same line is unusual; treat as parse error rather than guessing.
+                errorMessage = tr("Invalid DOT edge statement: mixed '->' and '--' operators on the same line.");
+                return false;
+            }
+
+            if (isUndirectedEdge)
+            {
+                nodeSequence = edgeChain.split("--", Qt::SkipEmptyParts);
+                edgeTypeThisLine = EdgeType::Undirected;
             }
             else
-            { // is directed
-                nodeSequence = str.split("->");
-                edgeDirType = EdgeType::Directed;
+            {
+                nodeSequence = edgeChain.split("->", Qt::SkipEmptyParts);
+                edgeTypeThisLine = EdgeType::Directed;
             }
-            // Create all nodes defined in nodeSequence
-            for (QList<QString>::iterator it = nodeSequence.begin(); it != nodeSequence.end(); it++)
+
+            // Create all nodes defined in nodeSequence (and edges between consecutive nodes)
+            for (auto it = nodeSequence.begin(); it != nodeSequence.end(); ++it)
             {
                 node = (*it).simplified();
-                qDebug() << " nodeSequence node " << node;
+
+                // Create node if unseen
                 if ((aNum = nodesDiscovered.indexOf(node)) == -1)
                 {
-                    // node not discovered before
                     totalNodes++;
                     randX = rand() % gwWidth;
                     randY = rand() % gwHeight;
-                    qDebug() << "🌟 Signaling to create new node" << totalNodes
-                             << "at" << QPointF(randX, randY)
-                             << "label" << node.toLatin1()
-                             << "colored " << nodeColor
-                             << "initNodeSize " << initNodeSize
-                             << "initNodeNumberColor " << initNodeNumberColor
-                             << "initNodeNumberSize " << initNodeNumberSize
-                             << "initNodeLabelColor " << initNodeLabelColor
-                             << "nodeShape" << initNodeShape;
+
                     emit signalCreateNode(
                         totalNodes, initNodeSize, nodeColor,
                         initNodeNumberColor, initNodeNumberSize,
                         node, initNodeLabelColor, initNodeLabelSize,
                         QPointF(randX, randY),
                         initNodeShape, QString());
+
                     nodesDiscovered.push_back(node);
-                    qDebug() << " * Total totalNodes "
-                             << totalNodes << " nodesDiscovered  " << nodesDiscovered.size();
                     target = totalNodes;
-                    if (it != nodeSequence.begin())
-                    {
-                        totalLinks++;
-                        qDebug() << "🔗 signaling to create new edge:"
-                                 << source << "->" << target << "totalLinks:" << totalLinks;
-                        emit signalCreateEdge(source, target, edgeWeight, edgeColor,
-                                              edgeDirType, arrows, bezier);
-                    }
                 }
                 else
                 {
-                    // node discovered before
                     target = aNum + 1;
-                    qDebug("# Node already exists. Vector num: %i ", target);
-                    if (it != nodeSequence.begin())
-                    {
-                        totalLinks++;
-                        qDebug() << "🔗 signaling to create new edge"
-                                 << source << "->" << target << "totalLinks:" << totalLinks;
-                        emit signalCreateEdge(source, target, edgeWeight, edgeColor,
-                                              edgeDirType, arrows, bezier);
-                    }
                 }
+
+                // Emit edge between previous node (source) and current node (target)
+                if (it != nodeSequence.begin())
+                {
+                    totalLinks++;
+                    emit signalCreateEdge(source, target, edgeWeight, edgeColor,
+                                          edgeTypeThisLine, arrows, bezier);
+                }
+
                 source = target;
             }
-            nodeSequence.clear();
-            qDebug("Finished reading fileLine %i ", fileLine);
-        }
-        else if (str.contains("[", Qt::CaseInsensitive) && str.contains("=") && !netProperties)
-        { // Default node properties - no node keyword
 
-            qDebug("* Node properties found but with no Node keyword in the beginning!");
+            nodeSequence.clear();
+            continue;
+        }
+
+        // Default node properties - no node keyword
+        if (str.contains("[", Qt::CaseInsensitive) && str.contains("=") && !netProperties)
+        {
             start = str.indexOf('[');
             end = str.indexOf(']');
-            temp = str.mid(start + 1, end - start - 1); // keep whatever is inside [ and ]
-            qDebug() << "Properties start at " << start << " and end at " << end;
-            temp = temp.simplified();
-            qDebug() << temp.toLatin1();
+            if (start == -1 || end == -1 || end <= start)
+                continue;
+
+            temp = str.mid(start + 1, end - start - 1).simplified();
             readDotProperties(temp, nodeValue, label, nodeShape, nodeColor, fontName, fontColor);
-            qDebug("Finished the properties!");
 
             if (start > 2)
-            { // there is a node definition here
+            {
                 node = str.left(start).remove('\"').simplified();
-                qDebug() << "node label: " << node.toLatin1() << ".";
                 if (!nodesDiscovered.contains(node))
                 {
-                    qDebug("not discovered node");
                     totalNodes++;
                     randX = rand() % gwWidth;
                     randY = rand() % gwHeight;
-                    qDebug() << "🌟 Signaling to create new node at"
-                             << randX << "," << randY << "label" << node.toLatin1()
-                             << " colored " << nodeColor;
+
                     emit signalCreateNode(
                         totalNodes, initNodeSize, nodeColor,
                         initNodeNumberColor, initNodeNumberSize,
                         label, initNodeLabelColor, initNodeLabelSize,
                         QPointF(randX, randY),
                         nodeShape, QString());
-                    aNum = totalNodes;
+
                     nodesDiscovered.push_back(node);
-                    qDebug() << " Total totalNodes: " << totalNodes << " nodesDiscovered = " << nodesDiscovered.size();
-                }
-                else
-                {
-                    qDebug("discovered node - skipping it!");
                 }
             }
+
+            continue;
         }
 
-        else
-        {
-            qDebug() << "  Redudant data: " << str.toLatin1();
-        }
+        qDebug() << "  Redundant data:" << str;
     }
 
+    // Ensure at least one relation exists.
     if (relationsList.size() == 0)
     {
         emit signalAddNewRelation((!networkName.isEmpty()) ? networkName : "unnamed");
     }
+
+    // IMPORTANT: Preserve graph-level directedness for the file.
+    // Do NOT leak "last edge operator" into the graph kind.
+    edgeDirType = graphDirType;
 
     qDebug() << "Parser::parseAsDot() - Finished OK. Returning.";
     return true;
