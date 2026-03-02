@@ -85,7 +85,9 @@ HeadlessLoadResult loadGraphHeadless(
                          out.fileName = loadedFileName;
                          out.netName = netName;
                          out.totalNodes = totalNodes;
-                         out.tiesGraph  = tiesGraph; // canonical, already correct
+                         // tiesGraph is emitted by Graph::graphFileLoaded() as edgesEnabled():
+                         // logical ties count (E for undirected, A for directed).
+                         out.tiesGraph = tiesGraph;
                          out.elapsedTime = elapsedTime;
                          out.message = message;
                          out.ok = (loadedFileType != FileType::UNRECOGNIZED);
@@ -131,24 +133,24 @@ HeadlessLoadResult loadGraphHeadless(
 
     // Queue Parser::load to run in parserThread *after* the event loop spins.
     QMetaObject::invokeMethod(parser, [=]()
-                              {
-                                  parser->load(fileName,
-                                               codecName,
-                                               initVertexSize,
-                                               initVertexColor,
-                                               initVertexShape,
-                                               initVertexNumberColor,
-                                               initVertexNumberSize,
-                                               initVertexLabelColor,
-                                               initVertexLabelSize,
-                                               initEdgeColor,
-                                               canvasWidth,
-                                               canvasHeight,
-                                               fileFormat,
-                                               delimiter,
-                                               sm_two_mode,
-                                               sm_has_labels);
-                              }, Qt::QueuedConnection);
+                              { 
+                                parser->load(fileName,
+                                             codecName,
+                                             initVertexSize,
+                                             initVertexColor,
+                                             initVertexShape,
+                                             initVertexNumberColor,
+                                             initVertexNumberSize,
+                                             initVertexLabelColor,
+                                             initVertexLabelSize,
+                                             initEdgeColor,
+                                             canvasWidth,
+                                             canvasHeight,
+                                             fileFormat,
+                                             delimiter,
+                                             sm_two_mode,
+                                             sm_has_labels); 
+                                    }, Qt::QueuedConnection);
 
     qDebug() << "[CLI] entering loop.exec()";
     loop.exec();
