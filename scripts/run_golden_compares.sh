@@ -198,6 +198,7 @@ run_case_io "${DATA}/Benchmark_BA_Directed_N500_m3.paj" 2 "${BASE_IO}/Benchmark_
 run_case_io "${DATA}/TinyGraphviz_Dir_N3.dot" 4 "${BASE_IO}/TinyGraphviz_Dir_N3__FT4.json"
 run_case_io "${DATA}/TinyGML_Weighted_Dir_N3.gml" 6 "${BASE_IO}/TinyGML_Weighted_Dir_N3__FT6_weighted.json"
 run_case_io "${DATA}/TinyEdgeList_Weighted_Dir_N3.wlst" 7 "${BASE_IO}/TinyEdgeList_Weighted_Dir_N3__FT7.json"
+run_case_io "${DATA}/TinyGraphviz_Undir_N3.dot" 4 "$BASE_IO/TinyGraphviz_Undir_N3__FT4.json"
 
 echo
 if [[ "$FAILS" -eq 0 ]]; then

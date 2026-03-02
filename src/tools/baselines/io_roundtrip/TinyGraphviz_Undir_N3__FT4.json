@@ -1,8 +1,8 @@
 {
     "counts": {
-        "links_sna": 8,
+        "links_sna": 4,
         "nodes": 3,
-        "ties_graph": 4
+        "ties_graph": 2
     },
     "dataset": {
         "filetype": 4,
@@ -17,13 +17,13 @@
     "kernel": "io_roundtrip",
     "load_report": {
         "fileType_signal": 4,
-        "load_ms": 2,
+        "load_ms": 1,
         "load_msg": "",
         "net_name": "TinyGraphviz_Undir_N3",
         "ok": true
     },
     "metrics": {
-        "density": "1.3333333333333333"
+        "density": "0.66666666666666663"
     },
     "relations_bundle": [
         {
@@ -57,7 +57,7 @@
                     "3"
                 ]
             },
-            "ties_graph": 4
+            "ties_graph": 2
         }
     ],
     "roundtrip_result": {
@@ -100,7 +100,7 @@
         ]
     },
     "timings": {
-        "load_ms": 2,
+        "load_ms": 1,
         "reload_ms": 0,
         "save_ms": 0,
         "total_ms": 0
