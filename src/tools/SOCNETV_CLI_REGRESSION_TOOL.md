@@ -47,6 +47,8 @@ The CLI is modular.
 * `cli/kernels/kernel_reachability_v2.cpp`
 * `cli/kernels/kernel_walks_v3.cpp`
 * `cli/kernels/kernel_prominence_v4.cpp`
+* `cli/kernels/kernel_io_roundtrip_v5.cpp`
+
 
 Each kernel owns:
 
@@ -192,6 +194,44 @@ This kernel combines:
 
 ---
 
+## IO Roundtrip Kernel
+
+* Kernel: `io_roundtrip`
+* JSON schema: `schema_version = 5`
+
+Purpose:
+* Protects IO + parser correctness during refactors by enforcing a strict **load → (optional export) → reload** contract.
+* Verifies canonical graph signatures rather than trusting parser counters.
+* Supports **multi-relational** graphs via a per-relation bundle comparison.
+
+Workflow:
+1) Load input dataset (any supported format).
+2) Attempt to export in the same format (only when export is supported for that file type).
+3) Reload exported file.
+4) Compare canonical signatures between original load and roundtrip reload:
+   * Single relation: compares the single signature.
+   * Multi-relational: compares a per-relation signature bundle (relation names + per-relation counts/signatures).
+
+Export support:
+* Some file formats do not export yet (e.g. GRAPHVIZ, GML, EDGELIST_*).  
+  For those formats, the kernel reports a stable “skipped export” outcome and still emits v5 JSON.
+
+Key output fields (v5):
+* `KERNEL_DESC` — describes the kernel contract
+* `RELATIONS` — number of relations in the loaded graph
+* `SYMMETRIC` — 0/1 (important because some formats default to DIRECTED but are symmetric)
+* `ROUNDTRIP_EQUIV` — 0/1 if roundtrip was performed
+* `ROUNDTRIP_SKIPPED` — string reason when export is not supported (performed=false)
+
+Comparison:
+* `compareGoldenV5Io()` enforces stable behavior for:
+  * performed vs skipped export
+  * per-relation bundle structure and signatures
+  * canonical counts derived from the Graph (ties_graph) and derived links_sna
+  * relation-name normalization (no double quoting, etc.)
+
+---
+
 # Basic Usage
 
 Distance kernel:
@@ -207,7 +247,12 @@ Common file types (see `global.h`):
 * 1 → GRAPHML
 * 2 → PAJEK (.paj / .net)
 * 3 → ADJACENCY
-* 5 → UCINET
+* 4 → GRAPHVIZ (DOT)
+* 5 → UCINET (DL)
+* 6 → GML
+* 7 → EDGELIST_WEIGHTED
+* 8 → EDGELIST_SIMPLE
+* 9 → TWOMODE (not supported by CLI kernels; do not baseline)
 
 ---
 
@@ -275,6 +320,31 @@ W0  = considerWeights=0
 IW1 = inverseWeights=1
 DI0 = dropIsolates=0
 ```
+
+---
+
+## IO Roundtrip (schema v5)
+
+```bash
+./socnetv-cli \
+  --kernel io_roundtrip \
+  -i src/data/TinyGraphML_Weighted_Dir_N3.graphml \
+  -f 1 \
+  --dump-json src/tools/baselines/io_roundtrip/TinyGraphML_Weighted_Dir_N3__FT1.json
+```
+
+Notes:
+
+* Formats without export support still produce a stable v5 JSON with:
+
+  * performed=false
+  * a `ROUNDTRIP_SKIPPED` reason string
+  * canonical load signatures
+
+Baseline directory:
+
+* `src/tools/baselines/io_roundtrip/`
+
 
 ---
 
@@ -370,6 +440,23 @@ Prestige:
 * PRP / SPRP
 
 Floating-point values are serialized as strings.
+
+---
+
+## IO Roundtrip Kernel (v5)
+
+Graph-level:
+* nodes
+* relations
+* directed / symmetric / weighted
+* ties_graph (canonical, from Graph adjacency)
+* links_sna (derived)
+
+Roundtrip-level:
+* performed vs skipped export behavior (must remain stable)
+* `ROUNDTRIP_EQUIV` and mismatch hints when performed
+* per-relation signature bundle comparison for multi-relational datasets
+  (expected relations + signatures from original load vs what reload produced)
 
 ---
 
