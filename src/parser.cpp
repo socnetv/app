@@ -247,10 +247,10 @@ void Parser::load(const QString &fileName,
     if (fileLoaded)
     {
         qDebug() << "[PARSER] emit signalFileLoaded:"
-         << "fileFormat" << fileFormat
-         << "edgeDirType" << edgeDirType
-         << "totalLinks(parser)" << totalLinks
-         << "totalNodes" << totalNodes;
+                 << "fileFormat" << fileFormat
+                 << "edgeDirType" << edgeDirType
+                 << "totalLinks(parser)" << totalLinks
+                 << "totalNodes" << totalNodes;
 
         emit signalFileLoaded(fileFormat,
                               fileName,
@@ -307,10 +307,11 @@ void Parser::createRandomNodes(const int &fixedNum,
  * @brief Normalizes a quoted identifier from external network formats.
  *
  * Some formats (e.g. Pajek) use quotes in headers as syntactic delimiters, such as:
- *
+ * ```
  *   *Matrix 9: "star"
  *   *Matrix :9 "star"
  *   *Matrix :9 'star'
+ * ```
  *
  * Quotes are part of the file syntax and must not become part of the internal
  * relation name. This function:
@@ -334,7 +335,7 @@ QString Parser::normalizeQuotedIdentifier(const QString &s)
     if (out.size() >= 2)
     {
         const QChar first = out.front();
-        const QChar last  = out.back();
+        const QChar last = out.back();
 
         if ((first == '"' && last == '"') || (first == '\'' && last == '\''))
             out = out.mid(1, out.size() - 2);
@@ -1429,14 +1430,14 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
              *
              * IMPORT IS TOLERANT.
              *
-             * The parser must accept common real-world variants, including:
+             * The parser accepts common real-world variants, including:
              *
              *   *Matrix :1
              *   *Matrix :1 "Label"
              *   *Matrix 1:
              *   *Matrix 1: "Label"
              *
-             * The parser must normalize the relation name so that:
+             * The parser normalizes the relation name so that:
              *   - Leading ":k", "k", or "k:" tokens do not pollute the label.
              *   - Wrapping quotes are removed.
              *
@@ -1446,6 +1447,63 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
              * Canonicalization belongs to export, not import.
              */
 
+            auto parsePajekMatrixHeader = [](const QString &line,
+                                                 int *outK,
+                                                 QString *outLabel) -> bool
+            {
+                // Accept:
+                //   *Matrix :1
+                //   *Matrix :1 "Label"
+                //   *Matrix 1:
+                //   *Matrix 1: "Label"
+                //
+                // Output:
+                //   outK = 1-based matrix index
+                //   outLabel = cleaned label (no surrounding quotes), may be empty
+
+                QString s = line.trimmed();
+
+                // Remove leading "*Matrix" (case-insensitive)
+                if (!s.toLower().startsWith("*matrix"))
+                    return false;
+
+                s = s.mid(QString("*matrix").size()).trimmed();
+                if (s.isEmpty())
+                    return false;
+
+                // Optional ":" before k
+                if (s.startsWith(':'))
+                    s = s.mid(1).trimmed();
+
+                // Read integer k
+                int pos = 0;
+                while (pos < s.size() && s.at(pos).isDigit())
+                    ++pos;
+
+                if (pos == 0)
+                    return false;
+
+                bool ok = false;
+                const int k = s.left(pos).toInt(&ok);
+                if (!ok || k <= 0)
+                    return false;
+
+                s = s.mid(pos).trimmed();
+
+                // Optional ":" after k
+                if (s.startsWith(':'))
+                    s = s.mid(1).trimmed();
+
+                // Whatever remains is the optional label
+                QString label;
+                if (!s.isEmpty())
+                    label = normalizeQuotedIdentifier(s); // your existing helper (strips wrapping quotes etc)
+
+                *outK = k;
+                *outLabel = label.trimmed();
+                return true;
+            };
+
             qDebug() << str;
             arcs_flag = false;
             edges_flag = false;
@@ -1453,10 +1511,13 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
             matrix_flag = true;
             // check if row has label for matrix data,
             //  and use it as relation name
-            if ((pos = str.indexOf(":")) != -1)
+            int k = 0;
+            QString label;
+            if (parsePajekMatrixHeader(str, &k, &label))
             {
-                relation = str.right(str.size() - pos - 1);
-                relation = normalizeQuotedIdentifier(relation);
+                // If label missing, use temporary name = index (for UI)
+                relation = label.isEmpty() ? QString::number(k) : label;
+
                 relationsList << relation;
                 qDebug() << "added new relation" << relation
                          << "to relationsList - signaling to add new relation";
@@ -1468,13 +1529,14 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                              << lastRelationIndex
                              << "signaling to change to the last relation...";
                     emit signalSetRelation(lastRelationIndex);
-                    i = 0; // reset the source node index
                 }
+                i = 0; // reset the source node index
             }
+
             continue;
         }
 
-        /** READING NODES */
+        /** READING NODES, THEN EDGES/ARCS */
         if (!edges_flag && !arcs_flag && !arcslist_flag && !matrix_flag)
         {
             // qDebug("=== Reading nodes ===");
@@ -1642,10 +1704,10 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                 nodeShape, QString());
             initNodeColor = nodeColor;
         }
-        // NODES CREATED. CREATE EDGES/ARCS NOW.
-        // first check that all nodes are already created
         else
         {
+            // NODES CREATED. CREATE EDGES/ARCS NOW.
+            // first check that all nodes are already created
             if (j && j != totalNodes)
             { // if there were more or less nodes than the file declared
                 qDebug() << "*** WARNING ***: The Pajek file declares " << totalNodes << "  nodes, but I found " << j << " nodes....";
