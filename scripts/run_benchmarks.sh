@@ -121,7 +121,7 @@ extract_kv_int() {
   awk -F= -v k="$key" '$1==k { print $2 }'
 }
 
-pct_slower_than() {
+within_threshold() {
   local actual="$1"
   local expected="$2"
   [[ -z "$actual" || -z "$expected" ]] && return 1
@@ -167,7 +167,7 @@ run_case() {
   fi
 
   local ok median
-  ok="$(printf '%s\n' "$out" | extract_kv_int OK | tail -n1)"
+  ok="$(printf '%s\n' "$out" | extract_kv_int LOAD_OK | tail -n1)"
   median="$(printf '%s\n' "$out" | extract_kv_int COMPUTE_MS_MEDIAN | tail -n1)"
 
   echo "OK=$ok MEDIAN_MS=$median"
@@ -191,11 +191,15 @@ run_case() {
     return 0
   fi
 
-  if pct_slower_than "$median" "$expected"; then
-    echo "OK: ${median}ms <= ${expected}ms (+10%)"
+  local allowed
+  # allowed threshold = expected + 10%
+  allowed=$(( expected + (expected / 10) ))
+
+  if within_threshold "$median" "$expected"; then
+    echo "OK: ${median}ms <= ${allowed}ms (baseline ${expected}ms, +10%)"
     return 0
   else
-    echo "WARN: ${median}ms > ${expected}ms (+10%)"
+    echo "FAIL: ${median}ms > ${allowed}ms (baseline ${expected}ms, +10%)"
     [[ "$STRICT" == "1" ]] && return 1
     return 0
   fi
