@@ -17,7 +17,7 @@
     "kernel": "io_roundtrip",
     "load_report": {
         "fileType_signal": 2,
-        "load_ms": 1,
+        "load_ms": 3,
         "load_msg": "",
         "net_name": "Stephenson_and_Zelen_5_actors_6edges",
         "ok": true
@@ -28,7 +28,7 @@
     "relations_bundle": [
         {
             "index": 0,
-            "name": "1 non-weighted",
+            "name": "non-weighted",
             "signature": {
                 "edge_list": [
                     {
@@ -117,7 +117,7 @@
         },
         {
             "index": 1,
-            "name": "2 weighted",
+            "name": "weighted",
             "signature": {
                 "edge_list": [
                     {
@@ -301,9 +301,9 @@
         ]
     },
     "timings": {
-        "load_ms": 1,
+        "load_ms": 3,
         "reload_ms": 0,
         "save_ms": 0,
-        "total_ms": 1
+        "total_ms": 2
     }
 }

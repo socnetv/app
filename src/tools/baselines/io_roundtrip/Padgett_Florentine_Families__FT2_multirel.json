@@ -17,7 +17,7 @@
     "kernel": "io_roundtrip",
     "load_report": {
         "fileType_signal": 2,
-        "load_ms": 3,
+        "load_ms": 2,
         "load_msg": "",
         "net_name": "Padgett's Florentine Families",
         "ok": true
@@ -770,9 +770,9 @@
         ]
     },
     "timings": {
-        "load_ms": 3,
+        "load_ms": 2,
         "reload_ms": 0,
         "save_ms": 0,
-        "total_ms": 2
+        "total_ms": 3
     }
 }

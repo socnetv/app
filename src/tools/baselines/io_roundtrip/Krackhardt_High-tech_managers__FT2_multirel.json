@@ -17,7 +17,7 @@
     "kernel": "io_roundtrip",
     "load_report": {
         "fileType_signal": 2,
-        "load_ms": 3,
+        "load_ms": 1,
         "load_msg": "",
         "net_name": "Krackhardt's High-tech managers",
         "ok": true
@@ -28,7 +28,7 @@
     "relations_bundle": [
         {
             "index": 0,
-            "name": "1 gives_advice_to",
+            "name": "gives_advice_to",
             "signature": {
                 "edge_list": [
                     {
@@ -1055,7 +1055,7 @@
         },
         {
             "index": 1,
-            "name": "2 is_friend_of",
+            "name": "is_friend_of",
             "signature": {
                 "edge_list": [
                     {
@@ -1642,7 +1642,7 @@
         },
         {
             "index": 2,
-            "name": "3 reports_to",
+            "name": "reports_to",
             "signature": {
                 "edge_list": [
                     {
@@ -2852,9 +2852,9 @@
         ]
     },
     "timings": {
-        "load_ms": 3,
-        "reload_ms": 1,
+        "load_ms": 1,
+        "reload_ms": 2,
         "save_ms": 1,
-        "total_ms": 6
+        "total_ms": 11
     }
 }
