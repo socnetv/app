@@ -5,13 +5,13 @@
 3 "3" ic red		0.758468 	0.724189	circle
 4 "4" ic red		0.226804 	0.724189	circle
 5 "5" ic red		0.480118 	0.10472	circle
-*Matrix 1: non-weighted
+*Matrix :1 non-weighted
 0 1 0 1 1 
 1 0 1 0 1 
 0 1 0 1 0 
 1 0 1 0 0 
 1 1 0 0 0
-*Matrix 2: weighted
+*Matrix :2 weighted
 0 2 0 1 5 
 2 0 1 0 5 
 0 1 0 10 0 

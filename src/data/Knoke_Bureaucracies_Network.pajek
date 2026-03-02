@@ -10,7 +10,7 @@
 8 "UWAY" 0.6236    0.8804    0.5000
 9 "WELF" 0.3764    0.8804    0.5000
 10 "WEST" 0.1764    0.7351    0.5000
-*Matrix 1: "Information exchange"
+*Matrix :1 "Information exchange"
 0 1 0 0 1 0 1 0 1 0 
 1 0 1 1 1 0 1 1 1 0 
 0 1 0 1 1 1 1 0 0 1 
@@ -21,7 +21,7 @@
 1 1 0 1 1 0 1 0 1 0 
 0 1 0 0 1 0 1 0 0 0 
 1 1 1 0 1 0 1 0 0 0 
-*Matrix 2: "Money exchange"
+*Matrix :2 "Money exchange"
 0 0 1 0 1 0 0 1 1 1 
 0 0 1 0 0 0 0 0 0 0 
 0 0 0 0 0 0 0 1 0 0 

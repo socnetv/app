@@ -24,7 +24,7 @@
 22 "UK"      0.5921 0.4555
 23 "US"      0.5464 0.5983
 24 "YUG"     0.3576 0.4845
-*Matrix 3: "ws6 - Basic manufactured goods"
+*Matrix :3 "ws6 - Basic manufactured goods"
 0 0 0 1 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1
 1 0 1 1 0 1 0 0 1 0 1 1 1 0 0 0 1 1 1 0 1 0 1 0
 1 1 0 1 1 1 1 0 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1
