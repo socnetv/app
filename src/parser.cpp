@@ -306,17 +306,20 @@ void Parser::createRandomNodes(const int &fixedNum,
 /**
  * @brief Normalizes a quoted identifier from external network formats.
  *
- * Some formats (e.g. Pajek) use double quotes in headers as syntactic
- * delimiters, such as:
+ * Some formats (e.g. Pajek) use quotes in headers as syntactic delimiters, such as:
  *
- *   *Matrix 1: "Marital"
+ *   *Matrix 9: "star"
+ *   *Matrix :9 "star"
+ *   *Matrix :9 'star'
  *
- * The quotes are part of the file syntax and must not become part of the
- * internal relation name. This function:
+ * Quotes are part of the file syntax and must not become part of the internal
+ * relation name. This function:
  *
  *  - trims surrounding whitespace
- *  - removes a single pair of wrapping double quotes, if present
- *  - normalizes doubled quotes ("") inside quoted strings
+ *  - removes a single pair of wrapping double quotes OR single quotes, if present
+ *  - normalizes doubled quotes inside quoted strings:
+ *      ""  -> "
+ *      ''  -> '
  *
  * It does NOT collapse internal whitespace.
  *
@@ -327,15 +330,23 @@ QString Parser::normalizeQuotedIdentifier(const QString &s)
 {
     QString out = s.trimmed();
 
-    // Strip wrapping double quotes (used as format delimiters)
-    if (out.size() >= 2 && out.startsWith('"') && out.endsWith('"'))
-        out = out.mid(1, out.size() - 2);
+    // Strip one pair of wrapping quotes (format delimiters)
+    if (out.size() >= 2)
+    {
+        const QChar first = out.front();
+        const QChar last  = out.back();
+
+        if ((first == '"' && last == '"') || (first == '\'' && last == '\''))
+            out = out.mid(1, out.size() - 2);
+    }
 
     // Normalize doubled quotes inside quoted strings
     out.replace("\"\"", "\"");
+    out.replace("''", "'");
 
     return out.trimmed();
 }
+
 /**
  * @brief Parses the given raw data as DL formatted (UCINET) data.
  *
