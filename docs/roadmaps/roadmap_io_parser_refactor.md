@@ -9,240 +9,94 @@ Reduce tight coupling between `Parser` (Qt signals/threads) and core `Graph` sta
 - ❌ No changes to parsing behavior, graph semantics, or numeric outputs
 - ❌ No UI object construction in IO/algorithm slices (F4 boundary)
 
+## istorical Context Before WS4
+
+* `Parser` mutated `Graph` via Qt signals.
+* GUI and CLI wired those signals to `Graph` mutators.
+* Mutation contract was implicit and spread across multiple locations.
+* Signal fan-out was the de facto API.
+
+This was fragile and hard to test deterministically.
+
 ## Current Reality
-- `Parser` emits signals; `Graph` consumes them to mutate graph/model state.
-- Headless loading exists via CLI wiring (local `Parser` on a local `QThread`, signals connected directly to `Graph` mutators).
-- UI path uses similar signal wiring (must remain behavior-identical).
 
-## Parser → Graph Signal Contract (P1)
-The following signals define the mutation stream from `Parser` into `Graph`.
-This mapping must remain stable during WS4:
+- `Parser` now mutates `Graph` exclusively via `IGraphParseSink`.
+- Legacy Parser→Graph signal fan-out has been removed.
+- Headless and GUI loading paths are sink-backed and behaviorally identical.
+- Parsing still runs on a dedicated worker thread (GUI + CLI).
 
-### Relation lifecycle
-- `Parser::signalAddNewRelation(QString relName, bool changeRelation)`
-  → `Graph::relationAdd(QString relName, bool changeRelation)`
-- `Parser::signalSetRelation(int relIndex, bool updateUI)`
-  → `Graph::relationSet(int relIndex, bool updateUI)`
+## Parser → Graph Mutation Contract (Post-P3)
 
-### Node creation
-- `Parser::signalCreateNode(...)`
-  → `Graph::vertexCreate(...)`
-- `Parser::signalCreateNodeAtPosRandom(bool signalMW)`
-  → `Graph::vertexCreateAtPosRandom(bool signalMW)`
-- `Parser::signalCreateNodeAtPosRandomWithLabel(int num, QString label, bool signalMW)`
-  → `Graph::vertexCreateAtPosRandomWithLabel(int num, QString label, bool signalMW)`
+The mutation stream from `Parser` into `Graph` is now defined by `IGraphParseSink`.
 
-### Edge creation
-- `Parser::signalCreateEdge(int source, int target, double weight, QString color, int edgeDirType, bool arrows, bool bezier, QString edgeLabel, bool signalMW)`
-  → `Graph::edgeCreate(...)`
+All graph/model mutations during parsing must flow exclusively through:
 
-### File loaded / finalization
-- `Parser::signalFileLoaded(int fileType, QString fileName, QString netName, int totalNodes, int totalLinks, int edgeDirType, qint64 elapsedTime, QString message)`
-  → `Graph::graphFileLoaded(...)`
+- `addNewRelation(...)`
+- `setRelation(...)`
+- `createNode(...)`
+- `createNodeAtPosRandom(...)`
+- `createNodeAtPosRandomWithLabel(...)`
+- `createEdge(...)`
+- `removeDummyNode(...)`
+- `fileLoaded(...)`
 
-### Legacy cleanup
-- `Parser::removeDummyNode(int)`
-  → `Graph::vertexRemoveDummyNode(int)`
+Legacy Qt mutation signals have been removed (P3.6–P3.7).
 
 ### Terminal signal
-- `Parser::finished(QString)`
-  Used by headless loaders as a fallback “done” signal to avoid deadlocks if `Graph::signalGraphLoaded` does not fire.
+
+- `Parser::finished(QString)` remains for lifecycle completion.
+- Preferred completion signal remains `Graph::signalGraphLoaded`.
 
 ### Completion condition (important)
-Headless loaders should block until `Graph::signalGraphLoaded` is emitted (preferred completion),
-with `Parser::finished` used only as a safety fallback.
 
-## Target Direction
-Introduce an IO layer that can load deterministically into a model.
-Keep the Qt signal-based pipeline initially, but provide a non-UI entry point.
-Status: Parser signal fan-out is now defined in a single location.
-GUI and CLI loading paths are behaviorally aligned.
+Headless loaders block until:
+- Preferred: `Graph::signalGraphLoaded`
+- Fallback: `Parser::finished`
+
 
 ## Milestones
 
-### P1 (DONE): Document `Parser` entrypoints + signal contract 
-### P2 (DONE): Extracted centralized Parser→Graph wiring helper
-  (`src/graph/io/graph_parser_wiring.{h,cpp}`) and updated both
-  GUI (`Graph::loadFile`) and CLI headless loader to use it.
-  No semantic changes. Golden + benchmark parity verified.
-### P3 (DONE): Replace signal fan-out with an explicit builder / transaction API (still semantics-identical).
-**Goal:** Keep parsing semantics identical, but stop treating signals as “the API”.
-Parser should write into a narrow “mutation sink” (builder/transaction) that is explicit and testable. Qt signals may remain as a compatibility layer temporarily, but they stop being the primary data plane.
+### P1 — Parser API + signal/slot contract documented ✅ DONE
+- Documented Parser mutation surface and completion conditions.
+- Historical note: completion condition = `Graph::signalGraphLoaded`, with `Parser::finished` as fallback.
 
-#### P3.0 (DONE) — Parser audit findings and invariants snapshot 
+### P2 — Centralize Parser→Graph wiring helper ✅ DONE (superseded)
+- Implemented shared wiring helper to prevent drift (GUI + headless).
+- NOTE: This helper was later removed once sink-based mutation became the sole plane (see P3.5).
 
-##### Entry point and execution model
+### P3 — Introduce explicit sink-based mutation plane ✅ DONE
 
-* Parser is invoked via `Parser::load(...)` and runs on a dedicated worker thread in both GUI and CLI.
-* Parser does **not** use timers, sleeps, `processEvents`, or any internal event loops.
-* Thread use in Parser is limited to debug logging (`QThread::currentThread()`).
+#### P3.1 — Add mutation sink interface ✅ DONE
+- Added `IGraphParseSink` (signal-parity contract).
 
-##### Mutation stream contract (must remain identical)
+#### P3.2 — Add Graph-backed sink adapter ✅ DONE
+- Added `GraphParseSinkGraph` forwarding sink → Graph façade mutators.
 
-Parser mutates the graph only through the standard mutation signals (now centralized via `wireParserToGraph()`):
+#### P3.3 — Parser supports optional sink ✅ DONE
+- Added `Parser::setParseSink(...)` and `Parser::setOwnedParseSink(...)` for thread-safe lifetime.
+- Parser forwards mutation events to sink (preserving ordering and payload parity).
 
-* Relations:
+#### P3.4 — Switch GUI load path to sink-backed mutation ✅ DONE
+- `Graph::loadFile(...)` configures an owned `GraphParseSinkGraph` on the Parser.
+- GUI no longer uses mutation signal wiring.
 
-  * `signalAddNewRelation(name, changeRelation)`
-  * `signalSetRelation(index, updateUI)`
-* Nodes:
+#### P3.5 — Remove legacy Parser→Graph wiring helper ✅ DONE
+- Deleted `src/graph/io/graph_parser_wiring.{h,cpp}` and removed from build files.
 
-  * `signalCreateNode(...)`
-  * `signalCreateNodeAtPosRandom(...)`
-  * `signalCreateNodeAtPosRandomWithLabel(...)`
-* Edges:
+#### P3.6 — Stop emitting legacy Parser mutation signals ✅ DONE
+- Removed `emit` for mutation signals (sink is the sole mutation plane).
 
-  * `signalCreateEdge(source, target, weight, color, edgeDirType, arrows, bezier[, edgeLabel][, signalMW])`
-* Cleanup:
+#### P3.7 — Remove legacy Parser mutation signals ✅ DONE
+- Deleted unused mutation signal declarations from `parser.h`.
+- Parsing mutations now flow exclusively through `IGraphParseSink` (GUI + headless).
 
-  * `removeDummyNode(int)` emitted from Parser (legacy signal)
-* Finalization:
+### P4 — Golden IO coverage + roundtrip stability ✅ DONE
+- Implemented via CLI golden harness:
+  - `scripts/run_golden_compares.sh`
+  - `io_roundtrip` kernel baselines in `src/tools/baselines/io_roundtrip/`
+- Coverage includes GraphML (FT1) plus multiple additional formats (e.g., Pajek/Adj/DOT/DL/GML/EdgeList).
+- Formats without exporters are still covered: “export skipped” outcome is baseline-locked.
 
-  * `signalFileLoaded(fileType, fileName, netName, totalNodes, totalLinks, edgeDirType, elapsedTime, message)`
-  * `finished(reason)` is emitted at the end of `Parser::load()` (also used as headless fallback).
-
-**Completion rule (loader behavior):**
-
-* Preferred completion: `Graph::signalGraphLoaded` (emitted by `Graph::graphFileLoaded`).
-* Fallback completion: `Parser::finished`.
-
-##### Semantics decision points (do not “fix” during refactor)
-
-* `edgeDirType` is mutable during parsing and may change per format and/or per line (e.g., DOT `graph|digraph`, `--` vs `->`).
-* Parser sometimes emits per-edge direction explicitly (`EdgeType::Directed` / `Undirected`) and sometimes uses a variable `edgeDirType`.
-* P3 must preserve exact timing and values of:
-
-  * per-edge `edgeDirType` argument in `signalCreateEdge`
-  * graph-level `edgeDirType` argument emitted in `signalFileLoaded`
-
-##### Totals and counters (known non-authoritative behavior)
-
-* Parser maintains `totalNodes` and `totalLinks` in format-specific ways.
-* In Pajek parsing, undirected `*Edges` are counted as `+2` per edge line; arcs and other modes use `+1`.
-* Graph is the source of truth for ties/links: `Graph::graphFileLoaded()` recomputes actual links via adjacency recount (`edgesEnabled()`), and does not trust `totalLinks` from Parser (see issue #183 note in Graph).
-
-##### Default relation behavior (must preserve timing)
-
-* Multiple parsers/handlers explicitly create and select a default relation:
-
-  * `signalAddNewRelation("unnamed")`
-  * `signalSetRelation(0)`
-* P3 must not centralize or “simplify” this unless emission order remains identical per handler.
-
-##### Current wiring locations (P1/P2 status check)
-
-* GUI: `Graph::loadFile()` uses `SocNetV::IO::wireParserToGraph()`
-* CLI: `loadGraphHeadless()` uses `SocNetV::IO::wireParserToGraph()`
-* The mutation contract is defined in a single place (`src/graph/io/graph_parser_wiring.*`).
-
----
-
-#### P3.1 (DONE) — Introduce “mutation sink” interface (new, minimal) ✅
-
-**Deliverables**
-
-* New interface (header-only initially is OK), e.g. `IGraphParseSink` or `GraphParseTransaction`.
-* Methods map 1:1 to current mutation operations (no new semantics):
-
-  * begin/end relation, set relation
-  * create node variants
-  * create edge
-  * optional “remove dummy node”
-  * finalize (fileType, edgeDirType, etc.) **but only as data**, not as UI signals
-
-**Rules**
-
-* No UI types.
-* No ownership/lifetime surprises.
-* Keep everything synchronous at first.
-
-**Verification**
-
-* Build GUI + CLI.
-* Goldens + benchmarks.
-
-#### P3.2 (DONE) — Implement Graph-backed sink adapter (thin wrapper) ✅
-
-**Deliverables**
-
-* Implement sink that calls Graph methods **with the exact same arguments** currently provided via signals.
-* This is effectively the “explicit equivalent” of `wireParserToGraph()`.
-
-**Verification**
-
-* Build GUI + CLI.
-* Goldens + benchmarks.
-
-#### P3.3 (DONE) — Parser writes to sink (keep signals as compatibility, initially) ✅
-
-- Added `IGraphParseSink` interface under `src/graph/io/`
-- Implemented `GraphParseSinkGraph` adapter (Graph-backed)
-- Extended `Parser` with optional `setParseSink()`
-- Parser now forwards all mutation events to sink (if set), preserving exact argument ordering and semantics
-- Headless loader switched to sink-backed mutation (signals removed from CLI path)
-- GUI load path still uses signal wiring (unchanged)
-- Golden parity confirmed
-- Benchmarks within guardrails
-
-#### P3.4 (DONE) — Switch GUI load path to sink-backed mutation ✅
-
-- Graph::loadFile now sets an owned parse sink on Parser (thread-safe lifetime).
-- Removed GUI Parser→Graph mutation wiring via wireParserToGraph.
-- Parser still emits mutation signals (unchanged), but Graph no longer consumes them in GUI load path.
-- Golden parity confirmed.
-- Benchmarks within guardrails (no strict regressions expected; CLI unaffected by this step).
-
-#### P3.5 (DONE) — Remove legacy Parser→Graph signal wiring helper ✅
-
-- Deleted src/graph/io/graph_parser_wiring.{h,cpp}
-- Removed from CMake and qmake project files
-- Parser mutation plane is now sink-backed for both GUI and headless
-- Golden parity confirmed
-
-
-#### P3.6 (DONE) — Stop emitting legacy Parser mutation signals ✅
-
-Now that parsing mutations flow exclusively via `IGraphParseSink` for both GUI and headless paths (P3.4) and the legacy wiring helper is removed (P3.5), the Parser mutation signals are no longer consumed in-tree.
-
-Changes:
-- Removed `emit` calls for legacy mutation signals:
-  - `signalAddNewRelation`
-  - `signalSetRelation`
-  - `signalCreateNode`
-  - `signalCreateNodeAtPosRandom`
-  - `signalCreateNodeAtPosRandomWithLabel`
-  - `signalCreateEdge`
-  - `signalFileLoaded`
-- Sink calls remain unchanged and preserve exact argument ordering and semantics.
-- Golden parity confirmed.
-
-Verification:
-- `rg -n 'connect\([^)]*Parser::signal(CreateNode|CreateEdge|FileLoaded|AddNewRelation|SetRelation)' src` returns no matches.
-- `./scripts/run_golden_compares.sh` passes.
-
-#### P3.7 (DONE) — Remove legacy Parser mutation signals ✅
-
-- Removed Parser mutation signal declarations and remaining emit sites:
-  `signalAddNewRelation`, `signalSetRelation`, `signalCreateNode`,
-  `signalCreateNodeAtPosRandom`, `signalCreateNodeAtPosRandomWithLabel`,
-  `signalCreateEdge`, `signalFileLoaded` (and legacy `removeDummyNode` mutation signal if present).
-- Parser mutation plane is now sink-only (`IGraphParseSink`) for both GUI and headless.
-- Golden parity confirmed.
-
-**Work Discipline**
-
-* One sub-step per commit.
-* After every commit: build, run goldens, run benchmarks, inspect diffs.
-
-### P4 (DONE) — Golden IO coverage + roundtrip stability ✅
-
-Status: implemented via the CLI golden regression harness.
-
-Coverage is enforced by:
-- `scripts/run_golden_compares.sh`:
-  - `io_roundtrip` kernel baselines under `src/tools/baselines/io_roundtrip/`
-  - Includes GraphML (FT1) plus multiple other formats (FT2/3/4/5/6/7)
-  - Export-skipped formats still produce stable signature baselines (skipped outcome is locked in)
 
 Notes:
 - Adding new IO coverage is done by:
@@ -253,10 +107,86 @@ Notes:
 ---
 
 
-## Work Rules
-- No semantic changes to file parsing behavior during extraction.
-- Always test with known datasets and inspect golden output diffs.
-- After structural changes:
-  - build (GUI + CLI)
-  - `./scripts/run_golden_compares.sh`
-  - `./scripts/run_benchmarks.sh` (includes IO benchmarks)
+## Next Steps
+
+### P5 — Introduce ParseConfig boundary (reduce coupling) ⏳ TODO
+
+Goal:
+Eliminate implicit coupling between Parser and Graph/UI defaults while preserving exact parsing semantics and numeric outputs.
+
+Current issue:
+`Parser::load(...)` accepts a large parameter list (node defaults, edge defaults, canvas size, format flags) and threads them through format handlers.
+
+Plan:
+- Introduce an immutable `ParseConfig` struct (QtCore-only types).
+- At the start of `Parser::load(...)`, construct `ParseConfig cfg{...}` from existing parameters.
+- Refactor internal parse handlers to accept `const ParseConfig&` instead of individual defaults.
+- Do NOT change the public signature of `Parser::load(...)` initially.
+
+Rules:
+- No logic changes.
+- No reordering of operations.
+- No change to emission order or values passed to sink.
+- Golden parity required.
+
+Verification:
+- build
+- `./scripts/run_golden_compares.sh`
+- `./scripts/run_benchmarks.sh`
+
+### P6 — Split parser.cpp by file type translation units ⏳ TODO
+
+Goal:
+Reduce translation unit size and improve locality without changing behavior.
+
+Target layout (all remain `Parser::` member functions):
+
+- `src/parser/parser_common.cpp`      (shared helpers)
+- `src/parser/parser_edgelist.cpp`    (Simple + Weighted edgelists)
+- `src/parser/parser_adjacency.cpp`   (Adjacency / Sociomatrix)
+- `src/parser/parser_dl.cpp`          (UCINET DL)
+- `src/parser/parser_pajek.cpp`       (Pajek NET/PAJ)
+- `src/parser/parser_graphml.cpp`     (GraphML XML)
+- `src/parser/parser_gml.cpp`         (GML)
+- `src/parser/parser_dot.cpp`         (GraphViz DOT)
+
+Execution discipline:
+- Extract one format per commit.
+- Each commit must:
+  - compile (GUI + CLI)
+  - pass goldens
+  - pass benchmarks
+- No logic edits during extraction.
+- Only mechanical move + include fixes.
+
+Build updates required:
+- Add each new `.cpp` to:
+  - CMake target sources
+  - `socnetv.pro`
+
+Code size policy:
+- Preferred TU size: 500–1500 LOC
+- >3000 LOC after extraction → candidate for further slicing
+
+### P7 — Optional: explicit parse transaction layer ⏳ OPTIONAL
+
+Goal:
+Make parsing explicitly transactional while preserving semantics.
+
+Idea:
+- Introduce a lightweight `ParseTransaction` object created in `Parser::load(...)`.
+- Parser writes events into the transaction.
+- Sink applies mutations.
+- No change in mutation ordering or values.
+
+Proceed only if it reduces complexity without altering behavior.
+
+---
+
+## Current Architectural State (Post-P3)
+
+- Parser mutation plane is sink-only (`IGraphParseSink`).
+- No Parser→Graph mutation signals remain.
+- GUI and CLI loading paths are unified.
+- Golden regression harness enforces IO + roundtrip stability.
+- Benchmarks enforce performance guardrails.
