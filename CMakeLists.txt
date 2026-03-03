@@ -111,6 +111,7 @@ set(GRAPH_SOURCES
     src/graph/storage/graph_vertices.cpp
     src/graph/storage/graph_edges.cpp
     src/graph/io/graph_io.cpp
+    src/graph/io/graph_parser_wiring.cpp
     src/graph/relations/graph_relations.cpp
     src/graph/filters/graph_edge_filters.cpp
     src/graph/filters/graph_node_filters.cpp

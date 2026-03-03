@@ -5,6 +5,7 @@
 #include <QMetaObject>
 #include <QDebug>
 
+#include "../graph/io/graph_parser_wiring.h"
 #include "../graph.h"
 #include "../parser.h"
 
@@ -45,30 +46,7 @@ HeadlessLoadResult loadGraphHeadless(
     // QObject::connect(&parserThread, &QThread::finished,
     //                  parser, &QObject::deleteLater);
 
-    // ---- Mirror Graph::loadFile() signal wiring ----
-    QObject::connect(parser, &Parser::signalAddNewRelation,
-                     &graph, &Graph::relationAdd);
-
-    QObject::connect(parser, &Parser::signalSetRelation,
-                     &graph, &Graph::relationSet);
-
-    QObject::connect(parser, &Parser::signalCreateNode,
-                     &graph, &Graph::vertexCreate);
-
-    QObject::connect(parser, &Parser::signalCreateNodeAtPosRandom,
-                     &graph, &Graph::vertexCreateAtPosRandom);
-
-    QObject::connect(parser, &Parser::signalCreateNodeAtPosRandomWithLabel,
-                     &graph, &Graph::vertexCreateAtPosRandomWithLabel);
-
-    QObject::connect(parser, &Parser::signalCreateEdge,
-                     &graph, &Graph::edgeCreate);
-
-    QObject::connect(parser, &Parser::signalFileLoaded,
-                     &graph, &Graph::graphFileLoaded);
-
-    QObject::connect(parser, SIGNAL(removeDummyNode(int)),
-                     &graph, SLOT(vertexRemoveDummyNode(int)));
+    SocNetV::IO::wireParserToGraph(parser, &graph);
 
     // We'll block until Graph emits signalGraphLoaded
     QEventLoop loop;

@@ -1,156 +1,71 @@
-# IO / Parser Refactor Roadmap (WS4)
+# IO / Parser Refactor Roadmap
 
 ## Goal
+Reduce tight coupling between `Parser` (Qt signals/threads) and core `Graph` state, while preserving **identical parsing semantics** and **deterministic outputs** (golden parity required).
 
-Reduce tight coupling between `Parser` (Qt signals / threads) and core graph state,
-while preserving exact parsing behavior and performance.
-
-This work prepares the ground for WS3 (domain model split).
-
----
+## Scope & Non-Goals
+- ✅ Mechanical extraction / boundary cleanup
+- ✅ Deterministic, non-UI entrypoints for loading
+- ❌ No changes to parsing behavior, graph semantics, or numeric outputs
+- ❌ No UI object construction in IO/algorithm slices (F4 boundary)
 
 ## Current Reality
+- `Parser` emits signals; `Graph` consumes them to mutate graph/model state.
+- Headless loading exists via CLI wiring (local `Parser` on a local `QThread`, signals connected directly to `Graph` mutators).
+- UI path uses similar signal wiring (must remain behavior-identical).
 
-* `Parser` emits Qt signals.
-* `Graph` receives those signals and mutates internal state.
-* Parsing, threading, and graph mutation are tightly intertwined.
-* CLI headless loading exists but still follows the same internal wiring.
+## Parser → Graph Signal Contract (P1)
+The following signals define the mutation stream from `Parser` into `Graph`.
+This mapping must remain stable during WS4:
 
----
+### Relation lifecycle
+- `Parser::signalAddNewRelation(QString relName, bool changeRelation)`
+  → `Graph::relationAdd(QString relName, bool changeRelation)`
+- `Parser::signalSetRelation(int relIndex, bool updateUI)`
+  → `Graph::relationSet(int relIndex, bool updateUI)`
+
+### Node creation
+- `Parser::signalCreateNode(...)`
+  → `Graph::vertexCreate(...)`
+- `Parser::signalCreateNodeAtPosRandom(bool signalMW)`
+  → `Graph::vertexCreateAtPosRandom(bool signalMW)`
+- `Parser::signalCreateNodeAtPosRandomWithLabel(int num, QString label, bool signalMW)`
+  → `Graph::vertexCreateAtPosRandomWithLabel(int num, QString label, bool signalMW)`
+
+### Edge creation
+- `Parser::signalCreateEdge(int source, int target, double weight, QString color, int edgeDirType, bool arrows, bool bezier, QString edgeLabel, bool signalMW)`
+  → `Graph::edgeCreate(...)`
+
+### File loaded / finalization
+- `Parser::signalFileLoaded(int fileType, QString fileName, QString netName, int totalNodes, int totalLinks, int edgeDirType, qint64 elapsedTime, QString message)`
+  → `Graph::graphFileLoaded(...)`
+
+### Legacy cleanup
+- `Parser::removeDummyNode(int)`
+  → `Graph::vertexRemoveDummyNode(int)`
+
+### Terminal signal
+- `Parser::finished(QString)`
+  Used by headless loaders as a fallback “done” signal to avoid deadlocks if `Graph::signalGraphLoaded` does not fire.
+
+### Completion condition (important)
+Headless loaders should block until `Graph::signalGraphLoaded` is emitted (preferred completion),
+with `Parser::finished` used only as a safety fallback.
 
 ## Target Direction
-
-Introduce a clearer IO boundary:
-
-```
-Parser / IO
-      ↓
-Explicit build API
-      ↓
-Graph (façade)
-```
-
-Constraints:
-
-* Parsing logic remains unchanged.
-* Qt signal-based pipeline remains operational during transition.
-* A deterministic, non-UI entry point must exist.
-
----
-
-## Structural Rules (Mandatory)
-
-During WS4:
-
-* Parser may depend on QtCore (QString, QFile, etc.).
-* Parser must not construct UI widgets.
-* Parser must not reach into Graph internals directly.
-* Graph must not depend on Parser implementation details.
-* All graph mutation must flow through an explicit API (introduced in P3).
-
-No semantic parsing changes are allowed unless explicitly approved.
-
----
+Introduce an IO layer that can load deterministically into a model.
+Keep the Qt signal-based pipeline initially, but provide a non-UI entry point.
 
 ## Milestones
+- P1 (DONE): Document `Parser` entrypoints + signal contract (this section).
+- P2: Headless “parse-only” mode (no UI assumptions), shared between GUI/CLI via a single wiring helper.
+- P3: Replace signal fan-out with an explicit builder / transaction API (still semantics-identical).
+- P4: Golden parse tests for key formats (GraphML + at least one other), plus roundtrip stability tests.
 
----
-
-### P1 — Document Parser Contract
-
-**Objective:** make the implicit signal-based contract explicit.
-
-Deliverables:
-
-* List all public Parser entry points.
-* List all emitted signals.
-* For each signal:
-
-  * payload
-  * emission timing (per-file / per-node / per-edge / finalization)
-  * receiving slot(s) in `Graph`
-* Document threading assumptions (who owns Parser, which thread emits).
-
-Definition of Done:
-
-* A documented “Parser → Graph contract” section exists in this file.
-* No behavior changes.
-* Build + golden comparisons pass.
-
----
-
-### P2 — Headless Parse-Only Mode
-
-**Objective:** enable deterministic parsing without UI involvement.
-
-Deliverables:
-
-* Entry point that parses a file without UI signal assumptions.
-* No dependency on `MainWindow`.
-* Works under CLI harness.
-
-Definition of Done:
-
-* CLI can parse datasets and produce deterministic graph state.
-* Golden metric comparisons unchanged.
-* Performance within guardrails.
-
----
-
-### P3 — Introduce Explicit Builder / Transaction API
-
-**Objective:** replace implicit signal fan-out with controlled graph mutation.
-
-Deliverables:
-
-* Define a minimal “GraphBuild” API.
-* Parser calls explicit mutation methods instead of signal fan-out.
-* Qt signal pipeline temporarily coexists if needed.
-
-Definition of Done:
-
-* Parsing no longer relies on signal chaining for state mutation.
-* UI load flow still functions.
-* Golden + benchmarks pass.
-
----
-
-### P4 — Golden Parse Tests
-
-**Objective:** guarantee parsing determinism.
-
-Deliverables:
-
-* Deterministic structural snapshot (e.g., node/edge count + checksum).
-* Golden tests for:
-
-  * GraphML
-  * One additional commonly used format.
-* Stored under baseline tooling.
-
-Definition of Done:
-
-* Parsing differences become detectable via regression tooling.
-* CI-ready snapshot comparison possible.
-
----
-
-## Regression Discipline
-
-For every milestone:
-
-* Golden metric comparisons must pass.
-* Performance benchmarks must remain within tolerance.
-* Parsing semantics must remain identical.
-
-Parsing changes are considered high-risk and must be validated with known datasets.
-
----
-
-## Sequencing Note
-
-WS4 should be completed before WS3 (domain model split).
-
-Clarifying IO boundaries first prevents domain split from inheriting Qt signal entanglement.
-
----
+## Work Rules
+- No semantic changes to file parsing behavior during extraction.
+- Always test with known datasets and inspect golden output diffs.
+- After structural changes:
+  - build (GUI + CLI)
+  - `./scripts/run_golden_compares.sh`
+  - `./scripts/run_benchmarks.sh` (includes IO benchmarks)
