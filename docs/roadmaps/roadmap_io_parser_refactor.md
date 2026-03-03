@@ -69,7 +69,7 @@ GUI and CLI loading paths are behaviorally aligned.
 **Goal:** Keep parsing semantics identical, but stop treating signals as “the API”.
 Parser should write into a narrow “mutation sink” (builder/transaction) that is explicit and testable. Qt signals may remain as a compatibility layer temporarily, but they stop being the primary data plane.
 
-#### P3.0 (DONE) — Parser audit findings and invariants snapshot
+#### P3.0 (DONE) — Parser audit findings and invariants snapshot 
 
 ##### Entry point and execution model
 
@@ -137,7 +137,7 @@ Parser mutates the graph only through the standard mutation signals (now central
 
 ---
 
-#### P3.1 (DONE) — Introduce “mutation sink” interface (new, minimal)
+#### P3.1 (DONE) — Introduce “mutation sink” interface (new, minimal) ✅
 
 **Deliverables**
 
@@ -161,7 +161,7 @@ Parser mutates the graph only through the standard mutation signals (now central
 * Build GUI + CLI.
 * Goldens + benchmarks.
 
-#### P3.2 (DONE) — Implement Graph-backed sink adapter (thin wrapper)
+#### P3.2 (DONE) — Implement Graph-backed sink adapter (thin wrapper) ✅
 
 **Deliverables**
 
@@ -173,7 +173,7 @@ Parser mutates the graph only through the standard mutation signals (now central
 * Build GUI + CLI.
 * Goldens + benchmarks.
 
-#### P3.3 (DONE) — Parser writes to sink (keep signals as compatibility, initially)
+#### P3.3 (DONE) — Parser writes to sink (keep signals as compatibility, initially) ✅
 
 - Added `IGraphParseSink` interface under `src/graph/io/`
 - Implemented `GraphParseSinkGraph` adapter (Graph-backed)
@@ -184,18 +184,13 @@ Parser mutates the graph only through the standard mutation signals (now central
 - Golden parity confirmed
 - Benchmarks within guardrails
 
-#### P3.4 — Swap GUI path to sink-first (signals only for UI notifications)
+### P3.4 (DONE) — Switch GUI load path to sink-backed mutation ✅
 
-**Deliverables**
-
-* `Graph::loadFile()` (GUI path) creates the sink and passes it to Parser.
-* Parser→Graph mutation happens via sink, not via Qt connects.
-* Keep `signalFileLoaded`/`finished` only as completion notifications (or bridge them).
-
-**Verification**
-
-* Build GUI + CLI.
-* Goldens + benchmarks.
+- Graph::loadFile now sets an owned parse sink on Parser (thread-safe lifetime).
+- Removed GUI Parser→Graph mutation wiring via wireParserToGraph.
+- Parser still emits mutation signals (unchanged), but Graph no longer consumes them in GUI load path.
+- Golden parity confirmed.
+- Benchmarks within guardrails (no strict regressions expected; CLI unaffected by this step).
 
 #### P3.5 — Swap CLI headless path to sink-first (remove dependence on signal wiring)
 

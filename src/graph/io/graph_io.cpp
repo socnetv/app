@@ -22,6 +22,8 @@
 #include <QDir>
 #include <QStringEncoder>
 #include "graph/io/graph_parser_wiring.h"
+#include "graph/io/graph_parse_sink_graph.h"
+#include <memory>
 
 /**
  * @brief Loads a graph from a given file.
@@ -64,8 +66,9 @@ void Graph::loadFile(const QString fileName,
     connect(&file_parserThread, &QThread::finished,
             file_parser, &QObject::deleteLater);
 
-    // Centralized Parser -> Graph wiring (mechanical extraction; no behavior change)
-    SocNetV::IO::wireParserToGraph(file_parser, this);
+    // NEW: GUI uses sink-backed mutation (Parser owns the sink for thread-safe lifetime)
+    file_parser->setOwnedParseSink(
+        std::make_unique<SocNetV::IO::GraphParseSinkGraph>(*this));
 
     connect(file_parser, &Parser::finished,
             this, &Graph::graphLoadedTerminateParserThreads);

@@ -41,15 +41,8 @@ HeadlessLoadResult loadGraphHeadless(
 
     parser->moveToThread(&parserThread);
 
-    // Ensure parser is deleted when thread finishes
-    // But if we do this then deleteLater() may never run because 
-    // we quit the parser thread event loop before it processes deferred deletes.
-    // QObject::connect(&parserThread, &QThread::finished,
-    //                  parser, &QObject::deleteLater);
-
     SocNetV::IO::GraphParseSinkGraph sink(graph);
     parser->setParseSink(&sink);
-    // SocNetV::IO::wireParserToGraph(parser, &graph);
 
     // We'll block until Graph emits signalGraphLoaded
     QEventLoop loop;

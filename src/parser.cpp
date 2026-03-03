@@ -66,7 +66,11 @@ void Parser::setParseSink(SocNetV::IO::IGraphParseSink *sink)
 {
     m_parseSink = sink;
 }
-
+void Parser::setOwnedParseSink(std::unique_ptr<SocNetV::IO::IGraphParseSink> sink)
+{
+    m_ownedParseSink = std::move(sink);
+    m_parseSink = m_ownedParseSink.get();
+}
 /**
  * @brief Loads the data of the given network file, and calls the relevant method to parse it.
  *
