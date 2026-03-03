@@ -336,7 +336,6 @@ void Parser::createRandomNodes(const int &fixedNum,
             {
                 m_parseSink->createNodeAtPosRandom(false);
             }
-            emit signalCreateNodeAtPosRandom(false);
         }
     }
     else
@@ -346,7 +345,6 @@ void Parser::createRandomNodes(const int &fixedNum,
         {
             m_parseSink->createNodeAtPosRandomWithLabel(fixedNum, label, false);
         }
-        emit signalCreateNodeAtPosRandomWithLabel(fixedNum, label, false);
     }
 }
 
@@ -779,7 +777,6 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                 {
                     m_parseSink->addNewRelation(relation);
                 }
-                emit signalAddNewRelation(relation);
             }
         }
 
@@ -944,7 +941,6 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                         {
                             m_parseSink->setRelation(relationCounter);
                         }
-                        emit signalSetRelation(relationCounter);
                     }
                     else if (source > totalNodes)
                     {
@@ -959,7 +955,6 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                         {
                             m_parseSink->setRelation(relationCounter);
                         }
-                        emit signalSetRelation(relationCounter);
                     }
                     else
                     {
@@ -997,8 +992,6 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                                     m_parseSink->createEdge(source, target, edgeWeight, initEdgeColor,
                                                             EdgeType::Directed, arrows, bezier);
                                 }
-                                emit signalCreateEdge(source, target, edgeWeight, initEdgeColor,
-                                                      EdgeType::Directed, arrows, bezier);
                                 totalLinks++;
                             }
                         }
@@ -1014,8 +1007,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                                     m_parseSink->createEdge(source, target, edgeWeight, initEdgeColor,
                                                       EdgeType::Directed, arrows, bezier);
                                 }
-                                emit signalCreateEdge(source, target, edgeWeight, initEdgeColor,
-                                                      EdgeType::Directed, arrows, bezier);
+
                                 totalLinks++;
                                 qDebug() << "TotalLinks= " << totalLinks;
                             }
@@ -1072,7 +1064,6 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                             if (m_parseSink) {
                                     m_parseSink->createEdge(source, target, edgeWeight, initEdgeColor, EdgeType::Directed, arrows, bezier);
                             }
-                            emit signalCreateEdge(source, target, edgeWeight, initEdgeColor, EdgeType::Directed, arrows, bezier);
 
                             totalLinks++;
                             qDebug() << "TotalLinks= " << totalLinks;
@@ -1130,8 +1121,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                     m_parseSink->createEdge(source, target, edgeWeight, initEdgeColor, EdgeType::Directed,
                                             arrows, bezier);
                 }
-                emit signalCreateEdge(source, target, edgeWeight, initEdgeColor, EdgeType::Directed,
-                                      arrows, bezier);
+
                 totalLinks++;
             } // END edgelist1 format reading.
         } // end if data_flag
@@ -1139,14 +1129,10 @@ bool Parser::parseAsDL(const QByteArray &rawData)
 
     if (relationsList.isEmpty())
     {
-        // QString defaultRelation = "DefaultRelation_" + QString::number(QDateTime::currentSecsSinceEpoch());
-        // relationsList << defaultRelation;
-        // emit signalAddNewRelation(defaultRelation);
         if (m_parseSink)
         {
             m_parseSink->addNewRelation("unnamed");
         }
-        emit signalAddNewRelation("unnamed");
     }
 
     // The network has been loaded. Change to the first relation
@@ -1154,7 +1140,6 @@ bool Parser::parseAsDL(const QByteArray &rawData)
     {
         m_parseSink->setRelation(0);
     }
-    emit signalSetRelation(0);
 
     // Clear temp arrays
     lineElement.clear();
@@ -1488,7 +1473,6 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                 {
                     m_parseSink->addNewRelation(relation);
                 }
-                emit signalAddNewRelation(relation);
                 lastRelationIndex = relationsList.size() - 1;
                 if (lastRelationIndex > 0)
                 {
@@ -1499,7 +1483,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                     {
                         m_parseSink->setRelation(lastRelationIndex);
                     }
-                    emit signalSetRelation(lastRelationIndex);
+
                     i = 0; // reset the source node index
                 }
             }
@@ -1616,7 +1600,6 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                 {
                     m_parseSink->addNewRelation(relation);
                 }
-                emit signalAddNewRelation(relation);
                 lastRelationIndex = relationsList.size() - 1;
                 if (lastRelationIndex > 0)
                 {
@@ -1627,7 +1610,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                     {
                         m_parseSink->setRelation(lastRelationIndex);
                     }
-                    emit signalSetRelation(lastRelationIndex);
+
                 }
                 i = 0; // reset the source node index
             }
@@ -1967,8 +1950,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                     m_parseSink->createEdge(source, target, edgeWeight, edgeColor,
                                             EdgeType::Undirected, arrows, bezier, edgeLabel);
                 }
-                emit signalCreateEdge(source, target, edgeWeight, edgeColor,
-                                      EdgeType::Undirected, arrows, bezier, edgeLabel);
+
                 totalLinks = totalLinks + 2;
 
             } // end if EDGES
@@ -2050,8 +2032,6 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                     m_parseSink->createEdge(source, target, edgeWeight, edgeColor,
                                             EdgeType::Directed, arrows, bezier, edgeLabel);
                 }
-                emit signalCreateEdge(source, target, edgeWeight, edgeColor,
-                                      EdgeType::Directed, arrows, bezier, edgeLabel);
                 totalLinks++;
             } // else if ARCS
             else if (arcslist_flag)
@@ -2074,8 +2054,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                         m_parseSink->createEdge(source, target, edgeWeight, edgeColor,
                                                 EdgeType::Directed, arrows, bezier);
                     }
-                    emit signalCreateEdge(source, target, edgeWeight, edgeColor,
-                                          EdgeType::Directed, arrows, bezier);
+
                     totalLinks++;
                 }
             } // else if ARCSLIST
@@ -2102,8 +2081,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                             m_parseSink->createEdge(source, target + 1, edgeWeight, edgeColor,
                                                     EdgeType::Directed, arrows, bezier);
                         }
-                        emit signalCreateEdge(source, target + 1, edgeWeight, edgeColor,
-                                              EdgeType::Directed, arrows, bezier);
+
                         totalLinks++;
                     }
                 }
@@ -2136,7 +2114,6 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
         {
             m_parseSink->addNewRelation(networkName);
         }
-        emit signalAddNewRelation(networkName);
     }
 
     qDebug() << "Clearing temporary dummies and relations list";
@@ -2148,7 +2125,6 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
     {
         m_parseSink->setRelation(0);
     }
-    emit signalSetRelation(0);
 
     if (has_arcs)
     {
@@ -2228,7 +2204,7 @@ bool Parser::parseAsAdjacency(const QByteArray &rawData, const QString &delimite
         {
             m_parseSink->addNewRelation("unnamed");
         }
-        emit signalAddNewRelation("unnamed");
+
     }
 
     qDebug() << "Finished OK. Returning.";
@@ -2458,7 +2434,7 @@ bool Parser::createEdgesForRow(const QStringList &currentRow, int rowIndex)
             {
                 m_parseSink->createEdge(rowIndex, colIndex, edgeWeight, initEdgeColor, EdgeType::Directed, true, false);
             }
-            emit signalCreateEdge(rowIndex, colIndex, edgeWeight, initEdgeColor, EdgeType::Directed, true, false);
+
             totalLinks++;
         }
     }
@@ -2589,7 +2565,7 @@ bool Parser::parseAsTwoModeSociomatrix(const QByteArray &rawData)
                         {
                             m_parseSink->createEdge(i, k, edgeWeight, initEdgeColor, EdgeType::Undirected, arrows, bezier);
                         }
-                        emit signalCreateEdge(i, k, edgeWeight, initEdgeColor, EdgeType::Undirected, arrows, bezier);
+
                         totalLinks++;
                     }
                 }
@@ -2604,7 +2580,6 @@ bool Parser::parseAsTwoModeSociomatrix(const QByteArray &rawData)
         {
             m_parseSink->addNewRelation("unnamed");
         }
-        emit signalAddNewRelation("unnamed");
     }
 
     qDebug() << "Finished OK. Returning.";
@@ -2766,7 +2741,6 @@ bool Parser::parseAsGraphML(const QByteArray &rawData)
     {
         m_parseSink->setRelation(0);
     }
-    emit signalSetRelation(0);
 
     qDebug() << "Finished OK. Returning.";
     return true;
@@ -2900,7 +2874,6 @@ void Parser::readGraphMLElementGraph(QXmlStreamReader &xml)
     {
         m_parseSink->addNewRelation(networkName);
     }
-    emit signalAddNewRelation(networkName);
     int lastRelationIndex = relationsList.size() - 1;
     if (lastRelationIndex > 0)
     {
@@ -2912,7 +2885,6 @@ void Parser::readGraphMLElementGraph(QXmlStreamReader &xml)
         {
             m_parseSink->setRelation(lastRelationIndex);
         }
-        emit signalSetRelation(lastRelationIndex);
     }
     qDebug() << "graph id:" << networkName;
 }
@@ -3261,8 +3233,7 @@ void Parser::endGraphMLElementEdge(QXmlStreamReader &xml)
         m_parseSink->createEdge(source, target, edgeWeight, edgeColor, edgeDirType,
                                 arrows, bezier, edgeLabel);
     }
-    emit signalCreateEdge(source, target, edgeWeight, edgeColor, edgeDirType,
-                          arrows, bezier, edgeLabel);
+
     totalLinks++;
     bool_edge = false;
 }
@@ -3707,7 +3678,6 @@ void Parser::createMissingNodeEdges()
                 {
                     m_parseSink->createEdge(source, target, edgeWeight, edgeColor, edgeDirType, arrows, bezier, edgeLabel);
                 }
-                emit signalCreateEdge(source, target, edgeWeight, edgeColor, edgeDirType, arrows, bezier, edgeLabel);
             }
             ++it;
         }
@@ -4323,8 +4293,7 @@ bool Parser::parseAsGML(const QByteArray &rawData)
                     m_parseSink->createEdge(source, target, edgeWeight, edgeColor,
                                             edgeDirType, arrows, bezier, edgeLabel);
                 }
-                emit signalCreateEdge(source, target, edgeWeight, edgeColor,
-                                      edgeDirType, arrows, bezier, edgeLabel);
+
                 continue;
             }
             else if (graphKey)
@@ -4341,7 +4310,6 @@ bool Parser::parseAsGML(const QByteArray &rawData)
         {
             m_parseSink->addNewRelation("unnamed");
         }
-        emit signalAddNewRelation("unnamed");
     }
 
     qDebug() << "Finished OK. Returning.";
@@ -4756,8 +4724,7 @@ bool Parser::parseAsDot(const QByteArray &rawData)
                         m_parseSink->createEdge(source, target, edgeWeight, edgeColor,
                                                 edgeTypeThisLine, arrows, bezier);
                     }
-                    emit signalCreateEdge(source, target, edgeWeight, edgeColor,
-                                          edgeTypeThisLine, arrows, bezier);
+
                 }
 
                 source = target;
@@ -4820,7 +4787,6 @@ bool Parser::parseAsDot(const QByteArray &rawData)
         {
             m_parseSink->addNewRelation(relName);
         }
-        emit signalAddNewRelation(relName);
     }
 
     // IMPORTANT: Preserve graph-level directedness for the file.
@@ -5451,13 +5417,6 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
                                     arrows,
                                     bezier);
         }
-        emit signalCreateEdge(source,
-                              target,
-                              edgeWeight,
-                              initEdgeColor,
-                              edgeDirType,
-                              arrows,
-                              bezier);
 
         ++edge;
     }
@@ -5468,7 +5427,6 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
         {
             m_parseSink->addNewRelation("unnamed");
         }
-        emit signalAddNewRelation("unnamed");
     }
 
     qDebug() << " END. Returning.";
@@ -5794,13 +5752,6 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
                                     arrows,
                                     bezier);
         }
-        emit signalCreateEdge(source,
-                              target,
-                              edgeWeight,
-                              initEdgeColor,
-                              edgeDirType,
-                              arrows,
-                              bezier);
 
         ++edge;
     }
@@ -5811,7 +5762,6 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
         {
             m_parseSink->addNewRelation("unnamed");
         }
-        emit signalAddNewRelation("unnamed");
     }
 
     qDebug() << " Finished OK. Returning.";

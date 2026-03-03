@@ -200,17 +200,25 @@ Parser mutates the graph only through the standard mutation signals (now central
 - Golden parity confirmed
 
 
-#### P3.6 — Deprecate signal wiring helper (keep temporarily, then delete)
+#### P3.6 — Stop emitting legacy Parser mutation signals ✅
 
-**Deliverables**
+Now that parsing mutations flow exclusively via `IGraphParseSink` for both GUI and headless paths (P3.4) and the legacy wiring helper is removed (P3.5), the Parser mutation signals are no longer consumed in-tree.
 
-* Mark `wireParserToGraph()` as transitional / deprecated in comments.
-* Once both GUI + CLI are sink-based and stable, remove the helper and the obsolete connects.
+Changes:
+- Removed `emit` calls for legacy mutation signals:
+  - `signalAddNewRelation`
+  - `signalSetRelation`
+  - `signalCreateNode`
+  - `signalCreateNodeAtPosRandom`
+  - `signalCreateNodeAtPosRandomWithLabel`
+  - `signalCreateEdge`
+  - `signalFileLoaded`
+- Sink calls remain unchanged and preserve exact argument ordering and semantics.
+- Golden parity confirmed.
 
-**Verification**
-
-* Build GUI + CLI.
-* Goldens + benchmarks.
+Verification:
+- `rg -n 'connect\([^)]*Parser::signal(CreateNode|CreateEdge|FileLoaded|AddNewRelation|SetRelation)' src` returns no matches.
+- `./scripts/run_golden_compares.sh` passes.
 
 #### P3.7 — Document final contract + add targeted parse goldens (handoff to P4)
 
