@@ -173,18 +173,16 @@ Parser mutates the graph only through the standard mutation signals (now central
 * Build GUI + CLI.
 * Goldens + benchmarks.
 
-#### P3.3 (CURRENT) — Parser writes to sink (keep signals as compatibility, initially)
+#### P3.3 (DONE) — Parser writes to sink (keep signals as compatibility, initially)
 
-**Deliverables**
-
-* Parser gains an optional sink pointer/reference.
-* Parser internals call `sink->createEdge(...)` etc.
-* Keep emitting signals too for now (or gate via a flag), but ensure **ordering is identical**.
-
-**Verification**
-
-* Build GUI + CLI.
-* Goldens + benchmarks.
+- Added `IGraphParseSink` interface under `src/graph/io/`
+- Implemented `GraphParseSinkGraph` adapter (Graph-backed)
+- Extended `Parser` with optional `setParseSink()`
+- Parser now forwards all mutation events to sink (if set), preserving exact argument ordering and semantics
+- Headless loader switched to sink-backed mutation (signals removed from CLI path)
+- GUI load path still uses signal wiring (unchanged)
+- Golden parity confirmed
+- Benchmarks within guardrails
 
 #### P3.4 — Swap GUI path to sink-first (signals only for UI notifications)
 

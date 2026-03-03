@@ -6,6 +6,7 @@
 #include <QDebug>
 
 #include "../graph/io/graph_parser_wiring.h"
+#include "../graph/io/graph_parse_sink_graph.h"
 #include "../graph.h"
 #include "../parser.h"
 
@@ -46,7 +47,9 @@ HeadlessLoadResult loadGraphHeadless(
     // QObject::connect(&parserThread, &QThread::finished,
     //                  parser, &QObject::deleteLater);
 
-    SocNetV::IO::wireParserToGraph(parser, &graph);
+    SocNetV::IO::GraphParseSinkGraph sink(graph);
+    parser->setParseSink(&sink);
+    // SocNetV::IO::wireParserToGraph(parser, &graph);
 
     // We'll block until Graph emits signalGraphLoaded
     QEventLoop loop;

@@ -161,6 +161,16 @@ void Parser::load(const QString &fileName,
         qint64 elapsedTime = computationTimer.elapsed();
         qDebug() << "Cannot open file" << fileName;
         errorMessage = tr("Cannot open file: %1").arg(fileName);
+        if (m_parseSink) {
+            m_parseSink->fileLoaded(FileType::UNRECOGNIZED,
+                              QString(),
+                              QString(),
+                              0,
+                              0,
+                              false,
+                              elapsedTime,
+                              errorMessage);
+        }
         emit signalFileLoaded(FileType::UNRECOGNIZED,
                               QString(),
                               QString(),
@@ -251,12 +261,21 @@ void Parser::load(const QString &fileName,
 
     if (fileLoaded)
     {
-        qDebug() << "[PARSER] emit signalFileLoaded:"
+        qDebug() << "[PARSER] emit signal fileLoaded:"
                  << "fileFormat" << fileFormat
                  << "edgeDirType" << edgeDirType
                  << "totalLinks(parser)" << totalLinks
                  << "totalNodes" << totalNodes;
-
+        if (m_parseSink)
+        {
+            m_parseSink->fileLoaded(fileFormat,
+                                    fileName,
+                                    networkName,
+                                    totalNodes,
+                                    totalLinks,
+                                    edgeDirType,
+                                    elapsedTime);
+        }
         emit signalFileLoaded(fileFormat,
                               fileName,
                               networkName,
@@ -267,6 +286,17 @@ void Parser::load(const QString &fileName,
     }
     else if (errorMessage != QString())
     {
+        if (m_parseSink)
+        {
+            m_parseSink->fileLoaded(FileType::UNRECOGNIZED,
+                                    QString(),
+                                    QString(),
+                                    0,
+                                    0,
+                                    false,
+                                    elapsedTime,
+                                    errorMessage);
+        }
         emit signalFileLoaded(FileType::UNRECOGNIZED,
                               QString(),
                               QString(),
@@ -298,12 +328,20 @@ void Parser::createRandomNodes(const int &fixedNum,
         for (int i = 0; i < newNodes; i++)
         {
             qDebug() << "Signaling to create multiple nodes. Now signaling for node:" << i + 1;
+            if (m_parseSink)
+            {
+                m_parseSink->createNodeAtPosRandom(false);
+            }
             emit signalCreateNodeAtPosRandom(false);
         }
     }
     else
     {
         qDebug() << "Signaling to create a single node:" << fixedNum << "with label:" << label;
+        if (m_parseSink)
+        {
+            m_parseSink->createNodeAtPosRandomWithLabel(fixedNum, label, false);
+        }
         emit signalCreateNodeAtPosRandomWithLabel(fixedNum, label, false);
     }
 }
@@ -950,6 +988,11 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                             {
                                 // Create self-loop only if DIAGONAL PRESENT and value is non-zero
                                 qDebug() << "Creating self-loop for node " << source;
+                                if (m_parseSink)
+                                {
+                                    m_parseSink->createEdge(source, target, edgeWeight, initEdgeColor,
+                                                            EdgeType::Directed, arrows, bezier);
+                                }
                                 emit signalCreateEdge(source, target, edgeWeight, initEdgeColor,
                                                       EdgeType::Directed, arrows, bezier);
                                 totalLinks++;
@@ -963,6 +1006,10 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                                 qDebug() << "relation" << relationCounter
                                          << "Adding edge from " << source << " to " << target
                                          << " with weight " << edgeWeight;
+                                if (m_parseSink) {
+                                    m_parseSink->createEdge(source, target, edgeWeight, initEdgeColor,
+                                                      EdgeType::Directed, arrows, bezier);
+                                }
                                 emit signalCreateEdge(source, target, edgeWeight, initEdgeColor,
                                                       EdgeType::Directed, arrows, bezier);
                                 totalLinks++;
@@ -1018,7 +1065,9 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                                      << source << " to " << target
                                      << "weight " << edgeWeight
                                      << "signaling to create new edge";
-
+                            if (m_parseSink) {
+                                    m_parseSink->createEdge(source, target, edgeWeight, initEdgeColor, EdgeType::Directed, arrows, bezier);
+                            }
                             emit signalCreateEdge(source, target, edgeWeight, initEdgeColor, EdgeType::Directed, arrows, bezier);
 
                             totalLinks++;
@@ -1072,6 +1121,11 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                 qDebug() << "Signaling to create new edge"
                          << source << "->" << target << " weight= " << edgeWeight
                          << " TotalLinks=  " << totalLinks + 1;
+                if (m_parseSink)
+                {
+                    m_parseSink->createEdge(source, target, edgeWeight, initEdgeColor, EdgeType::Directed,
+                                            arrows, bezier);
+                }
                 emit signalCreateEdge(source, target, edgeWeight, initEdgeColor, EdgeType::Directed,
                                       arrows, bezier);
                 totalLinks++;
@@ -1904,6 +1958,11 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                 arrows = false;
                 bezier = false;
                 qDebug() << "EDGES: signaling to create new edge:" << source << " - " << target;
+                if (m_parseSink)
+                {
+                    m_parseSink->createEdge(source, target, edgeWeight, edgeColor,
+                                            EdgeType::Undirected, arrows, bezier, edgeLabel);
+                }
                 emit signalCreateEdge(source, target, edgeWeight, edgeColor,
                                       EdgeType::Undirected, arrows, bezier, edgeLabel);
                 totalLinks = totalLinks + 2;
@@ -1982,6 +2041,11 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                 bezier = false;
                 has_arcs = true;
                 qDebug() << "ARCS: signaling to create new arc:" << source << "->" << target << "with weight " << weight;
+                if (m_parseSink)
+                {
+                    m_parseSink->createEdge(source, target, edgeWeight, edgeColor,
+                                            EdgeType::Directed, arrows, bezier, edgeLabel);
+                }
                 emit signalCreateEdge(source, target, edgeWeight, edgeColor,
                                       EdgeType::Directed, arrows, bezier, edgeLabel);
                 totalLinks++;
@@ -2001,6 +2065,11 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                 {
                     target = lineElement.at(index).toInt(&ok, 10);
                     qDebug() << "ARCS LIST: signaling to create new arc:" << source << "->" << target << "with weight " << weight;
+                    if (m_parseSink)
+                    {
+                        m_parseSink->createEdge(source, target, edgeWeight, edgeColor,
+                                                EdgeType::Directed, arrows, bezier);
+                    }
                     emit signalCreateEdge(source, target, edgeWeight, edgeColor,
                                           EdgeType::Directed, arrows, bezier);
                     totalLinks++;
@@ -2024,6 +2093,11 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                         qDebug() << " MATRIX: signaling to create new arc"
                                  << source << "->" << target + 1
                                  << "with weight" << weight;
+                        if (m_parseSink)
+                        {
+                            m_parseSink->createEdge(source, target + 1, edgeWeight, edgeColor,
+                                                    EdgeType::Directed, arrows, bezier);
+                        }
                         emit signalCreateEdge(source, target + 1, edgeWeight, edgeColor,
                                               EdgeType::Directed, arrows, bezier);
                         totalLinks++;
@@ -2045,6 +2119,9 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
         qDebug("Trying to delete the dummies now");
         for (list<int>::iterator it = listDummiesPajek.begin(); it != listDummiesPajek.end(); it++)
         {
+            if (m_parseSink) {
+                m_parseSink->removeDummyNode(*it);
+            }
             emit removeDummyNode(*it);
         }
     }
@@ -2373,7 +2450,10 @@ bool Parser::createEdgesForRow(const QStringList &currentRow, int rowIndex)
         {
             qDebug() << "Signaling to create new edge:" << rowIndex << "->" << colIndex
                      << "weight:" << edgeWeight << "TotalLinks:" << totalLinks + 1;
-
+            if (m_parseSink)
+            {
+                m_parseSink->createEdge(rowIndex, colIndex, edgeWeight, initEdgeColor, EdgeType::Directed, true, false);
+            }
             emit signalCreateEdge(rowIndex, colIndex, edgeWeight, initEdgeColor, EdgeType::Directed, true, false);
             totalLinks++;
         }
@@ -2501,6 +2581,10 @@ bool Parser::parseAsTwoModeSociomatrix(const QByteArray &rawData)
                         bezier = false;
                         edgeWeight = 1;
                         qDebug() << "Actor" << i << " on the same event as actor " << k << ". signaling to create new edge";
+                        if (m_parseSink)
+                        {
+                            m_parseSink->createEdge(i, k, edgeWeight, initEdgeColor, EdgeType::Undirected, arrows, bezier);
+                        }
                         emit signalCreateEdge(i, k, edgeWeight, initEdgeColor, EdgeType::Undirected, arrows, bezier);
                         totalLinks++;
                     }
@@ -3168,6 +3252,11 @@ void Parser::endGraphMLElementEdge(QXmlStreamReader &xml)
     }
     qDebug() << "signaling to create new edge"
              << source << "->" << target << " edgeDirType value " << edgeDirType;
+    if (m_parseSink)
+    {
+        m_parseSink->createEdge(source, target, edgeWeight, edgeColor, edgeDirType,
+                                arrows, bezier, edgeLabel);
+    }
     emit signalCreateEdge(source, target, edgeWeight, edgeColor, edgeDirType,
                           arrows, bezier, edgeLabel);
     totalLinks++;
@@ -3610,7 +3699,10 @@ void Parser::createMissingNodeEdges()
                 }
                 qDebug() << "signaling to create new edge:"
                          << source << "->" << target << " edgeDirType value " << edgeDirType;
-
+                if (m_parseSink)
+                {
+                    m_parseSink->createEdge(source, target, edgeWeight, edgeColor, edgeDirType, arrows, bezier, edgeLabel);
+                }
                 emit signalCreateEdge(source, target, edgeWeight, edgeColor, edgeDirType, arrows, bezier, edgeLabel);
             }
             ++it;
@@ -4222,7 +4314,11 @@ bool Parser::parseAsGML(const QByteArray &rawData)
 
                 if (edgeLabel == QString())
                     edgeLabel = edge_source + "->" + edge_target;
-
+                if (m_parseSink)
+                {
+                    m_parseSink->createEdge(source, target, edgeWeight, edgeColor,
+                                            edgeDirType, arrows, bezier, edgeLabel);
+                }
                 emit signalCreateEdge(source, target, edgeWeight, edgeColor,
                                       edgeDirType, arrows, bezier, edgeLabel);
                 continue;
@@ -4540,13 +4636,14 @@ bool Parser::parseAsDot(const QByteArray &rawData)
             totalNodes++;
             randX = rand() % gwWidth;
             randY = rand() % gwHeight;
-            if (m_parseSink) {
+            if (m_parseSink)
+            {
                 m_parseSink->createNode(
-                totalNodes, initNodeSize, initNodeColor,
-                initNodeNumberColor, initNodeNumberSize,
-                nodeLabel, initNodeLabelColor, initNodeLabelSize,
-                QPointF(randX, randY),
-                initNodeShape, QString());
+                    totalNodes, initNodeSize, initNodeColor,
+                    initNodeNumberColor, initNodeNumberSize,
+                    nodeLabel, initNodeLabelColor, initNodeLabelSize,
+                    QPointF(randX, randY),
+                    initNodeShape, QString());
             }
             emit signalCreateNode(
                 totalNodes, initNodeSize, initNodeColor,
@@ -4622,13 +4719,14 @@ bool Parser::parseAsDot(const QByteArray &rawData)
                     totalNodes++;
                     randX = rand() % gwWidth;
                     randY = rand() % gwHeight;
-                    if (m_parseSink) {
+                    if (m_parseSink)
+                    {
                         m_parseSink->createNode(
-                        totalNodes, initNodeSize, nodeColor,
-                        initNodeNumberColor, initNodeNumberSize,
-                        node, initNodeLabelColor, initNodeLabelSize,
-                        QPointF(randX, randY),
-                        initNodeShape, QString());
+                            totalNodes, initNodeSize, nodeColor,
+                            initNodeNumberColor, initNodeNumberSize,
+                            node, initNodeLabelColor, initNodeLabelSize,
+                            QPointF(randX, randY),
+                            initNodeShape, QString());
                     }
                     emit signalCreateNode(
                         totalNodes, initNodeSize, nodeColor,
@@ -4649,6 +4747,11 @@ bool Parser::parseAsDot(const QByteArray &rawData)
                 if (it != nodeSequence.begin())
                 {
                     totalLinks++;
+                    if (m_parseSink)
+                    {
+                        m_parseSink->createEdge(source, target, edgeWeight, edgeColor,
+                                                edgeTypeThisLine, arrows, bezier);
+                    }
                     emit signalCreateEdge(source, target, edgeWeight, edgeColor,
                                           edgeTypeThisLine, arrows, bezier);
                 }
@@ -4679,7 +4782,15 @@ bool Parser::parseAsDot(const QByteArray &rawData)
                     totalNodes++;
                     randX = rand() % gwWidth;
                     randY = rand() % gwHeight;
-
+                    if (m_parseSink)
+                    {
+                        m_parseSink->createNode(
+                            totalNodes, initNodeSize, nodeColor,
+                            initNodeNumberColor, initNodeNumberSize,
+                            label, initNodeLabelColor, initNodeLabelSize,
+                            QPointF(randX, randY),
+                            nodeShape, QString());
+                    }
                     emit signalCreateNode(
                         totalNodes, initNodeSize, nodeColor,
                         initNodeNumberColor, initNodeNumberSize,
@@ -5254,6 +5365,18 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
             qDebug() << "signaling to create new node" << node.value
                      << "label" << node.key
                      << "at pos" << QPointF(randX, randY);
+            if (m_parseSink)
+            {
+                m_parseSink->createNode(node.value,
+                                        initNodeSize,
+                                        initNodeColor,
+                                        initNodeNumberColor,
+                                        initNodeNumberSize,
+                                        node.key,
+                                        initNodeLabelColor, initNodeLabelSize,
+                                        QPointF(randX, randY),
+                                        initNodeShape, QString());
+            }
             emit signalCreateNode(node.value,
                                   initNodeSize,
                                   initNodeColor,
@@ -5270,6 +5393,18 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
             qDebug() << "signaling to create new node" << node.key.toInt()
                      << "label" << node.key
                      << "at pos" << QPointF(randX, randY);
+            if (m_parseSink)
+            {
+                m_parseSink->createNode(node.key.toInt(),
+                                        initNodeSize,
+                                        initNodeColor,
+                                        initNodeNumberColor,
+                                        initNodeNumberSize,
+                                        node.key,
+                                        initNodeLabelColor, initNodeLabelSize,
+                                        QPointF(randX, randY),
+                                        initNodeShape, QString());
+            }
             emit signalCreateNode(node.key.toInt(),
                                   initNodeSize,
                                   initNodeColor,
@@ -5302,6 +5437,16 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
             target = edgeElement[1].toInt();
         }
         edgeWeight = edge.value();
+        if (m_parseSink)
+        {
+            m_parseSink->createEdge(source,
+                                    target,
+                                    edgeWeight,
+                                    initEdgeColor,
+                                    edgeDirType,
+                                    arrows,
+                                    bezier);
+        }
         emit signalCreateEdge(source,
                               target,
                               edgeWeight,
@@ -5562,6 +5707,18 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
             qDebug() << "signaling to create new node" << node.value
                      << "label" << node.key
                      << "at pos" << QPointF(randX, randY);
+            if (m_parseSink)
+            {
+                m_parseSink->createNode(node.value,
+                                        initNodeSize,
+                                        initNodeColor,
+                                        initNodeNumberColor,
+                                        initNodeNumberSize,
+                                        node.key,
+                                        initNodeLabelColor, initNodeLabelSize,
+                                        QPointF(randX, randY),
+                                        initNodeShape, QString());
+            }
             emit signalCreateNode(node.value,
                                   initNodeSize,
                                   initNodeColor,
@@ -5579,6 +5736,18 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
                      << node.key.toInt()
                      << "label" << node.key
                      << "at pos" << QPointF(randX, randY);
+            if (m_parseSink)
+            {
+                m_parseSink->createNode(node.key.toInt(),
+                                        initNodeSize,
+                                        initNodeColor,
+                                        initNodeNumberColor,
+                                        initNodeNumberSize,
+                                        node.key,
+                                        initNodeLabelColor, initNodeLabelSize,
+                                        QPointF(randX, randY),
+                                        initNodeShape, QString());
+            }
             emit signalCreateNode(node.key.toInt(),
                                   initNodeSize,
                                   initNodeColor,
@@ -5611,6 +5780,16 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
             target = edgeElement[1].toInt();
         }
         edgeWeight = edge.value();
+        if (m_parseSink)
+        {
+            m_parseSink->createEdge(source,
+                                    target,
+                                    edgeWeight,
+                                    initEdgeColor,
+                                    edgeDirType,
+                                    arrows,
+                                    bezier);
+        }
         emit signalCreateEdge(source,
                               target,
                               edgeWeight,
