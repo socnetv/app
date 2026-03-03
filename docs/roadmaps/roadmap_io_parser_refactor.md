@@ -69,30 +69,15 @@ GUI and CLI loading paths are behaviorally aligned.
 **Goal:** Keep parsing semantics identical, but stop treating signals as “the API”.
 Parser should write into a narrow “mutation sink” (builder/transaction) that is explicit and testable. Qt signals may remain as a compatibility layer temporarily, but they stop being the primary data plane.
 
-#### P3.0 — Parser audit + invariants snapshot (NO CODE MOVES YET)
+#### P3.0 — Parser audit findings and invariants snapshot
 
-**Deliverables**
-
-* List all Parser entrypoints used by GUI + CLI (public methods, slots, helpers).
-* Identify where Parser currently:
-
-  * decides directed/undirected defaults
-  * decides weighted/unweighted defaults
-  * increments counters (`totalNodes`, `totalLinks`, relations count)
-  * emits “final” signals (`signalFileLoaded`, `finished`)
-* Document thread assumptions: what must run on parser thread vs graph thread.
-
----
-
-##### P3.0 — Parser audit findings and invariants snapshot
-
-###### Entry point and execution model
+##### Entry point and execution model
 
 * Parser is invoked via `Parser::load(...)` and runs on a dedicated worker thread in both GUI and CLI.
 * Parser does **not** use timers, sleeps, `processEvents`, or any internal event loops.
 * Thread use in Parser is limited to debug logging (`QThread::currentThread()`).
 
-###### Mutation stream contract (must remain identical)
+##### Mutation stream contract (must remain identical)
 
 Parser mutates the graph only through the standard mutation signals (now centralized via `wireParserToGraph()`):
 
@@ -121,7 +106,7 @@ Parser mutates the graph only through the standard mutation signals (now central
 * Preferred completion: `Graph::signalGraphLoaded` (emitted by `Graph::graphFileLoaded`).
 * Fallback completion: `Parser::finished`.
 
-###### Semantics decision points (do not “fix” during refactor)
+##### Semantics decision points (do not “fix” during refactor)
 
 * `edgeDirType` is mutable during parsing and may change per format and/or per line (e.g., DOT `graph|digraph`, `--` vs `->`).
 * Parser sometimes emits per-edge direction explicitly (`EdgeType::Directed` / `Undirected`) and sometimes uses a variable `edgeDirType`.
@@ -130,13 +115,13 @@ Parser mutates the graph only through the standard mutation signals (now central
   * per-edge `edgeDirType` argument in `signalCreateEdge`
   * graph-level `edgeDirType` argument emitted in `signalFileLoaded`
 
-###### Totals and counters (known non-authoritative behavior)
+##### Totals and counters (known non-authoritative behavior)
 
 * Parser maintains `totalNodes` and `totalLinks` in format-specific ways.
 * In Pajek parsing, undirected `*Edges` are counted as `+2` per edge line; arcs and other modes use `+1`.
 * Graph is the source of truth for ties/links: `Graph::graphFileLoaded()` recomputes actual links via adjacency recount (`edgesEnabled()`), and does not trust `totalLinks` from Parser (see issue #183 note in Graph).
 
-###### Default relation behavior (must preserve timing)
+##### Default relation behavior (must preserve timing)
 
 * Multiple parsers/handlers explicitly create and select a default relation:
 
@@ -144,7 +129,7 @@ Parser mutates the graph only through the standard mutation signals (now central
   * `signalSetRelation(0)`
 * P3 must not centralize or “simplify” this unless emission order remains identical per handler.
 
-###### Current wiring locations (P1/P2 status check)
+##### Current wiring locations (P1/P2 status check)
 
 * GUI: `Graph::loadFile()` uses `SocNetV::IO::wireParserToGraph()`
 * CLI: `loadGraphHeadless()` uses `SocNetV::IO::wireParserToGraph()`
