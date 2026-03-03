@@ -1,4 +1,37 @@
 #!/usr/bin/env bash
+# run_golden_compares.sh — SocNetV CLI golden regression harness
+#
+# Runs all registered kernel cases and compares their output against
+# committed JSON baseline files. Exits non-zero if any case fails.
+#
+# Usage:
+#   ./scripts/run_golden_compares.sh
+#   SOCNETV_CLI=./build/socnetv-cli ./scripts/run_golden_compares.sh
+#
+# Kernels covered:
+#   v1  distance      — DistanceEngine + geodesic centralities
+#   v2  reachability  — reachability matrix (R(i,j) = 1 if finite geodesic)
+#   v3  walks_matrix  — walks matrix A^K
+#   v4  prominence    — all node-level centrality + prestige indices
+#   v5  io_roundtrip  — load → export → reload signature comparison
+#                       (export skipped for formats without exporter;
+#                        baseline locks in the skipped outcome too)
+#
+# Baselines:
+#   src/tools/baselines/             (distance v1)
+#   src/tools/baselines/reachability/ (v2)
+#   src/tools/baselines/walks/        (v3)
+#   src/tools/baselines/prominence/   (v4)
+#   src/tools/baselines/io_roundtrip/ (v5)
+#
+# To add a new case:
+#   1. Run socnetv-cli --kernel <k> ... --dump-json <baseline.json>
+#   2. Commit the baseline JSON
+#   3. Add a run_case_<k> call below in the appropriate section
+#
+# To regenerate a baseline after a deliberate semantic fix:
+#   Run the dump command again and commit the updated JSON.
+#   Never regenerate baselines to silence a real regression.
 set -uo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
