@@ -69,7 +69,7 @@ GUI and CLI loading paths are behaviorally aligned.
 **Goal:** Keep parsing semantics identical, but stop treating signals as “the API”.
 Parser should write into a narrow “mutation sink” (builder/transaction) that is explicit and testable. Qt signals may remain as a compatibility layer temporarily, but they stop being the primary data plane.
 
-#### P3.0 — Parser audit findings and invariants snapshot
+#### P3.0 (DONE) — Parser audit findings and invariants snapshot
 
 ##### Entry point and execution model
 
@@ -137,7 +137,7 @@ Parser mutates the graph only through the standard mutation signals (now central
 
 ---
 
-#### P3.1 — Introduce “mutation sink” interface (new, minimal)
+#### P3.1 (DONE) — Introduce “mutation sink” interface (new, minimal)
 
 **Deliverables**
 
@@ -161,7 +161,7 @@ Parser mutates the graph only through the standard mutation signals (now central
 * Build GUI + CLI.
 * Goldens + benchmarks.
 
-#### P3.2 — Implement Graph-backed sink adapter (thin wrapper)
+#### P3.2 (DONE) — Implement Graph-backed sink adapter (thin wrapper)
 
 **Deliverables**
 
@@ -173,7 +173,7 @@ Parser mutates the graph only through the standard mutation signals (now central
 * Build GUI + CLI.
 * Goldens + benchmarks.
 
-#### P3.3 — Parser writes to sink (keep signals as compatibility, initially)
+#### P3.3 (CURRENT) — Parser writes to sink (keep signals as compatibility, initially)
 
 **Deliverables**
 
