@@ -127,44 +127,6 @@ public:
 
 signals:
 
-    void signalAddNewRelation( const QString & relName, const bool &changeRelation=false);
-    void signalSetRelation(int, const bool &updateUI=true);
-    void signalCreateNode( const int &num,
-                          const int &size,
-                          const QString &color,
-                          const QString &numColor,
-                          const int &numSize,
-                          const QString &label,
-                          const QString &lColor,
-                          const int &lSize,
-                          const QPointF &p,
-                          const QString &shape,
-                          const QString &iconPath=QString(),
-                          const bool &signalMW=false,
-                          const QHash<QString,QString> nodeCustomAttributes=QHash<QString,QString>());
-    void signalCreateNodeAtPosRandom(const bool &signalMW=false);
-    void signalCreateNodeAtPosRandomWithLabel (const int &num,
-                                         const QString &label,
-                                         const bool &signalMW=false
-                                         );
-
-    void signalCreateEdge (const int &source, const int &target, const qreal &weight,
-                          const QString &color, const int &edgeDirType,
-                          const bool &arrows, const bool &bezier,
-                          const QString &edgeLabel=QString(),
-                          const bool &signalMW=false);
-
-    void signalFileLoaded(const int &fileType,
-                          const QString &fileName,
-                          const QString &netName,
-                          const int &totalNodes,
-                          const int &totalLinks,
-                          const int &edgeDirType,
-                          const qint64 &elapsedTime,
-                          const QString &message=QString());
-
-
-    void removeDummyNode (int);
     void finished(QString);
 	
 protected:

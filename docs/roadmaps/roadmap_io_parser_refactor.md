@@ -200,7 +200,7 @@ Parser mutates the graph only through the standard mutation signals (now central
 - Golden parity confirmed
 
 
-#### P3.6 — Stop emitting legacy Parser mutation signals ✅
+#### P3.6 (DONE) — Stop emitting legacy Parser mutation signals ✅
 
 Now that parsing mutations flow exclusively via `IGraphParseSink` for both GUI and headless paths (P3.4) and the legacy wiring helper is removed (P3.5), the Parser mutation signals are no longer consumed in-tree.
 
@@ -220,20 +220,14 @@ Verification:
 - `rg -n 'connect\([^)]*Parser::signal(CreateNode|CreateEdge|FileLoaded|AddNewRelation|SetRelation)' src` returns no matches.
 - `./scripts/run_golden_compares.sh` passes.
 
-#### P3.7 — Document final contract + add targeted parse goldens (handoff to P4)
+#### P3.7 (DONE) — Remove legacy Parser mutation signals ✅
 
-**Deliverables**
-
-* Update the “Parser contract” section to describe sink API as canonical.
-* Add/confirm parse/IO baselines (P4) for at least:
-
-  * GraphML
-  * Pajek
-  * one “weird” format (DL or DOT) depending on current stability
-
-**Verification**
-
-* Goldens + benchmarks.
+- Removed Parser mutation signal declarations and remaining emit sites:
+  `signalAddNewRelation`, `signalSetRelation`, `signalCreateNode`,
+  `signalCreateNodeAtPosRandom`, `signalCreateNodeAtPosRandomWithLabel`,
+  `signalCreateEdge`, `signalFileLoaded` (and legacy `removeDummyNode` mutation signal if present).
+- Parser mutation plane is now sink-only (`IGraphParseSink`) for both GUI and headless.
+- Golden parity confirmed.
 
 **Work Discipline**
 

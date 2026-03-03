@@ -175,14 +175,7 @@ void Parser::load(const QString &fileName,
                               elapsedTime,
                               errorMessage);
         }
-        emit signalFileLoaded(FileType::UNRECOGNIZED,
-                              QString(),
-                              QString(),
-                              0,
-                              0,
-                              false,
-                              elapsedTime,
-                              errorMessage);
+
         return;
     }
 
@@ -280,13 +273,7 @@ void Parser::load(const QString &fileName,
                                     edgeDirType,
                                     elapsedTime);
         }
-        emit signalFileLoaded(fileFormat,
-                              fileName,
-                              networkName,
-                              totalNodes,
-                              totalLinks,
-                              edgeDirType,
-                              elapsedTime);
+
     }
     else if (errorMessage != QString())
     {
@@ -301,14 +288,7 @@ void Parser::load(const QString &fileName,
                                     elapsedTime,
                                     errorMessage);
         }
-        emit signalFileLoaded(FileType::UNRECOGNIZED,
-                              QString(),
-                              QString(),
-                              0,
-                              0,
-                              false,
-                              elapsedTime,
-                              errorMessage);
+
         return;
     }
 
@@ -1767,17 +1747,6 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                                                 nodeShape,
                                                 QString());
                     }
-                    emit signalCreateNode(num,
-                                          initNodeSize,
-                                          nodeColor,
-                                          initNodeNumberColor,
-                                          initNodeNumberSize,
-                                          label,
-                                          lineElement[3],
-                                          initNodeLabelSize,
-                                          QPointF(randX, randY),
-                                          nodeShape,
-                                          QString());
 
                     listDummiesPajek.push_back(num);
                     miss++;
@@ -1801,12 +1770,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                     QPointF(randX, randY),
                     nodeShape, QString());
             }
-            emit signalCreateNode(
-                nodeNum, initNodeSize, nodeColor,
-                initNodeNumberColor, initNodeNumberSize,
-                label, initNodeLabelColor, initNodeLabelSize,
-                QPointF(randX, randY),
-                nodeShape, QString());
+
             initNodeColor = nodeColor;
         }
         else
@@ -1843,19 +1807,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                             QString(),
                             false);
                     }
-                    emit signalCreateNode(
-                        num,
-                        initNodeSize,
-                        initNodeColor,
-                        initNodeNumberColor,
-                        initNodeNumberSize,
-                        QString::number(i),
-                        initNodeLabelColor,
-                        initNodeLabelSize,
-                        QPointF(randX, randY),
-                        initNodeShape,
-                        QString(),
-                        false);
+
                 }
                 j = totalNodes;
             }
@@ -2391,8 +2343,7 @@ void Parser::createNodeWithDefaults(int nodeIndex, const QString &label)
         m_parseSink->createNode(nodeIndex, initNodeSize, initNodeColor, initNodeNumberColor, initNodeNumberSize,
                                 label, initNodeLabelColor, initNodeLabelSize, randomPosition, initNodeShape, QString());
     }
-    emit signalCreateNode(nodeIndex, initNodeSize, initNodeColor, initNodeNumberColor, initNodeNumberSize,
-                          label, initNodeLabelColor, initNodeLabelSize, randomPosition, initNodeShape, QString());
+
 }
 
 /**
@@ -2537,12 +2488,9 @@ bool Parser::parseAsTwoModeSociomatrix(const QByteArray &rawData)
                                     QPointF(randX, randY),
                                     initNodeShape, QString());
         }
-        emit signalCreateNode(i, initNodeSize, initNodeColor,
-                              initNodeNumberColor, initNodeNumberSize,
-                              QString::number(i), initNodeLabelColor, initNodeLabelSize,
-                              QPointF(randX, randY),
-                              initNodeShape, QString());
+
         j = 1;
+
         qDebug() << "reading actor affiliations...";
         for (QStringList::Iterator it1 = lineElement.begin(); it1 != lineElement.end(); ++it1)
         {
@@ -3087,19 +3035,7 @@ void Parser::endGraphMLElementNode(QXmlStreamReader &xml)
                                     false,
                                     nodeCustomAttributes);
         }
-        emit signalCreateNode(totalNodes,
-                              nodeSize,
-                              nodeColor,
-                              nodeNumberColor,
-                              nodeNumberSize,
-                              nodeLabel,
-                              nodeLabelColor,
-                              nodeLabelSize,
-                              QPointF(randX, randY),
-                              nodeShape,
-                              (nodeIconPath.isEmpty() ? initNodeCustomIcon : nodeIconPath),
-                              false,
-                              nodeCustomAttributes);
+
     }
     else
     {
@@ -3119,19 +3055,7 @@ void Parser::endGraphMLElementNode(QXmlStreamReader &xml)
                                     false,
                                     nodeCustomAttributes);
         }
-        emit signalCreateNode(totalNodes,
-                              nodeSize,
-                              nodeColor,
-                              nodeNumberColor,
-                              nodeNumberSize,
-                              nodeLabel,
-                              nodeLabelColor,
-                              nodeLabelSize,
-                              QPointF(randX, randY),
-                              nodeShape,
-                              QString(),
-                              false,
-                              nodeCustomAttributes);
+
     }
 
     bool_node = false;
@@ -4271,13 +4195,6 @@ bool Parser::parseAsGML(const QByteArray &rawData)
                         QPointF(randX, randY),
                         nodeShape, QString());
                 }
-                emit signalCreateNode(
-                    node_id.toInt(nullptr, 10),
-                    initNodeSize, nodeColor,
-                    initNodeNumberColor, initNodeNumberSize,
-                    nodeLabel, initNodeLabelColor, initNodeLabelSize,
-                    QPointF(randX, randY),
-                    nodeShape, QString());
 
                 continue;
             }
@@ -4574,12 +4491,6 @@ bool Parser::parseAsDot(const QByteArray &rawData)
                     QPointF(randX, randY),
                     initNodeShape, QString());
             }
-            emit signalCreateNode(
-                totalNodes, initNodeSize, initNodeColor,
-                initNodeNumberColor, initNodeNumberSize,
-                nodeLabel, initNodeLabelColor, initNodeLabelSize,
-                QPointF(randX, randY),
-                initNodeShape, QString());
 
             nodesDiscovered.push_back(node);
             target = totalNodes;
@@ -4616,12 +4527,6 @@ bool Parser::parseAsDot(const QByteArray &rawData)
                     QPointF(randX, randY),
                     initNodeShape, QString());
             }
-            emit signalCreateNode(
-                totalNodes, initNodeSize, initNodeColor,
-                initNodeNumberColor, initNodeNumberSize,
-                nodeLabel, initNodeLabelColor, initNodeLabelSize,
-                QPointF(randX, randY),
-                initNodeShape, QString());
 
             nodesDiscovered.push_back(node);
             target = totalNodes;
@@ -4699,12 +4604,6 @@ bool Parser::parseAsDot(const QByteArray &rawData)
                             QPointF(randX, randY),
                             initNodeShape, QString());
                     }
-                    emit signalCreateNode(
-                        totalNodes, initNodeSize, nodeColor,
-                        initNodeNumberColor, initNodeNumberSize,
-                        node, initNodeLabelColor, initNodeLabelSize,
-                        QPointF(randX, randY),
-                        initNodeShape, QString());
 
                     nodesDiscovered.push_back(node);
                     target = totalNodes;
@@ -4761,12 +4660,6 @@ bool Parser::parseAsDot(const QByteArray &rawData)
                             QPointF(randX, randY),
                             nodeShape, QString());
                     }
-                    emit signalCreateNode(
-                        totalNodes, initNodeSize, nodeColor,
-                        initNodeNumberColor, initNodeNumberSize,
-                        label, initNodeLabelColor, initNodeLabelSize,
-                        QPointF(randX, randY),
-                        nodeShape, QString());
 
                     nodesDiscovered.push_back(node);
                 }
@@ -5346,15 +5239,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
                                         QPointF(randX, randY),
                                         initNodeShape, QString());
             }
-            emit signalCreateNode(node.value,
-                                  initNodeSize,
-                                  initNodeColor,
-                                  initNodeNumberColor,
-                                  initNodeNumberSize,
-                                  node.key,
-                                  initNodeLabelColor, initNodeLabelSize,
-                                  QPointF(randX, randY),
-                                  initNodeShape, QString());
+
         }
         else
         {
@@ -5374,15 +5259,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
                                         QPointF(randX, randY),
                                         initNodeShape, QString());
             }
-            emit signalCreateNode(node.key.toInt(),
-                                  initNodeSize,
-                                  initNodeColor,
-                                  initNodeNumberColor,
-                                  initNodeNumberSize,
-                                  node.key,
-                                  initNodeLabelColor, initNodeLabelSize,
-                                  QPointF(randX, randY),
-                                  initNodeShape, QString());
+
         }
     }
 
@@ -5680,15 +5557,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
                                         QPointF(randX, randY),
                                         initNodeShape, QString());
             }
-            emit signalCreateNode(node.value,
-                                  initNodeSize,
-                                  initNodeColor,
-                                  initNodeNumberColor,
-                                  initNodeNumberSize,
-                                  node.key,
-                                  initNodeLabelColor, initNodeLabelSize,
-                                  QPointF(randX, randY),
-                                  initNodeShape, QString());
+
         }
         else
         {
@@ -5709,15 +5578,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
                                         QPointF(randX, randY),
                                         initNodeShape, QString());
             }
-            emit signalCreateNode(node.key.toInt(),
-                                  initNodeSize,
-                                  initNodeColor,
-                                  initNodeNumberColor,
-                                  initNodeNumberSize,
-                                  node.key,
-                                  initNodeLabelColor, initNodeLabelSize,
-                                  QPointF(randX, randY),
-                                  initNodeShape, QString());
+
         }
     }
 
