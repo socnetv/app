@@ -21,7 +21,6 @@
 #include <QTextStream>
 #include <QDir>
 #include <QStringEncoder>
-#include "graph/io/graph_parser_wiring.h"
 #include "graph/io/graph_parse_sink_graph.h"
 #include <memory>
 

@@ -5,7 +5,6 @@
 #include <QMetaObject>
 #include <QDebug>
 
-#include "../graph/io/graph_parser_wiring.h"
 #include "../graph/io/graph_parse_sink_graph.h"
 #include "../graph.h"
 #include "../parser.h"

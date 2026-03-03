@@ -184,7 +184,7 @@ Parser mutates the graph only through the standard mutation signals (now central
 - Golden parity confirmed
 - Benchmarks within guardrails
 
-### P3.4 (DONE) — Switch GUI load path to sink-backed mutation ✅
+#### P3.4 (DONE) — Switch GUI load path to sink-backed mutation ✅
 
 - Graph::loadFile now sets an owned parse sink on Parser (thread-safe lifetime).
 - Removed GUI Parser→Graph mutation wiring via wireParserToGraph.
@@ -192,18 +192,13 @@ Parser mutates the graph only through the standard mutation signals (now central
 - Golden parity confirmed.
 - Benchmarks within guardrails (no strict regressions expected; CLI unaffected by this step).
 
-#### P3.5 — Swap CLI headless path to sink-first (remove dependence on signal wiring)
+#### P3.5 (DONE) — Remove legacy Parser→Graph signal wiring helper ✅
 
-**Deliverables**
+- Deleted src/graph/io/graph_parser_wiring.{h,cpp}
+- Removed from CMake and qmake project files
+- Parser mutation plane is now sink-backed for both GUI and headless
+- Golden parity confirmed
 
-* `loadGraphHeadless()` passes a sink to Parser.
-* Completion still waits on `Graph::signalGraphLoaded` (preferred), `Parser::finished` as fallback.
-* Remove any now-unused wiring in CLI loader.
-
-**Verification**
-
-* Build CLI.
-* Goldens + benchmarks (especially IO benchmarks).
 
 #### P3.6 — Deprecate signal wiring helper (keep temporarily, then delete)
 
