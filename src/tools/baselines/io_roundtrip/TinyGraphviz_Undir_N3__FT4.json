@@ -17,7 +17,7 @@
     "kernel": "io_roundtrip",
     "load_report": {
         "fileType_signal": 4,
-        "load_ms": 1,
+        "load_ms": 0,
         "load_msg": "",
         "net_name": "TinyGraphviz_Undir_N3",
         "ok": true
@@ -34,15 +34,15 @@
                     {
                         "u": 1,
                         "v": 2,
-                        "w": "0"
+                        "w": "1"
                     },
                     {
                         "u": 2,
                         "v": 3,
-                        "w": "0"
+                        "w": "1"
                     }
                 ],
-                "hash_sha256": "1e07656785a919cd85e1fac8aa9826513bda5a9ef8dc319a6700e106ced0b012",
+                "hash_sha256": "6b2700675a6f5366c74caec85e9c7a728364fdaad47bdb8f02f0a9bd8517360d",
                 "node_custom_attributes": [
                     {
                     },
@@ -76,15 +76,15 @@
             {
                 "u": 1,
                 "v": 2,
-                "w": "0"
+                "w": "1"
             },
             {
                 "u": 2,
                 "v": 3,
-                "w": "0"
+                "w": "1"
             }
         ],
-        "hash_sha256": "1e07656785a919cd85e1fac8aa9826513bda5a9ef8dc319a6700e106ced0b012",
+        "hash_sha256": "6b2700675a6f5366c74caec85e9c7a728364fdaad47bdb8f02f0a9bd8517360d",
         "node_custom_attributes": [
             {
             },
@@ -100,7 +100,7 @@
         ]
     },
     "timings": {
-        "load_ms": 1,
+        "load_ms": 0,
         "reload_ms": 0,
         "save_ms": 0,
         "total_ms": 0
