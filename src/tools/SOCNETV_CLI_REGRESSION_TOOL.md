@@ -4,14 +4,7 @@
 
 It provides deterministic execution of compute kernels without loading any UI components.
 
-Originally introduced to protect the refactor of:
-
-```
-Graph::graphDistancesGeodesic()
-→ DistanceEngine
-```
-
-It has since evolved into a modular regression harness for multiple algorithm families.
+Originally introduced to protect the code refactor we did during WorkStreams WS1 and WS2 [WorkStreams WS1 and WS2](../../docs/ARCHITECTURAL_REFACTORING_ROADMAP.md). It has since evolved into a modular regression harness for multiple algorithm families.
 
 ---
 
@@ -558,8 +551,10 @@ src/tools/baselines/io_roundtrip/
 
 See:
 
+[BASELINES__README.md](./baselines/BASELINES__README.md)
+
 ```
-src/tools/baselines/BASELINES__README.md
+
 ```
 
 ---
