@@ -62,6 +62,11 @@ Parser::~Parser()
     }
 }
 
+void Parser::setParseSink(SocNetV::IO::IGraphParseSink *sink)
+{
+    m_parseSink = sink;
+}
+
 /**
  * @brief Loads the data of the given network file, and calls the relevant method to parse it.
  *
@@ -728,6 +733,10 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                 qDebug() << "adding new relation" << relation
                          << "to relationsList and signaling to create new relation";
                 relationsList << relation;
+                if (m_parseSink)
+                {
+                    m_parseSink->addNewRelation(relation);
+                }
                 emit signalAddNewRelation(relation);
             }
         }
@@ -889,6 +898,10 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                                  << "source node counter is" << source
                                  << "and relation to:" << relation << "index:"
                                  << relationCounter << "signaling to change to that relation...";
+                        if (m_parseSink)
+                        {
+                            m_parseSink->setRelation(relationCounter);
+                        }
                         emit signalSetRelation(relationCounter);
                     }
                     else if (source > totalNodes)
@@ -900,6 +913,10 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                                  << " init source node counter to" << source
                                  << " and relation to" << relation << ": "
                                  << relationCounter << "signaling to change to that relation...";
+                        if (m_parseSink)
+                        {
+                            m_parseSink->setRelation(relationCounter);
+                        }
                         emit signalSetRelation(relationCounter);
                     }
                     else
@@ -1067,10 +1084,18 @@ bool Parser::parseAsDL(const QByteArray &rawData)
         // QString defaultRelation = "DefaultRelation_" + QString::number(QDateTime::currentSecsSinceEpoch());
         // relationsList << defaultRelation;
         // emit signalAddNewRelation(defaultRelation);
+        if (m_parseSink)
+        {
+            m_parseSink->addNewRelation("unnamed");
+        }
         emit signalAddNewRelation("unnamed");
     }
 
     // The network has been loaded. Change to the first relation
+    if (m_parseSink)
+    {
+        m_parseSink->setRelation(0);
+    }
     emit signalSetRelation(0);
 
     // Clear temp arrays
@@ -1401,6 +1426,10 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                 relationsList << relation;
                 qDebug() << "added new relation" << relation
                          << "to relationsList - signaling to add new relation";
+                if (m_parseSink)
+                {
+                    m_parseSink->addNewRelation(relation);
+                }
                 emit signalAddNewRelation(relation);
                 lastRelationIndex = relationsList.size() - 1;
                 if (lastRelationIndex > 0)
@@ -1408,6 +1437,10 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                     qDebug() << "last relation index:"
                              << lastRelationIndex
                              << "signaling to change to the last relation...";
+                    if (m_parseSink)
+                    {
+                        m_parseSink->setRelation(lastRelationIndex);
+                    }
                     emit signalSetRelation(lastRelationIndex);
                     i = 0; // reset the source node index
                 }
@@ -1448,8 +1481,8 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
              */
 
             auto parsePajekMatrixHeader = [](const QString &line,
-                                                 int *outK,
-                                                 QString *outLabel) -> bool
+                                             int *outK,
+                                             QString *outLabel) -> bool
             {
                 // Accept:
                 //   *Matrix :1
@@ -1521,6 +1554,10 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                 relationsList << relation;
                 qDebug() << "added new relation" << relation
                          << "to relationsList - signaling to add new relation";
+                if (m_parseSink)
+                {
+                    m_parseSink->addNewRelation(relation);
+                }
                 emit signalAddNewRelation(relation);
                 lastRelationIndex = relationsList.size() - 1;
                 if (lastRelationIndex > 0)
@@ -1528,6 +1565,10 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                     qDebug() << "last relation index:"
                              << lastRelationIndex
                              << "signaling to change to the last relation...";
+                    if (m_parseSink)
+                    {
+                        m_parseSink->setRelation(lastRelationIndex);
+                    }
                     emit signalSetRelation(lastRelationIndex);
                 }
                 i = 0; // reset the source node index
@@ -1671,6 +1712,20 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                 {
                     qDebug() << "Signaling to create new dummy node" << num
                              << "at" << QPointF(randX, randY);
+                    if (m_parseSink)
+                    {
+                        m_parseSink->createNode(num,
+                                                initNodeSize,
+                                                nodeColor,
+                                                initNodeNumberColor,
+                                                initNodeNumberSize,
+                                                label,
+                                                lineElement[3],
+                                                initNodeLabelSize,
+                                                QPointF(randX, randY),
+                                                nodeShape,
+                                                QString());
+                    }
                     emit signalCreateNode(num,
                                           initNodeSize,
                                           nodeColor,
@@ -1696,6 +1751,15 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
             }
             qDebug() << "Signaling to create new node" << nodeNum
                      << "at" << QPointF(randX, randY);
+            if (m_parseSink)
+            {
+                m_parseSink->createNode(
+                    nodeNum, initNodeSize, nodeColor,
+                    initNodeNumberColor, initNodeNumberSize,
+                    label, initNodeLabelColor, initNodeLabelSize,
+                    QPointF(randX, randY),
+                    nodeShape, QString());
+            }
             emit signalCreateNode(
                 nodeNum, initNodeSize, nodeColor,
                 initNodeNumberColor, initNodeNumberSize,
@@ -1722,6 +1786,22 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                     randY = rand() % gwHeight;
                     qDebug() << "Signaling to create new node" << num
                              << "at random pos:" << QPointF(randX, randY);
+                    if (m_parseSink)
+                    {
+                        m_parseSink->createNode(
+                            num,
+                            initNodeSize,
+                            initNodeColor,
+                            initNodeNumberColor,
+                            initNodeNumberSize,
+                            QString::number(i),
+                            initNodeLabelColor,
+                            initNodeLabelSize,
+                            QPointF(randX, randY),
+                            initNodeShape,
+                            QString(),
+                            false);
+                    }
                     emit signalCreateNode(
                         num,
                         initNodeSize,
@@ -1971,6 +2051,10 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
 
     if (relationsList.size() == 0)
     {
+        if (m_parseSink)
+        {
+            m_parseSink->addNewRelation(networkName);
+        }
         emit signalAddNewRelation(networkName);
     }
 
@@ -1979,6 +2063,10 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
     relationsList.clear();
 
     qDebug() << "signaling to change to the first relation...";
+    if (m_parseSink)
+    {
+        m_parseSink->setRelation(0);
+    }
     emit signalSetRelation(0);
 
     if (has_arcs)
@@ -2055,6 +2143,10 @@ bool Parser::parseAsAdjacency(const QByteArray &rawData, const QString &delimite
     // If no relations are defined, add a default unnamed relation.
     if (relationsList.empty())
     {
+        if (m_parseSink)
+        {
+            m_parseSink->addNewRelation("unnamed");
+        }
         emit signalAddNewRelation("unnamed");
     }
 
@@ -2238,6 +2330,11 @@ void Parser::createNodeWithDefaults(int nodeIndex, const QString &label)
     QPointF randomPosition(QRandomGenerator::global()->bounded(gwWidth), QRandomGenerator::global()->bounded(gwHeight));
 
     // Emit a signal to create the node with the given properties.
+    if (m_parseSink)
+    {
+        m_parseSink->createNode(nodeIndex, initNodeSize, initNodeColor, initNodeNumberColor, initNodeNumberSize,
+                                label, initNodeLabelColor, initNodeLabelSize, randomPosition, initNodeShape, QString());
+    }
     emit signalCreateNode(nodeIndex, initNodeSize, initNodeColor, initNodeNumberColor, initNodeNumberSize,
                           label, initNodeLabelColor, initNodeLabelSize, randomPosition, initNodeShape, QString());
 }
@@ -2373,6 +2470,14 @@ bool Parser::parseAsTwoModeSociomatrix(const QByteArray &rawData)
         randY = rand() % gwHeight;
         qDebug() << "Signaling to create new node"
                  << i << "at random pos:" << randX << "x" << randY;
+        if (m_parseSink)
+        {
+            m_parseSink->createNode(i, initNodeSize, initNodeColor,
+                                    initNodeNumberColor, initNodeNumberSize,
+                                    QString::number(i), initNodeLabelColor, initNodeLabelSize,
+                                    QPointF(randX, randY),
+                                    initNodeShape, QString());
+        }
         emit signalCreateNode(i, initNodeSize, initNodeColor,
                               initNodeNumberColor, initNodeNumberSize,
                               QString::number(i), initNodeLabelColor, initNodeLabelSize,
@@ -2407,6 +2512,10 @@ bool Parser::parseAsTwoModeSociomatrix(const QByteArray &rawData)
 
     if (relationsList.size() == 0)
     {
+        if (m_parseSink)
+        {
+            m_parseSink->addNewRelation("unnamed");
+        }
         emit signalAddNewRelation("unnamed");
     }
 
@@ -2565,6 +2674,10 @@ bool Parser::parseAsGraphML(const QByteArray &rawData)
     xml.clear();
 
     qDebug() << "signaling to change to the first relation...";
+    if (m_parseSink)
+    {
+        m_parseSink->setRelation(0);
+    }
     emit signalSetRelation(0);
 
     qDebug() << "Finished OK. Returning.";
@@ -2695,6 +2808,10 @@ void Parser::readGraphMLElementGraph(QXmlStreamReader &xml)
     // add it as relation
     relationsList << networkName;
     qDebug() << "Signaling to add new relation:" << networkName;
+    if (m_parseSink)
+    {
+        m_parseSink->addNewRelation(networkName);
+    }
     emit signalAddNewRelation(networkName);
     int lastRelationIndex = relationsList.size() - 1;
     if (lastRelationIndex > 0)
@@ -2703,6 +2820,10 @@ void Parser::readGraphMLElementGraph(QXmlStreamReader &xml)
         qDebug() << "last relation index:"
                  << lastRelationIndex
                  << "signaling to change to the new relation";
+        if (m_parseSink)
+        {
+            m_parseSink->setRelation(lastRelationIndex);
+        }
         emit signalSetRelation(lastRelationIndex);
     }
     qDebug() << "graph id:" << networkName;
@@ -2891,6 +3012,22 @@ void Parser::endGraphMLElementNode(QXmlStreamReader &xml)
 
     if (nodeShape == "custom")
     {
+        if (m_parseSink)
+        {
+            m_parseSink->createNode(totalNodes,
+                                    nodeSize,
+                                    nodeColor,
+                                    nodeNumberColor,
+                                    nodeNumberSize,
+                                    nodeLabel,
+                                    nodeLabelColor,
+                                    nodeLabelSize,
+                                    QPointF(randX, randY),
+                                    nodeShape,
+                                    (nodeIconPath.isEmpty() ? initNodeCustomIcon : nodeIconPath),
+                                    false,
+                                    nodeCustomAttributes);
+        }
         emit signalCreateNode(totalNodes,
                               nodeSize,
                               nodeColor,
@@ -2907,6 +3044,22 @@ void Parser::endGraphMLElementNode(QXmlStreamReader &xml)
     }
     else
     {
+        if (m_parseSink)
+        {
+            m_parseSink->createNode(totalNodes,
+                                    nodeSize,
+                                    nodeColor,
+                                    nodeNumberColor,
+                                    nodeNumberSize,
+                                    nodeLabel,
+                                    nodeLabelColor,
+                                    nodeLabelSize,
+                                    QPointF(randX, randY),
+                                    nodeShape,
+                                    QString(),
+                                    false,
+                                    nodeCustomAttributes);
+        }
         emit signalCreateNode(totalNodes,
                               nodeSize,
                               nodeColor,
@@ -4043,7 +4196,16 @@ bool Parser::parseAsGML(const QByteArray &rawData)
                     randX = rand() % gwWidth;
                     randY = rand() % gwHeight;
                 }
-
+                if (m_parseSink)
+                {
+                    m_parseSink->createNode(
+                        node_id.toInt(nullptr, 10),
+                        initNodeSize, nodeColor,
+                        initNodeNumberColor, initNodeNumberSize,
+                        nodeLabel, initNodeLabelColor, initNodeLabelSize,
+                        QPointF(randX, randY),
+                        nodeShape, QString());
+                }
                 emit signalCreateNode(
                     node_id.toInt(nullptr, 10),
                     initNodeSize, nodeColor,
@@ -4074,7 +4236,13 @@ bool Parser::parseAsGML(const QByteArray &rawData)
     }
 
     if (relationsList.size() == 0)
+    {
+        if (m_parseSink)
+        {
+            m_parseSink->addNewRelation("unnamed");
+        }
         emit signalAddNewRelation("unnamed");
+    }
 
     qDebug() << "Finished OK. Returning.";
     return true;
@@ -4329,7 +4497,15 @@ bool Parser::parseAsDot(const QByteArray &rawData)
             totalNodes++;
             randX = rand() % gwWidth;
             randY = rand() % gwHeight;
-
+            if (m_parseSink)
+            {
+                m_parseSink->createNode(
+                    totalNodes, initNodeSize, initNodeColor,
+                    initNodeNumberColor, initNodeNumberSize,
+                    nodeLabel, initNodeLabelColor, initNodeLabelSize,
+                    QPointF(randX, randY),
+                    initNodeShape, QString());
+            }
             emit signalCreateNode(
                 totalNodes, initNodeSize, initNodeColor,
                 initNodeNumberColor, initNodeNumberSize,
@@ -4363,7 +4539,14 @@ bool Parser::parseAsDot(const QByteArray &rawData)
             totalNodes++;
             randX = rand() % gwWidth;
             randY = rand() % gwHeight;
-
+            if (m_parseSink) {
+                m_parseSink->createNode(
+                totalNodes, initNodeSize, initNodeColor,
+                initNodeNumberColor, initNodeNumberSize,
+                nodeLabel, initNodeLabelColor, initNodeLabelSize,
+                QPointF(randX, randY),
+                initNodeShape, QString());
+            }
             emit signalCreateNode(
                 totalNodes, initNodeSize, initNodeColor,
                 initNodeNumberColor, initNodeNumberSize,
@@ -4509,7 +4692,12 @@ bool Parser::parseAsDot(const QByteArray &rawData)
     // Ensure at least one relation exists.
     if (relationsList.size() == 0)
     {
-        emit signalAddNewRelation((!networkName.isEmpty()) ? networkName : "unnamed");
+        QString relName = (!networkName.isEmpty()) ? networkName : "unnamed";
+        if (m_parseSink)
+        {
+            m_parseSink->addNewRelation(relName);
+        }
+        emit signalAddNewRelation(relName);
     }
 
     // IMPORTANT: Preserve graph-level directedness for the file.
@@ -5119,6 +5307,10 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
 
     if (relationsList.size() == 0)
     {
+        if (m_parseSink)
+        {
+            m_parseSink->addNewRelation("unnamed");
+        }
         emit signalAddNewRelation("unnamed");
     }
 
@@ -5424,6 +5616,10 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
 
     if (relationsList.size() == 0)
     {
+        if (m_parseSink)
+        {
+            m_parseSink->addNewRelation("unnamed");
+        }
         emit signalAddNewRelation("unnamed");
     }
 

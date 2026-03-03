@@ -24,6 +24,7 @@
 #include <QObject>
 #include <QMultiMap>
 #include <QDebug>
+#include "graph/io/graph_parse_sink.h"
 
 class QXmlStreamReader;
 class QXmlStreamAttributes;
@@ -71,6 +72,7 @@ public:
 	
     Parser();
     ~Parser();
+    void setParseSink(SocNetV::IO::IGraphParseSink *sink);
     void load(const QString &fileName, const QString &codecName, const int &defNodeSize,
               const QString &defNodeColor, const QString &defNodeShape, const QString &defNodeNumberColor,
               const int &defNodeNumberSize, const QString &defNodeLabelColor, const int &defNodeLabelSize ,
@@ -174,6 +176,7 @@ private:
     bool createEdgesForRow(const QStringList &currentRow, int rowIndex);
     bool containsReservedKeywords(const QString &str) const;
 
+    SocNetV::IO::IGraphParseSink *m_parseSink = nullptr;
     QHash<QString, int> nodeHash;
 	QHash<QString, QString> keyFor, keyName, keyType, keyDefaultValue ;
     QHash<QString, QString> edgesMissingNodesHash;
