@@ -21,6 +21,7 @@
 #include <QTextStream>
 #include <QDir>
 #include <QStringEncoder>
+#include "graph/io/graph_parser_wiring.h"
 
 /**
  * @brief Loads a graph from a given file.
@@ -63,29 +64,8 @@ void Graph::loadFile(const QString fileName,
     connect(&file_parserThread, &QThread::finished,
             file_parser, &QObject::deleteLater);
 
-    connect(file_parser, &Parser::signalAddNewRelation,
-            this, &Graph::relationAdd);
-
-    connect(file_parser, &Parser::signalSetRelation,
-            this, &Graph::relationSet);
-
-    connect(file_parser, &Parser::signalCreateNode,
-            this, &Graph::vertexCreate);
-
-    connect(file_parser, &Parser::signalCreateNodeAtPosRandom,
-            this, &Graph::vertexCreateAtPosRandom);
-
-    connect(file_parser, &Parser::signalCreateNodeAtPosRandomWithLabel,
-            this, &Graph::vertexCreateAtPosRandomWithLabel);
-
-    connect(file_parser, &Parser::signalCreateEdge,
-            this, &Graph::edgeCreate);
-
-    connect(file_parser, &Parser::signalFileLoaded,
-            this, &Graph::graphFileLoaded);
-
-    connect(file_parser, SIGNAL(removeDummyNode(int)),
-            this, SLOT(vertexRemoveDummyNode(int)));
+    // Centralized Parser -> Graph wiring (mechanical extraction; no behavior change)
+    SocNetV::IO::wireParserToGraph(file_parser, this);
 
     connect(file_parser, &Parser::finished,
             this, &Graph::graphLoadedTerminateParserThreads);
