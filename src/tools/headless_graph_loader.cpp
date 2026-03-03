@@ -121,25 +121,44 @@ HeadlessLoadResult loadGraphHeadless(
     const int canvasHeight = 600;
 
     // Queue Parser::load to run in parserThread *after* the event loop spins.
-    QMetaObject::invokeMethod(parser, [=]()
-                              { 
-                                parser->load(fileName,
-                                             codecName,
-                                             initVertexSize,
-                                             initVertexColor,
-                                             initVertexShape,
-                                             initVertexNumberColor,
-                                             initVertexNumberSize,
-                                             initVertexLabelColor,
-                                             initVertexLabelSize,
-                                             initEdgeColor,
-                                             canvasWidth,
-                                             canvasHeight,
-                                             fileFormat,
-                                             delimiter,
-                                             sm_two_mode,
-                                             sm_has_labels); 
-                                    }, Qt::QueuedConnection);
+    QMetaObject::invokeMethod(
+    parser,
+    [parser,
+     fileName,
+     codecName,
+     fileFormat,
+     delimiter,
+     sm_two_mode,
+     sm_has_labels,
+     initVertexSize,
+     initVertexColor,
+     initVertexShape,
+     initVertexNumberColor,
+     initVertexNumberSize,
+     initVertexLabelColor,
+     initVertexLabelSize,
+     initEdgeColor,
+     canvasWidth,
+     canvasHeight]()
+    {
+        parser->load(fileName,
+                     codecName,
+                     initVertexSize,
+                     initVertexColor,
+                     initVertexShape,
+                     initVertexNumberColor,
+                     initVertexNumberSize,
+                     initVertexLabelColor,
+                     initVertexLabelSize,
+                     initEdgeColor,
+                     canvasWidth,
+                     canvasHeight,
+                     fileFormat,
+                     delimiter,
+                     sm_two_mode,
+                     sm_has_labels);
+    },
+    Qt::QueuedConnection);
 
     qDebug() << "[CLI] entering loop.exec()";
     loop.exec();
