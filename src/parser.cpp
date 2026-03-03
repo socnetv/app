@@ -2104,7 +2104,6 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
             if (m_parseSink) {
                 m_parseSink->removeDummyNode(*it);
             }
-            emit removeDummyNode(*it);
         }
     }
 
