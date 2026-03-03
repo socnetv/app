@@ -300,23 +300,40 @@ run_case "BA500_M3_C0_W0" \
   -i "$ROOT_DIR/src/data/Benchmark_BA_Directed_N500_m3.paj" \
   -f 2 -c 0 -w 0 -x 1 -k 0 --bench 20 || fail=1
 
+LARGE_NETS_DIR="${HOME}/socnetv/library/nets/large"
+
+# ---------------- large-net distance benchmark cases ----------------
+# Only run if ~/socnetv/library/nets/large/ exists (not shipped with repo).
+# BA500 cases above are always the CI-reproducible fallback.
+
+if [[ -d "$LARGE_NETS_DIR" ]]; then
+  run_case "DIST_GRAPHML_1000N_10000A_C0_W0" \
+    -i "$LARGE_NETS_DIR/1000actors-10000arcs.graphml" \
+    -f 1 -c 0 -w 0 -x 1 -k 0 --bench 2 || fail=1
+
+  run_case "DIST_GRAPHML_1000N_10000A_C1_W0" \
+    -i "$LARGE_NETS_DIR/1000actors-10000arcs.graphml" \
+    -f 1 -c 1 -w 0 -x 1 -k 0 --bench 2 || fail=1
+
+else
+  echo "[bench] LARGE_NETS_DIR not found ($LARGE_NETS_DIR), skipping large-net distance benchmarks" >&2
+fi
+
 # ---------------- IO roundtrip benchmark cases ----------------
 # Only large nets (N>=50) are meaningful for IO timing.
 # Uses ~/socnetv/library/nets/large/ if available, falls back to src/data/.
 
-LARGE_NETS_DIR="${HOME}/socnetv/library/nets/large"
 # Always run the shipped dataset (reproducible in CI)
 run_case_io_bench "IO_PAJ_BA500" \
   "$ROOT_DIR/src/data/Benchmark_BA_Directed_N500_m3.paj" 2 || fail=1
+
 if [[ -d "$LARGE_NETS_DIR" ]]; then
   run_case_io_bench "IO_GRAPHML_2000N_40000E" \
     "$LARGE_NETS_DIR/2000actors-40000edges.graphml" 1 || fail=1
   run_case_io_bench "IO_GRAPHML_1000N_10000A" \
     "$LARGE_NETS_DIR/1000actors-10000arcs.graphml" 1 || fail=1
 else
-  echo "[bench] LARGE_NETS_DIR not found ($LARGE_NETS_DIR), using fallback dataset" >&2
-  run_case_io_bench "IO_PAJ_BA500" \
-    "$ROOT_DIR/src/data/Benchmark_BA_Directed_N500_m3.paj" 2 || fail=1
+  echo "[bench] LARGE_NETS_DIR not found ($LARGE_NETS_DIR), skipping large-net IO benchmarks" >&2
 fi
 
 echo "=== DONE ==="
