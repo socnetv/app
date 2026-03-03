@@ -55,10 +55,15 @@ with `Parser::finished` used only as a safety fallback.
 ## Target Direction
 Introduce an IO layer that can load deterministically into a model.
 Keep the Qt signal-based pipeline initially, but provide a non-UI entry point.
+Status: Parser signal fan-out is now defined in a single location.
+GUI and CLI loading paths are behaviorally aligned.
 
 ## Milestones
 - P1 (DONE): Document `Parser` entrypoints + signal contract (this section).
-- P2: Headless “parse-only” mode (no UI assumptions), shared between GUI/CLI via a single wiring helper.
+- P2 (DONE): Extracted centralized Parser→Graph wiring helper
+  (`src/graph/io/graph_parser_wiring.{h,cpp}`) and updated both
+  GUI (`Graph::loadFile`) and CLI headless loader to use it.
+  No semantic changes. Golden + benchmark parity verified.
 - P3: Replace signal fan-out with an explicit builder / transaction API (still semantics-identical).
 - P4: Golden parse tests for key formats (GraphML + at least one other), plus roundtrip stability tests.
 
