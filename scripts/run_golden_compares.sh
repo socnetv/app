@@ -2,10 +2,24 @@
 set -uo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-CLI="${ROOT_DIR}/build/socnetv-cli"
-if [[ ! -x "$CLI" ]]; then
-  CLI="$ROOT_DIR/builds/__unspec__/Debug/socnetv-cli"
+BUILD_TYPE="${BUILD_TYPE:-Debug}"  # Debug|Release (hint only)
+
+# shellcheck source=/dev/null
+. "$ROOT_DIR/scripts/lib/find_socnetv_cli.sh"
+
+if [[ -n "${SOCNETV_CLI:-}" ]]; then
+  CLI="$SOCNETV_CLI"
+else
+  CLI="$(find_socnetv_cli "$ROOT_DIR" "$BUILD_TYPE" 2>/dev/null || true)"
 fi
+
+if [[ -z "${CLI:-}" || ! -x "$CLI" ]]; then
+  echo "[ERROR] socnetv-cli not found/executable." >&2
+  echo "Hint: SOCNETV_CLI=/full/path/to/socnetv-cli $0" >&2
+  exit 2
+fi
+
+echo "[golden] Using CLI: $CLI"
 
 BASE="${ROOT_DIR}/src/tools/baselines"
 BASE_REACH="${ROOT_DIR}/src/tools/baselines/reachability"

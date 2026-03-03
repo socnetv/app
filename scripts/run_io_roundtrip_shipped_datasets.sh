@@ -1,10 +1,31 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
-# Runs the io_roundtrip kernel for all datasets shipped in our src/data, using the filetype inferred from the extension.
+# Runs the io_roundtrip kernel for all datasets shipped in src/data, using the filetype inferred from the extension.
 # The kernel is run without --compare-json
 
-for f in $(find src/data -type f); do
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+BUILD_TYPE="${BUILD_TYPE:-Debug}"
+
+# shellcheck source=/dev/null
+. "$ROOT_DIR/scripts/lib/find_socnetv_cli.sh"
+
+if [[ -n "${SOCNETV_CLI:-}" ]]; then
+  CLI="$SOCNETV_CLI"
+else
+  CLI="$(find_socnetv_cli "$ROOT_DIR" "$BUILD_TYPE" 2>/dev/null || true)"
+fi
+
+if [[ -z "${CLI:-}" || ! -x "$CLI" ]]; then
+  echo "[ERROR] socnetv-cli not found/executable." >&2
+  echo "Hint: SOCNETV_CLI=/full/path/to/socnetv-cli $0" >&2
+  exit 2
+fi
+
+echo "[io_all] Using CLI: $CLI"
+
+# Safe iteration over filenames
+while IFS= read -r -d '' f; do
   case "$f" in
     *.graphml) ft=1 ;;
     *.paj|*.net) ft=2 ;;
@@ -18,6 +39,5 @@ for f in $(find src/data -type f); do
   esac
 
   echo "=== IO_ROUNDTRIP $f (FT$ft) ==="
-  ./build/socnetv-cli --kernel io_roundtrip -i "$f" -f "$ft" || exit 1
-done
-
+  "$CLI" --kernel io_roundtrip -i "$f" -f "$ft" || exit 1
+done < <(find "$ROOT_DIR/src/data" -type f -print0)

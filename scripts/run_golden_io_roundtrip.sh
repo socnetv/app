@@ -8,6 +8,26 @@ set -eu
 UPDATE=0
 KEEP_BAK=1
 
+ROOT_DIR=$(cd "$(dirname "$0")/.." && pwd)
+BUILD_TYPE=${BUILD_TYPE:-Debug}
+
+. "$ROOT_DIR/scripts/lib/find_socnetv_cli.sh"
+
+if [ -n "${SOCNETV_CLI:-}" ]; then
+  CLI="$SOCNETV_CLI"
+else
+  CLI=$(find_socnetv_cli "$ROOT_DIR" "$BUILD_TYPE" 2>/dev/null || true)
+fi
+
+if [ -z "${CLI:-}" ] || [ ! -x "$CLI" ]; then
+  echo "[ERROR] socnetv-cli not found/executable." >&2
+  echo "Hint: SOCNETV_CLI=/full/path/to/socnetv-cli $0" >&2
+  exit 2
+fi
+
+echo "[io] Using CLI: $CLI"
+
+
 usage() {
   echo "Usage: $0 [--update] [--no-bak]" >&2
   exit 2
@@ -47,7 +67,7 @@ for j in src/tools/baselines/io_roundtrip/*.json; do
   if [ "$UPDATE" -eq 1 ]; then
     tmp="$(mktemp "${j}.tmp.XXXXXX")"
     # Generate fresh JSON and overwrite baseline
-    ./build/socnetv-cli --kernel io_roundtrip -i "$path" -f "$ft" --dump-json "$tmp" >/dev/null
+    "$CLI"  --kernel io_roundtrip -i "$path" -f "$ft" --dump-json "$tmp" >/dev/null
 
     if [ "$KEEP_BAK" -eq 1 ]; then
       cp -f "$j" "${j}.bak"
@@ -56,6 +76,6 @@ for j in src/tools/baselines/io_roundtrip/*.json; do
     mv -f "$tmp" "$j"
     echo "UPDATED: $j"
   else
-    ./build/socnetv-cli --kernel io_roundtrip -i "$path" -f "$ft" --compare-json "$j" || exit 1
+    "$CLI" --kernel io_roundtrip -i "$path" -f "$ft" --compare-json "$j" || exit 1
   fi
 done

@@ -29,14 +29,25 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 BENCH_BUILD_TYPE="${BENCH_BUILD_TYPE:-Debug}"  # Debug|Release (hint only)
 
-DEFAULT_CLI="$ROOT_DIR/build/socnetv-cli"
-if [[ ! -x "$DEFAULT_CLI" ]]; then
-  DEFAULT_CLI="$ROOT_DIR/builds/__unspec__/${BENCH_BUILD_TYPE}/socnetv-cli"
-  if [[ ! -x "$DEFAULT_CLI" ]]; then
-    DEFAULT_CLI="$ROOT_DIR/builds/__unspec__/Debug/socnetv-cli"
+# shellcheck source=/dev/null
+. "$ROOT_DIR/scripts/lib/find_socnetv_cli.sh"
+
+if [[ -n "${SOCNETV_CLI:-}" ]]; then
+  if [[ ! -x "$SOCNETV_CLI" ]]; then
+    echo "ERROR: SOCNETV_CLI is set but not executable: $SOCNETV_CLI" >&2
+    exit 1
   fi
+else
+  SOCNETV_CLI="$(find_socnetv_cli "$ROOT_DIR" "$BENCH_BUILD_TYPE" 2>/dev/null || true)"
 fi
-SOCNETV_CLI="${SOCNETV_CLI:-$DEFAULT_CLI}"
+
+if [[ -z "${SOCNETV_CLI:-}" || ! -x "$SOCNETV_CLI" ]]; then
+  echo "ERROR: Could not find socnetv-cli." >&2
+  echo "Hint: SOCNETV_CLI=/full/path/to/socnetv-cli $0" >&2
+  exit 1
+fi
+
+echo "[bench] Using SOCNETV_CLI=$SOCNETV_CLI"
 
 BASELINE_ROOT="$ROOT_DIR/scripts/perf_baselines"
 
