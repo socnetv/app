@@ -65,7 +65,7 @@ GUI and CLI loading paths are behaviorally aligned.
   (`src/graph/io/graph_parser_wiring.{h,cpp}`) and updated both
   GUI (`Graph::loadFile`) and CLI headless loader to use it.
   No semantic changes. Golden + benchmark parity verified.
-### P3: Replace signal fan-out with an explicit builder / transaction API (still semantics-identical).
+### P3 (DONE): Replace signal fan-out with an explicit builder / transaction API (still semantics-identical).
 **Goal:** Keep parsing semantics identical, but stop treating signals as “the API”.
 Parser should write into a narrow “mutation sink” (builder/transaction) that is explicit and testable. Qt signals may remain as a compatibility layer temporarily, but they stop being the primary data plane.
 
@@ -234,7 +234,21 @@ Verification:
 * One sub-step per commit.
 * After every commit: build, run goldens, run benchmarks, inspect diffs.
 
-### P4: Golden parse tests for key formats (GraphML + at least one other), plus roundtrip stability tests.
+### P4 (DONE) — Golden IO coverage + roundtrip stability ✅
+
+Status: implemented via the CLI golden regression harness.
+
+Coverage is enforced by:
+- `scripts/run_golden_compares.sh`:
+  - `io_roundtrip` kernel baselines under `src/tools/baselines/io_roundtrip/`
+  - Includes GraphML (FT1) plus multiple other formats (FT2/3/4/5/6/7)
+  - Export-skipped formats still produce stable signature baselines (skipped outcome is locked in)
+
+Notes:
+- Adding new IO coverage is done by:
+  1) generating a new baseline JSON via `socnetv-cli --kernel io_roundtrip ... --dump-json ...`
+  2) committing it
+  3) adding a `run_case_io` entry to `run_golden_compares.sh`
 
 ---
 
