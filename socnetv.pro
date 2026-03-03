@@ -103,6 +103,7 @@ SOURCES += src/main.cpp \
     src/graph/storage/graph_vertices.cpp \
     src/graph/storage/graph_edges.cpp \
     src/graph/io/graph_io.cpp \
+    src/graph/io/graph_parse_sink_graph.cpp \
     src/graph/relations/graph_relations.cpp \
     src/graph/filters/graph_edge_filters.cpp \
     src/graph/filters/graph_node_filters.cpp \
