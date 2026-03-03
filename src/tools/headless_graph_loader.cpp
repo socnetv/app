@@ -39,8 +39,11 @@ HeadlessLoadResult loadGraphHeadless(
 
     parser->moveToThread(&parserThread);
 
-    QObject::connect(&parserThread, &QThread::finished,
-                     parser, &QObject::deleteLater);
+    // Ensure parser is deleted when thread finishes
+    // But if we do this then deleteLater() may never run because 
+    // we quit the parser thread event loop before it processes deferred deletes.
+    // QObject::connect(&parserThread, &QThread::finished,
+    //                  parser, &QObject::deleteLater);
 
     // ---- Mirror Graph::loadFile() signal wiring ----
     QObject::connect(parser, &Parser::signalAddNewRelation,
@@ -69,6 +72,7 @@ HeadlessLoadResult loadGraphHeadless(
 
     // We'll block until Graph emits signalGraphLoaded
     QEventLoop loop;
+    bool done = false; // either one fires first (loaded OR finished), avoid double quit
 
     QObject::connect(&graph, &Graph::signalGraphLoaded,
                      &loop,
@@ -81,6 +85,9 @@ HeadlessLoadResult loadGraphHeadless(
                          const qint64 &elapsedTime,
                          const QString &message)
                      {
+                         if (done)
+                             return;
+                         done = true;
                          out.fileType = loadedFileType;
                          out.fileName = loadedFileName;
                          out.netName = netName;
@@ -106,6 +113,10 @@ HeadlessLoadResult loadGraphHeadless(
                      &loop,
                      [&](const QString &reason)
                      {
+                         if (done)
+                             return;
+                         done = true;
+
                          qDebug() << "[CLI] Parser finished:" << reason;
 
                          // If graph didn't emit signalGraphLoaded for some reason, still quit.
@@ -158,6 +169,8 @@ HeadlessLoadResult loadGraphHeadless(
 
     parserThread.quit();
     parserThread.wait();
+    delete parser;
+    parser = nullptr;
 
     qDebug() << "[CLI] loadGraphHeadless() end:" << out.ok;
 
