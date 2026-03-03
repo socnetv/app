@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
     cli.addVersionOption();
 
     QCommandLineOption verboseOpt(QStringList() << "b" << "verbose", "Verbose debug output.");
+    QCommandLineOption strictOpt(QStringList() << "strict", "Fail on timing regressions (io_roundtrip kernel).");
     QCommandLineOption fileOpt(QStringList() << "i" << "input", "Input network file path.", "path");
     QCommandLineOption typeOpt(QStringList() << "f" << "format", "File type enum int.", "int", "0");
     QCommandLineOption delimOpt(QStringList() << "d" << "delim", "Delimiter.", "str", " ");
@@ -56,6 +57,7 @@ int main(int argc, char *argv[])
                                    "K", "0");
 
     cli.addOption(verboseOpt);
+    cli.addOption(strictOpt);
     cli.addOption(fileOpt);
     cli.addOption(typeOpt);
     cli.addOption(delimOpt);
@@ -76,6 +78,8 @@ int main(int argc, char *argv[])
     cli::CliConfig cfg;
 
     cfg.verbose = cli.isSet(verboseOpt);
+    cfg.strict = cli.isSet(strictOpt);
+    
     if (!cfg.verbose)
     {
         // Kill qDebug/qInfo output from Qt + your code (keeps warnings/criticals)

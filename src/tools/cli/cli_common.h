@@ -28,6 +28,7 @@ namespace cli
 
         int benchRuns = 0; // 0 = off
         QString kernel;    // "distance", etc.
+        bool strict = false; // if true, timing regressions fail (exit non-zero)
     };
 
     // ---------------- printing ----------------

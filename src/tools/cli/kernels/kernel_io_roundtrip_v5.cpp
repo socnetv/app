@@ -407,7 +407,56 @@ namespace cli
             return root;
         }
 
-        static int compareGoldenV5Io(const QJsonObject &expected, const QJsonObject &actual)
+        static int checkIoTimings(const QJsonObject &expected,
+                                  const QJsonObject &actual,
+                                  bool strict,
+                                  QTextStream &err)
+        {
+            // Timing check policy:
+            // - N < 50: skip entirely (measurement noise dominates)
+            // - baseline load_ms == 0: skip (can't compute threshold)
+            // - N >= 50: warn if actual > baseline * 110%; fail only if --strict
+
+            const int n = expected.value("counts").toObject().value("nodes").toInt(0);
+            if (n < 50)
+            {
+                err << "TIMING_SKIP: N=" << n << " < 50, timing not enforced\n";
+                return 0;
+            }
+
+            const qint64 baselineMs = static_cast<qint64>(
+                expected.value("timings").toObject().value("load_ms").toInteger(0));
+            if (baselineMs == 0)
+            {
+                err << "TIMING_SKIP: baseline load_ms=0, timing not enforced\n";
+                return 0;
+            }
+
+            const qint64 actualMs = static_cast<qint64>(
+                actual.value("timings").toObject().value("load_ms").toInteger(0));
+
+            const qint64 allowed = baselineMs + (baselineMs / 10); // +10%
+
+            if (actualMs <= allowed)
+            {
+                err << "TIMING_OK: load_ms=" << actualMs
+                    << " <= " << allowed << " (baseline=" << baselineMs << " +10%)\n";
+                return 0;
+            }
+
+            err << "TIMING_WARN: load_ms=" << actualMs
+                << " > " << allowed << " (baseline=" << baselineMs << " +10%)\n";
+
+            if (strict)
+            {
+                err << "TIMING_FAIL: --strict mode, timing regression is a hard failure\n";
+                return 1;
+            }
+            return 0;
+        }
+
+
+        static int compareGoldenV5Io(const QJsonObject &expected, const QJsonObject &actual, const CliConfig &cfg)
         {
             QTextStream err(stderr);
 
@@ -466,6 +515,11 @@ namespace cli
             const QJsonArray aRel = actual.value("relations_bundle").toArray();
             if (!compareRelationsBundle(eRel, aRel, err))
                 return 1;
+
+            // Timing check (advisory unless --strict)
+            const int timingRc = checkIoTimings(expected, actual, cfg.strict, err);
+            if (timingRc != 0)
+                return timingRc;
 
             err << "OK: baseline match\n";
             return 0;
@@ -596,7 +650,7 @@ namespace cli
                 QTextStream(stderr) << "ERROR: JSON compare read failed: " << err << "\n";
                 return 2;
             }
-            const int rc = compareGoldenV5Io(expected, root);
+            const int rc = compareGoldenV5Io(expected, root, cfg);
             if (rc != 0)
                 return rc;
         }
