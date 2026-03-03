@@ -4297,6 +4297,7 @@ bool Parser::parseAsDot(const QByteArray &rawData)
     edgeColor = "black";
     nodeShape = "";
     edgeWeight = 1.0;
+    initEdgeWeight = 1.0;
     qreal nodeValue = 1.0;
 
     bool netProperties = false;
@@ -4621,7 +4622,14 @@ bool Parser::parseAsDot(const QByteArray &rawData)
                     totalNodes++;
                     randX = rand() % gwWidth;
                     randY = rand() % gwHeight;
-
+                    if (m_parseSink) {
+                        m_parseSink->createNode(
+                        totalNodes, initNodeSize, nodeColor,
+                        initNodeNumberColor, initNodeNumberSize,
+                        node, initNodeLabelColor, initNodeLabelSize,
+                        QPointF(randX, randY),
+                        initNodeShape, QString());
+                    }
                     emit signalCreateNode(
                         totalNodes, initNodeSize, nodeColor,
                         initNodeNumberColor, initNodeNumberSize,
