@@ -96,7 +96,7 @@ WS2 is structurally complete.
 
 ---
 
-### WS3 — Domain Model Split (SKELETON)
+### WS3 — Domain Model Split (DONE)
 
 Goal: establish a domain model that does not depend on Qt UI concerns.
 
@@ -107,7 +107,7 @@ WS3 assumes WS2 façade boundaries are stable.
 
 ---
 
-### WS4 — IO / Parser Refactor (NEXT)
+### WS4 — IO / Parser Refactor (CURRRENT)
 
 Goal: move file loading toward a clean IO layer and reduce Qt signal entanglement.
 
@@ -115,7 +115,7 @@ Goal: move file loading toward a clean IO layer and reduce Qt signal entanglemen
 
 Next focus:
 
-* Clarify parser responsibilities
+* Clarify parser responsibilities (DONE)
 * Reduce Qt signal coupling in load flow
 * Prepare clean IO boundary before WS3 domain split
 
