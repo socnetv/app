@@ -89,7 +89,7 @@ It is compiled alongside the main application via CMake.
 
 # Kernels and JSON Schemas
 
-Kernels are selected with `--kernel`.
+Kernels are selected with `--kernel`. See more in 'Basic usage' further below.
 
 ---
 
@@ -241,6 +241,8 @@ Distance kernel:
   -i src/data/SmallWorld_N10_E12.graphml \
   -f 1
 ```
+
+where `-f` denotes the file type.
 
 Common file types (see `global.h`):
 
@@ -546,6 +548,13 @@ Prominence baselines:
 ```
 src/tools/baselines/prominence/
 ```
+
+IO baselines:
+
+```
+src/tools/baselines/io_roundtrip/
+```
+
 
 See:
 
