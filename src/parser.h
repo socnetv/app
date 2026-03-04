@@ -42,6 +42,8 @@ struct Actor {
 };
 
 
+
+
 /**
  * @brief The CompareActors class
  * Implements a min-priority queue
@@ -139,6 +141,32 @@ private:
     void createNodeWithDefaults(int nodeIndex, const QString &label);
     bool createEdgesForRow(const QStringList &currentRow, int rowIndex);
     bool containsReservedKeywords(const QString &str) const;
+
+    /**
+     * @brief ParseConfig boundary - the immutable config object
+     */
+    struct ParseConfig {
+        QString fileName;
+        QString codecName;
+
+        int fileFormat;
+        QString delim;
+        int sm_mode;
+        bool sm_has_labels;
+
+        int initNodeSize;
+        QString initNodeColor;
+        QString initNodeShape;
+        QString initNodeNumberColor;
+        int initNodeNumberSize;
+        QString initNodeLabelColor;
+        int initNodeLabelSize;
+
+        QString initEdgeColor;
+
+        int gwWidth;
+        int gwHeight;
+    };
 
     SocNetV::IO::IGraphParseSink *m_parseSink = nullptr;
     std::unique_ptr<SocNetV::IO::IGraphParseSink> m_ownedParseSink;

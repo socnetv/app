@@ -108,37 +108,56 @@ void Parser::load(const QString &fileName,
                   const bool &sm_has_labels)
 {
 
+    ParseConfig cfg{
+        /* fileName */ fileName,
+        /* codecName */ codecName,
+        /* fileFormat */ format,
+        /* delim */ delim,
+        /* sm_mode */ sm_mode,
+        /* sm_has_labels */ sm_has_labels,
+        /* initNodeSize */ defNodeSize,
+        /* initNodeColor */ defNodeColor,
+        /* initNodeShape */ defNodeShape,
+        /* initNodeNumberColor */ defNodeNumberColor,
+        /* initNodeNumberSize */ defNodeNumberSize,
+        /* initNodeLabelColor */ defNodeLabelColor,
+        /* initNodeLabelSize */ defNodeLabelSize,
+        /* initEdgeColor */ defEdgeColor,
+        /* gwWidth */ canvasWidth,
+        /* gwHeight */ canvasHeight};
+
     qDebug() << "Parser::load() current thread:" << QThread::currentThread()
              << " affinity thread:" << this->thread()
-             << "loading file:" << fileName
-             << "codecName" << codecName;
+             << "loading file:" << cfg.fileName
+             << "codecName" << cfg.codecName;
 
-    initNodeSize = defNodeSize;
-    initNodeColor = defNodeColor;
-    initNodeShape = defNodeShape;
-    initNodeNumberColor = defNodeNumberColor;
-    initNodeNumberSize = defNodeNumberSize;
-    initNodeLabelColor = defNodeLabelColor;
-    initNodeLabelSize = defNodeLabelSize;
+    initNodeSize = cfg.initNodeSize;
+    initNodeColor = cfg.initNodeColor;
+    initNodeShape = cfg.initNodeShape;
+    initNodeNumberColor = cfg.initNodeNumberColor;
+    initNodeNumberSize = cfg.initNodeNumberSize;
+    initNodeLabelColor = cfg.initNodeLabelColor;
+    initNodeLabelSize = cfg.initNodeLabelSize;
 
-    initEdgeColor = defEdgeColor;
+    initEdgeColor = cfg.initEdgeColor;
+
+    m_textCodecName = cfg.codecName;
+    networkName = (cfg.fileName.split("/")).last();
+    gwWidth = cfg.gwWidth;
+    gwHeight = cfg.gwHeight;
+    fileFormat = cfg.fileFormat;
+    two_sm_mode = cfg.sm_mode;
 
     edgeDirType = EdgeType::Directed;
     arrows = true;
     bezier = false;
-    m_textCodecName = codecName;
-    networkName = (fileName.split("/")).last();
-    gwWidth = canvasWidth;
-    gwHeight = canvasHeight;
     randX = 0;
     randY = 0;
-    fileFormat = format;
-    two_sm_mode = sm_mode;
     fileLoaded = false;
 
-    if (!delim.isNull() && !delim.isEmpty())
+    if (!cfg.delim.isNull() && !cfg.delim.isEmpty())
     {
-        delimiter = delim;
+        delimiter = cfg.delim;
     }
     else
     {
@@ -149,7 +168,7 @@ void Parser::load(const QString &fileName,
 
     qDebug() << "Initial networkName:" << networkName
              << "requested fileFormat: " << fileFormat
-             << "delim:" << delim << "delimiter" << delimiter;
+             << "delim:" << cfg.delim << "delimiter" << delimiter;
 
     errorMessage = QString();
 
@@ -159,28 +178,29 @@ void Parser::load(const QString &fileName,
 
     // Try to open the file
     qDebug() << "Opening file...";
-    QFile file(fileName);
+    QFile file(cfg.fileName);
     if (!file.open(QIODevice::ReadOnly))
     {
         qint64 elapsedTime = computationTimer.elapsed();
-        qDebug() << "Cannot open file" << fileName;
-        errorMessage = tr("Cannot open file: %1").arg(fileName);
-        if (m_parseSink) {
+        qDebug() << "Cannot open file" << cfg.fileName;
+        errorMessage = tr("Cannot open file: %1").arg(cfg.fileName);
+        if (m_parseSink)
+        {
             m_parseSink->fileLoaded(FileType::UNRECOGNIZED,
-                              QString(),
-                              QString(),
-                              0,
-                              0,
-                              false,
-                              elapsedTime,
-                              errorMessage);
+                                    QString(),
+                                    QString(),
+                                    0,
+                                    0,
+                                    false,
+                                    elapsedTime,
+                                    errorMessage);
         }
 
         return;
     }
 
     // Get the canonical path of the file to load (only the path)
-    fileDirPath = QFileInfo(fileName).canonicalPath();
+    fileDirPath = QFileInfo(cfg.fileName).canonicalPath();
 
     // Read the file into a byte array
     qDebug() << "Reading the whole file into a byte array...";
@@ -204,7 +224,7 @@ void Parser::load(const QString &fileName,
         }
         break;
     case FileType::ADJACENCY:
-        if (parseAsAdjacency(rawData, delimiter, sm_has_labels))
+        if (parseAsAdjacency(rawData, delimiter, cfg.sm_has_labels))
         {
             fileLoaded = true;
         }
@@ -266,14 +286,13 @@ void Parser::load(const QString &fileName,
         if (m_parseSink)
         {
             m_parseSink->fileLoaded(fileFormat,
-                                    fileName,
+                                    cfg.fileName,
                                     networkName,
                                     totalNodes,
                                     totalLinks,
                                     edgeDirType,
                                     elapsedTime);
         }
-
     }
     else if (errorMessage != QString())
     {
@@ -983,9 +1002,10 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                                 qDebug() << "relation" << relationCounter
                                          << "Adding edge from " << source << " to " << target
                                          << " with weight " << edgeWeight;
-                                if (m_parseSink) {
+                                if (m_parseSink)
+                                {
                                     m_parseSink->createEdge(source, target, edgeWeight, initEdgeColor,
-                                                      EdgeType::Directed, arrows, bezier);
+                                                            EdgeType::Directed, arrows, bezier);
                                 }
 
                                 totalLinks++;
@@ -1041,8 +1061,9 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                                      << source << " to " << target
                                      << "weight " << edgeWeight
                                      << "signaling to create new edge";
-                            if (m_parseSink) {
-                                    m_parseSink->createEdge(source, target, edgeWeight, initEdgeColor, EdgeType::Directed, arrows, bezier);
+                            if (m_parseSink)
+                            {
+                                m_parseSink->createEdge(source, target, edgeWeight, initEdgeColor, EdgeType::Directed, arrows, bezier);
                             }
 
                             totalLinks++;
@@ -1590,7 +1611,6 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                     {
                         m_parseSink->setRelation(lastRelationIndex);
                     }
-
                 }
                 i = 0; // reset the source node index
             }
@@ -1807,7 +1827,6 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                             QString(),
                             false);
                     }
-
                 }
                 j = totalNodes;
             }
@@ -2053,7 +2072,8 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
         qDebug("Trying to delete the dummies now");
         for (list<int>::iterator it = listDummiesPajek.begin(); it != listDummiesPajek.end(); it++)
         {
-            if (m_parseSink) {
+            if (m_parseSink)
+            {
                 m_parseSink->removeDummyNode(*it);
             }
         }
@@ -2155,7 +2175,6 @@ bool Parser::parseAsAdjacency(const QByteArray &rawData, const QString &delimite
         {
             m_parseSink->addNewRelation("unnamed");
         }
-
     }
 
     qDebug() << "Finished OK. Returning.";
@@ -2343,7 +2362,6 @@ void Parser::createNodeWithDefaults(int nodeIndex, const QString &label)
         m_parseSink->createNode(nodeIndex, initNodeSize, initNodeColor, initNodeNumberColor, initNodeNumberSize,
                                 label, initNodeLabelColor, initNodeLabelSize, randomPosition, initNodeShape, QString());
     }
-
 }
 
 /**
@@ -3035,7 +3053,6 @@ void Parser::endGraphMLElementNode(QXmlStreamReader &xml)
                                     false,
                                     nodeCustomAttributes);
         }
-
     }
     else
     {
@@ -3055,7 +3072,6 @@ void Parser::endGraphMLElementNode(QXmlStreamReader &xml)
                                     false,
                                     nodeCustomAttributes);
         }
-
     }
 
     bool_node = false;
@@ -4622,7 +4638,6 @@ bool Parser::parseAsDot(const QByteArray &rawData)
                         m_parseSink->createEdge(source, target, edgeWeight, edgeColor,
                                                 edgeTypeThisLine, arrows, bezier);
                     }
-
                 }
 
                 source = target;
@@ -5239,7 +5254,6 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
                                         QPointF(randX, randY),
                                         initNodeShape, QString());
             }
-
         }
         else
         {
@@ -5259,7 +5273,6 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
                                         QPointF(randX, randY),
                                         initNodeShape, QString());
             }
-
         }
     }
 
@@ -5557,7 +5570,6 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
                                         QPointF(randX, randY),
                                         initNodeShape, QString());
             }
-
         }
         else
         {
@@ -5578,7 +5590,6 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
                                         QPointF(randX, randY),
                                         initNodeShape, QString());
             }
-
         }
     }
 
