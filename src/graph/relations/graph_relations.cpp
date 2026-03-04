@@ -85,6 +85,12 @@ void Graph::relationSet(int relNum, const bool &updateUI)
     m_curRelation = relNum;
 
     //
+    // Invalidate the weighted cache so isWeighted() re-scans the new relation's edges.
+    // Without this, isWeighted() returns the cached result from the previous relation.
+    //
+    calculatedGraphWeighted = false;
+
+    //
     // Check if isWeighted so that multiple-relation networks are properly loaded.
     //
     isWeighted();

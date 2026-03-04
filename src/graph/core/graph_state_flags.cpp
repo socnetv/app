@@ -32,6 +32,10 @@ bool Graph::isWeighted()
         return m_graphIsWeighted;
     }
 
+    // Reset before scan: only set true if a non-unit weight is found.
+    // Without this, a stale true from a previous relation's edges would persist.
+    m_graphIsWeighted = false;
+
     qreal m_weight = 0;
     VList::const_iterator it, it1;
     int N = vertices();
