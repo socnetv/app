@@ -134,6 +134,7 @@ SOURCES += src/main.cpp \
     src/graphvertex.cpp \
     src/matrix.cpp \
     src/parser.cpp \
+    src/parser/parser_graphml.cpp \
     src/parser/parser_edgelist.cpp \
     src/parser/parser_adjacency.cpp \
     src/parser/parser_dl.cpp \
