@@ -222,7 +222,6 @@ src/parser/
 * Parser constructor / destructor
 * sink wiring
 * `load()` dispatcher
-* `parseAsTwoModeSociomatrix`
 * minimal coordinator logic
 
 **parser_common.cpp**
@@ -236,7 +235,7 @@ src/parser/
 ### Extracted formats
 
 * EdgeList (simple + weighted)
-* Adjacency / Sociomatrix
+* Adjacency / Sociomatrix / two-mode sociomatrix
 * UCINET DL
 * Pajek
 * GraphML
