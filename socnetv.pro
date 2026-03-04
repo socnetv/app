@@ -137,6 +137,7 @@ SOURCES += src/main.cpp \
     src/parser/parser_edgelist.cpp \
     src/parser/parser_adjacency.cpp \
     src/parser/parser_dl.cpp \
+    src/parser/parser_dot.cpp \
     src/webcrawler.cpp \
     src/chart.cpp \
     src/graphicswidget.cpp \

@@ -147,6 +147,7 @@ set(PARSER_SOURCES
     src/parser/parser_edgelist.cpp 
     src/parser/parser_adjacency.cpp 
     src/parser/parser_dl.cpp 
+    src/parser/parser_dot.cpp 
 )
 
 set(CLI_SOURCES

@@ -681,3 +681,19 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
     qDebug() << " Finished OK. Returning.";
     return true;
 }
+
+
+/**
+ * Debugging only - Used while parsing weighted edge lists
+ */
+template <typename T>
+void print_queue(T &q)
+{
+    qDebug() << "print_queue() ";
+    while (!q.empty())
+    {
+        qDebug() << q.top().key << " value: " << q.top().value << " ";
+        q.pop();
+    }
+    qDebug() << "\n";
+}
