@@ -9,7 +9,9 @@ If you are new to the codebase, start here, then read the high-level refactoring
 Detailed execution plans live under:
 
 ```
+
 docs/roadmaps/
+
 ```
 
 ---
@@ -34,7 +36,9 @@ This design worked but made testing, modularization, and safe refactoring diffic
 To safeguard the modernization effort, SocNetV includes a **headless regression harness**:
 
 ```
+
 socnetv-cli
+
 ```
 
 This tool allows deterministic execution of algorithms and parsing pipelines.
@@ -47,23 +51,74 @@ It supports:
 
 Documentation:
 
-* [`SOCNETV_CLI_REGRESSION_TOOL.md`](../src/tools/SOCNETV_CLI_REGRESSION_TOOL.md)
+```
+
+src/tools/SOCNETV_CLI_REGRESSION_TOOL.md
+
+```
 
 Scripts:
 
 ```
+
 scripts/run_golden_compares.sh
 scripts/run_benchmarks.sh
 scripts/run_golden_io_roundtrip.sh
+scripts/run_io_roundtrip_shipped_datasets.sh
+
 ```
 
 These scripts must pass after structural refactors.
+
+The CLI tool executes deterministic algorithm kernels and compares results
+against committed JSON baselines. This guarantees that architectural
+refactors do not change algorithm outputs or graph semantics.
+
+---
+
+# CLI Kernel Architecture
+
+The regression harness is organized around **kernel modules**.
+
+Each kernel protects a specific algorithm family and emits a deterministic JSON schema.
+
+Current kernels include:
+
+```
+
+kernel_distance_v1
+kernel_reachability_v2
+kernel_walks_v3
+kernel_prominence_v4
+kernel_io_roundtrip_v5
+
+```
+
+Each kernel owns:
+
+* its execution logic
+* JSON schema definition
+* strict comparison logic
+
+Schemas are versioned and never modified after release.
+
+This ensures deterministic verification of algorithm correctness during
+architectural refactors.
 
 ---
 
 # Current Architectural State
 
-Refactoring workstreams **WS1 and WS2 are complete**.
+Refactoring workstreams **WS1, WS2, and WS4 are complete**.
+
+The project now has:
+
+* engine-based algorithms
+* a thin Graph façade
+* a deterministic regression harness
+* unified GUI/CLI parsing via `IGraphParseSink`
+
+The current development focus is **WS6 — regression harness expansion and testing coverage**.
 
 ---
 
@@ -79,19 +134,24 @@ Refactoring workstreams **WS1 and WS2 are complete**.
 `graph.cpp` contains only:
 
 ```
+
 Graph::Graph(...)
 Graph::clear(...)
+
 ```
 
 All other functionality lives under:
 
 ```
+
 src/graph/
+
 ```
 
 organized by responsibility:
 
 ```
+
 centrality/
 clustering/
 cohesion/
@@ -110,6 +170,7 @@ similarity/
 storage/
 ui/
 util/
+
 ```
 
 ---
@@ -130,8 +191,10 @@ Responsibilities:
 Examples:
 
 ```
+
 src/graph/prominence/graph_prominence_distribution.cpp
 src/graph/centrality/graph_centrality.cpp
+
 ```
 
 ---
@@ -148,7 +211,9 @@ Responsibilities:
 Example:
 
 ```
+
 src/graph/ui/graph_ui_prominence_distribution.cpp
+
 ```
 
 ---
@@ -169,15 +234,19 @@ This separation is mandatory.
 Shortest-path algorithms were extracted into:
 
 ```
+
 src/engine/
+
 ```
 
 Main components:
 
 ```
+
 distance_engine.cpp
 distance_progress_sink.h
 graph_distance_progress_sink.cpp
+
 ```
 
 These engines can run:
@@ -194,7 +263,9 @@ The parser architecture was modernized during **WS4**.
 Historically:
 
 ```
+
 Parser → Qt signals → Graph mutation
+
 ```
 
 This design was fragile and hard to test deterministically.
@@ -206,18 +277,22 @@ This design was fragile and hard to test deterministically.
 Parsing now uses an explicit mutation interface:
 
 ```
+
 Parser
-  ↓
+↓
 IGraphParseSink
-  ↓
+↓
 Graph
+
 ```
 
 Key components:
 
 ```
+
 src/graph/io/graph_parse_sink.h
 src/graph/io/graph_parse_sink_graph.cpp
+
 ```
 
 The sink defines the mutation contract used during parsing.
@@ -225,12 +300,14 @@ The sink defines the mutation contract used during parsing.
 Typical mutation calls include:
 
 ```
+
 createNode(...)
 createEdge(...)
 setRelation(...)
 addNewRelation(...)
 removeDummyNode(...)
 fileLoaded(...)
+
 ```
 
 Legacy Parser → Graph mutation signals have been removed.
@@ -244,9 +321,11 @@ Both **GUI and CLI loading paths now share the same mutation pipeline**, ensurin
 ## UI Layer
 
 ```
+
 MainWindow
 dialogs
 graphics widgets/items
+
 ```
 
 ---
@@ -254,7 +333,9 @@ graphics widgets/items
 ## Core Coordinator
 
 ```
+
 Graph (façade)
+
 ```
 
 ---
@@ -262,9 +343,11 @@ Graph (façade)
 ## Data Structures
 
 ```
+
 GraphVertex
 edge storage
 analysis caches
+
 ```
 
 ---
@@ -274,6 +357,7 @@ analysis caches
 Examples:
 
 ```
+
 DistanceEngine
 centrality
 clustering
@@ -283,6 +367,7 @@ layouts
 generators
 reporting
 reachability
+
 ```
 
 ---
@@ -290,9 +375,11 @@ reachability
 ## IO
 
 ```
+
 Parser
 IGraphParseSink
 GraphParseSinkGraph
+
 ```
 
 ---
@@ -302,26 +389,35 @@ GraphParseSinkGraph
 High-level plan:
 
 ```
+
 ARCHITECTURAL_REFACTORING_ROADMAP.md
+
 ```
 
 Completed:
 
 ```
+
 WS1 — Distance engine extraction
 WS2 — Graph façade
+WS4 — IO / Parser boundary cleanup
+
 ```
 
 Current focus:
 
 ```
-WS4 — IO / Parser boundary cleanup
+
+WS6 — Testing / regression harness expansion
+
 ```
 
 Next architectural milestone:
 
 ```
+
 WS3 — Domain model separation
+
 ```
 
 ---
@@ -340,11 +436,16 @@ WS3 — Domain model separation
 After structural changes:
 
 ```
+
 ./scripts/run_golden_compares.sh
 ./scripts/run_benchmarks.sh
+
 ```
 
 Golden outputs and performance must remain stable.
+
+Benchmarks verify performance guardrails for key algorithms and ensure
+architectural refactors do not introduce slowdowns.
 
 ---
 
@@ -361,8 +462,10 @@ During refactors it should be considered **observable behavior** unless intentio
 Launchpad PPA builds are officially supported for:
 
 ```
+
 Ubuntu 22.04 LTS (Jammy)
 Ubuntu 24.04 LTS (Noble)
+
 ```
 
 Other Ubuntu series are intentionally disabled to reduce maintenance surface and dependency drift.
@@ -374,6 +477,7 @@ Other Ubuntu series are intentionally disabled to reduce maintenance surface and
 Current runtime flow:
 
 ```
+
 UI
 ↓
 Graph (façade)
@@ -383,6 +487,7 @@ Algorithm slice / engine
 UI façade (if rendering required)
 ↓
 Signal to MainWindow
+
 ```
 
 Do **not bypass this flow**.
