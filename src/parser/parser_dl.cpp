@@ -941,3 +941,34 @@ bool Parser::readDLKeywords(QStringList &strList,
     return true;
 }
 
+
+/**
+ * @brief Signals to create either a single new node (numbered fixedNum) or multiple new nodes (numbered from 1 to to newNodes)
+ * @param fixedNum
+ * @param label
+ * @param newNodes
+ */
+void Parser::createRandomNodes(const int &fixedNum,
+                               const QString &label,
+                               const int &newNodes)
+{
+    if (newNodes != 1)
+    {
+        for (int i = 0; i < newNodes; i++)
+        {
+            qDebug() << "Signaling to create multiple nodes. Now signaling for node:" << i + 1;
+            if (m_parseSink)
+            {
+                m_parseSink->createNodeAtPosRandom(false);
+            }
+        }
+    }
+    else
+    {
+        qDebug() << "Signaling to create a single node:" << fixedNum << "with label:" << label;
+        if (m_parseSink)
+        {
+            m_parseSink->createNodeAtPosRandomWithLabel(fixedNum, label, false);
+        }
+    }
+}

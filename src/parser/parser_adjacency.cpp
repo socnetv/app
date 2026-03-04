@@ -284,3 +284,74 @@ void Parser::createNodeWithDefaults(int nodeIndex, const QString &label)
                                 label, initNodeLabelColor, initNodeLabelSize, randomPosition, initNodeShape, QString());
     }
 }
+
+
+/**
+ * Iterates through a row of the adjacency matrix to create edges.
+ * Emits a signal for each non-zero weight to create an edge between nodes.
+ * Parsing is aborted immediately if any invalid data is encountered.
+ * @param currentRow The adjacency matrix row being processed.
+ * @param rowIndex The index of the row (source node for edges).
+ * @return true if edges are successfully created, false otherwise.
+ */
+bool Parser::createEdgesForRow(const QStringList &currentRow, int rowIndex)
+{
+    int colIndex = 0;
+    bool conversionOK = false;
+
+    for (const QString &edgeStr : currentRow)
+    {
+        colIndex++;
+        edgeWeight = edgeStr.toDouble(&conversionOK);
+
+        // Abort if a matrix element cannot be converted to a number.
+        if (!conversionOK)
+        {
+            errorMessage = tr("Error reading Adjacency-formatted file. "
+                              "Element (%1, %2) contains invalid data ('%3'). Parsing aborted.")
+                               .arg(rowIndex)
+                               .arg(colIndex)
+                               .arg(edgeStr);
+            return false;
+        }
+
+        // If the weight is greater than 0, create a directed edge.
+        if (edgeWeight > 0)
+        {
+            qDebug() << "Signaling to create new edge:" << rowIndex << "->" << colIndex
+                     << "weight:" << edgeWeight << "TotalLinks:" << totalLinks + 1;
+            if (m_parseSink)
+            {
+                m_parseSink->createEdge(rowIndex, colIndex, edgeWeight, initEdgeColor, EdgeType::Directed, true, false);
+            }
+
+            totalLinks++;
+        }
+    }
+
+    return true;
+}
+
+
+/**
+ * Checks if the given string contains any reserved keywords.
+ * Reserved keywords suggest the file is not adjacency-formatted but in another graph format.
+ * Parsing is aborted if a reserved keyword is found.
+ * @param str The string to check for keywords.
+ * @return true if a reserved keyword is found, false otherwise.
+ */
+bool Parser::containsReservedKeywords(const QString &str) const
+{
+    // List of keywords reserved by other file formats.
+    static const QStringList reservedKeywords = {
+        "*Vertices", "*Arcs", "*Edges", "*Network", "graph", "digraph", "DL n", "DL", "dl", "list", "<graphml", "<?xml"};
+
+    for (const QString &keyword : reservedKeywords)
+    {
+        if (str.trimmed().startsWith(keyword, Qt::CaseInsensitive))
+        {
+            return true;
+        }
+    }
+    return false;
+}
