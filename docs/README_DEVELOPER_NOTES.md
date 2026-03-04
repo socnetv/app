@@ -47,9 +47,7 @@ It supports:
 
 Documentation:
 
-```
-src/tools/SOCNETV_CLI_REGRESSION_TOOL.md
-```
+* [`SOCNETV_CLI_REGRESSION_TOOL.md`](../src/tools/SOCNETV_CLI_REGRESSION_TOOL.md)
 
 Scripts:
 
