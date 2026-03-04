@@ -135,6 +135,7 @@ SOURCES += src/main.cpp \
     src/matrix.cpp \
     src/parser.cpp \
     src/parser/parser_edgelist.cpp \
+    src/parser/parser_adjacency.cpp \
     src/webcrawler.cpp \
     src/chart.cpp \
     src/graphicswidget.cpp \
