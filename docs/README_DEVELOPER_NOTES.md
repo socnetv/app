@@ -8,11 +8,13 @@ If you are new to the codebase, start here, then read the high-level refactoring
 
 Detailed execution plans live under:
 
-* `docs/roadmaps/`
+```
+docs/roadmaps/
+```
 
 ---
 
-## Project Snapshot
+# Project Snapshot
 
 SocNetV is a Qt-based desktop application for social network analysis and visualization.
 
@@ -25,20 +27,49 @@ Historically, most functionality flowed through a central `Graph` object which a
 
 This design worked but made testing, modularization, and safe refactoring difficult.
 
-To safeguard our modernization effort, we have a harness tool, called `socnetv-cli`.
-The tool supports golden compares and benchmarking. 
-See [SOCNETV_CLI_REGRESSION_TOOL.md](../src/tools/SOCNETV_CLI_REGRESSION_TOOL.md)
-Also, there are automated scripts to run:
--  [golden compares](../scripts/run_golden_compares.sh) 
--  [benchmarks](../scripts/run_benchmarks.sh).
+---
+
+# Regression Safety Harness
+
+To safeguard the modernization effort, SocNetV includes a **headless regression harness**:
+
+```
+socnetv-cli
+```
+
+This tool allows deterministic execution of algorithms and parsing pipelines.
+
+It supports:
+
+* golden output comparisons
+* performance benchmarking
+* IO roundtrip validation
+
+Documentation:
+
+```
+src/tools/SOCNETV_CLI_REGRESSION_TOOL.md
+```
+
+Scripts:
+
+```
+scripts/run_golden_compares.sh
+scripts/run_benchmarks.sh
+scripts/run_golden_io_roundtrip.sh
+```
+
+These scripts must pass after structural refactors.
 
 ---
 
-## Current Architectural State
+# Current Architectural State
 
-Refactoring workstreams WS1 and WS2 are complete.
+Refactoring workstreams **WS1 and WS2 are complete**.
 
-### Graph as Façade
+---
+
+# Graph as Façade
 
 `Graph` now acts primarily as:
 
@@ -49,8 +80,10 @@ Refactoring workstreams WS1 and WS2 are complete.
 
 `graph.cpp` contains only:
 
-* `Graph::Graph(...)`
-* `Graph::clear(...)`
+```
+Graph::Graph(...)
+Graph::clear(...)
+```
 
 All other functionality lives under:
 
@@ -58,117 +91,287 @@ All other functionality lives under:
 src/graph/
 ```
 
-organized by responsibility (distances, centrality, clustering, prominence, layouts, io, ui, etc.).
+organized by responsibility:
+
+```
+centrality/
+clustering/
+cohesion/
+crawler/
+distances/
+filters/
+generators/
+io/
+layouts/
+matrices/
+prominence/
+reachability/
+relations/
+reporting/
+similarity/
+storage/
+ui/
+util/
+```
 
 ---
 
-## Structural Boundary Inside `src/graph/`
+# Structural Boundary Inside `src/graph/`
 
-A strict separation is now enforced:
+A strict separation is enforced.
 
-### Algorithm slices
+## Algorithm slices
 
-* Compute data only
-* May use QtCore
-* Do **not** construct QtWidgets / QtCharts objects
-* Do **not** emit UI signals directly
+Responsibilities:
 
-### UI façade layer (`src/graph/ui/`)
+* compute data only
+* may use QtCore
+* must **not** construct QtWidgets / QtCharts objects
+* must **not** emit UI signals directly
 
-* Constructs QtCharts / QtWidgets objects
-* Handles PNG exports
-* Emits signals to `MainWindow`
+Examples:
+
+```
+src/graph/prominence/graph_prominence_distribution.cpp
+src/graph/centrality/graph_centrality.cpp
+```
+
+---
+
+## UI façade layer (`src/graph/ui/`)
+
+Responsibilities:
+
+* construct QtWidgets / QtCharts objects
+* render visualizations
+* export PNG charts
+* emit UI update signals to `MainWindow`
+
+Example:
+
+```
+src/graph/ui/graph_ui_prominence_distribution.cpp
+```
+
+---
+
+## Rule for New Code
 
 If you add new analytics:
 
-* Keep computation in algorithm slices
-* Delegate rendering and signal emission to the UI façade
+1. **compute results in algorithm slices**
+2. **perform rendering in the UI façade**
 
-This rule is mandatory for new code.
-
----
-
-## Code Shape (High-Level)
-
-### UI Layer
-
-* `MainWindow`
-* dialogs
-* graphics widgets/items
-
-### Core Coordinator
-
-* `Graph` (façade)
-
-### Data Structures
-
-* `GraphVertex`
-* edge storage
-* analysis caches
-
-### Engines / Slices
-
-* DistanceEngine
-* centrality
-* clustering
-* prominence
-* similarity
-* layouts
-* generators
-* reporting
-* io wrappers
-
-### I/O
-
-* `Parser` (next major refactor target — WS4)
+This separation is mandatory.
 
 ---
 
-## Current Refactor Direction
+# Distance Engine
+
+Shortest-path algorithms were extracted into:
+
+```
+src/engine/
+```
+
+Main components:
+
+```
+distance_engine.cpp
+distance_progress_sink.h
+graph_distance_progress_sink.cpp
+```
+
+These engines can run:
+
+* from the GUI
+* from the CLI regression harness
+
+---
+
+# Parsing and I/O
+
+The parser architecture was modernized during **WS4**.
+
+Historically:
+
+```
+Parser → Qt signals → Graph mutation
+```
+
+This design was fragile and hard to test deterministically.
+
+---
+
+## Current Parsing Architecture
+
+Parsing now uses an explicit mutation interface:
+
+```
+Parser
+  ↓
+IGraphParseSink
+  ↓
+Graph
+```
+
+Key components:
+
+```
+src/graph/io/graph_parse_sink.h
+src/graph/io/graph_parse_sink_graph.cpp
+```
+
+The sink defines the mutation contract used during parsing.
+
+Typical mutation calls include:
+
+```
+createNode(...)
+createEdge(...)
+setRelation(...)
+addNewRelation(...)
+removeDummyNode(...)
+fileLoaded(...)
+```
+
+Legacy Parser → Graph mutation signals have been removed.
+
+Both **GUI and CLI loading paths now share the same mutation pipeline**, ensuring deterministic behavior.
+
+---
+
+# Code Shape (High-Level)
+
+## UI Layer
+
+```
+MainWindow
+dialogs
+graphics widgets/items
+```
+
+---
+
+## Core Coordinator
+
+```
+Graph (façade)
+```
+
+---
+
+## Data Structures
+
+```
+GraphVertex
+edge storage
+analysis caches
+```
+
+---
+
+## Engines / Algorithm Slices
+
+Examples:
+
+```
+DistanceEngine
+centrality
+clustering
+prominence
+similarity
+layouts
+generators
+reporting
+reachability
+```
+
+---
+
+## IO
+
+```
+Parser
+IGraphParseSink
+GraphParseSinkGraph
+```
+
+---
+
+# Current Refactor Direction
 
 High-level plan:
 
-* `ARCHITECTURAL_REFACTORING_ROADMAP.md`
+```
+ARCHITECTURAL_REFACTORING_ROADMAP.md
+```
 
-WS2 (Graph façade) is complete.
+Completed:
 
-Next focus:
+```
+WS1 — Distance engine extraction
+WS2 — Graph façade
+```
 
-* WS4 — IO / Parser boundary cleanup
+Current focus:
 
-The goal is to clarify loading flow and reduce Qt signal entanglement before attempting a domain model split (WS3).
+```
+WS4 — IO / Parser boundary cleanup
+```
+
+Next architectural milestone:
+
+```
+WS3 — Domain model separation
+```
 
 ---
 
-## Development Workflow Notes
+# Development Workflow Notes
 
-### Build
+## Build
 
-* CMake + Qt 6 (macOS/Linux/Windows)
-* Refactors must be incremental and verifiable.
+* CMake + Qt6 (Linux / macOS / Windows)
+* Refactors must remain incremental.
 
-### Regression Discipline
+---
 
-* Golden comparisons must pass. See scripts/run_golden_compares.sh
-* Performance must remain within benchmark guardrails. See scripts/run_benchmark.sh
-* Behavior preservation is mandatory.
+## Regression Discipline
 
-### Debug Output
+After structural changes:
 
-* Considered part of observable behavior during refactors unless explicitly changed.
+```
+./scripts/run_golden_compares.sh
+./scripts/run_benchmarks.sh
+```
 
+Golden outputs and performance must remain stable.
 
-### Launchpad PPA builds
+---
+
+## Debug Output
+
+Debug output may be used in golden comparisons.
+
+During refactors it should be considered **observable behavior** unless intentionally changed.
+
+---
+
+# Launchpad PPA builds
 
 Launchpad PPA builds are officially supported for:
-- Ubuntu 22.04 LTS (Jammy)
-- Ubuntu 24.04 LTS (Noble)
+
+```
+Ubuntu 22.04 LTS (Jammy)
+Ubuntu 24.04 LTS (Noble)
+```
 
 Other Ubuntu series are intentionally disabled to reduce maintenance surface and dependency drift.
 
 ---
 
-## Mental Model for Contributors
+# Mental Model for Contributors
 
 Current runtime flow:
 
@@ -184,7 +387,6 @@ UI façade (if rendering required)
 Signal to MainWindow
 ```
 
-Do not bypass this flow.
+Do **not bypass this flow**.
 
-If you are unsure whether something belongs in an algorithm slice or in the UI façade layer, prefer separation.
-
+If unsure whether code belongs in an algorithm slice or in the UI façade layer, prefer **separation of concerns**.
