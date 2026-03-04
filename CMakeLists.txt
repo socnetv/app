@@ -139,8 +139,12 @@ set(GRAPH_SOURCES
     src/graph/similarity/graph_similarity_matrices.cpp
     src/graph/reporting/graph_reports.cpp
     src/graph/reporting/graph_reports_settings.cpp
-    
+)
 
+
+set(PARSER_SOURCES
+    src/parser.cpp
+    src/parser/parser_edgelist.cpp 
 )
 
 set(CLI_SOURCES
@@ -186,9 +190,9 @@ set(SOURCES
     src/texteditor.cpp
     ${ENGINE_SOURCES}
     ${GRAPH_SOURCES}
+    ${PARSER_SOURCES}
     src/graphvertex.cpp
     src/matrix.cpp 
-    src/parser.cpp 
     src/webcrawler.cpp 
     src/chart.cpp 
     src/graphicswidget.cpp 
@@ -471,9 +475,9 @@ if(BUILD_CLI)
         ${CLI_SOURCES}
         ${ENGINE_SOURCES}
         ${GRAPH_SOURCES}
+        ${PARSER_SOURCES}
         src/graphvertex.cpp
         src/matrix.cpp
-        src/parser.cpp
         src/webcrawler.cpp
     )
 
