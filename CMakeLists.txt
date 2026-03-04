@@ -144,6 +144,7 @@ set(GRAPH_SOURCES
 
 set(PARSER_SOURCES
     src/parser.cpp
+    src/parser/parser_common.cpp 
     src/parser/parser_graphml.cpp 
     src/parser/parser_edgelist.cpp 
     src/parser/parser_adjacency.cpp 

@@ -430,19 +430,3 @@ bool Parser::parseAsTwoModeSociomatrix(const QByteArray &rawData)
     return true;
 }
 
-/**
- * @brief Helper. Checks if the string parameter is a comment (starts with a known char, i.e #).
- *
- * @param str
- * @return  bool
- */
-bool Parser::isComment(QString str)
-{
-    if (str.startsWith("#", Qt::CaseInsensitive) || str.startsWith("/*", Qt::CaseInsensitive) || str.startsWith("%", Qt::CaseInsensitive) || str.startsWith("/*", Qt::CaseInsensitive) || str.startsWith("//", Qt::CaseInsensitive) || str.isEmpty())
-    {
-        qDebug() << "Parser::isComment() - Comment or an empty line was found. "
-                    "Skipping...";
-        return true;
-    }
-    return false;
-}
