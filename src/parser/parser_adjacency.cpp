@@ -355,3 +355,291 @@ bool Parser::containsReservedKeywords(const QString &str) const
     }
     return false;
 }
+
+/**
+ * @brief Parses a two-mode (bipartite) sociomatrix file (.2sm / .aff).
+ *
+ * The file contains a rectangular NR × NC binary (or weighted) matrix where
+ * rows = Mode 1 actors (persons, CEOs, …) and columns = Mode 2 actors
+ * (events, clubs, …).
+ *
+ * Behaviour is controlled by two_sm_mode (set from ParseConfig::sm_mode,
+ * default = 1):
+ *
+ *   two_sm_mode == 1  →  Bipartite graph (default)
+ *       Creates NR + NC nodes and one undirected edge per non-zero cell.
+ *       Mode 1 nodes: numbers 1..NR,       labels "p1".."pNR", initNodeColor / initNodeShape
+ *       Mode 2 nodes: numbers NR+1..NR+NC, labels "e1".."eNC", "SkyBlue"   / "diamond"
+ *
+ *   two_sm_mode == 2  →  Person (Mode-1) projection  [B × Bᵀ]
+ *       Creates NR nodes. Connects person i and person k with an undirected
+ *       edge whenever they share at least one event (co-membership).
+ *
+ *   two_sm_mode == 3  →  Event (Mode-2) projection  [Bᵀ × B]
+ *       Creates NC nodes. Connects event j and event l with an undirected
+ *       edge whenever they share at least one person.
+ *
+ * @param rawData  Raw bytes of the file.
+ * @return true on success, false on parse error.
+ */
+bool Parser::parseAsTwoModeSociomatrix(const QByteArray &rawData)
+{
+    qDebug() << "Parsing data as two-mode sociomatrix, two_sm_mode =" << two_sm_mode;
+
+    QTextCodec *codec = QTextCodec::codecForName(m_textCodecName.toLatin1());
+    QString decodedData = codec->toUnicode(rawData);
+    QTextStream ts(&decodedData);
+
+    // ------------------------------------------------------------------ //
+    //  Pass 1 — read all data rows into memory, validate structure         //
+    // ------------------------------------------------------------------ //
+    QVector<QStringList> matrix;
+    int fileLine = 0;
+    int NC = 0;   // column count fixed by first data row
+
+    while (!ts.atEnd()) {
+        fileLine++;
+        QString str = ts.readLine().simplified();
+
+        if (isComment(str) || str.isEmpty())
+            continue;
+
+        // Reject files that look like another format
+        if (str.contains("vertices",  Qt::CaseInsensitive) ||
+            str.contains("network",   Qt::CaseInsensitive) ||
+            str.contains("graph",     Qt::CaseInsensitive) ||
+            str.contains("digraph",   Qt::CaseInsensitive) ||
+            str.contains("DL n",      Qt::CaseInsensitive) ||
+            str == "DL" || str == "dl" ||
+            str.contains("list",      Qt::CaseInsensitive) ||
+            str.contains("graphml",   Qt::CaseInsensitive) ||
+            str.contains("xml",       Qt::CaseInsensitive))
+        {
+            qDebug() << "*** Not a two-mode sociomatrix file. Aborting!";
+            errorMessage = tr("Invalid two-mode sociomatrix file. "
+                              "Non-comment line %1 includes keywords reserved by "
+                              "other file formats (vertices, graphml, network, "
+                              "graph, digraph, DL, xml)").arg(fileLine);
+            return false;
+        }
+
+        QStringList row = str.contains(',') ? str.split(',') : str.split(' ');
+
+        if (NC == 0) {
+            NC = row.size();
+        } else if (row.size() != NC) {
+            qDebug() << "*** Ragged matrix at line" << fileLine;
+            errorMessage = tr("Invalid two-mode sociomatrix file. "
+                              "Row %1 has a different number of elements than "
+                              "the first data row.").arg(fileLine);
+            return false;
+        }
+
+        matrix.append(row);
+    }
+
+    const int NR = matrix.size();
+
+    if (NR == 0 || NC == 0) {
+        qDebug() << "*** Empty matrix, aborting.";
+        errorMessage = tr("Invalid two-mode sociomatrix file: no data rows found.");
+        return false;
+    }
+
+    qDebug() << "Matrix dimensions: NR =" << NR << "NC =" << NC
+             << "two_sm_mode =" << two_sm_mode;
+
+    // ------------------------------------------------------------------ //
+    //  Common setup                                                        //
+    // ------------------------------------------------------------------ //
+    edgeDirType = EdgeType::Undirected;
+    arrows      = true;
+    bezier      = false;
+    totalLinks  = 0;
+    totalNodes  = 0;
+    firstModeMultiMap.clear();
+    secondModeMultiMap.clear();
+    relationsList.clear();
+
+    if (m_parseSink)
+        m_parseSink->addNewRelation("unnamed");
+
+    // ------------------------------------------------------------------ //
+    //  Mode 1 — Bipartite graph                                           //
+    // ------------------------------------------------------------------ //
+    if (two_sm_mode == 1) {
+
+        // Create Mode-1 nodes (persons / actors)
+        for (int i = 1; i <= NR; ++i) {
+            randX = rand() % gwWidth;
+            randY = rand() % gwHeight;
+            if (m_parseSink) {
+                m_parseSink->createNode(
+                    i, initNodeSize, initNodeColor,
+                    initNodeNumberColor, initNodeNumberSize,
+                    QString("p%1").arg(i),
+                    initNodeLabelColor, initNodeLabelSize,
+                    QPointF(randX, randY),
+                    initNodeShape, QString());
+            }
+        }
+
+        // Create Mode-2 nodes (events / groups)
+        const QString mode2Color = "SkyBlue";
+        const QString mode2Shape = "diamond";
+        for (int j = 1; j <= NC; ++j) {
+            randX = rand() % gwWidth;
+            randY = rand() % gwHeight;
+            if (m_parseSink) {
+                m_parseSink->createNode(
+                    NR + j, initNodeSize, mode2Color,
+                    initNodeNumberColor, initNodeNumberSize,
+                    QString("e%1").arg(j),
+                    initNodeLabelColor, initNodeLabelSize,
+                    QPointF(randX, randY),
+                    mode2Shape, QString());
+            }
+        }
+
+        totalNodes = NR + NC;
+
+        // Create cross-edges for every non-zero cell
+        for (int i = 0; i < NR; ++i) {
+            for (int j = 0; j < NC; ++j) {
+                const QString &cell = matrix[i][j].trimmed();
+                if (cell != "0") {
+                    bool ok = false;
+                    qreal w = cell.toDouble(&ok);
+                    edgeWeight = ok ? w : 1.0;
+                    qDebug() << "Bipartite edge:" << (i + 1) << "->" << (NR + j + 1)
+                             << "weight" << edgeWeight;
+                    if (m_parseSink) {
+                        m_parseSink->createEdge(
+                            i + 1, NR + j + 1, edgeWeight,
+                            initEdgeColor, EdgeType::Undirected,
+                            arrows, bezier);
+                    }
+                    totalLinks++;
+                }
+            }
+        }
+
+    // ------------------------------------------------------------------ //
+    //  Mode 2 — Person projection  (B × Bᵀ)                              //
+    // ------------------------------------------------------------------ //
+    } else if (two_sm_mode == 2) {
+
+        // Build firstModeMultiMap: person i (1-indexed) → events attended
+        for (int i = 0; i < NR; ++i) {
+            for (int j = 0; j < NC; ++j) {
+                if (matrix[i][j].trimmed() != "0")
+                    firstModeMultiMap.insert(i + 1, j + 1);
+            }
+        }
+
+        // Create person nodes
+        for (int i = 1; i <= NR; ++i) {
+            randX = rand() % gwWidth;
+            randY = rand() % gwHeight;
+            if (m_parseSink) {
+                m_parseSink->createNode(
+                    i, initNodeSize, initNodeColor,
+                    initNodeNumberColor, initNodeNumberSize,
+                    QString::number(i),
+                    initNodeLabelColor, initNodeLabelSize,
+                    QPointF(randX, randY),
+                    initNodeShape, QString());
+            }
+        }
+
+        totalNodes = NR;
+
+        // Connect persons sharing at least one event
+        for (int i = 1; i <= NR; ++i) {
+            for (int k = 1; k < i; ++k) {
+                const QList<int> eventsI = firstModeMultiMap.values(i);
+                bool connected = false;
+                for (int ev : eventsI) {
+                    if (firstModeMultiMap.contains(k, ev)) {
+                        connected = true;
+                        break;
+                    }
+                }
+                if (connected) {
+                    qDebug() << "Person projection: edge" << i << "-" << k;
+                    if (m_parseSink) {
+                        m_parseSink->createEdge(
+                            i, k, 1.0,
+                            initEdgeColor, EdgeType::Undirected,
+                            arrows, bezier);
+                    }
+                    totalLinks++;
+                }
+            }
+        }
+
+    // ------------------------------------------------------------------ //
+    //  Mode 3 — Event projection  (Bᵀ × B)                               //
+    // ------------------------------------------------------------------ //
+    } else if (two_sm_mode == 3) {
+
+        // Build secondModeMultiMap: event j (1-indexed) → persons attending
+        for (int i = 0; i < NR; ++i) {
+            for (int j = 0; j < NC; ++j) {
+                if (matrix[i][j].trimmed() != "0")
+                    secondModeMultiMap.insert(j + 1, i + 1);
+            }
+        }
+
+        // Create event nodes
+        for (int j = 1; j <= NC; ++j) {
+            randX = rand() % gwWidth;
+            randY = rand() % gwHeight;
+            if (m_parseSink) {
+                m_parseSink->createNode(
+                    j, initNodeSize, initNodeColor,
+                    initNodeNumberColor, initNodeNumberSize,
+                    QString::number(j),
+                    initNodeLabelColor, initNodeLabelSize,
+                    QPointF(randX, randY),
+                    initNodeShape, QString());
+            }
+        }
+
+        totalNodes = NC;
+
+        // Connect events sharing at least one person
+        for (int j = 1; j <= NC; ++j) {
+            for (int l = 1; l < j; ++l) {
+                const QList<int> personsJ = secondModeMultiMap.values(j);
+                bool connected = false;
+                for (int p : personsJ) {
+                    if (secondModeMultiMap.contains(l, p)) {
+                        connected = true;
+                        break;
+                    }
+                }
+                if (connected) {
+                    qDebug() << "Event projection: edge" << j << "-" << l;
+                    if (m_parseSink) {
+                        m_parseSink->createEdge(
+                            j, l, 1.0,
+                            initEdgeColor, EdgeType::Undirected,
+                            arrows, bezier);
+                    }
+                    totalLinks++;
+                }
+            }
+        }
+
+    } else {
+        qWarning() << "parseAsTwoModeSociomatrix: unknown two_sm_mode" << two_sm_mode
+                   << "- falling back to bipartite (mode 1)";
+        two_sm_mode = 1;
+        return parseAsTwoModeSociomatrix(rawData);
+    }
+
+    qDebug() << "parseAsTwoModeSociomatrix done."
+             << "totalNodes" << totalNodes << "totalLinks" << totalLinks;
+    return true;
+}

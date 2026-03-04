@@ -5846,8 +5846,9 @@ int MainWindow::slotHelpMessageToUser(const int type,
                                       QMessageBox::StandardButtons buttons,
                                       QMessageBox::StandardButton defBtn,
                                       const QString btn1,
-                                      const QString btn2
-                                      ) {
+                                      const QString btn2,
+                                      const QString btn3)
+{
     int response=0;
     QMessageBox msgBox;
     msgBox.setMinimumWidth(400);
@@ -5933,20 +5934,25 @@ int MainWindow::slotHelpMessageToUser(const int type,
 
         break;
 
-    case USER_MSG_QUESTION_CUSTOM: // a custom question with just two buttons
+    case USER_MSG_QUESTION_CUSTOM: // a custom question with just two/three buttons
         if (!statusMsg.isNull()) statusMessage(  statusMsg  );
         msgBox.setWindowTitle("Question");
         msgBox.setText( text );
         if (!info.isNull()) msgBox.setInformativeText(info);
         pbtn1 = msgBox.addButton(btn1, QMessageBox::ActionRole);
         pbtn2 = msgBox.addButton(btn2, QMessageBox::ActionRole);
-        msgBox.setIcon(QMessageBox::Question);
-        response = msgBox.exec();
-        if (msgBox.clickedButton() == pbtn1 ) {
-            response=1;
-        }
-        else if (msgBox.clickedButton() == pbtn2 ) {
-            response=2;
+        if (!btn3.isNull() && !btn3.isEmpty()) {
+            QPushButton *pbtn3 = msgBox.addButton(btn3, QMessageBox::ActionRole);
+            msgBox.setIcon(QMessageBox::Question);
+            response = msgBox.exec();
+            if (msgBox.clickedButton() == pbtn1)       response = 1;
+            else if (msgBox.clickedButton() == pbtn2)  response = 2;
+            else if (msgBox.clickedButton() == pbtn3)  response = 3;
+        } else {
+            msgBox.setIcon(QMessageBox::Question);
+            response = msgBox.exec();
+            if (msgBox.clickedButton() == pbtn1)       response = 1;
+            else if (msgBox.clickedButton() == pbtn2)  response = 2;
         }
         break;
     default: //just for sanity
@@ -5959,14 +5965,7 @@ int MainWindow::slotHelpMessageToUser(const int type,
         break;
     }
     return response;
-
 }
-
-
-
-
-
-
 
 /**
  * @brief Called when user selects something in the Network Auto Create
@@ -7236,47 +7235,60 @@ void MainWindow::slotNetworkFileLoad(const QString &fileNameToLoad,
     QString delimiter=QString();
     int sm_two_mode = 0;
     int sm_has_labels = 0;
-
-    if ( fileFormat == FileType::TWOMODE ) {
-        switch(
-               slotHelpMessageToUser (
-                   USER_MSG_QUESTION_CUSTOM,
-                   tr("Select mode"),
-                   tr("Two-mode sociomatrix"),
-                   tr("If this file is in two-mode sociomatrix format, "
-                      "please specify which mode to open \n\n"
-                      "1st mode: rows are nodes \n"
-                      "2nd mode: columns are nodes"),
-                   QMessageBox::NoButton,
-                   QMessageBox::Ok,
-                   tr("1st Mode"),tr("2nd mode")
-
-                   )
-               ) {
+    if (fileFormat == FileType::TWOMODE)
+    {
+        switch (
+            slotHelpMessageToUser(
+                USER_MSG_QUESTION_CUSTOM,
+                tr("Two-Mode Sociomatrix — Select Import Mode"),
+                tr("Two-mode sociomatrix import"),
+                tr("This file contains a two-mode (bipartite) sociomatrix, "
+                   "where rows represent one set of actors (e.g. persons) "
+                   "and columns represent another set (e.g. events or groups).\n\n"
+                   "How would you like to import it?\n\n"
+                   "Bipartite graph: creates both sets of nodes and connects "
+                   "each person to the events they attend. (Recommended)\n\n"
+                   "Person network: creates only the person nodes and connects "
+                   "two persons if they share at least one event.\n\n"
+                   "Event network: creates only the event nodes and connects "
+                   "two events if they share at least one person."),
+                QMessageBox::NoButton,
+                QMessageBox::Ok,
+                tr("Bipartite graph"),
+                tr("Person network"),
+                tr("Event network")))
+        {
         case 1:
-            sm_two_mode = 1;
+            sm_two_mode = 1; // bipartite — default
             break;
         case 2:
-            sm_two_mode = 2;
+            sm_two_mode = 2; // person (Mode-1) projection
+            break;
+        case 3:
+            sm_two_mode = 3; // event (Mode-2) projection
+            break;
+        default:
+            sm_two_mode = 1; // user closed the dialog — go bipartite
             break;
         }
     }
-    else if ( fileFormat == FileType::ADJACENCY ) {
+    else if (fileFormat == FileType::ADJACENCY)
+    {
         // Ask if there are labels defined on the first line of the ADJACENCY file
-        switch(
-               slotHelpMessageToUser (
-                   USER_MSG_QUESTION_CUSTOM,
-                   tr("Opt for labels"),
-                   tr("Node labels?"),
-                   tr("This file contains an adjacency matrix (sociomatrix). "
-                      "Please specify whether there are node labels defined "
-                      "on the first (comment) line. \n"),
-                   QMessageBox::NoButton,
-                   QMessageBox::Ok,
-                   tr("Yes"),tr("No")
+        switch (
+            slotHelpMessageToUser(
+                USER_MSG_QUESTION_CUSTOM,
+                tr("Opt for labels"),
+                tr("Node labels?"),
+                tr("This file contains an adjacency matrix (sociomatrix). "
+                   "Please specify whether there are node labels defined "
+                   "on the first (comment) line. \n"),
+                QMessageBox::NoButton,
+                QMessageBox::Ok,
+                tr("Yes"), tr("No")
 
-                   )
-               ) {
+                    ))
+        {
         case 1:
             sm_has_labels = 1;
             break;
@@ -7284,9 +7296,7 @@ void MainWindow::slotNetworkFileLoad(const QString &fileNameToLoad,
             sm_has_labels = 0;
             break;
         }
-
     }
-
 
     // Ask for data delimiter
     if ( fileFormat == FileType::ADJACENCY ||

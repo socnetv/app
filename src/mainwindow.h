@@ -514,7 +514,8 @@ public slots:
                               QMessageBox::StandardButtons buttons=QMessageBox::NoButton,
                               QMessageBox::StandardButton defBtn=QMessageBox::Ok,
                               const QString btn1=QString(),
-                              const QString btn2=QString()
+                              const QString btn2=QString(),
+                              const QString btn3=QString()
             );
 
 
