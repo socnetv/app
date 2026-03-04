@@ -224,7 +224,7 @@ void Parser::load(const QString &fileName,
         }
         break;
     case FileType::ADJACENCY:
-        if (parseAsAdjacency(rawData, delimiter, cfg.sm_has_labels))
+        if (parseAsAdjacency(rawData, cfg, delimiter))
         {
             fileLoaded = true;
         }
@@ -2138,7 +2138,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
  * @param sm_has_labels Indicates if the sociomatrix has labels in the first comment line.
  * @return true if parsing succeeds, false otherwise.
  */
-bool Parser::parseAsAdjacency(const QByteArray &rawData, const QString &delimiter, const bool &sm_has_labels)
+bool Parser::parseAsAdjacency(const QByteArray &rawData, const ParseConfig &cfg, const QString &delimiter)
 {
     qDebug() << "Parsing data as adjacency formatted... delimiter: " << delimiter;
 
@@ -2147,11 +2147,11 @@ bool Parser::parseAsAdjacency(const QByteArray &rawData, const QString &delimite
     QString decodedData = codec->toUnicode(rawData);
     QTextStream ts(&decodedData);
 
-    QStringList nodeLabels; // Stores node labels if `sm_has_labels` is true.
+    QStringList nodeLabels; // Stores node labels if `cfg.sm_has_labels` is true.
     QString str;
 
     // Validate the input data.
-    if (!validateAndInitialize(rawData, delimiter, sm_has_labels, nodeLabels))
+    if (!validateAndInitialize(rawData, delimiter, cfg.sm_has_labels, nodeLabels))
     {
         return false;
     }
