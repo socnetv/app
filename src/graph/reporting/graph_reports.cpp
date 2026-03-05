@@ -3685,8 +3685,6 @@ void Graph::writeMatrixWalks(const QString &fn,
 
     progressStatus(tr("Computing Walks..."));
     graphWalksMatrixCreate(N, length, true);
-    qDebug() << "writeMatrixWalks() - after graphWalksMatrixCreate, progressCanceled:"
-             << progressCanceled();
     if (progressCanceled())
     {
         file.close();
