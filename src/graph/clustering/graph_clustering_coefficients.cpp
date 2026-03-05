@@ -274,7 +274,7 @@ qreal Graph::clusteringCoefficient(const bool updateProgress)
         varianceCLC += x;
     }
 
-    varianceIC /= N;
+    varianceCLC /= N;
 
     if (updateProgress)
     {
