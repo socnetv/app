@@ -14,7 +14,7 @@
  */
 
 #include "graph.h"
-
+#include <QApplication>
 #include <QDebug>
 #include <cmath>
 
@@ -384,6 +384,14 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
     {
         return;
     }
+    // Drain all progress dialogs left over from graphMatrixDistanceGeodesicCreate()
+    // before creating the KK progress dialog. That function creates up to two
+    // dialogs (geodesic engine + matrix writing loop) which must be destroyed
+    // before we push our own.
+    progressFinish();
+    progressFinish();
+    // Ensure Qt processes the deleteLater events before we proceed.
+    QApplication::processEvents();
 
     // Compute original spring length
     // lij for 1 <= i!=j <= n using the formula:
