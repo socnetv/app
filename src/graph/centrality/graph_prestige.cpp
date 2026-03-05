@@ -67,7 +67,12 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
     {
 
         progressUpdate(++progressCounter);
-
+        if (progressCanceled())
+        {
+            delete enabledInEdges;
+            progressFinish();
+            return;
+        }
         v1 = (*it)->number();
         qDebug() << "computing DP for vertex" << v1;
 
@@ -218,7 +223,10 @@ void Graph::prestigeProximity(const bool considerWeights,
     qDebug() << "(Re)Computing Proximity prestige scores...";
 
     graphDistancesGeodesic(false, considerWeights, inverseWeights, inverseWeights);
-
+    if (progressCanceled())
+    {
+        return;
+    }
     // calculate centralities
     VList::const_iterator it, jt;
     qreal PP = 0;
@@ -243,7 +251,11 @@ void Graph::prestigeProximity(const bool considerWeights,
     {
 
         progressUpdate(++progressCounter);
-
+        if (progressCanceled())
+        {
+            progressFinish();
+            return;
+        }
         PP = 0;
         Ii = 0;
 
@@ -407,7 +419,11 @@ void Graph::prestigePageRank(const bool &dropIsolates)
     }
 
     progressUpdate(N / 3);
-
+    if (progressCanceled())
+    {
+        progressFinish();
+        return;
+    }
     // begin iteration - continue until we reach our desired delta
     while (maxDelta > delta)
     {
@@ -527,7 +543,11 @@ void Graph::prestigePageRank(const bool &dropIsolates)
     }
 
     progressUpdate(2 * N / 3);
-
+    if (progressCanceled())
+    {
+        progressFinish();
+        return;
+    }
     if (N != 0)
     {
         meanPRP = sumPRP / (qreal)N;

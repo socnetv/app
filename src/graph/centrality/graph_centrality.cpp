@@ -79,13 +79,20 @@ void Graph::centralityInformation(const bool considerWeights,
     }
 
     progressUpdate(n / 3);
+    if (progressCanceled())
+    {
+        progressFinish();
+        return;
+    }
     progressStatus(tr("Computing inverse adjacency matrix. Please wait..."));
-
     invM.inverse(WM);
-
     progressStatus(tr("Computing IC scores. Please wait..."));
-
     progressUpdate(2 * n / 3);
+    if (progressCanceled())
+    {
+        progressFinish();
+        return;
+    }
 
     diagonalEntriesSum = 0;
     rowSum = 0;
@@ -218,12 +225,22 @@ void Graph::centralityEigenvector(const bool &considerWeights,
     }
 
     progressUpdate(N / 3);
-
+    if (progressCanceled())
+    {
+        delete[] EVC;
+        progressFinish();
+        return;
+    }
     AM.powerIteration(EVC, sumEVC, maxEVC, maxNodeEVC,
                       minEVC, minNodeEVC,
                       0.0000001, 500);
-
     progressUpdate(2 * N / 3);
+    if (progressCanceled())
+    {
+        delete[] EVC;
+        progressFinish();
+        return;
+    }
 
     progressStatus(tr("Leading eigenvector computed. "
                           "Analysing centralities. Please wait..."));
@@ -306,7 +323,11 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
     progressCreate(N, pMsg);
 
     progressUpdate(N / 3);
-
+    if (progressCanceled())
+    {
+        progressFinish();
+        return;
+    }
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
@@ -344,7 +365,11 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
     }
 
     progressUpdate(2 * N / 3);
-
+    if (progressCanceled())
+    {
+        progressFinish();
+        return;
+    }
     // Calculate std Out-Degree, min, max, classes and sumSDC
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
@@ -446,7 +471,10 @@ void Graph::centralityClosenessIR(const bool considerWeights,
     qDebug() << "(Re)Computing IRCC closeness centrality...";
 
     graphDistancesGeodesic(false, considerWeights, inverseWeights, dropIsolates);
-
+    if (progressCanceled())
+    {
+        return;
+    }
     // calculate centralities
     VList::const_iterator it, jt;
     int progressCounter = 0;
@@ -476,7 +504,11 @@ void Graph::centralityClosenessIR(const bool considerWeights,
     {
 
         progressUpdate(++progressCounter);
-
+        if (progressCanceled())
+        {
+            progressFinish();
+            return;
+        }
         IRCC = 0;
         sumD = 0;
         Ji = 0;
