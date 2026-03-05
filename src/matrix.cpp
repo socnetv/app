@@ -2489,7 +2489,8 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
 
 /**
  * @brief  Prints this matrix as HTML table
- * This has the problem that the real actorNumber != elementLabel i.e. when we
+ * WARNING: DO NOT USE WHEN THE NETWORK CONTAINS DISABLED/DELETED NODES 
+ * It has the problem that the real actorNumber != elementLabel i.e. when we
  * have deleted a node/vertex
  * @param os
  * @param debug
