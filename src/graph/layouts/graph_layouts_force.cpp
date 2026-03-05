@@ -716,25 +716,32 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
 qreal Graph::layoutForceDirected_FR_temperature(const int iteration) const
 {
     qreal temp = 0;
-
-    qreal temperature = 5.8309518948453; // limits the displacement of the vertex
-
+    // Simmering temperature: derived from canvas width to maintain continuity
+    // with the quenching phase formula canvasWidth / (iteration + 10).
+    // At the quench/simmer boundary (iteration=10) the quench formula gives
+    // canvasWidth/20; we use canvasWidth/210 as the constant low simmering
+    // value (the quench formula evaluated at the simmer/freeze boundary,
+    // iteration=200). Previously hardcoded as 5.8309518948453, which assumed
+    // a fixed canvas width of ~1224px and broke on other display sizes.
+    qreal temperature = canvasWidth / 210.0;
     qDebug() << "Graph::layoutForceDirected_FR_temperature(): cool iteration " << iteration;
     // For the temperature (which limits the displacement of each vertex),
     // Fruchterman & Reingold suggested in their paper that it might start
-    // at an initial high value (i.e. "one tenth the width of the frame"
-    //  and then decay to 0 in an inverse linear fashion
+    // at an initial high value (i.e. "one tenth the width of the frame")
+    // and then decay to 0 in an inverse linear fashion.
     // They also suggested "a combination of quenching and simmering",
     // which is a high initial temperature and then a constant low one.
-    // This is what SocNetV does. In fact after 200 iterations we follow Eades advice
-    // and stop movement (temp = 0)
+    // This is what SocNetV does. In fact after 200 iterations we follow Eades
+    // advice and stop movement (temp = 0).
     if (iteration < 10)
     {
-        // quenching: starts at a high temperature ( canvasWidth / 10) and cools steadily and rapidly
+        // quenching: starts at a high temperature (canvasWidth / 10)
+        // and cools steadily and rapidly
         temp = canvasWidth / (iteration + 10.0);
     }
     else if (iteration > 200)
-    { // follow Eades advice...
+    {
+        // follow Eades advice: freeze all movement
         temp = 0;
     }
     else
@@ -742,7 +749,6 @@ qreal Graph::layoutForceDirected_FR_temperature(const int iteration) const
         // simmering: stay at a constant low temperature
         temp = temperature;
     }
-
     qDebug() << "Graph::layoutForceDirected_FR_temperature() - iteration " << iteration
              << " temp " << temp;
     return temp;
