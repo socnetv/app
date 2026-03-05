@@ -13761,30 +13761,23 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
 
      }
 
-
-
-
-
-
-
-
 }
 
-
-
-
-
 /**
- * @brief Creates a Qt Progress Dialog
- * if max = 0, then max becomes equal to active vertices*
- * @param max
- * @param msg
+ * @brief Creates a Qt Progress Dialog.
+ * If max = 0, then max becomes equal to active vertices.
+ * Connects the dialog's Cancel button to Graph::slotCancelComputation()
+ * so that the user can interrupt long-running computations.
+ * @param max The maximum value for the progress bar (0 = use active vertex count)
+ * @param msg The message to display in the dialog
  */
-void MainWindow::slotProgressBoxCreate(const int &max, const QString &msg){
-    qDebug() << "MW::slotProgressBoxCreate" ;
+void MainWindow::slotProgressBoxCreate(const int &max, const QString &msg)
+{
+    qDebug() << "MW::slotProgressBoxCreate";
 
-    if (  appSettings["showProgressBar"] == "true"  ){
-        int duration = (max==0) ? activeNodes(): max;
+    if (appSettings["showProgressBar"] == "true")
+    {
+        int duration = (max == 0) ? activeNodes() : max;
         QProgressDialog *progressBox = new QProgressDialog(msg,
                                                            "Cancel",
                                                            0,
@@ -13795,8 +13788,10 @@ void MainWindow::slotProgressBoxCreate(const int &max, const QString &msg){
         progressBox->setWindowModality(Qt::WindowModal);
         progressBox->setWindowModality(Qt::ApplicationModal);
 
-        connect ( activeGraph, &Graph::signalProgressBoxUpdate,
-                  progressBox, &QProgressDialog::setValue );
+        connect(activeGraph, &Graph::signalProgressBoxUpdate,
+                progressBox, &QProgressDialog::setValue);
+        connect(progressBox, &QProgressDialog::canceled,
+                activeGraph, &Graph::slotCancelComputation);
 
         progressBox->setMinimumDuration(0);
         progressBox->setAutoClose(true);
@@ -13805,10 +13800,8 @@ void MainWindow::slotProgressBoxCreate(const int &max, const QString &msg){
         progressDialogs.push(progressBox);
     }
 
-    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 }
-
 
 /**
  * @brief Destroys the first in queue Progress dialog

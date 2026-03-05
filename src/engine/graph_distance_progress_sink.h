@@ -28,6 +28,7 @@ public:
     void progressCreate(int total, const QString& msg) override;
     void progressUpdate(int value) override;
     void progressKill() override;
+    bool progressCanceled() const override;    
 
 private:
     Graph& graph;

@@ -202,6 +202,8 @@ public slots:
 
     void slotHandleCrawlerRequestReply();
     void webSpider();
+    
+    void slotCancelComputation();
 
     QString htmlEscaped(QString str) const;
 
@@ -1206,6 +1208,9 @@ public:
 
     int factorial(int);
 
+    // Progress cancellation query: readable by engines and sinks.
+    bool progressCanceled() const;
+
     /**  vpos stores the real position of each vertex inside m_graph.
      *  It starts at zero (0).
      *   We need to know the place of a vertex inside m_graph after adding
@@ -1226,6 +1231,7 @@ protected:
     void progressCreate(int max, const QString &msg);
     void progressUpdate(int value);
     void progressFinish();
+
     void uiProminenceDistributionSpline(const QVector<QPair<qreal, qreal>> &points,
                                         qreal min, qreal max,
                                         qreal minF, qreal maxF,
@@ -1415,6 +1421,7 @@ private:
     bool calculatedTriad;
     bool calculatedGraphSymmetry, calculatedGraphReciprocity;
     bool calculatedGraphDensity, calculatedGraphWeighted;
+    bool m_progressCanceled;
     bool m_graphIsDirected, m_graphIsSymmetric, m_graphIsWeighted, m_graphIsConnected;
 
     int csRecDepth;

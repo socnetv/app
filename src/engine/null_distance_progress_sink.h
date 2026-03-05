@@ -24,4 +24,5 @@ public:
     void progressCreate(int, const QString&) override {}
     void progressUpdate(int) override {}
     void progressKill() override {}
+    bool progressCanceled() const override { return false; }
 };

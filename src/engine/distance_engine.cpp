@@ -133,7 +133,12 @@ void DistanceEngine::compute(const bool computeCentralities,
                       ds,
                       csssp,
                       sink);
-
+        if (sink.progressCanceled())
+        {
+            qDebug() << "DistanceEngine::compute() - canceled. Skipping finalize.";
+            sink.progressKill();
+            return;
+        }
         // ---- Finalization: connectivity scan + aggregation ----
         finalize(computeCentralities,
                  dropIsolates,
@@ -388,7 +393,11 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
                  << "Source vertex s" << ds.s << "vpos" << ds.si;
 
         sink.progressUpdate(++ds.progressCounter);
-
+        if (sink.progressCanceled())
+        {
+            qDebug() << "DistanceEngine::runAllSources() - canceled by user. Aborting.";
+            return;
+        }
         if (!(*ds.it)->isEnabled())
         {
             qDebug() << "***** PHASE 1 (SSSP): s" << ds.s << "disabled. SKIP/CONTINUE";

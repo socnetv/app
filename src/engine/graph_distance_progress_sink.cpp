@@ -39,3 +39,8 @@ void GraphDistanceProgressSink::progressKill()
 {
     emit graph.signalProgressBoxKill();
 }
+
+bool GraphDistanceProgressSink::progressCanceled() const
+{
+    return graph.progressCanceled();
+}
