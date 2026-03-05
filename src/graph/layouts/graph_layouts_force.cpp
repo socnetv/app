@@ -160,6 +160,12 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations)
         layoutForceDirected_Eades_moveNodes(c4);
 
         progressUpdate(++progressCounter);
+        if (progressCanceled())
+        {
+            progressFinish();
+            setModStatus(ModStatus::VertexPositions);
+            return;
+        }        
 
     } // end iterations
 
@@ -293,6 +299,12 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations)
         layoutForceDirected_FR_moveNodes(layoutForceDirected_FR_temperature(iteration));
 
         progressUpdate(++progressCounter);
+        if (progressCanceled())
+        {
+            progressFinish();
+            setModStatus(ModStatus::VertexPositions);
+            return;
+        }        
     }
 
     progressFinish();
@@ -368,6 +380,11 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
 
     graphMatrixDistanceGeodesicCreate(considerWeights, inverseWeights, dropIsolates);
 
+    if (progressCanceled())
+    {
+        return;
+    }
+
     // Compute original spring length
     // lij for 1 <= i!=j <= n using the formula:
     // lij = L x dij
@@ -442,7 +459,12 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
         progressCounter++;
 
         progressUpdate(progressCounter);
-
+        if (progressCanceled())
+        {
+            progressFinish();
+            setModStatus(ModStatus::VertexPositions);
+            return;
+        }
         if (progressCounter == maxIterations)
         {
             //            qDebug()<< "Reached maxIterations. BREAK";
