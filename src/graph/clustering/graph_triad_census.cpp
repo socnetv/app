@@ -17,10 +17,9 @@
 #include <QDebug>
 
 /**
- * @brief Graph::graphTriadCensus
- *  Conducts a triad census and updates QList::triadTypeFreqs,
+ * @brief Conducts a triad census and updates QList::triadTypeFreqs,
  * 		which is the list carrying all triad type frequencies
- *  Complexity:O(n!)
+ *  Complexity: O(n³) — three nested loops each bounded by N.
  * @return
  */
 bool Graph::graphTriadCensus()
@@ -56,7 +55,12 @@ bool Graph::graphTriadCensus()
     {
 
         progressUpdate(++progressCounter);
-
+        if (progressCanceled())
+        {
+            calculatedTriad = false;
+            progressFinish();
+            return false;
+        }
         for (v2 = (v1 + 1); v2 != m_graph.cend(); v2++)
         {
 

@@ -19,8 +19,6 @@
  * @brief  Creates an adjacency matrix AM
  *  where AM(i,j)=1 if i is connected to j
  *  and AM(i,j)=0 if i not connected to j
- *  Used in Graph::centralityInformation(), Graph::graphWalksMatrixCreate
- *  and Graph::createMatrixAdjacencyInverse()
  * @param dropIsolates
  * @param considerWeights
  * @param inverseWeights

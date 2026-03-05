@@ -12663,7 +12663,10 @@ void MainWindow::slotAnalyzeWalksLength(){
 
 
     activeGraph->writeMatrixWalks(fn, length);
-
+    if ( activeGraph->progressCanceled() ) {
+        statusMessage(tr("Computation canceled."));
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12718,6 +12721,10 @@ void MainWindow::slotAnalyzeWalksTotal(){
     statusMessage(  tr("Computing total walks matrix. Please wait...") );
 
     activeGraph->writeMatrixWalks(fn);
+    if ( activeGraph->progressCanceled() ) {
+        statusMessage(tr("Computation canceled."));
+        return;
+    }    
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12864,6 +12871,10 @@ void MainWindow::slotAnalyzeCommunitiesTriadCensus() {
     bool considerWeights=true;
 
     activeGraph->writeTriadCensus(fn, considerWeights);
+    if ( activeGraph->progressCanceled() ) {
+        statusMessage(tr("Computation canceled."));
+        return;
+    }    
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));

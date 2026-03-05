@@ -3654,8 +3654,7 @@ void Graph::writeWalksOfLengthMatrixPlainText(const QString &fn, const int &leng
 }
 
 /**
- * @brief Calls graphWalksMatrixCreate() to compute walks and writes the
- * Walks of given length matrix to a file in HTML.
+ * @brief Writes the walks of given length matrix to a file in HTML.
  * If length = 0, it writes the Total Walks matrix.
  * @param fn
  * @param length
@@ -3686,7 +3685,13 @@ void Graph::writeMatrixWalks(const QString &fn,
 
     progressStatus(tr("Computing Walks..."));
     graphWalksMatrixCreate(N, length, true);
-
+    qDebug() << "writeMatrixWalks() - after graphWalksMatrixCreate, progressCanceled:"
+             << progressCanceled();
+    if (progressCanceled())
+    {
+        file.close();
+        return;
+    }
     QTextStream outText(&file);
 
     outText << htmlHead;
@@ -3834,7 +3839,11 @@ void Graph::writeClusteringCoefficient(const QString fileName,
     VList::const_iterator it;
 
     averageCLC = clusteringCoefficient(true);
-
+    if (progressCanceled())
+    {
+        file.close();
+        return;
+    }
     QString pMsg = tr("Writing Clustering Coefficients to file. \nPlease wait...");
     progressStatus(pMsg);
     progressCreate(N, pMsg);
@@ -3911,6 +3920,12 @@ void Graph::writeClusteringCoefficient(const QString fileName,
     {
 
         progressUpdate(++progressCounter);
+        if (progressCanceled())
+        {
+            file.close();
+            progressFinish();
+            return;
+        }
 
         rowCount++;
 
@@ -4033,6 +4048,11 @@ void Graph::writeTriadCensus(const QString fileName,
             file.close();
             return;
         }
+        if (progressCanceled())
+        {
+            file.close();
+            return;
+        }        
     }
 
     int rowCount = 0;
@@ -4141,8 +4161,7 @@ void Graph::writeTriadCensus(const QString fileName,
 }
 
 /**
- * @brief Graph::writeCliqueCensus
- * Calls graphCliques() to compute all cliques (maximal connected subgraphs) of the network.
+ * @brief Calls graphCliques() to compute all cliques (maximal connected subgraphs) of the network.
  * Then writes the results into a file, along with the Actor by clique analysis,
  * the Co-membership matrix and the Hierarchical clustering of overlap matrix
  * @param fileName

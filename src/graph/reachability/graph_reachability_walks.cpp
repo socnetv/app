@@ -40,7 +40,10 @@ void Graph::createMatrixReachability()
     qDebug() << "Creating the Reachability Matrix...";
 
     graphDistancesGeodesic(false);
-
+    if (progressCanceled())
+    {
+        return;
+    }
     VList::const_iterator it, jt;
 
     int N = vertices(false, false, true);
@@ -62,7 +65,11 @@ void Graph::createMatrixReachability()
     {
 
         progressUpdate(++progressCounter);
-
+        if (progressCanceled())
+        {
+            progressFinish();
+            return;
+        }
         source = (*it)->number();
 
         if (!(*it)->isEnabled())
@@ -144,7 +151,11 @@ void Graph::graphWalksMatrixCreate(const int &N,
 {
     // Build adjacency matrix with explicit policy (BUGFIX: do not force weights)
     createMatrixAdjacency(dropIsolates, considerWeights, inverseWeights, symmetrize);
-
+    if (progressCanceled())
+    {
+        if (updateProgress) progressFinish();
+        return;
+    }
     if (length > 0)
     {
         qDebug() << "Graph::graphWalksMatrixCreate() - "
@@ -186,7 +197,14 @@ void Graph::graphWalksMatrixCreate(const int &N,
             XSM += XM;
 
             if (updateProgress)
+            {
                 progressUpdate(i);
+                if (progressCanceled())
+                {
+                    progressFinish();
+                    return;
+                }
+            }
         }
 
         if (updateProgress)
@@ -212,7 +230,10 @@ QList<int> Graph::vertexinfluenceRange(int v1)
     qDebug() << "Graph::vertexinfluenceRange() - vertex:" << v1;
 
     graphDistancesGeodesic(false);
-
+    if (progressCanceled())
+    {
+        return influenceRanges.values(v1);
+    }
     VList::const_iterator jt;
 
     int N = vertices(false, false, true);
@@ -231,7 +252,11 @@ QList<int> Graph::vertexinfluenceRange(int v1)
     {
 
         progressUpdate(++progressCounter);
-
+        if (progressCanceled())
+        {
+            progressFinish();
+            return influenceRanges.values(v1);
+        }
         target = (*jt)->number();
 
         if (!(*jt)->isEnabled())
@@ -267,7 +292,10 @@ QList<int> Graph::vertexinfluenceDomain(int v1)
     qDebug() << "Graph::vertexinfluenceDomain() - vertex:" << v1;
 
     graphDistancesGeodesic(false);
-
+    if (progressCanceled())
+    {
+        return influenceDomains.values(v1);
+    }
     VList::const_iterator it;
 
     int N = vertices(false, false, true);
@@ -286,7 +314,11 @@ QList<int> Graph::vertexinfluenceDomain(int v1)
     {
 
         progressUpdate(++progressCounter);
-
+        if (progressCanceled())
+        {
+            progressFinish();
+            return influenceDomains.values(v1);
+        }
         source = (*it)->number();
 
         if (!(*it)->isEnabled())

@@ -246,6 +246,11 @@ qreal Graph::clusteringCoefficient(const bool updateProgress)
         if (updateProgress)
         {
             progressUpdate(++progressCounter);
+            if (progressCanceled())
+            {
+                progressFinish();
+                return averageCLC;
+            }
         }
 
         temp = clusteringCoefficientLocal((*vertex)->number());
