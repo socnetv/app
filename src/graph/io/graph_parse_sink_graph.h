@@ -19,64 +19,66 @@
 
 class Graph;
 
-namespace SocNetV::IO {
+namespace SocNetV::IO
+{
 
-/**
- * @brief Forwards parse mutations directly into an existing Graph instance.
- *
- * NOTE: This is intentionally a thin adapter. No logic, no ordering changes.
- */
-class GraphParseSinkGraph final : public IGraphParseSink {
-public:
-    explicit GraphParseSinkGraph(Graph &graph);
+    /**
+     * @brief Forwards parse mutations directly into an existing Graph instance.
+     *
+     * NOTE: This is intentionally a thin adapter. No logic, no ordering changes.
+     */
+    class GraphParseSinkGraph final : public IGraphParseSink
+    {
+    public:
+        explicit GraphParseSinkGraph(Graph &graph);
 
-    void addNewRelation(const QString &relName, const bool &changeRelation = false) override;
-    void setRelation(int relNum, const bool &updateUI = true) override;
+        void addNewRelation(const QString &relName, const bool &changeRelation = false) override;
+        void setRelation(int relNum, const bool &updateUI = true) override;
 
-    void createNode(const int &num,
-                    const int &size,
-                    const QString &color,
-                    const QString &numColor,
-                    const int &numSize,
-                    const QString &label,
-                    const QString &lColor,
-                    const int &lSize,
-                    const QPointF &p,
-                    const QString &shape,
-                    const QString &iconPath = QString(),
-                    const bool &signalMW = false,
-                    const QHash<QString, QString> nodeCustomAttributes =
-                        QHash<QString, QString>()) override;
+        void createNode(const int &num,
+                        const int &size,
+                        const QString &color,
+                        const QString &numColor,
+                        const int &numSize,
+                        const QString &label,
+                        const QString &lColor,
+                        const int &lSize,
+                        const QPointF &p,
+                        const QString &shape,
+                        const QString &iconPath = QString(),
+                        const bool &signalMW = false,
+                        const QHash<QString, QString> nodeCustomAttributes =
+                            QHash<QString, QString>()) override;
 
-    void createNodeAtPosRandom(const bool &signalMW = false) override;
+        void createNodeAtPosRandom(const bool &signalMW = false) override;
 
-    void createNodeAtPosRandomWithLabel(const int &num,
-                                        const QString &label,
-                                        const bool &signalMW = false) override;
+        void createNodeAtPosRandomWithLabel(const int &num,
+                                            const QString &label,
+                                            const bool &signalMW = false) override;
 
-    void createEdge(const int &source,
-                    const int &target,
-                    const qreal &weight,
-                    const QString &color,
-                    const int &edgeDirType,
-                    const bool &arrows,
-                    const bool &bezier,
-                    const QString &edgeLabel = QString(),
-                    const bool &signalMW = false) override;
+        void createEdge(const int &source,
+                        const int &target,
+                        const qreal &weight,
+                        const QString &color,
+                        const int &edgeDirType,
+                        const bool &arrows,
+                        const bool &bezier,
+                        const QString &edgeLabel = QString(),
+                        const bool &signalMW = false) override;
 
-    void removeDummyNode(int num) override;
+        void removeDummyNode(int num) override;
 
-    void fileLoaded(const int &fileType,
-                    const QString &fileName,
-                    const QString &netName,
-                    const int &totalNodes,
-                    const int &totalLinks,
-                    const int &edgeDirType,
-                    const qint64 &elapsedTime,
-                    const QString &message = QString()) override;
+        void fileLoaded(const int &fileType,
+                        const QString &fileName,
+                        const QString &netName,
+                        const int &totalNodes,
+                        const int &totalLinks,
+                        const int &edgeDirType,
+                        const qint64 &elapsedTime,
+                        const QString &message = QString()) override;
 
-private:
-    Graph &m_graph;
-};
+    private:
+        Graph &m_graph;
+    };
 
 } // namespace SocNetV::IO

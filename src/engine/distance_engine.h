@@ -57,7 +57,7 @@ private:
 
     void bfsSSSP(const int &s, const int &si, const bool &computeCentralities,
                  const bool &dropIsolates);
-                 
+
     void dijkstraSSSP(const int &s, const int &si,
                       const bool &computeCentralities,
                       const bool &inverseWeights,

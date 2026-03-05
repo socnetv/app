@@ -14,18 +14,19 @@
  */
 
 #include "graph_distance_progress_sink.h"
-#include "../graph.h"   // adjust include if you prefer "graph.h" from include paths
+#include "../graph.h" // adjust include if you prefer "graph.h" from include paths
 
-GraphDistanceProgressSink::GraphDistanceProgressSink(Graph& g)
+GraphDistanceProgressSink::GraphDistanceProgressSink(Graph &g)
     : graph(g)
-{}
+{
+}
 
-void GraphDistanceProgressSink::statusMessage(const QString& msg)
+void GraphDistanceProgressSink::statusMessage(const QString &msg)
 {
     emit graph.statusMessage(msg);
 }
 
-void GraphDistanceProgressSink::progressCreate(const int total, const QString& msg)
+void GraphDistanceProgressSink::progressCreate(const int total, const QString &msg)
 {
     graph.resetProgressCanceled();
     emit graph.signalProgressBoxCreate(total, msg);

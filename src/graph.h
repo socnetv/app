@@ -60,8 +60,6 @@ typedef QList<int> L_int;
 typedef QList<int> V_int;
 typedef QList<QString> V_str;
 
-
-
 /**
  * @brief The Graph class
  * This is the main class for a Graph, used in conjuction with GraphVertex, Parser and Matrix objects.
@@ -202,7 +200,7 @@ public slots:
 
     void slotHandleCrawlerRequestReply();
     void webSpider();
-    
+
     void slotCancelComputation();
 
     QString htmlEscaped(QString str) const;
@@ -1243,13 +1241,13 @@ protected:
                                       const QString &name,
                                       const QString &distImageFileName);
     void uiProminenceDistributionBars(const QStringList &categories,
-                                     const QVector<qreal> &frequencies,
-                                     const qreal min,
-                                     const qreal max,
-                                     const qreal minF,
-                                     const qreal maxF,
-                                     const QString &name,
-                                     const QString &distImageFileName);                                      
+                                      const QVector<qreal> &frequencies,
+                                      const qreal min,
+                                      const qreal max,
+                                      const qreal minF,
+                                      const qreal maxF,
+                                      const QString &name,
+                                      const QString &distImageFileName);
 
 private:
     /** private member functions */

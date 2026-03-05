@@ -153,7 +153,8 @@ void Graph::graphWalksMatrixCreate(const int &N,
     createMatrixAdjacency(dropIsolates, considerWeights, inverseWeights, symmetrize);
     if (progressCanceled())
     {
-        if (updateProgress) progressFinish();
+        if (updateProgress)
+            progressFinish();
         return;
     }
     if (length > 0)
@@ -189,9 +190,9 @@ void Graph::graphWalksMatrixCreate(const int &N,
         for (int i = 2; i <= (N - 1); ++i)
         {
             progressStatus(tr("Computing all sociomatrix powers up to %1. "
-                                  "Now computing A^%2. Please wait...")
-                                   .arg(N - 1)
-                                   .arg(i));
+                              "Now computing A^%2. Please wait...")
+                               .arg(N - 1)
+                               .arg(i));
 
             XM *= AM;
             XSM += XM;

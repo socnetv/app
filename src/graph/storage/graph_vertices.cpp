@@ -135,9 +135,9 @@ void Graph::vertexCreateAtPos(const QPointF &p)
                  true);
 
     progressStatus(tr("New node (numbered %1) added at position (%2,%3). Double-click on it to start a new edge from it.")
-                           .arg(vertexNumberMax())
-                           .arg(p.x())
-                           .arg(p.y()));
+                       .arg(vertexNumberMax())
+                       .arg(p.x())
+                       .arg(p.y()));
 }
 
 /**
@@ -334,7 +334,6 @@ const GraphVertex *Graph::vertexAtIndex(int idx) const
 VList::const_iterator Graph::verticesBegin() const { return m_graph.cbegin(); }
 
 VList::const_iterator Graph::verticesEnd() const { return m_graph.cend(); }
-
 
 /**
  * @brief Returns a list of all isolated vertices inside the graph
@@ -597,10 +596,9 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
     progressFinish();
 }
 
-
-// 
+//
 // Vertex numbers
-// 
+//
 /**
  * @brief Returns the number of the last vertex in the graph.
  *
@@ -630,7 +628,6 @@ int Graph::vertexNumberMin()
 //
 // Vertex existence and find operations
 //
-
 
 /**
  * @brief Gets the number of vertices in the graph
@@ -679,7 +676,6 @@ int Graph::vertices(const bool &dropIsolates, const bool &countAll, const bool &
     calculatedVertices = true;
     return m_totalVertices;
 }
-
 
 /**
  * @brief Returns true if the current graph has no vertices at all

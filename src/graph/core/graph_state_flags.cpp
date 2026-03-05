@@ -221,9 +221,9 @@ void Graph::setUndirected(const bool &toggle, const bool &signalMW)
 {
     qDebug() << "Graph::setUndirected - Toggling graph undirected to" << toggle;
     qDebug() << "Graph::setUndirected - m_graphIsSymmetric:" << m_graphIsSymmetric
-           << "m_graphIsDirected:" << m_graphIsDirected
-           << "m_totalEdges:" << m_totalEdges
-           << "calculatedEdges:" << calculatedEdges;
+             << "m_graphIsDirected:" << m_graphIsDirected
+             << "m_totalEdges:" << m_totalEdges
+             << "calculatedEdges:" << calculatedEdges;
 
     if (!toggle)
     {
@@ -296,4 +296,3 @@ bool Graph::isUndirected()
     //    qDebug() << "isUndirected: " << !m_graphIsDirected;
     return !m_graphIsDirected;
 }
-

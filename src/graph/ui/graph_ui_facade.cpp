@@ -39,7 +39,8 @@ void Graph::progressStatus(const QString &msg)
 /**
  * @brief Resets the cancellation status
  */
-void Graph::resetProgressCanceled() {
+void Graph::resetProgressCanceled()
+{
     qDebug() << "Graph::resetProgressCanceled() - resetting flag";
     m_progressCanceled = false;
 }

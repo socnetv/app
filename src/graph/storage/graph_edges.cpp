@@ -426,9 +426,9 @@ void Graph::edgeRemoveSelectedAll()
 
 /**
  * @brief Checks if there is an edge from v1 to v2 and returns the weight, if the edge exists.
- * 
+ *
  * Complexity:  O(logN) for vpos retrieval + O(1) for QList index retrieval + O(logN) for checking edge(v2)
- * 
+ *
  * @param v1
  * @param v2
  * @param reciprocated: if true, checks if the edge is reciprocated (v1<->v2) with the same weight

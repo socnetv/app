@@ -243,7 +243,7 @@ void Graph::centralityEigenvector(const bool &considerWeights,
     }
 
     progressStatus(tr("Leading eigenvector computed. "
-                          "Analysing centralities. Please wait..."));
+                      "Analysing centralities. Please wait..."));
 
     i = 0;
 
@@ -664,7 +664,8 @@ void Graph::resolveClasses(qreal C, H_StrToInt &discreteClasses, int &classes, i
  */
 bool Graph::isCentralityIndexComputed(const IndexType index) const
 {
-    switch (index) {
+    switch (index)
+    {
     case IndexType::DC:
         return calculatedDC;
     case IndexType::CC:   // CC, IRCC, BC, SC, EC, PC are all

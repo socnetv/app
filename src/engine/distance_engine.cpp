@@ -109,14 +109,13 @@ void DistanceEngine::compute(const bool computeCentralities,
                              const bool inverseWeights,
                              const bool dropIsolates)
 {
-    
+
     qDebug() << "DistanceEngine::compute() - "
              << "centralities" << computeCentralities
              << "considerWeights:" << considerWeights
              << "inverseWeights:" << inverseWeights
              << "dropIsolates:" << dropIsolates;
 
-    
     if (computeCentralities)
     {
         if (graph.calculatedCentralities)
@@ -1370,7 +1369,7 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                 if (dist_w > graph.graphDiameterCached())
                 {
                     graph.setDiameterCached(dist_w);
-                    
+
                     qDebug() << "    --- dijkstra: "
                                 "New graph diameter ="
                              << graph.graphDiameterCached();

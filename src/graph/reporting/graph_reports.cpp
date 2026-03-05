@@ -4050,7 +4050,7 @@ void Graph::writeTriadCensus(const QString fileName,
         {
             file.close();
             return;
-        }        
+        }
     }
 
     int rowCount = 0;
@@ -5958,7 +5958,7 @@ bool Graph::writeMatrix(const QString &fn,
         {
             file.close();
             return false;
-        }        
+        }
         progressStatus(tr("Writing Reachability Matrix..."));
         break;
 
@@ -5969,7 +5969,7 @@ bool Graph::writeMatrix(const QString &fn,
         {
             file.close();
             return false;
-        }        
+        }
         progressStatus(tr("Adjacency recomputed. Writing Adjacency Matrix..."));
         break;
     case MATRIX_COCITATION:
@@ -5979,7 +5979,7 @@ bool Graph::writeMatrix(const QString &fn,
         {
             file.close();
             return false;
-        }        
+        }
         progressStatus(tr("Adjacency recomputed. Writing Adjacency Matrix..."));
         break;
     case MATRIX_DISTANCES_HAMMING:
@@ -5992,7 +5992,7 @@ bool Graph::writeMatrix(const QString &fn,
         {
             file.close();
             return false;
-        }        
+        }
         progressStatus(tr("Tie profile distances recomputed. Writing matrix..."));
         break;
 

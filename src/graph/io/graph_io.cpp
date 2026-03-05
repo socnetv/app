@@ -321,7 +321,6 @@ bool Graph::saveToPajekFormat(const QString &fileName,
         return false;
     }
 
-
     QTextStream t(&f);
     // Keep numeric output stable-ish across locales.
     t.setLocale(QLocale::c());
@@ -347,7 +346,7 @@ bool Graph::saveToPajekFormat(const QString &fileName,
 
     /**
      *  @brief Returns a canonical label for Pajek *Matrix headers (no surrounding quotes).
-     * 
+     *
      * Pajek *Matrix Header Export Contract
      *
      * EXPORT IS STRICT AND CANONICAL.

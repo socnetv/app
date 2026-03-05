@@ -839,8 +839,6 @@ void Graph::randomNetLatticeCreate(const int &N,
                         }
                     }
                 }
-
-
             }
         }
     }
@@ -873,6 +871,10 @@ void Graph::randomNetLatticeCreate(const int &N,
                    QString(), false);
 
         progressCounter += progressFraction;
+        if (fmod(progressCounter, 1.0) == 0)
+        {
+            progressUpdate((int)progressCounter);
+        }
     }
 
     relationCurrentRename(tr("lattice"), true);
