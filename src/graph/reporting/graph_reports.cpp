@@ -3750,13 +3750,11 @@ void Graph::writeMatrixWalks(const QString &fn,
 
     if (length > 0)
     {
-        // XM.printHTMLTable(outText);
         writeMatrixHTMLTable(outText, XM, true);
     }
     else
     {
         writeMatrixHTMLTable(outText, XSM, true);
-        // XSM.printHTMLTable(outText);
     }
 
     outText << "<p>&nbsp;</p>";
@@ -4516,10 +4514,20 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
     {
     case MATRIX_ADJACENCY:
         createMatrixAdjacency(dropIsolates);
+        if (progressCanceled())
+        {
+            file.close();
+            return false;
+        }
         STR_EQUIV = AM;
         break;
     case MATRIX_DISTANCES:
         graphMatrixDistanceGeodesicCreate(considerWeights, inverseWeights, dropIsolates);
+        if (progressCanceled())
+        {
+            file.close();
+            return false;
+        }
         STR_EQUIV = DM;
         break;
     default:
@@ -4605,9 +4613,13 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
             << "</p>";
 
     progressUpdate(N / 3);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        return false;
+    }
     writeMatrixHTMLTable(outText, STR_EQUIV, true, false, false, dropIsolates);
-    // STR_EQUIV.printHTMLTable(outText,true,false);
 
     outText << "<p>"
             << "<span class=\"info\">"
@@ -4616,6 +4628,12 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
             << "</p>";
 
     progressUpdate(2 * N / 3);
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        return false;
+    }
     writeClusteringHierarchicalResultsToStream(outText, N, dendrogram);
 
     outText << "<p>&nbsp;</p>";
@@ -5061,7 +5079,6 @@ void Graph::writeMatrixDissimilarities(const QString fileName,
             << "</span>"
             << "</p>";
 
-    // DSM.printHTMLTable(outText);
     writeMatrixHTMLTable(outText, DSM, true);
     outText << "<p class=\"description\">";
     outText << "<span class=\"info\">"
@@ -5218,7 +5235,7 @@ void Graph::writeMatrixSimilarityMatching(const QString fileName,
             << "</p>";
 
     progressUpdate(0);
-    // SCM.printHTMLTable(outText);
+
     writeMatrixHTMLTable(outText, SCM, true);
 
     outText << "<p class=\"description\">";
@@ -5373,7 +5390,6 @@ void Graph::writeMatrixSimilarityPearson(const QString fileName,
             << "</span>"
             << "</p>";
 
-    // PCC.printHTMLTable(outText);
     writeMatrixHTMLTable(outText, PCC, true);
 
     outText << "<p class=\"description\">";
@@ -5955,6 +5971,11 @@ bool Graph::writeMatrix(const QString &fn,
     case MATRIX_DISTANCES_EUCLIDEAN:
         progressStatus(tr("Need to recompute tie profile distances. Please wait..."));
         createMatrixAdjacency();
+        if (progressCanceled())
+        {
+            file.close();
+            return false;
+        }        
         progressStatus(tr("Tie profile distances recomputed. Writing matrix..."));
         break;
 
@@ -6037,7 +6058,6 @@ bool Graph::writeMatrix(const QString &fn,
                 << "<br />"
                 << "</p>";
         writeMatrixHTMLTable(outText, AM, true, false, false);
-        // AM.printHTMLTable(outText,true);
         break;
     case MATRIX_LAPLACIAN:
         outText << "<p class=\"description\">"
@@ -6052,7 +6072,6 @@ bool Graph::writeMatrix(const QString &fn,
                       "- and all other elements zero.<br />")
                 << "<br />"
                 << "</p>";
-        // AM.laplacianMatrix().printHTMLTable(outText,true,false,false);
         writeMatrixHTMLTable(outText, AM.laplacianMatrix(), true, false, false);
         break;
     case MATRIX_DEGREE:
@@ -6062,7 +6081,6 @@ bool Graph::writeMatrix(const QString &fn,
                       "and all other elements are zero.")
                 << "<br />"
                 << "</p>";
-        // AM.degreeMatrix().printHTMLTable(outText, true);
         writeMatrixHTMLTable(outText, AM.degreeMatrix(), true, false, false);
         break;
     case MATRIX_DISTANCES:
@@ -6074,7 +6092,6 @@ bool Graph::writeMatrix(const QString &fn,
                 << "<br />"
                 << "</p>";
         writeMatrixHTMLTable(outText, DM, true);
-        // DM.printHTMLTable(outText,true);
         break;
     case MATRIX_GEODESICS:
         outText << "<p class=\"description\">"
@@ -6085,7 +6102,6 @@ bool Graph::writeMatrix(const QString &fn,
                 << "<br />"
                 << "</p>";
         writeMatrixHTMLTable(outText, SIGMA, true);
-        // SIGMA.printHTMLTable(outText,true);
         break;
 
     case MATRIX_ADJACENCY_INVERSE:
@@ -6099,7 +6115,6 @@ bool Graph::writeMatrix(const QString &fn,
         else
         {
             writeMatrixHTMLTable(outText, invAM, true);
-            // invAM.printHTMLTable(outText,true);
         }
         break;
     case MATRIX_REACHABILITY:
@@ -6114,7 +6129,6 @@ bool Graph::writeMatrix(const QString &fn,
                 << "<br />"
                 << "</p>";
         writeMatrixHTMLTable(outText, XRM, true);
-        // XRM.printHTMLTable(outText,true);
         break;
 
     case MATRIX_ADJACENCY_TRANSPOSE:
@@ -6128,7 +6142,6 @@ bool Graph::writeMatrix(const QString &fn,
                 << "</p>";
 
         writeMatrixHTMLTable(outText, AM.transpose(), true);
-        // AM.transpose().printHTMLTable(outText,true);
         break;
 
     case MATRIX_COCITATION:
@@ -6143,7 +6156,6 @@ bool Graph::writeMatrix(const QString &fn,
                 << tr("C is a symmetric matrix.")
                 << "</p>";
         writeMatrixHTMLTable(outText, AM.cocitationMatrix(), true);
-        // AM.cocitationMatrix().printHTMLTable(outText,true);
         break;
 
     case MATRIX_DISTANCES_EUCLIDEAN:
@@ -6157,7 +6169,6 @@ bool Graph::writeMatrix(const QString &fn,
         writeMatrixHTMLTable(outText,
                              AM.distancesMatrix(METRIC_EUCLIDEAN_DISTANCE, varLocation, false, true),
                              true, false, false);
-        // AM.distancesMatrix(METRIC_EUCLIDEAN_DISTANCE, varLocation, false, true ).printHTMLTable(outText,true);
         break;
     case MATRIX_DISTANCES_HAMMING:
         outText << "<p class=\"description\">"
@@ -6170,7 +6181,6 @@ bool Graph::writeMatrix(const QString &fn,
         writeMatrixHTMLTable(outText,
                              AM.distancesMatrix(METRIC_HAMMING_DISTANCE, varLocation, false, true),
                              true, false, false);
-        // AM.distancesMatrix(METRIC_HAMMING_DISTANCE, varLocation, false, true ).printHTMLTable(outText,true);
         break;
     case MATRIX_DISTANCES_JACCARD:
         outText << "<p class=\"description\">"
@@ -6182,7 +6192,6 @@ bool Graph::writeMatrix(const QString &fn,
         writeMatrixHTMLTable(outText,
                              AM.distancesMatrix(METRIC_JACCARD_INDEX, "Rows", false, true),
                              true, false, false);
-        // AM.distancesMatrix(METRIC_JACCARD_INDEX, "Rows", false, true ).printHTMLTable(outText,true);
 
         break;
     case MATRIX_DISTANCES_MANHATTAN:
@@ -6196,7 +6205,6 @@ bool Graph::writeMatrix(const QString &fn,
         writeMatrixHTMLTable(outText,
                              AM.distancesMatrix(METRIC_MANHATTAN_DISTANCE, varLocation, false, true),
                              true, false, false);
-        // AM.distancesMatrix(METRIC_MANHATTAN_DISTANCE, varLocation, false, true ).printHTMLTable(outText,true);
         break;
     case MATRIX_DISTANCES_CHEBYSHEV:
         outText << "<p class=\"description\">"
@@ -6208,7 +6216,6 @@ bool Graph::writeMatrix(const QString &fn,
         writeMatrixHTMLTable(outText,
                              AM.distancesMatrix(METRIC_CHEBYSHEV_MAXIMUM, varLocation, false, true),
                              true, false, false);
-        // AM.distancesMatrix(METRIC_CHEBYSHEV_MAXIMUM, varLocation, false, true ).printHTMLTable(outText,true);
         break;
 
     default:
