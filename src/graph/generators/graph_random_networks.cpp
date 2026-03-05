@@ -831,7 +831,7 @@ void Graph::randomNetLatticeCreate(const int &N,
                         //                        qDebug()<< i << "<->"<< target << "OK";
 
                         edge = QString::number(i) + "<->" + QString::number(target);
-                        oppEdge = QString::number(i) + "<->" + QString::number(target);
+                        oppEdge = QString::number(target) + "<->" + QString::number(i);
 
                         if (!latticeEdges.contains(edge) && !latticeEdges.contains(oppEdge))
                         {
@@ -840,19 +840,7 @@ void Graph::randomNetLatticeCreate(const int &N,
                     }
                 }
 
-                //// up
-                // target = i-j*length;
-                //// pre
-                // target = i-j;
 
-                //// same
-                // i
-
-                //// next
-                // target = i+j;
-
-                //// down
-                // target = i+j*length;
             }
         }
     }
@@ -868,7 +856,7 @@ void Graph::randomNetLatticeCreate(const int &N,
     //
 
     qDebug() << "drawing edges";
-
+    progressFraction = (latticeEdges.size() > 0) ? 1.0 / (qreal)latticeEdges.size() : 1.0;
     for (int i = 0; i < latticeEdges.size(); ++i)
     {
 
