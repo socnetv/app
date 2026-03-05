@@ -5833,7 +5833,7 @@ void Graph::writeDataSetToFile(const QString dir, const QString fileName)
 /**
     Writes the specified matrix of social network to file fn
 */
-void Graph::writeMatrix(const QString &fn,
+bool Graph::writeMatrix(const QString &fn,
                         const int &matrix,
                         const bool &considerWeights,
                         const bool &inverseWeights,
@@ -5854,7 +5854,7 @@ void Graph::writeMatrix(const QString &fn,
     {
         qDebug() << "Could not open (for writing) file:" << fn;
         progressStatus(tr("Error. Could not write to ") + fn);
-        return;
+        return false;
     }
 
     bool inverseResult = false;
@@ -5867,7 +5867,7 @@ void Graph::writeMatrix(const QString &fn,
         if (progressCanceled())
         {
             file.close();
-            return;
+            return false;
         }
         progressStatus(tr("Adjacency recomputed. Writing Adjacency Matrix..."));
         break;
@@ -5877,7 +5877,7 @@ void Graph::writeMatrix(const QString &fn,
         if (progressCanceled())
         {
             file.close();
-            return;
+            return false;
         }
         progressStatus(tr("Adjacency recomputed. Writing Laplacian Matrix..."));
         break;
@@ -5887,7 +5887,7 @@ void Graph::writeMatrix(const QString &fn,
         if (progressCanceled())
         {
             file.close();
-            return;
+            return false;
         }
         progressStatus(tr("Adjacency recomputed. Writing Degree Matrix..."));
         break;
@@ -5896,7 +5896,7 @@ void Graph::writeMatrix(const QString &fn,
         if (progressCanceled())
         {
             file.close();
-            return;
+            return false;
         }
         progressStatus(tr("Distances recomputed. Writing Distances Matrix..."));
         break;
@@ -5905,7 +5905,7 @@ void Graph::writeMatrix(const QString &fn,
         if (progressCanceled())
         {
             file.close();
-            return;
+            return false;
         }
         progressStatus(tr("Distances recomputed. Writing Shortest Paths Matrix..."));
         break;
@@ -6208,6 +6208,7 @@ void Graph::writeMatrix(const QString &fn,
     outText << htmlEnd;
 
     file.close();
+    return true;
 }
 
 /**

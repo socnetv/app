@@ -769,7 +769,7 @@ public:
     void writeReciprocity(const QString fileName,
                           const bool considerWeights = false);
 
-    void writeMatrix(const QString &fileName,
+    bool writeMatrix(const QString &fileName,
                      const int &matrix = MATRIX_ADJACENCY,
                      const bool &considerWeights = true,
                      const bool &inverseWeights = false,

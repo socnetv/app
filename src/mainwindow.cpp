@@ -12337,10 +12337,13 @@ void MainWindow::slotAnalyzeMatrixDistances(){
 
     statusMessage( tr("Computing geodesic distances. Please wait...") );
 
-    activeGraph->writeMatrix(fn,MATRIX_DISTANCES,
+    if ( !activeGraph->writeMatrix(fn,MATRIX_DISTANCES,
                              optionsEdgeWeightConsiderAct->isChecked(),
                              inverseWeights,
-                             editFilterNodesIsolatesAct->isChecked());
+                             editFilterNodesIsolatesAct->isChecked()) ) {
+        statusMessage(tr("Computation canceled."));
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
