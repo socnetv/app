@@ -5921,17 +5921,32 @@ bool Graph::writeMatrix(const QString &fn,
         break;
     case MATRIX_REACHABILITY:
         createMatrixReachability();
+        if (progressCanceled())
+        {
+            file.close();
+            return false;
+        }        
         progressStatus(tr("Writing Reachability Matrix..."));
         break;
 
     case MATRIX_ADJACENCY_TRANSPOSE:
         progressStatus(tr("Need to recompute Adjacency Matrix. Please wait..."));
         createMatrixAdjacency();
+        if (progressCanceled())
+        {
+            file.close();
+            return false;
+        }        
         progressStatus(tr("Adjacency recomputed. Writing Adjacency Matrix..."));
         break;
     case MATRIX_COCITATION:
         progressStatus(tr("Need to recompute Adjacency Matrix. Please wait..."));
         createMatrixAdjacency();
+        if (progressCanceled())
+        {
+            file.close();
+            return false;
+        }        
         progressStatus(tr("Adjacency recomputed. Writing Adjacency Matrix..."));
         break;
     case MATRIX_DISTANCES_HAMMING:

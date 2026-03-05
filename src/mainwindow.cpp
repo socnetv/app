@@ -12032,7 +12032,10 @@ void MainWindow::slotAnalyzeMatrixAdjacencyTranspose(){
 
     statusMessage( tr ("Transposing adjacency matrix.") );
 
-    activeGraph->writeMatrix(fn,MATRIX_ADJACENCY_TRANSPOSE) ;
+    if ( !activeGraph->writeMatrix(fn,MATRIX_ADJACENCY_TRANSPOSE) ) {
+        statusMessage(tr("Computation canceled."));
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12063,7 +12066,10 @@ void MainWindow::slotAnalyzeMatrixAdjacencyCocitation(){
 
     statusMessage( tr ("Computing Cocitation matrix.") );
 
-    activeGraph->writeMatrix(fn,MATRIX_COCITATION) ;
+    if ( !activeGraph->writeMatrix(fn,MATRIX_COCITATION) ) {
+        statusMessage(tr("Computation canceled."));
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12094,8 +12100,10 @@ void MainWindow::slotAnalyzeMatrixDegree(){
 
     statusMessage(tr ("Computing Degree matrix.") );
 
-    //activeGraph->writeMatrixDegreeText(fn) ;
-    activeGraph->writeMatrix(fn, MATRIX_DEGREE) ;
+    if ( !activeGraph->writeMatrix(fn, MATRIX_DEGREE) ) {
+        statusMessage(tr("Computation canceled."));
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12128,7 +12136,10 @@ void MainWindow::slotAnalyzeMatrixLaplacian(){
 
     statusMessage(tr ("Computing Laplacian matrix") );
 
-    activeGraph->writeMatrix(fn, MATRIX_LAPLACIAN) ;
+    if ( !activeGraph->writeMatrix(fn, MATRIX_LAPLACIAN) ) {
+        statusMessage(tr("Computation canceled."));
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12738,7 +12749,10 @@ void MainWindow::slotAnalyzeReachabilityMatrix(){
 
     statusMessage(  tr("Computing reachability matrix. Please wait...") );
 
-    activeGraph->writeMatrix(fn, MATRIX_REACHABILITY );
+    if ( !activeGraph->writeMatrix(fn, MATRIX_REACHABILITY) ) {
+        statusMessage(tr("Computation canceled."));
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
