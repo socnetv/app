@@ -155,7 +155,10 @@ bool Graph::createMatrixAdjacencyInverse(const QString &method)
     int N = vertices(dropIsolates, false, true);
 
     createMatrixAdjacency(dropIsolates, considerWeights);
-
+    if (progressCanceled())
+    {
+        return false;
+    }
     invAM.resize(N, N);
 
     if (method == "gauss")

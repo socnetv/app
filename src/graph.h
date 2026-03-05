@@ -789,9 +789,6 @@ public:
     void writeMatrixAdjacencyPlot(const QString fileName,
                                   const bool &simpler = false);
 
-    void writeMatrixAdjacencyInvert(const QString &filename,
-                                    const QString &method);
-
     void writeMatrixLaplacianPlainText(const QString &filename);
     void writeMatrixDegreeText(const QString &filename);
 

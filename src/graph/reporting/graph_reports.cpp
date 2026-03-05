@@ -5912,6 +5912,11 @@ bool Graph::writeMatrix(const QString &fn,
     case MATRIX_ADJACENCY_INVERSE:
         progressStatus(tr("Computing Inverse Adjacency Matrix. Please wait..."));
         inverseResult = createMatrixAdjacencyInverse(QString("lu"));
+        if (progressCanceled())
+        {
+            file.close();
+            return false;
+        }
         progressStatus(tr("Inverse Adjacency Matrix computed. Writing Matrix..."));
         break;
     case MATRIX_REACHABILITY:
@@ -6689,65 +6694,6 @@ void Graph::writeMatrixAdjacencyPlot(const QString fn,
     file.close();
 
     progressFinish();
-}
-
-/**
- * @brief Calls Graph::createMatrixAdjacencyInverse(method) to compute
- * the inverse of the adjacency matrix and writes it to file fn in HTML notation
- * @param fn
- * @param method
- */
-void Graph::writeMatrixAdjacencyInvert(const QString &fn,
-                                       const QString &method)
-{
-    qDebug() << "Writing inverse of the adjacency matrix to file:" << fn;
-
-    int i = 0, j = 0;
-    VList::const_iterator it, it1;
-    QFile file(fn);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-        qDebug() << "Could not open (for writing) file:" << fn;
-        progressStatus(tr("Error. Could not write to ") + fn);
-        return;
-    }
-    QTextStream outText(&file);
-
-    outText << "-Social Network Visualizer " << VERSION << "\n";
-    outText << tr("Network name: ") << getName() << "\n\n";
-    outText << tr("Inverse Matrix:") << "\n";
-    if (!createMatrixAdjacencyInverse(method))
-    {
-        outText << "\n"
-                << " The adjacency matrix is singular.";
-        file.close();
-        return;
-    }
-    int isolatedVertices = verticesListIsolated().size();
-    if (isolatedVertices > 0)
-        outText << "\n"
-                << "Dropped " << isolatedVertices
-                << " isolated vertices"
-                << "\n\n";
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-        if (!(*it)->isEnabled() || (*it)->isIsolated())
-            continue;
-        j = 0;
-        for (it1 = m_graph.cbegin(); it1 != m_graph.cend(); ++it1)
-        {
-            if (!(*it1)->isEnabled() || (*it)->isIsolated())
-                continue;
-            outText << invAM.item(i, j) << " ";
-            qDebug() << i << "," << j << " = " << invAM.item(i, j);
-            j++;
-        }
-        i++;
-        outText << "\n";
-        qDebug() << "\n";
-    }
-
-    file.close();
 }
 
 /**

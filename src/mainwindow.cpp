@@ -11996,8 +11996,10 @@ void MainWindow::slotAnalyzeMatrixAdjacencyInverse(){
 
     statusMessage(tr ("Inverting adjacency matrix.") );
 
-    //activeGraph->writeMatrixAdjacencyInvert(fn, QString("lu")) ;
-    activeGraph->writeMatrix(fn,MATRIX_ADJACENCY_INVERSE) ;
+    if ( !activeGraph->writeMatrix(fn,MATRIX_ADJACENCY_INVERSE) ) {
+        statusMessage(tr("Computation canceled."));
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12379,10 +12381,13 @@ void MainWindow::slotAnalyzeMatrixGeodesics(){
 
     statusMessage(  tr("Computing geodesics (number of shortest paths) for each pair. Please wait...") );
 
-    activeGraph->writeMatrix(fn,MATRIX_GEODESICS,
+    if ( !activeGraph->writeMatrix(fn,MATRIX_GEODESICS,
                              optionsEdgeWeightConsiderAct->isChecked(),
                              inverseWeights,
-                             editFilterNodesIsolatesAct->isChecked());
+                             editFilterNodesIsolatesAct->isChecked()) ) {
+        statusMessage(tr("Computation canceled."));
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
