@@ -54,7 +54,11 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
         qDebug() << "Graph::createMatrixAdjacency() - i" << i << "name" << (*it)->number();
 
         progressUpdate(++progressCounter);
-
+        if (progressCanceled())
+        {
+            progressFinish();
+            return;
+        }
         if (!(*it)->isEnabled() || ((*it)->isIsolated() && dropIsolates))
         {
             qDebug() << "Graph::createMatrixAdjacency() - SKIP i" << i << "name" << (*it)->number();
