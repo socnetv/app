@@ -37,6 +37,7 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
 
     if (progressCanceled())
     {
+        calculatedDistances = false;
         return;
     }
     
@@ -63,6 +64,7 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
         progressUpdate(++progressCounter);
         if (progressCanceled())
         {
+            calculatedDistances = false;
             progressFinish();
             return;
         }
@@ -137,6 +139,7 @@ void Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
 
     if (progressCanceled())
     {
+        calculatedDistances = false;
         return;
     }
 
@@ -164,6 +167,7 @@ void Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
         progressUpdate(++progressCounter);
         if (progressCanceled())
         {
+            calculatedDistances = false;
             progressFinish();
             return;
         }        

@@ -13836,7 +13836,6 @@ void MainWindow::slotProgressBoxDestroy(const int &max){
             QProgressDialog *progressBox = progressDialogs.pop();
             progressBox->reset();
             progressBox->deleteLater();
-            delete progressBox;
         }
     }
 }

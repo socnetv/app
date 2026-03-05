@@ -40,6 +40,7 @@ void Graph::progressStatus(const QString &msg)
  * @brief Resets the cancellation status
  */
 void Graph::resetProgressCanceled() {
+    qDebug() << "Graph::resetProgressCanceled() - resetting flag";
     m_progressCanceled = false;
 }
 /**
@@ -81,6 +82,6 @@ bool Graph::progressCanceled() const
  */
 void Graph::slotCancelComputation()
 {
-    qDebug() << "Graph::slotCancelComputation() - user canceled computation";
+    qDebug() << "Graph::slotCancelComputation() - setting flag from thread:" << QThread::currentThreadId();
     m_progressCanceled = true;
 }

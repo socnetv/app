@@ -84,17 +84,39 @@ DistanceEngine::DistanceEngine(Graph &g)
 {
 }
 
+/**
+ * @brief Runs the full geodesic distance (and optionally centrality) computation pipeline.
+ *
+ * Orchestrates three phases:
+ * - Phase 0 (Init): initialises scratch structures, resets aggregates,
+ *   handles the degenerate E==0 case.
+ * - Phase 1+2 (SSSP loop): runs BFS or Dijkstra from every source vertex,
+ *   accumulating per-source distance and centrality data.
+ * - Phase 3 (Finalize): connectivity scan, group-level aggregation,
+ *   normalisation of centrality scores.
+ *
+ * If the user cancels via the progress dialog, the function returns early
+ * after Phase 1+2 without finalising, and @c calculatedDistances is left
+ * @c false so the next call recomputes from scratch.
+ *
+ * @param computeCentralities  If true, also computes BC, CC, SC, EC, PC.
+ * @param considerWeights      If true, uses edge weights (Dijkstra); otherwise BFS.
+ * @param inverseWeights       If true, uses 1/weight as the distance metric.
+ * @param dropIsolates         If true, excludes isolated vertices from all calculations.
+ */
 void DistanceEngine::compute(const bool computeCentralities,
                              const bool considerWeights,
                              const bool inverseWeights,
                              const bool dropIsolates)
 {
-    qDebug() << "Graph::graphDistancesGeodesic()"
+    
+    qDebug() << "DistanceEngine::compute() - "
              << "centralities" << computeCentralities
              << "considerWeights:" << considerWeights
              << "inverseWeights:" << inverseWeights
              << "dropIsolates:" << dropIsolates;
 
+    
     if (computeCentralities)
     {
         if (graph.calculatedCentralities)
