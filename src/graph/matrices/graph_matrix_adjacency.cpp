@@ -171,7 +171,7 @@ bool Graph::createMatrixAdjacencyInverse(const QString &method)
         j = 0;
         for (it1 = m_graph.cbegin(); it1 != m_graph.cend(); ++it1)
         {
-            if (!(*it1)->isEnabled() || (*it)->isIsolated())
+            if (!(*it1)->isEnabled() || (*it1)->isIsolated())
                 continue;
             if (invAM.item(i, j) != 0)
                 isSingular = false;
