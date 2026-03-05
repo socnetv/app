@@ -422,7 +422,14 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
         {
             if (i == j)
                 continue;
-            k.setItem(i, j, K / (DM.item(i, j) * DM.item(i, j)));
+            qreal dij = DM.item(i, j);
+            if (dij <= 0 || dij >= RAND_MAX)
+            {
+                // disconnected or degenerate pair — no spring force
+                k.setItem(i, j, 0);
+                continue;
+            }
+            k.setItem(i, j, K / (dij * dij));
         }
     }
     //    qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - k=" ;
@@ -455,9 +462,9 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
     // while ( max_D_i > e )
     while (Delta_max > epsilon)
     {
+        couldNotSolveLinearSystem = false;
 
         progressCounter++;
-
         progressUpdate(progressCounter);
         if (progressCanceled())
         {
@@ -526,9 +533,14 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
                     qDebug() << "  m==i, continuing";
                     continue;
                 }
-
-                partDrvtEx += k.item(m, i) * ((xm - xi) - (l.item(m, i) * (xm - xi)) / sqrt((xm - xi) * (xm - xi) + (ym - yi) * (ym - yi)));
-                partDrvtEy += k.item(m, i) * ((ym - yi) - (l.item(m, i) * (ym - yi)) / sqrt((xm - xi) * (xm - xi) + (ym - yi) * (ym - yi)));
+                qreal denom1 = sqrt((xm - xi) * (xm - xi) + (ym - yi) * (ym - yi));
+                if (denom1 < 1e-6)
+                {
+                    // particles at same position — skip to avoid division by zero
+                    continue;
+                }
+                partDrvtEx += k.item(m, i) * ((xm - xi) - (l.item(m, i) * (xm - xi)) / denom1);
+                partDrvtEy += k.item(m, i) * ((ym - yi) - (l.item(m, i) * (ym - yi)) / denom1);
 
             } // end v2 for loop
 
@@ -616,10 +628,15 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
                     qDebug() << "  m==i, continuing";
                     continue;
                 }
-                partDrvDenom = pow(sqrt((xm - xi) * (xm - xi) + (ym - yi) * (ym - yi)), 3);
-
-                partDrvtEx_m += k.item(m, i) * ((xm - xi) - (l.item(m, i) * (xm - xi)) / sqrt((xm - xi) * (xm - xi) + (ym - yi) * (ym - yi)));
-                partDrvtEy_m += k.item(m, i) * ((ym - yi) - (l.item(m, i) * (ym - yi)) / sqrt((xm - xi) * (xm - xi) + (ym - yi) * (ym - yi)));
+                qreal denom2 = sqrt((xm - xi) * (xm - xi) + (ym - yi) * (ym - yi));
+                if (denom2 < 1e-6)
+                {
+                    // particles at same position — skip to avoid division by zero
+                    continue;
+                }
+                partDrvDenom = denom2 * denom2 * denom2;
+                partDrvtEx_m += k.item(m, i) * ((xm - xi) - (l.item(m, i) * (xm - xi)) / denom2);
+                partDrvtEy_m += k.item(m, i) * ((ym - yi) - (l.item(m, i) * (ym - yi)) / denom2);
 
                 partDrvtExSec_m += k.item(m, i) * (1 - (l.item(m, i) * (ym - yi) * (ym - yi)) / partDrvDenom);
 
@@ -693,7 +710,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
 
         m_graph[m]->setX(xm);
         m_graph[m]->setY(ym);
-        // emit setNodePos( pnm,  xm,  ym);
+        emit setNodePos( pnm,  xm,  ym);
 
     } // end while (Delta_max > epsilon) {
 
