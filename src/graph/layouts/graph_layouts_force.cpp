@@ -142,8 +142,8 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations)
                              << " f_att=" << f_att
                              << " sdx * f_att " << sign(DV.x()) * f_att
                              << " sdy * f_att " << sign(DV.y()) * f_att
-                             << " disp_s.x=" << (*v2)->disp().rx()
-                             << " disp_s.y=" << (*v2)->disp().ry()
+                             << " disp_s.x=" << (*v1)->disp().rx()
+                             << " disp_s.y=" << (*v1)->disp().ry()
                              << " disp_t.x=" << (*v2)->disp().rx()
                              << " disp_t.y=" << (*v2)->disp().ry();
 
