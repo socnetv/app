@@ -35,10 +35,13 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
 
     graphDistancesGeodesic(false, considerWeights, inverseWeights, dropIsolates);
 
+    if (progressCanceled())
+    {
+        return;
+    }
+    
     VList::const_iterator it, jt;
-
     int N = vertices(dropIsolates, false, true);
-
     int progressCounter = 0;
     int source = 0, target = 0;
     int i = 0, j = 0;
@@ -58,6 +61,11 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
     {
 
         progressUpdate(++progressCounter);
+        if (progressCanceled())
+        {
+            progressFinish();
+            return;
+        }
 
         source = (*it)->number();
 
@@ -127,10 +135,13 @@ void Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
 
     graphDistancesGeodesic(false, considerWeights, inverseWeights, dropIsolates);
 
+    if (progressCanceled())
+    {
+        return;
+    }
+
     VList::const_iterator it, jt;
-
     int N = vertices(dropIsolates, false, true);
-
     int progressCounter = 0;
     int source = 0, target = 0;
     int i = 0, j = 0;
@@ -151,6 +162,11 @@ void Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
     {
 
         progressUpdate(++progressCounter);
+        if (progressCanceled())
+        {
+            progressFinish();
+            return;
+        }        
 
         source = (*it)->number();
 

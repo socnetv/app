@@ -27,6 +27,7 @@ void GraphDistanceProgressSink::statusMessage(const QString& msg)
 
 void GraphDistanceProgressSink::progressCreate(const int total, const QString& msg)
 {
+    graph.resetProgressCanceled();
     emit graph.signalProgressBoxCreate(total, msg);
 }
 

@@ -5864,24 +5864,49 @@ void Graph::writeMatrix(const QString &fn,
     {
     case MATRIX_ADJACENCY:
         createMatrixAdjacency();
+        if (progressCanceled())
+        {
+            file.close();
+            return;
+        }
         progressStatus(tr("Adjacency recomputed. Writing Adjacency Matrix..."));
         break;
     case MATRIX_LAPLACIAN:
         progressStatus(tr("Need to recompute Adjacency Matrix. Please wait..."));
         createMatrixAdjacency();
+        if (progressCanceled())
+        {
+            file.close();
+            return;
+        }
         progressStatus(tr("Adjacency recomputed. Writing Laplacian Matrix..."));
         break;
     case MATRIX_DEGREE:
         progressStatus(tr("Need to recompute Adjacency Matrix. Please wait..."));
         createMatrixAdjacency();
+        if (progressCanceled())
+        {
+            file.close();
+            return;
+        }
         progressStatus(tr("Adjacency recomputed. Writing Degree Matrix..."));
         break;
     case MATRIX_DISTANCES:
         graphMatrixDistanceGeodesicCreate(considerWeights, inverseWeights, dropIsolates);
+        if (progressCanceled())
+        {
+            file.close();
+            return;
+        }
         progressStatus(tr("Distances recomputed. Writing Distances Matrix..."));
         break;
     case MATRIX_GEODESICS:
         graphMatrixShortestPathsCreate(considerWeights, inverseWeights, false);
+        if (progressCanceled())
+        {
+            file.close();
+            return;
+        }
         progressStatus(tr("Distances recomputed. Writing Shortest Paths Matrix..."));
         break;
     case MATRIX_ADJACENCY_INVERSE:

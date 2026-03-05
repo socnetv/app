@@ -1210,6 +1210,7 @@ public:
 
     // Progress cancellation query: readable by engines and sinks.
     bool progressCanceled() const;
+    void resetProgressCanceled();
 
     /**  vpos stores the real position of each vertex inside m_graph.
      *  It starts at zero (0).

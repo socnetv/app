@@ -37,13 +37,19 @@ void Graph::progressStatus(const QString &msg)
     emit statusMessage(msg);
 }
 /**
+ * @brief Resets the cancellation status
+ */
+void Graph::resetProgressCanceled() {
+    m_progressCanceled = false;
+}
+/**
  * @brief Emits a signal to create a progress box in the UI with the given maximum value and message.
  * @param max The maximum value for the progress box.
  * @param msg The message to be shown in the progress box.
  */
 void Graph::progressCreate(int max, const QString &msg)
 {
-    m_progressCanceled = false;
+    resetProgressCanceled();
     emit signalProgressBoxCreate(max, msg);
 }
 /**

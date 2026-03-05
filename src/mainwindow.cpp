@@ -12119,7 +12119,7 @@ void MainWindow::slotAnalyzeMatrixLaplacian(){
         return;
     }
 
-    qDebug() << "MW:slotAnalyzeMatrixLaplacian() - calling Graph::writeMatrix";
+    qDebug() << "MW:slotAnalyzeMatrixLaplacian()";
 
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-laplacian-"+dateTime+".html";
