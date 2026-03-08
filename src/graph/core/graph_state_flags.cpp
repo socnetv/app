@@ -38,17 +38,12 @@ bool Graph::isWeighted()
 
     qreal m_weight = 0;
     VList::const_iterator it, it1;
-    int N = vertices();
-    int progressCounter = 0;
 
     QString pMsg = tr("Checking if the graph edges are valued. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-
-        progressUpdate(++progressCounter);
 
         for (it1 = m_graph.cbegin(); it1 != m_graph.cend(); ++it1)
         {
@@ -66,8 +61,6 @@ bool Graph::isWeighted()
     }
     calculatedGraphWeighted = true;
     qDebug() << "graph is weighted:" << m_graphIsWeighted;
-
-    progressFinish();
 
     return m_graphIsWeighted;
 }

@@ -833,27 +833,6 @@ void MainWindow::slotOpenSettingsDialog() {
     // show settings dialog
     m_settingsDialog->exec();
 
-
-}
-
-
-
-/**
- * @brief Fixes known bugs in QProgressDialog class.
-   i.e. Workaround for macOS-only Qt bug: QTBUG-65750, QTBUG-70357.
-   QProgressDialog too small and too narrow to fit the text of its label
- * @param dialog
- */
-void MainWindow::polishProgressDialog(QProgressDialog* dialog)
-{
-#ifdef Q_OS_MAC
-    // Workaround for macOS-only Qt bug; see: QTBUG-65750, QTBUG-70357.
-    const int margin = dialog->fontMetrics().maxWidth();
-    dialog->resize(dialog->width() + 2 * margin, dialog->height());
-    dialog->show();
-#else
-    Q_UNUSED(dialog);
-#endif
 }
 
 
@@ -13807,33 +13786,59 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
 void MainWindow::slotProgressBoxCreate(const int &max, const QString &msg)
 {
     qDebug() << "MW::slotProgressBoxCreate";
-
     if (appSettings["showProgressBar"] == "true")
     {
         int duration = (max == 0) ? activeNodes() : max;
+        if (!progressDialogs.isEmpty())
+        {
+            // A dialog is already active — reuse it for the new sub-step
+            // instead of stacking a new one on top.
+            QProgressDialog *progressBox = progressDialogs.top();
+            progressBox->setLabelText(msg);
+            progressBox->setMaximum(duration);
+            progressBox->setValue(0);
+            // Push nullptr sentinel so slotProgressBoxDestroy knows
+            // this is a sub-step finish and should not destroy the real dialog.
+            progressDialogs.push(nullptr);            
+            qDebug() << "MW::slotProgressBoxCreate - reusing existing dialog for sub-step";
+            QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+            return;
+        }
         QProgressDialog *progressBox = new QProgressDialog(msg,
                                                            "Cancel",
                                                            0,
                                                            duration,
                                                            this);
         polishProgressDialog(progressBox);
-
-        progressBox->setWindowModality(Qt::WindowModal);
         progressBox->setWindowModality(Qt::ApplicationModal);
-
         connect(activeGraph, &Graph::signalProgressBoxUpdate,
                 progressBox, &QProgressDialog::setValue);
         connect(progressBox, &QProgressDialog::canceled,
                 activeGraph, &Graph::slotCancelComputation);
-
         progressBox->setMinimumDuration(0);
         progressBox->setAutoClose(true);
         progressBox->setAutoReset(true);
-
         progressDialogs.push(progressBox);
     }
-
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+}
+
+/**
+ * @brief Fixes known bugs in QProgressDialog class.
+   i.e. Workaround for macOS-only Qt bug: QTBUG-65750, QTBUG-70357.
+   QProgressDialog too small and too narrow to fit the text of its label
+ * @param dialog
+ */
+void MainWindow::polishProgressDialog(QProgressDialog *dialog)
+{
+#ifdef Q_OS_MAC
+    // Workaround for macOS-only Qt bug; see: QTBUG-65750, QTBUG-70357.
+    const int margin = dialog->fontMetrics().maxWidth();
+    dialog->resize(dialog->width() + 2 * margin, dialog->height());
+    dialog->show();
+#else
+    Q_UNUSED(dialog);
+#endif
 }
 
 /**
@@ -13842,9 +13847,17 @@ void MainWindow::slotProgressBoxCreate(const int &max, const QString &msg)
 void MainWindow::slotProgressBoxDestroy(const int &max){
     qDebug() << "MainWindow::slotProgressBoxDestroy";
     QApplication::restoreOverrideCursor();
-    if (  appSettings["showProgressBar"] == "true" && max > -1 ) {
-        if (! progressDialogs.isEmpty()) {
+    if (appSettings["showProgressBar"] == "true" && max > -1)
+    {
+        if (!progressDialogs.isEmpty())
+        {
             QProgressDialog *progressBox = progressDialogs.pop();
+            if (progressBox == nullptr)
+            {
+                // Sub-step sentinel — real dialog stays alive.
+                qDebug() << "MW::slotProgressBoxDestroy - sub-step sentinel, skipping destroy";
+                return;
+            }
             progressBox->reset();
             progressBox->deleteLater();
         }
