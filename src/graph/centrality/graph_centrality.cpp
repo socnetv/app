@@ -26,7 +26,6 @@
 void Graph::centralityInformation(const bool considerWeights,
                                   const bool inverseWeights)
 {
-
     qDebug() << "Graph::centralityInformation()";
 
     if (calculatedIC)
@@ -42,20 +41,59 @@ void Graph::centralityInformation(const bool considerWeights,
     minIC = RAND_MAX;
     classesIC = 0;
     varianceIC = 0;
+    meanIC = 0;
+    maxNodeIC = 0;
+    minNodeIC = 0;
 
     VList::const_iterator it;
 
     int i = 0, j = 0;
 
-    qreal m_weight = 0, weightSum = 1, diagonalEntriesSum = 0, rowSum = 0;
-    qreal IC = 0, SIC = 0;
+    qreal m_weight = 0;
+    qreal weightSum = 1;
+    qreal traceC = 0;
+    qreal commonRowSum = 0;
+    qreal IC = 0;
+    qreal SIC = 0;
+
     /* Note: isolated nodes must be dropped from the AM
-        Otherwise, the SIGMA matrix might be singular, therefore non-invertible. */
-    bool dropIsolates = true;
-    bool symmetrize = true;
-    int n = vertices(dropIsolates, false, true);
+       Otherwise, the SIGMA matrix might be singular, therefore non-invertible. */
+    const bool dropIsolates = true;
+    const bool symmetrize = true;
+    const int n = vertices(dropIsolates, false, true);
+
+    /* Degenerate case: no non-isolated vertices */
+    if (n == 0)
+    {
+        for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+        {
+            (*it)->setIC(0);
+            (*it)->setSIC(0);
+        }
+        calculatedIC = true;
+        progressFinish();
+        return;
+    }
+
+    /* Degenerate case: IC is not meaningful for fewer than 2 non-isolated vertices */
+    if (n < 2)
+    {
+        for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+        {
+            (*it)->setIC(0);
+            (*it)->setSIC(0);
+        }
+        calculatedIC = true;
+        progressFinish();
+        return;
+    }
 
     createMatrixAdjacency(dropIsolates, considerWeights, inverseWeights, symmetrize);
+    if (progressCanceled())
+    {
+        progressFinish();
+        return;
+    }
 
     QString pMsg = tr("Computing Information Centralities. \nPlease wait...");
     progressStatus(pMsg);
@@ -71,8 +109,9 @@ void Graph::centralityInformation(const bool considerWeights,
         {
             if (i == j)
                 continue;
+
             m_weight = AM.item(i, j);
-            weightSum += m_weight; // sum of weights for all edges incident to i
+            weightSum += m_weight;              // sum of weights for all edges incident to i
             WM.setItem(i, j, 1 - m_weight);
         }
         WM.setItem(i, i, weightSum);
@@ -84,8 +123,10 @@ void Graph::centralityInformation(const bool considerWeights,
         progressFinish();
         return;
     }
+
     progressStatus(tr("Computing inverse adjacency matrix. Please wait..."));
     invM.inverse(WM);
+
     progressStatus(tr("Computing IC scores. Please wait..."));
     progressUpdate(2 * n / 3);
     if (progressCanceled())
@@ -94,15 +135,17 @@ void Graph::centralityInformation(const bool considerWeights,
         return;
     }
 
-    diagonalEntriesSum = 0;
-    rowSum = 0;
+    traceC = 0;
+    commonRowSum = 0;
+
     for (j = 0; j < n; j++)
     {
-        rowSum += invM.item(0, j);
+        commonRowSum += invM.item(0, j);
     }
+
     for (i = 0; i < n; i++)
     {
-        diagonalEntriesSum += invM.item(i, i); // calculate the matrix trace
+        traceC += invM.item(i, i);
     }
 
     i = 0;
@@ -111,36 +154,60 @@ void Graph::centralityInformation(const bool considerWeights,
         if ((*it)->isIsolated())
         {
             (*it)->setIC(0);
+            (*it)->setSIC(0);
             continue;
         }
-        IC = 1.0 / (invM.item(i, i) + (diagonalEntriesSum - 2.0 * rowSum) / n);
 
+        IC = 1.0 / (invM.item(i, i) + (traceC - 2.0 * commonRowSum) / n);
         (*it)->setIC(IC);
         t_sumIC += IC;
-        i++;
+        ++i;
     }
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+
+    if (t_sumIC > 0)
     {
-        IC = (*it)->IC();
-        SIC = IC / t_sumIC;
-        (*it)->setSIC(SIC);
-        sumIC += SIC;
-        resolveClasses(SIC, discreteICs, classesIC);
-        minmax(SIC, (*it), maxIC, minIC, maxNodeIC, minNodeIC);
+        for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+        {
+            if ((*it)->isIsolated())
+            {
+                (*it)->setSIC(0);
+                continue;
+            }
+
+            IC = (*it)->IC();
+            SIC = IC / t_sumIC;
+            (*it)->setSIC(SIC);
+            sumIC += SIC;
+            resolveClasses(SIC, discreteICs, classesIC);
+            minmax(SIC, (*it), maxIC, minIC, maxNodeIC, minNodeIC);
+        }
+
+        meanIC = sumIC / static_cast<qreal>(n);
+
+        qreal x = 0;
+        varianceIC = 0;
+        for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+        {
+            if ((*it)->isIsolated())
+                continue;
+
+            x = ((*it)->SIC() - meanIC);
+            x *= x;
+            varianceIC += x;
+        }
+
+        varianceIC /= static_cast<qreal>(n);
     }
-
-    qreal x = 0;
-    meanIC = sumIC / static_cast<qreal>(n);
-
-    varianceIC = 0;
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    else
     {
-        x = ((*it)->SIC() - meanIC);
-        x *= x;
-        varianceIC += x;
+        for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+        {
+            (*it)->setSIC(0);
+        }
+        sumIC = 0;
+        meanIC = 0;
+        varianceIC = 0;
     }
-
-    varianceIC /= (qreal)n;
 
     calculatedIC = true;
 
