@@ -819,12 +819,6 @@ public:
                                       const QString &varLocation = "rows",
                                       const bool &diagonal = false);
 
-    void writeMatrixSimilarityPearsonPlainText(const QString fileName,
-                                               const bool considerWeights,
-                                               const QString &matrix = "adjacency",
-                                               const QString &varLocation = "rows",
-                                               const bool &diagonal = false);
-
     void writeEccentricity(const QString fileName,
                            const bool considerWeights = false,
                            const bool inverseWeights = false,
