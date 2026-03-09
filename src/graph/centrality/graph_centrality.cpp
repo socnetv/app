@@ -257,7 +257,12 @@ void Graph::centralityEigenvector(const bool &considerWeights,
 
     createMatrixAdjacency(dropIsolates, considerWeights,
                           inverseWeights, symmetrize);
-
+    if (progressCanceled())
+    {
+        delete[] EVC;
+        progressFinish();
+        return;
+    }
     QString pMsg = tr("Computing Eigenvector Centrality scores. \nPlease wait...");
     progressStatus(pMsg);
     progressCreate(N, pMsg);
@@ -272,7 +277,7 @@ void Graph::centralityEigenvector(const bool &considerWeights,
         for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
         {
 
-            if (!(*it)->isIsolated() && dropIsolates)
+            if ((*it)->isIsolated() && dropIsolates)   // skip isolates
             {
                 continue;
             }
@@ -319,7 +324,7 @@ void Graph::centralityEigenvector(const bool &considerWeights,
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
-        if (!(*it)->isIsolated() && dropIsolates)
+        if ((*it)->isIsolated() && dropIsolates)   // skip isolates
         {
             continue;
         }
