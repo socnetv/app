@@ -4873,7 +4873,7 @@ void Graph::writeClusteringHierarchicalResultsToStream(QTextStream &outText,
  * @param diagonal
  * @param considerWeights
  */
-void Graph::writeMatrixDissimilarities(const QString fileName,
+bool Graph::writeMatrixDissimilarities(const QString fileName,
                                        const QString &metricStr,
                                        const QString &varLocation,
                                        const bool &diagonal,
@@ -4893,7 +4893,7 @@ void Graph::writeMatrixDissimilarities(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
@@ -4901,6 +4901,12 @@ void Graph::writeMatrixDissimilarities(const QString fileName,
     int N = vertices();
 
     createMatrixAdjacency();
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        return false;
+    }
 
     progressStatus((tr("Examining pair-wise tie profile dissimilarities of actors...")));
 
@@ -4994,6 +5000,7 @@ void Graph::writeMatrixDissimilarities(const QString fileName,
     outText << htmlEnd;
 
     file.close();
+    return true;
 }
 
 /**
@@ -5005,7 +5012,7 @@ void Graph::writeMatrixDissimilarities(const QString fileName,
  * @param diagonal
  * @param considerWeights
  */
-void Graph::writeMatrixSimilarityMatching(const QString fileName,
+bool Graph::writeMatrixSimilarityMatching(const QString fileName,
                                           const QString &measure,
                                           const QString &matrix,
                                           const QString &varLocation,
@@ -5027,7 +5034,7 @@ void Graph::writeMatrixSimilarityMatching(const QString fileName,
     {
         qDebug() << "Could not open (for writing) file:" << fileName;
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
@@ -5039,6 +5046,12 @@ void Graph::writeMatrixSimilarityMatching(const QString fileName,
     if (matrix == "Adjacency")
     {
         createMatrixAdjacency();
+        if (progressCanceled())
+        {
+            file.close();
+            progressFinish();
+            return false;
+        }        
         createMatrixSimilarityMatching(AM, SCM, measureInt,
                                        varLocation, diagonal, considerWeights);
     }
@@ -5050,7 +5063,8 @@ void Graph::writeMatrixSimilarityMatching(const QString fileName,
     }
     else
     {
-        return;
+        file.close();
+        return false;
     }
 
     QString pMsg = tr("Writing Similarity coefficients to file. \nPlease wait...");
@@ -5172,6 +5186,8 @@ void Graph::writeMatrixSimilarityMatching(const QString fileName,
 
     progressUpdate(1);
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -5180,7 +5196,7 @@ void Graph::writeMatrixSimilarityMatching(const QString fileName,
  * @param fileName
  * @param considerWeights
  */
-void Graph::writeMatrixSimilarityPearson(const QString fileName,
+bool Graph::writeMatrixSimilarityPearson(const QString fileName,
                                          const bool considerWeights,
                                          const QString &matrix,
                                          const QString &varLocation,
@@ -5198,7 +5214,7 @@ void Graph::writeMatrixSimilarityPearson(const QString fileName,
     {
         qDebug() << "Could not open (for writing) file:" << fileName;
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
@@ -5210,16 +5226,29 @@ void Graph::writeMatrixSimilarityPearson(const QString fileName,
     if (matrix == "Adjacency")
     {
         createMatrixAdjacency();
+        if (progressCanceled())
+        {
+            file.close();
+            progressFinish();
+            return false;
+        }        
         createMatrixSimilarityPearson(AM, PCC, varLocation, diagonal);
     }
     else if (matrix == "Distances")
     {
         graphDistancesGeodesic();
+        if (progressCanceled())
+        {
+            file.close();
+            progressFinish();
+            return false;
+        }        
         createMatrixSimilarityPearson(DM, PCC, varLocation, diagonal);
     }
     else
     {
-        return;
+        file.close();
+        return false;
     }
 
     progressStatus(tr("Writing Pearson coefficients to file: ") + fileName);
@@ -5314,6 +5343,8 @@ void Graph::writeMatrixSimilarityPearson(const QString fileName,
     outText << htmlEnd;
 
     file.close();
+
+    return true;
 }
 
 /**

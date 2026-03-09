@@ -371,6 +371,11 @@ void Graph::relationAddCocitation()
     bool dropIsolates = false;
 
     createMatrixAdjacency();
+    if (progressCanceled())
+    {
+        progressFinish();
+        return;
+    }
 
     Matrix *CT = new Matrix(AM.rows(), AM.cols());
     *CT = AM.cocitationMatrix();
@@ -419,6 +424,7 @@ void Graph::relationAddCocitation()
         i++;
     }
 
+    delete CT;
     m_graphIsSymmetric = true;
 
     setModStatus(ModStatus::EdgeCount);

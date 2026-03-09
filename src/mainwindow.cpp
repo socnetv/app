@@ -12933,12 +12933,15 @@ void MainWindow::slotAnalyzeStrEquivalenceSimilarityByMeasure(const QString &mat
 
     bool considerWeights=true;
 
-    activeGraph->writeMatrixSimilarityMatching( fn,
+    if ( ! activeGraph->writeMatrixSimilarityMatching( fn,
                                                 measure,
                                                 matrix,
                                                 varLocation,
                                                 diagonal,
-                                                considerWeights);
+                                                considerWeights) )
+    {
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -13016,8 +13019,11 @@ void MainWindow::slotAnalyzeStrEquivalenceDissimilaritiesTieProfile(const QStrin
 
     askAboutEdgeWeights();
 
-    activeGraph->writeMatrixDissimilarities(fn, metric, varLocation,diagonal,
-                                            optionsEdgeWeightConsiderAct->isChecked());
+    if (!activeGraph->writeMatrixDissimilarities(fn, metric, varLocation, diagonal,
+                                                 optionsEdgeWeightConsiderAct->isChecked()))
+    {
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -13070,7 +13076,10 @@ void MainWindow::slotAnalyzeStrEquivalencePearson(const QString &matrix,
 
     bool considerWeights=true;
 
-    activeGraph->writeMatrixSimilarityPearson( fn, considerWeights, matrix, varLocation, diagonal);
+    if ( ! activeGraph->writeMatrixSimilarityPearson( fn, considerWeights, matrix, varLocation, diagonal) )
+    {
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));

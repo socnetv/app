@@ -787,21 +787,21 @@ public:
     void writeMatrixAdjacencyPlot(const QString fileName,
                                   const bool &simpler = false);
 
-    void writeMatrixDissimilarities(const QString fileName,
+    bool writeMatrixDissimilarities(const QString fileName,
                                     const QString &metricStr,
                                     const QString &varLocation,
                                     const bool &diagonal,
                                     const bool &considerWeights);
 
 
-    void writeMatrixSimilarityMatching(const QString fileName,
+    bool writeMatrixSimilarityMatching(const QString fileName,
                                        const QString &measure = "Simple",
                                        const QString &matrix = "adjacency",
                                        const QString &varLocation = "rows",
                                        const bool &diagonal = false,
                                        const bool &considerWeights = true);
 
-    void writeMatrixSimilarityPearson(const QString fileName,
+    bool writeMatrixSimilarityPearson(const QString fileName,
                                       const bool considerWeights,
                                       const QString &matrix = "adjacency",
                                       const QString &varLocation = "rows",
