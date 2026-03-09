@@ -4210,7 +4210,12 @@ bool Graph::writeCliqueCensus(const QString &fileName,
 
     // Call graphCliques() to compute all cliques (maximal connected subgraphs) of the network.
     graphCliques();
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        return false;
+    }
     pMsg = tr("Writing Clique Census to file. Please wait..");
     progressStatus(pMsg);
 
