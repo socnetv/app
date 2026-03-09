@@ -12516,11 +12516,14 @@ void MainWindow::slotAnalyzeEccentricity(){
 
     askAboutEdgeWeights();
 
-    activeGraph->writeEccentricity(
+    if ( ! activeGraph->writeEccentricity(
                 fn,
                 optionsEdgeWeightConsiderAct->isChecked(),
                 inverseWeights,
-                editFilterNodesIsolatesAct->isChecked());
+                editFilterNodesIsolatesAct->isChecked()) ) 
+    {
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12617,8 +12620,7 @@ void MainWindow::slotAnalyzeConnectedness(){
 
 
 /**
-*	Calls Graph:: writeWalksOfLengthMatrixPlainText() to calculate and print
-*   the number of walks of a given length , between each pair of nodes.
+*	Calculate and print the number of walks of a given length , between each pair of nodes.
 */
 void MainWindow::slotAnalyzeWalksLength(){
     if ( !activeNodes()   )  {
@@ -12662,8 +12664,7 @@ void MainWindow::slotAnalyzeWalksLength(){
 
 
 /**
- * @brief Calls Graph:: writeWalksTotalMatrixPlainText() to calculate and print
-*  the total number of walks of any length , between each pair of nodes.
+ * @brief Calculate and print the total number of walks of any length, between each pair of nodes.
  */
 void MainWindow::slotAnalyzeWalksTotal(){
     if ( !activeNodes()   )  {
@@ -12774,7 +12775,9 @@ void MainWindow::slotAnalyzeClusteringCoefficient (){
 
     bool considerWeights=true;
 
-    activeGraph->writeClusteringCoefficient(fn, considerWeights);
+    if ( ! activeGraph->writeClusteringCoefficient(fn, considerWeights) )  {
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12849,9 +12852,7 @@ void MainWindow::slotAnalyzeCommunitiesTriadCensus() {
 
     bool considerWeights=true;
 
-    activeGraph->writeTriadCensus(fn, considerWeights);
-    if ( activeGraph->progressCanceled() ) {
-        statusMessage(tr("Computation canceled."));
+    if ( ! activeGraph->writeTriadCensus(fn, considerWeights)) {
         return;
     }    
 
@@ -13182,11 +13183,13 @@ void MainWindow::slotAnalyzeCentralityDegree(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-out-degree-"+dateTime+".html";
 
-
-    activeGraph->writeCentralityDegree(
-                fn,
-                optionsEdgeWeightConsiderAct->isChecked(),
-                editFilterNodesIsolatesAct->isChecked() );
+    if (!activeGraph->writeCentralityDegree(
+            fn,
+            optionsEdgeWeightConsiderAct->isChecked(),
+            editFilterNodesIsolatesAct->isChecked()))
+    {
+        return;
+    }
 
     statusMessage(tr("Opening Out-Degree Centralities report..."));
 
@@ -13221,11 +13224,14 @@ void MainWindow::slotAnalyzeCentralityCloseness(){
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-closeness-"+dateTime+".html";
 
 
-    activeGraph->writeCentralityCloseness(
+    if (!activeGraph->writeCentralityCloseness(
                 fn,
                 optionsEdgeWeightConsiderAct->isChecked(),
                 inverseWeights,
-                editFilterNodesIsolatesAct->isChecked() || dropIsolates);
+                editFilterNodesIsolatesAct->isChecked() || dropIsolates))
+    {
+        return;
+    }
 
     statusMessage(tr("Opening Closeness Centralities report..."));
 
@@ -13260,11 +13266,14 @@ void MainWindow::slotAnalyzeCentralityClosenessIR(){
 
     askAboutEdgeWeights();
 
-    activeGraph->writeCentralityClosenessInfluenceRange(
+    if (! activeGraph->writeCentralityClosenessInfluenceRange(
                 fn,
                 optionsEdgeWeightConsiderAct->isChecked(),
                 inverseWeights,
-                editFilterNodesIsolatesAct->isChecked());
+                editFilterNodesIsolatesAct->isChecked())) 
+    {
+        return;
+    }
 
     statusMessage(tr("Opening Influence Range Closeness Centralities report..."));
 
@@ -13297,10 +13306,13 @@ void MainWindow::slotAnalyzeCentralityBetweenness(){
 
     askAboutEdgeWeights();
 
-    activeGraph->writeCentralityBetweenness(
-                fn, optionsEdgeWeightConsiderAct->isChecked(),
-                inverseWeights,
-                editFilterNodesIsolatesAct->isChecked());
+    if (!activeGraph->writeCentralityBetweenness(
+            fn, optionsEdgeWeightConsiderAct->isChecked(),
+            inverseWeights,
+            editFilterNodesIsolatesAct->isChecked()))
+    {
+        return;
+    }
 
     statusMessage(tr("Opening Betweenness Centralities report..."));
 
@@ -13345,9 +13357,12 @@ void MainWindow::slotAnalyzePrestigeDegree(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-prestige-degree-"+dateTime+".html";
 
-    activeGraph->writePrestigeDegree(fn,
-                                     optionsEdgeWeightConsiderAct->isChecked(),
-                                     editFilterNodesIsolatesAct->isChecked() );
+    if (!activeGraph->writePrestigeDegree(fn,
+                                          optionsEdgeWeightConsiderAct->isChecked(),
+                                          editFilterNodesIsolatesAct->isChecked()))
+    {
+        return;
+    }
 
     statusMessage(tr("Opening Degree Prestige (in-degree) report..."));
 
@@ -13379,7 +13394,9 @@ void MainWindow::slotAnalyzePrestigePageRank(){
 
     askAboutEdgeWeights();
 
-    activeGraph->writePrestigePageRank(fn, editFilterNodesIsolatesAct->isChecked());
+    if ( ! activeGraph->writePrestigePageRank(fn, editFilterNodesIsolatesAct->isChecked()) ) {
+        return;
+    }
 
     statusMessage(tr("Opening PageRank Prestige report..."));
 
@@ -13412,8 +13429,11 @@ void MainWindow::slotAnalyzePrestigeProximity(){
 
     askAboutEdgeWeights();
 
-    activeGraph->writePrestigeProximity(fn, true, false ,
-                                        editFilterNodesIsolatesAct->isChecked());
+    if (!activeGraph->writePrestigeProximity(fn, true, false,
+                                             editFilterNodesIsolatesAct->isChecked()))
+    {
+        return;
+    }
 
     statusMessage(tr("Opening Proximity Prestige report..."));
 
@@ -13477,10 +13497,13 @@ void MainWindow::slotAnalyzeCentralityInformation(){
 
     askAboutEdgeWeights();
 
-    activeGraph->writeCentralityInformation(
-                fn,
-                optionsEdgeWeightConsiderAct->isChecked(),
-                inverseWeights);
+    if (!activeGraph->writeCentralityInformation(
+            fn,
+            optionsEdgeWeightConsiderAct->isChecked(),
+            inverseWeights))
+    {
+        return;
+    }
 
     statusMessage(tr("Opening Information Centralities report..."));
 
@@ -13517,11 +13540,14 @@ void MainWindow::slotAnalyzeCentralityEigenvector(){
 
     bool dropIsolates = false;
 
-    activeGraph->writeCentralityEigenvector(
-                fn,
-                optionsEdgeWeightConsiderAct->isChecked(),
-                inverseWeights,
-                dropIsolates);
+    if (!activeGraph->writeCentralityEigenvector(
+            fn,
+            optionsEdgeWeightConsiderAct->isChecked(),
+            inverseWeights,
+            dropIsolates))
+    {
+        return;
+    }
 
     statusMessage(tr("Opening Eigenvector Centralities report..."));
 
@@ -13555,12 +13581,14 @@ void MainWindow::slotAnalyzeCentralityStress(){
 
     askAboutEdgeWeights();
 
-
-    activeGraph->writeCentralityStress(
-                fn,
-                optionsEdgeWeightConsiderAct->isChecked(),
-                inverseWeights,
-                editFilterNodesIsolatesAct->isChecked());
+    if (!activeGraph->writeCentralityStress(
+            fn,
+            optionsEdgeWeightConsiderAct->isChecked(),
+            inverseWeights,
+            editFilterNodesIsolatesAct->isChecked()))
+    {
+        return;
+    }
 
     statusMessage(tr("Opening Stress Centralities report..."));
 
@@ -13595,11 +13623,14 @@ void MainWindow::slotAnalyzeCentralityPower(){
 
     askAboutEdgeWeights();
 
-    activeGraph->writeCentralityPower(
-                fn,
-                optionsEdgeWeightConsiderAct->isChecked(),
-                inverseWeights,
-                editFilterNodesIsolatesAct->isChecked());
+    if (!activeGraph->writeCentralityPower(
+            fn,
+            optionsEdgeWeightConsiderAct->isChecked(),
+            inverseWeights,
+            editFilterNodesIsolatesAct->isChecked()))
+    {
+        return;
+    }
 
     statusMessage(tr("Opening Gil-Schmidt Power Centralities report..."));
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
@@ -13632,11 +13663,14 @@ void MainWindow::slotAnalyzeCentralityEccentricity(){
 
     askAboutEdgeWeights();
 
-    activeGraph->writeCentralityEccentricity(
-                fn,
-                optionsEdgeWeightConsiderAct->isChecked(),
-                inverseWeights,
-                editFilterNodesIsolatesAct->isChecked());
+    if (!activeGraph->writeCentralityEccentricity(
+            fn,
+            optionsEdgeWeightConsiderAct->isChecked(),
+            inverseWeights,
+            editFilterNodesIsolatesAct->isChecked()))
+    {
+        return;
+    }
 
     statusMessage(tr("Opening Closeness Centralities report..."));
 

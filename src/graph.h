@@ -807,64 +807,64 @@ public:
                                       const QString &varLocation = "rows",
                                       const bool &diagonal = false);
 
-    void writeEccentricity(const QString fileName,
+    bool writeEccentricity(const QString fileName,
                            const bool considerWeights = false,
                            const bool inverseWeights = false,
                            const bool dropIsolates = false);
 
     //   friend QTextStream& operator <<  (QTextStream& os, Graph& m);
 
-    void writeCentralityDegree(const QString,
+    bool writeCentralityDegree(const QString,
                                const bool weights,
                                const bool dropIsolates);
 
-    void writeCentralityCloseness(const QString,
+    bool writeCentralityCloseness(const QString,
                                   const bool weights,
                                   const bool inverseWeights,
                                   const bool dropIsolates);
 
-    void writeCentralityClosenessInfluenceRange(const QString,
+    bool writeCentralityClosenessInfluenceRange(const QString,
                                                 const bool weights,
                                                 const bool inverseWeights,
                                                 const bool dropIsolates);
 
-    void writeCentralityBetweenness(const QString,
+    bool writeCentralityBetweenness(const QString,
                                     const bool weights,
                                     const bool inverseWeights,
                                     const bool dropIsolates);
 
-    void writeCentralityPower(const QString,
+    bool writeCentralityPower(const QString,
                               const bool weigths,
                               const bool inverseWeights,
                               const bool dropIsolates);
 
-    void writeCentralityStress(const QString,
+    bool writeCentralityStress(const QString,
                                const bool weigths,
                                const bool inverseWeights,
                                const bool dropIsolates);
 
-    void writeCentralityEccentricity(const QString,
+    bool writeCentralityEccentricity(const QString,
                                      const bool weigths,
                                      const bool inverseWeights,
                                      const bool dropIsolates);
 
-    void writeCentralityInformation(const QString,
+    bool writeCentralityInformation(const QString,
                                     const bool weigths,
                                     const bool inverseWeights);
 
-    void writeCentralityEigenvector(const QString,
+    bool writeCentralityEigenvector(const QString,
                                     const bool &weigths = true,
                                     const bool &inverseWeights = false,
                                     const bool &dropIsolates = false);
 
-    void writePrestigeDegree(const QString, const bool weights,
+    bool writePrestigeDegree(const QString, const bool weights,
                              const bool dropIsolates);
 
-    void writePrestigeProximity(const QString, const bool weights,
+    bool writePrestigeProximity(const QString, const bool weights,
                                 const bool inverseWeights,
                                 const bool dropIsolates);
 
-    void writePrestigePageRank(const QString, const bool Isolates = false);
+    bool writePrestigePageRank(const QString, const bool Isolates = false);
 
     bool writeClusteringHierarchical(const QString &fileName,
                                      const QString &varLocation,
@@ -884,9 +884,9 @@ public:
     bool writeCliqueCensus(const QString &fileName,
                            const bool considerWeights);
 
-    void writeClusteringCoefficient(const QString, const bool);
+    bool writeClusteringCoefficient(const QString, const bool);
 
-    void writeTriadCensus(const QString, const bool);
+    bool writeTriadCensus(const QString, const bool);
 
     /* DISTANCES, CENTRALITIES & PROMINENCE MEASURES */
 
@@ -1033,10 +1033,6 @@ public:
                                 const bool &considerWeights = false,
                                 const bool &inverseWeights = false,
                                 const bool &symmetrize = false);
-
-    void writeWalksTotalMatrixPlainText(const QString &fn);
-
-    void writeWalksOfLengthMatrixPlainText(const QString &fn, const int &length);
 
     void writeMatrixWalks(const QString &fn,
                           const int &length = 0,

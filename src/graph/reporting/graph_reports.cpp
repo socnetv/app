@@ -277,7 +277,7 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::writeEccentricity(const QString fileName, const bool considerWeights,
+bool Graph::writeEccentricity(const QString fileName, const bool considerWeights,
                               const bool inverseWeights, const bool dropIsolates)
 {
 
@@ -291,7 +291,7 @@ void Graph::writeEccentricity(const QString fileName, const bool considerWeights
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
@@ -304,7 +304,8 @@ void Graph::writeEccentricity(const QString fileName, const bool considerWeights
     {
         file.close();
         progressFinish();
-        return;
+        progressStatus(tr("Computation canceled."));
+        return false;
     }
     int progressCounter = 0;
     int rowCount = 0;
@@ -460,6 +461,8 @@ void Graph::writeEccentricity(const QString fileName, const bool considerWeights
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -468,7 +471,7 @@ void Graph::writeEccentricity(const QString fileName, const bool considerWeights
  * @param considerWeights
  * @param inverseWeights
  */
-void Graph::writeCentralityInformation(const QString fileName,
+bool Graph::writeCentralityInformation(const QString fileName,
                                        const bool considerWeights,
                                        const bool inverseWeights)
 {
@@ -483,7 +486,7 @@ void Graph::writeCentralityInformation(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
 
     QTextStream outText(&file);
@@ -493,7 +496,8 @@ void Graph::writeCentralityInformation(const QString fileName,
     {
         file.close();
         progressFinish();
-        return;
+        progressStatus(tr("Computation canceled."));
+        return false;
     }
     QString distImageFileName;
 
@@ -725,6 +729,8 @@ void Graph::writeCentralityInformation(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -734,7 +740,7 @@ void Graph::writeCentralityInformation(const QString fileName,
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::writeCentralityEigenvector(const QString fileName,
+bool Graph::writeCentralityEigenvector(const QString fileName,
                                        const bool &considerWeights,
                                        const bool &inverseWeights,
                                        const bool &dropIsolates)
@@ -750,7 +756,7 @@ void Graph::writeCentralityEigenvector(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
@@ -759,7 +765,8 @@ void Graph::writeCentralityEigenvector(const QString fileName,
     {
         file.close();
         progressFinish();
-        return;
+        progressStatus(tr("Computation canceled."));
+        return false;
     }
     QString distImageFileName;
 
@@ -977,6 +984,8 @@ void Graph::writeCentralityEigenvector(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -985,7 +994,7 @@ void Graph::writeCentralityEigenvector(const QString fileName,
  * @param considerWeights
  * @param dropIsolates
  */
-void Graph::writeCentralityDegree(const QString fileName,
+bool Graph::writeCentralityDegree(const QString fileName,
                                   const bool considerWeights,
                                   const bool dropIsolates)
 {
@@ -1002,7 +1011,7 @@ void Graph::writeCentralityDegree(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false; 
     }
     QTextStream outText(&file);
 
@@ -1011,7 +1020,8 @@ void Graph::writeCentralityDegree(const QString fileName,
     {
         file.close();
         progressFinish();
-        return;
+        progressStatus(tr("Computation canceled."));
+        return false;
     }
     QString distImageFileName;
 
@@ -1265,6 +1275,8 @@ void Graph::writeCentralityDegree(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -1274,7 +1286,7 @@ void Graph::writeCentralityDegree(const QString fileName,
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::writeCentralityCloseness(const QString fileName,
+bool Graph::writeCentralityCloseness(const QString fileName,
                                      const bool considerWeights,
                                      const bool inverseWeights,
                                      const bool dropIsolates)
@@ -1294,7 +1306,7 @@ void Graph::writeCentralityCloseness(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
@@ -1303,7 +1315,8 @@ void Graph::writeCentralityCloseness(const QString fileName,
     {
         file.close();
         progressFinish();
-        return;
+        progressStatus(tr("Computation canceled."));
+        return false;
     }
     QString distImageFileName;
 
@@ -1556,6 +1569,8 @@ void Graph::writeCentralityCloseness(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -1565,7 +1580,7 @@ void Graph::writeCentralityCloseness(const QString fileName,
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
+bool Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
                                                    const bool considerWeights,
                                                    const bool inverseWeights,
                                                    const bool dropIsolates)
@@ -1581,7 +1596,7 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
@@ -1590,7 +1605,8 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
     {
         file.close();
         progressFinish();
-        return;
+        progressStatus(tr("Computation canceled."));
+        return false;
     }
     QString distImageFileName;
 
@@ -1788,6 +1804,8 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -1797,7 +1815,7 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::writeCentralityBetweenness(const QString fileName,
+bool Graph::writeCentralityBetweenness(const QString fileName,
                                        const bool considerWeights,
                                        const bool inverseWeights,
                                        const bool dropIsolates)
@@ -1813,7 +1831,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
@@ -1822,7 +1840,8 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     {
         file.close();
         progressFinish();
-        return;
+        progressStatus(tr("Computation canceled."));
+        return false;
     }
     QString distImageFileName;
 
@@ -2069,6 +2088,8 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -2078,7 +2099,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::writeCentralityStress(const QString fileName,
+bool Graph::writeCentralityStress(const QString fileName,
                                   const bool considerWeights,
                                   const bool inverseWeights,
                                   const bool dropIsolates)
@@ -2094,7 +2115,7 @@ void Graph::writeCentralityStress(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
@@ -2103,7 +2124,8 @@ void Graph::writeCentralityStress(const QString fileName,
     {
         file.close();
         progressFinish();
-        return;
+        progressStatus(tr("Computation canceled."));
+        return false;
     }
     QString distImageFileName;
 
@@ -2311,6 +2333,8 @@ void Graph::writeCentralityStress(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -2320,7 +2344,7 @@ void Graph::writeCentralityStress(const QString fileName,
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::writeCentralityEccentricity(const QString fileName,
+bool Graph::writeCentralityEccentricity(const QString fileName,
                                         const bool considerWeights,
                                         const bool inverseWeights,
                                         const bool dropIsolates)
@@ -2336,7 +2360,7 @@ void Graph::writeCentralityEccentricity(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
@@ -2345,7 +2369,8 @@ void Graph::writeCentralityEccentricity(const QString fileName,
     {
         file.close();
         progressFinish();
-        return;
+        progressStatus(tr("Computation canceled."));
+        return false;
     }
     QString distImageFileName;
 
@@ -2535,6 +2560,8 @@ void Graph::writeCentralityEccentricity(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -2544,7 +2571,7 @@ void Graph::writeCentralityEccentricity(const QString fileName,
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::writeCentralityPower(const QString fileName,
+bool Graph::writeCentralityPower(const QString fileName,
                                  const bool considerWeights,
                                  const bool inverseWeights,
                                  const bool dropIsolates)
@@ -2560,7 +2587,7 @@ void Graph::writeCentralityPower(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
@@ -2569,7 +2596,8 @@ void Graph::writeCentralityPower(const QString fileName,
     {
         file.close();
         progressFinish();
-        return;
+        progressStatus(tr("Computation canceled."));
+        return false;
     }
     QString distImageFileName;
 
@@ -2811,6 +2839,8 @@ void Graph::writeCentralityPower(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -2819,7 +2849,7 @@ void Graph::writeCentralityPower(const QString fileName,
  * @param considerWeights
  * @param dropIsolates
  */
-void Graph::writePrestigeDegree(const QString fileName,
+bool Graph::writePrestigeDegree(const QString fileName,
                                 const bool considerWeights,
                                 const bool dropIsolates)
 {
@@ -2834,7 +2864,7 @@ void Graph::writePrestigeDegree(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
@@ -2843,7 +2873,8 @@ void Graph::writePrestigeDegree(const QString fileName,
     {
         file.close();
         progressFinish();
-        return;
+        progressStatus(tr("Computation canceled."));
+        return false;
     }
     QString distImageFileName;
 
@@ -3097,6 +3128,8 @@ void Graph::writePrestigeDegree(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -3107,7 +3140,7 @@ void Graph::writePrestigeDegree(const QString fileName,
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::writePrestigeProximity(const QString fileName,
+bool Graph::writePrestigeProximity(const QString fileName,
                                    const bool considerWeights,
                                    const bool inverseWeights,
                                    const bool dropIsolates)
@@ -3123,7 +3156,7 @@ void Graph::writePrestigeProximity(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
@@ -3132,7 +3165,8 @@ void Graph::writePrestigeProximity(const QString fileName,
     {
         file.close();
         progressFinish();
-        return;
+        progressStatus(tr("Computation canceled."));
+        return false;
     }
     QString distImageFileName;
 
@@ -3326,6 +3360,8 @@ void Graph::writePrestigeProximity(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -3333,7 +3369,7 @@ void Graph::writePrestigeProximity(const QString fileName,
  * @param fileName
  * @param dropIsolates
  */
-void Graph::writePrestigePageRank(const QString fileName,
+bool Graph::writePrestigePageRank(const QString fileName,
                                   const bool dropIsolates)
 {
 
@@ -3347,7 +3383,7 @@ void Graph::writePrestigePageRank(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
@@ -3356,7 +3392,8 @@ void Graph::writePrestigePageRank(const QString fileName,
     {
         file.close();
         progressFinish();
-        return;
+        progressStatus(tr("Computation canceled."));
+        return false;
     }
     QString distImageFileName;
 
@@ -3567,79 +3604,11 @@ void Graph::writePrestigePageRank(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
-/**
- * @brief Graph::writeWalksTotalMatrixPlainText
- * Writes the total number of walks matrix
- * @param fn
- * @param netName
- * @param length
- */
-void Graph::writeWalksTotalMatrixPlainText(const QString &fn)
-{
 
-    qDebug() << "I will write (plain-text) total walks to file:" << fn;
-
-    QFile file(fn);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-        qDebug() << "Could not open file for writing. Abort.";
-        progressStatus(tr("Error. Could not write to ") + fn);
-        return;
-    }
-
-    QTextStream outText(&file);
-
-    outText << "-Social Network Visualizer " << VERSION << "\n";
-    outText << tr("Network name: ") << getName() << "\n"
-            << "\n";
-    outText << "Total number of walks of any length less than or equal to " << vertices() - 1
-            << " between each pair of nodes \n\n";
-    outText << "Warning: Walk counts consider unordered pairs of nodes\n\n";
-
-    int N = vertices();
-
-    graphWalksMatrixCreate(N, 0, true);
-
-    outText << XSM;
-
-    file.close();
-}
-
-/**
- * @brief Graph::writeWalksOfLengthMatrixPlainText
- * @param fn
- * @param length
- */
-void Graph::writeWalksOfLengthMatrixPlainText(const QString &fn, const int &length)
-{
-
-    qDebug() << "I will write (plain-text) walks of length:" << length
-             << "to file:" << fn;
-
-    QFile file(fn);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-        qDebug() << "Could not open file for writing. Abort.";
-        progressStatus(tr("Error. Could not write to ") + fn);
-        return;
-    }
-    progressStatus(tr("Writing Walks matrix to file:") + fn);
-
-    QTextStream outText(&file);
-
-    outText << "-Social Network Visualizer " << VERSION << "- \n";
-    outText << "Network name: " << getName() << " \n";
-    outText << "Number of walks of length " << length << " between each pair of nodes \n\n";
-
-    int N = vertices();
-    graphWalksMatrixCreate(N, length, true);
-
-    outText << XM;
-
-    file.close();
-}
 
 /**
  * @brief Writes the walks of given length matrix to a file in HTML.
@@ -3676,6 +3645,7 @@ void Graph::writeMatrixWalks(const QString &fn,
     if (progressCanceled())
     {
         file.close();
+        progressStatus(tr("Computation canceled."));
         return;
     }
     QTextStream outText(&file);
@@ -3796,12 +3766,11 @@ void Graph::writeReachabilityMatrixPlainText(const QString &fn, const bool &drop
 }
 
 /**
- * @brief Graph::writeClusteringCoefficient
- * Writes the clustering coefficients to a file
+ * @brief Writes the clustering coefficients to a file
  * @param fileName
  * @param considerWeights
  */
-void Graph::writeClusteringCoefficient(const QString fileName,
+bool Graph::writeClusteringCoefficient(const QString fileName,
                                        const bool considerWeights)
 {
 
@@ -3814,7 +3783,7 @@ void Graph::writeClusteringCoefficient(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
@@ -3828,7 +3797,8 @@ void Graph::writeClusteringCoefficient(const QString fileName,
     if (progressCanceled())
     {
         file.close();
-        return;
+        progressStatus(tr("Computation canceled."));
+        return false;
     }
     QString pMsg = tr("Writing Clustering Coefficients to file. \nPlease wait...");
     progressStatus(pMsg);
@@ -3910,7 +3880,8 @@ void Graph::writeClusteringCoefficient(const QString fileName,
         {
             file.close();
             progressFinish();
-            return;
+            progressStatus(tr("Computation canceled."));
+            return false;
         }
 
         rowCount++;
@@ -4001,10 +3972,12 @@ void Graph::writeClusteringCoefficient(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 // Writes the triad census to a file
-void Graph::writeTriadCensus(const QString fileName,
+bool Graph::writeTriadCensus(const QString fileName,
                              const bool considerWeights)
 {
 
@@ -4019,7 +3992,7 @@ void Graph::writeTriadCensus(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
 
     QTextStream outText(&file);
@@ -4032,12 +4005,13 @@ void Graph::writeTriadCensus(const QString fileName,
         {
             qDebug() << "Error in graphTriadCensus(). Exiting...";
             file.close();
-            return;
+            return false;
         }
         if (progressCanceled())
         {
             file.close();
-            return;
+            progressStatus(tr("Computation canceled."));
+            return false;
         }
     }
 
@@ -4144,6 +4118,8 @@ void Graph::writeTriadCensus(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -4202,6 +4178,7 @@ bool Graph::writeCliqueCensus(const QString &fileName,
     {
         file.close();
         progressFinish();
+        progressStatus(tr("Computation canceled."));
         return false;
     }
     pMsg = tr("Writing Clique Census to file. Please wait..");
@@ -4527,6 +4504,7 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
         if (progressCanceled())
         {
             file.close();
+            progressStatus(tr("Computation canceled."));
             return false;
         }
         STR_EQUIV = AM;
@@ -4536,6 +4514,7 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
         if (progressCanceled())
         {
             file.close();
+            progressStatus(tr("Computation canceled."));
             return false;
         }
         STR_EQUIV = DM;
@@ -4627,6 +4606,7 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
     {
         file.close();
         progressFinish();
+        progressStatus(tr("Computation canceled."));
         return false;
     }
     writeMatrixHTMLTable(outText, STR_EQUIV, true, false, false, dropIsolates);
@@ -4642,6 +4622,7 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
     {
         file.close();
         progressFinish();
+        progressStatus(tr("Computation canceled."));
         return false;
     }
     writeClusteringHierarchicalResultsToStream(outText, N, dendrogram);
@@ -5716,6 +5697,7 @@ bool Graph::writeMatrix(const QString &fn,
         if (progressCanceled())
         {
             file.close();
+            progressStatus(tr("Computation canceled."));
             return false;
         }
         progressStatus(tr("Adjacency recomputed. Writing Adjacency Matrix..."));
@@ -5726,6 +5708,7 @@ bool Graph::writeMatrix(const QString &fn,
         if (progressCanceled())
         {
             file.close();
+            progressStatus(tr("Computation canceled."));
             return false;
         }
         progressStatus(tr("Adjacency recomputed. Writing Laplacian Matrix..."));
@@ -5736,6 +5719,7 @@ bool Graph::writeMatrix(const QString &fn,
         if (progressCanceled())
         {
             file.close();
+            progressStatus(tr("Computation canceled."));
             return false;
         }
         progressStatus(tr("Adjacency recomputed. Writing Degree Matrix..."));
@@ -5745,6 +5729,7 @@ bool Graph::writeMatrix(const QString &fn,
         if (progressCanceled())
         {
             file.close();
+            progressStatus(tr("Computation canceled."));
             return false;
         }
         progressStatus(tr("Distances recomputed. Writing Distances Matrix..."));
@@ -5754,6 +5739,7 @@ bool Graph::writeMatrix(const QString &fn,
         if (progressCanceled())
         {
             file.close();
+            progressStatus(tr("Computation canceled."));
             return false;
         }
         progressStatus(tr("Distances recomputed. Writing Shortest Paths Matrix..."));
@@ -5764,6 +5750,7 @@ bool Graph::writeMatrix(const QString &fn,
         if (progressCanceled())
         {
             file.close();
+            progressStatus(tr("Computation canceled."));
             return false;
         }
         progressStatus(tr("Inverse Adjacency Matrix computed. Writing Matrix..."));
@@ -5773,6 +5760,7 @@ bool Graph::writeMatrix(const QString &fn,
         if (progressCanceled())
         {
             file.close();
+            progressStatus(tr("Computation canceled."));
             return false;
         }
         progressStatus(tr("Writing Reachability Matrix..."));
@@ -5784,6 +5772,7 @@ bool Graph::writeMatrix(const QString &fn,
         if (progressCanceled())
         {
             file.close();
+            progressStatus(tr("Computation canceled."));
             return false;
         }
         progressStatus(tr("Adjacency recomputed. Writing Adjacency Matrix..."));
@@ -5794,6 +5783,7 @@ bool Graph::writeMatrix(const QString &fn,
         if (progressCanceled())
         {
             file.close();
+            progressStatus(tr("Computation canceled."));
             return false;
         }
         progressStatus(tr("Adjacency recomputed. Writing Adjacency Matrix..."));
@@ -5807,6 +5797,7 @@ bool Graph::writeMatrix(const QString &fn,
         if (progressCanceled())
         {
             file.close();
+            progressStatus(tr("Computation canceled."));
             return false;
         }
         progressStatus(tr("Tie profile distances recomputed. Writing matrix..."));
