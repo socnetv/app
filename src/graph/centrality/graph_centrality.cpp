@@ -226,7 +226,6 @@ void Graph::centralityEigenvector(const bool &considerWeights,
                                   const bool &inverseWeights,
                                   const bool &dropIsolates)
 {
-
     if (calculatedEVC)
     {
         qDebug() << "Graph not changed - EVC already computed. Return.";
@@ -235,7 +234,7 @@ void Graph::centralityEigenvector(const bool &considerWeights,
 
     qDebug() << "(Re)Computing Eigenvector centrality scores...";
 
-    progressStatus((tr("Calculating EVC scores...")));
+    progressStatus(tr("Calculating EVC scores..."));
 
     classesEVC = 0;
     discreteEVCs.clear();
@@ -244,12 +243,27 @@ void Graph::centralityEigenvector(const bool &considerWeights,
     minEVC = RAND_MAX;
     varianceEVC = 0;
     meanEVC = 0;
+    maxNodeEVC = 0;
+    minNodeEVC = 0;
+
     VList::const_iterator it;
 
-    bool symmetrize = false;
-    bool useDegrees = false;
+    const bool symmetrize = false;
+    const bool useDegrees = false;
     int i = 0;
-    int N = vertices(dropIsolates);
+    const int N = vertices(dropIsolates);
+
+    if (N == 0)
+    {
+        for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+        {
+            (*it)->setEVC(0);
+            (*it)->setSEVC(0);
+        }
+        calculatedEVC = true;
+        progressFinish();
+        return;
+    }
 
     qreal *EVC = new (nothrow) qreal[N];
     Q_CHECK_PTR(EVC);
@@ -263,37 +277,31 @@ void Graph::centralityEigenvector(const bool &considerWeights,
         progressFinish();
         return;
     }
+
     QString pMsg = tr("Computing Eigenvector Centrality scores. \nPlease wait...");
     progressStatus(pMsg);
     progressCreate(N, pMsg);
 
     if (useDegrees)
     {
-
         qDebug() << "Using outDegree for initial EVC vector";
 
         progressStatus(tr("Computing outDegrees. Please wait..."));
 
         for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
         {
-
-            if ((*it)->isIsolated() && dropIsolates)   // skip isolates
-            {
+            if ((*it)->isIsolated() && dropIsolates)
                 continue;
-            }
 
             EVC[i] = (*it)->degreeOut();
-
             i++;
         }
     }
     else
     {
         qDebug() << "Using unit initial EVC vector";
-        for (int i = 0; i < N; i++)
-        {
-            EVC[i] = 1;
-        }
+        for (int k = 0; k < N; k++)
+            EVC[k] = 1;
     }
 
     progressUpdate(N / 3);
@@ -303,9 +311,11 @@ void Graph::centralityEigenvector(const bool &considerWeights,
         progressFinish();
         return;
     }
+
     AM.powerIteration(EVC, sumEVC, maxEVC, maxNodeEVC,
                       minEVC, minNodeEVC,
                       0.0000001, 500);
+
     progressUpdate(2 * N / 3);
     if (progressCanceled())
     {
@@ -317,42 +327,35 @@ void Graph::centralityEigenvector(const bool &considerWeights,
     progressStatus(tr("Leading eigenvector computed. "
                       "Analysing centralities. Please wait..."));
 
+    // Recompute sum defensively from final vector
+    sumEVC = 0;
+    for (int k = 0; k < N; ++k)
+        sumEVC += EVC[k];
+
+    meanEVC = sumEVC / static_cast<qreal>(N);
+
     i = 0;
-
-    meanEVC = sumEVC / (qreal)N;
-
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-
-        if ((*it)->isIsolated() && dropIsolates)   // skip isolates
+        if ((*it)->isIsolated() && dropIsolates)
         {
+            (*it)->setEVC(0);
+            (*it)->setSEVC(0);
             continue;
         }
 
         (*it)->setEVC(EVC[i]);
-        if (maxEVC != 0)
-        {
-            SEVC = EVC[i] / maxEVC;
-        }
-        else
-        {
-            SEVC = 0;
-        }
 
+        SEVC = (maxEVC != 0) ? (EVC[i] / maxEVC) : 0;
         (*it)->setSEVC(SEVC);
 
         resolveClasses(SEVC, discreteEVCs, classesEVC);
-
         varianceEVC += (EVC[i] - meanEVC) * (EVC[i] - meanEVC);
 
         i++;
     }
 
-    varianceEVC = varianceEVC / (qreal)N;
-
-    // group eigenvector centralization measure is
-    // S(cmax - c(vi)) divided by the maximum value possible,
-    // where c(vi) is the eigenvector centrality of vertex vi.
+    varianceEVC /= static_cast<qreal>(N);
 
     calculatedEVC = true;
 
