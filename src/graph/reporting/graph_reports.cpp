@@ -375,7 +375,12 @@ void Graph::writeEccentricity(const QString fileName, const bool considerWeights
         graphDistancesGeodesic(true, considerWeights,
                                inverseWeights, dropIsolates);
     }
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        return;
+    }
     int progressCounter = 0;
     int rowCount = 0;
     int N = vertices();
@@ -559,7 +564,12 @@ void Graph::writeCentralityInformation(const QString fileName,
     QTextStream outText(&file);
 
     centralityInformation(considerWeights, inverseWeights);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        return;
+    }
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -820,7 +830,12 @@ void Graph::writeCentralityEigenvector(const QString fileName,
     QTextStream outText(&file);
 
     centralityEigenvector(considerWeights, inverseWeights, dropIsolates);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        return;
+    }
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -1067,7 +1082,12 @@ void Graph::writeCentralityDegree(const QString fileName,
     QTextStream outText(&file);
 
     centralityDegree(considerWeights, dropIsolates);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        return;
+    }
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -1354,12 +1374,16 @@ void Graph::writeCentralityCloseness(const QString fileName,
     QTextStream outText(&file);
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        return;
+    }
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
     {
-
         distImageFileName = QFileInfo(fileName).canonicalPath() +
                             QDir::separator() + QFileInfo(fileName).completeBaseName() + ".png";
     }
@@ -1637,7 +1661,12 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
     QTextStream outText(&file);
 
     centralityClosenessIR(considerWeights, inverseWeights, dropIsolates);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        return;
+    }
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -1864,7 +1893,12 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     QTextStream outText(&file);
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        return;
+    }
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -2140,7 +2174,12 @@ void Graph::writeCentralityStress(const QString fileName,
     QTextStream outText(&file);
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        return;
+    }
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -2377,7 +2416,12 @@ void Graph::writeCentralityEccentricity(const QString fileName,
     QTextStream outText(&file);
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        return;
+    }
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -2596,12 +2640,16 @@ void Graph::writeCentralityPower(const QString fileName,
     QTextStream outText(&file);
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        return;
+    }
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
     {
-
         distImageFileName = QFileInfo(fileName).canonicalPath() +
                             QDir::separator() + QFileInfo(fileName).completeBaseName() + ".png";
     }
@@ -2866,7 +2914,12 @@ void Graph::writePrestigeDegree(const QString fileName,
     QTextStream outText(&file);
 
     prestigeDegree(considerWeights, dropIsolates);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        return;
+    }
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -3150,7 +3203,12 @@ void Graph::writePrestigeProximity(const QString fileName,
     QTextStream outText(&file);
 
     prestigeProximity(considerWeights, inverseWeights, dropIsolates);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        return;
+    }
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -3369,7 +3427,12 @@ void Graph::writePrestigePageRank(const QString fileName,
     QTextStream outText(&file);
 
     prestigePageRank(dropIsolates);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        return;
+    }
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
