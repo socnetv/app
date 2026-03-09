@@ -787,18 +787,6 @@ public:
     void writeMatrixAdjacencyPlot(const QString fileName,
                                   const bool &simpler = false);
 
-    void writeMatrixLaplacianPlainText(const QString &filename);
-    void writeMatrixDegreeText(const QString &filename);
-
-    void writeMatrixDistancesPlainText(const QString &fn,
-                                       const bool &considerWeights,
-                                       const bool &inverseWeights,
-                                       const bool &dropIsolates);
-
-    void writeMatrixShortestPathsPlainText(const QString &fn,
-                                           const bool &considerWeights,
-                                           const bool &inverseWeights);
-
     void writeMatrixDissimilarities(const QString fileName,
                                     const QString &metricStr,
                                     const QString &varLocation,
