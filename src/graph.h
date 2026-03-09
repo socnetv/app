@@ -805,12 +805,6 @@ public:
                                     const bool &diagonal,
                                     const bool &considerWeights);
 
-    void writeMatrixSimilarityMatchingPlain(const QString fileName,
-                                            const int &measure = METRIC_SIMPLE_MATCHING,
-                                            const QString &matrix = "adjacency",
-                                            const QString &varLocation = "rows",
-                                            const bool &diagonal = false,
-                                            const bool &considerWeights = true);
 
     void writeMatrixSimilarityMatching(const QString fileName,
                                        const QString &measure = "Simple",
