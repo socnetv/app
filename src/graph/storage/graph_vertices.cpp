@@ -457,6 +457,11 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
         {
 
             progressUpdate(++progressCounter);
+            if (progressCanceled())
+            {
+                progressFinish();
+                return;
+            }            
 
             for (int j = i + 1; j < vList.size(); ++j)
             {
@@ -493,6 +498,11 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
         {
 
             progressUpdate(++progressCounter);
+            if (progressCanceled())
+            {
+                progressFinish();
+                return;
+            }
 
             if (!(weight = edgeExists(center, vList.value(j))))
             {
@@ -527,7 +537,11 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
         {
 
             progressUpdate(++progressCounter);
-
+            if (progressCanceled())
+            {
+                progressFinish();
+                return;
+            }
             j = (i == vList.size() - 1) ? 0 : i + 1;
             if (!(weight = edgeExists(vList.value(i), vList.value(j))))
             {
@@ -560,7 +574,11 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
         {
 
             progressUpdate(++progressCounter);
-
+            if (progressCanceled())
+            {
+                progressFinish();
+                return;
+            }
             if (i == vList.size() - 1)
                 break;
             j = i + 1;
