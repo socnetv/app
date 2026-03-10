@@ -30,13 +30,13 @@ BuildRequires:  cmake
 
 %if 0%{?suse_version}
 BuildRequires:  qt6-tools-linguist
-BuildRequires:  qt6-core5compat-devel
+BuildRequires:  qt6-qt5compat-devel
 %endif
 
 %if 0%{?fedora} || 0%{?rhel_version} || 0%{?centos_version}
 BuildRequires:	qt6-linguist
-BuildRequires:  qt6-qt5compat-devel
 BuildRequires:  glibc-all-langpacks
+BuildRequires:  pkgconfig(Qt6Core5Compat)
 %endif
 
 
@@ -54,7 +54,6 @@ BuildRequires:  pkgconfig(Qt6OpenGLWidgets)
 BuildRequires:  pkgconfig(Qt6Svg)
 # qt6-qtcharts-devel
 BuildRequires:  pkgconfig(Qt6Charts)
-BuildRequires:  pkgconfig(Qt6Core5Compat)
 
 
 %description
