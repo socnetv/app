@@ -169,7 +169,16 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations)
 
     } // end iterations
 
+    // Emit all final node positions in one bulk pass now that the
+    // iteration loop is complete — avoids N×maxIterations signal emissions.
+    for (v1 = m_graph.cbegin(); v1 != m_graph.cend(); ++v1)
+    {
+        emit setNodePos((*v1)->number(), (*v1)->x(), (*v1)->y());
+    }
+
     progressFinish();
+
+    setModStatus(ModStatus::VertexPositions);
 }
 
 /**
@@ -307,7 +316,16 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations)
         }        
     }
 
+        // Emit all final node positions in one bulk pass now that the
+    // iteration loop is complete — avoids N×maxIterations signal emissions.
+    for (v1 = m_graph.cbegin(); v1 != m_graph.cend(); ++v1)
+    {
+        emit setNodePos((*v1)->number(), (*v1)->x(), (*v1)->y());
+    }
+
     progressFinish();
+
+    setModStatus(ModStatus::VertexPositions);  // was missing on normal exit path
 }
 
 /**
@@ -723,7 +741,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
 
         m_graph[m]->setX(xm);
         m_graph[m]->setY(ym);
-        emit setNodePos( pnm,  xm,  ym);
+
 
     } // end while (Delta_max > epsilon) {
 
@@ -937,6 +955,20 @@ qreal Graph::graphDistanceEuclidean(const QPointF &a)
         a.y() * a.y());
 }
 
+/**
+ * @brief Moves all vertices to their new positions as computed by the Eades Spring Embedder model.
+ *
+ * Called once per iteration from layoutForceDirectedSpringEmbedder(). Applies the
+ * accumulated displacement vectors to each vertex position, scaled by the normalization
+ * factor c4, and clamps the result to the visible canvas area.
+ *
+ * Node positions are updated in-memory only (setX/setY). The caller is responsible
+ * for emitting setNodePos signals in a single bulk pass after the iteration loop
+ * completes — this avoids N×maxIterations signal emissions to the graphics scene.
+ *
+ * @param c4 Normalization factor for the final displacement (typically 0.1).
+ *           Dampens the movement to prevent oscillation.
+ */
 void Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4)
 {
     qDebug() << "\n *****  layoutForceDirected_Eades_moveNodes() ";
@@ -976,14 +1008,24 @@ void Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4)
                  << newPos.y() << ")";
         (*v1)->setX(newPos.x());
         (*v1)->setY(newPos.y());
-        emit setNodePos((*v1)->number(), newPos.x(), newPos.y());
-        // vertexPosSet();
+
     }
 }
 
 /**
- * @brief Graph::layoutForceDirected_FR_moveNodes
- * @param temperature
+ * @brief Moves all vertices to their new positions as computed by the Fruchterman-Reingold model.
+ *
+ * Called once per iteration from layoutForceDirectedFruchtermanReingold(). Limits each
+ * vertex's displacement to the current temperature value, which decreases with each
+ * iteration to act as a simulated annealing cooling schedule, then clamps the result
+ * to the visible canvas area.
+ *
+ * Node positions are updated in-memory only (setX/setY). The caller is responsible
+ * for emitting setNodePos signals in a single bulk pass after the iteration loop
+ * completes — this avoids N×maxIterations signal emissions to the graphics scene.
+ *
+ * @param temperature Current annealing temperature, controlling the maximum displacement
+ *                    per iteration. Computed by layoutForceDirected_FR_temperature().
  */
 void Graph::layoutForceDirected_FR_moveNodes(const qreal &temperature)
 {
@@ -1015,6 +1057,6 @@ void Graph::layoutForceDirected_FR_moveNodes(const qreal &temperature)
                  << newPos.y() << ")";
         (*v1)->setX(newPos.x());
         (*v1)->setY(newPos.y());
-        emit setNodePos((*v1)->number(), newPos.x(), newPos.y());
+
     }
 }
