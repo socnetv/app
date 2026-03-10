@@ -40,6 +40,7 @@
  *  - A linear cooling schedule decreases c4 from c4_init to c4_min over maxIterations,
  *    damping displacement progressively so the layout settles rather than oscillating.
  *  - Early exit when max displacement in an iteration falls below epsilon (convergence).
+ * 
  */
 void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations)
 {
