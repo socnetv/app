@@ -4450,14 +4450,24 @@ bool Graph::writeCliqueCensus(const QString &fileName,
 }
 
 /**
- * @brief Writes Hierarchical Clustering Analysis to a given file
- * @param fileName
- * @param matrix
- * @param similarityMeasure
- * @param method
- * @param considerWeights
- * @param inverseWeights
- * @param dropIsolates
+ * @brief Performs Hierarchical Cluster Analysis (HCA) and writes the results to an HTML report file.
+ *
+ * The analysis proceeds in three phases:
+ * 1. Build the structural equivalence matrix (adjacency or geodesic distances).
+ * 2. Run the hierarchical clustering algorithm on the equivalence matrix.
+ * 3. Write the HTML report including the equivalence matrix and dendrogram.
+ *
+ * @param fileName        Path to the output HTML report file.
+ * @param varLocation     Whether variables are in rows or columns ("rows"/"cols").
+ * @param matrix          Input matrix type: "adjacency" or "distances".
+ * @param metric          Distance/dissimilarity metric (e.g., "euclidean", "manhattan").
+ * @param method          Clustering linkage method (e.g., "single", "complete", "average").
+ * @param diagonal        If true, include the diagonal of the matrix in computations.
+ * @param dendrogram      If true, include dendrogram output in the report.
+ * @param considerWeights If true, edge weights are used in distance computations.
+ * @param inverseWeights  If true, edge weights are inverted before use.
+ * @param dropIsolates    If true, isolate nodes are excluded from the analysis.
+ * @return true on success, false if the computation was cancelled or an error occurred.
  */
 bool Graph::writeClusteringHierarchical(const QString &fileName,
                                         const QString &varLocation,
@@ -4510,8 +4520,7 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
         STR_EQUIV = AM;
         break;
     case MATRIX_DISTANCES:
-        graphMatrixDistanceGeodesicCreate(considerWeights, inverseWeights, dropIsolates);
-        if (progressCanceled())
+        if (!graphMatrixDistanceGeodesicCreate(considerWeights, inverseWeights, dropIsolates))
         {
             file.close();
             progressStatus(tr("Computation canceled."));
@@ -4520,7 +4529,9 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
         STR_EQUIV = DM;
         break;
     default:
-        break;
+        file.close();
+        progressStatus(tr("Error: unsupported matrix type."));
+        return false;
     }
 
     if (!graphClusteringHierarchical(STR_EQUIV,
@@ -4534,8 +4545,8 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
                                      dropIsolates))
     {
         qDebug() << "Graph::writeClusteringHierarchical() - HCA failed. Returning...";
+        file.close();
         progressStatus("Error completing HCA analysis");
-        progressFinish();
         return false;
     }
 
@@ -5691,9 +5702,25 @@ void Graph::writeDataSetToFile(const QString dir, const QString fileName)
     }
 }
 
+
 /**
-    Writes the specified matrix of social network to file fn
-*/
+ * @brief Computes and writes the specified matrix of the social network to an HTML report file.
+ *
+ * Supported matrix types: adjacency, laplacian, degree, geodesic distances,
+ * shortest paths (geodesics), inverse adjacency, reachability, transpose,
+ * cocitation, and tie-profile distance matrices (Euclidean, Hamming, Jaccard,
+ * Manhattan, Chebyshev).
+ *
+ * @param fn              Path to the output HTML report file.
+ * @param matrix          Matrix type constant (e.g., MATRIX_ADJACENCY, MATRIX_DISTANCES).
+ * @param considerWeights If true, edge weights are used in distance computations.
+ * @param inverseWeights  If true, edge weights are inverted before use.
+ * @param dropIsolates    If true, isolate nodes are excluded from the analysis.
+ * @param varLocation     Whether variables are in rows or columns ("rows"/"cols"),
+ *                        used for tie-profile distance matrices.
+ * @param simpler         Reserved for future use.
+ * @return true on success, false if the computation was cancelled or an error occurred.
+ */
 bool Graph::writeMatrix(const QString &fn,
                         const int &matrix,
                         const bool &considerWeights,
@@ -5756,8 +5783,7 @@ bool Graph::writeMatrix(const QString &fn,
         progressStatus(tr("Adjacency recomputed. Writing Degree Matrix..."));
         break;
     case MATRIX_DISTANCES:
-        graphMatrixDistanceGeodesicCreate(considerWeights, inverseWeights, dropIsolates);
-        if (progressCanceled())
+        if (!graphMatrixDistanceGeodesicCreate(considerWeights, inverseWeights, dropIsolates))
         {
             file.close();
             progressStatus(tr("Computation canceled."));
@@ -5823,6 +5849,7 @@ bool Graph::writeMatrix(const QString &fn,
     case MATRIX_DISTANCES_JACCARD:
     case MATRIX_DISTANCES_MANHATTAN:
     case MATRIX_DISTANCES_EUCLIDEAN:
+    case MATRIX_DISTANCES_CHEBYSHEV:
         progressStatus(tr("Need to recompute tie profile distances. Please wait..."));
         createMatrixAdjacency();
         if (progressCanceled())
@@ -5835,7 +5862,9 @@ bool Graph::writeMatrix(const QString &fn,
         break;
 
     default:
-        break;
+        file.close();
+        progressStatus(tr("Error: unsupported matrix type."));
+        return false;
     }
 
     QTextStream outText(&file);
@@ -6090,6 +6119,7 @@ bool Graph::writeMatrix(const QString &fn,
     outText << htmlEnd;
 
     file.close();
+    progressFinish();
     return true;
 }
 

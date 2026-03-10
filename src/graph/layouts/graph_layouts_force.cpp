@@ -322,7 +322,6 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations)
  * distances and real ones for all pairs of particles
  * Initially, the particles/actors are placed on the vertices of a regular n-polygon
  */
-
 void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
                                            const bool considerWeights,
                                            const bool inverseWeights,
@@ -378,31 +377,42 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
 
     qDebug() << "Compute dij, where (i,j) in E";
 
-    graphMatrixDistanceGeodesicCreate(considerWeights, inverseWeights, dropIsolates);
+    if (!graphMatrixDistanceGeodesicCreate(considerWeights, inverseWeights, dropIsolates))
+    {
+        return;
+    }
 
     if (progressCanceled())
     {
         return;
     }
+
     // processEvents() ensures the geodesic progress dialog updates are
     // flushed before we start the KK iteration phase.
     QApplication::processEvents();
 
-    // Compute original spring length
-    // lij for 1 <= i!=j <= n using the formula:
-    // lij = L x dij
-    // where L the desirable length of a single edge in the display pane
-    // Since we are on a restricted display (a canvas), L depends on the
-    // diameter D of the graph and the length L of a side of the display square:
-    // L = L0 / D
-
-    qDebug() << "Compute lij = L x dij. lij will be symmmetric.";
-
-    D = graphDiameter(considerWeights, inverseWeights);
+    // Use the cached diameter — graphMatrixDistanceGeodesicCreate() already
+    // ran the DistanceEngine so re-calling graphDiameter() would redundantly
+    // re-trigger it if the cache were ever invalidated.
+    D = graphDiameterCached();
     L0 = canvasMinDimension() - 100;
+
+    // Guard against degenerate graphs (no edges, all isolates, single node)
+    // where D == 0, which would cause division by zero.
+    if (D <= 0)
+    {
+        qDebug() << "KK layout: graph diameter is 0 (degenerate graph). Aborting.";
+        progressFinish();
+        setModStatus(ModStatus::VertexPositions);
+        return;
+    }
+
+    // L = L0 / D: the desirable length of a single edge in the display pane
+    // scales with the graph diameter so the layout fills the canvas.
     L = L0 / D;
 
-    qDebug() << "L=" << L0 << "/" << D << "=" << L;
+    qDebug() << "Compute lij = L x dij. lij will be symmetric."
+             << "L0=" << L0 << "D=" << D << "L=" << L;
 
     l.zeroMatrix(DM.rows(), DM.cols());
     l = DM;

@@ -124,28 +124,40 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
 }
 
 /**
- * @brief Creates the matrix DM of geodesic distances between vertices
- * @param considerWeights
- * @param inverseWeights
- * @param dropIsolates
+ * @brief Creates the matrix DM of geodesic distances between vertices.
+ *
+ * Phase 1: calls graphDistancesGeodesic() which runs the DistanceEngine.
+ * The engine owns its own progress dialog — it creates it, updates it,
+ * and destroys it before returning. The dialog stack is empty on return.
+ *
+ * Phase 2: fills the DM matrix from the cached per-vertex distances.
+ * This is an O(N²) memory-write pass — fast enough to need no progress
+ * dialog of its own. No progressUpdate or progressFinish is called here;
+ * the caller owns the dialog lifecycle for any subsequent phase.
+ *
+ * @param considerWeights If true, edge weights are used in distance computations.
+ * @param inverseWeights  If true, edge weights are inverted before use.
+ * @param dropIsolates    If true, isolate nodes are excluded from the analysis.
+ * @return true on success, false if the computation was cancelled.
  */
-void Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
+bool Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
                                               const bool &inverseWeights,
                                               const bool &dropIsolates)
 {
     qDebug() << "Graph::graphMatrixDistanceGeodesicCreate()";
 
+    // Phase 1: compute all geodesic distances via DistanceEngine.
+    // The engine owns its own progress dialog for this phase.
     graphDistancesGeodesic(false, considerWeights, inverseWeights, dropIsolates);
 
     if (progressCanceled())
     {
         calculatedDistances = false;
-        return;
+        return false;
     }
 
     VList::const_iterator it, jt;
     int N = vertices(dropIsolates, false, true);
-    int progressCounter = 0;
     int source = 0, target = 0;
     int i = 0, j = 0;
 
@@ -155,76 +167,49 @@ void Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
 
     DM.resize(N, N);
 
-    QString pMsg = tr("Creating geodesic distances matrix. \nPlease wait ");
-    progressStatus(pMsg);
-    progressCreate(N, pMsg);
-
-    qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() - Writing distances matrix...";
+    // Phase 2: fill DM from cached per-vertex distances.
+    // No progressUpdate here — the DistanceEngine dialog is already destroyed
+    // by this point. The matrix-fill is O(N²) memory writes and needs no
+    // progress reporting of its own.
+    progressStatus(tr("Creating geodesic distances matrix. \nPlease wait "));
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
-        progressUpdate(++progressCounter);
-        if (progressCanceled())
-        {
-            calculatedDistances = false;
-            progressFinish();
-            return;
-        }
-
         source = (*it)->number();
 
-        if ((*it)->isIsolated() && dropIsolates)
-        {
-            qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() - "
-                     << source << "isolated. SKIP";
-
+        if ((*it)->isIsolated() && dropIsolates) {
             continue;
         }
-
-        if (!(*it)->isEnabled())
-        {
-            qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() - "
-                     << source << "disabled. SKIP";
+        if (!(*it)->isEnabled()) {
             continue;
         }
-
-        qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() - source"
-                 << source << "i" << i;
 
         for (jt = m_graph.cbegin(); jt != m_graph.cend(); ++jt)
         {
-
             target = (*jt)->number();
 
-            if ((*jt)->isIsolated() && dropIsolates)
-            {
-                qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() - "
-                         << target << "isolated. SKIP";
+            if ((*jt)->isIsolated() && dropIsolates) {
+                continue;
+            }
+            if (!(*jt)->isEnabled()) {
                 continue;
             }
 
-            if (!(*jt)->isEnabled())
-            {
-                qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() - "
-                         << target << "disabled. SKIP";
-                continue;
-            }
+            // qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() - "
+            //          << "target" << target << "j" << j;
+            // qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() - setting DM ("
+            //          << i << "," << j << ") =" << (*it)->distance(target);
 
-            qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() - "
-                     << "target" << target << "j" << j;
-
-            qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() -  setting DM ("
-                     << i << "," << j << ") =" << (*it)->distance(target);
             DM.setItem(i, j, (*it)->distance(target));
-
             j++;
         }
         j = 0;
         i++;
     }
 
-    progressFinish();
+    // No progressFinish() here — the caller owns the outer dialog lifecycle.
+    return true;
 }
 
 /**

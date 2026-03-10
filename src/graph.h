@@ -971,9 +971,9 @@ public:
     void addToDistanceSum(qreal delta);
     void incGeodesicsCount();
     void setAverageDistanceCached(qreal v);
-
-    void graphMatrixDistanceGeodesicCreate(const bool &considerWeights = false,
-                                           const bool &inverseWeights = true,
+    
+    bool graphMatrixDistanceGeodesicCreate(const bool &considerWeights = false,
+                                           const bool &inverseWeights = false,
                                            const bool &dropIsolates = false);
 
     void graphMatrixShortestPathsCreate(const bool &considerWeights = false,
