@@ -1158,7 +1158,7 @@ public:
     void randomNetSmallWorldCreate(const int &N, const int &degree,
                                    const double &beta, const QString &mode);
 
-    void randomNetRingLatticeCreate(const int &N, const int &degree,
+    bool randomNetRingLatticeCreate(const int &N, const int &degree,
                                     const bool updateProgress = false);
 
     void randomNetRegularCreate(const int &N,

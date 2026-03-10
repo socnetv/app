@@ -8719,8 +8719,9 @@ void MainWindow::slotNetworkRandomRingLattice(){
         return;
     }
 
-
-    activeGraph->randomNetRingLatticeCreate(newNodes, degree, true );
+    if (! activeGraph->randomNetRingLatticeCreate(newNodes, degree, true ) ) {
+        return;
+    }
 
     setWindowTitle("Untitled ring-lattice network");
 

@@ -623,7 +623,7 @@ void Graph::randomNetRegularCreate(const int &N,
  * @param radius
  * @param updateProgress
  */
-void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
+bool Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
                                        const bool updateProgress)
 {
     qDebug() << "Creating ring lattice random network...";
@@ -645,28 +645,28 @@ void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
     QString pMsg = tr("Creating ring-lattice network. \n"
                       "Please wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
+
+    if (updateProgress)
+        progressCreate(N, pMsg);
 
     for (int i = 0; i < N; i++)
     {
         x = x0 + radius * cos(i * rad);
         y = y0 + radius * sin(i * rad);
-        //        qDebug() << "creating new vertex " << i+1;
         vertexCreate(i + 1, initVertexSize, initVertexColor,
                      initVertexNumberColor, initVertexNumberSize,
                      QString::number(i + 1), initVertexLabelColor, initVertexLabelSize,
                      QPoint(x, y), initVertexShape, initVertexIconPath, false);
     }
+
     int target = 0;
     for (int i = 0; i < N; i++)
     {
-        //        qDebug("Creating links for node %i = ", i+1);
         for (int j = 0; j < degree / 2; j++)
         {
             target = i + j + 1;
             if (target > (N - 1))
                 target = target - N;
-            //            qDebug("Creating Link between %i  and %i", i+1, target+1);
             edgeCreate(i + 1, target + 1, 1, initEdgeColor,
                        EdgeType::Undirected, false, false,
                        QString(), false);
@@ -674,16 +674,23 @@ void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
         if (updateProgress)
         {
             progressUpdate(++progressCounter);
+            if (progressCanceled())
+            {
+                progressFinish();
+                return false;
+            }
         }
     }
 
+    // Always rename the relation, regardless of updateProgress (fix: was inside updateProgress guard)
+    relationCurrentRename(tr("ring-lattice"), true);
+
     if (updateProgress)
-    {
-        relationCurrentRename(tr("ring-lattice"), true);
         progressFinish();
-    }
 
     setModStatus(ModStatus::VertexEdgeCount, updateProgress);
+
+    return true;
 }
 
 /**
