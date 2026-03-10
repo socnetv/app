@@ -1158,12 +1158,9 @@ public:
     bool randomNetRegularCreate(const int &N, const int &degree,
                                 const QString &mode, const bool &diag);
 
-    void randomNetLatticeCreate(const int &N,
-                                const int &length,
-                                const int &dimension,
-                                const int &neighborhoodLength,
-                                const QString &mode,
-                                const bool &circular = false);
+    bool randomNetLatticeCreate(const int &N, const int &length,
+                                const int &dimension, const int &nei,
+                                const QString &mode, const bool &circular);
 
     int factorial(int);
 

@@ -8760,25 +8760,24 @@ void MainWindow::slotNetworkRandomLattice(const int &newNodes,
                                           const int &dimension,
                                           const int &nei,
                                           const QString &mode,
-                                          const bool &circular){
-
+                                          const bool &circular)
+{
     qDebug() << "Request to create a new lattice random network...";
-
     initApp();
-
-    activeGraph->randomNetLatticeCreate (newNodes, length, dimension, nei, mode, circular);
-
+    if (!activeGraph->randomNetLatticeCreate(newNodes, length, dimension, nei, mode, circular))
+    {
+        statusMessage(tr("Lattice network creation cancelled or did not finish."));
+        return;
+    }
     setWindowTitle("Untitled lattice network");
-
-    slotHelpMessageToUser (
+    slotHelpMessageToUser(
                 USER_MSG_INFO,
                 tr("Lattice random network created."),
                 tr("Random network created. \n"
                    "A new lattice random network with %1 nodes has been created.").arg(newNodes),
                 tr("A lattice is a network whose drawing forms a regular tiling. "
-                    "Lattices are also known as meshes or grids.")
+                   "Lattices are also known as meshes or grids.")
                 );
-
 }
 
 

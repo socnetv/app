@@ -693,25 +693,41 @@ bool Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
     return true;
 }
 
+
 /**
- * @brief Creates a lattice network
- * @param N
- * @param length
- * @param dimension
- * @param neighborhood
- * @param mode
- * @param diag
+ * @brief Creates a lattice (mesh/grid) random network.
+ *
+ * Nodes are arranged in a length×length grid. Each node connects to its
+ * neighbours within a given neighbourhood distance in both horizontal and
+ * vertical directions. The resulting network forms a regular tiling pattern.
+ *
+ * Note: the `dimension` and `circular` parameters are reserved for future
+ * extension to higher-dimensional and toroidal lattices.
+ *
+ * @param N                 Total number of nodes (should equal length^2).
+ * @param length            Number of nodes along each dimension of the grid.
+ * @param dimension         Reserved for future use (higher-dimensional lattices).
+ * @param neighborhoodLength  Distance within which nodes are connected.
+ * @param mode              "graph" for undirected, anything else for directed.
+ * @param circular          Reserved for future use (toroidal/circular lattice).
+ * @return true on success, false if the user cancelled.
  */
-void Graph::randomNetLatticeCreate(const int &N,
+bool Graph::randomNetLatticeCreate(const int &N,
                                    const int &length,
                                    const int &dimension,
                                    const int &neighborhoodLength,
                                    const QString &mode,
                                    const bool &circular)
 {
-    qDebug() << "Creating lattice network...";
+    qDebug() << "Creating lattice network..."
+             << "N" << N
+             << "length" << length
+             << "neighborhoodLength" << neighborhoodLength
+             << "mode" << mode;
+
     Q_UNUSED(circular);
     Q_UNUSED(dimension);
+
     if (mode == "graph")
     {
         setDirected(false);
@@ -734,42 +750,29 @@ void Graph::randomNetLatticeCreate(const int &N,
     QString oppEdge;
 
     randomizeThings();
-
     vpos.reserve(N);
 
     QString pMsg = tr("Creating lattice network. \n"
                       "Please wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
-    // create vertices
-
-    qDebug() << "creating vertices";
-
+    // Create nodes arranged in a length x length grid
     nCount = 0;
     canvasPadding = 20;
     nodeHPadding = (canvasWidth) / (double)(length + 2);
     nodeVPadding = (canvasHeight) / (double)(length + 2);
 
-    qDebug() << "canvasPadding" << canvasPadding
-             << "nodeHPadding" << nodeHPadding;
+    qDebug() << "Creating" << N << "vertices in a" << length << "x" << length
+             << "grid - nodeHPadding" << nodeHPadding
+             << "nodeVPadding" << nodeVPadding;
 
     for (int i = 0; i < length; i++)
     {
-
-        // compute vertical pos
         y = canvasPadding + nodeVPadding * (i + 1);
-
         for (int j = 0; j < length; j++)
         {
             nCount++;
-            // compute horizontal pos
             x = canvasPadding + nodeHPadding * (j + 1);
-
-            //            qDebug() << "creating new vertex at"
-            //                     << x << "," << y;
-
-            // create vertex
             vertexCreate(
                 nCount, initVertexSize,
                 initVertexColor,
@@ -785,91 +788,68 @@ void Graph::randomNetLatticeCreate(const int &N,
         }
     }
 
-    //
-    // compute and then draw edges
-    //
-
-    qDebug() << "Computing edges";
+    // Compute the edge list: for each node, find all neighbours
+    // within neighborhoodLength steps in both axes
+    qDebug() << "Computing edges...";
 
     if (mode == "graph")
     {
-
-        // undirected graph
-
         for (int i = 1; i <= N; i++)
         {
-
-            //            qDebug()<< "Creating undirected edges for node  "<< i;
-
             for (int j = 1; j < neighborhoodLength + 1; j++)
             {
-
                 for (int p = 0; p < 2; p++)
                 {
-
                     for (int q = 0; q < 2; q++)
                     {
-
                         target = i + pow((-1), p) * j * pow(length, q);
 
+                        // Skip out-of-bounds: wrap-around on right edge
                         if (i % length == 0 && target == i + 1)
-                        {
-                            //                            qDebug()<< i << "<->"<< target << "OOB RIGHT";
                             continue;
-                        }
+                        // Skip out-of-bounds: wrap-around on left edge
                         if (i % length == 1 && target == i - 1)
-                        {
-                            //                            qDebug()<< i << "<->"<< target << "OOB LEFT";
                             continue;
-                        }
+                        // Skip out-of-bounds: below grid
                         if (target > N)
                         {
-                            //                            qDebug()<< i << "<->"<< target << "OOB DOWN";
                             target = target % N;
                             continue;
                         }
-
+                        // Skip out-of-bounds: above grid
                         if (target < 1)
                         {
-                            //                            qDebug()<< i << "<->"<< target << "OOB UP";
                             target = N - target;
                             continue;
                         }
-                        //                        qDebug()<< i << "<->"<< target << "OK";
 
+                        // Add edge only once (undirected: skip if reverse already recorded)
                         edge = QString::number(i) + "<->" + QString::number(target);
                         oppEdge = QString::number(target) + "<->" + QString::number(i);
-
                         if (!latticeEdges.contains(edge) && !latticeEdges.contains(oppEdge))
                         {
-                            latticeEdges.append(QString::number(i) + "<->" + QString::number(target));
+                            latticeEdges.append(edge);
                         }
                     }
                 }
             }
         }
     }
-
     else
     {
-
-        // directed graph
+        // Directed lattice: reserved for future implementation
     }
 
-    //
-    // draw edges
-    //
+    // Draw edges; progress tracks actual edge count for accuracy
+    qDebug() << "Drawing" << latticeEdges.size() << "edges...";
 
-    qDebug() << "drawing edges";
     progressFraction = (latticeEdges.size() > 0) ? 1.0 / (qreal)latticeEdges.size() : 1.0;
+
+    progressCreate(latticeEdges.size(), pMsg);
+
     for (int i = 0; i < latticeEdges.size(); ++i)
     {
-
         m_edge = latticeEdges.at(i).split("<->");
-
-        //        qDebug() << "Drawing undirected Edge no" << i + 1 << ":"
-        //                 << m_edge[0].toInt(0) << "<->" << m_edge[1].toInt(0);
-
         edgeCreate(m_edge[0].toInt(0), m_edge[1].toInt(0), 1,
                    initEdgeColor,
                    (isUndirected()) ? EdgeType::Undirected : EdgeType::Directed,
@@ -881,6 +861,11 @@ void Graph::randomNetLatticeCreate(const int &N,
         if (fmod(progressCounter, 1.0) == 0)
         {
             progressUpdate((int)progressCounter);
+            if (progressCanceled())
+            {
+                progressFinish();
+                return false;
+            }
         }
     }
 
@@ -889,7 +874,10 @@ void Graph::randomNetLatticeCreate(const int &N,
     progressFinish();
 
     setModStatus(ModStatus::VertexEdgeCount);
+
+    return true;
 }
+
 
 /**
     Calculates and returns x! factorial...
