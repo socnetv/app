@@ -1155,7 +1155,7 @@ public:
                                   const qreal &alpha,
                                   const QString &mode);
 
-    void randomNetSmallWorldCreate(const int &N, const int &degree,
+    bool randomNetSmallWorldCreate(const int &N, const int &degree,
                                    const double &beta, const QString &mode);
 
     bool randomNetRingLatticeCreate(const int &N, const int &degree,

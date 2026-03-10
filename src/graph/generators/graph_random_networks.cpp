@@ -358,33 +358,47 @@ void Graph::randomNetScaleFreeCreate(const int &N,
 }
 
 /**
- * @brief Creates a small world random network
- * @param vert
- * @param degree
- * @param beta
+ * @brief Creates a Watts–Strogatz small-world random network.
+ *
+ * The algorithm works in two phases:
+ * 1. Build a ring lattice of N nodes each connected to `degree` neighbours.
+ * 2. Rewire each edge with probability `beta` to a randomly chosen node,
+ *    producing the characteristic short path lengths and high clustering.
+ *
+ * @param N      Number of nodes.
+ * @param degree Number of neighbours each node is initially connected to (must be even).
+ * @param beta   Rewiring probability in [0,1]. 0 = pure lattice, 1 = random graph.
+ * @param mode   "graph" for undirected, anything else for directed.
+ * @return true on success, false if the user cancelled.
  */
-void Graph::randomNetSmallWorldCreate(const int &N, const int &degree,
+bool Graph::randomNetSmallWorldCreate(const int &N, const int &degree,
                                       const double &beta, const QString &mode)
 {
-    qDebug() << "Creating small-world randome network. Vertices: " << N
-             << "degree: " << degree
-             << "beta: " << beta
-             << "mode: " << mode
-             << "First creating a ring lattice";
+    qDebug() << "Creating small-world random network. Vertices:" << N
+             << "degree:" << degree
+             << "beta:" << beta
+             << "mode:" << mode;
 
     if (mode == "graph")
     {
         setDirected(false);
     }
 
-    randomNetRingLatticeCreate(N, degree, true);
+    // Phase 1: build the underlying ring lattice.
+    // We pass updateProgress=false so the lattice builder does not create its
+    // own progress dialog — we own the single dialog for the whole operation.
+    if (!randomNetRingLatticeCreate(N, degree, false))
+    {
+        return false;
+    }
 
+    // Phase 2: rewire edges with probability beta (Watts-Strogatz).
     QString pMsg = tr("Creating Small-World Random Network. \n"
                       "Please wait ...");
     progressStatus(pMsg);
     progressCreate(N, pMsg);
 
-    qDebug("******** Graph: REWIRING starts...");
+    qDebug() << "Rewiring starts...";
 
     int candidate = 0;
     int progressCounter = 1;
@@ -393,51 +407,46 @@ void Graph::randomNetSmallWorldCreate(const int &N, const int &degree,
     {
         for (int j = i + 1; j < N; j++)
         {
-            //            qDebug()<<">>>>> REWIRING: Check if  "<< i << " is linked to " << j;
             if (edgeExists(i, j))
             {
-                //                qDebug()<<">>>>> REWIRING: They're linked. Do a random REWIRING "
-                //                          "Experiment between "<< i<< " and " << j
-                //                       << " Beta parameter is " << beta;
+                // Rewire this edge with probability beta
                 if (rand() % 100 < (beta * 100))
                 {
-                    //                    qDebug(">>>>> REWIRING: We'l break this edge!");
                     edgeRemove(i, j, true);
-                    //                    qDebug()<<">>>>> REWIRING: OK. Let's create a new edge!";
+
+                    // Find a valid rewiring target: not a self-loop,
+                    // not already a neighbour of i
                     for (;;)
-                    {                                 // do until we create a new edge
-                        candidate = rand() % (N + 1); // pick another vertex.
+                    {
+                        candidate = rand() % (N + 1);
                         if (candidate == 0 || candidate == i)
                             continue;
-                        //                        qDebug()<<">>>>> REWIRING: Candidate: "<< candidate;
-                        // Only if differs from i and hasnot edge with it
-                        //                        qDebug("<---->Random New Edge Experiment between %i and %i:", i, candidate);
                         if (edgeExists(i, candidate) != 0)
                             continue;
-                        if (rand() % 100 > 0.5)
-                        {
-                            //                            qDebug() << "Creating new edge";
-                            edgeCreate(i, candidate, 1, initEdgeColor,
-                                       EdgeType::Undirected, false, false,
-                                       QString(), false);
-                            break;
-                        }
+                        edgeCreate(i, candidate, 1, initEdgeColor,
+                                   EdgeType::Undirected, false, false,
+                                   QString(), false);
+                        break;
                     }
                 }
-                else
-                    qDebug("Will not break link!");
             }
         }
+
         progressUpdate(++progressCounter);
+        if (progressCanceled())
+        {
+            progressFinish();
+            return false;
+        }
     }
 
     relationCurrentRename(tr("small-world"), true);
 
     progressFinish();
 
-    layoutVertexSizeByIndegree();
-
     setModStatus(ModStatus::VertexEdgeCount);
+
+    return true;
 }
 
 /**

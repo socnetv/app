@@ -8584,13 +8584,13 @@ void MainWindow::slotNetworkRandomSmallWorld(const int &newNodes,
                                              const bool &diag)
 {
     Q_UNUSED(diag);
-
     qDebug() << "Request to create a new small-world random network...";
-
-    activeGraph->randomNetSmallWorldCreate(newNodes, degree, beta, mode);
-
+    if (!activeGraph->randomNetSmallWorldCreate(newNodes, degree, beta, mode))
+    {
+        statusMessage(tr("Small-world network creation cancelled or did not finish."));
+        return;
+    }
     setWindowTitle("Untitled small-world network");
-
     slotHelpMessageToUser (
                 USER_MSG_INFO,
                 tr("Small-World random network created."),
@@ -8598,7 +8598,6 @@ void MainWindow::slotNetworkRandomSmallWorld(const int &newNodes,
                    "A new random network with %1 nodes has been created according to the Watts & Strogatz model.").arg(newNodes),
                 tr("A small-world network has short average path lengths and high clustering coefficient.")
                 );
-
 }
 
 
