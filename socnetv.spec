@@ -34,7 +34,7 @@ BuildRequires:  qt6-qt5compat-devel
 %endif
 
 %if 0%{?fedora} || 0%{?rhel_version} || 0%{?centos_version}
-BuildRequires:	qt6-linguist
+BuildRequires:  qt6-qttools-devel
 BuildRequires:  glibc-all-langpacks
 BuildRequires:  pkgconfig(Qt6Core5Compat)
 %endif
