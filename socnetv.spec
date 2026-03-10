@@ -13,26 +13,6 @@
 # See also http://www.rpm.org
 #
 
-### Define our defaults, they will be overriden in the distro detection below.
-%define qmake /usr/bin/qmake-qt6
-%define lrelease /usr/bin/lrelease-qt6
-
-### Detect host Linux distribution and update defines.
-%if 0%{?fedora} || 0%{?rhel_version} || 0%{?centos_version}
-%define qmake /usr/bin/qmake6
-%define lrelease /usr/bin/lrelease-qt6
-%endif
-
-%if 0%{?suse_version}
-%define qmake /usr/bin/qmake6
-%define lrelease /usr/bin/lrelease6
-%endif
-
-%if 0%{?mageia}
-%define qmake /usr/bin/qmake-qt6
-%define lrelease /usr/bin/lrelease-qt6
-%endif
-
 Name:		socnetv
 Version:	3.4
 Release:	1%{?dist}
@@ -41,9 +21,12 @@ License:	GPL-3.0-or-later
 Group:		Productivity/Scientific/Math 
 URL:		https://socnetv.org/
 Source0:	app-%{version}.tar.gz
-BuildRequires:  make
 BuildRequires:	gcc-c++
 BuildRequires:	gzip
+BuildRequires:  cmake
+
+# Remove ninja-build from BuildRequires
+# cmake will use make by default
 
 %if 0%{?suse_version}
 BuildRequires:  qt6-tools-linguist
@@ -95,18 +78,15 @@ find .
 
 
 %build
-# Run lrelease to generate Qt message files from Qt Linguist translation files
-%{lrelease} socnetv.pro
-
-### Run qmake
-%{qmake} CONFIG+=release
-
-### Run make to build the application
-%__make %{?_smp_mflags}
-# NOTE: Also available as the make_build macro, but that is not available for openSUSE 13.2, Leap 42.2 and SLE 12 SP2 (rpm < 4.12).
+cmake -S . -B build \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DBUILD_CLI=OFF
+cmake --build build -- %{?_smp_mflags}
 
 %install
-%{make_install} INSTALL_ROOT=%{buildroot}
+DESTDIR=%{buildroot} cmake --install build
+
 
 ### Debugging: Show where we are and show files in build root.
 pwd
@@ -155,7 +135,7 @@ pwd
 ### CHANGELOG SECTION
 ###
 %changelog
-* Fri Mar 27 2026 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 3.4-1
+* Tue Mar 10 2026 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 3.4-1
 - Upstream v3.4
 * Thu Feb 26 2026 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 3.3.1-1
 - Upstream v3.3.1
