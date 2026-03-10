@@ -29,7 +29,7 @@ BuildRequires:  cmake
 # cmake will use make by default
 
 %if 0%{?suse_version}
-BuildRequires:  qt6-tools-linguist
+BuildRequires:  qt6-linguist-devel
 BuildRequires:  qt6-qt5compat-devel
 %endif
 
