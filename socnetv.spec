@@ -115,12 +115,12 @@ pwd
 pwd
 pwd
 
-
+### No license, no doc lines — 
+### the `%{_datadir}/doc/%{name}/` covers everything CMake installs there.
 %files
 %defattr(-,root,root)
 %dir /usr/share/socnetv
-%license COPYING
-%doc AUTHORS CHANGELOG.md README.md
+%{_datadir}/doc/%{name}/
 %{_bindir}/%{name}
 %{_datadir}/%{name}/%{name}_*.qm
 %{_datadir}/applications/%{name}.desktop
