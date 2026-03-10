@@ -1079,8 +1079,6 @@ public:
 
     void layoutRandom();
 
-    void layoutRandomInMemory();
-
     void layoutRadialRandom(const bool &guides = true);
 
     void layoutCircular(const double &x0,
@@ -1122,7 +1120,7 @@ public:
                                     const qreal &dist,
                                     const qreal &optimalDistance);
 
-    void layoutForceDirected_Eades_moveNodes(const qreal &c4);
+    qreal layoutForceDirected_Eades_moveNodes(const qreal &c4);
 
     void layoutForceDirected_FR_moveNodes(const qreal &temperature);
 
@@ -1243,6 +1241,8 @@ private:
                         H_StrToInt &discreteClasses,
                         int &classes, int name);
 
+    void layoutRandomInMemory();
+    
     VList m_graph; // List of pointers to the vertices. Each vertex stores all info: links, colors, etc
 
     Parser *file_parser; // Our file loader threaded class.

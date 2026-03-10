@@ -11399,21 +11399,34 @@ void MainWindow::slotLayoutRadialRandom(){
 
 
 /**
- * @brief Calls Graph::layoutForceDirectedSpringEmbedder to embed the Eades
- * spring-gravitational model to the network.
- * Called from menu or toolbox checkbox
+ * @brief Embed the Eades spring-gravitational model to the network.
+ * Called from menu or toolbox checkbox.
  */
-void MainWindow::slotLayoutSpringEmbedder(){
-    qDebug()<< "MW:slotLayoutSpringEmbedder";
-    if ( !activeNodes() )  {
+void MainWindow::slotLayoutSpringEmbedder()
+{
+    qDebug() << "MW::slotLayoutSpringEmbedder";
+    if (!activeNodes()) {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-
-    activeGraph->layoutForceDirectedSpringEmbedder(500);
-    statusMessage( tr("Spring-Gravitational (Eades) model embedded.") );
+    // Eades (1984) designed this algorithm for small graphs (N < 30).
+    // For larger graphs the system frequently gets stuck in local minima
+    // and the O(N²×I) complexity makes it slow. Warn the user.
+    if (activeNodes() > 30) {
+        QMessageBox::warning(
+            this,
+            tr("Eades Spring Embedder — Size Warning"),
+            tr("The Eades Spring Embedder was designed for graphs with fewer than 30 nodes.\n\n"
+               "This network has %1 nodes. The layout may get stuck in local minima "
+               "and the result may not be aesthetically pleasing.\n\n"
+               "Consider using the Fruchterman-Reingold or Kamada-Kawai models instead, "
+               "which handle larger graphs better.")
+               .arg(activeNodes())
+        );
+    }
+    activeGraph->layoutForceDirectedSpringEmbedder(300);
+    statusMessage(tr("Spring-Gravitational (Eades) model embedded."));
 }
-
 
 
 

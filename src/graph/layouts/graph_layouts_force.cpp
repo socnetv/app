@@ -20,43 +20,99 @@
 
 /**
  * @brief Embeds a Force Directed Placement layout according to the initial Spring Embedder model proposed by Eades.
- * @param maxIterations
+ * @param maxIterations  Maximum number of iterations to run. The loop may exit
+ *   earlier if the layout converges (max displacement falls below epsilon).
+ *
  *  The Spring Embedder model (Eades, 1984), part of the Force Directed Placement (FDP) family,
-    assigns forces to all vertices and edges, as if nodes were electrically charged particles (Coulomb's law)
-    and all edges were springs (i.e. Hooke's law).
-
-    These forces are applied to the nodes iteratively, pulling them closer together or pushing them further apart,
-    until the system comes to an equilibrium state (node positions do not change anymore).
-
-    Note that, following Eades, we do not need to have a faithful simulation;
-    we can -and we do- apply unrealistic forces in an unrealistic manner.
-    For instance, instead of the forces described by Hooke's law,
-    we will assume weaker logarithmic forces between far apart vertices...
+ *  assigns forces to all vertices and edges: non-adjacent node pairs repel each other via an
+ *  inverse-square law (analogous to Coulomb's law), while adjacent pairs attract via a
+ *  logarithmic spring — deliberately not Hooke's law, which Eades argued causes clumping
+ *  at large distances.
+ *  These forces are applied to the nodes iteratively, pulling them closer together or pushing
+ *  them further apart, until the system comes to an equilibrium state (node positions do not
+ *  change anymore).
+ *
+ *  Implementation notes:
+ *  - Adjacency is pre-cached into a QSet<QPair<int,int>> before the iteration loop to avoid
+ *    O(log N) edgeExists() calls inside the O(N²) inner loop.
+ *  - Repulsion and attraction math is inlined directly (no QString model dispatch per call).
+ *  - Vertex numbers are cached to local ints before the inner loop.
+ *  - A linear cooling schedule decreases c4 from c4_init to c4_min over maxIterations,
+ *    damping displacement progressively so the layout settles rather than oscillating.
+ *  - Early exit when max displacement in an iteration falls below epsilon (convergence).
  */
 void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations)
 {
+    // --- Step size (c4 in Eades' notation) ---
+    // Eades used a fixed c4=0.1. We keep a mild linear cooling schedule
+    // (0.1 → 0.01) to help the layout settle without oscillating, while
+    // staying close to the original spirit. The displacement cap in
+    // layoutForceDirected_Eades_moveNodes() prevents early-iteration explosions.
+    const qreal c4_init = 0.10;
+    const qreal c4_min  = 0.01;
+
+    // --- Force constants ---
+    // Faithful to Eades (1984): c1=2, c3=1 in his notation.
+    // c_spring (c1): logarithmic spring stiffness for adjacent pairs.
+    // c_rep (c3): inverse-square repulsion strength for all pairs.
+    const qreal c_spring = 2.0;
+    const qreal c_rep    = 1.0;
+
+    // --- Convergence threshold ---
+    // Exit early when the largest single-node displacement in an iteration
+    // falls below epsilon (canvas pixels). Avoids running all maxIterations
+    // when the layout has already settled.
+    // Must be large enough that the layout runs for sufficient iterations
+    // before converging — 0.5 was too tight and caused exit after 1-2 iterations.
+    const qreal epsilon = 2.0;
 
     int iteration = 1;
     int progressCounter = 0;
     qreal dist = 0;
     qreal f_rep = 0, f_att = 0;
     QPointF DV;
-    qreal c4 = 0.1; // normalization factor for final displacement
-
     VList::const_iterator v1;
     VList::const_iterator v2;
 
-    /**
-     * compute max spring length as function of canvas area divided by the
-     * total vertices area
-     */
     qreal V = (qreal)vertices();
-    qreal naturalLength = computeOptimalDistance(V);
-    qDebug() << "\n\n layoutForceDirectedSpringEmbedder() "
-             << " vertices " << V
-             << " naturalLength " << naturalLength;
+    // Natural length (c2 in Eades' notation): the ideal edge length in canvas pixels.
+    // Eades worked in a normalised unit square with c2=1. Translating to pixel
+    // coordinates: c2 = canvasMinDimension / sqrt(V), which gives the pixel-space
+    // equivalent of one "unit" in his formulation. For N=100 on a 799px canvas
+    // this yields ~80px — well within the range where log(d/c2) is meaningfully
+    // attractive for connected pairs (d > c2) and repulsive for too-close pairs.
+    qreal naturalLength = canvasMinDimension() / qSqrt(V);
 
-    /* apply an initial random layout */
+    qDebug() << "\n\n layoutForceDirectedSpringEmbedder()"
+             << "vertices" << V
+             << "canvas" << canvasWidth << canvasHeight
+             << "naturalLength" << naturalLength
+             << "maxIterations" << maxIterations
+             << "c4_init" << c4_init << "c4_min" << c4_min
+             << "c_spring" << c_spring << "c_rep" << c_rep;
+
+    // --- Pre-cache adjacency into a flat QSet for O(1) edge existence lookup.
+    // This avoids N² × maxIterations calls to edgeExists() (which is O(log N))
+    // inside the inner loop. We cache both directions so the undirected case
+    // is handled transparently.
+    QSet<QPair<int,int>> adjCache;
+    adjCache.reserve(edgesEnabled() * 2);
+    for (v1 = m_graph.cbegin(); v1 != m_graph.cend(); ++v1)
+    {
+        if (!(*v1)->isEnabled()) continue;
+        int s = (*v1)->number();
+        for (v2 = m_graph.cbegin(); v2 != m_graph.cend(); ++v2)
+        {
+            if (!(*v2)->isEnabled()) continue;
+            int t = (*v2)->number();
+            if (s == t) continue;
+            if (edgeExists(s, t))
+                adjCache.insert(qMakePair(s, t));
+        }
+    }
+    qDebug() << "layoutForceDirectedSpringEmbedder() - adjCache size" << adjCache.size();
+
+    /* Apply an initial random layout */
     layoutRandomInMemory();
 
     QString pMsg = tr("Embedding Eades Spring-Gravitational model. \n"
@@ -66,117 +122,118 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations)
 
     for (iteration = 1; iteration <= maxIterations; iteration++)
     {
+        // Linear cooling: c4 decreases from c4_init at iteration 1
+        // to c4_min at iteration maxIterations.
+        const qreal c4 = c4_init - (c4_init - c4_min)
+                         * (qreal(iteration - 1) / qreal(maxIterations - 1));
 
-        // setup init disp
+        // Reset displacement vectors for all vertices
         for (v1 = m_graph.cbegin(); v1 != m_graph.cend(); ++v1)
         {
             (*v1)->disp().rx() = 0;
             (*v1)->disp().ry() = 0;
-            qDebug() << " 0000 s " << (*v1)->number() << " zeroing rx/ry";
         }
 
         for (v1 = m_graph.cbegin(); v1 != m_graph.cend(); ++v1)
         {
-            qDebug() << "*********  Calculate forces for source s  "
-                     << (*v1)->number()
-                     << " pos " << (*v1)->x() << ", " << (*v1)->y();
-
             if (!(*v1)->isEnabled())
-            {
-                qDebug() << "  vertex s disabled. Continue";
                 continue;
-            }
+
+            // Cache source vertex number once — avoids repeated iterator
+            // dereferences inside the O(N) inner loop.
+            const int s = (*v1)->number();
+
+            // qDebug() << "********* Calculate forces for source s" << s
+            //          << " pos" << (*v1)->x() << "," << (*v1)->y();
 
             for (v2 = m_graph.cbegin(); v2 != m_graph.cend(); ++v2)
             {
                 if (!(*v2)->isEnabled())
-                {
-                    qDebug() << "   t " << (*v1)->number() << " disabled. Continue";
                     continue;
-                }
-
                 if (v2 == v1)
-                {
-                    qDebug() << "   s==t, continuing";
                     continue;
-                }
+
+                // Cache target vertex number once per inner iteration.
+                const int t = (*v2)->number();
 
                 DV.setX((*v2)->x() - (*v1)->x());
                 DV.setY((*v2)->y() - (*v1)->y());
-
                 dist = graphDistanceEuclidean(DV);
 
-                /**
-                 *  calculate electric (repulsive) forces between
-                 *  all vertices.
-                 */
-                f_rep = layoutForceDirected_F_rep("Eades", dist, naturalLength);
+                // --- Repulsive force (Eades: inverse-square, all pairs) ---
+                // Inlined from layoutForceDirected_F_rep("Eades",...).
+                // No distance cutoff: every pair repels, regardless of distance.
+                // This fixes the clustering bug caused by the old
+                // "f_rep = 0 when dist > 2*optimalDistance" cutoff.
+                if (dist > 0)
+                    f_rep = -(c_rep / (dist * dist));
+                else
+                    f_rep = -naturalLength; // coincident vertices: push apart
+
                 (*v1)->disp().rx() += sign(DV.x()) * f_rep;
                 (*v1)->disp().ry() += sign(DV.y()) * f_rep;
-                qDebug() << "  s = " << (*v1)->number()
-                         << " pushed away from t = " << (*v2)->number()
-                         << " dist " << dist
-                         << " f_rep=" << f_rep
-                         << " sign * f_repx " << sign(DV.x()) * f_rep
-                         << " sign * f_repy " << sign(DV.y()) * f_rep;
 
-                /**
-                 * calculate spring forces between adjacent nodes
-                 * that pull them together (if d > naturalLength)
-                 * or push them apart (if d < naturalLength)
-                 */
-                if (this->edgeExists((*v1)->number(), (*v2)->number()))
+                // qDebug() << "  s=" << s << " pushed away from t=" << t
+                //          << " dist" << dist << " f_rep=" << f_rep;
+
+                // --- Attractive (spring) force (Eades: log spring, adjacent pairs only) ---
+                // Inlined from layoutForceDirected_F_att("Eades",...).
+                // O(1) lookup via pre-cached QSet instead of edgeExists().
+                if (adjCache.contains(qMakePair(s, t)))
                 {
-
-                    f_att = layoutForceDirected_F_att("Eades", dist, naturalLength);
+                    f_att = (dist > 0)
+                                ? c_spring * log10(dist / naturalLength)
+                                : 0.0;
 
                     (*v1)->disp().rx() += sign(DV.x()) * f_att;
                     (*v1)->disp().ry() += sign(DV.y()) * f_att;
                     (*v2)->disp().rx() -= sign(DV.x()) * f_att;
                     (*v2)->disp().ry() -= sign(DV.y()) * f_att;
 
-                    qDebug() << "  s= " << (*v1)->number()
-                             << " attracted by t= " << (*v2)->number()
-                             << " dist " << dist
-                             << " f_att=" << f_att
-                             << " sdx * f_att " << sign(DV.x()) * f_att
-                             << " sdy * f_att " << sign(DV.y()) * f_att
-                             << " disp_s.x=" << (*v1)->disp().rx()
-                             << " disp_s.y=" << (*v1)->disp().ry()
-                             << " disp_t.x=" << (*v2)->disp().rx()
-                             << " disp_t.y=" << (*v2)->disp().ry();
-
-                } // end if edgeExists
-
+                    // qDebug() << "  s=" << s << " attracted by t=" << t
+                    //          << " dist" << dist << " f_att=" << f_att
+                    //          << " disp_s=(" << (*v1)->disp().rx() << "," << (*v1)->disp().ry() << ")"
+                    //          << " disp_t=(" << (*v2)->disp().rx() << "," << (*v2)->disp().ry() << ")";
+                }
             } // end for v2
 
-            qDebug() << "  >>> final s = " << (*v1)->number()
-                     << " disp_s.x=" << (*v1)->disp().rx()
-                     << " disp_s.y=" << (*v1)->disp().ry();
-
+            // qDebug() << "  >>> final s=" << s
+            //          << " disp=(" << (*v1)->disp().rx() << "," << (*v1)->disp().ry() << ")";
         } // end for v1
 
-        layoutForceDirected_Eades_moveNodes(c4);
+        // Apply displacements with current cooling factor and track max displacement
+        // for convergence detection.
+        const qreal maxDisp = layoutForceDirected_Eades_moveNodes(c4);
 
         progressUpdate(++progressCounter);
+
         if (progressCanceled())
         {
             progressFinish();
             setModStatus(ModStatus::VertexPositions);
             return;
-        }        
+        }
+
+        qDebug() << "  iteration" << iteration << " c4=" << c4 << " maxDisp=" << maxDisp;
+
+        // Early exit: layout has converged when no node moved more than epsilon pixels.
+        if (maxDisp < epsilon)
+        {
+            qDebug() << "layoutForceDirectedSpringEmbedder() - converged at iteration"
+                     << iteration << " maxDisp=" << maxDisp;
+            break;
+        }
 
     } // end iterations
 
-    // Emit all final node positions in one bulk pass now that the
-    // iteration loop is complete — avoids N×maxIterations signal emissions.
+    // Emit all final node positions in one bulk pass now that the iteration loop
+    // is complete — avoids N×maxIterations signal emissions to the graphics scene.
     for (v1 = m_graph.cbegin(); v1 != m_graph.cend(); ++v1)
     {
         emit setNodePos((*v1)->number(), (*v1)->x(), (*v1)->y());
     }
 
     progressFinish();
-
     setModStatus(ModStatus::VertexPositions);
 }
 
@@ -802,73 +859,121 @@ qreal Graph::layoutForceDirected_FR_temperature(const int iteration) const
 }
 
 /**
- * @brief Computes Optimal Distance. Used in Spring Embedder and FR algorithms.
- * @return qreal optimalDistance
+ * @brief Computes the optimal inter-vertex distance for force-directed layouts.
+ *
+ * The optimal distance (also called k or naturalLength) represents the radius
+ * of the empty area ideally surrounding each vertex. It is derived from the
+ * available canvas area per vertex, plus the vertex's own diameter.
+ *
+ * Formula:
+ *   vertexArea = ceil( sqrt( canvasArea / V ) )   — side of a square tile per vertex
+ *   optimalDistance = vertexDiameter + vertexArea
+ *
+ * This gives the distance at which repulsive and attractive forces balance for
+ * a uniformly distributed graph. For denser graphs or larger N, vertexArea
+ * shrinks (fewer pixels per node), so the returned value decreases — callers
+ * may apply their own scaling multiplier on top (e.g. FR uses C=0.9).
+ *
+ * @param V  Number of active vertices in the graph.
+ * @return   Optimal inter-vertex spacing in canvas pixels.
  */
 qreal Graph::computeOptimalDistance(const int &V)
 {
+    // Diameter of a vertex in canvas pixels
     qreal vertexWidth = (qreal)2.0 * initVertexSize;
     qreal screenArea = canvasHeight * canvasWidth;
+    // Side length of the square canvas tile allocated to each vertex
     qreal vertexArea = qCeil(qSqrt(screenArea / V));
-    // optimalDistance (or k) is the radius of the empty area around a  vertex -
-    // we add vertexWidth to it
+    // Optimal distance = vertex diameter + per-vertex tile side
     return (vertexWidth + vertexArea);
 }
 
+/**
+ * @brief Computes the attractive (spring) force between two adjacent vertices.
+ *
+ * For the Eades model: logarithmic spring force scaled by c_spring = 2.
+ *   Note: log10(dist / optimalDistance) is negative when dist < optimalDistance,
+ *   meaning the spring pushes nodes apart when they are closer than the natural
+ *   length — this is intentional per Eades (1984), who uses a log spring that
+ *   both attracts far-apart neighbours and repels too-close ones.
+ *
+ * For the FR model: quadratic attraction as per Fruchterman & Reingold (1991).
+ *
+ * @param model      Layout model identifier: "Eades" or "FR".
+ * @param dist       Euclidean distance between the two adjacent vertices (canvas pixels).
+ * @param optimalDistance  The natural/optimal inter-vertex spacing for the current graph.
+ * @return Attractive force magnitude (positive = pull toward each other).
+ */
 qreal Graph::layoutForceDirected_F_att(const QString model, const qreal &dist,
                                        const qreal &optimalDistance)
 {
     qreal f_att;
     if (model == "Eades")
     {
+        // NOTE: This branch is retained for reference only.
+        // The Eades path in layoutForceDirectedSpringEmbedder() inlines
+        // the attraction force directly and does NOT call this function.
         qreal c_spring = 2;
         f_att = c_spring * log10(dist / optimalDistance);
     }
     else
-    { // model->FR
+    { // model == "FR"
         f_att = (dist * dist) / optimalDistance;
     }
-
     return f_att;
 }
 
+/**
+ * @brief Computes the repulsive force between two vertices for force-directed layouts.
+ *
+ * For the Eades model: uses an inverse-square law with constant c_rep.
+ *   - The previous cutoff (f_rep = 0 when dist > 2 * optimalDistance) has been removed.
+ *     That cutoff was the primary cause of node clustering: distant nodes received zero
+ *     repulsion and were never pushed apart. All vertex pairs now repel each other,
+ *     regardless of distance.
+ *   - c_rep = c3 = 1.0 per Eades (1984). The inlined Eades path in
+ *     layoutForceDirectedSpringEmbedder() uses the same value directly.
+ *
+ * For the FR model: uses the grid-variant with a 2*optimalDistance cutoff radius,
+ * as described by Fruchterman & Reingold (1991).
+ *
+ * @param model      Layout model identifier: "Eades" or "FR".
+ * @param dist       Euclidean distance between the two vertices (canvas pixels).
+ * @param optimalDistance  The natural/optimal inter-vertex spacing for the current graph.
+ * @return Repulsive force magnitude (negative, i.e. pushing apart).
+ */
 qreal Graph::layoutForceDirected_F_rep(const QString model, const qreal &dist,
                                        const qreal &optimalDistance)
 {
     qreal f_rep;
     if (model == "Eades")
     {
-        if (dist != 0)
+        if (dist > 0)
         {
+            // c_rep = c3 = 1.0 per Eades (1984).
+            // No distance cutoff: every pair repels regardless of distance,
+            // fixing the clustering bug from the original implementation.
             qreal c_rep = 1.0;
             f_rep = c_rep / (dist * dist);
-            if (dist > (2.0 * optimalDistance))
-            {
-                // neglect vertices outside circular area of radius 2 * optimalDistance
-                f_rep = 0;
-            }
         }
         else
         {
-            f_rep = optimalDistance; // move away
+            f_rep = 0; // coincident vertices handled by inlined Eades path
         }
     }
     else
-    { // model->FR
-        // To speed up our algorithm we use the grid-variant algorithm.
+    { // model == "FR"
+        // Grid-variant: neglect repulsion outside 2*optimalDistance radius
+        // to approximate the Barnes-Hut speedup described by FR (1991).
         if ((2.0 * optimalDistance) < dist)
         {
-            // neglect vertices outside circular area of radius 2*optimalDistance
             f_rep = 0;
         }
         else
         {
-            // repelsive forces are computed only for vertices within a circular area
-            // of radius 2*optimalDistance
             f_rep = (optimalDistance * optimalDistance / dist);
         }
     }
-
     return -f_rep;
 }
 
@@ -954,6 +1059,7 @@ qreal Graph::graphDistanceEuclidean(const QPointF &a)
         a.y() * a.y());
 }
 
+
 /**
  * @brief Moves all vertices to their new positions as computed by the Eades Spring Embedder model.
  *
@@ -961,54 +1067,80 @@ qreal Graph::graphDistanceEuclidean(const QPointF &a)
  * accumulated displacement vectors to each vertex position, scaled by the normalization
  * factor c4, and clamps the result to the visible canvas area.
  *
+ * Displacement clamping: each component (x, y) is capped at
+ * ±(canvasMinDimension * 0.05) before being applied. This prevents the
+ * "iteration-2 explosion" caused by near-coincident node pairs at the start
+ * of the simulation — without the cap, f_rep = c_rep/dist² diverges for
+ * dist→0 and a single node pair can produce a 100px+ spike that locks the
+ * layout into a bad configuration for all remaining iterations.
+ *
  * Node positions are updated in-memory only (setX/setY). The caller is responsible
  * for emitting setNodePos signals in a single bulk pass after the iteration loop
  * completes — this avoids N×maxIterations signal emissions to the graphics scene.
  *
- * @param c4 Normalization factor for the final displacement (typically 0.1).
- *           Dampens the movement to prevent oscillation.
+ * @param c4  Displacement normalization factor for this iteration. Supplied by the
+ *            caller's linear cooling schedule (decreases from c4_init to c4_min over
+ *            maxIterations) to progressively damp movement and allow the layout to settle.
+ * @return    The largest Euclidean displacement applied to any single vertex this
+ *            iteration (canvas pixels). Used by the caller for convergence detection.
  */
-void Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4)
+qreal Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4)
 {
-    qDebug() << "\n *****  layoutForceDirected_Eades_moveNodes() ";
+    qDebug() << "\n ***** layoutForceDirected_Eades_moveNodes() c4=" << c4;
+
+    // Maximum displacement allowed per node per iteration, per component (x or y).
+    // Caps the effect of near-coincident node pairs where f_rep = c_rep/dist²
+    // diverges as dist→0, preventing a single large spike from locking the
+    // layout into a bad configuration in the first few iterations.
+    // Scales with canvas size so it works across different display resolutions.
+    const qreal maxAllowedDisp = canvasMinDimension() * 0.05;
+
     QPointF newPos;
     qreal xvel = 0, yvel = 0;
+    qreal maxDisp = 0;
     VList::const_iterator v1;
 
     for (v1 = m_graph.cbegin(); v1 != m_graph.cend(); ++v1)
     {
-        // calculate new overall velocity vector
+        // Scale displacement by the current cooling factor
         xvel = c4 * (*v1)->disp().rx();
         yvel = c4 * (*v1)->disp().ry();
-        qDebug() << " ##### source vertex  " << (*v1)->number()
-                 << " xvel,yvel = (" << xvel << ", " << yvel << ")";
 
-        // fix Qt error a positive QPoint to the floor
-        //  when we ask for setNodePos to happen.
-        if (xvel < 1 && xvel > 0)
-            xvel = 1;
-        if (yvel < 1 && yvel > 0)
-            yvel = 1;
+        // Clamp each component to ±maxAllowedDisp to prevent explosion
+        // from near-coincident node pairs at simulation start
+        xvel = qBound(-maxAllowedDisp, xvel, maxAllowedDisp);
+        yvel = qBound(-maxAllowedDisp, yvel, maxAllowedDisp);
 
-        // Move source node to new position according to overall velocity
-        newPos = QPointF((qreal)(*v1)->x() + xvel, (qreal)(*v1)->y() + yvel);
+        qDebug() << " ##### vertex" << (*v1)->number()
+                 << " xvel,yvel=(" << xvel << "," << yvel << ")"
+                 << " maxAllowedDisp=" << maxAllowedDisp;
 
-        qDebug() << " source vertex v1 " << (*v1)->number()
-                 << " current pos: (" << (*v1)->x()
-                 << " , " << (*v1)->y()
-                 << " Possible new pos (" << newPos.x()
-                 << " , " << newPos.y();
+        // Fix Qt sub-pixel rounding: a fractional positive displacement < 1
+        // gets floored to 0 by integer QPoint conversion; bump it to 1.
+        if (xvel < 1 && xvel > 0) xvel = 1;
+        if (yvel < 1 && yvel > 0) yvel = 1;
 
-        // check if new pos is out of usable screen and adjust
+        // Track largest displacement for convergence detection in the caller
+        qreal disp = qSqrt(xvel * xvel + yvel * yvel);
+        if (disp > maxDisp)
+            maxDisp = disp;
+
+        newPos = QPointF((*v1)->x() + xvel, (*v1)->y() + yvel);
+
+        qDebug() << " vertex" << (*v1)->number()
+                 << " current pos:(" << (*v1)->x() << "," << (*v1)->y() << ")"
+                 << " possible new pos:(" << newPos.x() << "," << newPos.y() << ")";
+
+        // Clamp to visible canvas area
         newPos.rx() = canvasVisibleX(newPos.x());
         newPos.ry() = canvasVisibleY(newPos.y());
 
-        qDebug() << "  Final new pos (" << newPos.x() << ","
-                 << newPos.y() << ")";
+        qDebug() << "  final new pos:(" << newPos.x() << "," << newPos.y() << ")";
+
         (*v1)->setX(newPos.x());
         (*v1)->setY(newPos.y());
-
     }
+    return maxDisp;
 }
 
 /**
