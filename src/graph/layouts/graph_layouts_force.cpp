@@ -57,8 +57,7 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations)
              << " naturalLength " << naturalLength;
 
     /* apply an initial random layout */
-    // layoutCircular(canvasWidth/2.0, canvasHeight/2.0, naturalLength/2.0 ,false);
-    layoutRandom();
+    layoutRandomInMemory();
 
     QString pMsg = tr("Embedding Eades Spring-Gravitational model. \n"
                       "Please wait ....");

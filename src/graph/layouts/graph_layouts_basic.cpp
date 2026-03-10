@@ -121,6 +121,30 @@ void Graph::layoutRadialRandom(const bool &guides)
     setModStatus(ModStatus::VertexPositions);
 }
 
+
+/**
+ * @brief Repositions all vertices at random coordinates without emitting any signals.
+ *
+ * Used internally by force-directed layout algorithms (Eades, FR) to set up
+ * initial particle positions before the iteration loop begins. Since the iteration
+ * loop will immediately overwrite these positions and emits a bulk setNodePos pass
+ * at the end, there is no need to signal the graphics scene here.
+ *
+ * For the standalone random layout action (with progress dialog and scene update),
+ * use layoutRandom() instead.
+ */
+void Graph::layoutRandomInMemory()
+{
+    qDebug() << "Graph::layoutRandomInMemory()";
+    VList::const_iterator it;
+    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    {
+        (*it)->setX(canvasRandomX());
+        (*it)->setY(canvasRandomY());
+    }
+}
+
+
 /**
  * @brief Repositions all nodes on the periphery of a circle with given radius
  * @param x0

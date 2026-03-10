@@ -1079,6 +1079,8 @@ public:
 
     void layoutRandom();
 
+    void layoutRandomInMemory();
+
     void layoutRadialRandom(const bool &guides = true);
 
     void layoutCircular(const double &x0,
