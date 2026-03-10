@@ -181,24 +181,37 @@ bool Graph::randomNetErdosCreate(const int &N,
 }
 
 /**
- * @brief Creates a scale-free random-network network
- * @param N
- * @param power
- * @param m0
- * @param m
- * @param alpha
- * @param mode
+ * @brief Creates a Barabási–Albert scale-free random network.
+ *
+ * The algorithm works in two phases:
+ * 1. Seed: build a fully connected clique of m0 initial nodes.
+ * 2. Growth: add nodes one by one up to N, each connecting to m existing
+ *    nodes via preferential attachment — nodes with higher degree are more
+ *    likely to receive new edges (rich-get-richer effect).
+ *
+ * The attachment probability for node j is:
+ *   P(j) = (alpha + degree(j)^power) / sumDegrees
+ *
+ * @param N      Total number of nodes in the final network.
+ * @param power  Exponent of the preferential attachment (typically 1).
+ * @param m0     Number of nodes in the initial seed clique.
+ * @param m      Number of edges each new node attaches to existing nodes.
+ * @param alpha  Additive constant in the attachment probability (zero-appeal).
+ * @param mode   "graph" for undirected, anything else for directed.
+ * @return true on success, false if the user cancelled.
  */
-void Graph::randomNetScaleFreeCreate(const int &N,
+bool Graph::randomNetScaleFreeCreate(const int &N,
                                      const int &power,
                                      const int &m0,
                                      const int &m,
                                      const qreal &alpha,
                                      const QString &mode)
 {
-    qDebug() << "Graph::randomNetScaleFreeCreate() - max nodes n" << N
+    qDebug() << "Graph::randomNetScaleFreeCreate() -"
+             << "N" << N
              << "power" << power
-             << "edges added in every round m" << m
+             << "m0" << m0
+             << "m" << m
              << "alpha" << alpha
              << "mode" << mode;
 
@@ -223,21 +236,18 @@ void Graph::randomNetScaleFreeCreate(const int &N,
 
     vpos.reserve(N);
 
-    qDebug() << "Graph::randomNetScaleFreeCreate() - "
-             << "Create initial connected net of m0 nodes";
-
     QString pMsg = tr("Creating Scale-Free Random Network. \n"
                       "Please wait...");
     progressStatus(pMsg);
     progressCreate(N, pMsg);
 
+    // Phase 1: create the initial seed clique of m0 nodes
+    qDebug() << "Graph::randomNetScaleFreeCreate() - creating seed clique of" << m0 << "nodes";
+
     for (int i = 0; i < m0; ++i)
     {
         x = x0 + radius * cos(i * rad);
         y = y0 + radius * sin(i * rad);
-
-        qDebug() << "Graph::randomNetScaleFreeCreate() - "
-                 << " initial node i " << i + 1 << " pos " << x << "," << y;
         vertexCreate(
             i + 1, initVertexSize, initVertexColor,
             initVertexNumberColor, initVertexNumberSize,
@@ -247,33 +257,38 @@ void Graph::randomNetScaleFreeCreate(const int &N,
 
     for (int i = 0; i < m0; ++i)
     {
-        qDebug() << "Graph::randomNetScaleFreeCreate() - "
-                 << " Creating all edges for initial node i " << i + 1;
         for (int j = i + 1; j < m0; ++j)
         {
-            qDebug() << "Graph::randomNetScaleFreeCreate() ---- "
-                        "Creating initial edge "
-                     << i + 1 << " <->" << j + 1;
-            edgeCreate(i + 1, j + 1, 1, initEdgeColor,
-                       EdgeType::Undirected, false, false,
-                       QString(), false);
+            // Respect mode when creating seed clique edges,
+            // consistent with the growth phase below
+            if (mode == "graph")
+            {
+                edgeCreate(i + 1, j + 1, 1, initEdgeColor,
+                           EdgeType::Undirected, false, false,
+                           QString(), false);
+            }
+            else
+            {
+                edgeCreate(i + 1, j + 1, 1, initEdgeColor,
+                           EdgeType::Directed, true, false,
+                           QString(), false);
+            }
         }
         progressUpdate(++progressCounter);
+        if (progressCanceled())
+        {
+            progressFinish();
+            return false;
+        }
     }
 
-    qDebug() << "Graph::randomNetScaleFreeCreate() - @@@@ "
-             << " start network growth to " << N
-             << " nodes with preferential attachment";
+    // Phase 2: grow the network to N nodes via preferential attachment
+    qDebug() << "Graph::randomNetScaleFreeCreate() - growing network to" << N << "nodes";
 
     for (int i = m0; i < N; ++i)
     {
-
         x = x0 + radius * cos(i * rad);
         y = y0 + radius * sin(i * rad);
-
-        qDebug() << "Graph::randomNetScaleFreeCreate() - ++++"
-                 << " adding new node i " << i + 1
-                 << " pos " << x << "," << y;
 
         vertexCreate(
             i + 1, initVertexSize, initVertexColor,
@@ -282,75 +297,61 @@ void Graph::randomNetScaleFreeCreate(const int &N,
             QPoint(x, y), initVertexShape, initVertexIconPath, false);
 
         progressUpdate(++progressCounter);
+        if (progressCanceled())
+        {
+            progressFinish();
+            return false;
+        }
 
-        // need to multiply by 2, since we have a undirected graph
-        // and edgesEnabled reports edges/2
+        // Sum of degrees used as denominator in attachment probability
+        // Multiply by 2 for undirected graphs since edgesEnabled() counts each edge once
         sumDegrees = 2 * edgesEnabled();
 
         newEdges = 0;
 
-        qDebug() << "Graph::randomNetScaleFreeCreate() - repeat until we reach"
-                 << m << "new edges for node" << i + 1;
+        // Repeat until this new node has attached to exactly m existing nodes
         for (;;)
-        { // do until we create m new edges
-
+        {
             for (int j = 0; j < i; ++j)
             {
-                qDebug() << "Graph::randomNetScaleFreeCreate() - "
-                         << " preferential attachment test of new node i "
-                         << i + 1
-                         << " with node j " << j + 1
-                         << " - newEdges " << newEdges;
-
                 if (newEdges == m)
                     break;
 
                 k_j = vertexDegreeIn(j + 1);
                 k_j = pow(k_j, power);
+
+                // If no edges exist yet, connect with certainty;
+                // otherwise use preferential attachment probability
                 if (sumDegrees < 1)
-                    prob_j = 1; // always create edge if no other edge exist
+                    prob_j = 1;
                 else
                     prob_j = (alpha + k_j) / sumDegrees;
 
                 prob = (rand() % 100 + 1) / 100.0;
 
-                qDebug() << "Graph::randomNetScaleFreeCreate() - "
-                         << " Edge probability with old node "
-                         << j + 1 << " is: alpha + k_j ^ power " << alpha + k_j
-                         << " / sumDegrees " << sumDegrees
-                         << " = prob_j " << prob_j
-                         << " prob " << prob;
-
                 if (prob <= prob_j)
                 {
                     if (mode == "graph")
                     {
-                        qDebug() << "Graph::randomNetScaleFreeCreate()  <----->"
-                                    "Creating pref.att. undirected edge "
-                                 << i + 1 << " <->" << j + 1;
                         edgeCreate(i + 1, j + 1, 1, initEdgeColor,
                                    EdgeType::Undirected, false, false,
                                    QString(), false);
-                        newEdges++;
                     }
                     else
                     {
-                        qDebug() << "Graph::randomNetScaleFreeCreate()  ----->"
-                                    "Creating pref.att. directed edge "
-                                 << i + 1 << " <->" << j + 1;
                         edgeCreate(i + 1, j + 1, 1, initEdgeColor,
                                    EdgeType::Directed, true, false,
                                    QString(), false);
-                        newEdges++;
                     }
+                    newEdges++;
                 }
             }
             if (newEdges == m)
                 break;
         }
-        qDebug() << "Graph::randomNetScaleFreeCreate() - " << m << "edges reached "
-                                                                   "for node"
-                 << i + 1;
+
+        qDebug() << "Graph::randomNetScaleFreeCreate() -"
+                 << m << "edges attached for node" << i + 1;
     }
 
     relationCurrentRename(tr("scale-free"), true);
@@ -361,7 +362,7 @@ void Graph::randomNetScaleFreeCreate(const int &N,
 
     progressFinish();
 
-    layoutVertexSizeByIndegree();
+    return true;
 }
 
 /**
