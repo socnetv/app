@@ -29,53 +29,57 @@ void Graph::randomizeThings()
 }
 
 /**
- * @brief Creates an erdos-renyi random network according to the given model
- * @param vert
- * @param model
- * @param edges
- * @param eprob
- * @param mode
- * @param diag
+ * @brief Creates an Erdős–Rényi random network.
+ *
+ * Supports two models:
+ * - G(n,p): each possible edge is included independently with probability p.
+ * - G(n,M): exactly M edges are placed at random among all possible pairs.
+ *
+ * @param N     Number of nodes.
+ * @param model "G(n,p)" or "G(n,M)".
+ * @param m     Number of edges (used in G(n,M) model; 0 for G(n,p)).
+ * @param p     Edge probability (used in G(n,p) model; 0 for G(n,M)).
+ * @param mode  "graph" for undirected, anything else for directed.
+ * @param diag  If true, self-loops are allowed.
+ * @return true on success, false if the user cancelled.
  */
-void Graph::randomNetErdosCreate(const int &N,
+bool Graph::randomNetErdosCreate(const int &N,
                                  const QString &model,
                                  const int &m,
                                  const qreal &p,
                                  const QString &mode,
                                  const bool &diag)
 {
-    qDebug() << "Creating an erdos-renyi random network, vertices " << N
-             << " model " << model
-             << " edges " << m
-             << " edge probability " << p
-             << " graph mode " << mode
-             << " diag " << diag;
+    qDebug() << "Creating Erdos-Renyi random network:"
+             << "N" << N
+             << "model" << model
+             << "edges" << m
+             << "edge probability" << p
+             << "mode" << mode
+             << "diag" << diag;
 
     if (mode == "graph")
     {
         setDirected(false);
     }
-    vpos.reserve(N);
 
+    vpos.reserve(N);
     randomizeThings();
 
     int progressCounter = 0;
     int edgeCount = 0;
 
-    qDebug() << "Creating nodes...";
-
     QString pMsg = tr("Creating Erdos-Renyi Random Network. \n"
-                      " Please wait...");
+                      "Please wait...");
 
+    // Progress max: M edges for G(n,M), N nodes for G(n,p)
     progressCreate((m != 0 ? m : N), pMsg);
 
+    // Create all nodes first
     for (int i = 0; i < N; i++)
     {
         int x = canvasRandomX();
         int y = canvasRandomY();
-
-        //        qDebug() << "creating new node" << i+1 << "at" << x << y;
-
         vertexCreate(
             i + 1, initVertexSize, initVertexColor,
             initVertexNumberColor, initVertexNumberSize,
@@ -83,86 +87,87 @@ void Graph::randomNetErdosCreate(const int &N,
             QPoint(x, y), initVertexShape, initVertexIconPath, false);
     }
 
-    qDebug() << "Creating edges...";
+    qDebug() << "Nodes created. Creating edges using model" << model;
 
     if (model == "G(n,p)")
     {
-        qDebug() << "G(n,p) model...";
+        // Bernoulli trials: each pair (i,j) gets an edge with probability p
         for (int i = 0; i < N; i++)
         {
             for (int j = 0; j < N; j++)
             {
-
-                //                qDebug() << "Bernoulli trial "
-                //                       << "for edge " <<  i+1 << "->" << j+1;
-
                 if (!diag && i == j)
-                {
-                    //                    qDebug()<< " skip because " << i+1 << " = " << j+1 << " and diag " << diag;
                     continue;
-                }
+
                 if ((rand() % 100 + 1) / 100.0 < p)
                 {
                     edgeCount++;
-
                     if (mode == "graph")
                     {
-                        //                        qDebug() << " create undirected Edge no " << edgeCount;
                         edgeCreate(i + 1, j + 1, 1, initEdgeColor,
                                    EdgeType::Undirected, false, false,
                                    QString(), false);
                     }
                     else
                     {
-                        //                        qDebug() << " create directed Edge no "<< edgeCount;
                         edgeCreate(i + 1, j + 1, 1, initEdgeColor,
                                    EdgeType::Directed, true, false,
                                    QString(), false);
                     }
                 }
-                //                else
-                //                    qDebug() << "do not create Edge";
             }
 
             progressUpdate(++progressCounter);
+            if (progressCanceled())
+            {
+                progressFinish();
+                return false;
+            }
         }
     }
     else
     {
-        qDebug() << "G(n,M) model...";
+        // G(n,M): place exactly m edges at random positions
         int source = 0, target = 0;
+        bool cancelled = false;
         do
         {
             source = rand() % N + 1;
             target = rand() % N + 1;
-            //            qDebug() << "random pair " << " " << source << " , " << target ;
+
             if (!diag && source == target)
-            {
-                //                qDebug() << "skip self loop pair ";
                 continue;
-            }
             if (edgeExists(source, target))
-            {
-                //                qDebug() << "skip pair - exists";
                 continue;
-            }
+
             edgeCount++;
             if (mode == "graph")
             {
-                //                qDebug() << "create " << " undirected Edge no " << edgeCount;
                 edgeCreate(source, target, 1, initEdgeColor,
                            EdgeType::Undirected, false, false,
                            QString(), false);
             }
             else
             {
-                //                qDebug() << "create " << " directed Edge no " << edgeCount;
                 edgeCreate(source, target, 1, initEdgeColor,
                            EdgeType::Directed, true, false,
                            QString(), false);
             }
+
             progressUpdate(++progressCounter);
+            if (progressCanceled())
+            {
+                cancelled = true;
+                break;
+            }
+
         } while (edgeCount != m);
+
+        if (cancelled)
+        {
+            progressFinish();
+            return false;
+        }
     }
 
     relationCurrentRename(tr("erdos-renyi"), true);
@@ -171,6 +176,8 @@ void Graph::randomNetErdosCreate(const int &N,
     progressFinish();
 
     setModStatus(ModStatus::VertexEdgeCount);
+
+    return true;
 }
 
 /**

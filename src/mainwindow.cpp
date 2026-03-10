@@ -8433,23 +8433,18 @@ void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
                                               const bool diag)
 {
     qDebug() << "Request to create an Erdos-Renyi random network...";
-
-    statusMessage( tr("Creating new Erdos-Renyi random network. Please wait... ")  );
-
+    statusMessage( tr("Creating new Erdos-Renyi random network. Please wait... ") );
     appSettings["randomErdosEdgeProbability"] = QString::number(eprob);
 
-    activeGraph->randomNetErdosCreate ( newNodes,
-                                        model,
-                                        edges,
-                                        eprob,
-                                        mode,
-                                        diag);
+    if (!activeGraph->randomNetErdosCreate(newNodes, model, edges, eprob, mode, diag))
+    {
+        statusMessage(tr("Erdős–Rényi network creation cancelled or did not finish."));
+        return;
+    }
 
     setWindowTitle("Untitled Erdos-Renyi random network");
-
     double threshold = log(newNodes)/newNodes;
-
-    if ( (eprob ) > threshold )
+    if ( (eprob) > threshold )
         slotHelpMessageToUser (
                     USER_MSG_INFO,
                     tr("Erdős–Rényi random network created."),
@@ -8461,7 +8456,6 @@ void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
                     .arg(QString::number(eprob))
                     .arg(QString::number(threshold))
                     );
-
     else
         slotHelpMessageToUser (
                     USER_MSG_INFO,

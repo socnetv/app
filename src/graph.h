@@ -1141,12 +1141,9 @@ public:
     /**RANDOM NETWORKS*/
     void randomizeThings();
 
-    void randomNetErdosCreate(const int &N,
-                              const QString &model,
-                              const int &m,
-                              const qreal &p,
-                              const QString &mode,
-                              const bool &diag);
+    bool randomNetErdosCreate(const int &N, const QString &model,
+                              const int &m, const qreal &p,
+                              const QString &mode, const bool &diag);
 
     void randomNetScaleFreeCreate(const int &N,
                                   const int &power,
