@@ -1,0 +1,128 @@
+{
+    "counts": {
+        "links_sna": 4,
+        "nodes": 3,
+        "ties_graph": 4
+    },
+    "dataset": {
+        "filetype": 8,
+        "name": "TinyEdgeList_Symmetric_Undir_N3.lst",
+        "path": "src/data/TinyEdgeList_Symmetric_Undir_N3.lst"
+    },
+    "graph": {
+        "directed": true,
+        "relations": 1,
+        "weighted": false
+    },
+    "kernel": "io_roundtrip",
+    "load_report": {
+        "fileType_signal": 8,
+        "load_ms": 0,
+        "load_msg": "",
+        "net_name": "TinyEdgeList_Symmetric_Undir_N3.lst",
+        "ok": true
+    },
+    "metrics": {
+        "density": "0.66666666666666663"
+    },
+    "relations_bundle": [
+        {
+            "index": 0,
+            "name": "unnamed",
+            "signature": {
+                "edge_list": [
+                    {
+                        "u": 1,
+                        "v": 2,
+                        "w": "1"
+                    },
+                    {
+                        "u": 2,
+                        "v": 1,
+                        "w": "1"
+                    },
+                    {
+                        "u": 2,
+                        "v": 3,
+                        "w": "1"
+                    },
+                    {
+                        "u": 3,
+                        "v": 2,
+                        "w": "1"
+                    }
+                ],
+                "hash_sha256": "985ee9e0f5789b14deb79487aab2d8ea39aba8e29a34813d145d23fc459fc0cc",
+                "node_custom_attributes": [
+                    {
+                    },
+                    {
+                    },
+                    {
+                    }
+                ],
+                "node_labels": [
+                    "1",
+                    "2",
+                    "3"
+                ]
+            },
+            "ties_graph": 4
+        }
+    ],
+    "roundtrip_result": {
+        "equivalent": true,
+        "performed": false
+    },
+    "run": {
+        "considerWeights": false,
+        "dropIsolates": false,
+        "inverseWeights": true,
+        "operation": "io_roundtrip_same_format"
+    },
+    "schema_version": 5,
+    "signature": {
+        "edge_list": [
+            {
+                "u": 1,
+                "v": 2,
+                "w": "1"
+            },
+            {
+                "u": 2,
+                "v": 1,
+                "w": "1"
+            },
+            {
+                "u": 2,
+                "v": 3,
+                "w": "1"
+            },
+            {
+                "u": 3,
+                "v": 2,
+                "w": "1"
+            }
+        ],
+        "hash_sha256": "985ee9e0f5789b14deb79487aab2d8ea39aba8e29a34813d145d23fc459fc0cc",
+        "node_custom_attributes": [
+            {
+            },
+            {
+            },
+            {
+            }
+        ],
+        "node_labels": [
+            "1",
+            "2",
+            "3"
+        ]
+    },
+    "timings": {
+        "load_ms": 0,
+        "reload_ms": 0,
+        "save_ms": 0,
+        "total_ms": 0
+    }
+}

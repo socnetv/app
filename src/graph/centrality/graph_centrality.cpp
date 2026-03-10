@@ -26,7 +26,6 @@
 void Graph::centralityInformation(const bool considerWeights,
                                   const bool inverseWeights)
 {
-
     qDebug() << "Graph::centralityInformation()";
 
     if (calculatedIC)
@@ -42,20 +41,59 @@ void Graph::centralityInformation(const bool considerWeights,
     minIC = RAND_MAX;
     classesIC = 0;
     varianceIC = 0;
+    meanIC = 0;
+    maxNodeIC = 0;
+    minNodeIC = 0;
 
     VList::const_iterator it;
 
     int i = 0, j = 0;
 
-    qreal m_weight = 0, weightSum = 1, diagonalEntriesSum = 0, rowSum = 0;
-    qreal IC = 0, SIC = 0;
+    qreal m_weight = 0;
+    qreal weightSum = 1;
+    qreal traceC = 0;
+    qreal commonRowSum = 0;
+    qreal IC = 0;
+    qreal SIC = 0;
+
     /* Note: isolated nodes must be dropped from the AM
-        Otherwise, the SIGMA matrix might be singular, therefore non-invertible. */
-    bool dropIsolates = true;
-    bool symmetrize = true;
-    int n = vertices(dropIsolates, false, true);
+       Otherwise, the SIGMA matrix might be singular, therefore non-invertible. */
+    const bool dropIsolates = true;
+    const bool symmetrize = true;
+    const int n = vertices(dropIsolates, false, true);
+
+    /* Degenerate case: no non-isolated vertices */
+    if (n == 0)
+    {
+        for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+        {
+            (*it)->setIC(0);
+            (*it)->setSIC(0);
+        }
+        calculatedIC = true;
+        progressFinish();
+        return;
+    }
+
+    /* Degenerate case: IC is not meaningful for fewer than 2 non-isolated vertices */
+    if (n < 2)
+    {
+        for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+        {
+            (*it)->setIC(0);
+            (*it)->setSIC(0);
+        }
+        calculatedIC = true;
+        progressFinish();
+        return;
+    }
 
     createMatrixAdjacency(dropIsolates, considerWeights, inverseWeights, symmetrize);
+    if (progressCanceled())
+    {
+        progressFinish();
+        return;
+    }
 
     QString pMsg = tr("Computing Information Centralities. \nPlease wait...");
     progressStatus(pMsg);
@@ -71,31 +109,43 @@ void Graph::centralityInformation(const bool considerWeights,
         {
             if (i == j)
                 continue;
+
             m_weight = AM.item(i, j);
-            weightSum += m_weight; // sum of weights for all edges incident to i
+            weightSum += m_weight;              // sum of weights for all edges incident to i
             WM.setItem(i, j, 1 - m_weight);
         }
         WM.setItem(i, i, weightSum);
     }
 
     progressUpdate(n / 3);
-    progressStatus(tr("Computing inverse adjacency matrix. Please wait..."));
+    if (progressCanceled())
+    {
+        progressFinish();
+        return;
+    }
 
+    progressStatus(tr("Computing inverse adjacency matrix. Please wait..."));
     invM.inverse(WM);
 
     progressStatus(tr("Computing IC scores. Please wait..."));
-
     progressUpdate(2 * n / 3);
+    if (progressCanceled())
+    {
+        progressFinish();
+        return;
+    }
 
-    diagonalEntriesSum = 0;
-    rowSum = 0;
+    traceC = 0;
+    commonRowSum = 0;
+
     for (j = 0; j < n; j++)
     {
-        rowSum += invM.item(0, j);
+        commonRowSum += invM.item(0, j);
     }
+
     for (i = 0; i < n; i++)
     {
-        diagonalEntriesSum += invM.item(i, i); // calculate the matrix trace
+        traceC += invM.item(i, i);
     }
 
     i = 0;
@@ -104,36 +154,60 @@ void Graph::centralityInformation(const bool considerWeights,
         if ((*it)->isIsolated())
         {
             (*it)->setIC(0);
+            (*it)->setSIC(0);
             continue;
         }
-        IC = 1.0 / (invM.item(i, i) + (diagonalEntriesSum - 2.0 * rowSum) / n);
 
+        IC = 1.0 / (invM.item(i, i) + (traceC - 2.0 * commonRowSum) / n);
         (*it)->setIC(IC);
         t_sumIC += IC;
-        i++;
+        ++i;
     }
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+
+    if (t_sumIC > 0)
     {
-        IC = (*it)->IC();
-        SIC = IC / t_sumIC;
-        (*it)->setSIC(SIC);
-        sumIC += SIC;
-        resolveClasses(SIC, discreteICs, classesIC);
-        minmax(SIC, (*it), maxIC, minIC, maxNodeIC, minNodeIC);
+        for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+        {
+            if ((*it)->isIsolated())
+            {
+                (*it)->setSIC(0);
+                continue;
+            }
+
+            IC = (*it)->IC();
+            SIC = IC / t_sumIC;
+            (*it)->setSIC(SIC);
+            sumIC += SIC;
+            resolveClasses(SIC, discreteICs, classesIC);
+            minmax(SIC, (*it), maxIC, minIC, maxNodeIC, minNodeIC);
+        }
+
+        meanIC = sumIC / static_cast<qreal>(n);
+
+        qreal x = 0;
+        varianceIC = 0;
+        for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+        {
+            if ((*it)->isIsolated())
+                continue;
+
+            x = ((*it)->SIC() - meanIC);
+            x *= x;
+            varianceIC += x;
+        }
+
+        varianceIC /= static_cast<qreal>(n);
     }
-
-    qreal x = 0;
-    meanIC = sumIC / static_cast<qreal>(n);
-
-    varianceIC = 0;
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    else
     {
-        x = ((*it)->SIC() - meanIC);
-        x *= x;
-        varianceIC += x;
+        for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+        {
+            (*it)->setSIC(0);
+        }
+        sumIC = 0;
+        meanIC = 0;
+        varianceIC = 0;
     }
-
-    varianceIC /= (qreal)n;
 
     calculatedIC = true;
 
@@ -152,7 +226,6 @@ void Graph::centralityEigenvector(const bool &considerWeights,
                                   const bool &inverseWeights,
                                   const bool &dropIsolates)
 {
-
     if (calculatedEVC)
     {
         qDebug() << "Graph not changed - EVC already computed. Return.";
@@ -161,7 +234,7 @@ void Graph::centralityEigenvector(const bool &considerWeights,
 
     qDebug() << "(Re)Computing Eigenvector centrality scores...";
 
-    progressStatus((tr("Calculating EVC scores...")));
+    progressStatus(tr("Calculating EVC scores..."));
 
     classesEVC = 0;
     discreteEVCs.clear();
@@ -170,12 +243,27 @@ void Graph::centralityEigenvector(const bool &considerWeights,
     minEVC = RAND_MAX;
     varianceEVC = 0;
     meanEVC = 0;
+    maxNodeEVC = 0;
+    minNodeEVC = 0;
+
     VList::const_iterator it;
 
-    bool symmetrize = false;
-    bool useDegrees = false;
+    const bool symmetrize = false;
+    const bool useDegrees = false;
     int i = 0;
-    int N = vertices(dropIsolates);
+    const int N = vertices(dropIsolates);
+
+    if (N == 0)
+    {
+        for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+        {
+            (*it)->setEVC(0);
+            (*it)->setSEVC(0);
+        }
+        calculatedEVC = true;
+        progressFinish();
+        return;
+    }
 
     qreal *EVC = new (nothrow) qreal[N];
     Q_CHECK_PTR(EVC);
@@ -183,6 +271,12 @@ void Graph::centralityEigenvector(const bool &considerWeights,
 
     createMatrixAdjacency(dropIsolates, considerWeights,
                           inverseWeights, symmetrize);
+    if (progressCanceled())
+    {
+        delete[] EVC;
+        progressFinish();
+        return;
+    }
 
     QString pMsg = tr("Computing Eigenvector Centrality scores. \nPlease wait...");
     progressStatus(pMsg);
@@ -190,80 +284,78 @@ void Graph::centralityEigenvector(const bool &considerWeights,
 
     if (useDegrees)
     {
-
         qDebug() << "Using outDegree for initial EVC vector";
 
         progressStatus(tr("Computing outDegrees. Please wait..."));
 
         for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
         {
-
-            if (!(*it)->isIsolated() && dropIsolates)
-            {
+            if ((*it)->isIsolated() && dropIsolates)
                 continue;
-            }
 
             EVC[i] = (*it)->degreeOut();
-
             i++;
         }
     }
     else
     {
         qDebug() << "Using unit initial EVC vector";
-        for (int i = 0; i < N; i++)
-        {
-            EVC[i] = 1;
-        }
+        for (int k = 0; k < N; k++)
+            EVC[k] = 1;
     }
 
     progressUpdate(N / 3);
+    if (progressCanceled())
+    {
+        delete[] EVC;
+        progressFinish();
+        return;
+    }
 
     AM.powerIteration(EVC, sumEVC, maxEVC, maxNodeEVC,
                       minEVC, minNodeEVC,
                       0.0000001, 500);
 
     progressUpdate(2 * N / 3);
+    if (progressCanceled())
+    {
+        delete[] EVC;
+        progressFinish();
+        return;
+    }
 
     progressStatus(tr("Leading eigenvector computed. "
-                          "Analysing centralities. Please wait..."));
+                      "Analysing centralities. Please wait..."));
+
+    // Recompute sum defensively from final vector
+    sumEVC = 0;
+    for (int k = 0; k < N; ++k)
+        sumEVC += EVC[k];
+
+    meanEVC = sumEVC / static_cast<qreal>(N);
 
     i = 0;
-
-    meanEVC = sumEVC / (qreal)N;
-
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-
-        if (!(*it)->isIsolated() && dropIsolates)
+        if ((*it)->isIsolated() && dropIsolates)
         {
+            (*it)->setEVC(0);
+            (*it)->setSEVC(0);
             continue;
         }
 
         (*it)->setEVC(EVC[i]);
-        if (maxEVC != 0)
-        {
-            SEVC = EVC[i] / maxEVC;
-        }
-        else
-        {
-            SEVC = 0;
-        }
 
+        SEVC = (maxEVC != 0) ? (EVC[i] / maxEVC) : 0;
         (*it)->setSEVC(SEVC);
 
         resolveClasses(SEVC, discreteEVCs, classesEVC);
-
         varianceEVC += (EVC[i] - meanEVC) * (EVC[i] - meanEVC);
 
         i++;
     }
 
-    varianceEVC = varianceEVC / (qreal)N;
-
-    // group eigenvector centralization measure is
-    // S(cmax - c(vi)) divided by the maximum value possible,
-    // where c(vi) is the eigenvector centrality of vertex vi.
+    varianceEVC /= static_cast<qreal>(N);
 
     calculatedEVC = true;
 
@@ -306,7 +398,11 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
     progressCreate(N, pMsg);
 
     progressUpdate(N / 3);
-
+    if (progressCanceled())
+    {
+        progressFinish();
+        return;
+    }
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
@@ -344,7 +440,11 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
     }
 
     progressUpdate(2 * N / 3);
-
+    if (progressCanceled())
+    {
+        progressFinish();
+        return;
+    }
     // Calculate std Out-Degree, min, max, classes and sumSDC
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
@@ -446,7 +546,10 @@ void Graph::centralityClosenessIR(const bool considerWeights,
     qDebug() << "(Re)Computing IRCC closeness centrality...";
 
     graphDistancesGeodesic(false, considerWeights, inverseWeights, dropIsolates);
-
+    if (progressCanceled())
+    {
+        return;
+    }
     // calculate centralities
     VList::const_iterator it, jt;
     int progressCounter = 0;
@@ -476,7 +579,11 @@ void Graph::centralityClosenessIR(const bool considerWeights,
     {
 
         progressUpdate(++progressCounter);
-
+        if (progressCanceled())
+        {
+            progressFinish();
+            return;
+        }
         IRCC = 0;
         sumD = 0;
         Ji = 0;
@@ -632,7 +739,8 @@ void Graph::resolveClasses(qreal C, H_StrToInt &discreteClasses, int &classes, i
  */
 bool Graph::isCentralityIndexComputed(const IndexType index) const
 {
-    switch (index) {
+    switch (index)
+    {
     case IndexType::DC:
         return calculatedDC;
     case IndexType::CC:   // CC, IRCC, BC, SC, EC, PC are all

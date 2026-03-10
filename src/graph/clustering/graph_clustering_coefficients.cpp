@@ -17,179 +17,202 @@
 #include <QDebug>
 
 /**
- * @brief  Returns the local clustering coefficient (CLUCOF) of a vertex v1
- * @param v1
- * @return
+ * @brief Returns the local clustering coefficient (CLUCOF) of vertex v1.
+ *
+ * For undirected (symmetric) graphs, uses the Watts–Strogatz formula:
+ *
+ *   C_i = 2 * |{e_jk : v_j, v_k ∈ N_i, e_jk ∈ E}| / ( k_i * (k_i - 1) )
+ *
+ * where N_i is the set of direct neighbours of v_i and k_i = |N_i|.
+ * Because the graph is symmetric every undirected edge is counted once
+ * (the reverse-edge dedup guard in the inner loop is preserved).
+ *
+ * For directed (asymmetric) graphs, uses the generalisation described in
+ * the SocNetV manual (equivalent to Watts–Strogatz extended to digraphs):
+ *
+ *   C_i = |{e_jk : v_j, v_k ∈ N_i, e_jk ∈ E}| / ( k_i * (k_i - 1) )
+ *
+ * where N_i is the UNION of in-neighbours and out-neighbours of v_i
+ * (excluding v_i itself), and each directed edge e_jk is counted
+ * independently – i.e. e_jk and e_kj are distinct.
+ *
+ * Bug fix (issue #58): the previous implementation built N_i from
+ * reciprocalEdgesHash() (only mutual ties), which gave C_i = 0 for nodes
+ * whose in- and out-neighbourhood were not identical.  N_i must be the
+ * full combined neighbourhood for directed networks.
+ *
+ * @param v1  The vertex number whose local CLUCOF is requested.
+ * @return    The local clustering coefficient in [0, 1], or 0 for isolates
+ *            and vertices with fewer than 2 neighbours.
  */
 qreal Graph::clusteringCoefficientLocal(const int &v1)
 {
     if (!isModified() && (m_graph[vpos[v1]]->hasCLC()))
     {
         qreal clucof = m_graph[vpos[v1]]->CLC();
-        qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") - "
-                 << " Not modified. Returning previous clucof = " << clucof;
+        qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
+                 << "Not modified. Returning cached clucof =" << clucof;
         return clucof;
     }
+    qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
+             << "Graph changed or clucof not yet calculated.";
 
-    qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") - "
-             << " Graph changed or clucof not calculated.";
-
-    bool isSymmetric = false;
-
-    if (this->isSymmetric())
-    {
-        isSymmetric = true;
-    }
-    else
-    {
-        isSymmetric = false;
-    }
+    const bool isSymmetric = this->isSymmetric();
 
     qreal clucof = 0, denom = 0, nom = 0;
     int u1 = 0, u2 = 0, k = 0;
-
-    H_StrToBool neighborhoodEdges;
+    H_StrToBool neighborhoodEdges; // tracks directed edges found among N_i
     neighborhoodEdges.clear();
 
-    qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") - vertex " << v1
-             << "[" << vpos[v1] << "] "
-             << " Checking adjacent edges ";
+    // ------------------------------------------------------------------
+    // Build the neighbourhood N_i.
+    //
+    // Undirected graph: N_i = direct neighbours (same as before, via
+    //   reciprocalEdgesHash which equals outEdgesEnabledHash on a symmetric
+    //   graph).
+    //
+    // Directed graph: N_i = union of out-neighbours and in-neighbours.
+    //   We use a QSet<int> to deduplicate nodes that are both.
+    // ------------------------------------------------------------------
 
-    QHash<int, qreal> reciprocalEdges;
-    reciprocalEdges = m_graph[vpos[v1]]->reciprocalEdgesHash();
+    QSet<int> neighborhood;
 
-    QHash<int, qreal>::const_iterator it1;
-    QHash<int, qreal>::const_iterator it2;
-
-    it1 = reciprocalEdges.cbegin();
-
-    while (it1 != reciprocalEdges.cend())
+    if (isSymmetric)
     {
-        u1 = it1.key();
-
-        qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
-                 << v1
-                 << "<->"
-                 << u1
-                 << "[" << vpos[u1] << "] exists"
-                 << "weight " << it1.value();
-
-        if (v1 == u1)
+        // For undirected graphs the existing reciprocalEdgesHash() path is
+        // correct – every neighbour appears in both directions.
+        QHash<int, qreal> reciprocal = m_graph[vpos[v1]]->reciprocalEdgesHash();
+        for (auto it = reciprocal.cbegin(); it != reciprocal.cend(); ++it)
         {
-            qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
-                     << "v1 == u1 - CONTINUE";
-            ++it1;
-            continue;
+            if (it.key() != v1)
+                neighborhood.insert(it.key());
+        }
+    }
+    else
+    {
+        // Directed graph: collect out-neighbours.
+        QHash<int, qreal> outN = m_graph[vpos[v1]]->outEdgesEnabledHash();
+        for (auto it = outN.cbegin(); it != outN.cend(); ++it)
+        {
+            if (it.key() != v1)
+                neighborhood.insert(it.key());
         }
 
-        it2 = reciprocalEdges.cbegin();
-        qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
-                 << "Checking if neighbor" << u1
-                 << "is connected to other neighbors of" << v1;
-
-        while (it2 != reciprocalEdges.cend())
+        // Collect in-neighbours (heap-allocated – take ownership).
+        QHash<int, qreal> *inN = m_graph[vpos[v1]]->inEdgesEnabledHash();
+        for (auto it = inN->cbegin(); it != inN->cend(); ++it)
         {
+            if (it.key() != v1)
+                neighborhood.insert(it.key());
+        }
+        delete inN;
+        inN = nullptr;
+    }
 
-            u2 = it2.key();
+    k = neighborhood.size();
 
-            qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
-                     << "Other neighbor" << u2
-                     << "Check if there is an edge"
-                     << u1
-                     << "[" << vpos[u1] << "]"
-                     << "->" << u2;
+    qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
+             << "neighbourhood N_i size k =" << k
+             << "members:" << neighborhood;
 
-            if (u1 == u2)
-            {
-                qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
-                         << "u1 == u2 - CONTINUE";
-                ++it2;
+    if (k < 2)
+    {
+        // A node with 0 or 1 neighbour cannot form any triangle.
+        qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
+                 << "k < 2, returning 0.";
+        m_graph[vpos[v1]]->setCLC(0);
+        return 0;
+    }
+
+    // ------------------------------------------------------------------
+    // Count edges that exist among the members of N_i.
+    //
+    // For undirected graphs we deduplicate {u1,u2} / {u2,u1} pairs so
+    // that each undirected edge is counted once, matching the formula
+    //   nom = |{e_jk}|  (unordered pairs).
+    //
+    // For directed graphs every ordered pair (u1→u2) is a distinct edge,
+    // so we only skip exact duplicates of the same ordered string, which
+    // the QHash insert naturally handles.
+    // ------------------------------------------------------------------
+
+    for (int u1_node : neighborhood)
+    {
+        for (int u2_node : neighborhood)
+        {
+            if (u1_node == u2_node)
                 continue;
-            }
+
+            u1 = u1_node;
+            u2 = u2_node;
 
             if (edgeExists(u1, u2) != 0)
             {
-                qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
-                         << "Connected neighbors: "
-                         << u1 << "->" << u2;
-
                 QString edge = QString::number(u1) + "->" + QString::number(u2);
                 QString revedge = QString::number(u2) + "->" + QString::number(u1);
 
                 if (isSymmetric)
                 {
+                    // Count each undirected edge once.
                     if (!neighborhoodEdges.contains(edge) &&
                         !neighborhoodEdges.contains(revedge))
                     {
                         neighborhoodEdges.insert(edge, true);
                         qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
-                                 << "Edge added to neighborhoodEdges : " << edge;
-                    }
-                    else
-                    {
-                        qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
-                                 << "Edge not added, discovered previously : " << edge;
+                                 << "Undirected edge added:" << edge;
                     }
                 }
                 else
                 {
+                    // Count each directed edge independently.
                     if (!neighborhoodEdges.contains(edge))
                     {
                         neighborhoodEdges.insert(edge, true);
                         qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
-                                 << "Edge added to neighborhoodEdges : " << edge;
-                    }
-                    else
-                    {
-                        qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
-                                 << "Edge not added, discovered previously : " << edge;
+                                 << "Directed edge added:" << edge;
                     }
                 }
             }
-
-            ++it2;
         }
-        ++it1;
     }
 
     nom = neighborhoodEdges.size();
-
     qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
-             << "neighborhoodEdges.size() =" << nom;
+             << "edges in neighbourhood =" << nom;
 
     if (nom == 0)
-        return 0; // stop if we're at a leaf.
+    {
+        qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
+                 << "No edges in neighbourhood, returning 0.";
+        m_graph[vpos[v1]]->setCLC(0);
+        return 0;
+    }
+
+    // ------------------------------------------------------------------
+    // Denominator: maximum possible edges among k neighbours.
+    //
+    // Undirected:  k*(k-1)/2   (unordered pairs)
+    // Directed:    k*(k-1)     (ordered pairs; both u→v and v→u are valid)
+    // ------------------------------------------------------------------
 
     if (isSymmetric)
     {
-        k = reciprocalEdges.size(); // k_{i} is the number of neighbours of a vertex
         denom = k * (k - 1.0) / 2.0;
-
         qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
-                 << "Symmetric graph. "
-                 << "Max edges in neighborhood" << denom;
+                 << "Undirected graph. Max neighbourhood edges =" << denom;
     }
     else
     {
-        // fixme : normally we should have a special method
-        // to compute the number of vertices k_i = |N_i|, in the neighborhood N_i
-        k = reciprocalEdges.size();
         denom = k * (k - 1.0);
-
-        qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") - "
-                 << "Not symmetric graph. "
-                 << "Max edges in neighborhood" << denom;
+        qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
+                 << "Directed graph. Max neighbourhood edges =" << denom;
     }
 
     clucof = nom / denom;
-
     qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
-             << "CLUCOF = " << clucof;
+             << "CLUCOF =" << clucof;
 
     m_graph[vpos[v1]]->setCLC(clucof);
-
-    reciprocalEdges.clear();
-    neighborhoodEdges.clear();
     return clucof;
 }
 
@@ -223,6 +246,11 @@ qreal Graph::clusteringCoefficient(const bool updateProgress)
         if (updateProgress)
         {
             progressUpdate(++progressCounter);
+            if (progressCanceled())
+            {
+                progressFinish();
+                return averageCLC;
+            }
         }
 
         temp = clusteringCoefficientLocal((*vertex)->number());
@@ -251,7 +279,7 @@ qreal Graph::clusteringCoefficient(const bool updateProgress)
         varianceCLC += x;
     }
 
-    varianceIC /= N;
+    varianceCLC /= N;
 
     if (updateProgress)
     {

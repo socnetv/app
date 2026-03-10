@@ -1,0 +1,309 @@
+{
+    "counts": {
+        "links_sna": 12,
+        "nodes": 5,
+        "ties_graph": 12
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "Stephenson_Zelen_5actors_6edges_IC_test_dataset.paj",
+        "path": "src/data/Stephenson_Zelen_5actors_6edges_IC_test_dataset.paj"
+    },
+    "graph": {
+        "directed": true,
+        "relations": 2,
+        "weighted": true
+    },
+    "kernel": "io_roundtrip",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 3,
+        "load_msg": "",
+        "net_name": "Stephenson_and_Zelen_5_actors_6edges",
+        "ok": true
+    },
+    "metrics": {
+        "density": "0.59999999999999998"
+    },
+    "relations_bundle": [
+        {
+            "index": 0,
+            "name": "non-weighted",
+            "signature": {
+                "edge_list": [
+                    {
+                        "u": 1,
+                        "v": 2,
+                        "w": "1"
+                    },
+                    {
+                        "u": 1,
+                        "v": 4,
+                        "w": "1"
+                    },
+                    {
+                        "u": 1,
+                        "v": 5,
+                        "w": "1"
+                    },
+                    {
+                        "u": 2,
+                        "v": 1,
+                        "w": "1"
+                    },
+                    {
+                        "u": 2,
+                        "v": 3,
+                        "w": "1"
+                    },
+                    {
+                        "u": 2,
+                        "v": 5,
+                        "w": "1"
+                    },
+                    {
+                        "u": 3,
+                        "v": 2,
+                        "w": "1"
+                    },
+                    {
+                        "u": 3,
+                        "v": 4,
+                        "w": "1"
+                    },
+                    {
+                        "u": 4,
+                        "v": 1,
+                        "w": "1"
+                    },
+                    {
+                        "u": 4,
+                        "v": 3,
+                        "w": "1"
+                    },
+                    {
+                        "u": 5,
+                        "v": 1,
+                        "w": "1"
+                    },
+                    {
+                        "u": 5,
+                        "v": 2,
+                        "w": "1"
+                    }
+                ],
+                "hash_sha256": "4180eef83835b9bfab07fa93f057121f76dbaf95affcc24104fde4e8f1f4e4bb",
+                "node_custom_attributes": [
+                    {
+                    },
+                    {
+                    },
+                    {
+                    },
+                    {
+                    },
+                    {
+                    }
+                ],
+                "node_labels": [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5"
+                ]
+            },
+            "ties_graph": 12
+        },
+        {
+            "index": 1,
+            "name": "weighted",
+            "signature": {
+                "edge_list": [
+                    {
+                        "u": 1,
+                        "v": 2,
+                        "w": "2"
+                    },
+                    {
+                        "u": 1,
+                        "v": 4,
+                        "w": "1"
+                    },
+                    {
+                        "u": 1,
+                        "v": 5,
+                        "w": "5"
+                    },
+                    {
+                        "u": 2,
+                        "v": 1,
+                        "w": "2"
+                    },
+                    {
+                        "u": 2,
+                        "v": 3,
+                        "w": "1"
+                    },
+                    {
+                        "u": 2,
+                        "v": 5,
+                        "w": "5"
+                    },
+                    {
+                        "u": 3,
+                        "v": 2,
+                        "w": "1"
+                    },
+                    {
+                        "u": 3,
+                        "v": 4,
+                        "w": "10"
+                    },
+                    {
+                        "u": 4,
+                        "v": 1,
+                        "w": "1"
+                    },
+                    {
+                        "u": 4,
+                        "v": 3,
+                        "w": "10"
+                    },
+                    {
+                        "u": 5,
+                        "v": 1,
+                        "w": "5"
+                    },
+                    {
+                        "u": 5,
+                        "v": 2,
+                        "w": "5"
+                    }
+                ],
+                "hash_sha256": "fd6d30b562ce3c7a0a84c8302fa5e2d7b4d3d58e585dfe1ba126ab5eea99ac3f",
+                "node_custom_attributes": [
+                    {
+                    },
+                    {
+                    },
+                    {
+                    },
+                    {
+                    },
+                    {
+                    }
+                ],
+                "node_labels": [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5"
+                ]
+            },
+            "ties_graph": 12
+        }
+    ],
+    "roundtrip_result": {
+        "equivalent": true,
+        "performed": true
+    },
+    "run": {
+        "considerWeights": false,
+        "dropIsolates": false,
+        "inverseWeights": true,
+        "operation": "io_roundtrip_same_format"
+    },
+    "schema_version": 5,
+    "signature": {
+        "edge_list": [
+            {
+                "u": 1,
+                "v": 2,
+                "w": "1"
+            },
+            {
+                "u": 1,
+                "v": 4,
+                "w": "1"
+            },
+            {
+                "u": 1,
+                "v": 5,
+                "w": "1"
+            },
+            {
+                "u": 2,
+                "v": 1,
+                "w": "1"
+            },
+            {
+                "u": 2,
+                "v": 3,
+                "w": "1"
+            },
+            {
+                "u": 2,
+                "v": 5,
+                "w": "1"
+            },
+            {
+                "u": 3,
+                "v": 2,
+                "w": "1"
+            },
+            {
+                "u": 3,
+                "v": 4,
+                "w": "1"
+            },
+            {
+                "u": 4,
+                "v": 1,
+                "w": "1"
+            },
+            {
+                "u": 4,
+                "v": 3,
+                "w": "1"
+            },
+            {
+                "u": 5,
+                "v": 1,
+                "w": "1"
+            },
+            {
+                "u": 5,
+                "v": 2,
+                "w": "1"
+            }
+        ],
+        "hash_sha256": "4180eef83835b9bfab07fa93f057121f76dbaf95affcc24104fde4e8f1f4e4bb",
+        "node_custom_attributes": [
+            {
+            },
+            {
+            },
+            {
+            },
+            {
+            },
+            {
+            }
+        ],
+        "node_labels": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5"
+        ]
+    },
+    "timings": {
+        "load_ms": 3,
+        "reload_ms": 0,
+        "save_ms": 0,
+        "total_ms": 2
+    }
+}

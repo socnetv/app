@@ -17,7 +17,6 @@
 
 #include "graph.h"
 
-
 /**
  * @brief Sets the directory where reports are saved
  * This is used when exporting prominence distribution images to be used in

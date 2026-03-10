@@ -16,7 +16,6 @@
 
 #include "graph.h"
 
-
 /**
  * @brief Returns the outDegree (sum of outbound edge weights) of vertex v1
  * @param v1
@@ -64,7 +63,6 @@ QSet<int> Graph::vertexNeighborhoodSet(const int &v1)
     return QSet<int>(myNeightbors.constBegin(), myNeightbors.constEnd());
 }
 
-
 /**
  * @brief Gets the graph density (if computed) or computes it again.
  *
@@ -100,8 +98,8 @@ qreal Graph::graphDensity()
     {
         const int enabledEdges = edgesEnabled(); // E (undirected) or A (directed)
         m_graphDensity = (isUndirected())
-            ? (qreal)2 * enabledEdges / (qreal)(V * (V - 1.0))
-            : (qreal)enabledEdges / (qreal)(V * (V - 1.0));
+                             ? (qreal)2 * enabledEdges / (qreal)(V * (V - 1.0))
+                             : (qreal)enabledEdges / (qreal)(V * (V - 1.0));
     }
     else
     {

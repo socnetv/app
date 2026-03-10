@@ -76,7 +76,6 @@ void Graph::layoutRadialRandom(const bool &guides)
     double maxRadius = canvasMaxRadius();
     // offset controls how far from the centre the central nodes be positioned
     qreal offset = 0.06, randomDecimal = 0;
-    int vert = vertices();
     int progressCounter = 0;
     VList::const_iterator it;
 
@@ -103,7 +102,7 @@ void Graph::layoutRadialRandom(const bool &guides)
                  << " new radius " << new_radius;
 
         // Calculate new position
-        rad = (2.0 * M_PI / vert);
+        rad = (2.0 * M_PI / N);
         new_x = x0 + new_radius * cos(i * rad);
         new_y = y0 + new_radius * sin(i * rad);
         (*it)->setX(new_x);
@@ -121,6 +120,30 @@ void Graph::layoutRadialRandom(const bool &guides)
     progressFinish();
     setModStatus(ModStatus::VertexPositions);
 }
+
+
+/**
+ * @brief Repositions all vertices at random coordinates without emitting any signals.
+ *
+ * Used internally by force-directed layout algorithms (Eades, FR) to set up
+ * initial particle positions before the iteration loop begins. Since the iteration
+ * loop will immediately overwrite these positions and emits a bulk setNodePos pass
+ * at the end, there is no need to signal the graphics scene here.
+ *
+ * For the standalone random layout action (with progress dialog and scene update),
+ * use layoutRandom() instead.
+ */
+void Graph::layoutRandomInMemory()
+{
+    qDebug() << "Graph::layoutRandomInMemory()";
+    VList::const_iterator it;
+    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    {
+        (*it)->setX(canvasRandomX());
+        (*it)->setY(canvasRandomY());
+    }
+}
+
 
 /**
  * @brief Repositions all nodes on the periphery of a circle with given radius
@@ -219,7 +242,7 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
              << prominenceIndex
              << "type:" << layoutType;
 
-    double i = 0, std = 0, norm = 0;
+    double i = 0, stdC = 0, norm = 0;
     double new_x = 0, new_y = 0;
     qreal C = 0, maxC = 0;
     double x0 = 0, y0 = 0, maxRadius = 0, new_radius = 0, rad = 0;
@@ -293,7 +316,10 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
         graphDistancesGeodesic(true, considerWeights,
                                inverseWeights, dropIsolates);
     }
-
+    if (progressCanceled())
+    {
+        return;
+    }
     QString pMsg;
     switch (layoutType)
     {
@@ -335,90 +361,90 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
         case IndexType::DC:
         {
             C = (*it)->SDC();
-            std = (*it)->SDC();
+            stdC = (*it)->SDC();
             maxC = maxSDC;
             break;
         }
         case IndexType::CC:
         {
             C = (*it)->CC();
-            std = (*it)->SCC();
+            stdC = (*it)->SCC();
             maxC = maxSCC;
             break;
         }
         case IndexType::IRCC:
         {
             C = (*it)->IRCC();
-            std = (*it)->SIRCC();
+            stdC = (*it)->SIRCC();
             maxC = maxIRCC;
             break;
         }
         case IndexType::BC:
         {
             C = (*it)->BC();
-            std = (*it)->SBC();
+            stdC = (*it)->SBC();
             maxC = maxSBC;
             break;
         }
         case IndexType::SC:
         {
             C = (*it)->SC();
-            std = (*it)->SSC();
+            stdC = (*it)->SSC();
             maxC = maxSSC;
             break;
         }
         case IndexType::EC:
         {
             C = (*it)->EC();
-            std = (*it)->SEC();
+            stdC = (*it)->SEC();
             maxC = maxEC;
             break;
         }
         case IndexType::PC:
         {
             C = (*it)->PC();
-            std = (*it)->SPC();
+            stdC = (*it)->SPC();
             maxC = maxSPC;
             break;
         }
         case IndexType::IC:
         {
             C = (*it)->IC();
-            std = (*it)->SIC();
+            stdC = (*it)->SIC();
             maxC = maxIC;
             break;
         }
         case IndexType::EVC:
         {
             C = (*it)->EVC();
-            std = (*it)->SEVC();
+            stdC = (*it)->SEVC();
             maxC = 1;
             break;
         }
         case IndexType::DP:
         {
             C = (*it)->SDP();
-            std = (*it)->SDP();
+            stdC = (*it)->SDP();
             maxC = maxSDP;
             break;
         }
         case IndexType::PRP:
         {
             C = (*it)->PRP();
-            std = (*it)->SPRP();
+            stdC = (*it)->SPRP();
             maxC = 1;
             break;
         }
         case IndexType::PP:
         {
             C = (*it)->PP();
-            std = (*it)->SPP();
+            stdC = (*it)->SPP();
             maxC = maxPP;
             break;
         }
         };
 
-        norm = std / maxC;
+        norm = stdC / maxC;
 
         progressUpdate(++progressCounter);
 
@@ -430,8 +456,8 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
 
             qDebug() << "vertex" << (*it)->number()
                      << "pos x" << (*it)->x() << "y" << (*it)->y()
-                     << "C" << C << "stdC" << std << "maxC" << maxC
-                     << "norm (std/maxC)" << norm
+                     << "C" << C << "stdC" << stdC << "maxC" << maxC
+                     << "norm (stdC/maxC)" << norm
                      << "maxradius" << maxRadius
                      << "newradius" << maxRadius - (norm - offset) * maxRadius;
 
@@ -479,8 +505,8 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
 
             qDebug() << "vertex" << (*it)->number()
                      << "pos x" << (*it)->x() << "y" << (*it)->y()
-                     << "C" << C << "stdC" << std << "maxC " << maxC
-                     << "norm (std/maxC)" << norm
+                     << "C" << C << "stdC" << stdC << "maxC " << maxC
+                     << "norm (stdC/maxC)" << norm
                      << "maxWidth " << maxWidth
                      << " maxHeight " << maxHeight
                      << "maxHeight-(norm)*maxHeight "
@@ -527,7 +553,7 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
         { // node size
 
             qDebug() << "vertex" << (*it)->number()
-                     << "C=" << C << ", stdC=" << std << "maxC" << maxC
+                     << "C=" << C << ", stdC=" << stdC << "maxC" << maxC
                      << "initVertexSize " << initVertexSize
                      << "norm (stdC/maxC) " << norm
                      << ", (norm) * initVertexSize " << (norm * initVertexSize);
@@ -563,7 +589,7 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
         { // node color
 
             qDebug() << "vertex" << (*it)->number()
-                     << "C=" << C << ", stdC=" << std << "maxC" << maxC
+                     << "C=" << C << ", stdC=" << stdC << "maxC" << maxC
                      << "initVertexColor " << initVertexColor
                      << "norm (stdC/maxC) " << norm;
 

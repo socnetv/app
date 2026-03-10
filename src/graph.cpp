@@ -416,4 +416,3 @@ void Graph::clear(const QString &reason)
     }
     qDebug() << "Finished clearing graph data and structures.";
 }
-

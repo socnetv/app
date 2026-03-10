@@ -269,81 +269,6 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
     progressFinish();
 }
 
-/**
- * @brief
- * Writes the matrix of distances to a file
- * @param fn
- * @param considerWeights
- * @param inverseWeights
- * @param dropIsolates
- */
-void Graph::writeMatrixDistancesPlainText(const QString &fn,
-                                          const bool &considerWeights,
-                                          const bool &inverseWeights,
-                                          const bool &dropIsolates)
-{
-
-    qDebug() << "I will write distances matrix (plain-text) to file:" << fn << "First compute the distances matrix...";
-
-    graphMatrixDistanceGeodesicCreate(considerWeights, inverseWeights, dropIsolates);
-
-    qDebug() << "Writing distances matrix (plain-text) to file:" << fn;
-
-    QFile file(fn);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-        qDebug() << "Could not open file for writing. Abort.";
-        progressStatus(tr("Error. Could not write to ") + fn);
-        return;
-    }
-    QTextStream outText(&file);
-
-    outText.setRealNumberPrecision(m_reportsRealPrecision);
-    outText << "-Social Network Visualizer " << VERSION << "\n";
-    outText << tr("Network name: ") << getName() << "\n\n";
-    outText << "Distance matrix: \n";
-
-    outText << DM;
-
-    file.close();
-}
-
-/**
- * @brief Writes the shortest paths matrix to a file
- * Each SIGMA(i,j) element is the number of shortest paths (geodesics) from i and j
- * @param fn
- * @param considerWeights
- * @param inverseWeights
- */
-void Graph::writeMatrixShortestPathsPlainText(const QString &fn,
-                                              const bool &considerWeights,
-                                              const bool &inverseWeights)
-{
-
-    qDebug() << "I will write shortest paths matrix (plain-text) to file:" << fn << "First compute the shortest paths matrix...";
-
-    graphMatrixShortestPathsCreate(considerWeights, inverseWeights, false);
-
-    qDebug() << "Writing shortest paths matrix (plain-text) to file:" << fn;
-
-    QFile file(fn);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-        qDebug() << "Could not open file for writing. Abort.";
-        progressStatus(tr("Error. Could not write to ") + fn);
-        return;
-    }
-
-    QTextStream outText(&file);
-
-    outText << "-Social Network Visualizer " << VERSION << "- \n";
-    outText << tr("Network name: ") << getName() << " \n\n";
-    outText << "Shortest paths matrix: \n";
-
-    outText << SIGMA;
-
-    file.close();
-}
 
 /**
  * @brief Writes the Eccentricity report to file
@@ -352,7 +277,7 @@ void Graph::writeMatrixShortestPathsPlainText(const QString &fn,
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::writeEccentricity(const QString fileName, const bool considerWeights,
+bool Graph::writeEccentricity(const QString fileName, const bool considerWeights,
                               const bool inverseWeights, const bool dropIsolates)
 {
 
@@ -366,7 +291,7 @@ void Graph::writeEccentricity(const QString fileName, const bool considerWeights
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
@@ -375,7 +300,13 @@ void Graph::writeEccentricity(const QString fileName, const bool considerWeights
         graphDistancesGeodesic(true, considerWeights,
                                inverseWeights, dropIsolates);
     }
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        progressStatus(tr("Computation canceled."));
+        return false;
+    }
     int progressCounter = 0;
     int rowCount = 0;
     int N = vertices();
@@ -530,6 +461,8 @@ void Graph::writeEccentricity(const QString fileName, const bool considerWeights
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -538,7 +471,7 @@ void Graph::writeEccentricity(const QString fileName, const bool considerWeights
  * @param considerWeights
  * @param inverseWeights
  */
-void Graph::writeCentralityInformation(const QString fileName,
+bool Graph::writeCentralityInformation(const QString fileName,
                                        const bool considerWeights,
                                        const bool inverseWeights)
 {
@@ -553,13 +486,19 @@ void Graph::writeCentralityInformation(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
 
     QTextStream outText(&file);
 
     centralityInformation(considerWeights, inverseWeights);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        progressStatus(tr("Computation canceled."));
+        return false;
+    }
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -790,6 +729,8 @@ void Graph::writeCentralityInformation(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -799,7 +740,7 @@ void Graph::writeCentralityInformation(const QString fileName,
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::writeCentralityEigenvector(const QString fileName,
+bool Graph::writeCentralityEigenvector(const QString fileName,
                                        const bool &considerWeights,
                                        const bool &inverseWeights,
                                        const bool &dropIsolates)
@@ -815,12 +756,18 @@ void Graph::writeCentralityEigenvector(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
     centralityEigenvector(considerWeights, inverseWeights, dropIsolates);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        progressStatus(tr("Computation canceled."));
+        return false;
+    }
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -1037,6 +984,8 @@ void Graph::writeCentralityEigenvector(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -1045,7 +994,7 @@ void Graph::writeCentralityEigenvector(const QString fileName,
  * @param considerWeights
  * @param dropIsolates
  */
-void Graph::writeCentralityDegree(const QString fileName,
+bool Graph::writeCentralityDegree(const QString fileName,
                                   const bool considerWeights,
                                   const bool dropIsolates)
 {
@@ -1062,12 +1011,18 @@ void Graph::writeCentralityDegree(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false; 
     }
     QTextStream outText(&file);
 
     centralityDegree(considerWeights, dropIsolates);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        progressStatus(tr("Computation canceled."));
+        return false;
+    }
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -1320,6 +1275,8 @@ void Graph::writeCentralityDegree(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -1329,7 +1286,7 @@ void Graph::writeCentralityDegree(const QString fileName,
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::writeCentralityCloseness(const QString fileName,
+bool Graph::writeCentralityCloseness(const QString fileName,
                                      const bool considerWeights,
                                      const bool inverseWeights,
                                      const bool dropIsolates)
@@ -1349,17 +1306,22 @@ void Graph::writeCentralityCloseness(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        progressStatus(tr("Computation canceled."));
+        return false;
+    }
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
     {
-
         distImageFileName = QFileInfo(fileName).canonicalPath() +
                             QDir::separator() + QFileInfo(fileName).completeBaseName() + ".png";
     }
@@ -1607,6 +1569,8 @@ void Graph::writeCentralityCloseness(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -1616,7 +1580,7 @@ void Graph::writeCentralityCloseness(const QString fileName,
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
+bool Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
                                                    const bool considerWeights,
                                                    const bool inverseWeights,
                                                    const bool dropIsolates)
@@ -1632,12 +1596,18 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
     centralityClosenessIR(considerWeights, inverseWeights, dropIsolates);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        progressStatus(tr("Computation canceled."));
+        return false;
+    }
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -1834,6 +1804,8 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -1843,7 +1815,7 @@ void Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::writeCentralityBetweenness(const QString fileName,
+bool Graph::writeCentralityBetweenness(const QString fileName,
                                        const bool considerWeights,
                                        const bool inverseWeights,
                                        const bool dropIsolates)
@@ -1859,12 +1831,18 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        progressStatus(tr("Computation canceled."));
+        return false;
+    }
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -2110,6 +2088,8 @@ void Graph::writeCentralityBetweenness(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -2119,7 +2099,7 @@ void Graph::writeCentralityBetweenness(const QString fileName,
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::writeCentralityStress(const QString fileName,
+bool Graph::writeCentralityStress(const QString fileName,
                                   const bool considerWeights,
                                   const bool inverseWeights,
                                   const bool dropIsolates)
@@ -2135,12 +2115,18 @@ void Graph::writeCentralityStress(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        progressStatus(tr("Computation canceled."));
+        return false;
+    }
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -2347,6 +2333,8 @@ void Graph::writeCentralityStress(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -2356,7 +2344,7 @@ void Graph::writeCentralityStress(const QString fileName,
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::writeCentralityEccentricity(const QString fileName,
+bool Graph::writeCentralityEccentricity(const QString fileName,
                                         const bool considerWeights,
                                         const bool inverseWeights,
                                         const bool dropIsolates)
@@ -2372,12 +2360,18 @@ void Graph::writeCentralityEccentricity(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        progressStatus(tr("Computation canceled."));
+        return false;
+    }
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -2566,6 +2560,8 @@ void Graph::writeCentralityEccentricity(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -2575,7 +2571,7 @@ void Graph::writeCentralityEccentricity(const QString fileName,
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::writeCentralityPower(const QString fileName,
+bool Graph::writeCentralityPower(const QString fileName,
                                  const bool considerWeights,
                                  const bool inverseWeights,
                                  const bool dropIsolates)
@@ -2591,17 +2587,22 @@ void Graph::writeCentralityPower(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
     graphDistancesGeodesic(true, considerWeights, inverseWeights, dropIsolates);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        progressStatus(tr("Computation canceled."));
+        return false;
+    }
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
     {
-
         distImageFileName = QFileInfo(fileName).canonicalPath() +
                             QDir::separator() + QFileInfo(fileName).completeBaseName() + ".png";
     }
@@ -2838,6 +2839,8 @@ void Graph::writeCentralityPower(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -2846,7 +2849,7 @@ void Graph::writeCentralityPower(const QString fileName,
  * @param considerWeights
  * @param dropIsolates
  */
-void Graph::writePrestigeDegree(const QString fileName,
+bool Graph::writePrestigeDegree(const QString fileName,
                                 const bool considerWeights,
                                 const bool dropIsolates)
 {
@@ -2861,12 +2864,18 @@ void Graph::writePrestigeDegree(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
     prestigeDegree(considerWeights, dropIsolates);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        progressStatus(tr("Computation canceled."));
+        return false;
+    }
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -3119,6 +3128,8 @@ void Graph::writePrestigeDegree(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -3129,7 +3140,7 @@ void Graph::writePrestigeDegree(const QString fileName,
  * @param inverseWeights
  * @param dropIsolates
  */
-void Graph::writePrestigeProximity(const QString fileName,
+bool Graph::writePrestigeProximity(const QString fileName,
                                    const bool considerWeights,
                                    const bool inverseWeights,
                                    const bool dropIsolates)
@@ -3145,12 +3156,18 @@ void Graph::writePrestigeProximity(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
     prestigeProximity(considerWeights, inverseWeights, dropIsolates);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        progressStatus(tr("Computation canceled."));
+        return false;
+    }
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -3343,6 +3360,8 @@ void Graph::writePrestigeProximity(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -3350,7 +3369,7 @@ void Graph::writePrestigeProximity(const QString fileName,
  * @param fileName
  * @param dropIsolates
  */
-void Graph::writePrestigePageRank(const QString fileName,
+bool Graph::writePrestigePageRank(const QString fileName,
                                   const bool dropIsolates)
 {
 
@@ -3364,12 +3383,18 @@ void Graph::writePrestigePageRank(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
     prestigePageRank(dropIsolates);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        progressStatus(tr("Computation canceled."));
+        return false;
+    }
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -3579,83 +3604,14 @@ void Graph::writePrestigePageRank(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
-/**
- * @brief Graph::writeWalksTotalMatrixPlainText
- * Writes the total number of walks matrix
- * @param fn
- * @param netName
- * @param length
- */
-void Graph::writeWalksTotalMatrixPlainText(const QString &fn)
-{
 
-    qDebug() << "I will write (plain-text) total walks to file:" << fn;
-
-    QFile file(fn);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-        qDebug() << "Could not open file for writing. Abort.";
-        progressStatus(tr("Error. Could not write to ") + fn);
-        return;
-    }
-
-    QTextStream outText(&file);
-
-    outText << "-Social Network Visualizer " << VERSION << "\n";
-    outText << tr("Network name: ") << getName() << "\n"
-            << "\n";
-    outText << "Total number of walks of any length less than or equal to " << vertices() - 1
-            << " between each pair of nodes \n\n";
-    outText << "Warning: Walk counts consider unordered pairs of nodes\n\n";
-
-    int N = vertices();
-
-    graphWalksMatrixCreate(N, 0, true);
-
-    outText << XSM;
-
-    file.close();
-}
 
 /**
- * @brief Graph::writeWalksOfLengthMatrixPlainText
- * @param fn
- * @param length
- */
-void Graph::writeWalksOfLengthMatrixPlainText(const QString &fn, const int &length)
-{
-
-    qDebug() << "I will write (plain-text) walks of length:" << length
-             << "to file:" << fn;
-
-    QFile file(fn);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-        qDebug() << "Could not open file for writing. Abort.";
-        progressStatus(tr("Error. Could not write to ") + fn);
-        return;
-    }
-    progressStatus(tr("Writing Walks matrix to file:") + fn);
-
-    QTextStream outText(&file);
-
-    outText << "-Social Network Visualizer " << VERSION << "- \n";
-    outText << "Network name: " << getName() << " \n";
-    outText << "Number of walks of length " << length << " between each pair of nodes \n\n";
-
-    int N = vertices();
-    graphWalksMatrixCreate(N, length, true);
-
-    outText << XM;
-
-    file.close();
-}
-
-/**
- * @brief Calls graphWalksMatrixCreate() to compute walks and writes the
- * Walks of given length matrix to a file in HTML.
+ * @brief Writes the walks of given length matrix to a file in HTML.
  * If length = 0, it writes the Total Walks matrix.
  * @param fn
  * @param length
@@ -3686,7 +3642,12 @@ void Graph::writeMatrixWalks(const QString &fn,
 
     progressStatus(tr("Computing Walks..."));
     graphWalksMatrixCreate(N, length, true);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressStatus(tr("Computation canceled."));
+        return;
+    }
     QTextStream outText(&file);
 
     outText << htmlHead;
@@ -3750,13 +3711,11 @@ void Graph::writeMatrixWalks(const QString &fn,
 
     if (length > 0)
     {
-        // XM.printHTMLTable(outText);
         writeMatrixHTMLTable(outText, XM, true);
     }
     else
     {
         writeMatrixHTMLTable(outText, XSM, true);
-        // XSM.printHTMLTable(outText);
     }
 
     outText << "<p>&nbsp;</p>";
@@ -3807,12 +3766,11 @@ void Graph::writeReachabilityMatrixPlainText(const QString &fn, const bool &drop
 }
 
 /**
- * @brief Graph::writeClusteringCoefficient
- * Writes the clustering coefficients to a file
+ * @brief Writes the clustering coefficients to a file
  * @param fileName
  * @param considerWeights
  */
-void Graph::writeClusteringCoefficient(const QString fileName,
+bool Graph::writeClusteringCoefficient(const QString fileName,
                                        const bool considerWeights)
 {
 
@@ -3825,7 +3783,7 @@ void Graph::writeClusteringCoefficient(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
@@ -3836,7 +3794,12 @@ void Graph::writeClusteringCoefficient(const QString fileName,
     VList::const_iterator it;
 
     averageCLC = clusteringCoefficient(true);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressStatus(tr("Computation canceled."));
+        return false;
+    }
     QString pMsg = tr("Writing Clustering Coefficients to file. \nPlease wait...");
     progressStatus(pMsg);
     progressCreate(N, pMsg);
@@ -3913,6 +3876,13 @@ void Graph::writeClusteringCoefficient(const QString fileName,
     {
 
         progressUpdate(++progressCounter);
+        if (progressCanceled())
+        {
+            file.close();
+            progressFinish();
+            progressStatus(tr("Computation canceled."));
+            return false;
+        }
 
         rowCount++;
 
@@ -4002,10 +3972,12 @@ void Graph::writeClusteringCoefficient(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 // Writes the triad census to a file
-void Graph::writeTriadCensus(const QString fileName,
+bool Graph::writeTriadCensus(const QString fileName,
                              const bool considerWeights)
 {
 
@@ -4020,7 +3992,7 @@ void Graph::writeTriadCensus(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
 
     QTextStream outText(&file);
@@ -4033,7 +4005,13 @@ void Graph::writeTriadCensus(const QString fileName,
         {
             qDebug() << "Error in graphTriadCensus(). Exiting...";
             file.close();
-            return;
+            return false;
+        }
+        if (progressCanceled())
+        {
+            file.close();
+            progressStatus(tr("Computation canceled."));
+            return false;
         }
     }
 
@@ -4140,11 +4118,12 @@ void Graph::writeTriadCensus(const QString fileName,
     file.close();
 
     progressFinish();
+
+    return true;
 }
 
 /**
- * @brief Graph::writeCliqueCensus
- * Calls graphCliques() to compute all cliques (maximal connected subgraphs) of the network.
+ * @brief Calls graphCliques() to compute all cliques (maximal connected subgraphs) of the network.
  * Then writes the results into a file, along with the Actor by clique analysis,
  * the Co-membership matrix and the Hierarchical clustering of overlap matrix
  * @param fileName
@@ -4195,7 +4174,13 @@ bool Graph::writeCliqueCensus(const QString &fileName,
 
     // Call graphCliques() to compute all cliques (maximal connected subgraphs) of the network.
     graphCliques();
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        progressStatus(tr("Computation canceled."));
+        return false;
+    }
     pMsg = tr("Writing Clique Census to file. Please wait..");
     progressStatus(pMsg);
 
@@ -4465,14 +4450,24 @@ bool Graph::writeCliqueCensus(const QString &fileName,
 }
 
 /**
- * @brief Writes Hierarchical Clustering Analysis to a given file
- * @param fileName
- * @param matrix
- * @param similarityMeasure
- * @param method
- * @param considerWeights
- * @param inverseWeights
- * @param dropIsolates
+ * @brief Performs Hierarchical Cluster Analysis (HCA) and writes the results to an HTML report file.
+ *
+ * The analysis proceeds in three phases:
+ * 1. Build the structural equivalence matrix (adjacency or geodesic distances).
+ * 2. Run the hierarchical clustering algorithm on the equivalence matrix.
+ * 3. Write the HTML report including the equivalence matrix and dendrogram.
+ *
+ * @param fileName        Path to the output HTML report file.
+ * @param varLocation     Whether variables are in rows or columns ("rows"/"cols").
+ * @param matrix          Input matrix type: "adjacency" or "distances".
+ * @param metric          Distance/dissimilarity metric (e.g., "euclidean", "manhattan").
+ * @param method          Clustering linkage method (e.g., "single", "complete", "average").
+ * @param diagonal        If true, include the diagonal of the matrix in computations.
+ * @param dendrogram      If true, include dendrogram output in the report.
+ * @param considerWeights If true, edge weights are used in distance computations.
+ * @param inverseWeights  If true, edge weights are inverted before use.
+ * @param dropIsolates    If true, isolate nodes are excluded from the analysis.
+ * @return true on success, false if the computation was cancelled or an error occurred.
  */
 bool Graph::writeClusteringHierarchical(const QString &fileName,
                                         const QString &varLocation,
@@ -4516,14 +4511,27 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
     {
     case MATRIX_ADJACENCY:
         createMatrixAdjacency(dropIsolates);
+        if (progressCanceled())
+        {
+            file.close();
+            progressStatus(tr("Computation canceled."));
+            return false;
+        }
         STR_EQUIV = AM;
         break;
     case MATRIX_DISTANCES:
-        graphMatrixDistanceGeodesicCreate(considerWeights, inverseWeights, dropIsolates);
+        if (!graphMatrixDistanceGeodesicCreate(considerWeights, inverseWeights, dropIsolates))
+        {
+            file.close();
+            progressStatus(tr("Computation canceled."));
+            return false;
+        }
         STR_EQUIV = DM;
         break;
     default:
-        break;
+        file.close();
+        progressStatus(tr("Error: unsupported matrix type."));
+        return false;
     }
 
     if (!graphClusteringHierarchical(STR_EQUIV,
@@ -4537,8 +4545,8 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
                                      dropIsolates))
     {
         qDebug() << "Graph::writeClusteringHierarchical() - HCA failed. Returning...";
+        file.close();
         progressStatus("Error completing HCA analysis");
-        progressFinish();
         return false;
     }
 
@@ -4605,9 +4613,14 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
             << "</p>";
 
     progressUpdate(N / 3);
-
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        progressStatus(tr("Computation canceled."));
+        return false;
+    }
     writeMatrixHTMLTable(outText, STR_EQUIV, true, false, false, dropIsolates);
-    // STR_EQUIV.printHTMLTable(outText,true,false);
 
     outText << "<p>"
             << "<span class=\"info\">"
@@ -4616,6 +4629,13 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
             << "</p>";
 
     progressUpdate(2 * N / 3);
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        progressStatus(tr("Computation canceled."));
+        return false;
+    }
     writeClusteringHierarchicalResultsToStream(outText, N, dendrogram);
 
     outText << "<p>&nbsp;</p>";
@@ -4855,108 +4875,6 @@ void Graph::writeClusteringHierarchicalResultsToStream(QTextStream &outText,
     } // end if dendrogram
 }
 
-/**
- * @brief Writes similarity matrix based on a matching measure to given file
- * @param fileName
- * @param measure
- * @param matrix
- * @param varLocation
- * @param diagonal
- * @param considerWeights
- */
-void Graph::writeMatrixSimilarityMatchingPlain(const QString fileName,
-                                               const int &measure,
-                                               const QString &matrix,
-                                               const QString &varLocation,
-                                               const bool &diagonal,
-                                               const bool &considerWeights)
-{
-
-    Q_UNUSED(considerWeights);
-
-    QFile file(fileName);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-        qDebug() << "Could not open file for writing. Abort.";
-        progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
-    }
-    QTextStream outText(&file);
-
-    progressStatus((tr("Examining pair-wise similarity of actors...")));
-
-    Matrix SCM;
-    if (matrix == "Adjacency")
-    {
-        createMatrixAdjacency();
-        createMatrixSimilarityMatching(AM, SCM, measure, varLocation, diagonal, considerWeights);
-    }
-    else if (matrix == "Distances")
-    {
-        graphDistancesGeodesic();
-        createMatrixSimilarityMatching(DM, SCM, measure, varLocation, diagonal, considerWeights);
-    }
-    else
-    {
-        return;
-    }
-
-    progressStatus(tr("Writing similarity coefficients to file: ") + fileName);
-
-    outText.setRealNumberPrecision(m_reportsRealPrecision);
-
-    outText << tr("SIMILARITY MATRIX: MATCHING COEFFICIENTS (SMMC)") << "\n\n";
-
-    outText << qSetPadChar('.') << qSetFieldWidth(20) << Qt::left
-            << tr("Network name: ") << Qt::reset << getName() << "\n"
-            << qSetPadChar('.') << qSetFieldWidth(20) << Qt::left
-            << tr("Input matrix: ") << Qt::reset << matrix << "\n"
-            << qSetPadChar('.') << qSetFieldWidth(20) << Qt::left
-            << tr("Variables in: ") << Qt::reset << ((varLocation != "Rows" && varLocation != "Columns") ? "Concatenated rows + columns " : varLocation) << "\n"
-            << qSetPadChar('.') << qSetFieldWidth(20) << Qt::left
-            << tr("Matching measure: ") << Qt::reset;
-
-    outText << graphMetricTypeToString(measure);
-
-    outText << "\n"
-            << qSetPadChar('.') << qSetFieldWidth(20) << Qt::left
-            << tr("Diagonal: \t") << Qt::reset << ((diagonal) ? "Included" : "Not included") << "\n\n";
-
-    outText << tr("Analysis results") << "\n\n";
-    if (measure == METRIC_HAMMING_DISTANCE)
-        outText << tr("SMMC range: 0 < C") << "\n\n";
-    else
-        outText << tr("SMMC range: 0 < C < 1") << "\n\n";
-
-    outText << SCM;
-
-    outText << "\n";
-
-    if (measure == METRIC_HAMMING_DISTANCE)
-    {
-        outText << tr("SMMC = 0, when two actors are absolutely similar (no tie/distance differences).") << "\n";
-        outText << tr(
-            "SMMC > 0, when two actors have some differences in their ties/distances, \n"
-            "i.e. SMMC = 3 means the two actors have 3 differences in their tie/distance profiles to other actors.");
-    }
-    else
-    {
-        outText << tr("SMMC = 0, when there is no tie profile similarity at all.") << "\n";
-        outText << tr(
-            "SMMC > 0, when two actors have some matches in their ties/distances, \n"
-            "i.e. SMMC = 1 means the two actors have their ties to other actors exactly the same all the time.");
-    }
-
-    outText << "\n\n";
-
-    outText << tr("Similarity Matrix by Matching Measure Report,\n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
-            << actualDateTime.currentDateTime()
-                   .toString(QString("ddd, dd.MMM.yyyy hh:mm:ss"))
-            << "\n\n";
-
-    file.close();
-}
 
 /**
  * @brief Writes dissimilarity matrix based on a metric/measure to given html file
@@ -4966,7 +4884,7 @@ void Graph::writeMatrixSimilarityMatchingPlain(const QString fileName,
  * @param diagonal
  * @param considerWeights
  */
-void Graph::writeMatrixDissimilarities(const QString fileName,
+bool Graph::writeMatrixDissimilarities(const QString fileName,
                                        const QString &metricStr,
                                        const QString &varLocation,
                                        const bool &diagonal,
@@ -4986,7 +4904,7 @@ void Graph::writeMatrixDissimilarities(const QString fileName,
     {
         qDebug() << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
@@ -4994,6 +4912,12 @@ void Graph::writeMatrixDissimilarities(const QString fileName,
     int N = vertices();
 
     createMatrixAdjacency();
+    if (progressCanceled())
+    {
+        file.close();
+        progressFinish();
+        return false;
+    }
 
     progressStatus((tr("Examining pair-wise tie profile dissimilarities of actors...")));
 
@@ -5061,7 +4985,6 @@ void Graph::writeMatrixDissimilarities(const QString fileName,
             << "</span>"
             << "</p>";
 
-    // DSM.printHTMLTable(outText);
     writeMatrixHTMLTable(outText, DSM, true);
     outText << "<p class=\"description\">";
     outText << "<span class=\"info\">"
@@ -5088,6 +5011,7 @@ void Graph::writeMatrixDissimilarities(const QString fileName,
     outText << htmlEnd;
 
     file.close();
+    return true;
 }
 
 /**
@@ -5099,7 +5023,7 @@ void Graph::writeMatrixDissimilarities(const QString fileName,
  * @param diagonal
  * @param considerWeights
  */
-void Graph::writeMatrixSimilarityMatching(const QString fileName,
+bool Graph::writeMatrixSimilarityMatching(const QString fileName,
                                           const QString &measure,
                                           const QString &matrix,
                                           const QString &varLocation,
@@ -5121,7 +5045,7 @@ void Graph::writeMatrixSimilarityMatching(const QString fileName,
     {
         qDebug() << "Could not open (for writing) file:" << fileName;
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
@@ -5133,6 +5057,12 @@ void Graph::writeMatrixSimilarityMatching(const QString fileName,
     if (matrix == "Adjacency")
     {
         createMatrixAdjacency();
+        if (progressCanceled())
+        {
+            file.close();
+            progressFinish();
+            return false;
+        }        
         createMatrixSimilarityMatching(AM, SCM, measureInt,
                                        varLocation, diagonal, considerWeights);
     }
@@ -5144,7 +5074,8 @@ void Graph::writeMatrixSimilarityMatching(const QString fileName,
     }
     else
     {
-        return;
+        file.close();
+        return false;
     }
 
     QString pMsg = tr("Writing Similarity coefficients to file. \nPlease wait...");
@@ -5218,7 +5149,7 @@ void Graph::writeMatrixSimilarityMatching(const QString fileName,
             << "</p>";
 
     progressUpdate(0);
-    // SCM.printHTMLTable(outText);
+
     writeMatrixHTMLTable(outText, SCM, true);
 
     outText << "<p class=\"description\">";
@@ -5266,6 +5197,8 @@ void Graph::writeMatrixSimilarityMatching(const QString fileName,
 
     progressUpdate(1);
     progressFinish();
+
+    return true;
 }
 
 /**
@@ -5274,7 +5207,7 @@ void Graph::writeMatrixSimilarityMatching(const QString fileName,
  * @param fileName
  * @param considerWeights
  */
-void Graph::writeMatrixSimilarityPearson(const QString fileName,
+bool Graph::writeMatrixSimilarityPearson(const QString fileName,
                                          const bool considerWeights,
                                          const QString &matrix,
                                          const QString &varLocation,
@@ -5292,7 +5225,7 @@ void Graph::writeMatrixSimilarityPearson(const QString fileName,
     {
         qDebug() << "Could not open (for writing) file:" << fileName;
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
     QTextStream outText(&file);
 
@@ -5304,16 +5237,29 @@ void Graph::writeMatrixSimilarityPearson(const QString fileName,
     if (matrix == "Adjacency")
     {
         createMatrixAdjacency();
+        if (progressCanceled())
+        {
+            file.close();
+            progressFinish();
+            return false;
+        }        
         createMatrixSimilarityPearson(AM, PCC, varLocation, diagonal);
     }
     else if (matrix == "Distances")
     {
         graphDistancesGeodesic();
+        if (progressCanceled())
+        {
+            file.close();
+            progressFinish();
+            return false;
+        }        
         createMatrixSimilarityPearson(DM, PCC, varLocation, diagonal);
     }
     else
     {
-        return;
+        file.close();
+        return false;
     }
 
     progressStatus(tr("Writing Pearson coefficients to file: ") + fileName);
@@ -5373,7 +5319,6 @@ void Graph::writeMatrixSimilarityPearson(const QString fileName,
             << "</span>"
             << "</p>";
 
-    // PCC.printHTMLTable(outText);
     writeMatrixHTMLTable(outText, PCC, true);
 
     outText << "<p class=\"description\">";
@@ -5409,81 +5354,8 @@ void Graph::writeMatrixSimilarityPearson(const QString fileName,
     outText << htmlEnd;
 
     file.close();
-}
 
-/**
- * @brief
- * Calls Graph::graphSimilariyPearsonCorrelationCoefficients() and
- * writes Pearson Correlation Coefficients to given file
- * @param fileName
- * @param considerWeights
- */
-void Graph::writeMatrixSimilarityPearsonPlainText(const QString fileName,
-                                                  const bool considerWeights,
-                                                  const QString &matrix,
-                                                  const QString &varLocation,
-                                                  const bool &diagonal)
-{
-    qDebug() << "Writing Pearson Correlation coefficients (plain text) to file:" << fileName;
-
-    Q_UNUSED(considerWeights);
-    QFile file(fileName);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-        qDebug() << "Could not open (for writing) file:" << fileName;
-        progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
-    }
-    QTextStream outText(&file);
-
-    progressStatus((tr("Calculating Pearson Correlations...")));
-
-    Matrix PCC;
-    if (matrix == "Adjacency")
-    {
-        createMatrixAdjacency();
-        createMatrixSimilarityPearson(AM, PCC, varLocation, diagonal);
-    }
-    else if (matrix == "Distances")
-    {
-        graphDistancesGeodesic();
-        createMatrixSimilarityPearson(DM, PCC, varLocation, diagonal);
-    }
-    else
-    {
-        return;
-    }
-
-    progressStatus(tr("Writing Pearson coefficients to file: ") + fileName);
-
-    outText.setRealNumberPrecision(m_reportsRealPrecision);
-
-    outText << tr("PEARSON CORRELATION COEFFICIENTS (PCC) MATRIX") << "\n\n";
-
-    outText << tr("Network name: ") << getName() << "\n"
-            << tr("Input matrix: ") << matrix << "\n"
-            << tr("Variables in: ") << ((varLocation != "Rows" && varLocation != "Columns") ? "Concatenated rows + columns " : varLocation)
-            << "\n\n";
-    outText << tr("Analysis results") << "\n\n";
-
-    outText << tr("PCC range: -1 < C < 1") << "\n";
-
-    outText << PCC;
-
-    outText << "\n";
-    outText << tr("PCC = 0, when there is no correlation at all.\n");
-    outText << tr(
-        "PCC > 0, when there is positive correlation, i.e. +1 means actors with same patterns of ties/distances.\n");
-    outText << tr(
-        "PCC < 0, when there is negative correlation, i.e. -1 for actors with exactly opposite patterns of ties.\n");
-    outText << "\n\n";
-    outText << tr("Pearson Correlation Coefficients Report,\n");
-    outText << tr("Created by SocNetV ") << VERSION << ": "
-            << actualDateTime.currentDateTime()
-                   .toString(QString("ddd, dd.MMM.yyyy hh:mm:ss"))
-            << "\n\n";
-
-    file.close();
+    return true;
 }
 
 /**
@@ -5830,10 +5702,26 @@ void Graph::writeDataSetToFile(const QString dir, const QString fileName)
     }
 }
 
+
 /**
-    Writes the specified matrix of social network to file fn
-*/
-void Graph::writeMatrix(const QString &fn,
+ * @brief Computes and writes the specified matrix of the social network to an HTML report file.
+ *
+ * Supported matrix types: adjacency, laplacian, degree, geodesic distances,
+ * shortest paths (geodesics), inverse adjacency, reachability, transpose,
+ * cocitation, and tie-profile distance matrices (Euclidean, Hamming, Jaccard,
+ * Manhattan, Chebyshev).
+ *
+ * @param fn              Path to the output HTML report file.
+ * @param matrix          Matrix type constant (e.g., MATRIX_ADJACENCY, MATRIX_DISTANCES).
+ * @param considerWeights If true, edge weights are used in distance computations.
+ * @param inverseWeights  If true, edge weights are inverted before use.
+ * @param dropIsolates    If true, isolate nodes are excluded from the analysis.
+ * @param varLocation     Whether variables are in rows or columns ("rows"/"cols"),
+ *                        used for tie-profile distance matrices.
+ * @param simpler         Reserved for future use.
+ * @return true on success, false if the computation was cancelled or an error occurred.
+ */
+bool Graph::writeMatrix(const QString &fn,
                         const int &matrix,
                         const bool &considerWeights,
                         const bool &inverseWeights,
@@ -5854,7 +5742,7 @@ void Graph::writeMatrix(const QString &fn,
     {
         qDebug() << "Could not open (for writing) file:" << fn;
         progressStatus(tr("Error. Could not write to ") + fn);
-        return;
+        return false;
     }
 
     bool inverseResult = false;
@@ -5864,57 +5752,119 @@ void Graph::writeMatrix(const QString &fn,
     {
     case MATRIX_ADJACENCY:
         createMatrixAdjacency();
+        if (progressCanceled())
+        {
+            file.close();
+            progressStatus(tr("Computation canceled."));
+            return false;
+        }
         progressStatus(tr("Adjacency recomputed. Writing Adjacency Matrix..."));
         break;
     case MATRIX_LAPLACIAN:
         progressStatus(tr("Need to recompute Adjacency Matrix. Please wait..."));
         createMatrixAdjacency();
+        if (progressCanceled())
+        {
+            file.close();
+            progressStatus(tr("Computation canceled."));
+            return false;
+        }
         progressStatus(tr("Adjacency recomputed. Writing Laplacian Matrix..."));
         break;
     case MATRIX_DEGREE:
         progressStatus(tr("Need to recompute Adjacency Matrix. Please wait..."));
         createMatrixAdjacency();
+        if (progressCanceled())
+        {
+            file.close();
+            progressStatus(tr("Computation canceled."));
+            return false;
+        }
         progressStatus(tr("Adjacency recomputed. Writing Degree Matrix..."));
         break;
     case MATRIX_DISTANCES:
-        graphMatrixDistanceGeodesicCreate(considerWeights, inverseWeights, dropIsolates);
+        if (!graphMatrixDistanceGeodesicCreate(considerWeights, inverseWeights, dropIsolates))
+        {
+            file.close();
+            progressStatus(tr("Computation canceled."));
+            return false;
+        }
         progressStatus(tr("Distances recomputed. Writing Distances Matrix..."));
         break;
     case MATRIX_GEODESICS:
         graphMatrixShortestPathsCreate(considerWeights, inverseWeights, false);
+        if (progressCanceled())
+        {
+            file.close();
+            progressStatus(tr("Computation canceled."));
+            return false;
+        }
         progressStatus(tr("Distances recomputed. Writing Shortest Paths Matrix..."));
         break;
     case MATRIX_ADJACENCY_INVERSE:
         progressStatus(tr("Computing Inverse Adjacency Matrix. Please wait..."));
         inverseResult = createMatrixAdjacencyInverse(QString("lu"));
+        if (progressCanceled())
+        {
+            file.close();
+            progressStatus(tr("Computation canceled."));
+            return false;
+        }
         progressStatus(tr("Inverse Adjacency Matrix computed. Writing Matrix..."));
         break;
     case MATRIX_REACHABILITY:
         createMatrixReachability();
+        if (progressCanceled())
+        {
+            file.close();
+            progressStatus(tr("Computation canceled."));
+            return false;
+        }
         progressStatus(tr("Writing Reachability Matrix..."));
         break;
 
     case MATRIX_ADJACENCY_TRANSPOSE:
         progressStatus(tr("Need to recompute Adjacency Matrix. Please wait..."));
         createMatrixAdjacency();
+        if (progressCanceled())
+        {
+            file.close();
+            progressStatus(tr("Computation canceled."));
+            return false;
+        }
         progressStatus(tr("Adjacency recomputed. Writing Adjacency Matrix..."));
         break;
     case MATRIX_COCITATION:
         progressStatus(tr("Need to recompute Adjacency Matrix. Please wait..."));
         createMatrixAdjacency();
+        if (progressCanceled())
+        {
+            file.close();
+            progressStatus(tr("Computation canceled."));
+            return false;
+        }
         progressStatus(tr("Adjacency recomputed. Writing Adjacency Matrix..."));
         break;
     case MATRIX_DISTANCES_HAMMING:
     case MATRIX_DISTANCES_JACCARD:
     case MATRIX_DISTANCES_MANHATTAN:
     case MATRIX_DISTANCES_EUCLIDEAN:
+    case MATRIX_DISTANCES_CHEBYSHEV:
         progressStatus(tr("Need to recompute tie profile distances. Please wait..."));
         createMatrixAdjacency();
+        if (progressCanceled())
+        {
+            file.close();
+            progressStatus(tr("Computation canceled."));
+            return false;
+        }
         progressStatus(tr("Tie profile distances recomputed. Writing matrix..."));
         break;
 
     default:
-        break;
+        file.close();
+        progressStatus(tr("Error: unsupported matrix type."));
+        return false;
     }
 
     QTextStream outText(&file);
@@ -5992,7 +5942,6 @@ void Graph::writeMatrix(const QString &fn,
                 << "<br />"
                 << "</p>";
         writeMatrixHTMLTable(outText, AM, true, false, false);
-        // AM.printHTMLTable(outText,true);
         break;
     case MATRIX_LAPLACIAN:
         outText << "<p class=\"description\">"
@@ -6007,7 +5956,6 @@ void Graph::writeMatrix(const QString &fn,
                       "- and all other elements zero.<br />")
                 << "<br />"
                 << "</p>";
-        // AM.laplacianMatrix().printHTMLTable(outText,true,false,false);
         writeMatrixHTMLTable(outText, AM.laplacianMatrix(), true, false, false);
         break;
     case MATRIX_DEGREE:
@@ -6017,7 +5965,6 @@ void Graph::writeMatrix(const QString &fn,
                       "and all other elements are zero.")
                 << "<br />"
                 << "</p>";
-        // AM.degreeMatrix().printHTMLTable(outText, true);
         writeMatrixHTMLTable(outText, AM.degreeMatrix(), true, false, false);
         break;
     case MATRIX_DISTANCES:
@@ -6029,7 +5976,6 @@ void Graph::writeMatrix(const QString &fn,
                 << "<br />"
                 << "</p>";
         writeMatrixHTMLTable(outText, DM, true);
-        // DM.printHTMLTable(outText,true);
         break;
     case MATRIX_GEODESICS:
         outText << "<p class=\"description\">"
@@ -6040,7 +5986,6 @@ void Graph::writeMatrix(const QString &fn,
                 << "<br />"
                 << "</p>";
         writeMatrixHTMLTable(outText, SIGMA, true);
-        // SIGMA.printHTMLTable(outText,true);
         break;
 
     case MATRIX_ADJACENCY_INVERSE:
@@ -6054,7 +5999,6 @@ void Graph::writeMatrix(const QString &fn,
         else
         {
             writeMatrixHTMLTable(outText, invAM, true);
-            // invAM.printHTMLTable(outText,true);
         }
         break;
     case MATRIX_REACHABILITY:
@@ -6069,7 +6013,6 @@ void Graph::writeMatrix(const QString &fn,
                 << "<br />"
                 << "</p>";
         writeMatrixHTMLTable(outText, XRM, true);
-        // XRM.printHTMLTable(outText,true);
         break;
 
     case MATRIX_ADJACENCY_TRANSPOSE:
@@ -6083,7 +6026,6 @@ void Graph::writeMatrix(const QString &fn,
                 << "</p>";
 
         writeMatrixHTMLTable(outText, AM.transpose(), true);
-        // AM.transpose().printHTMLTable(outText,true);
         break;
 
     case MATRIX_COCITATION:
@@ -6098,7 +6040,6 @@ void Graph::writeMatrix(const QString &fn,
                 << tr("C is a symmetric matrix.")
                 << "</p>";
         writeMatrixHTMLTable(outText, AM.cocitationMatrix(), true);
-        // AM.cocitationMatrix().printHTMLTable(outText,true);
         break;
 
     case MATRIX_DISTANCES_EUCLIDEAN:
@@ -6112,7 +6053,6 @@ void Graph::writeMatrix(const QString &fn,
         writeMatrixHTMLTable(outText,
                              AM.distancesMatrix(METRIC_EUCLIDEAN_DISTANCE, varLocation, false, true),
                              true, false, false);
-        // AM.distancesMatrix(METRIC_EUCLIDEAN_DISTANCE, varLocation, false, true ).printHTMLTable(outText,true);
         break;
     case MATRIX_DISTANCES_HAMMING:
         outText << "<p class=\"description\">"
@@ -6125,7 +6065,6 @@ void Graph::writeMatrix(const QString &fn,
         writeMatrixHTMLTable(outText,
                              AM.distancesMatrix(METRIC_HAMMING_DISTANCE, varLocation, false, true),
                              true, false, false);
-        // AM.distancesMatrix(METRIC_HAMMING_DISTANCE, varLocation, false, true ).printHTMLTable(outText,true);
         break;
     case MATRIX_DISTANCES_JACCARD:
         outText << "<p class=\"description\">"
@@ -6137,7 +6076,6 @@ void Graph::writeMatrix(const QString &fn,
         writeMatrixHTMLTable(outText,
                              AM.distancesMatrix(METRIC_JACCARD_INDEX, "Rows", false, true),
                              true, false, false);
-        // AM.distancesMatrix(METRIC_JACCARD_INDEX, "Rows", false, true ).printHTMLTable(outText,true);
 
         break;
     case MATRIX_DISTANCES_MANHATTAN:
@@ -6151,7 +6089,6 @@ void Graph::writeMatrix(const QString &fn,
         writeMatrixHTMLTable(outText,
                              AM.distancesMatrix(METRIC_MANHATTAN_DISTANCE, varLocation, false, true),
                              true, false, false);
-        // AM.distancesMatrix(METRIC_MANHATTAN_DISTANCE, varLocation, false, true ).printHTMLTable(outText,true);
         break;
     case MATRIX_DISTANCES_CHEBYSHEV:
         outText << "<p class=\"description\">"
@@ -6163,7 +6100,6 @@ void Graph::writeMatrix(const QString &fn,
         writeMatrixHTMLTable(outText,
                              AM.distancesMatrix(METRIC_CHEBYSHEV_MAXIMUM, varLocation, false, true),
                              true, false, false);
-        // AM.distancesMatrix(METRIC_CHEBYSHEV_MAXIMUM, varLocation, false, true ).printHTMLTable(outText,true);
         break;
 
     default:
@@ -6183,6 +6119,8 @@ void Graph::writeMatrix(const QString &fn,
     outText << htmlEnd;
 
     file.close();
+    progressFinish();
+    return true;
 }
 
 /**
@@ -6665,111 +6603,3 @@ void Graph::writeMatrixAdjacencyPlot(const QString fn,
     progressFinish();
 }
 
-/**
- * @brief Calls Graph::createMatrixAdjacencyInverse(method) to compute
- * the inverse of the adjacency matrix and writes it to file fn in HTML notation
- * @param fn
- * @param method
- */
-void Graph::writeMatrixAdjacencyInvert(const QString &fn,
-                                       const QString &method)
-{
-    qDebug() << "Writing inverse of the adjacency matrix to file:" << fn;
-
-    int i = 0, j = 0;
-    VList::const_iterator it, it1;
-    QFile file(fn);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-        qDebug() << "Could not open (for writing) file:" << fn;
-        progressStatus(tr("Error. Could not write to ") + fn);
-        return;
-    }
-    QTextStream outText(&file);
-
-    outText << "-Social Network Visualizer " << VERSION << "\n";
-    outText << tr("Network name: ") << getName() << "\n\n";
-    outText << tr("Inverse Matrix:") << "\n";
-    if (!createMatrixAdjacencyInverse(method))
-    {
-        outText << "\n"
-                << " The adjacency matrix is singular.";
-        file.close();
-        return;
-    }
-    int isolatedVertices = verticesListIsolated().size();
-    if (isolatedVertices > 0)
-        outText << "\n"
-                << "Dropped " << isolatedVertices
-                << " isolated vertices"
-                << "\n\n";
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-        if (!(*it)->isEnabled() || (*it)->isIsolated())
-            continue;
-        j = 0;
-        for (it1 = m_graph.cbegin(); it1 != m_graph.cend(); ++it1)
-        {
-            if (!(*it1)->isEnabled() || (*it)->isIsolated())
-                continue;
-            outText << invAM.item(i, j) << " ";
-            qDebug() << i << "," << j << " = " << invAM.item(i, j);
-            j++;
-        }
-        i++;
-        outText << "\n";
-        qDebug() << "\n";
-    }
-
-    file.close();
-}
-
-/**
- * @brief Computes the Degree matrix of the graph and writes it to given file
- * @param fn
- */
-void Graph::writeMatrixDegreeText(const QString &fn)
-{
-
-    qDebug() << "Writing degree matrix to file:" << fn;
-
-    createMatrixAdjacency();
-
-    QFile file(fn);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-        qDebug() << "Could not open (for writing) file:" << fn;
-        progressStatus(tr("Error. Could not write to ") + fn);
-        return;
-    }
-    QTextStream outText(&file);
-
-    outText << AM.degreeMatrix();
-
-    file.close();
-}
-
-/**
- * @brief Computes the Laplacian matrix of the graph and writes it to given file
- * @param fn
- */
-void Graph::writeMatrixLaplacianPlainText(const QString &fn)
-{
-
-    qDebug() << "Writing Laplacian matrix to file:" << fn;
-
-    createMatrixAdjacency();
-
-    QFile file(fn);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-        qDebug() << "Could not open (for writing) file:" << fn;
-        progressStatus(tr("Error. Could not write to ") + fn);
-        return;
-    }
-    QTextStream outText(&file);
-
-    outText << AM.laplacianMatrix();
-
-    file.close();
-}

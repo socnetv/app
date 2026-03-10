@@ -14,17 +14,44 @@ Benchmarks **do not validate correctness** — correctness is enforced by golden
 
 # What Is Being Benchmarked
 
-The benchmark harness executes:
+The benchmark harness executes two kinds of cases:
 
-```
+## Distance / Centrality (schema v1)
 
---kernel distance
+Benchmarks the `--kernel distance` (DistanceEngine + centrality computation).
 
-```
+Shipped cases (always run, CI-reproducible):
 
-Only the **distance/centrality kernel (schema v1)** is benchmarked.
+- `EIES48_T1_C1_W1` — Freeman EIES 48 actors, time 1, weighted, centralities ON
+- `EIES48_T2_C1_W1` — Freeman EIES 48 actors, time 2, weighted, centralities ON
+- `BA500_M3_C1_W0` — Barabási–Albert N=500, m=3, centralities ON
+- `BA500_M3_C0_W0` — Barabási–Albert N=500, m=3, distances only
 
-Other kernels (reachability, walks_matrix, etc.) are validated for correctness only, not performance.
+Large-net cases (run only if `~/socnetv/library/nets/large/` exists — local developer machines only, not CI):
+
+- `DIST_GRAPHML_1000N_10000A_C0_W0` — 1000 actors, 10000 arcs, distances only (`--bench 2`)
+- `DIST_GRAPHML_1000N_10000A_C1_W0` — 1000 actors, 10000 arcs, centralities ON (`--bench 2`)
+
+> **Note:** Distance computation cost is primarily a function of E (edges), not N (vertices).
+> The DistanceEngine runs BFS/Dijkstra from each source: O(N × (N + E)).
+> For dense graphs, E dominates. This is why a 1000-node/10000-arc graph
+> takes ~100× longer than a 500-node/1219-arc graph.
+
+## IO Roundtrip (schema v5)
+
+Benchmarks `--kernel io_roundtrip` load timing for large datasets.
+Measures `LOAD_MS` (file load time only, not save/reload).
+
+Shipped cases (always run, CI-reproducible):
+
+- `IO_PAJ_BA500` — Barabási–Albert N=500, m=3, Pajek format
+
+Large-net cases (run only if `~/socnetv/library/nets/large/` exists):
+
+- `IO_GRAPHML_2000N_40000E` — 2000 actors, 40000 edges, GraphML
+- `IO_GRAPHML_1000N_10000A` — 1000 actors, 10000 arcs, GraphML
+
+Other kernels (reachability, walks_matrix, prominence) are validated for correctness only, not performance.
 
 ---
 
@@ -38,12 +65,8 @@ Priority order for choosing the expected baseline file:
 2. `BENCH_BASELINE_SET=<name>`  
    → `scripts/perf_baselines/<name>/perf_expected.env`
 
-3. Auto set:  
-   `<OS>-<ARCH>-<HOST>`  
+3. Auto set: `<OS>-<ARCH>`  
    → `scripts/perf_baselines/<auto>/perf_expected.env` (if present)
-
-4. Legacy fallback:  
-   `PERF_EXPECTED_FILE` (defaults to `scripts/perf_expected.env`)
 
 The script prints an INFO line showing:
 
@@ -93,10 +116,30 @@ To treat performance regressions as hard failures:
 A case fails if:
 
 ```
-median_actual > median_expected × 1.10
+actual > expected × 1.10
 ```
 
 The tolerance is +10%.
+
+For distance cases, `actual` is the **median compute time** over N runs (`--bench N`).
+For IO cases, `actual` is the **single load time** (`LOAD_MS`). IO baselines with
+`expected == 0ms` are skipped automatically (too fast to measure reliably).
+
+IO timing regression enforcement is also available at the kernel level via
+`socnetv-cli --strict` (applies `checkIoTimings()` inside `compareGoldenV5Io()`).
+
+---
+
+# Large Net Cases
+
+Cases that use `~/socnetv/library/nets/large/` are **local-only**:
+
+- They are skipped silently in CI environments where the directory does not exist.
+- They are always guarded by `if [[ -d "$LARGE_NETS_DIR" ]]`.
+- They should not be expected to be fast — 1000-node distance benchmarks
+  take 28–47 seconds on a Debug build.
+- Record baselines for these on your own machine; do not commit baselines
+  recorded on machines with different hardware or build configurations.
 
 ---
 
@@ -111,7 +154,8 @@ Override binary path explicitly:
 SOCNETV_CLI=/path/to/socnetv-cli ./scripts/run_benchmarks.sh
 ```
 
-`BENCH_BUILD_TYPE=Debug|Release` is only a hint used for default binary path discovery.
+`BENCH_BUILD_TYPE=Debug|Release` is only a hint used for default binary path discovery
+via `scripts/lib/find_socnetv_cli.sh`.
 
 Example:
 
@@ -155,16 +199,7 @@ Baselines are not intended to be routinely overwritten.
 
 # Rollback
 
-To revert to legacy single-baseline behavior:
+To revert to a previous baseline:
 
-* Revert `scripts/run_benchmarks.sh`
-* Remove `scripts/perf_baselines/`
-
-The legacy baseline file:
-
-```
-scripts/perf_expected.env
-```
-
-remains supported.
-
+* Restore the relevant `scripts/perf_baselines/<set>/perf_expected.env` from git history.
+* Or delete the set directory and re-record with `--record`.

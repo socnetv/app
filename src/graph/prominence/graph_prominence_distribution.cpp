@@ -19,69 +19,78 @@
 #include <queue>  // std::priority_queue
 #include <vector> // std::vector (used as the container in priority_queue)
 
+namespace
+{
 
+    struct PromDistData
+    {
+        std::vector<std::pair<double, double>> points; // (value, frequency)
+        double min = 0.0;
+        double max = 0.0;
+        double minF = 0.0;
+        double maxF = 0.0;
+    };
 
-namespace {
+    static PromDistData computePromDistData(const H_StrToInt &discreteClasses)
+    {
+        // priority queue (value, frequency) ordered ascending by value
+        priority_queue<PairVF, vector<PairVF>, PairVFCompare> seriesPQ;
 
-struct PromDistData {
-    std::vector<std::pair<double,double>> points; // (value, frequency)
-    double min  = 0.0;
-    double max  = 0.0;
-    double minF = 0.0;
-    double maxF = 0.0;
-};
+        for (auto it = discreteClasses.constBegin(); it != discreteClasses.constEnd(); ++it)
+        {
+            seriesPQ.push(PairVF(it.key().toDouble(), it.value()));
+        }
 
-static PromDistData computePromDistData(const H_StrToInt &discreteClasses) {
-    // priority queue (value, frequency) ordered ascending by value
-    priority_queue<PairVF, vector<PairVF>, PairVFCompare> seriesPQ;
+        PromDistData out;
+        const size_t initialSize = seriesPQ.size();
 
-    for (auto it = discreteClasses.constBegin(); it != discreteClasses.constEnd(); ++it) {
-        seriesPQ.push(PairVF(it.key().toDouble(), it.value()));
-    }
+        if (initialSize == 0)
+        {
+            out.minF = 0.0;
+            out.maxF = 0.0;
+            return out;
+        }
 
-    PromDistData out;
-    const size_t initialSize = seriesPQ.size();
-
-    if (initialSize == 0) {
-        out.minF = 0.0;
+        out.minF = static_cast<double>(RAND_MAX);
         out.maxF = 0.0;
+
+        size_t idx = 0;
+        while (!seriesPQ.empty())
+        {
+            const double value = seriesPQ.top().value;
+            const double freq = seriesPQ.top().frequency;
+
+            out.points.emplace_back(value, freq);
+
+            if (freq < out.minF)
+                out.minF = freq;
+            if (freq > out.maxF)
+                out.maxF = freq;
+
+            if (idx == 0)
+                out.min = value;
+            if (seriesPQ.size() == 1)
+                out.max = value;
+
+            seriesPQ.pop();
+            ++idx;
+        }
+
         return out;
     }
 
-    out.minF = static_cast<double>(RAND_MAX);
-    out.maxF = 0.0;
-
-    size_t idx = 0;
-    while (!seriesPQ.empty()) {
-        const double value = seriesPQ.top().value;
-        const double freq  = seriesPQ.top().frequency;
-
-        out.points.emplace_back(value, freq);
-
-        if (freq < out.minF) out.minF = freq;
-        if (freq > out.maxF) out.maxF = freq;
-
-        if (idx == 0) out.min = value;
-        if (seriesPQ.size() == 1) out.max = value;
-
-        seriesPQ.pop();
-        ++idx;
+    static QVector<QPair<qreal, qreal>> toQPoints(const std::vector<std::pair<double, double>> &pts)
+    {
+        QVector<QPair<qreal, qreal>> out;
+        out.reserve(static_cast<int>(pts.size()));
+        for (const auto &p : pts)
+        {
+            out.append(qMakePair(static_cast<qreal>(p.first), static_cast<qreal>(p.second)));
+        }
+        return out;
     }
-
-    return out;
-}
-
-static QVector<QPair<qreal,qreal>> toQPoints(const std::vector<std::pair<double,double>> &pts) {
-    QVector<QPair<qreal,qreal>> out;
-    out.reserve(static_cast<int>(pts.size()));
-    for (const auto &p : pts) {
-        out.append(qMakePair(static_cast<qreal>(p.first), static_cast<qreal>(p.second)));
-    }
-    return out;
-}
 
 } // namespace
-
 
 /**
  * @brief Returns the IndexType of the given prominence index name
@@ -273,8 +282,6 @@ void Graph::prominenceDistribution(const int &index,
     }
 }
 
-
-
 /**
  * @brief Computes prominence distribution data and delegates Spline chart rendering.
  *
@@ -308,7 +315,6 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
         seriesName,
         distImageFileName);
 }
-
 
 /**
  * @brief Computes prominence distribution data and delegates Area chart rendering.
@@ -377,17 +383,18 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
     categories.reserve(static_cast<int>(data.points.size()));
     freqs.reserve(static_cast<int>(data.points.size()));
 
-    for (const auto &p : data.points) {
+    for (const auto &p : data.points)
+    {
         categories.append(QString::number(p.first, 'f', 6));
         freqs.append(static_cast<qreal>(p.second));
     }
 
     uiProminenceDistributionBars(categories,
-                                freqs,
-                                static_cast<qreal>(data.min),
-                                static_cast<qreal>(data.max),
-                                static_cast<qreal>(data.minF),
-                                static_cast<qreal>(data.maxF),
-                                name,
-                                distImageFileName);
+                                 freqs,
+                                 static_cast<qreal>(data.min),
+                                 static_cast<qreal>(data.max),
+                                 static_cast<qreal>(data.minF),
+                                 static_cast<qreal>(data.maxF),
+                                 name,
+                                 distImageFileName);
 }

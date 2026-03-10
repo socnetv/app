@@ -13,7 +13,6 @@
  * @see https://socnetv.org
  */
 
-
 #ifndef PARSER_H
 #define PARSER_H
 
@@ -24,40 +23,40 @@
 #include <QObject>
 #include <QMultiMap>
 #include <QDebug>
+#include <memory>
+#include "graph/io/graph_parse_sink.h"
 
 class QXmlStreamReader;
 class QXmlStreamAttributes;
-
-
 
 /**
  * @brief The Actor struct
  * Used while parsing edge lists
  */
-struct Actor {
+struct Actor
+{
     QString key;
     int value;
 };
-
 
 /**
  * @brief The CompareActors class
  * Implements a min-priority queue
  * Used while parsing weighted edge lists
  */
-class CompareActors {
-    public:
-    bool operator()(Actor& t1, Actor& t2)
+class CompareActors
+{
+public:
+    bool operator()(Actor &t1, Actor &t2)
     {
-       if (t1.value== t2.value)
-            return t1.key  > t2.key ;
-//       qDebug () << t1.value << " > " << t2.value << "?"
-//                 << ( t1.value > t2.value ) ;
-       return t1.value > t2.value;  //minimum priority
-       // Returns true if t2.value smaller than t1.value
+        if (t1.value == t2.value)
+            return t1.key > t2.key;
+        //       qDebug () << t1.value << " > " << t2.value << "?"
+        //                 << ( t1.value > t2.value ) ;
+        return t1.value > t2.value; // minimum priority
+        // Returns true if t2.value smaller than t1.value
     }
 };
-
 
 /**
  * @brief Defines a class for network file loading and parsing
@@ -65,107 +64,11 @@ class CompareActors {
  * Supports GraphML, Pajek, Adjacency, Graphviz, UCINET, EdgeLists etc
  *
  */
-class Parser :  public QObject {
-	Q_OBJECT
-public:
-	
-    Parser();
-    ~Parser();
-    void load(const QString &fileName, const QString &codecName, const int &defNodeSize,
-              const QString &defNodeColor, const QString &defNodeShape, const QString &defNodeNumberColor,
-              const int &defNodeNumberSize, const QString &defNodeLabelColor, const int &defNodeLabelSize ,
-              const QString &defEdgeColor, const int &canvasWidth, const int &canvasHeight, const int &format,
-              const QString &delim=QString(), const int &sm_mode=1, const bool &sm_has_labels=false);
-
-    bool parseAsPajek(const QByteArray &rawData);
-    bool parseAsAdjacency(const QByteArray &rawData, const QString &delimiter=",", const bool &sm_has_labels=false);
-    bool parseAsDot(const QByteArray &rawData);
-    QString preprocessDotContent(const QString &dotContent);
-    bool parseAsGraphML(const QByteArray &rawData);
-    bool parseAsGML(const QByteArray &rawData);
-    bool parseAsDL(const QByteArray &rawData);
-    bool parseAsEdgeListSimple(const QByteArray &rawData, const QString &delimiter);
-    bool parseAsEdgeListWeighted(const QByteArray &rawData, const QString &delimiter);
-    bool parseAsTwoModeSociomatrix(const QByteArray &rawData);
-
-    bool readDLKeywords(QStringList &strList, 
-        int &N, 
-        int &NM, 
-        int &NR, 
-        int &NC, 
-        bool &fullmatrixFormat, 
-        bool &edgelist1Format,
-        bool &diagonalPresent);
-
-    void readDotProperties(QString str, qreal &, QString &label,
-                       QString &shape, QString &color, QString &fontName,
-                       QString &fontColor );
-
-    bool readGraphML(QXmlStreamReader &);
-	void readGraphMLElementGraph(QXmlStreamReader &);
-	void readGraphMLElementNode (QXmlStreamReader &);
-	void endGraphMLElementNode (QXmlStreamReader &);
-	void readGraphMLElementEdge (QXmlStreamAttributes &);
-	void endGraphMLElementEdge (QXmlStreamReader &);
-	void readGraphMLElementData (QXmlStreamReader &);
-	void readGraphMLElementUnknown (QXmlStreamReader &);
-	void readGraphMLElementKey (QXmlStreamAttributes &);
-	void readGraphMLElementDefaultValue(QXmlStreamReader &);
-	void readGraphMLElementNodeGraphics (QXmlStreamReader &);
-	void readGraphMLElementEdgeGraphics (QXmlStreamReader &);
-    void createMissingNodeEdges();
-
-	bool isComment(QString str);  
-    void createRandomNodes(const int &fixedNum=1,const QString &label=QString(),
-                           const int &newNodes=1);
-
-
-signals:
-
-    void signalAddNewRelation( const QString & relName, const bool &changeRelation=false);
-    void signalSetRelation(int, const bool &updateUI=true);
-    void signalCreateNode( const int &num,
-                          const int &size,
-                          const QString &color,
-                          const QString &numColor,
-                          const int &numSize,
-                          const QString &label,
-                          const QString &lColor,
-                          const int &lSize,
-                          const QPointF &p,
-                          const QString &shape,
-                          const QString &iconPath=QString(),
-                          const bool &signalMW=false,
-                          const QHash<QString,QString> nodeCustomAttributes=QHash<QString,QString>());
-    void signalCreateNodeAtPosRandom(const bool &signalMW=false);
-    void signalCreateNodeAtPosRandomWithLabel (const int &num,
-                                         const QString &label,
-                                         const bool &signalMW=false
-                                         );
-
-    void signalCreateEdge (const int &source, const int &target, const qreal &weight,
-                          const QString &color, const int &edgeDirType,
-                          const bool &arrows, const bool &bezier,
-                          const QString &edgeLabel=QString(),
-                          const bool &signalMW=false);
-
-    void signalFileLoaded(const int &fileType,
-                          const QString &fileName,
-                          const QString &netName,
-                          const int &totalNodes,
-                          const int &totalLinks,
-                          const int &edgeDirType,
-                          const qint64 &elapsedTime,
-                          const QString &message=QString());
-
-
-    void removeDummyNode (int);
-    void finished(QString);
-	
-protected:
+class Parser : public QObject
+{
+    Q_OBJECT
 
 private:
-
     bool validateAndInitialize(const QByteArray &rawData, const QString &delimiter, const bool &sm_has_labels, QStringList &nodeLabels);
     void resetCounters();
     bool doParseAdjacency(QTextStream &ts, const QString &delimiter, const QStringList &nodeLabels);
@@ -173,12 +76,41 @@ private:
     bool createEdgesForRow(const QStringList &currentRow, int rowIndex);
     bool containsReservedKeywords(const QString &str) const;
 
+    /**
+     * @brief ParseConfig boundary - the immutable config object
+     */
+    struct ParseConfig
+    {
+        QString fileName;
+        QString codecName;
+
+        int fileFormat;
+        QString delim;
+        int sm_mode;
+        bool sm_has_labels;
+
+        int initNodeSize;
+        QString initNodeColor;
+        QString initNodeShape;
+        QString initNodeNumberColor;
+        int initNodeNumberSize;
+        QString initNodeLabelColor;
+        int initNodeLabelSize;
+
+        QString initEdgeColor;
+
+        int gwWidth;
+        int gwHeight;
+    };
+
+    SocNetV::IO::IGraphParseSink *m_parseSink = nullptr;
+    std::unique_ptr<SocNetV::IO::IGraphParseSink> m_ownedParseSink;
     QHash<QString, int> nodeHash;
-	QHash<QString, QString> keyFor, keyName, keyType, keyDefaultValue ;
+    QHash<QString, QString> keyFor, keyName, keyType, keyDefaultValue;
     QHash<QString, QString> edgesMissingNodesHash;
-    QStringList edgeMissingNodesList,edgeMissingNodesListData,relationsList;
-	QMultiMap<int, int> firstModeMultiMap, secondModeMultiMap;
-	QXmlStreamReader *xml;
+    QStringList edgeMissingNodesList, edgeMissingNodesListData, relationsList;
+    QMultiMap<int, int> firstModeMultiMap, secondModeMultiMap;
+    QXmlStreamReader *xml;
     QString fileDirPath;
     QString m_textCodecName;
     QString networkName;
@@ -192,19 +124,77 @@ private:
     QHash<QString, QString> nodeCustomAttributes, initNodeCustomAttributes;
     QString key_id, key_value, key_name, key_what, key_type;
     QString node_id, edge_id, edge_source, edge_target, edge_weight, edge_directed;
-	int gwWidth, gwHeight;
+    int gwWidth, gwHeight;
     int totalLinks, totalNodes, fileFormat, two_sm_mode, edgeDirType;
-    int initNodeSize,  initNodeNumberSize, nodeNumberSize, initNodeLabelSize;
+    int initNodeSize, initNodeNumberSize, nodeNumberSize, initNodeLabelSize;
     int nodeLabelSize, source, target, nodeSize;
     qreal initEdgeWeight, edgeWeight, arrowSize;
-    qreal bez_p1_x,bez_p1_y, bez_p2_x, bez_p2_y;
+    qreal bez_p1_x, bez_p1_y, bez_p2_x, bez_p2_y;
     bool fileLoaded, missingNode;
-	bool arrows, bezier, conv_OK;
+    bool arrows, bezier, conv_OK;
     bool bool_key, bool_node, bool_edge, fileContainsNodeColors;
     bool fileContainsNodeCoords, fileContainsLinkColors;
     bool fileContainsLinkLabels;
-	double randX, randY;
-};
+    double randX, randY;
 
+public:
+    Parser();
+    ~Parser();
+    void setParseSink(SocNetV::IO::IGraphParseSink *sink);
+    void setOwnedParseSink(std::unique_ptr<SocNetV::IO::IGraphParseSink> sink);
+    void load(const QString &fileName, const QString &codecName, const int &defNodeSize,
+              const QString &defNodeColor, const QString &defNodeShape, const QString &defNodeNumberColor,
+              const int &defNodeNumberSize, const QString &defNodeLabelColor, const int &defNodeLabelSize,
+              const QString &defEdgeColor, const int &canvasWidth, const int &canvasHeight, const int &format,
+              const QString &delim = QString(), const int &sm_mode = 1, const bool &sm_has_labels = false);
+
+    bool parseAsPajek(const QByteArray &rawData);
+    bool parseAsAdjacency(const QByteArray &rawData, const ParseConfig &cfg, const QString &delimiter);
+    bool parseAsDot(const QByteArray &rawData);
+    QString preprocessDotContent(const QString &dotContent);
+    bool parseAsGraphML(const QByteArray &rawData);
+    bool parseAsGML(const QByteArray &rawData);
+    bool parseAsDL(const QByteArray &rawData);
+    bool parseAsEdgeListSimple(const QByteArray &rawData, const QString &delimiter);
+    bool parseAsEdgeListWeighted(const QByteArray &rawData, const QString &delimiter);
+    bool parseAsTwoModeSociomatrix(const QByteArray &rawData);
+
+    bool readDLKeywords(QStringList &strList,
+                        int &N,
+                        int &NM,
+                        int &NR,
+                        int &NC,
+                        bool &fullmatrixFormat,
+                        bool &edgelist1Format,
+                        bool &diagonalPresent);
+
+    void readDotProperties(QString str, qreal &, QString &label,
+                           QString &shape, QString &color, QString &fontName,
+                           QString &fontColor);
+
+    bool readGraphML(QXmlStreamReader &);
+    void readGraphMLElementGraph(QXmlStreamReader &);
+    void readGraphMLElementNode(QXmlStreamReader &);
+    void endGraphMLElementNode(QXmlStreamReader &);
+    void readGraphMLElementEdge(QXmlStreamAttributes &);
+    void endGraphMLElementEdge(QXmlStreamReader &);
+    void readGraphMLElementData(QXmlStreamReader &);
+    void readGraphMLElementUnknown(QXmlStreamReader &);
+    void readGraphMLElementKey(QXmlStreamAttributes &);
+    void readGraphMLElementDefaultValue(QXmlStreamReader &);
+    void readGraphMLElementNodeGraphics(QXmlStreamReader &);
+    void readGraphMLElementEdgeGraphics(QXmlStreamReader &);
+    void createMissingNodeEdges();
+
+    bool isComment(QString str);
+    void createRandomNodes(const int &fixedNum = 1, const QString &label = QString(),
+                           const int &newNodes = 1);
+
+    static QString normalizeQuotedIdentifier(const QString &s);
+
+signals:
+
+    void finished(QString);
+};
 
 #endif

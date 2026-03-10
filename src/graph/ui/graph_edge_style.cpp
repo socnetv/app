@@ -16,9 +16,9 @@
 
 #include "graph.h"
 
-// 
+//
 // Visibility toggles
-// 
+//
 /**
  * @brief Changes the visibility of edge weight numbers
  * @param toggle
@@ -28,9 +28,9 @@ void Graph::edgeWeightNumbersVisibilitySet(const bool &toggle)
     initEdgeWeightNumbers = toggle;
 }
 
-// 
+//
 // Edge colors
-// 
+//
 
 /**
  * @brief Saves the default edge color
@@ -138,9 +138,9 @@ QString Graph::edgeColor(const int &v1, const int &v2)
     return m_graph[vpos[v1]]->outLinkColor(v2);
 }
 
-// 
+//
 // Edge labels
-// 
+//
 /**
  * @brief Changes the label of edge v1->v2
  * @param v1

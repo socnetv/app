@@ -84,12 +84,33 @@ DistanceEngine::DistanceEngine(Graph &g)
 {
 }
 
+/**
+ * @brief Runs the full geodesic distance (and optionally centrality) computation pipeline.
+ *
+ * Orchestrates three phases:
+ * - Phase 0 (Init): initialises scratch structures, resets aggregates,
+ *   handles the degenerate E==0 case.
+ * - Phase 1+2 (SSSP loop): runs BFS or Dijkstra from every source vertex,
+ *   accumulating per-source distance and centrality data.
+ * - Phase 3 (Finalize): connectivity scan, group-level aggregation,
+ *   normalisation of centrality scores.
+ *
+ * If the user cancels via the progress dialog, the function returns early
+ * after Phase 1+2 without finalising, and @c calculatedDistances is left
+ * @c false so the next call recomputes from scratch.
+ *
+ * @param computeCentralities  If true, also computes BC, CC, SC, EC, PC.
+ * @param considerWeights      If true, uses edge weights (Dijkstra); otherwise BFS.
+ * @param inverseWeights       If true, uses 1/weight as the distance metric.
+ * @param dropIsolates         If true, excludes isolated vertices from all calculations.
+ */
 void DistanceEngine::compute(const bool computeCentralities,
                              const bool considerWeights,
                              const bool inverseWeights,
                              const bool dropIsolates)
 {
-    qDebug() << "Graph::graphDistancesGeodesic()"
+
+    qDebug() << "DistanceEngine::compute() - "
              << "centralities" << computeCentralities
              << "considerWeights:" << considerWeights
              << "inverseWeights:" << inverseWeights
@@ -133,7 +154,12 @@ void DistanceEngine::compute(const bool computeCentralities,
                       ds,
                       csssp,
                       sink);
-
+        if (sink.progressCanceled())
+        {
+            qDebug() << "DistanceEngine::compute() - canceled. Skipping finalize.";
+            sink.progressKill();
+            return;
+        }
         // ---- Finalization: connectivity scan + aggregation ----
         finalize(computeCentralities,
                  dropIsolates,
@@ -388,7 +414,11 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
                  << "Source vertex s" << ds.s << "vpos" << ds.si;
 
         sink.progressUpdate(++ds.progressCounter);
-
+        if (sink.progressCanceled())
+        {
+            qDebug() << "DistanceEngine::runAllSources() - canceled by user. Aborting.";
+            return;
+        }
         if (!(*ds.it)->isEnabled())
         {
             qDebug() << "***** PHASE 1 (SSSP): s" << ds.s << "disabled. SKIP/CONTINUE";
@@ -1339,7 +1369,7 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                 if (dist_w > graph.graphDiameterCached())
                 {
                     graph.setDiameterCached(dist_w);
-                    
+
                     qDebug() << "    --- dijkstra: "
                                 "New graph diameter ="
                              << graph.graphDiameterCached();

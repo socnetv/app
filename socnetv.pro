@@ -12,7 +12,7 @@ TEMPLATE = app
 CONFIG  += qt thread $${ALLOW_WARNINGS} $${MY_TARGET_BUILD}
 CONFIG  += c++17
 TARGET = socnetv
-VERSION=3.3.1
+VERSION=3.4
 LANGUAGE = C++
 
 
@@ -103,6 +103,7 @@ SOURCES += src/main.cpp \
     src/graph/storage/graph_vertices.cpp \
     src/graph/storage/graph_edges.cpp \
     src/graph/io/graph_io.cpp \
+    src/graph/io/graph_parse_sink_graph.cpp \
     src/graph/relations/graph_relations.cpp \
     src/graph/filters/graph_edge_filters.cpp \
     src/graph/filters/graph_node_filters.cpp \
@@ -133,6 +134,14 @@ SOURCES += src/main.cpp \
     src/graphvertex.cpp \
     src/matrix.cpp \
     src/parser.cpp \
+    src/parser/parser_common.cpp \
+    src/parser/parser_graphml.cpp \
+    src/parser/parser_edgelist.cpp \
+    src/parser/parser_adjacency.cpp \
+    src/parser/parser_dl.cpp \
+    src/parser/parser_dot.cpp \
+    src/parser/parser_gml.cpp \
+    src/parser/parser_pajek.cpp \
     src/webcrawler.cpp \
     src/chart.cpp \
     src/graphicswidget.cpp \
@@ -172,8 +181,8 @@ RESOURCES = src/images.qrc \
 
 # This is Windows only
 win32 {
-  VERSION = 3.3.1.1           # major.minor.patch.build
-  VERSION_PE_HEADER = 3.3     # MSVC link.exe option /VERSION:x.y expects two numeric components (major.minor)
+  VERSION = 3.4.0.1           # major.minor.patch.build
+  VERSION_PE_HEADER = 3.4     # MSVC link.exe option /VERSION:x.y expects two numeric components (major.minor)
 
   #RC_FILE = src/icon.rc
   RC_ICONS = src/images/socnetv.ico

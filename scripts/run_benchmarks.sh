@@ -29,14 +29,25 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 BENCH_BUILD_TYPE="${BENCH_BUILD_TYPE:-Debug}"  # Debug|Release (hint only)
 
-DEFAULT_CLI="$ROOT_DIR/build/socnetv-cli"
-if [[ ! -x "$DEFAULT_CLI" ]]; then
-  DEFAULT_CLI="$ROOT_DIR/builds/__unspec__/${BENCH_BUILD_TYPE}/socnetv-cli"
-  if [[ ! -x "$DEFAULT_CLI" ]]; then
-    DEFAULT_CLI="$ROOT_DIR/builds/__unspec__/Debug/socnetv-cli"
+# shellcheck source=/dev/null
+. "$ROOT_DIR/scripts/lib/find_socnetv_cli.sh"
+
+if [[ -n "${SOCNETV_CLI:-}" ]]; then
+  if [[ ! -x "$SOCNETV_CLI" ]]; then
+    echo "ERROR: SOCNETV_CLI is set but not executable: $SOCNETV_CLI" >&2
+    exit 1
   fi
+else
+  SOCNETV_CLI="$(find_socnetv_cli "$ROOT_DIR" "$BENCH_BUILD_TYPE" 2>/dev/null || true)"
 fi
-SOCNETV_CLI="${SOCNETV_CLI:-$DEFAULT_CLI}"
+
+if [[ -z "${SOCNETV_CLI:-}" || ! -x "$SOCNETV_CLI" ]]; then
+  echo "ERROR: Could not find socnetv-cli." >&2
+  echo "Hint: SOCNETV_CLI=/full/path/to/socnetv-cli $0" >&2
+  exit 1
+fi
+
+echo "[bench] Using SOCNETV_CLI=$SOCNETV_CLI"
 
 BASELINE_ROOT="$ROOT_DIR/scripts/perf_baselines"
 
@@ -121,7 +132,7 @@ extract_kv_int() {
   awk -F= -v k="$key" '$1==k { print $2 }'
 }
 
-pct_slower_than() {
+within_threshold() {
   local actual="$1"
   local expected="$2"
   [[ -z "$actual" || -z "$expected" ]] && return 1
@@ -153,6 +164,65 @@ write_record_file() {
   } > "$out_file"
 }
 
+run_case_io_bench() {
+  local tag="$1"
+  local input="$2"
+  local ftype="$3"
+  shift 3
+
+  echo "=== $tag ==="
+
+  local out
+  if ! out="$("$SOCNETV_CLI" --kernel io_roundtrip -i "$input" -f "$ftype" "$@" 2>/dev/null)"; then
+    echo "ERROR: socnetv-cli failed for $tag" >&2
+    return 2
+  fi
+
+  local ok load_ms
+  ok="$(printf '%s\n' "$out" | extract_kv_int LOAD_OK | tail -n1)"
+  load_ms="$(printf '%s\n' "$out" | extract_kv_int LOAD_MS | tail -n1)"
+
+  echo "OK=$ok LOAD_MS=$load_ms"
+
+  if [[ "$ok" != "1" || -z "$load_ms" ]]; then
+    echo "ERROR: io_roundtrip benchmark did not produce valid output for $tag" >&2
+    return 2
+  fi
+
+  if [[ "${RECORD}" == "1" ]]; then
+    record_expected_var "$tag" "$load_ms"
+    echo "OK: recorded ${load_ms}ms"
+    return 0
+  fi
+
+  local expected_var="EXP_${tag}_MEDIAN_MS"
+  local expected="${!expected_var:-}"
+
+  if [[ -z "$expected" ]]; then
+    echo "WARN: no expected load_ms configured for $tag"
+    return 0
+  fi
+
+  # Skip enforcement if baseline is 0 (too fast to measure reliably)
+  if (( expected == 0 )); then
+    echo "TIMING_SKIP: baseline=0ms, not enforced for $tag"
+    return 0
+  fi
+
+  local allowed
+  allowed=$(( expected + (expected / 10) ))
+
+  if within_threshold "$load_ms" "$expected"; then
+    echo "OK: ${load_ms}ms <= ${allowed}ms (baseline ${expected}ms, +10%)"
+    return 0
+  else
+    echo "FAIL: ${load_ms}ms > ${allowed}ms (baseline ${expected}ms, +10%)"
+    [[ "$STRICT" == "1" ]] && return 1
+    return 0
+  fi
+}
+
+
 run_case() {
   local tag="$1"
   shift
@@ -167,7 +237,7 @@ run_case() {
   fi
 
   local ok median
-  ok="$(printf '%s\n' "$out" | extract_kv_int OK | tail -n1)"
+  ok="$(printf '%s\n' "$out" | extract_kv_int LOAD_OK | tail -n1)"
   median="$(printf '%s\n' "$out" | extract_kv_int COMPUTE_MS_MEDIAN | tail -n1)"
 
   echo "OK=$ok MEDIAN_MS=$median"
@@ -191,11 +261,15 @@ run_case() {
     return 0
   fi
 
-  if pct_slower_than "$median" "$expected"; then
-    echo "OK: ${median}ms <= ${expected}ms (+10%)"
+  local allowed
+  # allowed threshold = expected + 10%
+  allowed=$(( expected + (expected / 10) ))
+
+  if within_threshold "$median" "$expected"; then
+    echo "OK: ${median}ms <= ${allowed}ms (baseline ${expected}ms, +10%)"
     return 0
   else
-    echo "WARN: ${median}ms > ${expected}ms (+10%)"
+    echo "FAIL: ${median}ms > ${allowed}ms (baseline ${expected}ms, +10%)"
     [[ "$STRICT" == "1" ]] && return 1
     return 0
   fi
@@ -225,6 +299,42 @@ run_case "BA500_M3_C1_W0" \
 run_case "BA500_M3_C0_W0" \
   -i "$ROOT_DIR/src/data/Benchmark_BA_Directed_N500_m3.paj" \
   -f 2 -c 0 -w 0 -x 1 -k 0 --bench 20 || fail=1
+
+LARGE_NETS_DIR="${HOME}/socnetv/library/nets/large"
+
+# ---------------- large-net distance benchmark cases ----------------
+# Only run if ~/socnetv/library/nets/large/ exists (not shipped with repo).
+# BA500 cases above are always the CI-reproducible fallback.
+
+if [[ -d "$LARGE_NETS_DIR" ]]; then
+  run_case "DIST_GRAPHML_1000N_10000A_C0_W0" \
+    -i "$LARGE_NETS_DIR/1000actors-10000arcs.graphml" \
+    -f 1 -c 0 -w 0 -x 1 -k 0 --bench 2 || fail=1
+
+  run_case "DIST_GRAPHML_1000N_10000A_C1_W0" \
+    -i "$LARGE_NETS_DIR/1000actors-10000arcs.graphml" \
+    -f 1 -c 1 -w 0 -x 1 -k 0 --bench 2 || fail=1
+
+else
+  echo "[bench] LARGE_NETS_DIR not found ($LARGE_NETS_DIR), skipping large-net distance benchmarks" >&2
+fi
+
+# ---------------- IO roundtrip benchmark cases ----------------
+# Only large nets (N>=50) are meaningful for IO timing.
+# Uses ~/socnetv/library/nets/large/ if available, falls back to src/data/.
+
+# Always run the shipped dataset (reproducible in CI)
+run_case_io_bench "IO_PAJ_BA500" \
+  "$ROOT_DIR/src/data/Benchmark_BA_Directed_N500_m3.paj" 2 || fail=1
+
+if [[ -d "$LARGE_NETS_DIR" ]]; then
+  run_case_io_bench "IO_GRAPHML_2000N_40000E" \
+    "$LARGE_NETS_DIR/2000actors-40000edges.graphml" 1 || fail=1
+  run_case_io_bench "IO_GRAPHML_1000N_10000A" \
+    "$LARGE_NETS_DIR/1000actors-10000arcs.graphml" 1 || fail=1
+else
+  echo "[bench] LARGE_NETS_DIR not found ($LARGE_NETS_DIR), skipping large-net IO benchmarks" >&2
+fi
 
 echo "=== DONE ==="
 

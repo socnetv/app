@@ -1,0 +1,4 @@
+graph TinyGraphviz_Undir_N3 {
+    1 -- 2;
+    2 -- 3;
+}

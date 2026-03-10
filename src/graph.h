@@ -60,8 +60,6 @@ typedef QList<int> L_int;
 typedef QList<int> V_int;
 typedef QList<QString> V_str;
 
-
-
 /**
  * @brief The Graph class
  * This is the main class for a Graph, used in conjuction with GraphVertex, Parser and Matrix objects.
@@ -202,6 +200,8 @@ public slots:
 
     void slotHandleCrawlerRequestReply();
     void webSpider();
+
+    void slotCancelComputation();
 
     QString htmlEscaped(QString str) const;
 
@@ -767,7 +767,7 @@ public:
     void writeReciprocity(const QString fileName,
                           const bool considerWeights = false);
 
-    void writeMatrix(const QString &fileName,
+    bool writeMatrix(const QString &fileName,
                      const int &matrix = MATRIX_ADJACENCY,
                      const bool &considerWeights = true,
                      const bool &inverseWeights = false,
@@ -787,111 +787,84 @@ public:
     void writeMatrixAdjacencyPlot(const QString fileName,
                                   const bool &simpler = false);
 
-    void writeMatrixAdjacencyInvert(const QString &filename,
-                                    const QString &method);
-
-    void writeMatrixLaplacianPlainText(const QString &filename);
-    void writeMatrixDegreeText(const QString &filename);
-
-    void writeMatrixDistancesPlainText(const QString &fn,
-                                       const bool &considerWeights,
-                                       const bool &inverseWeights,
-                                       const bool &dropIsolates);
-
-    void writeMatrixShortestPathsPlainText(const QString &fn,
-                                           const bool &considerWeights,
-                                           const bool &inverseWeights);
-
-    void writeMatrixDissimilarities(const QString fileName,
+    bool writeMatrixDissimilarities(const QString fileName,
                                     const QString &metricStr,
                                     const QString &varLocation,
                                     const bool &diagonal,
                                     const bool &considerWeights);
 
-    void writeMatrixSimilarityMatchingPlain(const QString fileName,
-                                            const int &measure = METRIC_SIMPLE_MATCHING,
-                                            const QString &matrix = "adjacency",
-                                            const QString &varLocation = "rows",
-                                            const bool &diagonal = false,
-                                            const bool &considerWeights = true);
 
-    void writeMatrixSimilarityMatching(const QString fileName,
+    bool writeMatrixSimilarityMatching(const QString fileName,
                                        const QString &measure = "Simple",
                                        const QString &matrix = "adjacency",
                                        const QString &varLocation = "rows",
                                        const bool &diagonal = false,
                                        const bool &considerWeights = true);
 
-    void writeMatrixSimilarityPearson(const QString fileName,
+    bool writeMatrixSimilarityPearson(const QString fileName,
                                       const bool considerWeights,
                                       const QString &matrix = "adjacency",
                                       const QString &varLocation = "rows",
                                       const bool &diagonal = false);
 
-    void writeMatrixSimilarityPearsonPlainText(const QString fileName,
-                                               const bool considerWeights,
-                                               const QString &matrix = "adjacency",
-                                               const QString &varLocation = "rows",
-                                               const bool &diagonal = false);
-
-    void writeEccentricity(const QString fileName,
+    bool writeEccentricity(const QString fileName,
                            const bool considerWeights = false,
                            const bool inverseWeights = false,
                            const bool dropIsolates = false);
 
     //   friend QTextStream& operator <<  (QTextStream& os, Graph& m);
 
-    void writeCentralityDegree(const QString,
+    bool writeCentralityDegree(const QString,
                                const bool weights,
                                const bool dropIsolates);
 
-    void writeCentralityCloseness(const QString,
+    bool writeCentralityCloseness(const QString,
                                   const bool weights,
                                   const bool inverseWeights,
                                   const bool dropIsolates);
 
-    void writeCentralityClosenessInfluenceRange(const QString,
+    bool writeCentralityClosenessInfluenceRange(const QString,
                                                 const bool weights,
                                                 const bool inverseWeights,
                                                 const bool dropIsolates);
 
-    void writeCentralityBetweenness(const QString,
+    bool writeCentralityBetweenness(const QString,
                                     const bool weights,
                                     const bool inverseWeights,
                                     const bool dropIsolates);
 
-    void writeCentralityPower(const QString,
+    bool writeCentralityPower(const QString,
                               const bool weigths,
                               const bool inverseWeights,
                               const bool dropIsolates);
 
-    void writeCentralityStress(const QString,
+    bool writeCentralityStress(const QString,
                                const bool weigths,
                                const bool inverseWeights,
                                const bool dropIsolates);
 
-    void writeCentralityEccentricity(const QString,
+    bool writeCentralityEccentricity(const QString,
                                      const bool weigths,
                                      const bool inverseWeights,
                                      const bool dropIsolates);
 
-    void writeCentralityInformation(const QString,
+    bool writeCentralityInformation(const QString,
                                     const bool weigths,
                                     const bool inverseWeights);
 
-    void writeCentralityEigenvector(const QString,
+    bool writeCentralityEigenvector(const QString,
                                     const bool &weigths = true,
                                     const bool &inverseWeights = false,
                                     const bool &dropIsolates = false);
 
-    void writePrestigeDegree(const QString, const bool weights,
+    bool writePrestigeDegree(const QString, const bool weights,
                              const bool dropIsolates);
 
-    void writePrestigeProximity(const QString, const bool weights,
+    bool writePrestigeProximity(const QString, const bool weights,
                                 const bool inverseWeights,
                                 const bool dropIsolates);
 
-    void writePrestigePageRank(const QString, const bool Isolates = false);
+    bool writePrestigePageRank(const QString, const bool Isolates = false);
 
     bool writeClusteringHierarchical(const QString &fileName,
                                      const QString &varLocation,
@@ -911,9 +884,9 @@ public:
     bool writeCliqueCensus(const QString &fileName,
                            const bool considerWeights);
 
-    void writeClusteringCoefficient(const QString, const bool);
+    bool writeClusteringCoefficient(const QString, const bool);
 
-    void writeTriadCensus(const QString, const bool);
+    bool writeTriadCensus(const QString, const bool);
 
     /* DISTANCES, CENTRALITIES & PROMINENCE MEASURES */
 
@@ -998,9 +971,9 @@ public:
     void addToDistanceSum(qreal delta);
     void incGeodesicsCount();
     void setAverageDistanceCached(qreal v);
-
-    void graphMatrixDistanceGeodesicCreate(const bool &considerWeights = false,
-                                           const bool &inverseWeights = true,
+    
+    bool graphMatrixDistanceGeodesicCreate(const bool &considerWeights = false,
+                                           const bool &inverseWeights = false,
                                            const bool &dropIsolates = false);
 
     void graphMatrixShortestPathsCreate(const bool &considerWeights = false,
@@ -1060,10 +1033,6 @@ public:
                                 const bool &considerWeights = false,
                                 const bool &inverseWeights = false,
                                 const bool &symmetrize = false);
-
-    void writeWalksTotalMatrixPlainText(const QString &fn);
-
-    void writeWalksOfLengthMatrixPlainText(const QString &fn, const int &length);
 
     void writeMatrixWalks(const QString &fn,
                           const int &length = 0,
@@ -1151,7 +1120,7 @@ public:
                                     const qreal &dist,
                                     const qreal &optimalDistance);
 
-    void layoutForceDirected_Eades_moveNodes(const qreal &c4);
+    qreal layoutForceDirected_Eades_moveNodes(const qreal &c4);
 
     void layoutForceDirected_FR_moveNodes(const qreal &temperature);
 
@@ -1172,39 +1141,32 @@ public:
     /**RANDOM NETWORKS*/
     void randomizeThings();
 
-    void randomNetErdosCreate(const int &N,
-                              const QString &model,
-                              const int &m,
-                              const qreal &p,
-                              const QString &mode,
-                              const bool &diag);
+    bool randomNetErdosCreate(const int &N, const QString &model,
+                              const int &m, const qreal &p,
+                              const QString &mode, const bool &diag);
 
-    void randomNetScaleFreeCreate(const int &N,
-                                  const int &power,
-                                  const int &m0,
-                                  const int &m,
-                                  const qreal &alpha,
-                                  const QString &mode);
+    bool randomNetScaleFreeCreate(const int &N, const int &power,
+                                  const int &m0, const int &m,
+                                  const qreal &alpha, const QString &mode);
 
-    void randomNetSmallWorldCreate(const int &N, const int &degree,
+    bool randomNetSmallWorldCreate(const int &N, const int &degree,
                                    const double &beta, const QString &mode);
 
-    void randomNetRingLatticeCreate(const int &N, const int &degree,
+    bool randomNetRingLatticeCreate(const int &N, const int &degree,
                                     const bool updateProgress = false);
 
-    void randomNetRegularCreate(const int &N,
-                                const int &degree,
-                                const QString &mode,
-                                const bool &diag);
+    bool randomNetRegularCreate(const int &N, const int &degree,
+                                const QString &mode, const bool &diag);
 
-    void randomNetLatticeCreate(const int &N,
-                                const int &length,
-                                const int &dimension,
-                                const int &neighborhoodLength,
-                                const QString &mode,
-                                const bool &circular = false);
+    bool randomNetLatticeCreate(const int &N, const int &length,
+                                const int &dimension, const int &nei,
+                                const QString &mode, const bool &circular);
 
     int factorial(int);
+
+    // Progress cancellation query: readable by engines and sinks.
+    bool progressCanceled() const;
+    void resetProgressCanceled();
 
     /**  vpos stores the real position of each vertex inside m_graph.
      *  It starts at zero (0).
@@ -1226,6 +1188,7 @@ protected:
     void progressCreate(int max, const QString &msg);
     void progressUpdate(int value);
     void progressFinish();
+
     void uiProminenceDistributionSpline(const QVector<QPair<qreal, qreal>> &points,
                                         qreal min, qreal max,
                                         qreal minF, qreal maxF,
@@ -1239,13 +1202,13 @@ protected:
                                       const QString &name,
                                       const QString &distImageFileName);
     void uiProminenceDistributionBars(const QStringList &categories,
-                                     const QVector<qreal> &frequencies,
-                                     const qreal min,
-                                     const qreal max,
-                                     const qreal minF,
-                                     const qreal maxF,
-                                     const QString &name,
-                                     const QString &distImageFileName);                                      
+                                      const QVector<qreal> &frequencies,
+                                      const qreal min,
+                                      const qreal max,
+                                      const qreal minF,
+                                      const qreal maxF,
+                                      const QString &name,
+                                      const QString &distImageFileName);
 
 private:
     /** private member functions */
@@ -1278,6 +1241,8 @@ private:
                         H_StrToInt &discreteClasses,
                         int &classes, int name);
 
+    void layoutRandomInMemory();
+    
     VList m_graph; // List of pointers to the vertices. Each vertex stores all info: links, colors, etc
 
     Parser *file_parser; // Our file loader threaded class.
@@ -1415,6 +1380,7 @@ private:
     bool calculatedTriad;
     bool calculatedGraphSymmetry, calculatedGraphReciprocity;
     bool calculatedGraphDensity, calculatedGraphWeighted;
+    bool m_progressCanceled;
     bool m_graphIsDirected, m_graphIsSymmetric, m_graphIsWeighted, m_graphIsConnected;
 
     int csRecDepth;

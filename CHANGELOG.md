@@ -2,6 +2,71 @@
 
 All notable changes to this project are documented in this file. 
 
+## [3.4] – March 2026
+
+### New Features
+  - Two-mode sociomatrix import: correctly handles bipartite networks in parser (#15).
+  - Faithful Eades (1984) Spring Embedder implementation (#207).
+  - New `layoutRandomInMemory()` replaces `layoutRandom()` in force-directed pipelines (#206).
+
+### Bug Fixes
+  - Progress dialog / Cancel (#52): comprehensive fix across all computation paths:
+    - Wired Cancel into centrality, prestige, reachability, walks, matrix, report, layout, clique, and subgraph computations.
+    - Fixed cancel-then-retry regression (reset canceled flag + invalidate distance cache).
+    - Fixed stacked progress dialogs in multi-phase computations (KK layout, matrix functions).
+    - All `write*` report functions converted to `bool` return; MW slots guarded on cancel.
+    - All random network generators (`Erdos-Renyi`, `Small-World`, `Scale-Free`, `Regular`, `Lattice`, `Ring-Lattice`) fixed: bool return, cancel guards, progress max corrections.
+  - Layouts:
+    - Fixed division-by-zero, NaN/Inf and logic errors in Kamada-Kawai layout (#198).
+    - Fixed FR simmering temperature derivation from canvas width (#199).
+    - Batched `setNodePos` emissions in all force-directed layouts (#205, #206).
+  - Centrality:
+    - Fixed eigenvector centrality isolate reset and N==0 handling (#202).
+    - Fixed Information Centrality isolate handling and degenerate cases (#201).
+    - Fixed wrong vertex checked for `isIsolated` in `createMatrixAdjacencyInverse()` (#190).
+    - Fixed clustering coefficient computation for directed networks (#58).
+    - Fixed wrong weighted flag when switching relations (#82).
+  - Parsers / IO:
+    - Fixed Pajek `*Matrix` header parsing for relation labels (#188).
+    - Fixed Pajek multirelational export as `*Matrix` blocks (#184).
+    - Fixed quoted relation name normalization in Pajek headers (#185).
+    - Fixed inline GML node/edge block parsing (#186).
+    - Fixed arc doubling when loading undirected DOT graphs (#187).
+    - Fixed platform-dependent `weighted=true` from uninitialized `initEdgeWeight` in DOT parser (#189).
+    - Fixed `Graph::setDirected()` logic bugs.
+  - Fixed lattice network edge deduplication and progress tracking.
+  - Fixed version comparison in update-check (component-wise instead of integer).
+  - Fixed `#133` (see commit).
+
+### Refactoring (WS4 – IO/Parser)
+  - Completed WS4: IO/Parser refactor into focused modules:
+    - Extracted edgelist, adjacency, UCINET DL, DOT, GML, Pajek, GraphML parsers into separate files.
+    - Introduced `IGraphParseSink` explicit mutation surface and `GraphParseSinkGraph` bridge.
+    - Switched GUI and headless load paths to sink-backed parser mutations.
+    - Removed legacy `Parser→Graph` signal wiring.
+    - `Parser::load` and adjacency parser use `ParseConfig`.
+
+### Toolchain / Testing
+  - New `socnetv-cli` schema v5 `io_roundtrip` kernel for IO/parser regression protection.
+  - Added IO roundtrip timing regression to benchmarks.
+  - Expanded golden comparison suite with many new IO roundtrip cases and small deterministic test networks.
+  - Added `run_io_roundtrip_shipped_datasets.sh` and `run_golden_io_roundtrip.sh` scripts.
+  - Added UCINET FT5 io_roundtrip golden baselines.
+  - Fixed `run_golden_compares.sh` argument parsing.
+  - Fixed headless parser lifetime and signal race condition.
+
+### i18n
+  - Added `update_translations.sh` script; updated translation files.
+
+### Build / Packaging
+  - Debian packaging: switched to CMake build, series-aware Qt6 deps, added OpenGL/Vulkan/XKB build deps.
+  - CMake: `.qm` files now generated via `qt_add_lrelease`.
+  - Fixed Windows linker `/VERSION` for PE header.
+  - Help menu now links to `socnetv.org/manual/`.
+
+  - Many bugfixes, see: [GitHub Issues](https://github.com/socnetv/app/issues?q=is%3Aissue%20state%3Aclosed%20milestone%3A3.4).
+  
+
 ## [3.3] – February 2026
 
   - Major internal refactor: `Graph` is now a façade/coordinator; functionality has been split into focused `src/graph/*` modules.

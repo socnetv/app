@@ -32,19 +32,18 @@ bool Graph::isWeighted()
         return m_graphIsWeighted;
     }
 
+    // Reset before scan: only set true if a non-unit weight is found.
+    // Without this, a stale true from a previous relation's edges would persist.
+    m_graphIsWeighted = false;
+
     qreal m_weight = 0;
     VList::const_iterator it, it1;
-    int N = vertices();
-    int progressCounter = 0;
 
     QString pMsg = tr("Checking if the graph edges are valued. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-
-        progressUpdate(++progressCounter);
 
         for (it1 = m_graph.cbegin(); it1 != m_graph.cend(); ++it1)
         {
@@ -62,8 +61,6 @@ bool Graph::isWeighted()
     }
     calculatedGraphWeighted = true;
     qDebug() << "graph is weighted:" << m_graphIsWeighted;
-
-    progressFinish();
 
     return m_graphIsWeighted;
 }
@@ -192,27 +189,19 @@ void Graph::setSymmetric()
  */
 void Graph::setDirected(const bool &toggle, const bool &signalMW)
 {
-
-    qDebug() << "Setting graph directed to:" << toggle;
-
+    qDebug() << "Graph::setDirected - Setting graph directed to:" << toggle;
     if (!toggle)
     {
-        setUndirected(true);
+        setUndirected(true, signalMW);
+        return;
     }
-
     if (toggle == isDirected())
     {
-        qDebug() << "Same as now, nothing to do.";
+        qDebug() << "Graph::setDirected - Same as now, nothing to do.";
         return;
     }
-
     m_graphIsDirected = true;
-
-    if (m_graphIsDirected)
-    {
-        setModStatus(ModStatus::EdgeCount, signalMW);
-        return;
-    }
+    setModStatus(ModStatus::EdgeCount, signalMW);
 }
 
 /**
@@ -223,47 +212,59 @@ void Graph::setDirected(const bool &toggle, const bool &signalMW)
  */
 void Graph::setUndirected(const bool &toggle, const bool &signalMW)
 {
-
-    qDebug() << "Toggling graph undirected to" << toggle;
+    qDebug() << "Graph::setUndirected - Toggling graph undirected to" << toggle;
+    qDebug() << "Graph::setUndirected - m_graphIsSymmetric:" << m_graphIsSymmetric
+             << "m_graphIsDirected:" << m_graphIsDirected
+             << "m_totalEdges:" << m_totalEdges
+             << "calculatedEdges:" << calculatedEdges;
 
     if (!toggle)
     {
         setDirected(true);
         return;
     }
-
     if (toggle == isUndirected())
     {
-        qDebug() << "Same as now, nothing to do.";
+        qDebug() << "Graph::setUndirected - Same as now, nothing to do.";
         return;
     }
-
+    // NOTE: We set m_graphIsDirected = false BEFORE the loop so that
+    // edgeTypeSet() and other callers see the correct state immediately.
     m_graphIsDirected = false;
 
-    VList::const_iterator it;
-    int v2 = 0, v1 = 0, weight;
-    QHash<int, qreal> enabledOutEdges;
-    QHash<int, qreal>::const_iterator it1;
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    // Only add reverse arcs if the graph was previously directed.
+    // If the graph was already loaded with symmetric (undirected) arcs
+    // (e.g. from a DOT 'graph' file), the reverse arcs already exist
+    // and this loop would double them (see issue #187).
+    if (!m_graphIsSymmetric)
     {
-        v1 = (*it)->number();
-        qDebug() << "Iterating over edges of v1 " << v1;
-        enabledOutEdges = (*it)->outEdgesEnabledHash();
-        it1 = enabledOutEdges.cbegin();
-        while (it1 != enabledOutEdges.cend())
+        VList::const_iterator it;
+        int v2 = 0, v1 = 0;
+        qreal weight;
+        QHash<int, qreal> enabledOutEdges;
+        QHash<int, qreal>::const_iterator it1;
+        for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
         {
-            v2 = it1.key();
-            weight = it1.value();
-
-            qDebug() << "edge" << "v1" << v1 << "->" << v2 << " = " << "weight" << weight;
-            edgeTypeSet(v1, v2, weight, EdgeType::Undirected);
-            ++it1;
+            v1 = (*it)->number();
+            qDebug() << "Graph::setUndirected - Iterating over edges of v1 " << v1;
+            enabledOutEdges = (*it)->outEdgesEnabledHash();
+            it1 = enabledOutEdges.cbegin();
+            while (it1 != enabledOutEdges.cend())
+            {
+                v2 = it1.key();
+                weight = it1.value();
+                qDebug() << "edge" << "v1" << v1 << "->" << v2 << " = " << "weight" << weight;
+                edgeTypeSet(v1, v2, weight, EdgeType::Undirected);
+                ++it1;
+            }
         }
     }
-    // delete enabledOutEdges;
+    else
+    {
+        qDebug() << "Graph::setUndirected -Graph already has symmetric arcs (m_graphIsSymmetric=true); skipping reverse-arc addition.";
+    }
 
     m_graphIsSymmetric = true;
-
     setModStatus(ModStatus::EdgeCount, signalMW);
 }
 
@@ -274,7 +275,7 @@ void Graph::setUndirected(const bool &toggle, const bool &signalMW)
  */
 bool Graph::isDirected()
 {
-    qDebug() << "isDirected" << m_graphIsDirected;
+    qDebug() << "Graph::isDirected m_graphIsDirected" << m_graphIsDirected;
     return m_graphIsDirected;
 }
 
@@ -288,4 +289,3 @@ bool Graph::isUndirected()
     //    qDebug() << "isUndirected: " << !m_graphIsDirected;
     return !m_graphIsDirected;
 }
-

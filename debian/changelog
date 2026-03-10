@@ -1,3 +1,9 @@
+socnetv (3.4-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Dimitris V. Kalamaras <dimitris.kalamaras@gmail.com>  Tue, 10 Mar 2026 23:29:51 +0200
+
 socnetv (3.3.1-1) unstable; urgency=medium
 
   * Upstream release 3.3.1

@@ -833,27 +833,6 @@ void MainWindow::slotOpenSettingsDialog() {
     // show settings dialog
     m_settingsDialog->exec();
 
-
-}
-
-
-
-/**
- * @brief Fixes known bugs in QProgressDialog class.
-   i.e. Workaround for macOS-only Qt bug: QTBUG-65750, QTBUG-70357.
-   QProgressDialog too small and too narrow to fit the text of its label
- * @param dialog
- */
-void MainWindow::polishProgressDialog(QProgressDialog* dialog)
-{
-#ifdef Q_OS_MAC
-    // Workaround for macOS-only Qt bug; see: QTBUG-65750, QTBUG-70357.
-    const int margin = dialog->fontMetrics().maxWidth();
-    dialog->resize(dialog->width() + 2 * margin, dialog->height());
-    dialog->show();
-#else
-    Q_UNUSED(dialog);
-#endif
 }
 
 
@@ -5846,8 +5825,9 @@ int MainWindow::slotHelpMessageToUser(const int type,
                                       QMessageBox::StandardButtons buttons,
                                       QMessageBox::StandardButton defBtn,
                                       const QString btn1,
-                                      const QString btn2
-                                      ) {
+                                      const QString btn2,
+                                      const QString btn3)
+{
     int response=0;
     QMessageBox msgBox;
     msgBox.setMinimumWidth(400);
@@ -5933,20 +5913,25 @@ int MainWindow::slotHelpMessageToUser(const int type,
 
         break;
 
-    case USER_MSG_QUESTION_CUSTOM: // a custom question with just two buttons
+    case USER_MSG_QUESTION_CUSTOM: // a custom question with just two/three buttons
         if (!statusMsg.isNull()) statusMessage(  statusMsg  );
         msgBox.setWindowTitle("Question");
         msgBox.setText( text );
         if (!info.isNull()) msgBox.setInformativeText(info);
         pbtn1 = msgBox.addButton(btn1, QMessageBox::ActionRole);
         pbtn2 = msgBox.addButton(btn2, QMessageBox::ActionRole);
-        msgBox.setIcon(QMessageBox::Question);
-        response = msgBox.exec();
-        if (msgBox.clickedButton() == pbtn1 ) {
-            response=1;
-        }
-        else if (msgBox.clickedButton() == pbtn2 ) {
-            response=2;
+        if (!btn3.isNull() && !btn3.isEmpty()) {
+            QPushButton *pbtn3 = msgBox.addButton(btn3, QMessageBox::ActionRole);
+            msgBox.setIcon(QMessageBox::Question);
+            response = msgBox.exec();
+            if (msgBox.clickedButton() == pbtn1)       response = 1;
+            else if (msgBox.clickedButton() == pbtn2)  response = 2;
+            else if (msgBox.clickedButton() == pbtn3)  response = 3;
+        } else {
+            msgBox.setIcon(QMessageBox::Question);
+            response = msgBox.exec();
+            if (msgBox.clickedButton() == pbtn1)       response = 1;
+            else if (msgBox.clickedButton() == pbtn2)  response = 2;
         }
         break;
     default: //just for sanity
@@ -5959,14 +5944,7 @@ int MainWindow::slotHelpMessageToUser(const int type,
         break;
     }
     return response;
-
 }
-
-
-
-
-
-
 
 /**
  * @brief Called when user selects something in the Network Auto Create
@@ -7236,47 +7214,60 @@ void MainWindow::slotNetworkFileLoad(const QString &fileNameToLoad,
     QString delimiter=QString();
     int sm_two_mode = 0;
     int sm_has_labels = 0;
-
-    if ( fileFormat == FileType::TWOMODE ) {
-        switch(
-               slotHelpMessageToUser (
-                   USER_MSG_QUESTION_CUSTOM,
-                   tr("Select mode"),
-                   tr("Two-mode sociomatrix"),
-                   tr("If this file is in two-mode sociomatrix format, "
-                      "please specify which mode to open \n\n"
-                      "1st mode: rows are nodes \n"
-                      "2nd mode: columns are nodes"),
-                   QMessageBox::NoButton,
-                   QMessageBox::Ok,
-                   tr("1st Mode"),tr("2nd mode")
-
-                   )
-               ) {
+    if (fileFormat == FileType::TWOMODE)
+    {
+        switch (
+            slotHelpMessageToUser(
+                USER_MSG_QUESTION_CUSTOM,
+                tr("Two-Mode Sociomatrix — Select Import Mode"),
+                tr("Two-mode sociomatrix import"),
+                tr("This file contains a two-mode (bipartite) sociomatrix, "
+                   "where rows represent one set of actors (e.g. persons) "
+                   "and columns represent another set (e.g. events or groups).\n\n"
+                   "How would you like to import it?\n\n"
+                   "Bipartite graph: creates both sets of nodes and connects "
+                   "each person to the events they attend. (Recommended)\n\n"
+                   "Person network: creates only the person nodes and connects "
+                   "two persons if they share at least one event.\n\n"
+                   "Event network: creates only the event nodes and connects "
+                   "two events if they share at least one person."),
+                QMessageBox::NoButton,
+                QMessageBox::Ok,
+                tr("Bipartite graph"),
+                tr("Person network"),
+                tr("Event network")))
+        {
         case 1:
-            sm_two_mode = 1;
+            sm_two_mode = 1; // bipartite — default
             break;
         case 2:
-            sm_two_mode = 2;
+            sm_two_mode = 2; // person (Mode-1) projection
+            break;
+        case 3:
+            sm_two_mode = 3; // event (Mode-2) projection
+            break;
+        default:
+            sm_two_mode = 1; // user closed the dialog — go bipartite
             break;
         }
     }
-    else if ( fileFormat == FileType::ADJACENCY ) {
+    else if (fileFormat == FileType::ADJACENCY)
+    {
         // Ask if there are labels defined on the first line of the ADJACENCY file
-        switch(
-               slotHelpMessageToUser (
-                   USER_MSG_QUESTION_CUSTOM,
-                   tr("Opt for labels"),
-                   tr("Node labels?"),
-                   tr("This file contains an adjacency matrix (sociomatrix). "
-                      "Please specify whether there are node labels defined "
-                      "on the first (comment) line. \n"),
-                   QMessageBox::NoButton,
-                   QMessageBox::Ok,
-                   tr("Yes"),tr("No")
+        switch (
+            slotHelpMessageToUser(
+                USER_MSG_QUESTION_CUSTOM,
+                tr("Opt for labels"),
+                tr("Node labels?"),
+                tr("This file contains an adjacency matrix (sociomatrix). "
+                   "Please specify whether there are node labels defined "
+                   "on the first (comment) line. \n"),
+                QMessageBox::NoButton,
+                QMessageBox::Ok,
+                tr("Yes"), tr("No")
 
-                   )
-               ) {
+                    ))
+        {
         case 1:
             sm_has_labels = 1;
             break;
@@ -7284,9 +7275,7 @@ void MainWindow::slotNetworkFileLoad(const QString &fileNameToLoad,
             sm_has_labels = 0;
             break;
         }
-
     }
-
 
     // Ask for data delimiter
     if ( fileFormat == FileType::ADJACENCY ||
@@ -8444,23 +8433,18 @@ void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
                                               const bool diag)
 {
     qDebug() << "Request to create an Erdos-Renyi random network...";
-
-    statusMessage( tr("Creating new Erdos-Renyi random network. Please wait... ")  );
-
+    statusMessage( tr("Creating new Erdos-Renyi random network. Please wait... ") );
     appSettings["randomErdosEdgeProbability"] = QString::number(eprob);
 
-    activeGraph->randomNetErdosCreate ( newNodes,
-                                        model,
-                                        edges,
-                                        eprob,
-                                        mode,
-                                        diag);
+    if (!activeGraph->randomNetErdosCreate(newNodes, model, edges, eprob, mode, diag))
+    {
+        statusMessage(tr("Erdős–Rényi network creation cancelled or did not finish."));
+        return;
+    }
 
     setWindowTitle("Untitled Erdos-Renyi random network");
-
     double threshold = log(newNodes)/newNodes;
-
-    if ( (eprob ) > threshold )
+    if ( (eprob) > threshold )
         slotHelpMessageToUser (
                     USER_MSG_INFO,
                     tr("Erdős–Rényi random network created."),
@@ -8472,7 +8456,6 @@ void MainWindow::slotNetworkRandomErdosRenyi( const int newNodes,
                     .arg(QString::number(eprob))
                     .arg(QString::number(threshold))
                     );
-
     else
         slotHelpMessageToUser (
                     USER_MSG_INFO,
@@ -8523,34 +8506,28 @@ void MainWindow::slotNetworkRandomScaleFreeDialog() {
  * @param zeroAppeal
  * @param mode
  */
-void MainWindow::slotNetworkRandomScaleFree ( const int &newNodes,
-                                              const int &power,
-                                              const int &initialNodes,
-                                              const int &edgesPerStep,
-                                              const qreal &zeroAppeal,
-                                              const QString &mode)
+void MainWindow::slotNetworkRandomScaleFree(const int &newNodes,
+                                            const int &power,
+                                            const int &initialNodes,
+                                            const int &edgesPerStep,
+                                            const qreal &zeroAppeal,
+                                            const QString &mode)
 {
     qDebug() << "Request to create a new scale-free random network...";
-
-    activeGraph->randomNetScaleFreeCreate( newNodes,
-                                           power,
-                                           initialNodes,
-                                           edgesPerStep,
-                                           zeroAppeal,
-                                           mode);
-
-
+    if (!activeGraph->randomNetScaleFreeCreate(newNodes, power, initialNodes,
+                                               edgesPerStep, zeroAppeal, mode))
+    {
+        statusMessage(tr("Scale-free network creation cancelled or did not finish."));
+        return;
+    }
     setWindowTitle("Untitled scale-free network");
-
-    slotHelpMessageToUser (
+    slotHelpMessageToUser(
                 USER_MSG_INFO,
                 tr("Scale-free random network created."),
                 tr("Random network created. \n"
                    "A new scale-free random network with %1 nodes has been created according to the Barabási–Albert model.").arg(newNodes),
                 tr("A scale-free network is a network whose degree distribution follows a power law.")
-
                 );
-
 }
 
 
@@ -8595,13 +8572,13 @@ void MainWindow::slotNetworkRandomSmallWorld(const int &newNodes,
                                              const bool &diag)
 {
     Q_UNUSED(diag);
-
     qDebug() << "Request to create a new small-world random network...";
-
-    activeGraph->randomNetSmallWorldCreate(newNodes, degree, beta, mode);
-
+    if (!activeGraph->randomNetSmallWorldCreate(newNodes, degree, beta, mode))
+    {
+        statusMessage(tr("Small-world network creation cancelled or did not finish."));
+        return;
+    }
     setWindowTitle("Untitled small-world network");
-
     slotHelpMessageToUser (
                 USER_MSG_INFO,
                 tr("Small-World random network created."),
@@ -8609,7 +8586,6 @@ void MainWindow::slotNetworkRandomSmallWorld(const int &newNodes,
                    "A new random network with %1 nodes has been created according to the Watts & Strogatz model.").arg(newNodes),
                 tr("A small-world network has short average path lengths and high clustering coefficient.")
                 );
-
 }
 
 
@@ -8649,17 +8625,16 @@ void MainWindow::slotNetworkRandomRegularDialog()
  * @param diag
  */
 void MainWindow::slotNetworkRandomRegular(const int &newNodes, const int &degree,
-                                          const QString &mode, const bool &diag){
-
-
+                                          const QString &mode, const bool &diag)
+{
     initApp();
-
-    activeGraph->randomNetRegularCreate (newNodes,degree, mode, diag);
-
+    if (!activeGraph->randomNetRegularCreate(newNodes, degree, mode, diag))
+    {
+        statusMessage(tr("d-regular network creation cancelled or did not finish."));
+        return;
+    }
     setWindowTitle("Untitled d-regular network");
-
-
-    slotHelpMessageToUser (
+    slotHelpMessageToUser(
                 USER_MSG_INFO,
                 tr("d-regular network created."),
                 tr("Random network created. \n"
@@ -8667,7 +8642,6 @@ void MainWindow::slotNetworkRandomRegular(const int &newNodes, const int &degree
                 tr("Each node has the same number <em>%1</em> of neighbours, aka the same degree d.")
                 .arg(degree)
                 );
-
 }
 
 
@@ -8730,8 +8704,9 @@ void MainWindow::slotNetworkRandomRingLattice(){
         return;
     }
 
-
-    activeGraph->randomNetRingLatticeCreate(newNodes, degree, true );
+    if (! activeGraph->randomNetRingLatticeCreate(newNodes, degree, true ) ) {
+        return;
+    }
 
     setWindowTitle("Untitled ring-lattice network");
 
@@ -8785,25 +8760,24 @@ void MainWindow::slotNetworkRandomLattice(const int &newNodes,
                                           const int &dimension,
                                           const int &nei,
                                           const QString &mode,
-                                          const bool &circular){
-
+                                          const bool &circular)
+{
     qDebug() << "Request to create a new lattice random network...";
-
     initApp();
-
-    activeGraph->randomNetLatticeCreate (newNodes, length, dimension, nei, mode, circular);
-
+    if (!activeGraph->randomNetLatticeCreate(newNodes, length, dimension, nei, mode, circular))
+    {
+        statusMessage(tr("Lattice network creation cancelled or did not finish."));
+        return;
+    }
     setWindowTitle("Untitled lattice network");
-
-    slotHelpMessageToUser (
+    slotHelpMessageToUser(
                 USER_MSG_INFO,
                 tr("Lattice random network created."),
                 tr("Random network created. \n"
                    "A new lattice random network with %1 nodes has been created.").arg(newNodes),
                 tr("A lattice is a network whose drawing forms a regular tiling. "
-                    "Lattices are also known as meshes or grids.")
+                   "Lattices are also known as meshes or grids.")
                 );
-
 }
 
 
@@ -11425,21 +11399,34 @@ void MainWindow::slotLayoutRadialRandom(){
 
 
 /**
- * @brief Calls Graph::layoutForceDirectedSpringEmbedder to embed the Eades
- * spring-gravitational model to the network.
- * Called from menu or toolbox checkbox
+ * @brief Embed the Eades spring-gravitational model to the network.
+ * Called from menu or toolbox checkbox.
  */
-void MainWindow::slotLayoutSpringEmbedder(){
-    qDebug()<< "MW:slotLayoutSpringEmbedder";
-    if ( !activeNodes() )  {
+void MainWindow::slotLayoutSpringEmbedder()
+{
+    qDebug() << "MW::slotLayoutSpringEmbedder";
+    if (!activeNodes()) {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-
-    activeGraph->layoutForceDirectedSpringEmbedder(500);
-    statusMessage( tr("Spring-Gravitational (Eades) model embedded.") );
+    // Eades (1984) designed this algorithm for small graphs (N < 30).
+    // For larger graphs the system frequently gets stuck in local minima
+    // and the O(N²×I) complexity makes it slow. Warn the user.
+    if (activeNodes() > 30) {
+        QMessageBox::warning(
+            this,
+            tr("Eades Spring Embedder — Size Warning"),
+            tr("The Eades Spring Embedder was designed for graphs with fewer than 30 nodes.\n\n"
+               "This network has %1 nodes. The layout may get stuck in local minima "
+               "and the result may not be aesthetically pleasing.\n\n"
+               "Consider using the Fruchterman-Reingold or Kamada-Kawai models instead, "
+               "which handle larger graphs better.")
+               .arg(activeNodes())
+        );
+    }
+    activeGraph->layoutForceDirectedSpringEmbedder(300);
+    statusMessage(tr("Spring-Gravitational (Eades) model embedded."));
 }
-
 
 
 
@@ -11986,8 +11973,10 @@ void MainWindow::slotAnalyzeMatrixAdjacencyInverse(){
 
     statusMessage(tr ("Inverting adjacency matrix.") );
 
-    //activeGraph->writeMatrixAdjacencyInvert(fn, QString("lu")) ;
-    activeGraph->writeMatrix(fn,MATRIX_ADJACENCY_INVERSE) ;
+    if ( !activeGraph->writeMatrix(fn,MATRIX_ADJACENCY_INVERSE) ) {
+        statusMessage(tr("Computation canceled."));
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12020,7 +12009,10 @@ void MainWindow::slotAnalyzeMatrixAdjacencyTranspose(){
 
     statusMessage( tr ("Transposing adjacency matrix.") );
 
-    activeGraph->writeMatrix(fn,MATRIX_ADJACENCY_TRANSPOSE) ;
+    if ( !activeGraph->writeMatrix(fn,MATRIX_ADJACENCY_TRANSPOSE) ) {
+        statusMessage(tr("Computation canceled."));
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12051,7 +12043,10 @@ void MainWindow::slotAnalyzeMatrixAdjacencyCocitation(){
 
     statusMessage( tr ("Computing Cocitation matrix.") );
 
-    activeGraph->writeMatrix(fn,MATRIX_COCITATION) ;
+    if ( !activeGraph->writeMatrix(fn,MATRIX_COCITATION) ) {
+        statusMessage(tr("Computation canceled."));
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12082,8 +12077,10 @@ void MainWindow::slotAnalyzeMatrixDegree(){
 
     statusMessage(tr ("Computing Degree matrix.") );
 
-    //activeGraph->writeMatrixDegreeText(fn) ;
-    activeGraph->writeMatrix(fn, MATRIX_DEGREE) ;
+    if ( !activeGraph->writeMatrix(fn, MATRIX_DEGREE) ) {
+        statusMessage(tr("Computation canceled."));
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12109,14 +12106,17 @@ void MainWindow::slotAnalyzeMatrixLaplacian(){
         return;
     }
 
-    qDebug() << "MW:slotAnalyzeMatrixLaplacian() - calling Graph::writeMatrix";
+    qDebug() << "MW:slotAnalyzeMatrixLaplacian()";
 
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-laplacian-"+dateTime+".html";
 
     statusMessage(tr ("Computing Laplacian matrix") );
 
-    activeGraph->writeMatrix(fn, MATRIX_LAPLACIAN) ;
+    if ( !activeGraph->writeMatrix(fn, MATRIX_LAPLACIAN) ) {
+        statusMessage(tr("Computation canceled."));
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12327,10 +12327,13 @@ void MainWindow::slotAnalyzeMatrixDistances(){
 
     statusMessage( tr("Computing geodesic distances. Please wait...") );
 
-    activeGraph->writeMatrix(fn,MATRIX_DISTANCES,
+    if ( !activeGraph->writeMatrix(fn,MATRIX_DISTANCES,
                              optionsEdgeWeightConsiderAct->isChecked(),
                              inverseWeights,
-                             editFilterNodesIsolatesAct->isChecked());
+                             editFilterNodesIsolatesAct->isChecked()) ) {
+        statusMessage(tr("Computation canceled."));
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12366,10 +12369,13 @@ void MainWindow::slotAnalyzeMatrixGeodesics(){
 
     statusMessage(  tr("Computing geodesics (number of shortest paths) for each pair. Please wait...") );
 
-    activeGraph->writeMatrix(fn,MATRIX_GEODESICS,
+    if ( !activeGraph->writeMatrix(fn,MATRIX_GEODESICS,
                              optionsEdgeWeightConsiderAct->isChecked(),
                              inverseWeights,
-                             editFilterNodesIsolatesAct->isChecked());
+                             editFilterNodesIsolatesAct->isChecked()) ) {
+        statusMessage(tr("Computation canceled."));
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12508,11 +12514,14 @@ void MainWindow::slotAnalyzeEccentricity(){
 
     askAboutEdgeWeights();
 
-    activeGraph->writeEccentricity(
+    if ( ! activeGraph->writeEccentricity(
                 fn,
                 optionsEdgeWeightConsiderAct->isChecked(),
                 inverseWeights,
-                editFilterNodesIsolatesAct->isChecked());
+                editFilterNodesIsolatesAct->isChecked()) ) 
+    {
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12609,8 +12618,7 @@ void MainWindow::slotAnalyzeConnectedness(){
 
 
 /**
-*	Calls Graph:: writeWalksOfLengthMatrixPlainText() to calculate and print
-*   the number of walks of a given length , between each pair of nodes.
+*	Calculate and print the number of walks of a given length , between each pair of nodes.
 */
 void MainWindow::slotAnalyzeWalksLength(){
     if ( !activeNodes()   )  {
@@ -12634,7 +12642,10 @@ void MainWindow::slotAnalyzeWalksLength(){
 
 
     activeGraph->writeMatrixWalks(fn, length);
-
+    if ( activeGraph->progressCanceled() ) {
+        statusMessage(tr("Computation canceled."));
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12651,8 +12662,7 @@ void MainWindow::slotAnalyzeWalksLength(){
 
 
 /**
- * @brief Calls Graph:: writeWalksTotalMatrixPlainText() to calculate and print
-*  the total number of walks of any length , between each pair of nodes.
+ * @brief Calculate and print the total number of walks of any length, between each pair of nodes.
  */
 void MainWindow::slotAnalyzeWalksTotal(){
     if ( !activeNodes()   )  {
@@ -12689,6 +12699,10 @@ void MainWindow::slotAnalyzeWalksTotal(){
     statusMessage(  tr("Computing total walks matrix. Please wait...") );
 
     activeGraph->writeMatrixWalks(fn);
+    if ( activeGraph->progressCanceled() ) {
+        statusMessage(tr("Computation canceled."));
+        return;
+    }    
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12720,7 +12734,10 @@ void MainWindow::slotAnalyzeReachabilityMatrix(){
 
     statusMessage(  tr("Computing reachability matrix. Please wait...") );
 
-    activeGraph->writeMatrix(fn, MATRIX_REACHABILITY );
+    if ( !activeGraph->writeMatrix(fn, MATRIX_REACHABILITY) ) {
+        statusMessage(tr("Computation canceled."));
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12756,7 +12773,9 @@ void MainWindow::slotAnalyzeClusteringCoefficient (){
 
     bool considerWeights=true;
 
-    activeGraph->writeClusteringCoefficient(fn, considerWeights);
+    if ( ! activeGraph->writeClusteringCoefficient(fn, considerWeights) )  {
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12831,7 +12850,9 @@ void MainWindow::slotAnalyzeCommunitiesTriadCensus() {
 
     bool considerWeights=true;
 
-    activeGraph->writeTriadCensus(fn, considerWeights);
+    if ( ! activeGraph->writeTriadCensus(fn, considerWeights)) {
+        return;
+    }    
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12910,12 +12931,15 @@ void MainWindow::slotAnalyzeStrEquivalenceSimilarityByMeasure(const QString &mat
 
     bool considerWeights=true;
 
-    activeGraph->writeMatrixSimilarityMatching( fn,
+    if ( ! activeGraph->writeMatrixSimilarityMatching( fn,
                                                 measure,
                                                 matrix,
                                                 varLocation,
                                                 diagonal,
-                                                considerWeights);
+                                                considerWeights) )
+    {
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -12993,8 +13017,11 @@ void MainWindow::slotAnalyzeStrEquivalenceDissimilaritiesTieProfile(const QStrin
 
     askAboutEdgeWeights();
 
-    activeGraph->writeMatrixDissimilarities(fn, metric, varLocation,diagonal,
-                                            optionsEdgeWeightConsiderAct->isChecked());
+    if (!activeGraph->writeMatrixDissimilarities(fn, metric, varLocation, diagonal,
+                                                 optionsEdgeWeightConsiderAct->isChecked()))
+    {
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -13047,7 +13074,10 @@ void MainWindow::slotAnalyzeStrEquivalencePearson(const QString &matrix,
 
     bool considerWeights=true;
 
-    activeGraph->writeMatrixSimilarityPearson( fn, considerWeights, matrix, varLocation, diagonal);
+    if ( ! activeGraph->writeMatrixSimilarityPearson( fn, considerWeights, matrix, varLocation, diagonal) )
+    {
+        return;
+    }
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
@@ -13160,11 +13190,13 @@ void MainWindow::slotAnalyzeCentralityDegree(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-out-degree-"+dateTime+".html";
 
-
-    activeGraph->writeCentralityDegree(
-                fn,
-                optionsEdgeWeightConsiderAct->isChecked(),
-                editFilterNodesIsolatesAct->isChecked() );
+    if (!activeGraph->writeCentralityDegree(
+            fn,
+            optionsEdgeWeightConsiderAct->isChecked(),
+            editFilterNodesIsolatesAct->isChecked()))
+    {
+        return;
+    }
 
     statusMessage(tr("Opening Out-Degree Centralities report..."));
 
@@ -13199,11 +13231,14 @@ void MainWindow::slotAnalyzeCentralityCloseness(){
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-closeness-"+dateTime+".html";
 
 
-    activeGraph->writeCentralityCloseness(
+    if (!activeGraph->writeCentralityCloseness(
                 fn,
                 optionsEdgeWeightConsiderAct->isChecked(),
                 inverseWeights,
-                editFilterNodesIsolatesAct->isChecked() || dropIsolates);
+                editFilterNodesIsolatesAct->isChecked() || dropIsolates))
+    {
+        return;
+    }
 
     statusMessage(tr("Opening Closeness Centralities report..."));
 
@@ -13238,11 +13273,14 @@ void MainWindow::slotAnalyzeCentralityClosenessIR(){
 
     askAboutEdgeWeights();
 
-    activeGraph->writeCentralityClosenessInfluenceRange(
+    if (! activeGraph->writeCentralityClosenessInfluenceRange(
                 fn,
                 optionsEdgeWeightConsiderAct->isChecked(),
                 inverseWeights,
-                editFilterNodesIsolatesAct->isChecked());
+                editFilterNodesIsolatesAct->isChecked())) 
+    {
+        return;
+    }
 
     statusMessage(tr("Opening Influence Range Closeness Centralities report..."));
 
@@ -13275,10 +13313,13 @@ void MainWindow::slotAnalyzeCentralityBetweenness(){
 
     askAboutEdgeWeights();
 
-    activeGraph->writeCentralityBetweenness(
-                fn, optionsEdgeWeightConsiderAct->isChecked(),
-                inverseWeights,
-                editFilterNodesIsolatesAct->isChecked());
+    if (!activeGraph->writeCentralityBetweenness(
+            fn, optionsEdgeWeightConsiderAct->isChecked(),
+            inverseWeights,
+            editFilterNodesIsolatesAct->isChecked()))
+    {
+        return;
+    }
 
     statusMessage(tr("Opening Betweenness Centralities report..."));
 
@@ -13323,9 +13364,12 @@ void MainWindow::slotAnalyzePrestigeDegree(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-prestige-degree-"+dateTime+".html";
 
-    activeGraph->writePrestigeDegree(fn,
-                                     optionsEdgeWeightConsiderAct->isChecked(),
-                                     editFilterNodesIsolatesAct->isChecked() );
+    if (!activeGraph->writePrestigeDegree(fn,
+                                          optionsEdgeWeightConsiderAct->isChecked(),
+                                          editFilterNodesIsolatesAct->isChecked()))
+    {
+        return;
+    }
 
     statusMessage(tr("Opening Degree Prestige (in-degree) report..."));
 
@@ -13357,7 +13401,9 @@ void MainWindow::slotAnalyzePrestigePageRank(){
 
     askAboutEdgeWeights();
 
-    activeGraph->writePrestigePageRank(fn, editFilterNodesIsolatesAct->isChecked());
+    if ( ! activeGraph->writePrestigePageRank(fn, editFilterNodesIsolatesAct->isChecked()) ) {
+        return;
+    }
 
     statusMessage(tr("Opening PageRank Prestige report..."));
 
@@ -13390,8 +13436,11 @@ void MainWindow::slotAnalyzePrestigeProximity(){
 
     askAboutEdgeWeights();
 
-    activeGraph->writePrestigeProximity(fn, true, false ,
-                                        editFilterNodesIsolatesAct->isChecked());
+    if (!activeGraph->writePrestigeProximity(fn, true, false,
+                                             editFilterNodesIsolatesAct->isChecked()))
+    {
+        return;
+    }
 
     statusMessage(tr("Opening Proximity Prestige report..."));
 
@@ -13455,10 +13504,13 @@ void MainWindow::slotAnalyzeCentralityInformation(){
 
     askAboutEdgeWeights();
 
-    activeGraph->writeCentralityInformation(
-                fn,
-                optionsEdgeWeightConsiderAct->isChecked(),
-                inverseWeights);
+    if (!activeGraph->writeCentralityInformation(
+            fn,
+            optionsEdgeWeightConsiderAct->isChecked(),
+            inverseWeights))
+    {
+        return;
+    }
 
     statusMessage(tr("Opening Information Centralities report..."));
 
@@ -13495,11 +13547,14 @@ void MainWindow::slotAnalyzeCentralityEigenvector(){
 
     bool dropIsolates = false;
 
-    activeGraph->writeCentralityEigenvector(
-                fn,
-                optionsEdgeWeightConsiderAct->isChecked(),
-                inverseWeights,
-                dropIsolates);
+    if (!activeGraph->writeCentralityEigenvector(
+            fn,
+            optionsEdgeWeightConsiderAct->isChecked(),
+            inverseWeights,
+            dropIsolates))
+    {
+        return;
+    }
 
     statusMessage(tr("Opening Eigenvector Centralities report..."));
 
@@ -13533,12 +13588,14 @@ void MainWindow::slotAnalyzeCentralityStress(){
 
     askAboutEdgeWeights();
 
-
-    activeGraph->writeCentralityStress(
-                fn,
-                optionsEdgeWeightConsiderAct->isChecked(),
-                inverseWeights,
-                editFilterNodesIsolatesAct->isChecked());
+    if (!activeGraph->writeCentralityStress(
+            fn,
+            optionsEdgeWeightConsiderAct->isChecked(),
+            inverseWeights,
+            editFilterNodesIsolatesAct->isChecked()))
+    {
+        return;
+    }
 
     statusMessage(tr("Opening Stress Centralities report..."));
 
@@ -13573,11 +13630,14 @@ void MainWindow::slotAnalyzeCentralityPower(){
 
     askAboutEdgeWeights();
 
-    activeGraph->writeCentralityPower(
-                fn,
-                optionsEdgeWeightConsiderAct->isChecked(),
-                inverseWeights,
-                editFilterNodesIsolatesAct->isChecked());
+    if (!activeGraph->writeCentralityPower(
+            fn,
+            optionsEdgeWeightConsiderAct->isChecked(),
+            inverseWeights,
+            editFilterNodesIsolatesAct->isChecked()))
+    {
+        return;
+    }
 
     statusMessage(tr("Opening Gil-Schmidt Power Centralities report..."));
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
@@ -13610,11 +13670,14 @@ void MainWindow::slotAnalyzeCentralityEccentricity(){
 
     askAboutEdgeWeights();
 
-    activeGraph->writeCentralityEccentricity(
-                fn,
-                optionsEdgeWeightConsiderAct->isChecked(),
-                inverseWeights,
-                editFilterNodesIsolatesAct->isChecked());
+    if (!activeGraph->writeCentralityEccentricity(
+            fn,
+            optionsEdgeWeightConsiderAct->isChecked(),
+            inverseWeights,
+            editFilterNodesIsolatesAct->isChecked()))
+    {
+        return;
+    }
 
     statusMessage(tr("Opening Closeness Centralities report..."));
 
@@ -13751,54 +13814,73 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
 
      }
 
-
-
-
-
-
-
-
 }
 
-
-
-
-
 /**
- * @brief Creates a Qt Progress Dialog
- * if max = 0, then max becomes equal to active vertices*
- * @param max
- * @param msg
+ * @brief Creates a Qt Progress Dialog.
+ * If max = 0, then max becomes equal to active vertices.
+ * Connects the dialog's Cancel button to Graph::slotCancelComputation()
+ * so that the user can interrupt long-running computations.
+ * @param max The maximum value for the progress bar (0 = use active vertex count)
+ * @param msg The message to display in the dialog
  */
-void MainWindow::slotProgressBoxCreate(const int &max, const QString &msg){
-    qDebug() << "MW::slotProgressBoxCreate" ;
-
-    if (  appSettings["showProgressBar"] == "true"  ){
-        int duration = (max==0) ? activeNodes(): max;
+void MainWindow::slotProgressBoxCreate(const int &max, const QString &msg)
+{
+    qDebug() << "MW::slotProgressBoxCreate";
+    if (appSettings["showProgressBar"] == "true")
+    {
+        int duration = (max == 0) ? activeNodes() : max;
+        if (!progressDialogs.isEmpty())
+        {
+            // A dialog is already active — reuse it for the new sub-step
+            // instead of stacking a new one on top.
+            QProgressDialog *progressBox = progressDialogs.top();
+            progressBox->setLabelText(msg);
+            progressBox->setMaximum(duration);
+            progressBox->setValue(0);
+            // Push nullptr sentinel so slotProgressBoxDestroy knows
+            // this is a sub-step finish and should not destroy the real dialog.
+            progressDialogs.push(nullptr);            
+            qDebug() << "MW::slotProgressBoxCreate - reusing existing dialog for sub-step";
+            QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+            return;
+        }
         QProgressDialog *progressBox = new QProgressDialog(msg,
                                                            "Cancel",
                                                            0,
                                                            duration,
                                                            this);
         polishProgressDialog(progressBox);
-
-        progressBox->setWindowModality(Qt::WindowModal);
         progressBox->setWindowModality(Qt::ApplicationModal);
-
-        connect ( activeGraph, &Graph::signalProgressBoxUpdate,
-                  progressBox, &QProgressDialog::setValue );
-
+        connect(activeGraph, &Graph::signalProgressBoxUpdate,
+                progressBox, &QProgressDialog::setValue);
+        connect(progressBox, &QProgressDialog::canceled,
+                activeGraph, &Graph::slotCancelComputation);
         progressBox->setMinimumDuration(0);
         progressBox->setAutoClose(true);
         progressBox->setAutoReset(true);
-
         progressDialogs.push(progressBox);
     }
-
-    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 }
 
+/**
+ * @brief Fixes known bugs in QProgressDialog class.
+   i.e. Workaround for macOS-only Qt bug: QTBUG-65750, QTBUG-70357.
+   QProgressDialog too small and too narrow to fit the text of its label
+ * @param dialog
+ */
+void MainWindow::polishProgressDialog(QProgressDialog *dialog)
+{
+#ifdef Q_OS_MAC
+    // Workaround for macOS-only Qt bug; see: QTBUG-65750, QTBUG-70357.
+    const int margin = dialog->fontMetrics().maxWidth();
+    dialog->resize(dialog->width() + 2 * margin, dialog->height());
+    dialog->show();
+#else
+    Q_UNUSED(dialog);
+#endif
+}
 
 /**
  * @brief Destroys the first in queue Progress dialog
@@ -13806,12 +13888,19 @@ void MainWindow::slotProgressBoxCreate(const int &max, const QString &msg){
 void MainWindow::slotProgressBoxDestroy(const int &max){
     qDebug() << "MainWindow::slotProgressBoxDestroy";
     QApplication::restoreOverrideCursor();
-    if (  appSettings["showProgressBar"] == "true" && max > -1 ) {
-        if (! progressDialogs.isEmpty()) {
+    if (appSettings["showProgressBar"] == "true" && max > -1)
+    {
+        if (!progressDialogs.isEmpty())
+        {
             QProgressDialog *progressBox = progressDialogs.pop();
+            if (progressBox == nullptr)
+            {
+                // Sub-step sentinel — real dialog stays alive.
+                qDebug() << "MW::slotProgressBoxDestroy - sub-step sentinel, skipping destroy";
+                return;
+            }
             progressBox->reset();
             progressBox->deleteLater();
-            delete progressBox;
         }
     }
 }

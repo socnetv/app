@@ -2,6 +2,8 @@
 #
 # CMakeLists.txt - Build configuration for SocNetV (Social Network Visualizer)
 #
+# Last Update: Mar 2026
+#
 # This file defines the build system for SocNetV, an open-source social network 
 # analysis and visualization application built with Qt6. It is designed to support 
 # cross-platform builds on Linux, macOS, and Windows. Below is an overview of its 
@@ -53,7 +55,7 @@ set(APP_NAME SocNetV)
 set(APP_NAME_LOWER socnetv)
 
 project(SocNetV 
-    VERSION 3.3.1
+    VERSION 3.4
     DESCRIPTION "SocNetV: Open-source social network analysis application based on Qt."
     HOMEPAGE_URL "https://socnetv.org"
     LANGUAGES CXX
@@ -109,6 +111,7 @@ set(GRAPH_SOURCES
     src/graph/storage/graph_vertices.cpp
     src/graph/storage/graph_edges.cpp
     src/graph/io/graph_io.cpp
+    src/graph/io/graph_parse_sink_graph.cpp
     src/graph/relations/graph_relations.cpp
     src/graph/filters/graph_edge_filters.cpp
     src/graph/filters/graph_node_filters.cpp
@@ -136,18 +139,30 @@ set(GRAPH_SOURCES
     src/graph/similarity/graph_similarity_matrices.cpp
     src/graph/reporting/graph_reports.cpp
     src/graph/reporting/graph_reports_settings.cpp
-    
+)
 
+
+set(PARSER_SOURCES
+    src/parser.cpp
+    src/parser/parser_common.cpp 
+    src/parser/parser_graphml.cpp 
+    src/parser/parser_edgelist.cpp 
+    src/parser/parser_adjacency.cpp 
+    src/parser/parser_dl.cpp 
+    src/parser/parser_dot.cpp 
+    src/parser/parser_gml.cpp
+    src/parser/parser_pajek.cpp
 )
 
 set(CLI_SOURCES
     src/tools/socnetv_cli.cpp
     src/tools/cli/cli_common.cpp
+    src/tools/headless_graph_loader.cpp
     src/tools/cli/kernels/kernel_distance_v1.cpp
     src/tools/cli/kernels/kernel_reachability_v2.cpp
     src/tools/cli/kernels/kernel_walks_v3.cpp
     src/tools/cli/kernels/kernel_prominence_v4.cpp
-    src/tools/headless_graph_loader.cpp
+    src/tools/cli/kernels/kernel_io_roundtrip_v5.cpp
 )
 
 
@@ -182,9 +197,9 @@ set(SOURCES
     src/texteditor.cpp
     ${ENGINE_SOURCES}
     ${GRAPH_SOURCES}
+    ${PARSER_SOURCES}
     src/graphvertex.cpp
     src/matrix.cpp 
-    src/parser.cpp 
     src/webcrawler.cpp 
     src/chart.cpp 
     src/graphicswidget.cpp 
@@ -467,9 +482,9 @@ if(BUILD_CLI)
         ${CLI_SOURCES}
         ${ENGINE_SOURCES}
         ${GRAPH_SOURCES}
+        ${PARSER_SOURCES}
         src/graphvertex.cpp
         src/matrix.cpp
-        src/parser.cpp
         src/webcrawler.cpp
     )
 

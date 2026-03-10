@@ -135,9 +135,9 @@ void Graph::vertexCreateAtPos(const QPointF &p)
                  true);
 
     progressStatus(tr("New node (numbered %1) added at position (%2,%3). Double-click on it to start a new edge from it.")
-                           .arg(vertexNumberMax())
-                           .arg(p.x())
-                           .arg(p.y()));
+                       .arg(vertexNumberMax())
+                       .arg(p.x())
+                       .arg(p.y()));
 }
 
 /**
@@ -335,7 +335,6 @@ VList::const_iterator Graph::verticesBegin() const { return m_graph.cbegin(); }
 
 VList::const_iterator Graph::verticesEnd() const { return m_graph.cend(); }
 
-
 /**
  * @brief Returns a list of all isolated vertices inside the graph
  *
@@ -458,6 +457,11 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
         {
 
             progressUpdate(++progressCounter);
+            if (progressCanceled())
+            {
+                progressFinish();
+                return;
+            }            
 
             for (int j = i + 1; j < vList.size(); ++j)
             {
@@ -494,6 +498,11 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
         {
 
             progressUpdate(++progressCounter);
+            if (progressCanceled())
+            {
+                progressFinish();
+                return;
+            }
 
             if (!(weight = edgeExists(center, vList.value(j))))
             {
@@ -528,7 +537,11 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
         {
 
             progressUpdate(++progressCounter);
-
+            if (progressCanceled())
+            {
+                progressFinish();
+                return;
+            }
             j = (i == vList.size() - 1) ? 0 : i + 1;
             if (!(weight = edgeExists(vList.value(i), vList.value(j))))
             {
@@ -561,7 +574,11 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
         {
 
             progressUpdate(++progressCounter);
-
+            if (progressCanceled())
+            {
+                progressFinish();
+                return;
+            }
             if (i == vList.size() - 1)
                 break;
             j = i + 1;
@@ -597,10 +614,9 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
     progressFinish();
 }
 
-
-// 
+//
 // Vertex numbers
-// 
+//
 /**
  * @brief Returns the number of the last vertex in the graph.
  *
@@ -630,7 +646,6 @@ int Graph::vertexNumberMin()
 //
 // Vertex existence and find operations
 //
-
 
 /**
  * @brief Gets the number of vertices in the graph
@@ -679,7 +694,6 @@ int Graph::vertices(const bool &dropIsolates, const bool &countAll, const bool &
     calculatedVertices = true;
     return m_totalVertices;
 }
-
 
 /**
  * @brief Returns true if the current graph has no vertices at all

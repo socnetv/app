@@ -179,6 +179,11 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
     {
 
         progressUpdate(seq);
+        if (progressCanceled())
+        {
+            progressFinish();
+            return false;
+        }
 
         qDebug() << "matrix DSM contents now:";
         // DSM.printMatrixConsole();

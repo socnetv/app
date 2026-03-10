@@ -1,0 +1,4 @@
+# unweighted, undirected, symmetric, diagonal zeros
+0 1 0
+1 0 1
+0 1 0

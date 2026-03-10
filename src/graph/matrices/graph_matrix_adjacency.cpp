@@ -19,8 +19,6 @@
  * @brief  Creates an adjacency matrix AM
  *  where AM(i,j)=1 if i is connected to j
  *  and AM(i,j)=0 if i not connected to j
- *  Used in Graph::centralityInformation(), Graph::graphWalksMatrixCreate
- *  and Graph::createMatrixAdjacencyInverse()
  * @param dropIsolates
  * @param considerWeights
  * @param inverseWeights
@@ -54,7 +52,11 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
         qDebug() << "Graph::createMatrixAdjacency() - i" << i << "name" << (*it)->number();
 
         progressUpdate(++progressCounter);
-
+        if (progressCanceled())
+        {
+            progressFinish();
+            return;
+        }
         if (!(*it)->isEnabled() || ((*it)->isIsolated() && dropIsolates))
         {
             qDebug() << "Graph::createMatrixAdjacency() - SKIP i" << i << "name" << (*it)->number();
@@ -151,7 +153,10 @@ bool Graph::createMatrixAdjacencyInverse(const QString &method)
     int N = vertices(dropIsolates, false, true);
 
     createMatrixAdjacency(dropIsolates, considerWeights);
-
+    if (progressCanceled())
+    {
+        return false;
+    }
     invAM.resize(N, N);
 
     if (method == "gauss")
@@ -171,7 +176,7 @@ bool Graph::createMatrixAdjacencyInverse(const QString &method)
         j = 0;
         for (it1 = m_graph.cbegin(); it1 != m_graph.cend(); ++it1)
         {
-            if (!(*it1)->isEnabled() || (*it)->isIsolated())
+            if (!(*it1)->isEnabled() || (*it1)->isIsolated())
                 continue;
             if (invAM.item(i, j) != 0)
                 isSingular = false;

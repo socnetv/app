@@ -1,6 +1,6 @@
 # Build SocNetV for Windows x86_64 using Qt/MSVC2019 platform
 # https://socnetv.org
-# Last Update: Feb 2026
+# Last Update: Mar 2026
 # Copyright (c) 2026 by Dimitris Kalamaras
 #
 # This script builds SocNetV Windows installers ONLY on tags i.e. 3.0 or 3.0-beta*
@@ -55,7 +55,7 @@ install:
   - cmd: echo %APPVEYOR_REPO_COMMIT:~0,7%
   - cmd: echo "Setting SocNetV current version..."
   # NOTE: This is changed by our update version bash script
-  - cmd: set SOCNETV_VERSION=3.3.1
+  - cmd: set SOCNETV_VERSION=3.4
   - cmd: echo %SOCNETV_VERSION%
   - cmd: echo "Setting build type"
   - cmd: set BUILD_TYPE=Release

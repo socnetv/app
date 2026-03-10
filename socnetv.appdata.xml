@@ -29,6 +29,8 @@
 	  <release version="3.2" date="2025-04-01" />
 	  <release version="3.3" date="2026-02-25" />
 	  <release version="3.3.1" date="2026-02-26" />
+	  <release version="3.4" date="2026-03-10" />
+
         </releases>
         <developer_name>Dimitris B. Kalamaras</developer_name>
         <update_contact>dimitris.kalamaras_AT_gmail.com</update_contact>

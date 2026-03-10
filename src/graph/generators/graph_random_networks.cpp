@@ -29,53 +29,57 @@ void Graph::randomizeThings()
 }
 
 /**
- * @brief Creates an erdos-renyi random network according to the given model
- * @param vert
- * @param model
- * @param edges
- * @param eprob
- * @param mode
- * @param diag
+ * @brief Creates an Erdős–Rényi random network.
+ *
+ * Supports two models:
+ * - G(n,p): each possible edge is included independently with probability p.
+ * - G(n,M): exactly M edges are placed at random among all possible pairs.
+ *
+ * @param N     Number of nodes.
+ * @param model "G(n,p)" or "G(n,M)".
+ * @param m     Number of edges (used in G(n,M) model; 0 for G(n,p)).
+ * @param p     Edge probability (used in G(n,p) model; 0 for G(n,M)).
+ * @param mode  "graph" for undirected, anything else for directed.
+ * @param diag  If true, self-loops are allowed.
+ * @return true on success, false if the user cancelled.
  */
-void Graph::randomNetErdosCreate(const int &N,
+bool Graph::randomNetErdosCreate(const int &N,
                                  const QString &model,
                                  const int &m,
                                  const qreal &p,
                                  const QString &mode,
                                  const bool &diag)
 {
-    qDebug() << "Creating an erdos-renyi random network, vertices " << N
-             << " model " << model
-             << " edges " << m
-             << " edge probability " << p
-             << " graph mode " << mode
-             << " diag " << diag;
+    qDebug() << "Creating Erdos-Renyi random network:"
+             << "N" << N
+             << "model" << model
+             << "edges" << m
+             << "edge probability" << p
+             << "mode" << mode
+             << "diag" << diag;
 
     if (mode == "graph")
     {
         setDirected(false);
     }
-    vpos.reserve(N);
 
+    vpos.reserve(N);
     randomizeThings();
 
     int progressCounter = 0;
     int edgeCount = 0;
 
-    qDebug() << "Creating nodes...";
-
     QString pMsg = tr("Creating Erdos-Renyi Random Network. \n"
-                      " Please wait...");
+                      "Please wait...");
 
+    // Progress max: M edges for G(n,M), N nodes for G(n,p)
     progressCreate((m != 0 ? m : N), pMsg);
 
+    // Create all nodes first
     for (int i = 0; i < N; i++)
     {
         int x = canvasRandomX();
         int y = canvasRandomY();
-
-        //        qDebug() << "creating new node" << i+1 << "at" << x << y;
-
         vertexCreate(
             i + 1, initVertexSize, initVertexColor,
             initVertexNumberColor, initVertexNumberSize,
@@ -83,86 +87,87 @@ void Graph::randomNetErdosCreate(const int &N,
             QPoint(x, y), initVertexShape, initVertexIconPath, false);
     }
 
-    qDebug() << "Creating edges...";
+    qDebug() << "Nodes created. Creating edges using model" << model;
 
     if (model == "G(n,p)")
     {
-        qDebug() << "G(n,p) model...";
+        // Bernoulli trials: each pair (i,j) gets an edge with probability p
         for (int i = 0; i < N; i++)
         {
             for (int j = 0; j < N; j++)
             {
-
-                //                qDebug() << "Bernoulli trial "
-                //                       << "for edge " <<  i+1 << "->" << j+1;
-
                 if (!diag && i == j)
-                {
-                    //                    qDebug()<< " skip because " << i+1 << " = " << j+1 << " and diag " << diag;
                     continue;
-                }
+
                 if ((rand() % 100 + 1) / 100.0 < p)
                 {
                     edgeCount++;
-
                     if (mode == "graph")
                     {
-                        //                        qDebug() << " create undirected Edge no " << edgeCount;
                         edgeCreate(i + 1, j + 1, 1, initEdgeColor,
                                    EdgeType::Undirected, false, false,
                                    QString(), false);
                     }
                     else
                     {
-                        //                        qDebug() << " create directed Edge no "<< edgeCount;
                         edgeCreate(i + 1, j + 1, 1, initEdgeColor,
                                    EdgeType::Directed, true, false,
                                    QString(), false);
                     }
                 }
-                //                else
-                //                    qDebug() << "do not create Edge";
             }
 
             progressUpdate(++progressCounter);
+            if (progressCanceled())
+            {
+                progressFinish();
+                return false;
+            }
         }
     }
     else
     {
-        qDebug() << "G(n,M) model...";
+        // G(n,M): place exactly m edges at random positions
         int source = 0, target = 0;
+        bool cancelled = false;
         do
         {
             source = rand() % N + 1;
             target = rand() % N + 1;
-            //            qDebug() << "random pair " << " " << source << " , " << target ;
+
             if (!diag && source == target)
-            {
-                //                qDebug() << "skip self loop pair ";
                 continue;
-            }
             if (edgeExists(source, target))
-            {
-                //                qDebug() << "skip pair - exists";
                 continue;
-            }
+
             edgeCount++;
             if (mode == "graph")
             {
-                //                qDebug() << "create " << " undirected Edge no " << edgeCount;
                 edgeCreate(source, target, 1, initEdgeColor,
                            EdgeType::Undirected, false, false,
                            QString(), false);
             }
             else
             {
-                //                qDebug() << "create " << " directed Edge no " << edgeCount;
                 edgeCreate(source, target, 1, initEdgeColor,
                            EdgeType::Directed, true, false,
                            QString(), false);
             }
+
             progressUpdate(++progressCounter);
+            if (progressCanceled())
+            {
+                cancelled = true;
+                break;
+            }
+
         } while (edgeCount != m);
+
+        if (cancelled)
+        {
+            progressFinish();
+            return false;
+        }
     }
 
     relationCurrentRename(tr("erdos-renyi"), true);
@@ -171,27 +176,42 @@ void Graph::randomNetErdosCreate(const int &N,
     progressFinish();
 
     setModStatus(ModStatus::VertexEdgeCount);
+
+    return true;
 }
 
 /**
- * @brief Creates a scale-free random-network network
- * @param N
- * @param power
- * @param m0
- * @param m
- * @param alpha
- * @param mode
+ * @brief Creates a Barabási–Albert scale-free random network.
+ *
+ * The algorithm works in two phases:
+ * 1. Seed: build a fully connected clique of m0 initial nodes.
+ * 2. Growth: add nodes one by one up to N, each connecting to m existing
+ *    nodes via preferential attachment — nodes with higher degree are more
+ *    likely to receive new edges (rich-get-richer effect).
+ *
+ * The attachment probability for node j is:
+ *   P(j) = (alpha + degree(j)^power) / sumDegrees
+ *
+ * @param N      Total number of nodes in the final network.
+ * @param power  Exponent of the preferential attachment (typically 1).
+ * @param m0     Number of nodes in the initial seed clique.
+ * @param m      Number of edges each new node attaches to existing nodes.
+ * @param alpha  Additive constant in the attachment probability (zero-appeal).
+ * @param mode   "graph" for undirected, anything else for directed.
+ * @return true on success, false if the user cancelled.
  */
-void Graph::randomNetScaleFreeCreate(const int &N,
+bool Graph::randomNetScaleFreeCreate(const int &N,
                                      const int &power,
                                      const int &m0,
                                      const int &m,
                                      const qreal &alpha,
                                      const QString &mode)
 {
-    qDebug() << "Graph::randomNetScaleFreeCreate() - max nodes n" << N
+    qDebug() << "Graph::randomNetScaleFreeCreate() -"
+             << "N" << N
              << "power" << power
-             << "edges added in every round m" << m
+             << "m0" << m0
+             << "m" << m
              << "alpha" << alpha
              << "mode" << mode;
 
@@ -216,21 +236,18 @@ void Graph::randomNetScaleFreeCreate(const int &N,
 
     vpos.reserve(N);
 
-    qDebug() << "Graph::randomNetScaleFreeCreate() - "
-             << "Create initial connected net of m0 nodes";
-
     QString pMsg = tr("Creating Scale-Free Random Network. \n"
                       "Please wait...");
     progressStatus(pMsg);
     progressCreate(N, pMsg);
 
+    // Phase 1: create the initial seed clique of m0 nodes
+    qDebug() << "Graph::randomNetScaleFreeCreate() - creating seed clique of" << m0 << "nodes";
+
     for (int i = 0; i < m0; ++i)
     {
         x = x0 + radius * cos(i * rad);
         y = y0 + radius * sin(i * rad);
-
-        qDebug() << "Graph::randomNetScaleFreeCreate() - "
-                 << " initial node i " << i + 1 << " pos " << x << "," << y;
         vertexCreate(
             i + 1, initVertexSize, initVertexColor,
             initVertexNumberColor, initVertexNumberSize,
@@ -240,33 +257,38 @@ void Graph::randomNetScaleFreeCreate(const int &N,
 
     for (int i = 0; i < m0; ++i)
     {
-        qDebug() << "Graph::randomNetScaleFreeCreate() - "
-                 << " Creating all edges for initial node i " << i + 1;
         for (int j = i + 1; j < m0; ++j)
         {
-            qDebug() << "Graph::randomNetScaleFreeCreate() ---- "
-                        "Creating initial edge "
-                     << i + 1 << " <->" << j + 1;
-            edgeCreate(i + 1, j + 1, 1, initEdgeColor,
-                       EdgeType::Undirected, false, false,
-                       QString(), false);
+            // Respect mode when creating seed clique edges,
+            // consistent with the growth phase below
+            if (mode == "graph")
+            {
+                edgeCreate(i + 1, j + 1, 1, initEdgeColor,
+                           EdgeType::Undirected, false, false,
+                           QString(), false);
+            }
+            else
+            {
+                edgeCreate(i + 1, j + 1, 1, initEdgeColor,
+                           EdgeType::Directed, true, false,
+                           QString(), false);
+            }
         }
         progressUpdate(++progressCounter);
+        if (progressCanceled())
+        {
+            progressFinish();
+            return false;
+        }
     }
 
-    qDebug() << "Graph::randomNetScaleFreeCreate() - @@@@ "
-             << " start network growth to " << N
-             << " nodes with preferential attachment";
+    // Phase 2: grow the network to N nodes via preferential attachment
+    qDebug() << "Graph::randomNetScaleFreeCreate() - growing network to" << N << "nodes";
 
     for (int i = m0; i < N; ++i)
     {
-
         x = x0 + radius * cos(i * rad);
         y = y0 + radius * sin(i * rad);
-
-        qDebug() << "Graph::randomNetScaleFreeCreate() - ++++"
-                 << " adding new node i " << i + 1
-                 << " pos " << x << "," << y;
 
         vertexCreate(
             i + 1, initVertexSize, initVertexColor,
@@ -275,75 +297,61 @@ void Graph::randomNetScaleFreeCreate(const int &N,
             QPoint(x, y), initVertexShape, initVertexIconPath, false);
 
         progressUpdate(++progressCounter);
+        if (progressCanceled())
+        {
+            progressFinish();
+            return false;
+        }
 
-        // need to multiply by 2, since we have a undirected graph
-        // and edgesEnabled reports edges/2
+        // Sum of degrees used as denominator in attachment probability
+        // Multiply by 2 for undirected graphs since edgesEnabled() counts each edge once
         sumDegrees = 2 * edgesEnabled();
 
         newEdges = 0;
 
-        qDebug() << "Graph::randomNetScaleFreeCreate() - repeat until we reach"
-                 << m << "new edges for node" << i + 1;
+        // Repeat until this new node has attached to exactly m existing nodes
         for (;;)
-        { // do until we create m new edges
-
+        {
             for (int j = 0; j < i; ++j)
             {
-                qDebug() << "Graph::randomNetScaleFreeCreate() - "
-                         << " preferential attachment test of new node i "
-                         << i + 1
-                         << " with node j " << j + 1
-                         << " - newEdges " << newEdges;
-
                 if (newEdges == m)
                     break;
 
                 k_j = vertexDegreeIn(j + 1);
                 k_j = pow(k_j, power);
+
+                // If no edges exist yet, connect with certainty;
+                // otherwise use preferential attachment probability
                 if (sumDegrees < 1)
-                    prob_j = 1; // always create edge if no other edge exist
+                    prob_j = 1;
                 else
                     prob_j = (alpha + k_j) / sumDegrees;
 
                 prob = (rand() % 100 + 1) / 100.0;
 
-                qDebug() << "Graph::randomNetScaleFreeCreate() - "
-                         << " Edge probability with old node "
-                         << j + 1 << " is: alpha + k_j ^ power " << alpha + k_j
-                         << " / sumDegrees " << sumDegrees
-                         << " = prob_j " << prob_j
-                         << " prob " << prob;
-
                 if (prob <= prob_j)
                 {
                     if (mode == "graph")
                     {
-                        qDebug() << "Graph::randomNetScaleFreeCreate()  <----->"
-                                    "Creating pref.att. undirected edge "
-                                 << i + 1 << " <->" << j + 1;
                         edgeCreate(i + 1, j + 1, 1, initEdgeColor,
                                    EdgeType::Undirected, false, false,
                                    QString(), false);
-                        newEdges++;
                     }
                     else
                     {
-                        qDebug() << "Graph::randomNetScaleFreeCreate()  ----->"
-                                    "Creating pref.att. directed edge "
-                                 << i + 1 << " <->" << j + 1;
                         edgeCreate(i + 1, j + 1, 1, initEdgeColor,
                                    EdgeType::Directed, true, false,
                                    QString(), false);
-                        newEdges++;
                     }
+                    newEdges++;
                 }
             }
             if (newEdges == m)
                 break;
         }
-        qDebug() << "Graph::randomNetScaleFreeCreate() - " << m << "edges reached "
-                                                                   "for node"
-                 << i + 1;
+
+        qDebug() << "Graph::randomNetScaleFreeCreate() -"
+                 << m << "edges attached for node" << i + 1;
     }
 
     relationCurrentRename(tr("scale-free"), true);
@@ -354,37 +362,51 @@ void Graph::randomNetScaleFreeCreate(const int &N,
 
     progressFinish();
 
-    layoutVertexSizeByIndegree();
+    return true;
 }
 
 /**
- * @brief Creates a small world random network
- * @param vert
- * @param degree
- * @param beta
+ * @brief Creates a Watts–Strogatz small-world random network.
+ *
+ * The algorithm works in two phases:
+ * 1. Build a ring lattice of N nodes each connected to `degree` neighbours.
+ * 2. Rewire each edge with probability `beta` to a randomly chosen node,
+ *    producing the characteristic short path lengths and high clustering.
+ *
+ * @param N      Number of nodes.
+ * @param degree Number of neighbours each node is initially connected to (must be even).
+ * @param beta   Rewiring probability in [0,1]. 0 = pure lattice, 1 = random graph.
+ * @param mode   "graph" for undirected, anything else for directed.
+ * @return true on success, false if the user cancelled.
  */
-void Graph::randomNetSmallWorldCreate(const int &N, const int &degree,
+bool Graph::randomNetSmallWorldCreate(const int &N, const int &degree,
                                       const double &beta, const QString &mode)
 {
-    qDebug() << "Creating small-world randome network. Vertices: " << N
-             << "degree: " << degree
-             << "beta: " << beta
-             << "mode: " << mode
-             << "First creating a ring lattice";
+    qDebug() << "Creating small-world random network. Vertices:" << N
+             << "degree:" << degree
+             << "beta:" << beta
+             << "mode:" << mode;
 
     if (mode == "graph")
     {
         setDirected(false);
     }
 
-    randomNetRingLatticeCreate(N, degree, true);
+    // Phase 1: build the underlying ring lattice.
+    // We pass updateProgress=false so the lattice builder does not create its
+    // own progress dialog — we own the single dialog for the whole operation.
+    if (!randomNetRingLatticeCreate(N, degree, false))
+    {
+        return false;
+    }
 
+    // Phase 2: rewire edges with probability beta (Watts-Strogatz).
     QString pMsg = tr("Creating Small-World Random Network. \n"
                       "Please wait ...");
     progressStatus(pMsg);
     progressCreate(N, pMsg);
 
-    qDebug("******** Graph: REWIRING starts...");
+    qDebug() << "Rewiring starts...";
 
     int candidate = 0;
     int progressCounter = 1;
@@ -393,63 +415,71 @@ void Graph::randomNetSmallWorldCreate(const int &N, const int &degree,
     {
         for (int j = i + 1; j < N; j++)
         {
-            //            qDebug()<<">>>>> REWIRING: Check if  "<< i << " is linked to " << j;
             if (edgeExists(i, j))
             {
-                //                qDebug()<<">>>>> REWIRING: They're linked. Do a random REWIRING "
-                //                          "Experiment between "<< i<< " and " << j
-                //                       << " Beta parameter is " << beta;
+                // Rewire this edge with probability beta
                 if (rand() % 100 < (beta * 100))
                 {
-                    //                    qDebug(">>>>> REWIRING: We'l break this edge!");
                     edgeRemove(i, j, true);
-                    //                    qDebug()<<">>>>> REWIRING: OK. Let's create a new edge!";
+
+                    // Find a valid rewiring target: not a self-loop,
+                    // not already a neighbour of i
                     for (;;)
-                    {                                 // do until we create a new edge
-                        candidate = rand() % (N + 1); // pick another vertex.
+                    {
+                        candidate = rand() % (N + 1);
                         if (candidate == 0 || candidate == i)
                             continue;
-                        //                        qDebug()<<">>>>> REWIRING: Candidate: "<< candidate;
-                        // Only if differs from i and hasnot edge with it
-                        //                        qDebug("<---->Random New Edge Experiment between %i and %i:", i, candidate);
                         if (edgeExists(i, candidate) != 0)
                             continue;
-                        if (rand() % 100 > 0.5)
-                        {
-                            //                            qDebug() << "Creating new edge";
-                            edgeCreate(i, candidate, 1, initEdgeColor,
-                                       EdgeType::Undirected, false, false,
-                                       QString(), false);
-                            break;
-                        }
+                        edgeCreate(i, candidate, 1, initEdgeColor,
+                                   EdgeType::Undirected, false, false,
+                                   QString(), false);
+                        break;
                     }
                 }
-                else
-                    qDebug("Will not break link!");
             }
         }
+
         progressUpdate(++progressCounter);
+        if (progressCanceled())
+        {
+            progressFinish();
+            return false;
+        }
     }
 
     relationCurrentRename(tr("small-world"), true);
 
     progressFinish();
 
-    layoutVertexSizeByIndegree();
-
     setModStatus(ModStatus::VertexEdgeCount);
+
+    return true;
 }
 
 /**
- * @brief Creates a random network where nodes have the same degree.
- * @param vert
- * @param degree
+ * @brief Creates a pseudo-random d-regular network.
+ *
+ * Every node ends up with exactly `degree` neighbours. The algorithm:
+ * 1. Build an initial ordered edge list where each node i connects to the
+ *    next degree/2 nodes (undirected) or degree nodes (directed).
+ * 2. Repeatedly pick two edges at random and swap their endpoints,
+ *    ensuring no self-loops or duplicate edges result, until all edges
+ *    have been processed. This produces a random regular graph.
+ * 3. Draw the resulting edges.
+ *
+ * @param N      Number of nodes.
+ * @param degree Desired degree of every node (must be even for undirected).
+ * @param mode   "graph" for undirected, anything else for directed.
+ * @param diag   Reserved, currently unused.
+ * @return true on success, false if the user cancelled.
  */
-void Graph::randomNetRegularCreate(const int &N,
+bool Graph::randomNetRegularCreate(const int &N,
                                    const int &degree,
                                    const QString &mode, const bool &diag)
 {
-    qDebug() << "Creating d-regular random network...";
+    qDebug() << "Creating d-regular random network..."
+             << "N" << N << "degree" << degree << "mode" << mode;
     Q_UNUSED(diag);
 
     if (mode == "graph")
@@ -473,18 +503,12 @@ void Graph::randomNetRegularCreate(const int &N,
     QString pMsg = tr("Creating pseudo-random d-regular network. \n"
                       "Please wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
-    qDebug() << " creating vertices";
-
+    // Create all nodes
     for (int i = 0; i < N; i++)
     {
         x = canvasRandomX();
         y = canvasRandomY();
-
-        //        qDebug() << " creating new vertex at "
-        //                    << x << "," << y;
-
         vertexCreate(
             i + 1, initVertexSize, initVertexColor,
             initVertexNumberColor, initVertexNumberSize,
@@ -492,22 +516,16 @@ void Graph::randomNetRegularCreate(const int &N,
             QPoint(x, y), initVertexShape, initVertexIconPath, false);
     }
 
-    qDebug() << " Creating initial edges";
-
+    // Build initial ordered edge list
     if (mode == "graph")
     {
         for (int i = 0; i < N; i++)
         {
-            qDebug() << " "
-                        "Creating undirected edges for node  "
-                     << i + 1;
             for (int j = 0; j < degree / 2; j++)
             {
                 target = i + j + 1;
                 if (target > (N - 1))
                     target = target - N;
-                qDebug() << " undirected edge "
-                         << i + 1 << "<->" << target + 1;
                 m_edges.append(QString::number(i + 1) + "->" + QString::number(target + 1));
             }
         }
@@ -516,31 +534,28 @@ void Graph::randomNetRegularCreate(const int &N,
     {
         for (int i = 0; i < N; i++)
         {
-            //            qDebug()<< "Creating directed edges for node  "<< i+1;
             for (int j = 0; j < degree; j++)
             {
                 target = i + j + 1;
                 if (target > (N - 1))
                     target = target - N;
-                //                qDebug()<< " directed edge "<< i+1 << "->"<< target+1;
                 m_edges.append(QString::number(i + 1) + "->" + QString::number(target + 1));
             }
         }
     }
-    qDebug() << "Edge list count:" << m_edges.size()
-             << "Now reordering all edges in pairs...";
 
-    // take randomly two edges, of different vertices and combine their source
-    // and target vertices to two different edges
+    qDebug() << "Edge list count:" << m_edges.size()
+             << "Randomising by swapping edge endpoint pairs...";
+
+    // Randomise by repeatedly swapping endpoints of two randomly chosen edges,
+    // ensuring the result has no self-loops or duplicate edges
     for (int i = 1; i < m_edges.size(); ++i)
     {
-
         firstEdgeVertices.clear();
         secondEdgeVertices.clear();
-        firstEdgeVertices << "";
-        firstEdgeVertices << "";
-        secondEdgeVertices << "";
-        secondEdgeVertices << "";
+        firstEdgeVertices << "" << "";
+        secondEdgeVertices << "" << "";
+
         while (firstEdgeVertices[0] == firstEdgeVertices[1] ||
                firstEdgeVertices[0] == secondEdgeVertices[0] ||
                firstEdgeVertices[0] == secondEdgeVertices[1] ||
@@ -552,46 +567,25 @@ void Graph::randomNetRegularCreate(const int &N,
                (isUndirected() && m_edges.contains(secondEdgeVertices[1] + "->" + firstEdgeVertices[0])) ||
                (isUndirected() && m_edges.contains(firstEdgeVertices[1] + "->" + secondEdgeVertices[0])))
         {
-
             firstEdge = m_edges.at(rand() % m_edges.size());
             firstEdgeVertices = firstEdge.split("->");
             secondEdge = m_edges.at(rand() % m_edges.size());
             secondEdgeVertices = secondEdge.split("->");
-            //            qDebug()<< " firstEdgeVertices:"
-            //                    << firstEdgeVertices
-            //                    << " secondEdgeVertices:" << secondEdgeVertices;
         }
-        //        qDebug()<< " removing edges:" <<firstEdge << secondEdge;
+
         m_edges.removeAll(firstEdge);
         m_edges.removeAll(secondEdge);
-
-        //        qDebug()<< " 2 edges deleted for reordering:"
-        //                << firstEdgeVertices[0] << "->" << firstEdgeVertices[1]
-        //                << "and"
-        //                << secondEdgeVertices[0] << "->" << secondEdgeVertices[1]
-        //                << "edge list count:" << m_edges.size();
-
         m_edges.append(firstEdgeVertices[0] + "->" + secondEdgeVertices[1]);
         m_edges.append(secondEdgeVertices[0] + "->" + firstEdgeVertices[1]);
-
-        //        qDebug()<< " 2 new edges added:"
-        //                << firstEdgeVertices[0] << "->" << secondEdgeVertices[1]
-        //                <<"and"
-        //                << secondEdgeVertices[0]<<"->"<<firstEdgeVertices[1]
-        //                << "final edge list count:" << m_edges.size();
     }
 
-    //
-    // draw edges
-    //
+    // Now set progress max to actual edge count for accurate progress reporting
+    progressCreate(m_edges.size(), pMsg);
+
+    // Draw the randomised edges
     for (int i = 0; i < m_edges.size(); ++i)
     {
-
         m_edge = m_edges.at(i).split("->");
-
-        //        qDebug() << "Drawing undirected Edge" <<
-        //                 << m_edge[0].toInt(0) << "<->" << m_edge[1].toInt(0);
-
         edgeCreate(m_edge[0].toInt(0), m_edge[1].toInt(0), 1,
                    initEdgeColor,
                    (isUndirected()) ? EdgeType::Undirected : EdgeType::Directed,
@@ -600,10 +594,14 @@ void Graph::randomNetRegularCreate(const int &N,
                    QString(), false);
 
         progressCounter += progressFraction;
-
         if (fmod(progressCounter, 1.0) == 0)
         {
             progressUpdate((int)progressCounter);
+            if (progressCanceled())
+            {
+                progressFinish();
+                return false;
+            }
         }
     }
 
@@ -612,6 +610,8 @@ void Graph::randomNetRegularCreate(const int &N,
     progressFinish();
 
     setModStatus(ModStatus::VertexEdgeCount);
+
+    return true;
 }
 
 /**
@@ -623,7 +623,7 @@ void Graph::randomNetRegularCreate(const int &N,
  * @param radius
  * @param updateProgress
  */
-void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
+bool Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
                                        const bool updateProgress)
 {
     qDebug() << "Creating ring lattice random network...";
@@ -645,28 +645,28 @@ void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
     QString pMsg = tr("Creating ring-lattice network. \n"
                       "Please wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
+
+    if (updateProgress)
+        progressCreate(N, pMsg);
 
     for (int i = 0; i < N; i++)
     {
         x = x0 + radius * cos(i * rad);
         y = y0 + radius * sin(i * rad);
-        //        qDebug() << "creating new vertex " << i+1;
         vertexCreate(i + 1, initVertexSize, initVertexColor,
                      initVertexNumberColor, initVertexNumberSize,
                      QString::number(i + 1), initVertexLabelColor, initVertexLabelSize,
                      QPoint(x, y), initVertexShape, initVertexIconPath, false);
     }
+
     int target = 0;
     for (int i = 0; i < N; i++)
     {
-        //        qDebug("Creating links for node %i = ", i+1);
         for (int j = 0; j < degree / 2; j++)
         {
             target = i + j + 1;
             if (target > (N - 1))
                 target = target - N;
-            //            qDebug("Creating Link between %i  and %i", i+1, target+1);
             edgeCreate(i + 1, target + 1, 1, initEdgeColor,
                        EdgeType::Undirected, false, false,
                        QString(), false);
@@ -674,37 +674,60 @@ void Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
         if (updateProgress)
         {
             progressUpdate(++progressCounter);
+            if (progressCanceled())
+            {
+                progressFinish();
+                return false;
+            }
         }
     }
 
+    // Always rename the relation, regardless of updateProgress (fix: was inside updateProgress guard)
+    relationCurrentRename(tr("ring-lattice"), true);
+
     if (updateProgress)
-    {
-        relationCurrentRename(tr("ring-lattice"), true);
         progressFinish();
-    }
 
     setModStatus(ModStatus::VertexEdgeCount, updateProgress);
+
+    return true;
 }
 
+
 /**
- * @brief Creates a lattice network
- * @param N
- * @param length
- * @param dimension
- * @param neighborhood
- * @param mode
- * @param diag
+ * @brief Creates a lattice (mesh/grid) random network.
+ *
+ * Nodes are arranged in a length×length grid. Each node connects to its
+ * neighbours within a given neighbourhood distance in both horizontal and
+ * vertical directions. The resulting network forms a regular tiling pattern.
+ *
+ * Note: the `dimension` and `circular` parameters are reserved for future
+ * extension to higher-dimensional and toroidal lattices.
+ *
+ * @param N                 Total number of nodes (should equal length^2).
+ * @param length            Number of nodes along each dimension of the grid.
+ * @param dimension         Reserved for future use (higher-dimensional lattices).
+ * @param neighborhoodLength  Distance within which nodes are connected.
+ * @param mode              "graph" for undirected, anything else for directed.
+ * @param circular          Reserved for future use (toroidal/circular lattice).
+ * @return true on success, false if the user cancelled.
  */
-void Graph::randomNetLatticeCreate(const int &N,
+bool Graph::randomNetLatticeCreate(const int &N,
                                    const int &length,
                                    const int &dimension,
                                    const int &neighborhoodLength,
                                    const QString &mode,
                                    const bool &circular)
 {
-    qDebug() << "Creating lattice network...";
+    qDebug() << "Creating lattice network..."
+             << "N" << N
+             << "length" << length
+             << "neighborhoodLength" << neighborhoodLength
+             << "mode" << mode;
+
     Q_UNUSED(circular);
     Q_UNUSED(dimension);
+
     if (mode == "graph")
     {
         setDirected(false);
@@ -727,42 +750,29 @@ void Graph::randomNetLatticeCreate(const int &N,
     QString oppEdge;
 
     randomizeThings();
-
     vpos.reserve(N);
 
     QString pMsg = tr("Creating lattice network. \n"
                       "Please wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
-    // create vertices
-
-    qDebug() << "creating vertices";
-
+    // Create nodes arranged in a length x length grid
     nCount = 0;
     canvasPadding = 20;
     nodeHPadding = (canvasWidth) / (double)(length + 2);
     nodeVPadding = (canvasHeight) / (double)(length + 2);
 
-    qDebug() << "canvasPadding" << canvasPadding
-             << "nodeHPadding" << nodeHPadding;
+    qDebug() << "Creating" << N << "vertices in a" << length << "x" << length
+             << "grid - nodeHPadding" << nodeHPadding
+             << "nodeVPadding" << nodeVPadding;
 
     for (int i = 0; i < length; i++)
     {
-
-        // compute vertical pos
         y = canvasPadding + nodeVPadding * (i + 1);
-
         for (int j = 0; j < length; j++)
         {
             nCount++;
-            // compute horizontal pos
             x = canvasPadding + nodeHPadding * (j + 1);
-
-            //            qDebug() << "creating new vertex at"
-            //                     << x << "," << y;
-
-            // create vertex
             vertexCreate(
                 nCount, initVertexSize,
                 initVertexColor,
@@ -778,105 +788,68 @@ void Graph::randomNetLatticeCreate(const int &N,
         }
     }
 
-    //
-    // compute and then draw edges
-    //
-
-    qDebug() << "Computing edges";
+    // Compute the edge list: for each node, find all neighbours
+    // within neighborhoodLength steps in both axes
+    qDebug() << "Computing edges...";
 
     if (mode == "graph")
     {
-
-        // undirected graph
-
         for (int i = 1; i <= N; i++)
         {
-
-            //            qDebug()<< "Creating undirected edges for node  "<< i;
-
             for (int j = 1; j < neighborhoodLength + 1; j++)
             {
-
                 for (int p = 0; p < 2; p++)
                 {
-
                     for (int q = 0; q < 2; q++)
                     {
-
                         target = i + pow((-1), p) * j * pow(length, q);
 
+                        // Skip out-of-bounds: wrap-around on right edge
                         if (i % length == 0 && target == i + 1)
-                        {
-                            //                            qDebug()<< i << "<->"<< target << "OOB RIGHT";
                             continue;
-                        }
+                        // Skip out-of-bounds: wrap-around on left edge
                         if (i % length == 1 && target == i - 1)
-                        {
-                            //                            qDebug()<< i << "<->"<< target << "OOB LEFT";
                             continue;
-                        }
+                        // Skip out-of-bounds: below grid
                         if (target > N)
                         {
-                            //                            qDebug()<< i << "<->"<< target << "OOB DOWN";
                             target = target % N;
                             continue;
                         }
-
+                        // Skip out-of-bounds: above grid
                         if (target < 1)
                         {
-                            //                            qDebug()<< i << "<->"<< target << "OOB UP";
                             target = N - target;
                             continue;
                         }
-                        //                        qDebug()<< i << "<->"<< target << "OK";
 
+                        // Add edge only once (undirected: skip if reverse already recorded)
                         edge = QString::number(i) + "<->" + QString::number(target);
-                        oppEdge = QString::number(i) + "<->" + QString::number(target);
-
+                        oppEdge = QString::number(target) + "<->" + QString::number(i);
                         if (!latticeEdges.contains(edge) && !latticeEdges.contains(oppEdge))
                         {
-                            latticeEdges.append(QString::number(i) + "<->" + QString::number(target));
+                            latticeEdges.append(edge);
                         }
                     }
                 }
-
-                //// up
-                // target = i-j*length;
-                //// pre
-                // target = i-j;
-
-                //// same
-                // i
-
-                //// next
-                // target = i+j;
-
-                //// down
-                // target = i+j*length;
             }
         }
     }
-
     else
     {
-
-        // directed graph
+        // Directed lattice: reserved for future implementation
     }
 
-    //
-    // draw edges
-    //
+    // Draw edges; progress tracks actual edge count for accuracy
+    qDebug() << "Drawing" << latticeEdges.size() << "edges...";
 
-    qDebug() << "drawing edges";
+    progressFraction = (latticeEdges.size() > 0) ? 1.0 / (qreal)latticeEdges.size() : 1.0;
+
+    progressCreate(latticeEdges.size(), pMsg);
 
     for (int i = 0; i < latticeEdges.size(); ++i)
     {
-
         m_edge = latticeEdges.at(i).split("<->");
-
-        //        qDebug() << "Drawing undirected Edge no" << i + 1 << ":"
-        //                 << m_edge[0].toInt(0) << "<->" << m_edge[1].toInt(0);
-
         edgeCreate(m_edge[0].toInt(0), m_edge[1].toInt(0), 1,
                    initEdgeColor,
                    (isUndirected()) ? EdgeType::Undirected : EdgeType::Directed,
@@ -885,6 +858,15 @@ void Graph::randomNetLatticeCreate(const int &N,
                    QString(), false);
 
         progressCounter += progressFraction;
+        if (fmod(progressCounter, 1.0) == 0)
+        {
+            progressUpdate((int)progressCounter);
+            if (progressCanceled())
+            {
+                progressFinish();
+                return false;
+            }
+        }
     }
 
     relationCurrentRename(tr("lattice"), true);
@@ -892,7 +874,10 @@ void Graph::randomNetLatticeCreate(const int &N,
     progressFinish();
 
     setModStatus(ModStatus::VertexEdgeCount);
+
+    return true;
 }
+
 
 /**
     Calculates and returns x! factorial...

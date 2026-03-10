@@ -18,6 +18,7 @@
 #include "tools/cli/kernels/kernel_reachability_v2.h"
 #include "tools/cli/kernels/kernel_walks_v3.h"
 #include "tools/cli/kernels/kernel_prominence_v4.h"
+#include "tools/cli/kernels/kernel_io_roundtrip_v5.h"
 
 int main(int argc, char *argv[])
 {
@@ -28,6 +29,7 @@ int main(int argc, char *argv[])
     cli.addVersionOption();
 
     QCommandLineOption verboseOpt(QStringList() << "b" << "verbose", "Verbose debug output.");
+    QCommandLineOption strictOpt(QStringList() << "strict", "Fail on timing regressions (io_roundtrip kernel).");
     QCommandLineOption fileOpt(QStringList() << "i" << "input", "Input network file path.", "path");
     QCommandLineOption typeOpt(QStringList() << "f" << "format", "File type enum int.", "int", "0");
     QCommandLineOption delimOpt(QStringList() << "d" << "delim", "Delimiter.", "str", " ");
@@ -47,7 +49,7 @@ int main(int argc, char *argv[])
                                 "N", "0");
 
     QCommandLineOption kernelOpt(QStringList() << "kernel",
-                                 "Kernel: distance|reachability|walks_matrix|prominence",
+                                 "Kernel: distance|reachability|walks_matrix|prominence|io_roundtrip",
                                  "name", "distance");
 
     QCommandLineOption walksLenOpt(QStringList() << "walks-length",
@@ -55,6 +57,7 @@ int main(int argc, char *argv[])
                                    "K", "0");
 
     cli.addOption(verboseOpt);
+    cli.addOption(strictOpt);
     cli.addOption(fileOpt);
     cli.addOption(typeOpt);
     cli.addOption(delimOpt);
@@ -75,6 +78,8 @@ int main(int argc, char *argv[])
     cli::CliConfig cfg;
 
     cfg.verbose = cli.isSet(verboseOpt);
+    cfg.strict = cli.isSet(strictOpt);
+    
     if (!cfg.verbose)
     {
         // Kill qDebug/qInfo output from Qt + your code (keeps warnings/criticals)
@@ -128,7 +133,7 @@ int main(int argc, char *argv[])
         cfg.twoMode,
         cfg.hasLabels);
 
-    cli::printKV("OK", load.ok ? "1" : "0");
+    cli::printKV("LOAD_OK", load.ok ? "1" : "0");
     cli::printKV("FILE", QFileInfo(cfg.inputPath).fileName());
     cli::printKV("FILETYPE", load.fileType);
     cli::printKV("N", load.totalNodes);
@@ -143,9 +148,16 @@ int main(int argc, char *argv[])
     const int links_sna = g.isDirected() ? ties_graph : (2 * ties_graph);
 
     cli::printKV("DIRECTED", g.isDirected() ? 1 : 0);
+    cli::printKV("SYMMETRIC", g.isSymmetric() ? 1 : 0);
     cli::printKV("WEIGHTED", g.isWeighted() ? 1 : 0);
+    cli::printKV("RELATIONS", g.relations());
     cli::printKV("TIES_GRAPH", ties_graph);
     cli::printKV("LINKS_SNA", links_sna);
+    if (cfg.kernel == "io_roundtrip")
+    {
+        cli::printKV("KERNEL_DESC",
+                     "io_roundtrip: load -> save(same-format) -> reload; compares per-relation signatures from the reloaded file");
+    }
 
     if (cfg.kernel == "distance")
         return cli::runKernelDistanceV1(cfg, load, g);
@@ -158,6 +170,9 @@ int main(int argc, char *argv[])
     
     if (cfg.kernel == "prominence")
         return cli::runKernelProminenceV4(cfg, load, g);
+
+    if (cfg.kernel == "io_roundtrip")
+        return cli::runKernelIoRoundtripV5(cfg, load, g);
 
     QTextStream(stderr) << "ERROR: unsupported --kernel: " << cfg.kernel << "\n";
     return 2;
