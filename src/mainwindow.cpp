@@ -8506,34 +8506,28 @@ void MainWindow::slotNetworkRandomScaleFreeDialog() {
  * @param zeroAppeal
  * @param mode
  */
-void MainWindow::slotNetworkRandomScaleFree ( const int &newNodes,
-                                              const int &power,
-                                              const int &initialNodes,
-                                              const int &edgesPerStep,
-                                              const qreal &zeroAppeal,
-                                              const QString &mode)
+void MainWindow::slotNetworkRandomScaleFree(const int &newNodes,
+                                            const int &power,
+                                            const int &initialNodes,
+                                            const int &edgesPerStep,
+                                            const qreal &zeroAppeal,
+                                            const QString &mode)
 {
     qDebug() << "Request to create a new scale-free random network...";
-
-    activeGraph->randomNetScaleFreeCreate( newNodes,
-                                           power,
-                                           initialNodes,
-                                           edgesPerStep,
-                                           zeroAppeal,
-                                           mode);
-
-
+    if (!activeGraph->randomNetScaleFreeCreate(newNodes, power, initialNodes,
+                                               edgesPerStep, zeroAppeal, mode))
+    {
+        statusMessage(tr("Scale-free network creation cancelled or did not finish."));
+        return;
+    }
     setWindowTitle("Untitled scale-free network");
-
-    slotHelpMessageToUser (
+    slotHelpMessageToUser(
                 USER_MSG_INFO,
                 tr("Scale-free random network created."),
                 tr("Random network created. \n"
                    "A new scale-free random network with %1 nodes has been created according to the Barabási–Albert model.").arg(newNodes),
                 tr("A scale-free network is a network whose degree distribution follows a power law.")
-
                 );
-
 }
 
 
@@ -8631,17 +8625,16 @@ void MainWindow::slotNetworkRandomRegularDialog()
  * @param diag
  */
 void MainWindow::slotNetworkRandomRegular(const int &newNodes, const int &degree,
-                                          const QString &mode, const bool &diag){
-
-
+                                          const QString &mode, const bool &diag)
+{
     initApp();
-
-    activeGraph->randomNetRegularCreate (newNodes,degree, mode, diag);
-
+    if (!activeGraph->randomNetRegularCreate(newNodes, degree, mode, diag))
+    {
+        statusMessage(tr("d-regular network creation cancelled or did not finish."));
+        return;
+    }
     setWindowTitle("Untitled d-regular network");
-
-
-    slotHelpMessageToUser (
+    slotHelpMessageToUser(
                 USER_MSG_INFO,
                 tr("d-regular network created."),
                 tr("Random network created. \n"
@@ -8649,7 +8642,6 @@ void MainWindow::slotNetworkRandomRegular(const int &newNodes, const int &degree
                 tr("Each node has the same number <em>%1</em> of neighbours, aka the same degree d.")
                 .arg(degree)
                 );
-
 }
 
 

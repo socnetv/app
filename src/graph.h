@@ -1145,12 +1145,9 @@ public:
                               const int &m, const qreal &p,
                               const QString &mode, const bool &diag);
 
-    void randomNetScaleFreeCreate(const int &N,
-                                  const int &power,
-                                  const int &m0,
-                                  const int &m,
-                                  const qreal &alpha,
-                                  const QString &mode);
+    bool randomNetScaleFreeCreate(const int &N, const int &power,
+                                  const int &m0, const int &m,
+                                  const qreal &alpha, const QString &mode);
 
     bool randomNetSmallWorldCreate(const int &N, const int &degree,
                                    const double &beta, const QString &mode);
@@ -1158,10 +1155,8 @@ public:
     bool randomNetRingLatticeCreate(const int &N, const int &degree,
                                     const bool updateProgress = false);
 
-    void randomNetRegularCreate(const int &N,
-                                const int &degree,
-                                const QString &mode,
-                                const bool &diag);
+    bool randomNetRegularCreate(const int &N, const int &degree,
+                                const QString &mode, const bool &diag);
 
     void randomNetLatticeCreate(const int &N,
                                 const int &length,
