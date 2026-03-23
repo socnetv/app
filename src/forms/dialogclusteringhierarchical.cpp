@@ -69,7 +69,7 @@ DialogClusteringHierarchical::DialogClusteringHierarchical (QWidget *parent,
 
     ui.diagramCheckBox->setChecked(true);
 
-    connect ( ui.matrixSelect, SIGNAL(highlighted(QString)),
+    connect ( ui.matrixSelect, SIGNAL(textHighlighted(QString)),
               this, SLOT(matrixChanged(QString)) );
 
 
