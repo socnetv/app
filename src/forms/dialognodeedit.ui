@@ -275,7 +275,7 @@
          <bool>true</bool>
         </attribute>
         <attribute name="horizontalHeaderStretchLastSection">
-         <bool>false</bool>
+         <bool>true</bool>
         </attribute>
         <attribute name="verticalHeaderShowSortIndicator" stdset="0">
          <bool>true</bool>

@@ -146,10 +146,11 @@ DialogNodeEdit::DialogNodeEdit(QWidget *parent,
             this, &DialogNodeEdit::getNodeIconFile);
 
     connect(ui->addPropertyBtn, &QPushButton::clicked, this, &DialogNodeEdit::on_addPropertyButton_clicked);
-    
-    connect(ui->customAttributesTable, &QTableWidget::itemSelectionChanged, [this]() {
-        ui->removePropertyBtn->setEnabled(true);
-    }); 
+
+    connect(ui->customAttributesTable, &QTableWidget::itemSelectionChanged, [this]()
+            { ui->removePropertyBtn->setEnabled(
+                  !ui->customAttributesTable->selectedItems().isEmpty()); });
+
     connect(ui->removePropertyBtn, &QPushButton::clicked, this, &DialogNodeEdit::on_removePropertyButton_clicked);
 }
 
@@ -184,6 +185,7 @@ void DialogNodeEdit::getNodeShape(const int &nodeShapeIndex)
         nodeShape = "box";
         break;
     case NodeShape::Circle:
+        nodeShape = "circle";
         break;
     case NodeShape::Diamond:
         nodeShape = "diamond";
@@ -344,12 +346,14 @@ void DialogNodeEdit::getUserChoices()
         break;
     }
 
-    // ui->customAttributesTable
+    // Rebuild custom attributes entirely from table contents
+    m_customAttributes.clear();
     for (int i = 0; i < ui->customAttributesTable->rowCount(); ++i)
     {
-        QString key = ui->customAttributesTable->item(i, 0)->text();
-        QString value = ui->customAttributesTable->item(i, 1)->text();
-        m_customAttributes.insert(key, value);
+        QTableWidgetItem *keyItem = ui->customAttributesTable->item(i, 0);
+        QTableWidgetItem *valueItem = ui->customAttributesTable->item(i, 1);
+        if (keyItem && valueItem && !keyItem->text().isEmpty())
+            m_customAttributes.insert(keyItem->text(), valueItem->text());
     }
     emit userChoices(nodeLabel, nodeSize, nodeColor, nodeShape, iconPath, m_customAttributes);
 }
@@ -382,21 +386,42 @@ void DialogNodeEdit::selectColor()
  */
 void DialogNodeEdit::on_addPropertyButton_clicked()
 {
-    QString key = ui->keyLineEdit->text();
-    QString value = ui->valueLineEdit->text();
-    if (!key.isEmpty() && !value.isEmpty())
+    QString key = ui->keyLineEdit->text().trimmed();
+    QString value = ui->valueLineEdit->text().trimmed();
+
+    // Highlight empty fields and return
+    QGraphicsColorizeEffect *effect = nullptr;
+    if (key.isEmpty())
     {
-        m_customAttributes.insert(key, value);
-        int row = ui->customAttributesTable->rowCount();
-        ui->customAttributesTable->insertRow(row);
-        ui->customAttributesTable->setItem(row, 0, new QTableWidgetItem(key));
-        ui->customAttributesTable->setItem(row, 1, new QTableWidgetItem(value));
-        ui->keyLineEdit->clear();
-        ui->valueLineEdit->clear();
+        effect = new QGraphicsColorizeEffect;
+        effect->setColor(QColor("red"));
+        ui->keyLineEdit->setGraphicsEffect(effect);
     }
+    else
+    {
+        ui->keyLineEdit->setGraphicsEffect(nullptr);
+    }
+    if (value.isEmpty())
+    {
+        effect = new QGraphicsColorizeEffect;
+        effect->setColor(QColor("red"));
+        ui->valueLineEdit->setGraphicsEffect(effect);
+    }
+    else
+    {
+        ui->valueLineEdit->setGraphicsEffect(nullptr);
+    }
+    if (key.isEmpty() || value.isEmpty())
+        return;
+
+    m_customAttributes.insert(key, value);
+    int row = ui->customAttributesTable->rowCount();
+    ui->customAttributesTable->insertRow(row);
+    ui->customAttributesTable->setItem(row, 0, new QTableWidgetItem(key));
+    ui->customAttributesTable->setItem(row, 1, new QTableWidgetItem(value));
+    ui->keyLineEdit->clear();
+    ui->valueLineEdit->clear();
 }
-
-
 /**
  * @brief Slot function called when the remove property button is clicked.
  *

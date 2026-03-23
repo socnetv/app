@@ -279,18 +279,20 @@ QPushButton#removePropertyBtn {
     margin:0;
 }
 QPushButton#removePropertyBtn:disabled {
-    background-color: #32414B;
-    border: 1px solid #32414B;
-    color: #787878;
+    background-color: #aaa;
+    border: 1px solid #aaa;
+    color: #eee;
 }
 QPushButton#removePropertyBtn:hover {
     background-color:#ff0000;
 }
-QPushButton#addPropertyBtn{
-    background-color:#fff;
+QPushButton#addPropertyBtn {
+    background-color: #fff;
+    color: #222;
+    min-width: 60px;
     min-height: 1.5ex;
-    padding: 3px 0px;
-    margin:0;
+    padding: 3px 8px;
+    margin: 0;
 }
 
 QToolButton {
