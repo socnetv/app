@@ -2,8 +2,7 @@ KNOWN ISSUES
 ============
 
 - Negative weights break centralities
-- UCINET (DL) files in nodelist1 format (one-mode) are not supported.
-- SocNetV expects quotes around node labels in pajek formatted files. Pajek files missing opening/closing quotes ("") around node labels cannot be imported correctly (see https://github.com/socnetv/app/issues/73)
+
 
 TODO
 ====

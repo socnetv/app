@@ -376,8 +376,10 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                     nodeShape = "star";
                 else if (str.contains("triangle", Qt::CaseInsensitive))
                     nodeShape = "triangle";
-                else
+                else if (str.contains("diamond", Qt::CaseInsensitive))
                     nodeShape = "diamond";
+                else
+                    nodeShape = initNodeShape;
                 /** NODECOLORS */
                 // if there is an "ic" tag, a specific NodeColor for this node follows...
                 if (str.contains("ic", Qt::CaseInsensitive))
