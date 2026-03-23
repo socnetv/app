@@ -1,6 +1,6 @@
 # Build SocNetV images for Linux and macOS
 # https://socnetv.org
-# Last Update: Mar 2026
+# Last Update: Apr 2026
 # Copyright (c) 2026 by Dimitris Kalamaras
 #
 # This script builds SocNetV binaries ONLY when the commit message contains [travis]
@@ -14,7 +14,7 @@ language: cpp
 
 env:
   global:
-    - SOCNETV_VERSION=3.4
+    - SOCNETV_VERSION=3.5
     - UPLOADTOOL_ISPRERELEASE=true
 
 jobs:

@@ -2,7 +2,7 @@
 #
 # CMakeLists.txt - Build configuration for SocNetV (Social Network Visualizer)
 #
-# Last Update: Mar 2026
+# Last Update: Apr 2026
 #
 # This file defines the build system for SocNetV, an open-source social network 
 # analysis and visualization application built with Qt6. It is designed to support 
@@ -55,7 +55,7 @@ set(APP_NAME SocNetV)
 set(APP_NAME_LOWER socnetv)
 
 project(SocNetV 
-    VERSION 3.4
+    VERSION 3.5
     DESCRIPTION "SocNetV: Open-source social network analysis application based on Qt."
     HOMEPAGE_URL "https://socnetv.org"
     LANGUAGES CXX
