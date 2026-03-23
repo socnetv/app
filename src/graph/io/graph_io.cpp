@@ -850,17 +850,16 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
             }
 
             qDebug() << "m_vertexCustomAttributes:" << m_vertexCustomAttributes;
-            // TODO: TEST ME
             if (!m_vertexCustomAttributes.isEmpty())
             {
                 QString customVertexAttrId;
-                QHashIterator<QString, QString> i(m_vertexCustomAttributes);
-                int customAttrCount = 0;
                 for (auto cit = m_vertexCustomAttributes.cbegin(), end = m_vertexCustomAttributes.cend(); cit != end; ++cit)
                 {
-                    customVertexAttrId = 'd' + QString::number(1000 + customAttrCount);
+                    int attrIndex = vertexCustomAttributesList.indexOf(cit.key());
+                    if (attrIndex < 0)
+                        continue; // key not in global list, skip
+                    customVertexAttrId = 'd' + QString::number(1000 + attrIndex);
                     outText << "      <data key=\"" + customVertexAttrId + "\">" << cit.value() << "</data>\n";
-                    customAttrCount++;
                 }
             }
 

@@ -207,9 +207,7 @@ QStringList Graph::graphHasVertexCustomAttributes() const
 }
 
 /**
- * @brief Calls the customAttributes method for a specific vertex in the graph.
- *
- * This function retrieves the vertex at the position specified by the index `v1`
+ * @brief Retrieves the vertex at the position specified by the index `v1`
  * from the `vpos` map and calls its `customAttributes` method.
  *
  * @param v1 The index of the vertex whose custom attributes are to be accessed.
