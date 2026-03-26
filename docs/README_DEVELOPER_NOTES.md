@@ -6,6 +6,10 @@ If you are new to the codebase, start here, then read the high-level refactoring
 
 * [`ARCHITECTURAL_REFACTORING_ROADMAP.md`](ARCHITECTURAL_REFACTORING_ROADMAP.md)
 
+Then read the current product-oriented roadmap:
+
+* [`docs/roadmaps/roadmap_graph_exploration.md`](docs/roadmaps/roadmap_graph_exploration.md)
+
 Detailed execution plans live under:
 
 ```
@@ -118,7 +122,47 @@ The project now has:
 * a deterministic regression harness
 * unified GUI/CLI parsing via `IGraphParseSink`
 
-The current development focus is **WS6 — regression harness expansion and testing coverage**.
+---
+
+# Current Development Focus
+
+## Primary Workstream
+
+**WS9 — Graph Exploration & Data Workflows**
+
+Defined in:
+
+```
+
+docs/roadmaps/roadmap_graph_exploration.md
+
+```
+
+Focus areas:
+
+* graph filtering (structural + attribute-based)
+* subgraph exploration workflows
+* structured data editing (nodes/edges as tables)
+* CSV / JSON import-export
+* future query system and temporal filtering
+
+---
+
+## Supporting Workstream
+
+**WS6 — Testing / CI / Regression**
+
+All development must be validated through:
+
+* CLI regression harness
+* golden comparisons
+* benchmarks
+
+WS6 ensures:
+
+* safe refactoring
+* deterministic behavior
+* performance stability
 
 ---
 
@@ -260,21 +304,9 @@ These engines can run:
 
 The parser architecture was modernized during **WS4**.
 
-Historically:
-
-```
-
-Parser → Qt signals → Graph mutation
-
-```
-
-This design was fragile and hard to test deterministically.
-
 ---
 
 ## Current Parsing Architecture
-
-Parsing now uses an explicit mutation interface:
 
 ```
 
@@ -295,9 +327,7 @@ src/graph/io/graph_parse_sink_graph.cpp
 
 ```
 
-The sink defines the mutation contract used during parsing.
-
-Typical mutation calls include:
+Typical mutation calls:
 
 ```
 
@@ -310,9 +340,7 @@ fileLoaded(...)
 
 ```
 
-Legacy Parser → Graph mutation signals have been removed.
-
-Both **GUI and CLI loading paths now share the same mutation pipeline**, ensuring deterministic behavior.
+GUI and CLI share the same mutation pipeline → deterministic behavior.
 
 ---
 
@@ -384,50 +412,12 @@ GraphParseSinkGraph
 
 ---
 
-# Current Refactor Direction
-
-High-level plan:
-
-```
-
-ARCHITECTURAL_REFACTORING_ROADMAP.md
-
-```
-
-Completed:
-
-```
-
-WS1 — Distance engine extraction
-WS2 — Graph façade
-WS4 — IO / Parser boundary cleanup
-
-```
-
-Current focus:
-
-```
-
-WS6 — Testing / regression harness expansion
-
-```
-
-Next architectural milestone:
-
-```
-
-WS3 — Domain model separation
-
-```
-
----
-
 # Development Workflow Notes
 
 ## Build
 
 * CMake + Qt6 (Linux / macOS / Windows)
-* Refactors must remain incremental.
+* Refactors must remain incremental
 
 ---
 
@@ -444,22 +434,11 @@ After structural changes:
 
 Golden outputs and performance must remain stable.
 
-Benchmarks verify performance guardrails for key algorithms and ensure
-architectural refactors do not introduce slowdowns.
-
----
-
-## Debug Output
-
-Debug output may be used in golden comparisons.
-
-During refactors it should be considered **observable behavior** unless intentionally changed.
-
 ---
 
 # Launchpad PPA builds
 
-Launchpad PPA builds are officially supported for:
+Supported:
 
 ```
 
@@ -468,13 +447,9 @@ Ubuntu 24.04 LTS (Noble)
 
 ```
 
-Other Ubuntu series are intentionally disabled to reduce maintenance surface and dependency drift.
-
 ---
 
 # Mental Model for Contributors
-
-Current runtime flow:
 
 ```
 
@@ -492,4 +467,20 @@ Signal to MainWindow
 
 Do **not bypass this flow**.
 
-If unsure whether code belongs in an algorithm slice or in the UI façade layer, prefer **separation of concerns**.
+---
+
+# Development Philosophy (Important)
+
+SocNetV evolves through:
+
+### 1. Product-driven development (WS9)
+
+- deliver real user value
+- enable large-network exploration
+- build on existing systems
+
+### 2. Incremental architectural evolution
+
+- refactor safely using WS6 harness
+- avoid large disruptive rewrites
+- let real usage guide abstraction (WS3, WS7)
