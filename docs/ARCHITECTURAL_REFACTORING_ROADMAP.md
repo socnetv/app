@@ -92,12 +92,25 @@ Make SocNetV usable for **real-world large networks**.
 
 ### Scope
 
-- Graph filtering (structural + attribute-based)
-- Subgraph workflows (selection, extraction, export)
-- Structured data editing (attributes, tables, bulk operations)
-- Structured import/export (CSV, JSON)
-- Query system (mid-term)
-- Temporal filtering (future)
+WS9 consolidates the following GitHub issue tracks:
+
+- **Visualization & Decluttering** → #209  
+  (selection, ego networks, edge filtering, layouts)
+
+- **Filtering & Subgraphs** → #215  
+  (structural filters, attribute filters, subgraph workflows, queries)
+
+- **Data Workflows** → #223  
+  (attribute editing, tables, import/export, transformations)
+
+Concrete sub-features are tracked in:
+
+- #210–#214 (visualization)
+- #216–#221 (filtering & querying)
+- #224–#229 (data workflows)
+
+WS9 acts as the **umbrella workstream** coordinating these efforts.
+
 
 ### Architectural Impact
 
