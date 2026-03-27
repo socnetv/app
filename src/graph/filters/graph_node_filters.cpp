@@ -147,8 +147,8 @@ void Graph::vertexFilterByCentrality(const float threshold,
     {
         const int v = (*it)->number();
 
-        H_edges::const_iterator ed;
-        for (ed = (*it)->m_outEdges.cbegin(); ed != (*it)->m_outEdges.cend(); ++ed)
+        H_edges::iterator ed;
+        for (ed = (*it)->m_outEdges.begin(); ed != (*it)->m_outEdges.end(); ++ed)
         {
             if (ed.value().first != m_curRelation)
                 continue;

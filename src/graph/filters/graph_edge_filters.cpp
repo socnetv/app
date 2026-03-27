@@ -44,7 +44,7 @@ void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold
     int source, target = 0;
     qreal weight = 0, reverseEdgeWeight = 0;
     bool preserveReverseEdge = false;
-    H_edges::const_iterator ed;
+    H_edges::iterator ed;
 
     // Loop over all vertices
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
@@ -53,7 +53,7 @@ void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold
         source = (*it)->number();
 
         // Loop over all out edges of source
-        for (ed = (*it)->m_outEdges.cbegin(); ed != (*it)->m_outEdges.cend(); ++ed)
+        for (ed = (*it)->m_outEdges.begin(); ed != (*it)->m_outEdges.end(); ++ed)
         {
 
             // Init preserve reserve edge status to false
