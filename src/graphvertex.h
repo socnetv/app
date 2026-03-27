@@ -165,7 +165,7 @@ public:
     const H_edges& inEdges() const { return m_inEdges; }
     QHash<int,qreal>* inEdgesEnabledHash();
     QHash<int,qreal> reciprocalEdgesHash();
-    QList<int> neighborhoodList();
+    QList<int> reciprocalNeighborhoodList();
 
     int degreeOut();
     int outDegreeConst();
@@ -324,7 +324,6 @@ private:
     QHash<int,qreal> m_reciprocalEdges;
     L_int myPs;
     QMultiHash <int, L_int> m_cliques;
-    L_int m_neighborhoodList;
     H_IntToStr m_outLinkColors, m_outEdgeLabels;
 
     //FIXME vertex coords
