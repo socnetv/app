@@ -1,5 +1,5 @@
 /**
- * @file dialogfilterednodes.h
+ * @file dialogfilternodesbycentrality.h
  * @brief Defines the DialogFilterNodesByCentrality class for filtering nodes based on some attribute.
  * @author Dimitris B. Kalamaras
  * @copyright
