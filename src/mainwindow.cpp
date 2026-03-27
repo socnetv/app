@@ -1795,6 +1795,22 @@ void MainWindow::initActions(){
                                     "Filters out nodes according to their score in a user-selected centrality index."));
     connect(filterNodesByCentralityAct, SIGNAL(triggered()), this, SLOT(slotFilterNodesDialogByCentrality()));
 
+    filterNodesByEgoNetworkAct = new QAction(tr("Focus on Node (Ego Network)"), this);
+    filterNodesByEgoNetworkAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_F));
+    filterNodesByEgoNetworkAct->setStatusTip(tr("Show only the selected node and its direct neighbors."));
+    filterNodesByEgoNetworkAct->setWhatsThis(tr("Focus on Node (Ego Network)\n\n"
+                                                "Hides all nodes except the selected node and its direct neighbors. "
+                                                "Use 'Restore All Nodes' to undo."));
+    filterNodesByEgoNetworkAct->setEnabled(false); // enabled only when exactly 1 node selected
+    connect(filterNodesByEgoNetworkAct, SIGNAL(triggered()), this, SLOT(slotFilterNodesByEgoNetwork()));
+
+    filterNodesRestoreAllAct = new QAction(tr("Restore All Nodes"), this);
+    filterNodesRestoreAllAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_R));
+    filterNodesRestoreAllAct->setStatusTip(tr("Restore all nodes hidden by the last filter."));
+    filterNodesRestoreAllAct->setEnabled(false); // enabled only when history stack is non-empty
+    connect(filterNodesRestoreAllAct, SIGNAL(triggered()), this, SLOT(slotFilterNodesRestoreAll()));
+
+
     editFilterNodesIsolatesAct = new QAction(tr("Disable Isolate Nodes"), this);
     editFilterNodesIsolatesAct->setEnabled(true);
     editFilterNodesIsolatesAct->setCheckable(true);
@@ -3814,6 +3830,9 @@ void MainWindow::initMenuBar() {
     filterMenu->setIcon(QIcon(":/images/filter_list_48px.svg"));
     editMenu->addMenu(filterMenu);
 
+    filterMenu->addAction(filterNodesByEgoNetworkAct);
+    filterMenu->addAction(filterNodesRestoreAllAct);
+    filterMenu->addSeparator();
     filterMenu->addAction(filterNodesByCentralityAct );
     filterMenu->addAction(editFilterNodesIsolatesAct );
     filterMenu->addAction(editFilterEdgesByWeightAct );
@@ -11259,6 +11278,40 @@ void MainWindow::slotFilterNodesDialogByCentrality()
     dlg.exec();
 }
 
+/**
+ * @brief Triggers ego network focus mode on the currently selected node.
+ */
+void MainWindow::slotFilterNodesByEgoNetwork()
+{
+    if (!activeNodes())
+    {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+    const int v1 = activeGraph->vertexClicked();
+    if (v1 == 0)
+    {
+        slotHelpMessageToUser(USER_MSG_CRITICAL,
+                              tr("No node selected"),
+                              tr("Please click on a node first."));
+        return;
+    }
+    activeGraph->vertexFilterByEgoNetwork(v1);
+    filterNodesRestoreAllAct->setEnabled(true);
+}
+
+/**
+ * @brief Restores all nodes hidden by the last filter.
+ */
+void MainWindow::slotFilterNodesRestoreAll()
+{
+    activeGraph->vertexFilterRestoreAll();
+    // Disable restore action if history stack is now empty
+    if (activeGraph->visibilityHistoryEmpty())
+    {
+        filterNodesRestoreAllAct->setEnabled(false);
+    }
+}
 
 /**
  * @brief Toggles the status of all isolated vertices

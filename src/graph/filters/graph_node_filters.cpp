@@ -405,3 +405,21 @@ void Graph::vertexFilterRestoreAll()
 
     progressStatus(tr("Graph visibility restored."));
 }
+
+
+/**
+ * @brief Returns true if the visibility history stack is empty.
+ *
+ * Used by the UI to determine whether a "Restore All" action should
+ * be enabled. The stack holds one entry per non-destructive filter
+ * operation (e.g. ego network focus). Each call to vertexFilterRestoreAll()
+ * pops one entry; when the stack is empty, there is nothing left to restore.
+ *
+ * @return true if no filter snapshots are pending, false otherwise.
+ * @see vertexFilterByEgoNetwork()
+ * @see vertexFilterRestoreAll()
+ */
+bool Graph::visibilityHistoryEmpty() const
+{
+    return m_visibilityHistory.isEmpty();
+}
