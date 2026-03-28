@@ -95,6 +95,7 @@ kernel_reachability_v2
 kernel_walks_v3
 kernel_prominence_v4
 kernel_io_roundtrip_v5
+kernel_clustering_v6
 
 ```
 
