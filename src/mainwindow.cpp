@@ -5750,10 +5750,11 @@ void MainWindow::initApp(){
 
     setWindowTitle("SocNetV");
 
+    filterNodesRestoreAllAct->setEnabled(false);
+
     statusMessage( tr("Ready"));
 
     qDebug()<< "#### APP INITIALISATION FINISHED, ON THREAD" << thread();
-
 
 }
 
