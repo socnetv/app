@@ -10246,6 +10246,9 @@ void MainWindow::slotEditSelectionChanged(const int &selNodes, const int &selEdg
 
     }
 
+    // Enable ego network focus only when exactly 1 node is selected
+    filterNodesByEgoNetworkAct->setEnabled(selNodes == 1);
+    
     //
     // NOTE:
     // DO NOT display a message on the status bar on high frequently called functions like this
