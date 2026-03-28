@@ -41,6 +41,7 @@ The CLI is modular.
 * `cli/kernels/kernel_walks_v3.cpp`
 * `cli/kernels/kernel_prominence_v4.cpp`
 * `cli/kernels/kernel_io_roundtrip_v5.cpp`
+* `cli/kernels/kernel_clustering_v6.cpp`
 
 
 Each kernel owns:
@@ -234,6 +235,41 @@ Comparison:
 
 ---
 
+## Clustering Kernel
+
+* Kernel: `clustering`
+* JSON schema: `schema_version = 6`
+
+Protects:
+
+* local clustering coefficient (CLC) per node
+* network average clustering coefficient
+* triad census (16 MAN classes)
+* maximal clique counts by size
+
+Characteristics:
+
+* deterministic vertex ordering
+* deterministic float serialization
+* strict per-field comparison
+* no UI involvement
+
+This kernel combines:
+
+* `Graph::clusteringCoefficient(false)`
+* `Graph::graphTriadCensus()`
+* `Graph::graphCliques(QSet<int>(), QSet<int>(), QSet<int>())`
+
+Notes:
+
+* `-c` is not applicable
+* `--bench` not supported
+* `-w/-x` are still encoded in baselines for consistency, even if the
+  current clustering/clique routines are not weight-driven in the same
+  way as distance-based kernels
+
+---
+
 # Basic Usage
 
 ## Available Parameters
@@ -292,6 +328,7 @@ Supported kernels:
 * `walks_matrix` — schema v3
 * `prominence` — schema v4
 * `io_roundtrip` — schema v5
+* `clustering` — schema v6
 
 Examples:
 
@@ -301,6 +338,7 @@ Examples:
 --kernel walks_matrix
 --kernel prominence
 --kernel io_roundtrip
+--kernel clustering
 ```
 
 If omitted:
@@ -535,6 +573,23 @@ Notes:
 
 ---
 
+### `--kernel clustering` (schema v6)
+
+Allowed:
+
+* `-w`, `-x`, `-k`
+* `--dump-json`, `--compare-json`
+
+Not applicable / required:
+
+* `-c` not used
+* `--bench` not supported
+
+Notes:
+
+* v6 verifies clustering coefficient outputs, triad census, and maximal clique counts by size.
+
+
 ## Baseline naming convention (recommended)
 
 When you dump JSON, bake the run flags into the filename (as already used in this repo):
@@ -637,6 +692,32 @@ Notes:
 Baseline directory:
 
 * `src/tools/baselines/io_roundtrip/`
+
+---
+
+## Clustering (schema v6)
+
+```bash
+./socnetv-cli \
+  --kernel clustering \
+  -i src/data/Krackhardt_Kite_N10.paj \
+  -f 2 -w 0 -x 1 -k 0 \
+  --dump-json src/tools/baselines/clustering/Krackhardt_Kite_N10__CLUST__V6__FT2__W0_IW1_DI0.json
+```
+
+Flag encoding:
+
+```
+W0  = considerWeights=0
+FT2 = file type =2
+IW1 = inverseWeights=1
+DI0 = dropIsolates=0
+```
+
+Baseline directory:
+
+src/tools/baselines/clustering/
+
 
 
 ---
@@ -755,6 +836,53 @@ Roundtrip-level:
 
 ---
 
+## Clustering Kernel (v6)
+
+Graph-level:
+
+* nodes
+* links_sna
+* ties_graph
+* directed / weighted
+
+Metrics:
+
+* averageCLC
+* nodesWithCLC
+
+Per-node:
+
+* CLC
+* hasCLC
+
+Triad census:
+
+* 003
+* 012
+* 102
+* 021D
+* 021U
+* 021C
+* 111D
+* 111U
+* 030T
+* 030C
+* 201
+* 120D
+* 120U
+* 120C
+* 210
+* 300
+
+Cliques:
+
+* maximal clique counts by size
+* max_clique_size
+* total_cliques
+
+
+---
+
 # Micro-Benchmarking Mode (Distance Kernel Only)
 
 The CLI provides benchmarking for DistanceEngine.
@@ -799,6 +927,7 @@ Validates:
 * Reachability (v2)
 * Walks (v3)
 * Prominence (v4)
+* Clustering (v6)
 
 Fails on any mismatch.
 
@@ -846,6 +975,12 @@ IO baselines:
 
 ```
 src/tools/baselines/io_roundtrip/
+```
+
+Clustering baselines:
+
+```
+src/tools/baselines/clustering/
 ```
 
 

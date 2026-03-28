@@ -19,6 +19,7 @@
 #include "tools/cli/kernels/kernel_walks_v3.h"
 #include "tools/cli/kernels/kernel_prominence_v4.h"
 #include "tools/cli/kernels/kernel_io_roundtrip_v5.h"
+#include "tools/cli/kernels/kernel_clustering_v6.h"
 
 int main(int argc, char *argv[])
 {
@@ -49,7 +50,7 @@ int main(int argc, char *argv[])
                                 "N", "0");
 
     QCommandLineOption kernelOpt(QStringList() << "kernel",
-                                 "Kernel: distance|reachability|walks_matrix|prominence|io_roundtrip",
+                                 "Kernel: distance|reachability|walks_matrix|prominence|io_roundtrip|clustering",
                                  "name", "distance");
 
     QCommandLineOption walksLenOpt(QStringList() << "walks-length",
@@ -79,7 +80,7 @@ int main(int argc, char *argv[])
 
     cfg.verbose = cli.isSet(verboseOpt);
     cfg.strict = cli.isSet(strictOpt);
-    
+
     if (!cfg.verbose)
     {
         // Kill qDebug/qInfo output from Qt + your code (keeps warnings/criticals)
@@ -167,13 +168,16 @@ int main(int argc, char *argv[])
 
     if (cfg.kernel == "walks_matrix")
         return cli::runKernelWalksV3(cfg, load, g, walksLength);
-    
+
     if (cfg.kernel == "prominence")
         return cli::runKernelProminenceV4(cfg, load, g);
 
     if (cfg.kernel == "io_roundtrip")
         return cli::runKernelIoRoundtripV5(cfg, load, g);
 
+    if (cfg.kernel == "clustering")
+        return runKernelClusteringV6(cfg, load, g);
+    
     QTextStream(stderr) << "ERROR: unsupported --kernel: " << cfg.kernel << "\n";
     return 2;
 }
