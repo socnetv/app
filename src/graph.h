@@ -179,6 +179,7 @@ public slots:
 
     void vertexFilterByEgoNetwork(const int v1, const int depth = 1);
     void vertexFilterRestoreAll();
+    bool visibilityHistoryEmpty() const;
 
     void edgeFilterByWeight(const qreal, const bool);
 
@@ -1088,6 +1089,10 @@ public:
     bool graphTriadCensus();
 
     void triadType_examine_MAN_label(int, int, int, GraphVertex *, GraphVertex *, GraphVertex *);
+    // --- Triad census results (read-only access for CLI / reports) ---
+    const QList<int> &graphTriadTypeFreqs() const { return triadTypeFreqs; }
+    bool hasCalculatedTriadCensus() const { return calculatedTriad; }
+
     //	void eccentr_JordanCenter();    // TODO
 
     /* LAYOUTS */

@@ -163,6 +163,7 @@ set(CLI_SOURCES
     src/tools/cli/kernels/kernel_walks_v3.cpp
     src/tools/cli/kernels/kernel_prominence_v4.cpp
     src/tools/cli/kernels/kernel_io_roundtrip_v5.cpp
+    src/tools/cli/kernels/kernel_clustering_v6.cpp
 )
 
 
