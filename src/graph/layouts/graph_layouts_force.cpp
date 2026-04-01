@@ -411,6 +411,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
     int progressCounter = 0, minimizationIterations = 0;
 
     int i = 0, j = 0, m = 0, pm = 0, pnm = 0, pn = 0;
+    int mVpos = 0, pmVpos = 0; // physical m_graph[] indices, used only for m_graph[] access
 
     int N = vertices(); // active actors
 
@@ -523,6 +524,23 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
     //    qDebug()<< "Graph::layoutForceDirectedKamadaKawai() - k=" ;
     //    k.printMatrixConsole();
 
+    // Build a local index mapping: vertex number → sequential KK matrix index.
+    // This mirrors exactly the order graphMatrixDistanceGeodesicCreate() used
+    // when filling DM (iterating m_graph in order, skipping disabled/isolated).
+    // Matrix indices m and i must use this mapping; m_graph[] access uses vpos.
+    QHash<int, int> kkIdx;
+    kkIdx.reserve(N);
+    {
+        int seq = 0;
+        VList::const_iterator vit;
+        for (vit = m_graph.cbegin(); vit != m_graph.cend(); ++vit)
+        {
+            if (!(*vit)->isEnabled()) continue;
+            if (dropIsolates && (*vit)->isIsolated()) continue;
+            kkIdx[(*vit)->number()] = seq++;
+        }
+    }
+
     // initialize p1, p2, ... pn
     qDebug() << "Set particles to initial positions p";
 
@@ -581,12 +599,13 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
         {
 
             pn = (*v1)->number();
-            m = vpos[pn];
+            mVpos = vpos[pn];
+            m = kkIdx.value(pn, -1);
             xm = (*v1)->x();
             ym = (*v1)->y();
 
             //            qDebug()<< "Compute partial derivatives E for particle" << pn
-            //                    << " vpos m" <<  m
+            //                    << " kkIdx m" <<  m
             //                    << " pos"<< xm << ", "<< ym;
 
             if (!(*v1)->isEnabled())
@@ -603,12 +622,9 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
             for (v2 = m_graph.cbegin(); v2 != m_graph.cend(); ++v2)
             {
 
-                i = vpos[(*v2)->number()];
+                i = kkIdx.value((*v2)->number(), -1);
                 xi = (*v2)->x();
                 yi = (*v2)->y();
-
-                //                qDebug () << "  particle vpos i"<< i
-                //                          << "  pos (" <<  xi << "," << yi << ")";
 
                 if (!(*v2)->isEnabled())
                 {
@@ -616,9 +632,8 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
                     continue;
                 }
 
-                if (m == i)
+                if (i < 0 || i == m)
                 {
-                    qDebug() << "  m==i, continuing";
                     continue;
                 }
                 qreal denom1 = sqrt((xm - xi) * (xm - xi) + (ym - yi) * (ym - yi));
@@ -645,10 +660,11 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
                 partDrvtEx_m = partDrvtEx;
                 partDrvtEy_m = partDrvtEy;
 
-                pnm = pn; // store name of particle satisfying Delta_m = max Delta_i
-                pm = m;   // store vpos of particle satisfying Delta_m = max Delta_i
-                xpm = xm; // store particle x pos
-                ypm = ym; // store particle y pos
+                pnm = pn;    // store name of particle satisfying Delta_m = max Delta_i
+                pm = m;      // store kkIdx of particle satisfying Delta_m = max Delta_i
+                pmVpos = mVpos; // store m_graph index of same particle
+                xpm = xm;    // store particle x pos
+                ypm = ym;    // store particle y pos
             }
 
         } // end v1 for loop
@@ -661,6 +677,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
 
         // let pm the particle satisfying  D_m = max_D_i
         m = pm;
+        mVpos = pmVpos;
         xm = xpm;
         ym = ypm;
 
@@ -698,12 +715,9 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
             for (v2 = m_graph.cbegin(); v2 != m_graph.cend(); ++v2)
             {
 
-                i = vpos[(*v2)->number()];
+                i = kkIdx.value((*v2)->number(), -1);
                 xi = (*v2)->x();
                 yi = (*v2)->y();
-
-                //                qDebug () << "  m"<< m << "  i"<< i
-                //                          << "  pos_i (" <<  xi << "," << yi << ")";
 
                 if (!(*v2)->isEnabled())
                 {
@@ -711,9 +725,8 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
                     continue;
                 }
 
-                if (i == m)
+                if (i < 0 || i == m)
                 {
-                    qDebug() << "  m==i, continuing";
                     continue;
                 }
                 qreal denom2 = sqrt((xm - xi) * (xm - xi) + (ym - yi) * (ym - yi));
@@ -796,8 +809,8 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
                  << "Minimized Delta_m" << Delta_m
                  << "moving it to new pos" << xm << ym;
 
-        m_graph[m]->setX(xm);
-        m_graph[m]->setY(ym);
+        m_graph[mVpos]->setX(xm);
+        m_graph[mVpos]->setY(ym);
 
 
     } // end while (Delta_max > epsilon) {
