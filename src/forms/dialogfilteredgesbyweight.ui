@@ -7,23 +7,23 @@
     <x>0</x>
     <y>0</y>
     <width>600</width>
-    <height>350</height>
+    <height>275</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>600</width>
-    <height>350</height>
+    <height>275</height>
    </size>
   </property>
   <property name="windowTitle">
-   <string>Filter edges</string>
+   <string>Filter Edges by Weight</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>From this dialog, you can filter edges according to their weight. Select your desired weight threshold, then click on one of the radio buttons further below to control what to do. By default, it will filter edges with weight equal or over the weight threshold. The rest edges will be disabled (and invisible).</string>
+      <string>Select a weight threshold and choose which edges to hide. Hidden edges are not deleted — use Restore All Edges to show them again.</string>
      </property>
      <property name="textFormat">
       <enum>Qt::TextFormat::RichText</enum>
@@ -67,7 +67,7 @@
        <property name="sizeHint" stdset="0">
         <size>
          <width>40</width>
-         <height>25</height>
+         <height>20</height>
         </size>
        </property>
       </spacer>
@@ -81,10 +81,10 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the weight threshold to use while filtering.&lt;/p&gt;&lt;p&gt;By default, it filters edges with weights equal or above the selected threshold. &lt;/p&gt;&lt;p&gt;You can control the behaviour with the radio boxes below. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the weight threshold. Edges above or below this value will be hidden depending on the selected option below.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="statusTip">
-        <string>Enter the weight threshold to use while filtering. By default, it filters all edges with weights equal or above your selected threshold here. You can control the behaviour with the radio boxes below. </string>
+        <string>Enter the weight threshold. Edges will be hidden based on the option selected below.</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -111,35 +111,20 @@
      <item>
       <widget class="QRadioButton" name="overThresholdBt">
        <property name="text">
-        <string>Filter edges with weight equal or OVER the above threshold</string>
+        <string>Hide edges with weight below the threshold  (keep edges with weight ≥ threshold)</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QRadioButton" name="belowThresholdBt">
        <property name="text">
-        <string>Filter edges with weight equal or BELOW the above threshold</string>
+        <string>Hide edges with weight above the threshold  (keep edges with weight ≤ threshold)</string>
        </property>
       </widget>
      </item>
     </layout>
    </item>
    <item row="3" column="0">
-    <widget class="QLabel" name="label_3">
-     <property name="font">
-      <font>
-       <pointsize>10</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>This action is not destructive, until you close the app/network. You can undo the filtering by running this action again and selecting a threshold lower than the lowest edge weight (i.e. 0). Obviously, when you save a network with filtering applied, only the filtered edges will be saved.</string>
-     </property>
-     <property name="wordWrap">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Orientation::Horizontal</enum>

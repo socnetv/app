@@ -1842,11 +1842,21 @@ void MainWindow::initActions(){
     connect(editFilterEdgesByWeightAct , SIGNAL(triggered()),
             this, SLOT(slotEditFilterEdgesByWeightDialog()));
 
+    editFilterEdgesRestoreAllAct = new QAction(tr("Restore All Edges"), this);
+    editFilterEdgesRestoreAllAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_E, Qt::CTRL | Qt::Key_R));
+    editFilterEdgesRestoreAllAct->setStatusTip(tr("Restore all edges hidden by the weight filter."));
+    editFilterEdgesRestoreAllAct->setWhatsThis(tr("Restore All Edges\n\n"
+                                                   "Re-enables all edges hidden by the weight filter. "
+                                                   "No data is modified."));
+    editFilterEdgesRestoreAllAct->setEnabled(false);
+    connect(editFilterEdgesRestoreAllAct, SIGNAL(triggered()),
+            this, SLOT(slotEditFilterEdgesReset()));
+
     editFilterEdgesUnilateralAct = new QAction(tr("Disable unilateral edges"), this);
     editFilterEdgesUnilateralAct->setEnabled(true);
     editFilterEdgesUnilateralAct->setCheckable(true);
     editFilterEdgesUnilateralAct->setChecked(false);
-    editFilterEdgesUnilateralAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_E, Qt::CTRL | Qt::Key_R));
+    editFilterEdgesUnilateralAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_E, Qt::CTRL | Qt::Key_E));
     editFilterEdgesUnilateralAct->setStatusTip(tr("Temporarily disable all unilateral (non-reciprocal) edges in this relation. Keeps only \"strong\" ties."));
     editFilterEdgesUnilateralAct->setWhatsThis(tr("Unilateral edges\n\n"
                                                     "In directed networks, a tie between two actors "
@@ -3842,11 +3852,14 @@ void MainWindow::initMenuBar() {
 
     filterMenu->addAction(filterNodesBySelectionAct);
     filterMenu->addAction(filterNodesByEgoNetworkAct);
+    filterMenu->addAction(filterNodesByCentralityAct );
+    filterMenu->addSeparator();
     filterMenu->addAction(filterNodesRestoreAllAct);
     filterMenu->addSeparator();
-    filterMenu->addAction(filterNodesByCentralityAct );
     filterMenu->addAction(editFilterNodesIsolatesAct );
+    filterMenu->addSeparator();
     filterMenu->addAction(editFilterEdgesByWeightAct );
+    filterMenu->addAction(editFilterEdgesRestoreAllAct);
     filterMenu->addAction(editFilterEdgesUnilateralAct);
 
     // ANALYZE MENU
@@ -11398,10 +11411,23 @@ void MainWindow::slotEditFilterEdgesByWeightDialog() {
     connect( m_DialogEdgeFilterByWeight, &DialogFilterEdgesByWeight::userChoices,
              activeGraph, &Graph::edgeFilterByWeight);
 
+    // Enable restore action after filter is applied
+    connect( m_DialogEdgeFilterByWeight, &DialogFilterEdgesByWeight::userChoices,
+             this, [this](){ editFilterEdgesRestoreAllAct->setEnabled(true); });
+
     // Show the dialog
     m_DialogEdgeFilterByWeight->exec() ;
 }
 
+
+/**
+ * @brief Restores all edges hidden by the weight filter.
+ */
+void MainWindow::slotEditFilterEdgesReset()
+{
+    activeGraph->edgeFilterReset();
+    editFilterEdgesRestoreAllAct->setEnabled(false);
+}
 
 
 /**

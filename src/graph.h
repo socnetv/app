@@ -183,6 +183,7 @@ public slots:
     bool visibilityHistoryEmpty() const;
 
     void edgeFilterByWeight(const qreal, const bool);
+    void edgeFilterReset();
 
     void edgeFilterByRelation(int relation, bool status);
 

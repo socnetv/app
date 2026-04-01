@@ -143,6 +143,42 @@ void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold
 }
 
 /**
+ * @brief Re-enables all edges in the current relation.
+ *
+ * Restores full edge visibility after a weight filter has been applied.
+ * Non-destructive: only visibility is changed, no data is modified.
+ */
+void Graph::edgeFilterReset()
+{
+    qDebug() << "Graph::edgeFilterReset()";
+
+    VList::const_iterator it;
+    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    {
+        const int source = (*it)->number();
+
+        H_edges::iterator ed;
+        for (ed = (*it)->m_outEdges.begin(); ed != (*it)->m_outEdges.end(); ++ed)
+        {
+            if (ed.value().first != m_curRelation)
+                continue;
+
+            const qreal weight = ed.value().second.first;
+            const qreal reverseWeight = (*it)->hasEdgeFrom(ed.key());
+            const bool preserveReverse = (reverseWeight != 0);
+
+            ed.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true));
+            edgeInboundStatusSet(ed.key(), source, true);
+            emit signalSetEdgeVisibility(m_curRelation, source, ed.key(),
+                                         true, preserveReverse);
+        }
+    }
+
+    setModStatus(ModStatus::EdgeCount);
+    progressStatus(tr("All edges restored."));
+}
+
+/**
  * @brief Toggles (enables or disables) all edges of the given relation
  *
  * Calls the homonymous method of GraphVertex class.

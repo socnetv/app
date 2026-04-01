@@ -348,6 +348,7 @@ public slots:
     void slotFilterNodesBySelection();
     void slotFilterNodesRestoreAll();
     void slotEditFilterEdgesByWeightDialog();
+    void slotEditFilterEdgesReset();
     void slotEditFilterEdgesUnilateral(bool checked);
 
 
@@ -676,7 +677,7 @@ private:
     QAction *filterNodesByCentralityAct,  *filterNodesByEgoNetworkAct,
         *filterNodesBySelectionAct,
         *filterNodesRestoreAllAct, *editFilterNodesIsolatesAct,
-        *editFilterEdgesByWeightAct;
+        *editFilterEdgesByWeightAct, *editFilterEdgesRestoreAllAct;
     QAction *editFilterEdgesUnilateralAct;
     QAction *transformNodes2EdgesAct, *editEdgeSymmetrizeAllAct;
     QAction *editEdgeSymmetrizeStrongTiesAct, *editEdgeUndirectedAllAct;
