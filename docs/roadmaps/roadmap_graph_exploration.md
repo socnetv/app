@@ -79,10 +79,15 @@ Make large graphs readable and explorable.
 
 ### Phase 1 — Immediate UX
 
-* Focus on selection (#210)
-* Ego networks (k=1) (#211)
-* Hide non-selected nodes (#212)
-* Edge filtering by weight (#213)
+* ✔ Focus on selection (#210) — `Graph::vertexFilterBySelection()`, `filterNodesBySelectionAct` (Ctrl+X, Ctrl+S)
+* ✔ Ego networks (k=1) (#211) — `Graph::vertexFilterByEgoNetwork()`, `filterNodesByEgoNetworkAct` (Ctrl+X, Ctrl+F)
+* ✔ Hide non-selected nodes (#212) — closed as duplicate of #210
+* ✔ Edge filtering by weight (#213) — `Graph::edgeFilterByWeight()`, dialog + `Graph::edgeFilterReset()`, `editFilterEdgesRestoreAllAct` (Ctrl+E, Ctrl+R)
+
+**Cross-cutting UX (Phase 1):**
+* ✔ Non-destructive node filter restore — `Graph::vertexFilterRestoreAll()`, `filterNodesRestoreAllAct` (Ctrl+X, Ctrl+R)
+* ✔ Right-click on node auto-selects it before context menu opens (`GraphicsWidget::mousePressEvent`)
+* ✔ Ego network + Focus on Selection + Restore All Nodes wired into node right-click context menu
 
 ### Phase 2 — Layout Improvements (#214)
 
