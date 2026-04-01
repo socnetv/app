@@ -178,6 +178,7 @@ public slots:
                                   const IndexType centralityIndex);
 
     void vertexFilterByEgoNetwork(const int v1, const int depth = 1);
+    void vertexFilterBySelection(const QList<int> &selectedVertices);
     void vertexFilterRestoreAll();
     bool visibilityHistoryEmpty() const;
 

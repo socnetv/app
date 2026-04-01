@@ -1795,6 +1795,16 @@ void MainWindow::initActions(){
                                     "Filters out nodes according to their score in a user-selected centrality index."));
     connect(filterNodesByCentralityAct, SIGNAL(triggered()), this, SLOT(slotFilterNodesDialogByCentrality()));
 
+    filterNodesBySelectionAct = new QAction(tr("Focus on Selection"), this);
+    filterNodesBySelectionAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_S));
+    filterNodesBySelectionAct->setStatusTip(tr("Show only the selected nodes and edges between them."));
+    filterNodesBySelectionAct->setWhatsThis(tr("Focus on Selection\n\n"
+                                               "Hides all nodes except the currently selected ones. "
+                                               "Only edges between selected nodes remain visible. "
+                                               "Use 'Restore All Nodes' to undo."));
+    filterNodesBySelectionAct->setEnabled(false); // enabled when >= 1 node selected
+    connect(filterNodesBySelectionAct, SIGNAL(triggered()), this, SLOT(slotFilterNodesBySelection()));
+
     filterNodesByEgoNetworkAct = new QAction(tr("Focus on Node (Ego Network)"), this);
     filterNodesByEgoNetworkAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_F));
     filterNodesByEgoNetworkAct->setStatusTip(tr("Show only the selected node and its direct neighbors."));
@@ -3830,6 +3840,7 @@ void MainWindow::initMenuBar() {
     filterMenu->setIcon(QIcon(":/images/filter_list_48px.svg"));
     editMenu->addMenu(filterMenu);
 
+    filterMenu->addAction(filterNodesBySelectionAct);
     filterMenu->addAction(filterNodesByEgoNetworkAct);
     filterMenu->addAction(filterNodesRestoreAllAct);
     filterMenu->addSeparator();
@@ -10192,6 +10203,7 @@ void MainWindow::slotEditNodeOpenContextMenu() {
 
     nodeContextMenu->addSeparator();
 
+    nodeContextMenu->addAction(filterNodesBySelectionAct);
     nodeContextMenu->addAction(filterNodesByEgoNetworkAct);
     nodeContextMenu->addAction(filterNodesRestoreAllAct);
 
@@ -10250,6 +10262,8 @@ void MainWindow::slotEditSelectionChanged(const int &selNodes, const int &selEdg
 
     }
 
+    // Enable selection focus whenever at least 1 node is selected
+    filterNodesBySelectionAct->setEnabled(selNodes >= 1);
     // Enable ego network focus only when exactly 1 node is selected
     filterNodesByEgoNetworkAct->setEnabled(selNodes == 1);
     
@@ -11283,6 +11297,31 @@ void MainWindow::slotFilterNodesDialogByCentrality()
             &Graph::vertexFilterByCentrality);
 
     dlg.exec();
+}
+
+/**
+ * @brief Focuses the view on the currently selected nodes and edges between them.
+ *
+ * Hides all nodes not in the current selection. Only edges whose both
+ * endpoints are selected remain visible. Implements #210.
+ */
+void MainWindow::slotFilterNodesBySelection()
+{
+    if (!activeNodes())
+    {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+    const QList<int> selection = activeGraph->getSelectedVertices();
+    if (selection.isEmpty())
+    {
+        slotHelpMessageToUser(USER_MSG_CRITICAL,
+                              tr("No nodes selected"),
+                              tr("Please select at least one node first."));
+        return;
+    }
+    activeGraph->vertexFilterBySelection(selection);
+    filterNodesRestoreAllAct->setEnabled(true);
 }
 
 /**

@@ -327,6 +327,119 @@ void Graph::vertexFilterByEgoNetwork(const int v1, const int depth)
 }
 
 /**
+ * @brief Saves current visibility state and shows only the selected vertices
+ *        and the edges between them.
+ *
+ * Non-destructive: pushes a GraphVisibilitySnapshot onto m_visibilityHistory
+ * before making any changes. Call vertexFilterRestoreAll() to undo.
+ *
+ * Implements the "Focus on Selection" mode (#210): all nodes not in
+ * @p selectedVertices are hidden, and only edges whose both endpoints are
+ * in the selection remain visible.
+ *
+ * @param selectedVertices  List of vertex numbers that should remain visible.
+ */
+void Graph::vertexFilterBySelection(const QList<int> &selectedVertices)
+{
+    qDebug() << "Graph::vertexFilterBySelection() - selection:" << selectedVertices;
+
+    if (selectedVertices.isEmpty())
+    {
+        qDebug() << "Graph::vertexFilterBySelection() - empty selection, aborting.";
+        progressStatus(tr("No nodes selected. Please select at least one node first."));
+        return;
+    }
+
+    const QSet<int> visibleSet(selectedVertices.cbegin(), selectedVertices.cend());
+
+    // ------------------------------------------------------------------
+    // Snapshot current visibility state BEFORE making any changes.
+    // ------------------------------------------------------------------
+    GraphVisibilitySnapshot snapshot;
+    snapshot.active = true;
+
+    VList::const_iterator vi;
+    for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
+    {
+        const int vnum = (*vi)->number();
+        snapshot.nodeVisible.insert(vnum, (*vi)->isEnabled());
+
+        H_edges::const_iterator ei = (*vi)->m_outEdges.constBegin();
+        while (ei != (*vi)->m_outEdges.constEnd())
+        {
+            if (ei.value().first == m_curRelation)
+            {
+                snapshot.arcVisible.insert(
+                    QPair<int, int>(vnum, ei.key()),
+                    ei.value().second.second);
+            }
+            ++ei;
+        }
+    }
+
+    m_visibilityHistory.push(snapshot);
+
+    // ------------------------------------------------------------------
+    // PASS 1: Set vertex visibility.
+    // ------------------------------------------------------------------
+    for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
+    {
+        const int vnum = (*vi)->number();
+        const bool shouldBeVisible = visibleSet.contains(vnum);
+        if ((*vi)->isEnabled() != shouldBeVisible)
+        {
+            (*vi)->setEnabled(shouldBeVisible);
+            setModStatus(ModStatus::VertexCount);
+            emit setVertexVisibility(vnum, shouldBeVisible);
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // PASS 2: Set edge visibility.
+    // An edge is visible only if both endpoints are in the selection.
+    // ------------------------------------------------------------------
+    for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
+    {
+        const int source = (*vi)->number();
+
+        H_edges::iterator ei = (*vi)->m_outEdges.begin();
+        while (ei != (*vi)->m_outEdges.end())
+        {
+            if (ei.value().first != m_curRelation)
+            {
+                ++ei;
+                continue;
+            }
+            const int target = ei.key();
+            const qreal weight = ei.value().second.first;
+            const qreal reverseWeight = (*vi)->hasEdgeFrom(target);
+            const bool preserveReverse = (reverseWeight != 0);
+            const bool edgeShouldBeVisible =
+                visibleSet.contains(source) && visibleSet.contains(target);
+
+            ei.value() = pair_i_fb(m_curRelation, pair_f_b(weight, edgeShouldBeVisible));
+            edgeInboundStatusSet(target, source, edgeShouldBeVisible);
+
+            if (edgeShouldBeVisible)
+            {
+                emit signalSetEdgeVisibility(m_curRelation, source, target,
+                                             true, preserveReverse);
+            }
+            else
+            {
+                emit signalSetEdgeVisibility(m_curRelation, source, target,
+                                             false, preserveReverse,
+                                             weight, reverseWeight);
+            }
+            ++ei;
+        }
+    }
+
+    progressStatus(tr("Showing %1 selected node(s) and edges between them.")
+                       .arg(visibleSet.size()));
+}
+
+/**
  * @brief Restores vertex and edge visibility from the top snapshot on the
  *        history stack.
  *
