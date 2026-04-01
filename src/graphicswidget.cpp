@@ -1496,6 +1496,8 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
 
                 if ( e->button()==Qt::RightButton ) {
                     qDebug() << "This was a right-click on node. Signaling to open node menu";
+                    if ( !node->isSelected() )
+                        node->setSelected(true);
                     emit openNodeMenu();
                 }
                 if ( e->button()==Qt::MiddleButton) {
