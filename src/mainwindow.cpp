@@ -10190,9 +10190,12 @@ void MainWindow::slotEditNodeOpenContextMenu() {
 
     nodeContextMenu->addAction(editNodeRemoveAct );
 
-
     nodeContextMenu->addSeparator();
 
+    nodeContextMenu->addAction(filterNodesByEgoNetworkAct);
+    nodeContextMenu->addAction(filterNodesRestoreAllAct);
+
+    nodeContextMenu->addSeparator();
 
     //QCursor::pos() is good only for menus not related with node coordinates
     nodeContextMenu->exec(QCursor::pos() );
