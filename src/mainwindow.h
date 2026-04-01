@@ -344,8 +344,11 @@ public slots:
 
     void slotFilterNodesDialogByCentrality();
     void slotEditFilterNodesIsolates(bool checked);
+    void slotFilterNodesByEgoNetwork();
+    void slotFilterNodesRestoreAll();
     void slotEditFilterEdgesByWeightDialog();
     void slotEditFilterEdgesUnilateral(bool checked);
+
 
     void slotEditTransformNodes2Edges();
 
@@ -669,7 +672,9 @@ private:
     QAction *editNodeNumbersSizeAct, *editNodeLabelsSizeAct;
     QAction *editNodeSizeAllAct, *editNodeShapeAll;
     QAction *editEdgeLabelAct, *editEdgeColorAct, *editEdgeWeightAct;
-    QAction *filterNodesByCentralityAct, *editFilterNodesIsolatesAct, *editFilterEdgesByWeightAct;
+    QAction *filterNodesByCentralityAct,  *filterNodesByEgoNetworkAct,
+        *filterNodesRestoreAllAct, *editFilterNodesIsolatesAct, 
+        *editFilterEdgesByWeightAct;
     QAction *editFilterEdgesUnilateralAct;
     QAction *transformNodes2EdgesAct, *editEdgeSymmetrizeAllAct;
     QAction *editEdgeSymmetrizeStrongTiesAct, *editEdgeUndirectedAllAct;

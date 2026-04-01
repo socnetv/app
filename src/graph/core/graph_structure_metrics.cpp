@@ -39,28 +39,36 @@ int Graph::vertexDegreeIn(int v1)
 }
 
 /**
- * @brief Returns a list of all vertices mutually connected to vertex v1 in the
- * current relation
- * @param v1
- * @return  QList<int>
+ * @brief Returns a list of all vertices reciprocally connected to vertex v1
+ *        in the current relation.
+ *
+ * A vertex is included only if there is an enabled, reciprocal edge between
+ * v1 and that vertex in the current relation. For general 1-hop neighbors
+ * (out-edges only), iterate m_outEdges directly.
+ *
+ * @param v1  The vertex number to query.
+ * @return    QList<int> of reciprocally connected vertex numbers.
  */
 QList<int> Graph::vertexNeighborhoodList(const int &v1)
 {
-    // qDebug() << "Returning the neighborhood list of " << v1;
-    return m_graph[vpos[v1]]->neighborhoodList();
+    return m_graph[vpos[v1]]->reciprocalNeighborhoodList();
 }
 
 /**
- * @brief Returns the set of all vertices mutually connected to vertex v1 in the
- * current relation
- * @param v1
- * @return  QList<int>
+ * @brief Returns the set of all vertices reciprocally connected to vertex v1
+ *        in the current relation.
+ *
+ * A vertex is included only if there is an enabled, reciprocal edge between
+ * v1 and that vertex in the current relation. For general 1-hop neighbors
+ * (out-edges only), iterate m_outEdges directly.
+ *
+ * @param v1  The vertex number to query.
+ * @return    QSet<int> of reciprocally connected vertex numbers.
  */
 QSet<int> Graph::vertexNeighborhoodSet(const int &v1)
 {
-    // qDebug()<< "Graph::vertexNeighborhoodList()";
-    QList<int> myNeightbors = m_graph[vpos[v1]]->neighborhoodList();
-    return QSet<int>(myNeightbors.constBegin(), myNeightbors.constEnd());
+    const QList<int> neighbors = m_graph[vpos[v1]]->reciprocalNeighborhoodList();
+    return QSet<int>(neighbors.constBegin(), neighbors.constEnd());
 }
 
 /**

@@ -1,5 +1,5 @@
 /**
- * @file dialogfilternodes.cpp
+ * @file dialogfilternodesbycentrality.cpp
  * @brief Implements the DialogFilterNodesByCentrality class for filtering nodes based on their attributes.
  * @author Dimitris B. Kalamaras
  * @copyright
@@ -92,7 +92,7 @@ void DialogFilterNodesByCentrality::getUserChoices()
     const float threshold     = static_cast<float>(ui.weightThreshold->value());
     const bool overThreshold  = ui.overThresholdBt->isChecked();
 
-    // prominenceIndexList is 0-based but IndexType starts at 1
+    // NOTE: prominenceIndexList is 0-based but IndexType starts at 1
     const IndexType centralityIndex =
         static_cast<IndexType>(ui.indexComboBox->currentIndex() + 1);
 

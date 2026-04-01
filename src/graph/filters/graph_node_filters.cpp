@@ -147,8 +147,8 @@ void Graph::vertexFilterByCentrality(const float threshold,
     {
         const int v = (*it)->number();
 
-        H_edges::const_iterator ed;
-        for (ed = (*it)->m_outEdges.cbegin(); ed != (*it)->m_outEdges.cend(); ++ed)
+        H_edges::iterator ed;
+        for (ed = (*it)->m_outEdges.begin(); ed != (*it)->m_outEdges.end(); ++ed)
         {
             if (ed.value().first != m_curRelation)
                 continue;
@@ -191,4 +191,235 @@ void Graph::vertexFilterByCentrality(const float threshold,
     progressStatus(
         tr("Filter applied: vertices with score %1 %2 are now hidden.")
             .arg(condition, QString::number(threshold)));
+}
+
+/**
+ * @brief Saves current visibility state and shows only the ego network
+ *        of vertex v1 at the given depth.
+ *
+ * Non-destructive: pushes a GraphVisibilitySnapshot onto m_visibilityHistory
+ * before making any changes. Call vertexFilterRestoreAll() to undo.
+ *
+ * Only out-edges in the current relation are used to determine neighbors.
+ * Works correctly for both directed and undirected graphs.
+ *
+ * @param v1     The ego vertex (center of the neighborhood).
+ * @param depth  Neighborhood depth (currently only depth=1 supported).
+ */
+void Graph::vertexFilterByEgoNetwork(const int v1, const int depth)
+{
+    Q_UNUSED(depth); // reserved for future k-hop support
+
+    qDebug() << "Graph::vertexFilterByEgoNetwork() - ego:" << v1;
+
+    if (!vertexExists(v1))
+    {
+        qDebug() << "Graph::vertexFilterByEgoNetwork() - vertex" << v1 << "not found. Aborting.";
+        return;
+    }
+
+    // ------------------------------------------------------------------
+    // Build the visible set: ego + its 1-hop neighbors via enabled
+    // out-edges in the current relation.
+    // ------------------------------------------------------------------
+    QSet<int> visibleSet;
+    visibleSet.insert(v1);
+
+    const GraphVertex *ego = vertexAtIndex(vpos[v1]);
+    H_edges::const_iterator it = ego->m_outEdges.constBegin();
+    while (it != ego->m_outEdges.constEnd())
+    {
+        if (it.value().first == m_curRelation && it.value().second.second == true)
+        {
+            visibleSet.insert(it.key());
+        }
+        ++it;
+    }
+
+    qDebug() << "Graph::vertexFilterByEgoNetwork() - visible set:" << visibleSet;
+
+    // ------------------------------------------------------------------
+    // Snapshot current visibility state BEFORE making any changes.
+    // ------------------------------------------------------------------
+    GraphVisibilitySnapshot snapshot;
+    snapshot.active = true;
+
+    VList::const_iterator vi;
+    for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
+    {
+        const int vnum = (*vi)->number();
+        snapshot.nodeVisible.insert(vnum, (*vi)->isEnabled());
+
+        H_edges::const_iterator ei = (*vi)->m_outEdges.constBegin();
+        while (ei != (*vi)->m_outEdges.constEnd())
+        {
+            if (ei.value().first == m_curRelation)
+            {
+                snapshot.arcVisible.insert(
+                    QPair<int, int>(vnum, ei.key()),
+                    ei.value().second.second);
+            }
+            ++ei;
+        }
+    }
+
+    m_visibilityHistory.push(snapshot);
+
+    // ------------------------------------------------------------------
+    // PASS 1: Set vertex visibility.
+    // ------------------------------------------------------------------
+    for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
+    {
+        const int vnum = (*vi)->number();
+        const bool shouldBeVisible = visibleSet.contains(vnum);
+        if ((*vi)->isEnabled() != shouldBeVisible)
+        {
+            (*vi)->setEnabled(shouldBeVisible);
+            setModStatus(ModStatus::VertexCount);
+            emit setVertexVisibility(vnum, shouldBeVisible);
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // PASS 2: Set edge visibility.
+    // An edge is visible only if both endpoints are in the visible set.
+    // ------------------------------------------------------------------
+    for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
+    {
+        const int source = (*vi)->number();
+
+        H_edges::iterator ei = (*vi)->m_outEdges.begin();
+        while (ei != (*vi)->m_outEdges.end())
+        {
+            if (ei.value().first != m_curRelation)
+            {
+                ++ei;
+                continue;
+            }
+            const int target = ei.key();
+            const qreal weight = ei.value().second.first;
+            const qreal reverseWeight = (*vi)->hasEdgeFrom(target);
+            const bool preserveReverse = (reverseWeight != 0);
+            const bool edgeShouldBeVisible =
+                visibleSet.contains(source) && visibleSet.contains(target);
+
+            ei.value() = pair_i_fb(m_curRelation, pair_f_b(weight, edgeShouldBeVisible));
+            edgeInboundStatusSet(target, source, edgeShouldBeVisible);
+
+            if (edgeShouldBeVisible)
+            {
+                emit signalSetEdgeVisibility(m_curRelation, source, target,
+                                             true, preserveReverse);
+            }
+            else
+            {
+                emit signalSetEdgeVisibility(m_curRelation, source, target,
+                                             false, preserveReverse,
+                                             weight, reverseWeight);
+            }
+            ++ei;
+        }
+    }
+
+    progressStatus(tr("Showing ego network of node %1 (%2 neighbors).")
+                       .arg(v1)
+                       .arg(visibleSet.size() - 1));
+}
+
+/**
+ * @brief Restores vertex and edge visibility from the top snapshot on the
+ *        history stack.
+ *
+ * If the stack is empty (no filter is active), this is a no-op.
+ * Pops the snapshot after restoring, so repeated calls walk back through
+ * the filter history one step at a time.
+ */
+void Graph::vertexFilterRestoreAll()
+{
+    qDebug() << "Graph::vertexFilterRestoreAll()";
+
+    if (m_visibilityHistory.isEmpty())
+    {
+        qDebug() << "Graph::vertexFilterRestoreAll() - history stack empty, nothing to restore.";
+        progressStatus(tr("No active filter to restore."));
+        return;
+    }
+
+    const GraphVisibilitySnapshot snapshot = m_visibilityHistory.pop();
+
+    // ------------------------------------------------------------------
+    // PASS 1: Restore vertex visibility.
+    // ------------------------------------------------------------------
+    VList::const_iterator vi;
+    for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
+    {
+        const int vnum = (*vi)->number();
+        const bool wasVisible = snapshot.nodeVisible.value(vnum, true);
+        if ((*vi)->isEnabled() != wasVisible)
+        {
+            (*vi)->setEnabled(wasVisible);
+            setModStatus(ModStatus::VertexCount);
+            emit setVertexVisibility(vnum, wasVisible);
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // PASS 2: Restore edge visibility.
+    // ------------------------------------------------------------------
+    for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
+    {
+        const int source = (*vi)->number();
+
+        H_edges::iterator ei = (*vi)->m_outEdges.begin();
+        while (ei != (*vi)->m_outEdges.end())
+        {
+            if (ei.value().first != m_curRelation)
+            {
+                ++ei;
+                continue;
+            }
+            const int target = ei.key();
+            const qreal weight = ei.value().second.first;
+            const qreal reverseWeight = (*vi)->hasEdgeFrom(target);
+            const bool preserveReverse = (reverseWeight != 0);
+            const bool wasVisible =
+                snapshot.arcVisible.value(QPair<int, int>(source, target), true);
+
+            ei.value() = pair_i_fb(m_curRelation, pair_f_b(weight, wasVisible));
+            edgeInboundStatusSet(target, source, wasVisible);
+
+            if (wasVisible)
+            {
+                emit signalSetEdgeVisibility(m_curRelation, source, target,
+                                             true, preserveReverse);
+            }
+            else
+            {
+                emit signalSetEdgeVisibility(m_curRelation, source, target,
+                                             false, preserveReverse,
+                                             weight, reverseWeight);
+            }
+            ++ei;
+        }
+    }
+
+    progressStatus(tr("Graph visibility restored."));
+}
+
+
+/**
+ * @brief Returns true if the visibility history stack is empty.
+ *
+ * Used by the UI to determine whether a "Restore All" action should
+ * be enabled. The stack holds one entry per non-destructive filter
+ * operation (e.g. ego network focus). Each call to vertexFilterRestoreAll()
+ * pops one entry; when the stack is empty, there is nothing left to restore.
+ *
+ * @return true if no filter snapshots are pending, false otherwise.
+ * @see vertexFilterByEgoNetwork()
+ * @see vertexFilterRestoreAll()
+ */
+bool Graph::visibilityHistoryEmpty() const
+{
+    return m_visibilityHistory.isEmpty();
 }

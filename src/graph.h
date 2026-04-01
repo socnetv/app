@@ -25,6 +25,7 @@
 #include <QMultiMap>
 #include <QTextStream>
 #include <QThread>
+#include <QStack>
 
 // stack is a wrapper around <deque> in C++
 // see: www.cplusplus.com/reference/stl/stack
@@ -175,6 +176,10 @@ public slots:
     void vertexFilterByCentrality(const float threshold,
                                   const bool overThreshold,
                                   const IndexType centralityIndex);
+
+    void vertexFilterByEgoNetwork(const int v1, const int depth = 1);
+    void vertexFilterRestoreAll();
+    bool visibilityHistoryEmpty() const;
 
     void edgeFilterByWeight(const qreal, const bool);
 
@@ -388,6 +393,18 @@ public:
         Complete_Linkage = 1, // "complete-link or maximum
         Average_Linkage = 2,  // mean or "average-linkage" or UPGMA
 
+    };
+
+    // --------------------------------------------------------------------------
+    // FACADE API (SUPPORTED): Visibility snapshot for non-destructive filtering.
+    // Used by the filter system to save/restore vertex and edge visibility state.
+    // Stored as a stack to support future undo/redo.
+    // --------------------------------------------------------------------------
+    struct GraphVisibilitySnapshot
+    {
+        QHash<int, bool> nodeVisible;            // vertex number  → was enabled
+        QHash<QPair<int, int>, bool> arcVisible; // (source,target)→ was visible
+        bool active = false;                     // true when this snapshot holds real data
     };
 
     /* INIT AND CLEAR*/
@@ -793,7 +810,6 @@ public:
                                     const bool &diagonal,
                                     const bool &considerWeights);
 
-
     bool writeMatrixSimilarityMatching(const QString fileName,
                                        const QString &measure = "Simple",
                                        const QString &matrix = "adjacency",
@@ -971,7 +987,7 @@ public:
     void addToDistanceSum(qreal delta);
     void incGeodesicsCount();
     void setAverageDistanceCached(qreal v);
-    
+
     bool graphMatrixDistanceGeodesicCreate(const bool &considerWeights = false,
                                            const bool &inverseWeights = false,
                                            const bool &dropIsolates = false);
@@ -1073,6 +1089,10 @@ public:
     bool graphTriadCensus();
 
     void triadType_examine_MAN_label(int, int, int, GraphVertex *, GraphVertex *, GraphVertex *);
+    // --- Triad census results (read-only access for CLI / reports) ---
+    const QList<int> &graphTriadTypeFreqs() const { return triadTypeFreqs; }
+    bool hasCalculatedTriadCensus() const { return calculatedTriad; }
+
     //	void eccentr_JordanCenter();    // TODO
 
     /* LAYOUTS */
@@ -1242,7 +1262,7 @@ private:
                         int &classes, int name);
 
     void layoutRandomInMemory();
-    
+
     VList m_graph; // List of pointers to the vertices. Each vertex stores all info: links, colors, etc
 
     Parser *file_parser; // Our file loader threaded class.
@@ -1268,6 +1288,7 @@ private:
     QSet<int> m_verticesSet;
 
     QList<SelectedEdge> m_selectedEdges;
+    QStack<GraphVisibilitySnapshot> m_visibilityHistory; // filter undo stack
 
     QMultiHash<int, int> influenceRanges, influenceDomains;
 

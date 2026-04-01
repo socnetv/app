@@ -119,7 +119,7 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X)
         {
             vertex = (*it)->number();
 
-            myNeightbors = (*it)->neighborhoodList();
+            myNeightbors = (*it)->reciprocalNeighborhoodList();
             neighboursHash[vertex] = QSet<int>(myNeightbors.constBegin(), myNeightbors.constEnd());
 
             qDebug() << "Graph::graphCliques() - initialization step. NeighborhoodList of v"

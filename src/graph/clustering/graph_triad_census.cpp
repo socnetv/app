@@ -40,7 +40,7 @@ bool Graph::graphTriadCensus()
      * 0	1	2	3		4	5	6	7	8		9	10	11	12		13	14	15
      * 003 012 102	021D 021U 021C 111D	111U 030T 030C 201 	120D 120U 120C 210 300
      */
-
+    triadTypeFreqs.clear();
     for (int i = 0; i <= 15; ++i)
     {
         triadTypeFreqs.append(0);

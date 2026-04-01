@@ -1,0 +1,126 @@
+{
+    "cliques": {
+        "by_size": {
+            "2": 2,
+            "3": 3,
+            "4": 2
+        },
+        "max_clique_size": 4,
+        "total_cliques": 7
+    },
+    "counts": {
+        "links_sna": 36,
+        "nodes": 10,
+        "ties_graph": 18
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "Krackhardt_Kite_N10.paj",
+        "path": "src/data/Krackhardt_Kite_N10.paj"
+    },
+    "graph": {
+        "directed": false,
+        "weighted": false
+    },
+    "kernel": "clustering",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 2,
+        "load_msg": "",
+        "net_name": "Krackhardt_Kite_N10.paj",
+        "ok": true
+    },
+    "metrics": {
+        "averageCLC": "0.51999999999999991",
+        "nodesWithCLC": 10
+    },
+    "per_node": [
+        {
+            "CLC": "0.66666666666666663",
+            "hasCLC": true,
+            "id": 1,
+            "label": "Andre"
+        },
+        {
+            "CLC": "0.66666666666666663",
+            "hasCLC": true,
+            "id": 2,
+            "label": "Beverley"
+        },
+        {
+            "CLC": "1",
+            "hasCLC": true,
+            "id": 3,
+            "label": "Carol"
+        },
+        {
+            "CLC": "0.53333333333333333",
+            "hasCLC": true,
+            "id": 4,
+            "label": "Diane"
+        },
+        {
+            "CLC": "1",
+            "hasCLC": true,
+            "id": 5,
+            "label": "Ed"
+        },
+        {
+            "CLC": "0.5",
+            "hasCLC": true,
+            "id": 6,
+            "label": "Fernando"
+        },
+        {
+            "CLC": "0.5",
+            "hasCLC": true,
+            "id": 7,
+            "label": "Garth"
+        },
+        {
+            "CLC": "0.33333333333333331",
+            "hasCLC": true,
+            "id": 8,
+            "label": "Heather"
+        },
+        {
+            "CLC": "0",
+            "hasCLC": true,
+            "id": 9,
+            "label": "Ike"
+        },
+        {
+            "CLC": "0",
+            "hasCLC": true,
+            "id": 10,
+            "label": "Jane"
+        }
+    ],
+    "run": {
+        "considerWeights": false,
+        "dropIsolates": false,
+        "inverseWeights": true
+    },
+    "schema_version": 6,
+    "triad_census": {
+        "classes": {
+            "003": 22,
+            "012": 0,
+            "021C": 0,
+            "021D": 0,
+            "021U": 0,
+            "030C": 0,
+            "030T": 0,
+            "102": 63,
+            "111D": 0,
+            "111U": 0,
+            "120C": 0,
+            "120D": 0,
+            "120U": 0,
+            "201": 24,
+            "210": 0,
+            "300": 11
+        },
+        "total_triads": 120
+    }
+}

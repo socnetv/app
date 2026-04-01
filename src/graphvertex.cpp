@@ -59,7 +59,6 @@ GraphVertex::GraphVertex(Graph* parentGraph,
         m_outEdgeLabels.reserve(edgesEstimate);
         m_outEdges.reserve(edgesEstimate);
         m_inEdges.reserve(edgesEstimate);
-        m_neighborhoodList.reserve(edgesEstimate);
     }
 
     m_customAttributes = customAttributes;
@@ -964,37 +963,36 @@ QHash<int, qreal> GraphVertex::reciprocalEdgesHash(){
 }
 
 
-
 /**
- * @brief Returns a list of all neighbors mutually connected to this vertex in the active relation.
+ * @brief Returns a list of all vertices reciprocally connected to this vertex
+ *        in the active relation.
  *
- * The returned list does not include the vertex itself, even if it self-connected.
- * Same as calling GraphVertex::reciprocalEdgesHash().keys() which returns a QList of int keys,
- * where each key is a vertex reciprocally connected to this one.
+ * A vertex is included only if:
+ * - There is an enabled out-edge from this vertex to it in the current relation.
+ * - There is a reciprocal in-edge from it back to this vertex.
+ * - The reverse edge weight is non-zero (existence check, not exact equality).
+ * - The vertex is not this vertex itself (no self-loops).
  *
- * @return  QList<int>
+ * Note: this function returns MUTUAL neighbors only. For general 1-hop
+ * neighbors (out-edges only, regardless of reciprocity), use a direct
+ * iteration over m_outEdges instead.
+ *
+ * @return QList<int> of vertex numbers reciprocally connected to this vertex.
  */
-QList<int> GraphVertex::neighborhoodList(){
-
-    m_neighborhoodList.clear();
-    qreal m_weight=0;
-    int relation = 0;
-    bool edgeStatus=false;
-    H_edges::const_iterator it1=m_outEdges.constBegin();
-    while (it1 != m_outEdges.constEnd() ) {
-        relation = it1.value().first;
-        if ( relation == m_curRelation ) {
-            edgeStatus=it1.value().second.second;
-            if ( edgeStatus == true) {
-                m_weight=it1.value().second.first;
-                if ( this->number() != it1.key() && this->hasEdgeFrom (it1.key()) == m_weight ) {
-                    m_neighborhoodList << it1.key();
-                }
-            }
+QList<int> GraphVertex::reciprocalNeighborhoodList() {
+    QList<int> result;
+    H_edges::const_iterator it1 = m_outEdges.constBegin();
+    while (it1 != m_outEdges.constEnd()) {
+        if (it1.value().first == m_curRelation
+            && it1.value().second.second == true
+            && it1.key() != this->number()
+            && this->hasEdgeFrom(it1.key()) != 0)
+        {
+            result << it1.key();
         }
         ++it1;
     }
-    return m_neighborhoodList;
+    return result;
 }
 
 
@@ -1410,8 +1408,6 @@ GraphVertex::~GraphVertex() {
 
     m_distance.clear();
     m_distance.squeeze();
-
-    m_neighborhoodList.clear();
 
     m_cliques.clear();
     m_cliques.squeeze();

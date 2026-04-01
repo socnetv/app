@@ -182,7 +182,7 @@ void Graph::edgeClickedSet(const int &v1, const int &v2, const bool &openMenu)
     qreal oppositeWeight = edgeExists(m_clickedEdge.target, m_clickedEdge.source, false);
     if (oppositeWeight)
     {
-        qDebug() << "Reverse tie" << v2 << "->" << v2 << "exists. Weight:" << oppositeWeight;
+        qDebug() << "Reverse tie" << v2 << "->" << v1 << "exists. Weight:" << oppositeWeight;
         if (!isDirected())
         {
             type = EdgeType::Undirected;

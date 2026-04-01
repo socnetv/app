@@ -115,6 +115,8 @@ Graph::Graph(const int &reserveVerticesSize, const int &reserveEdgesPerVertexSiz
     m_clickedEdge.source = 0;
     m_clickedEdge.target = 0;
 
+    m_visibilityHistory.clear();  // discard any pending filter snapshots
+
     file_parser = 0;
 
     web_crawler = 0;
@@ -364,6 +366,8 @@ void Graph::clear(const QString &reason)
     m_vertexClicked = 0;
     m_clickedEdge.source = 0;
     m_clickedEdge.target = 0;
+
+    m_visibilityHistory.clear();  // discard any pending filter snapshots
 
     order = true; // returns true if the vpositions of the list is ordered.
 

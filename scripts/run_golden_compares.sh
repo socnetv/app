@@ -16,6 +16,7 @@
 #   v5  io_roundtrip  — load → export → reload signature comparison
 #                       (export skipped for formats without exporter;
 #                        baseline locks in the skipped outcome too)
+#   v6  clustering    — clustering coefficient + triad census + clique census
 #
 # Baselines:
 #   src/tools/baselines/             (distance v1)
@@ -23,6 +24,7 @@
 #   src/tools/baselines/walks/        (v3)
 #   src/tools/baselines/prominence/   (v4)
 #   src/tools/baselines/io_roundtrip/ (v5)
+#   src/tools/baselines/clustering/   (v6)
 #
 # To add a new case:
 #   1. Run socnetv-cli --kernel <k> ... --dump-json <baseline.json>
@@ -59,6 +61,7 @@ BASE_REACH="${ROOT_DIR}/src/tools/baselines/reachability"
 BASE_WALKS="${ROOT_DIR}/src/tools/baselines/walks"
 BASE_PROM="${ROOT_DIR}/src/tools/baselines/prominence"
 BASE_IO="${ROOT_DIR}/src/tools/baselines/io_roundtrip"
+BASE_CLUST="${ROOT_DIR}/src/tools/baselines/clustering"
 DATA="${ROOT_DIR}/src/data"
 
 if [[ ! -x "$CLI" ]]; then
@@ -117,6 +120,19 @@ run_case_prominence() {
 
   echo "==> $(basename "$baseline")"
   if ! "$CLI" --kernel prominence -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
+    echo "[FAIL] $(basename "$baseline")"
+    FAILS=$((FAILS+1))
+  fi
+}
+
+run_case_clustering() {
+  local input="$1"
+  local ftype="$2"
+  local flags=("${@:3:${#}-3}")
+  local baseline="${!#}"
+
+  echo "==> $(basename "$baseline")"
+  if ! "$CLI" --kernel clustering -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
   fi
@@ -234,6 +250,13 @@ run_case_prominence \
   -w 0 -x 1 -k 0 \
   "${BASE_PROM}/Sampson_Monks_N18__PROM__V4__FT2__W0_IW1_DI0.json"
 
+# CLUSTERING (schema v6)
+run_case_clustering \
+  "${DATA}/Krackhardt_Kite_N10.paj" \
+  2 \
+  -w 0 -x 1 -k 0 \
+  "${BASE_CLUST}/Krackhardt_Kite_N10__CLUST__V6__FT2__W0_IW1_DI0.json"
+  
 # IO ROUNDTRIP (schema v5)
 run_case_io "${DATA}/TinyAdj_Undir_N3.adj" 3 -d " " -l 0 "${BASE_IO}/TinyAdj_Undir_N3__FT3.json"
 run_case_io "${DATA}/TinyAdj_Weighted_Dir_N3.adj" 3 -d " " -l 0 "${BASE_IO}/TinyAdj_Weighted_Dir_N3__FT3.json"
