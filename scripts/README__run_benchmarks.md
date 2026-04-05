@@ -1,6 +1,6 @@
 # Benchmarks
 
-`run_benchmarks.sh` runs **socnetv-cli micro-benchmarks** and compares median compute times against stored baselines.
+`run_benchmarks.sh` runs **socnetv-cli micro-benchmarks** and compares benchmark timings against stored performance baselines where applicable.
 
 Benchmarks validate:
 
@@ -14,7 +14,14 @@ Benchmarks **do not validate correctness** — correctness is enforced by golden
 
 # What Is Being Benchmarked
 
-The benchmark harness executes three benchmark families:
+The benchmark harness supports three benchmark families.
+
+By default (`--type all`), it runs only the **baseline-enforced** families:
+
+- Distance / Centrality
+- IO Roundtrip
+
+The third family, **Optional Clustering Timing**, is developer-oriented and runs only when explicitly selected with `--type clustering`.
 
 ## Distance / Centrality (schema v1)
 
@@ -63,72 +70,67 @@ Important:
 - timings are single-run, wall-clock measurements
 - results are **informational only**
 - they are **not enforced** against performance baselines
-- they are **disabled by default**
+- they run **only** when explicitly selected with `--type clustering`
 
-Enable them with:
+Run them with:
 
 ```bash
-BENCH_CLUSTERING=1 ./scripts/run_benchmarks.sh --type clustering
+./scripts/run_benchmarks.sh --type clustering
 ```
 
 Current shipped clustering timing probes:
 
-- `CLUST_KITE_N10` — Krackhardt Kite N=10
-- `CLUST_SAMPSON_N18` — Sampson Monks N=18
+* `CLUST_KITE_N10` — Krackhardt Kite N=10
+* `CLUST_SAMPSON_N18` — Sampson Monks N=18
 
 Rationale:
 
-- The clustering kernel does not currently support deterministic multi-run benchmarking (`--bench`).
-- clique enumeration and triad census are still useful to time locally
-- this gives trend visibility without introducing noisy CI failures
-
+* The clustering kernel does not currently support deterministic multi-run benchmarking (`--bench`).
+* Clique enumeration and triad census are still useful to time locally.
+* This gives trend visibility without introducing noisy CI failures.
 
 ---
-
 
 # Benchmark Type Selection
 
 Use `--type` to select which benchmark family to run:
 
-- `--type distance` → run only distance / centrality benchmarks
-- `--type io` → run only IO timing benchmarks
-- `--type clustering` → run only optional clustering timing probes
-- `--type all` → run all applicable benchmark families (default)
+* `--type distance` → run only distance / centrality benchmarks
+* `--type io` → run only IO timing benchmarks
+* `--type clustering` → run only optional clustering timing probes
+* `--type all` → run the baseline-enforced benchmark families only (`distance` + `io`) (default)
 
 Examples:
 
 ```bash
 ./scripts/run_benchmarks.sh --type distance
 ./scripts/run_benchmarks.sh --type io
-BENCH_CLUSTERING=1 ./scripts/run_benchmarks.sh --type clustering
+./scripts/run_benchmarks.sh --type clustering
 ./scripts/run_benchmarks.sh --type all
 ```
 
 ---
 
-
 # Baseline Selection (Machine-Aware)
 
 Priority order for choosing the expected baseline file:
 
-1. `BENCH_BASELINE=/path/to/perf_expected.env`  
+1. `BENCH_BASELINE=/path/to/perf_expected.env`
    (explicit file path)
 
-2. `BENCH_BASELINE_SET=<name>`  
+2. `BENCH_BASELINE_SET=<name>`
    → `scripts/perf_baselines/<name>/perf_expected.env`
 
-3. Auto set: `<OS>-<ARCH>`  
+3. Auto set: `<OS>-<ARCH>`
    → `scripts/perf_baselines/<auto>/perf_expected.env` (if present)
 
 The script prints an INFO line showing:
 
 ```
-
 BENCH_BASELINE_SET
 EXPECTED_FILE
 BUILD_TYPE
 RECORD
-
 ```
 
 Baseline selection is therefore explicit and reproducible.
@@ -154,6 +156,11 @@ This writes:
 ```
 scripts/perf_baselines/<set>/perf_expected.env
 ```
+
+Note:
+
+* Recording applies to the baseline-enforced benchmark families.
+* Optional clustering timing probes are not recorded into performance baselines.
 
 ---
 
@@ -188,11 +195,11 @@ IO timing regression enforcement is also available at the kernel level via
 
 Cases that use `~/socnetv/library/nets/large/` are **local-only**:
 
-- They are skipped silently in CI environments where the directory does not exist.
-- They are always guarded by `if [[ -d "$LARGE_NETS_DIR" ]]`.
-- They should not be expected to be fast — 1000-node distance benchmarks
+* They are skipped silently in CI environments where the directory does not exist.
+* They are always guarded by `if [[ -d "$LARGE_NETS_DIR" ]]`.
+* They should not be expected to be fast — 1000-node distance benchmarks
   take 28–47 seconds on a Debug build.
-- Record baselines for these on your own machine; do not commit baselines
+* Record baselines for these on your own machine; do not commit baselines
   recorded on machines with different hardware or build configurations.
 
 ---
@@ -258,8 +265,9 @@ To revert to a previous baseline:
 * Restore the relevant `scripts/perf_baselines/<set>/perf_expected.env` from git history.
 * Or delete the set directory and re-record with `--record`.
 
+---
 
-# Future Work:
+# Future Work
 
 Clustering benchmarks may evolve to support deterministic multi-run timing
-(bench mode) once kernel_v6 exposes stable iteration semantics.
+(bench mode) once `kernel_v6` exposes stable iteration semantics.
