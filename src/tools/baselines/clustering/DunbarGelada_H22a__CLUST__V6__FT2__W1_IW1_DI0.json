@@ -1,0 +1,138 @@
+{
+    "cliques": {
+        "by_size": {
+            "2": 7,
+            "3": 3,
+            "4": 3
+        },
+        "max_clique_size": 4,
+        "total_cliques": 13
+    },
+    "counts": {
+        "links_sna": 48,
+        "nodes": 12,
+        "ties_graph": 24
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj",
+        "path": "src/data/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj"
+    },
+    "graph": {
+        "directed": false,
+        "weighted": true
+    },
+    "kernel": "clustering",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 0,
+        "load_msg": "",
+        "net_name": "Dunbar&Dunbar_Gelada_baboon_colony_H22a",
+        "ok": true
+    },
+    "metrics": {
+        "averageCLC": "0.30476190476190473",
+        "nodesWithCLC": 12
+    },
+    "per_node": [
+        {
+            "CLC": "0.20000000000000001",
+            "hasCLC": true,
+            "id": 1,
+            "label": "Adult"
+        },
+        {
+            "CLC": "0",
+            "hasCLC": true,
+            "id": 2,
+            "label": "2"
+        },
+        {
+            "CLC": "0.38095238095238093",
+            "hasCLC": true,
+            "id": 3,
+            "label": "Adult"
+        },
+        {
+            "CLC": "0.47619047619047616",
+            "hasCLC": true,
+            "id": 4,
+            "label": "Adult"
+        },
+        {
+            "CLC": "0.40000000000000002",
+            "hasCLC": true,
+            "id": 5,
+            "label": "Adult"
+        },
+        {
+            "CLC": "0.69999999999999996",
+            "hasCLC": true,
+            "id": 6,
+            "label": "3"
+        },
+        {
+            "CLC": "0.33333333333333331",
+            "hasCLC": true,
+            "id": 7,
+            "label": "3"
+        },
+        {
+            "CLC": "0",
+            "hasCLC": true,
+            "id": 8,
+            "label": "Adult"
+        },
+        {
+            "CLC": "0",
+            "hasCLC": true,
+            "id": 9,
+            "label": "1"
+        },
+        {
+            "CLC": "0.5",
+            "hasCLC": true,
+            "id": 10,
+            "label": "3"
+        },
+        {
+            "CLC": "0",
+            "hasCLC": true,
+            "id": 11,
+            "label": "2"
+        },
+        {
+            "CLC": "0.66666666666666663",
+            "hasCLC": true,
+            "id": 12,
+            "label": "1"
+        }
+    ],
+    "run": {
+        "considerWeights": true,
+        "dropIsolates": false,
+        "inverseWeights": true
+    },
+    "schema_version": 6,
+    "triad_census": {
+        "classes": {
+            "003": 61,
+            "012": 0,
+            "021C": 0,
+            "021D": 0,
+            "021U": 0,
+            "030C": 0,
+            "030T": 0,
+            "102": 91,
+            "111D": 0,
+            "111U": 0,
+            "120C": 0,
+            "120D": 0,
+            "120U": 0,
+            "201": 55,
+            "210": 0,
+            "300": 13
+        },
+        "total_triads": 220
+    }
+}

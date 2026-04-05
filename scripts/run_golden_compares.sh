@@ -250,12 +250,6 @@ run_case_prominence \
   -w 0 -x 1 -k 0 \
   "${BASE_PROM}/Sampson_Monks_N18__PROM__V4__FT2__W0_IW1_DI0.json"
 
-# CLUSTERING (schema v6)
-run_case_clustering \
-  "${DATA}/Krackhardt_Kite_N10.paj" \
-  2 \
-  -w 0 -x 1 -k 0 \
-  "${BASE_CLUST}/Krackhardt_Kite_N10__CLUST__V6__FT2__W0_IW1_DI0.json"
   
 # IO ROUNDTRIP (schema v5)
 run_case_io "${DATA}/TinyAdj_Undir_N3.adj" 3 -d " " -l 0 "${BASE_IO}/TinyAdj_Undir_N3__FT3.json"
@@ -274,6 +268,56 @@ run_case_io "${DATA}/TinyGraphviz_Undir_N3.dot" 4 "${BASE_IO}/TinyGraphviz_Undir
 run_case_io "${DATA}/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl" 5 "${BASE_IO}/StokmanZiegler_Netherlands__FT5__IO__V5.json"
 run_case_io "${DATA}/Bernard_Killworth_Fraternity.dl" 5 "${BASE_IO}/Bernard_Killworth_Fraternity__FT5__IO__V5.json"
 
+
+# CLUSTERING (schema v6)
+run_case_clustering \
+  "${DATA}/Krackhardt_Kite_N10.paj" \
+  2 \
+  -w 0 -x 1 -k 0 \
+  "${BASE_CLUST}/Krackhardt_Kite_N10__CLUST__V6__FT2__W0_IW1_DI0.json"
+
+run_case_clustering \
+  "${DATA}/TinyDirChain_N3.paj" \
+  2 \
+  -w 0 -x 1 -k 0 \
+  "${BASE_CLUST}/TinyDirChain_N3__CLUST__V6__FT2__W0_IW1_DI0.json"
+
+run_case_clustering \
+  "${DATA}/TinyPath_N3_E2.paj" \
+  2 \
+  -w 0 -x 1 -k 0 \
+  "${BASE_CLUST}/TinyPath_N3_E2__CLUST__V6__FT2__W0_IW1_DI0.json"
+
+run_case_clustering \
+  "${DATA}/Sampson_Monks_N18.net" \
+  2 \
+  -w 0 -x 1 -k 0 \
+  "${BASE_CLUST}/Sampson_Monks_N18__CLUST__V6__FT2__W0_IW1_DI0.json"
+
+run_case_clustering \
+  "${DATA}/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl" \
+  5 \
+  -w 0 -x 1 -k 0 \
+  "${BASE_CLUST}/StokmanZiegler_Netherlands__CLUST__V6__FT5__W0_IW1_DI0.json"
+
+run_case_clustering \
+  "${DATA}/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl" \
+  5 \
+  -w 1 -x 1 -k 0 \
+  "${BASE_CLUST}/StokmanZiegler_Netherlands__CLUST__V6__FT5__W1_IW1_DI0.json"
+
+run_case_clustering \
+  "${DATA}/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj" \
+  2 \
+  -w 0 -x 1 -k 0 \
+  "${BASE_CLUST}/DunbarGelada_H22a__CLUST__V6__FT2__W0_IW1_DI0.json"
+
+run_case_clustering \
+  "${DATA}/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj" \
+  2 \
+  -w 1 -x 1 -k 0 \
+  "${BASE_CLUST}/DunbarGelada_H22a__CLUST__V6__FT2__W1_IW1_DI0.json"
+  
 echo
 if [[ "$FAILS" -eq 0 ]]; then
   echo "[OK] All golden comparisons passed."

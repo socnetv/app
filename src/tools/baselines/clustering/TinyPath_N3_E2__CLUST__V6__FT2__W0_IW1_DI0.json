@@ -1,0 +1,82 @@
+{
+    "cliques": {
+        "by_size": {
+            "2": 2
+        },
+        "max_clique_size": 2,
+        "total_cliques": 2
+    },
+    "counts": {
+        "links_sna": 4,
+        "nodes": 3,
+        "ties_graph": 2
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "TinyPath_N3_E2.paj",
+        "path": "src/data/TinyPath_N3_E2.paj"
+    },
+    "graph": {
+        "directed": false,
+        "weighted": false
+    },
+    "kernel": "clustering",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 2,
+        "load_msg": "",
+        "net_name": "TinyPath_N3_E2.paj",
+        "ok": true
+    },
+    "metrics": {
+        "averageCLC": "0",
+        "nodesWithCLC": 3
+    },
+    "per_node": [
+        {
+            "CLC": "0",
+            "hasCLC": true,
+            "id": 1,
+            "label": "A"
+        },
+        {
+            "CLC": "0",
+            "hasCLC": true,
+            "id": 2,
+            "label": "B"
+        },
+        {
+            "CLC": "0",
+            "hasCLC": true,
+            "id": 3,
+            "label": "C"
+        }
+    ],
+    "run": {
+        "considerWeights": false,
+        "dropIsolates": false,
+        "inverseWeights": true
+    },
+    "schema_version": 6,
+    "triad_census": {
+        "classes": {
+            "003": 0,
+            "012": 0,
+            "021C": 0,
+            "021D": 0,
+            "021U": 0,
+            "030C": 0,
+            "030T": 0,
+            "102": 0,
+            "111D": 0,
+            "111U": 0,
+            "120C": 0,
+            "120D": 0,
+            "120U": 0,
+            "201": 1,
+            "210": 0,
+            "300": 0
+        },
+        "total_triads": 1
+    }
+}

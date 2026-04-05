@@ -1,0 +1,174 @@
+{
+    "cliques": {
+        "by_size": {
+            "1": 3,
+            "2": 7,
+            "3": 3
+        },
+        "max_clique_size": 3,
+        "total_cliques": 13
+    },
+    "counts": {
+        "links_sna": 57,
+        "nodes": 18,
+        "ties_graph": 57
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "Sampson_Monks_N18.net",
+        "path": "src/data/Sampson_Monks_N18.net"
+    },
+    "graph": {
+        "directed": true,
+        "weighted": false
+    },
+    "kernel": "clustering",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 3,
+        "load_msg": "",
+        "net_name": "Sampson_Monks_N18.net",
+        "ok": true
+    },
+    "metrics": {
+        "averageCLC": "0.34047619047619043",
+        "nodesWithCLC": 18
+    },
+    "per_node": [
+        {
+            "CLC": "0.33333333333333331",
+            "hasCLC": true,
+            "id": 1,
+            "label": "JohnBosco"
+        },
+        {
+            "CLC": "0.26190476190476192",
+            "hasCLC": true,
+            "id": 2,
+            "label": "Gregory"
+        },
+        {
+            "CLC": "0.25",
+            "hasCLC": true,
+            "id": 3,
+            "label": "Basil"
+        },
+        {
+            "CLC": "0.29999999999999999",
+            "hasCLC": true,
+            "id": 4,
+            "label": "Peter"
+        },
+        {
+            "CLC": "0.23333333333333334",
+            "hasCLC": true,
+            "id": 5,
+            "label": "Bonaventure"
+        },
+        {
+            "CLC": "0.58333333333333337",
+            "hasCLC": true,
+            "id": 6,
+            "label": "Berthold"
+        },
+        {
+            "CLC": "0.29999999999999999",
+            "hasCLC": true,
+            "id": 7,
+            "label": "Mark"
+        },
+        {
+            "CLC": "0.33333333333333331",
+            "hasCLC": true,
+            "id": 8,
+            "label": "Victor"
+        },
+        {
+            "CLC": "0.14999999999999999",
+            "hasCLC": true,
+            "id": 9,
+            "label": "Ambrose"
+        },
+        {
+            "CLC": "0.41666666666666669",
+            "hasCLC": true,
+            "id": 10,
+            "label": "Romuald"
+        },
+        {
+            "CLC": "0.25",
+            "hasCLC": true,
+            "id": 11,
+            "label": "Louis"
+        },
+        {
+            "CLC": "0.26666666666666666",
+            "hasCLC": true,
+            "id": 12,
+            "label": "Winifrid"
+        },
+        {
+            "CLC": "0.14999999999999999",
+            "hasCLC": true,
+            "id": 13,
+            "label": "Amand"
+        },
+        {
+            "CLC": "0.25",
+            "hasCLC": true,
+            "id": 14,
+            "label": "Hugh"
+        },
+        {
+            "CLC": "0.55000000000000004",
+            "hasCLC": true,
+            "id": 15,
+            "label": "Boniface"
+        },
+        {
+            "CLC": "0.66666666666666663",
+            "hasCLC": true,
+            "id": 16,
+            "label": "Albert"
+        },
+        {
+            "CLC": "0.5",
+            "hasCLC": true,
+            "id": 17,
+            "label": "Elias"
+        },
+        {
+            "CLC": "0.33333333333333331",
+            "hasCLC": true,
+            "id": 18,
+            "label": "Simplicius"
+        }
+    ],
+    "run": {
+        "considerWeights": false,
+        "dropIsolates": false,
+        "inverseWeights": true
+    },
+    "schema_version": 6,
+    "triad_census": {
+        "classes": {
+            "003": 293,
+            "012": 247,
+            "021C": 19,
+            "021D": 7,
+            "021U": 12,
+            "030C": 1,
+            "030T": 2,
+            "102": 165,
+            "111D": 27,
+            "111U": 13,
+            "120C": 4,
+            "120D": 7,
+            "120U": 1,
+            "201": 11,
+            "210": 4,
+            "300": 3
+        },
+        "total_triads": 816
+    }
+}

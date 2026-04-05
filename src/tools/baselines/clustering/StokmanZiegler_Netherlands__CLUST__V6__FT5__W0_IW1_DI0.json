@@ -1,0 +1,164 @@
+{
+    "cliques": {
+        "by_size": {
+            "1": 1,
+            "3": 1,
+            "4": 10,
+            "5": 4,
+            "6": 3
+        },
+        "max_clique_size": 6,
+        "total_cliques": 19
+    },
+    "counts": {
+        "links_sna": 120,
+        "nodes": 16,
+        "ties_graph": 120
+    },
+    "dataset": {
+        "filetype": 5,
+        "name": "Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl",
+        "path": "src/data/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl"
+    },
+    "graph": {
+        "directed": true,
+        "weighted": true
+    },
+    "kernel": "clustering",
+    "load_report": {
+        "fileType_signal": 5,
+        "load_ms": 1,
+        "load_msg": "",
+        "net_name": "Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl",
+        "ok": true
+    },
+    "metrics": {
+        "averageCLC": "0.60382846320346317",
+        "nodesWithCLC": 16
+    },
+    "per_node": [
+        {
+            "CLC": "0.51111111111111107",
+            "hasCLC": true,
+            "id": 1,
+            "label": "ABN"
+        },
+        {
+            "CLC": "0.51515151515151514",
+            "hasCLC": true,
+            "id": 2,
+            "label": "AMRO"
+        },
+        {
+            "CLC": "0.7142857142857143",
+            "hasCLC": true,
+            "id": 3,
+            "label": "ENNIA"
+        },
+        {
+            "CLC": "0.75",
+            "hasCLC": true,
+            "id": 4,
+            "label": "NS"
+        },
+        {
+            "CLC": "0.59999999999999998",
+            "hasCLC": true,
+            "id": 5,
+            "label": "BUHRT"
+        },
+        {
+            "CLC": "0.80000000000000004",
+            "hasCLC": true,
+            "id": 6,
+            "label": "AGO"
+        },
+        {
+            "CLC": "0.58181818181818179",
+            "hasCLC": true,
+            "id": 7,
+            "label": "AKZO"
+        },
+        {
+            "CLC": "0.72222222222222221",
+            "hasCLC": true,
+            "id": 8,
+            "label": "NB"
+        },
+        {
+            "CLC": "0.66666666666666663",
+            "hasCLC": true,
+            "id": 9,
+            "label": "SHV"
+        },
+        {
+            "CLC": "0.59999999999999998",
+            "hasCLC": true,
+            "id": 10,
+            "label": "FGH"
+        },
+        {
+            "CLC": "0.61904761904761907",
+            "hasCLC": true,
+            "id": 11,
+            "label": "HEINK"
+        },
+        {
+            "CLC": "0.58333333333333337",
+            "hasCLC": true,
+            "id": 12,
+            "label": "PHLPS"
+        },
+        {
+            "CLC": "0.8571428571428571",
+            "hasCLC": true,
+            "id": 13,
+            "label": "NATND"
+        },
+        {
+            "CLC": "0.53333333333333333",
+            "hasCLC": true,
+            "id": 14,
+            "label": "OGEM"
+        },
+        {
+            "CLC": "0.6071428571428571",
+            "hasCLC": true,
+            "id": 15,
+            "label": "RSV"
+        },
+        {
+            "CLC": "0",
+            "hasCLC": true,
+            "id": 16,
+            "label": "NSU"
+        }
+    ],
+    "run": {
+        "considerWeights": false,
+        "dropIsolates": false,
+        "inverseWeights": true
+    },
+    "schema_version": 6,
+    "triad_census": {
+        "classes": {
+            "003": 75,
+            "012": 0,
+            "021C": 0,
+            "021D": 0,
+            "021U": 0,
+            "030C": 0,
+            "030T": 0,
+            "102": 223,
+            "111D": 0,
+            "111U": 0,
+            "120C": 0,
+            "120D": 0,
+            "120U": 0,
+            "201": 169,
+            "210": 0,
+            "300": 93
+        },
+        "total_triads": 560
+    }
+}
