@@ -40,7 +40,7 @@
  *  - A linear cooling schedule decreases c4 from c4_init to c4_min over maxIterations,
  *    damping displacement progressively so the layout settles rather than oscillating.
  *  - Early exit when max displacement in an iteration falls below epsilon (convergence).
- * 
+ *
  */
 void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations)
 {
@@ -50,14 +50,14 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations)
     // staying close to the original spirit. The displacement cap in
     // layoutForceDirected_Eades_moveNodes() prevents early-iteration explosions.
     const qreal c4_init = 0.10;
-    const qreal c4_min  = 0.01;
+    const qreal c4_min = 0.01;
 
     // --- Force constants ---
     // Faithful to Eades (1984): c1=2, c3=1 in his notation.
     // c_spring (c1): logarithmic spring stiffness for adjacent pairs.
     // c_rep (c3): inverse-square repulsion strength for all pairs.
     const qreal c_spring = 2.0;
-    const qreal c_rep    = 1.0;
+    const qreal c_rep = 1.0;
 
     // --- Convergence threshold ---
     // Exit early when the largest single-node displacement in an iteration
@@ -96,17 +96,20 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations)
     // This avoids N² × maxIterations calls to edgeExists() (which is O(log N))
     // inside the inner loop. We cache both directions so the undirected case
     // is handled transparently.
-    QSet<QPair<int,int>> adjCache;
+    QSet<QPair<int, int>> adjCache;
     adjCache.reserve(edgesEnabled() * 2);
     for (v1 = m_graph.cbegin(); v1 != m_graph.cend(); ++v1)
     {
-        if (!(*v1)->isEnabled()) continue;
+        if (!(*v1)->isEnabled())
+            continue;
         int s = (*v1)->number();
         for (v2 = m_graph.cbegin(); v2 != m_graph.cend(); ++v2)
         {
-            if (!(*v2)->isEnabled()) continue;
+            if (!(*v2)->isEnabled())
+                continue;
             int t = (*v2)->number();
-            if (s == t) continue;
+            if (s == t)
+                continue;
             if (edgeExists(s, t))
                 adjCache.insert(qMakePair(s, t));
         }
@@ -125,8 +128,7 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations)
     {
         // Linear cooling: c4 decreases from c4_init at iteration 1
         // to c4_min at iteration maxIterations.
-        const qreal c4 = c4_init - (c4_init - c4_min)
-                         * (qreal(iteration - 1) / qreal(maxIterations - 1));
+        const qreal c4 = c4_init - (c4_init - c4_min) * (qreal(iteration - 1) / qreal(maxIterations - 1));
 
         // Reset displacement vectors for all vertices
         for (v1 = m_graph.cbegin(); v1 != m_graph.cend(); ++v1)
@@ -262,18 +264,44 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations)
     // we add vertexWidth to it
     qreal optimalDistance = C * computeOptimalDistance(V);
 
+    // Convergence threshold: exit early when no node moves more than epsilon pixels.
+    const qreal epsilon = 2.0;
+
     VList::const_iterator v1, v2;
     int iteration = 1;
 
-    /* apply an initial circular layout */
-    // layoutCircular(canvasWidth/2.0, canvasHeight/2.0, optimalDistance/2.0,false);
-    // layoutRandom();
+    // Apply an initial random layout, same as Eades.
+    // Ensures FR never starts from a stale or degenerate position state.
+    layoutRandomInMemory();
 
     qDebug() << "Graph: layoutForceDirectedFruchtermanReingold() ";
     qDebug() << "Graph: Setting optimalDistance = " << optimalDistance
              << "...following Fruchterman-Reingold (1991) formula ";
 
     qDebug() << "Graph: canvasWidth " << canvasWidth << " canvasHeight " << canvasHeight;
+
+    // Pre-cache adjacency into a flat QSet for O(1) edge existence lookup.
+    // Avoids N² × maxIterations calls to edgeExists() (O(log N) each)
+    // inside the inner loop. Both directions cached for undirected transparency.
+    QSet<QPair<int, int>> adjCache;
+    adjCache.reserve(edgesEnabled() * 2);
+    for (v1 = m_graph.cbegin(); v1 != m_graph.cend(); ++v1)
+    {
+        if (!(*v1)->isEnabled())
+            continue;
+        int s = (*v1)->number();
+        for (v2 = m_graph.cbegin(); v2 != m_graph.cend(); ++v2)
+        {
+            if (!(*v2)->isEnabled())
+                continue;
+            int t = (*v2)->number();
+            if (s == t)
+                continue;
+            if (edgeExists(s, t))
+                adjCache.insert(qMakePair(s, t));
+        }
+    }
+    qDebug() << "layoutForceDirectedFruchtermanReingold() - adjCache size" << adjCache.size();
 
     QString pMsg = tr("Embedding Fruchterman & Reingold forces model. \n"
                       "Please wait ...");
@@ -294,75 +322,52 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations)
 
         for (v1 = m_graph.cbegin(); v1 != m_graph.cend(); ++v1)
         {
-            //            qDebug() << "*****  Calculate forces for s " << (*v1)->number()
-            //                     << " vpos " <<  vpos[(*v1)->number()]
-            //                     << " pos "<< (*v1)->x() << ", "<< (*v1)->y();
-
             if (!(*v1)->isEnabled())
-            {
-                //                qDebug() << "  vertex s " << (*v1)->number() << " disabled. Continue";
                 continue;
-            }
+
+            // Cache source vertex number once — avoids repeated iterator
+            // dereferences inside the O(N) inner loop.
+            const int s = (*v1)->number();
 
             for (v2 = m_graph.cbegin(); v2 != m_graph.cend(); ++v2)
             {
-                //                qDebug () << "  t = "<< (*v2)->number()
-                //                          << "  pos (" <<  (*v2)->x() << "," << (*v2)->y() << ")";
-
                 if (!(*v2)->isEnabled())
-                {
-                    //                    qDebug()<< " t "<< (*v2)->number()<< " disabled. Continue";
                     continue;
-                }
 
                 if (v2 == v1)
-                {
-                    //                    qDebug() << "  s==t, continuing";
                     continue;
-                }
+
+                // Cache target vertex number once per inner iteration.
+                const int t = (*v2)->number();
 
                 DV.setX((*v2)->x() - (*v1)->x());
                 DV.setY((*v2)->y() - (*v1)->y());
 
                 dist = graphDistanceEuclidean(DV);
 
-                // calculate repulsive force from _near_ vertices
+                // Repulsive force — all pairs
                 f_rep = layoutForceDirected_F_rep("FR", dist, optimalDistance);
                 (*v1)->disp().rx() += sign(DV.x()) * f_rep;
                 (*v1)->disp().ry() += sign(DV.y()) * f_rep;
 
-                //                qDebug()<< " dist( " << (*v1)->number() <<  "," <<  (*v2)->number() <<  " = "
-                //                        << dist
-                //                        << " f_rep " << f_rep
-                //                        << " disp_s.x="<< (*v1)->disp().rx()
-                //                        << " disp_s.y="<< (*v1)->disp().ry();
-
-                if (edgeExists((*v1)->number(), (*v2)->number()))
+                // Attractive (spring) force — adjacent pairs only.
+                // O(1) lookup via pre-cached QSet
+                if (adjCache.contains(qMakePair(s, t)))
                 {
-                    // calculate attracting force
                     f_att = layoutForceDirected_F_att("FR", dist, optimalDistance);
                     (*v1)->disp().rx() += sign(DV.x()) * f_att;
                     (*v1)->disp().ry() += sign(DV.y()) * f_att;
                     (*v2)->disp().rx() -= sign(DV.x()) * f_att;
                     (*v2)->disp().ry() -= sign(DV.y()) * f_att;
-
-                    qDebug() << "  s= " << (*v1)->number()
-                             << " attracted by t= " << (*v2)->number()
-                             << "  optimalDistance =" << optimalDistance
-                             << " f_att " << f_att
-                             << " disp_s.x=" << (*v1)->disp().rx()
-                             << " disp_s.y=" << (*v1)->disp().ry()
-                             << " disp_t.x=" << (*v2)->disp().rx()
-                             << " disp_t.y=" << (*v2)->disp().ry();
-                } // endif
+                }
 
             } // end for v2
 
         } // end for v1
 
-        // limit the max displacement to the temperature t
-        // prevent placement outside of the frame/canvas
-        layoutForceDirected_FR_moveNodes(layoutForceDirected_FR_temperature(iteration));
+        // Limit displacement to temperature; track max displacement for convergence.
+        const qreal maxDisp = layoutForceDirected_FR_moveNodes(
+            layoutForceDirected_FR_temperature(iteration));
 
         progressUpdate(++progressCounter);
         if (progressCanceled())
@@ -370,10 +375,20 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations)
             progressFinish();
             setModStatus(ModStatus::VertexPositions);
             return;
-        }        
+        }
+
+        qDebug() << "  iteration" << iteration << " maxDisp=" << maxDisp;
+
+        // Early exit: layout has converged when no node moved more than epsilon pixels.
+        if (maxDisp < epsilon)
+        {
+            qDebug() << "layoutForceDirectedFruchtermanReingold() - converged at iteration"
+                     << iteration << " maxDisp=" << maxDisp;
+            break;
+        }
     }
 
-        // Emit all final node positions in one bulk pass now that the
+    // Emit all final node positions in one bulk pass now that the
     // iteration loop is complete — avoids N×maxIterations signal emissions.
     for (v1 = m_graph.cbegin(); v1 != m_graph.cend(); ++v1)
     {
@@ -382,7 +397,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations)
 
     progressFinish();
 
-    setModStatus(ModStatus::VertexPositions);  // was missing on normal exit path
+    setModStatus(ModStatus::VertexPositions); // was missing on normal exit path
 }
 
 /**
@@ -535,8 +550,10 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
         VList::const_iterator vit;
         for (vit = m_graph.cbegin(); vit != m_graph.cend(); ++vit)
         {
-            if (!(*vit)->isEnabled()) continue;
-            if (dropIsolates && (*vit)->isIsolated()) continue;
+            if (!(*vit)->isEnabled())
+                continue;
+            if (dropIsolates && (*vit)->isIsolated())
+                continue;
             kkIdx[(*vit)->number()] = seq++;
         }
     }
@@ -660,11 +677,11 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
                 partDrvtEx_m = partDrvtEx;
                 partDrvtEy_m = partDrvtEy;
 
-                pnm = pn;    // store name of particle satisfying Delta_m = max Delta_i
-                pm = m;      // store kkIdx of particle satisfying Delta_m = max Delta_i
+                pnm = pn;       // store name of particle satisfying Delta_m = max Delta_i
+                pm = m;         // store kkIdx of particle satisfying Delta_m = max Delta_i
                 pmVpos = mVpos; // store m_graph index of same particle
-                xpm = xm;    // store particle x pos
-                ypm = ym;    // store particle y pos
+                xpm = xm;       // store particle x pos
+                ypm = ym;       // store particle y pos
             }
 
         } // end v1 for loop
@@ -775,24 +792,13 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
 
             //            qDebug () << "m"<< m << " current m pos " << xm << ym << " new m pos " << xm +dx << ym+dy;
 
-            if ((xm + dx) < 50 || (xm + dx) > (canvasWidth - 50))
-            {
-                //                qDebug () << "new xm out of canvas, setting random x";
-                xm = canvasRandomX();
-            }
-            else
-            {
-                xm = xm + dx;
-            }
-            if ((ym + dy) < 50 || (ym + dy) > (canvasHeight - 50))
-            {
-                //                qDebug() <<  "new ym out of canvas, setting random y";
-                ym = canvasRandomY();
-            }
-            else
-            {
-                ym = ym + dy;
-            }
+            // Clamp new position to visible canvas area.
+            // Previously used canvasRandomX/Y() as fallback — a random teleport
+            // that introduced noise for large graphs with many out-of-bounds particles.
+            // canvasVisibleX/Y() clamps to the valid range, consistent with all
+            // other moveNodes functions.
+            xm = canvasVisibleX(xm + dx);
+            ym = canvasVisibleY(ym + dy);
 
             qDebug() << "m" << m << " new m pos " << xm << ym;
 
@@ -811,7 +817,6 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
 
         m_graph[mVpos]->setX(xm);
         m_graph[mVpos]->setY(ym);
-
 
     } // end while (Delta_max > epsilon) {
 
@@ -1073,7 +1078,6 @@ qreal Graph::graphDistanceEuclidean(const QPointF &a)
         a.y() * a.y());
 }
 
-
 /**
  * @brief Moves all vertices to their new positions as computed by the Eades Spring Embedder model.
  *
@@ -1131,8 +1135,10 @@ qreal Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4)
 
         // Fix Qt sub-pixel rounding: a fractional positive displacement < 1
         // gets floored to 0 by integer QPoint conversion; bump it to 1.
-        if (xvel < 1 && xvel > 0) xvel = 1;
-        if (yvel < 1 && yvel > 0) yvel = 1;
+        if (xvel < 1 && xvel > 0)
+            xvel = 1;
+        if (yvel < 1 && yvel > 0)
+            yvel = 1;
 
         // Track largest displacement for convergence detection in the caller
         qreal disp = qSqrt(xvel * xvel + yvel * yvel);
@@ -1172,36 +1178,37 @@ qreal Graph::layoutForceDirected_Eades_moveNodes(const qreal &c4)
  * @param temperature Current annealing temperature, controlling the maximum displacement
  *                    per iteration. Computed by layoutForceDirected_FR_temperature().
  */
-void Graph::layoutForceDirected_FR_moveNodes(const qreal &temperature)
+qreal Graph::layoutForceDirected_FR_moveNodes(const qreal &temperature)
 {
-
     qDebug() << "\n\n *****  layoutForceDirected_FR_moveNodes() \n\n ";
     qDebug() << " temperature " << temperature;
     QPointF newPos;
     qreal xvel = 0, yvel = 0;
+    qreal maxDisp = 0;
     VList::const_iterator v1;
 
     for (v1 = m_graph.cbegin(); v1 != m_graph.cend(); ++v1)
     {
-        // compute the new position
-        // limit the maximum displacement to a maximum temperature
+        // Limit displacement to the current temperature (simulated annealing cap)
         xvel = sign((*v1)->disp().rx()) * qMin(qAbs((*v1)->disp().rx()), temperature);
         yvel = sign((*v1)->disp().ry()) * qMin(qAbs((*v1)->disp().ry()), temperature);
+
+        // Track largest displacement for convergence detection in the caller
+        qreal disp = qSqrt(xvel * xvel + yvel * yvel);
+        if (disp > maxDisp)
+            maxDisp = disp;
+
         newPos = QPointF((*v1)->x() + xvel, (*v1)->y() + yvel);
+
         qDebug() << " source vertex v1 " << (*v1)->number()
                  << " current pos: (" << (*v1)->x() << "," << (*v1)->y() << ")"
-                 << "Possible new pos (" << newPos.x() << ","
-                 << newPos.y() << ")";
+                 << " new pos (" << newPos.x() << "," << newPos.y() << ")";
 
         newPos.rx() = canvasVisibleX(newPos.x());
         newPos.ry() = canvasVisibleY(newPos.y());
 
-        // Move node to new position
-        qDebug() << " final new pos "
-                 << newPos.x() << ","
-                 << newPos.y() << ")";
         (*v1)->setX(newPos.x());
         (*v1)->setY(newPos.y());
-
     }
+    return maxDisp;
 }

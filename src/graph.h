@@ -1144,7 +1144,7 @@ public:
 
     qreal layoutForceDirected_Eades_moveNodes(const qreal &c4);
 
-    void layoutForceDirected_FR_moveNodes(const qreal &temperature);
+    qreal layoutForceDirected_FR_moveNodes(const qreal &temperature);
 
     qreal layoutForceDirected_FR_temperature(const int iteration) const;
 
