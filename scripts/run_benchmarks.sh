@@ -5,6 +5,9 @@ set -euo pipefail
 #
 # Usage:
 #   ./scripts/run_benchmarks.sh
+#   ./scripts/run_benchmarks.sh --type distance
+#   ./scripts/run_benchmarks.sh --type io
+#   ./scripts/run_benchmarks.sh --type clustering
 #   ./scripts/run_benchmarks.sh --strict
 #   ./scripts/run_benchmarks.sh --record
 #   SOCNETV_CLI=./build/socnetv-cli ./scripts/run_benchmarks.sh
@@ -16,14 +19,32 @@ set -euo pipefail
 
 RECORD=0
 STRICT=0
+BENCH_TYPE="all"   # all|distance|io|clustering
+LARGE_NETS_DIR="${HOME}/socnetv/library/nets/large"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --strict) STRICT=1; shift ;;
     --record) RECORD=1; shift ;;
-    *) break ;;
+    --type)
+      [[ $# -ge 2 ]] || { echo "ERROR: --type requires an argument" >&2; exit 2; }
+      BENCH_TYPE="$2"
+      shift 2
+      ;;
+    *)
+      echo "ERROR: unknown argument: $1" >&2
+      exit 2
+      ;;
   esac
 done
+
+case "$BENCH_TYPE" in
+  all|distance|io|clustering) ;;
+  *)
+    echo "ERROR: invalid --type: $BENCH_TYPE (expected: all|distance|io|clustering)" >&2
+    exit 2
+    ;;
+esac
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
@@ -277,63 +298,133 @@ run_case() {
 
 fail=0
 
+should_run_type() {
+  local wanted="$1"
+  if [[ "$BENCH_TYPE" == "$wanted" ]]; then
+    return 0
+  fi
+
+  if [[ "$BENCH_TYPE" == "all" ]]; then
+    [[ "$wanted" == "distance" || "$wanted" == "io" ]]
+    return
+  fi
+
+  return 1
+}
+
 # ---------------- benchmark cases ----------------
 # NOTE: CLI enforces --bench only for --kernel distance (default kernel is distance).
 
-# Medium (UCINET time_1)
-run_case "EIES48_T1_C1_W1" \
-  -i "$ROOT_DIR/src/data/Freeman_EIES_network_48actors_Acquaintanceship_at_time_1.dl" \
-  -f 5 -c 1 -w 1 -x 1 -k 0 --bench 20 || fail=1
+if should_run_type distance; then
 
-# Medium (UCINET time_2)
-run_case "EIES48_T2_C1_W1" \
-  -i "$ROOT_DIR/src/data/Freeman_EIES_network_48actors_Acquaintanceship_at_time_2.dl" \
-  -f 5 -c 1 -w 1 -x 1 -k 0 --bench 20 || fail=1
+  # Medium (UCINET time_1)
+  run_case "EIES48_T1_C1_W1" \
+    -i "$ROOT_DIR/src/data/Freeman_EIES_network_48actors_Acquaintanceship_at_time_1.dl" \
+    -f 5 -c 1 -w 1 -x 1 -k 0 --bench 20 || fail=1
 
-# Large BA (500, m=3), centralities ON
-run_case "BA500_M3_C1_W0" \
-  -i "$ROOT_DIR/src/data/Benchmark_BA_Directed_N500_m3.paj" \
-  -f 2 -c 1 -w 0 -x 1 -k 0 --bench 20 || fail=1
+  # Medium (UCINET time_2)
+  run_case "EIES48_T2_C1_W1" \
+    -i "$ROOT_DIR/src/data/Freeman_EIES_network_48actors_Acquaintanceship_at_time_2.dl" \
+    -f 5 -c 1 -w 1 -x 1 -k 0 --bench 20 || fail=1
 
-# Large BA (500, m=3), distances only
-run_case "BA500_M3_C0_W0" \
-  -i "$ROOT_DIR/src/data/Benchmark_BA_Directed_N500_m3.paj" \
-  -f 2 -c 0 -w 0 -x 1 -k 0 --bench 20 || fail=1
+  # Large BA (500, m=3), centralities ON
+  run_case "BA500_M3_C1_W0" \
+    -i "$ROOT_DIR/src/data/Benchmark_BA_Directed_N500_m3.paj" \
+    -f 2 -c 1 -w 0 -x 1 -k 0 --bench 20 || fail=1
 
-LARGE_NETS_DIR="${HOME}/socnetv/library/nets/large"
+  # Large BA (500, m=3), distances only
+  run_case "BA500_M3_C0_W0" \
+    -i "$ROOT_DIR/src/data/Benchmark_BA_Directed_N500_m3.paj" \
+    -f 2 -c 0 -w 0 -x 1 -k 0 --bench 20 || fail=1
 
-# ---------------- large-net distance benchmark cases ----------------
-# Only run if ~/socnetv/library/nets/large/ exists (not shipped with repo).
-# BA500 cases above are always the CI-reproducible fallback.
+  # ---------------- large-net distance benchmark cases ----------------
+  # Only run if ~/socnetv/library/nets/large/ exists (not shipped with repo).
+  # BA500 cases above are always the CI-reproducible fallback.
 
-if [[ -d "$LARGE_NETS_DIR" ]]; then
-  run_case "DIST_GRAPHML_1000N_10000A_C0_W0" \
-    -i "$LARGE_NETS_DIR/1000actors-10000arcs.graphml" \
-    -f 1 -c 0 -w 0 -x 1 -k 0 --bench 2 || fail=1
+  if [[ -d "$LARGE_NETS_DIR" ]]; then
+    run_case "DIST_GRAPHML_1000N_10000A_C0_W0" \
+      -i "$LARGE_NETS_DIR/1000actors-10000arcs.graphml" \
+      -f 1 -c 0 -w 0 -x 1 -k 0 --bench 2 || fail=1
 
-  run_case "DIST_GRAPHML_1000N_10000A_C1_W0" \
-    -i "$LARGE_NETS_DIR/1000actors-10000arcs.graphml" \
-    -f 1 -c 1 -w 0 -x 1 -k 0 --bench 2 || fail=1
+    run_case "DIST_GRAPHML_1000N_10000A_C1_W0" \
+      -i "$LARGE_NETS_DIR/1000actors-10000arcs.graphml" \
+      -f 1 -c 1 -w 0 -x 1 -k 0 --bench 2 || fail=1
 
-else
-  echo "[bench] LARGE_NETS_DIR not found ($LARGE_NETS_DIR), skipping large-net distance benchmarks" >&2
+  else
+    echo "[bench] LARGE_NETS_DIR not found ($LARGE_NETS_DIR), skipping large-net distance benchmarks" >&2
+  fi
+
 fi
 
 # ---------------- IO roundtrip benchmark cases ----------------
 # Only large nets (N>=50) are meaningful for IO timing.
 # Uses ~/socnetv/library/nets/large/ if available, falls back to src/data/.
+if should_run_type io; then
+  # Always run the shipped dataset (reproducible in CI)
+  run_case_io_bench "IO_PAJ_BA500" \
+    "$ROOT_DIR/src/data/Benchmark_BA_Directed_N500_m3.paj" 2 || fail=1
 
-# Always run the shipped dataset (reproducible in CI)
-run_case_io_bench "IO_PAJ_BA500" \
-  "$ROOT_DIR/src/data/Benchmark_BA_Directed_N500_m3.paj" 2 || fail=1
+  if [[ -d "$LARGE_NETS_DIR" ]]; then
+    run_case_io_bench "IO_GRAPHML_2000N_40000E" \
+      "$LARGE_NETS_DIR/2000actors-40000edges.graphml" 1 || fail=1
+    run_case_io_bench "IO_GRAPHML_1000N_10000A" \
+      "$LARGE_NETS_DIR/1000actors-10000arcs.graphml" 1 || fail=1
+  else
+    echo "[bench] LARGE_NETS_DIR not found ($LARGE_NETS_DIR), skipping large-net IO benchmarks" >&2
+  fi
+fi
 
-if [[ -d "$LARGE_NETS_DIR" ]]; then
-  run_case_io_bench "IO_GRAPHML_2000N_40000E" \
-    "$LARGE_NETS_DIR/2000actors-40000edges.graphml" 1 || fail=1
-  run_case_io_bench "IO_GRAPHML_1000N_10000A" \
-    "$LARGE_NETS_DIR/1000actors-10000arcs.graphml" 1 || fail=1
-else
-  echo "[bench] LARGE_NETS_DIR not found ($LARGE_NETS_DIR), skipping large-net IO benchmarks" >&2
+# ---------------- optional clustering timing (non-bench) ----------------
+# NOTE:
+# - clustering kernel does NOT support --bench
+# - this is informational timing only (single run)
+# - not enforced in STRICT mode
+# - runs only with --type clustering
+
+run_case_clustering() {
+  local tag="$1"
+  shift
+
+  echo "=== $tag ==="
+
+  local start end ms out ok
+  start=$(date +%s%3N 2>/dev/null || date +%s)
+
+  if ! out="$("$SOCNETV_CLI" --kernel clustering "$@" 2>/dev/null)"; then
+    echo "ERROR: socnetv-cli failed for $tag" >&2
+    return 2
+  fi
+
+  end=$(date +%s%3N 2>/dev/null || date +%s)
+
+  if [[ ${#start} -le 10 ]]; then
+    ms=$(( (end - start) * 1000 ))
+  else
+    ms=$(( end - start ))
+  fi
+
+  ok="$(printf '%s\n' "$out" | extract_kv_int LOAD_OK | tail -n1)"
+
+  echo "OK=$ok CLUSTERING_MS=$ms"
+
+  if [[ "$ok" != "1" ]]; then
+    echo "ERROR: clustering run failed for $tag" >&2
+    return 2
+  fi
+
+  return 0
+}
+
+if should_run_type clustering; then
+  echo "[bench] Running clustering timing probes (informational only)" >&2
+
+  run_case_clustering "CLUST_KITE_N10" \
+    -i "$ROOT_DIR/src/data/Krackhardt_Kite_N10.paj" \
+    -f 2 -w 0 -x 1 -k 0 || fail=1
+
+  run_case_clustering "CLUST_SAMPSON_N18" \
+    -i "$ROOT_DIR/src/data/Sampson_Monks_N18.net" \
+    -f 2 -w 0 -x 1 -k 0 || fail=1
 fi
 
 echo "=== DONE ==="

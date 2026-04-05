@@ -14,7 +14,7 @@ Benchmarks **do not validate correctness** — correctness is enforced by golden
 
 # What Is Being Benchmarked
 
-The benchmark harness executes two kinds of cases:
+The benchmark harness executes three benchmark families:
 
 ## Distance / Centrality (schema v1)
 
@@ -53,7 +53,59 @@ Large-net cases (run only if `~/socnetv/library/nets/large/` exists):
 
 Other kernels (reachability, walks_matrix, prominence) are validated for correctness only, not performance.
 
+## Optional Clustering Timing (schema v6, informational)
+
+Benchmarks `--kernel clustering` wall-clock timing for selected datasets.
+
+Important:
+
+- clustering timing does **not** use `--bench`
+- timings are single-run, wall-clock measurements
+- results are **informational only**
+- they are **not enforced** against performance baselines
+- they are **disabled by default**
+
+Enable them with:
+
+```bash
+BENCH_CLUSTERING=1 ./scripts/run_benchmarks.sh --type clustering
+```
+
+Current shipped clustering timing probes:
+
+- `CLUST_KITE_N10` — Krackhardt Kite N=10
+- `CLUST_SAMPSON_N18` — Sampson Monks N=18
+
+Rationale:
+
+- The clustering kernel does not currently support deterministic multi-run benchmarking (`--bench`).
+- clique enumeration and triad census are still useful to time locally
+- this gives trend visibility without introducing noisy CI failures
+
+
 ---
+
+
+# Benchmark Type Selection
+
+Use `--type` to select which benchmark family to run:
+
+- `--type distance` → run only distance / centrality benchmarks
+- `--type io` → run only IO timing benchmarks
+- `--type clustering` → run only optional clustering timing probes
+- `--type all` → run all applicable benchmark families (default)
+
+Examples:
+
+```bash
+./scripts/run_benchmarks.sh --type distance
+./scripts/run_benchmarks.sh --type io
+BENCH_CLUSTERING=1 ./scripts/run_benchmarks.sh --type clustering
+./scripts/run_benchmarks.sh --type all
+```
+
+---
+
 
 # Baseline Selection (Machine-Aware)
 
@@ -124,6 +176,8 @@ The tolerance is +10%.
 For distance cases, `actual` is the **median compute time** over N runs (`--bench N`).
 For IO cases, `actual` is the **single load time** (`LOAD_MS`). IO baselines with
 `expected == 0ms` are skipped automatically (too fast to measure reliably).
+
+Strict regression enforcement applies to distance and IO benchmarks only. Optional clustering timing probes are informational and are not baseline-enforced.
 
 IO timing regression enforcement is also available at the kernel level via
 `socnetv-cli --strict` (applies `checkIoTimings()` inside `compareGoldenV5Io()`).
@@ -203,3 +257,9 @@ To revert to a previous baseline:
 
 * Restore the relevant `scripts/perf_baselines/<set>/perf_expected.env` from git history.
 * Or delete the set directory and re-record with `--record`.
+
+
+# Future Work:
+
+Clustering benchmarks may evolve to support deterministic multi-run timing
+(bench mode) once kernel_v6 exposes stable iteration semantics.
