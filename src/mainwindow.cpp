@@ -15252,7 +15252,8 @@ void MainWindow::createFortuneCookies(){
     fortuneCookie+="Jupiter and Saturn, Oberon, Miranda <br />"
                    "And Titania, Neptune, Titan. <br />"
                    "Stars can frighten. <br /> Syd Barrett";
-
+    fortuneCookie += "In theory, there is no difference between theory and practice. <br /> "
+                     "In practice, there is. <br /> --Yogi Berra";
 }
 
 
