@@ -628,3 +628,105 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
 
     prominenceDistribution(prominenceIndex, m_reportsChartType);
 }
+
+
+/**
+ * @brief Ego-centered radial layout.
+ *
+ * Places @p egoVertex at the canvas center, its 1-hop out-neighbors (in the
+ * current relation) on an inner ring, and all remaining enabled nodes on an
+ * outer ring. Only node positions are changed — graph structure is untouched.
+ *
+ * Ring radii are fixed fractions of canvasMaxRadius():
+ *   ring1 = 0.35 × maxRadius  (ego neighbors)
+ *   ring2 = 0.75 × maxRadius  (all other nodes)
+ *
+ * Edge case: if @p egoVertex does not exist, emits a status message and returns.
+ *
+ * @param egoVertex  The vertex number to place at the center.
+ */
+void Graph::layoutEgoRadial(const int egoVertex)
+{
+    qDebug() << "Graph::layoutEgoRadial() - ego:" << egoVertex;
+
+    if (!vertexExists(egoVertex))
+    {
+        progressStatus(tr("Ego radial layout: vertex %1 not found.").arg(egoVertex));
+        return;
+    }
+
+    const int N = vertices();
+    const double x0 = canvasWidth / 2.0;
+    const double y0 = canvasHeight / 2.0;
+    const double maxRadius = canvasMaxRadius();
+    const double ring1Radius = maxRadius * 0.35;
+    const double ring2Radius = maxRadius * 0.75;
+
+    // --- Build neighbor set: all enabled out-edges of ego in current relation ---
+    const QSet<int> neighbors = vertexOutNeighborsSet(egoVertex);
+
+    qDebug() << "Graph::layoutEgoRadial() - neighbors:" << neighbors.size()
+             << "other nodes:" << (N - 1 - neighbors.size());
+
+    QString pMsg = tr("Embedding Ego Radial layout. \nPlease wait...");
+    progressStatus(pMsg);
+    progressCreate(N, pMsg);
+    int progressCounter = 0;
+
+    // --- Place ego at center ---
+    m_graph[vpos[egoVertex]]->setX(x0);
+    m_graph[vpos[egoVertex]]->setY(y0);
+    emit setNodePos(egoVertex, x0, y0);
+    progressUpdate(++progressCounter);
+
+    // --- Place neighbors evenly on ring1 ---
+    const int ring1Count = neighbors.size();
+    if (ring1Count > 0)
+    {
+        const double ring1Step = 2.0 * M_PI / ring1Count;
+        int i = 0;
+        for (const int neighbor : neighbors)
+        {
+            const double new_x = canvasVisibleX(x0 + ring1Radius * cos(i * ring1Step));
+            const double new_y = canvasVisibleY(y0 + ring1Radius * sin(i * ring1Step));
+            m_graph[vpos[neighbor]]->setX(new_x);
+            m_graph[vpos[neighbor]]->setY(new_y);
+            emit setNodePos(neighbor, new_x, new_y);
+            progressUpdate(++progressCounter);
+            ++i;
+        }
+        emit addGuideCircle(x0, y0, ring1Radius);
+    }
+
+    // --- Place remaining enabled nodes on ring2 ---
+    // Collect them first so we know the count for even spacing.
+    QList<int> ring2Nodes;
+    VList::const_iterator it;
+    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    {
+        if (!(*it)->isEnabled()) continue;
+        const int vnum = (*it)->number();
+        if (vnum == egoVertex) continue;
+        if (neighbors.contains(vnum)) continue;
+        ring2Nodes.append(vnum);
+    }
+
+    const int ring2Count = ring2Nodes.size();
+    if (ring2Count > 0)
+    {
+        const double ring2Step = 2.0 * M_PI / ring2Count;
+        for (int i = 0; i < ring2Count; ++i)
+        {
+            const double new_x = canvasVisibleX(x0 + ring2Radius * cos(i * ring2Step));
+            const double new_y = canvasVisibleY(y0 + ring2Radius * sin(i * ring2Step));
+            m_graph[vpos[ring2Nodes[i]]]->setX(new_x);
+            m_graph[vpos[ring2Nodes[i]]]->setY(new_y);
+            emit setNodePos(ring2Nodes[i], new_x, new_y);
+            progressUpdate(++progressCounter);
+        }
+        emit addGuideCircle(x0, y0, ring2Radius);
+    }
+
+    progressFinish();
+    setModStatus(ModStatus::VertexPositions);
+}

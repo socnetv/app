@@ -72,6 +72,52 @@ QSet<int> Graph::vertexReciprocalNeighborsSet(const int &v1)
 }
 
 /**
+ * @brief Returns the set of all 1-hop neighbors of vertex v1 in the current relation.
+ *
+ * By default returns only out-neighbors (vertices reachable via enabled out-edges).
+ * When @p includeInEdges is true, also includes in-neighbors (vertices that have
+ * an enabled out-edge to v1), giving the full set of adjacent nodes regardless
+ * of edge direction.
+ *
+ * Only edges in the current relation that are enabled are considered.
+ *
+ * @param v1             The vertex number to query.
+ * @param includeInEdges If true, union of out- and in-neighbors is returned.
+ *                       Default: false (out-neighbors only).
+ * @return               QSet<int> of neighbor vertex numbers.
+ */
+QSet<int> Graph::vertexOutNeighborsSet(const int &v1, const bool includeInEdges)
+{
+    QSet<int> neighbors;
+
+    const GraphVertex *v = m_graph[vpos[v1]];
+
+    // Out-edges: always included
+    H_edges::const_iterator it = v->m_outEdges.constBegin();
+    while (it != v->m_outEdges.constEnd())
+    {
+        if (it.value().first == m_curRelation && it.value().second.second == true)
+            neighbors.insert(it.key());
+        ++it;
+    }
+
+    // In-edges: included only when requested
+    if (includeInEdges)
+    {
+        it = v->m_inEdges.constBegin();
+        while (it != v->m_inEdges.constEnd())
+        {
+            if (it.value().first == m_curRelation && it.value().second.second == true)
+                neighbors.insert(it.key());
+            ++it;
+        }
+    }
+
+    return neighbors;
+}
+
+
+/**
  * @brief Gets the graph density (if computed) or computes it again.
  *
  * The graph density is the ratio of present ties to total possible ties

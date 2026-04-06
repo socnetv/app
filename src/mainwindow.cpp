@@ -1911,6 +1911,12 @@ void MainWindow::initActions(){
                 tr("Random Circles Layout\n\n Repositions the nodes randomly on circles"));
     connect(layoutRandomRadialAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialRandom()));
 
+    layoutEgoRadialAct = new QAction(tr("Ego Radial layout"), this);
+    layoutEgoRadialAct->setShortcut(QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_E));
+    layoutEgoRadialAct->setStatusTip(tr("Place the selected vertex at center, its neighbors on an inner ring, all others on an outer ring"));
+    layoutEgoRadialAct->setWhatsThis(tr("Ego Radial Layout\n\nPlaces the selected vertex at the canvas center, its 1-hop out-neighbors on an inner ring, and all remaining nodes on an outer ring."));
+    connect(layoutEgoRadialAct, SIGNAL(triggered()), this, SLOT(slotLayoutEgoRadial()));
+
 
 
 
@@ -4044,6 +4050,8 @@ void MainWindow::initMenuBar() {
     layoutForceDirectedMenu->addAction (layoutFDP_FR_Act);
     layoutForceDirectedMenu->addAction (layoutFDP_Eades_Act);
 
+    layoutMenu->addSeparator();
+    layoutMenu->addAction(layoutEgoRadialAct);
     layoutMenu->addSeparator();
     layoutMenu->addAction (layoutGuidesAct);
 
@@ -10221,6 +10229,8 @@ void MainWindow::slotEditNodeOpenContextMenu() {
     nodeContextMenu->addAction(filterNodesRestoreAllAct);
 
     nodeContextMenu->addSeparator();
+    nodeContextMenu->addAction(tr("Ego Radial layout"), this, &MainWindow::slotLayoutEgoRadial);
+    nodeContextMenu->addSeparator();
 
     //QCursor::pos() is good only for menus not related with node coordinates
     nodeContextMenu->exec(QCursor::pos() );
@@ -11520,6 +11530,29 @@ void MainWindow::slotLayoutRadialRandom(){
 }
 
 
+/**
+ * @brief Calls Graph::layoutEgoRadial.
+ * Resolves the ego vertex from the current selection (exactly one selected)
+ * or from the last-clicked vertex, whichever is available.
+ */
+void MainWindow::slotLayoutEgoRadial() {
+    qDebug() << "MainWindow::slotLayoutEgoRadial()";
+    if ( !activeNodes() ) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+    int egoVertex = 0;
+    if ( activeGraph->getSelectedVerticesCount() == 1 )
+        egoVertex = activeGraph->getSelectedVertices().first();
+    else if ( activeGraph->vertexClicked() != 0 )
+        egoVertex = activeGraph->vertexClicked();
+    else {
+        statusMessage( tr("Please select or click one node first.") );
+        return;
+    }
+    activeGraph->layoutEgoRadial(egoVertex);
+    statusMessage( tr("Ego radial layout centered on vertex %1.").arg(egoVertex) );
+}
 
 
 

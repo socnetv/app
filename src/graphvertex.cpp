@@ -340,7 +340,6 @@ QHash<QString,QString> GraphVertex::customAttributes() const {
     return m_customAttributes;
 }
 
-
 /**
  * @brief Sets the horizontal position (in pixels) of the vertex
  * @param x
@@ -405,13 +404,11 @@ void GraphVertex::set_dispX (qreal x) { m_disp.rx() = x ; }
 void GraphVertex::set_dispY (qreal y) { m_disp.ry() = y ; }
 
 
-
 /**
  * @brief Returns displacement vector
  * @return
  */
 QPointF& GraphVertex::disp() { return m_disp; }
-
 
 
 /**
@@ -430,7 +427,6 @@ void GraphVertex::setRelation(int newRel) {
 }
 
 
-
 /**
  * @brief Adds an outbound edge to vertex v2 with weight w
  *
@@ -446,7 +442,6 @@ void GraphVertex::addOutEdge (const int &v2, const qreal &weight, const QString 
     setOutLinkColor(v2, color);
     setOutEdgeLabel(v2, label);
 }
-
 
 
 /**
@@ -621,7 +616,6 @@ void GraphVertex::addInEdge (const int &v1, const qreal &weight) {
 }
 
 
-
 /**
  * @brief Checks if the vertex has an enabled inbound edge from v2 and returns the edge weight or 0.
  *
@@ -684,9 +678,6 @@ void GraphVertex::removeInEdge(const int v2){
     }
 
 }
-
-
-
 
 
 
@@ -870,7 +861,6 @@ bool GraphVertex::isIsolated() {
 }
 
 
-
 /**
  * @brief Returns a qhash of all enabled outEdges, in the active relation or all relations if allRelations is true.
  *
@@ -994,7 +984,6 @@ QList<int> GraphVertex::reciprocalNeighborhoodList() {
     }
     return result;
 }
-
 
 
 
@@ -1134,11 +1123,6 @@ int GraphVertex::localDegree(){  int v2=0;
 
 
 
-
-
-
-
-
 /**
  * @brief Changes the status of all unilateral (non-reciprocal) outbound edges, in current relation
  *
@@ -1186,8 +1170,6 @@ void GraphVertex::setEnabledEdgesByRelation(const int relation, const bool statu
         }
     }
 }
-
-
 
 
 /**
@@ -1242,8 +1224,6 @@ qreal GraphVertex::distance (const int &v1) {
 void GraphVertex::clearDistance() {
     m_distance.clear();
 }
-
-
 
 
 /**

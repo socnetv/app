@@ -358,6 +358,7 @@ public slots:
     // LAYOUT MENU
     void slotLayoutRandom();
     void slotLayoutRadialRandom();
+    void slotLayoutEgoRadial();
 
     void slotLayoutRadialByProminenceIndex();
     void slotLayoutRadialByProminenceIndex(QString prominenceIndexName);
@@ -713,7 +714,7 @@ private:
     QAction *cDegreeAct, *cInDegreeAct, *cClosenessAct, *cInfluenceRangeClosenessAct,
     *cBetweennessAct, *cInformationAct, *cEigenvectorAct, *cPageRankAct,
     *cStressAct, *cPowerAct, *cEccentAct, *cProximityPrestigeAct;
-    QAction *layoutRandomAct, *layoutRandomRadialAct, *layoutGuidesAct;
+    QAction *layoutRandomAct, *layoutRandomRadialAct, *layoutEgoRadialAct, *layoutGuidesAct;
     QAction *layoutRadialProminence_DC_Act, *layoutRadialProminence_DP_Act,
     *layoutRadialProminence_CC_Act, *layoutRadialProminence_SC_Act, *layoutRadialProminence_EC_Act,
     *layoutRadialProminence_PC_Act, *layoutRadialProminence_BC_Act, *layoutRadialProminence_IC_Act,

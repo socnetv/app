@@ -520,10 +520,10 @@ public:
 
     int vertexDegreeIn(int);
 
-    // QSet<int> vertexOutNeighborsSet(const int &v1);
     QList<int> vertexReciprocalNeighborsList(const int &v1);
     QSet<int> vertexReciprocalNeighborsSet(const int &v1);
-
+    QSet<int> vertexOutNeighborsSet(const int &v1, const bool includeInEdges = false);
+    
     bool vertexIsolated(const int &v1) const;
 
     int vertexExists(const int &v1);
@@ -1103,6 +1103,8 @@ public:
     void layoutRandom();
 
     void layoutRadialRandom(const bool &guides = true);
+
+    void layoutEgoRadial(const int egoVertex);
 
     void layoutCircular(const double &x0,
                         const double &y0,
