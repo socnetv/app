@@ -42,7 +42,7 @@ field data from a file in a supported format (GraphML, GraphViz, EdgeList, GML, 
 
 - One-click recreation of well-known social network datasets such as Padgett's Florentine families.
 
-- Layout algorithms based on either prominence indices (i.e. circular, level and nodal sizes by centrality score) or force-directed models (i.e. Kamada-Kawai, Fruchterman-Reingold, etc) for meaningful visualizations of your social network data.
+- Layout algorithms based on either prominence indices (i.e. circular, level and nodal sizes by centrality score) or force-directed models (i.e. Kamada-Kawai, Fruchterman-Reingold, etc) for meaningful visualizations of your social network data. Also Ego-centered radial layout (focus on any node and its neighborhood).
 
 - Multirelational loading and editing. You can load a network consisting of multiple relations or create a network on your own and add multiple relations to it.
 

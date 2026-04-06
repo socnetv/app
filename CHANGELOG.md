@@ -2,6 +2,27 @@
 
 All notable changes to this project are documented in this file. 
 
+## [3.5] – April 2026
+
+### New Features
+  - Ego-centered radial layout: places a selected node at the canvas center,
+    its 1-hop out-neighbors on an inner ring, and all remaining nodes on an
+    outer ring. Available via Layout menu (Ctrl+Alt+E) and node right-click
+    context menu (#214).
+
+### Improvements
+  - Force-directed layouts improved for large graphs (#214):
+    - Fruchterman-Reingold: pre-cached adjacency (O(1) edge lookup in inner
+      loop), initial random placement, early convergence detection.
+    - Kamada-Kawai: canvas clamping replaces random teleport on out-of-bounds
+      particles.
+
+### Refactoring
+  - New `Graph::vertexOutNeighborsSet()`: returns enabled 1-hop out-neighbors
+    in the current relation; parametric for directed/undirected use.
+  - Renamed `vertexNeighborhoodList/Set` → `vertexReciprocalNeighborsList/Set`
+    to reflect that only reciprocal edges are considered.
+
 ## [3.4] – March 2026
 
 ### New Features
