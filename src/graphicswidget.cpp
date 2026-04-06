@@ -1210,19 +1210,24 @@ void GraphicsWidget::setEdgeVisibility(const int &relation,
                                        const bool &visible,
                                        const bool &preserveReverseEdge,
                                        const int &edgeWeight,
-                                       const int &reverseEdgeWeight){
+                                       const int &reverseEdgeWeight)
+{
     QString reverseEdgeName;
-    edgeName = createEdgeName( sourceNum, targetNum, relation );
-//    qDebug()<<"Changing visibility of graphics edge:"<<edgeName<<"to:"<<visible << "preserveReverseEdge:" << preserveReverseEdge;
-    if  ( edgesHash.contains (edgeName) ) {
+    edgeName = createEdgeName(sourceNum, targetNum, relation);
+
+    // During network teardown/reset, Graph may still emit edge-visibility updates
+    // after the corresponding GraphicsNodes have already been removed from nodeHash.
+    // In that case, do not attempt to recreate/draw edges.
+    const bool haveSourceNode = nodeHash.contains(sourceNum);
+    const bool haveTargetNode = nodeHash.contains(targetNum);
+
+    if (edgesHash.contains(edgeName)) {
         // Edge does exist
-        if ( !visible && preserveReverseEdge ) {
+        if (!visible && preserveReverseEdge) {
             // This edge must be disabled and the reverse must be preserved/created
-//            qDebug()<<"graphics edge"<<edgeName<<"exists, weight:" << edgesHash.value(edgeName)->weight() << " but the reverse must be preserved/created. Removing it (so that we can create the reverse)! ";
             delete edgesHash.value(edgeName);
         }
         else {
-//            qDebug()<<"graphics edge"<<edgeName<<"exists , weight:" << edgesHash.value(edgeName)->weight() << " (and no need to preserve the reverse). Toggling edge visibility to:" << visible;
             edgesHash.value(edgeName)->setVisible(visible);
             edgesHash.value(edgeName)->setEnabled(visible);
         }
@@ -1230,40 +1235,43 @@ void GraphicsWidget::setEdgeVisibility(const int &relation,
     else {
         // Edge does not exist yet
         if (visible) {
-//            qDebug()<<"Graphics edge"<<edgeName<<"does not exist, but Graph has it. We will either enable the reverse as reciprocated or create it!" ;
             // The reverse may exist. Check
-            reverseEdgeName = createEdgeName( targetNum, sourceNum, relation );
-            if  ( edgesHash.contains (reverseEdgeName) ) {
-//                qDebug()<<"Reverse graphics edge"<<reverseEdgeName<<"does exist, weight:" << edgesHash.value(reverseEdgeName)->weight() << "! Setting it as visible AND reciprocal.";
+            reverseEdgeName = createEdgeName(targetNum, sourceNum, relation);
+            if (edgesHash.contains(reverseEdgeName)) {
                 edgesHash.value(reverseEdgeName)->setVisible(true);
                 edgesHash.value(reverseEdgeName)->setEnabled(true);
                 edgesHash.value(reverseEdgeName)->setDirectionType(EdgeType::Reciprocated);
                 return;
             }
             else {
-//                qDebug()<<"Reverse graphics edge"<<reverseEdgeName<<"does not exist. Creating the requested edge" << edgeName;
-                drawEdge(sourceNum, targetNum, edgeWeight,"", "black", EdgeType::Directed);
+                // Do not create an edge if either endpoint node is already gone
+                if (!haveSourceNode || !haveTargetNode) {
+                    return;
+                }
+                drawEdge(sourceNum, targetNum, edgeWeight, "", "black", EdgeType::Directed);
             }
         }
     }
+
     if (preserveReverseEdge) {
         // Reverse edge must be preserved (see #140)
         // Check if the reverse exists and if not create it
-        reverseEdgeName = createEdgeName( targetNum, sourceNum, relation );
-        if  ( edgesHash.contains (reverseEdgeName) ) {
-//            qDebug()<<"Reverse graphics edge"<<reverseEdgeName<<"exist, weight:" << edgesHash.value(reverseEdgeName)->weight() << "Setting it visible to be preserved and directed.";
+        reverseEdgeName = createEdgeName(targetNum, sourceNum, relation);
+        if (edgesHash.contains(reverseEdgeName)) {
             edgesHash.value(reverseEdgeName)->setVisible(true);
             edgesHash.value(reverseEdgeName)->setEnabled(true);
             edgesHash.value(reverseEdgeName)->setDirectionType(EdgeType::Directed);
             return;
         }
         else {
-//            qDebug()<<"Reverse graphics edge"<<reverseEdgeName<<"does not exist yet (to be preserved as visible). Drawing it to be preserved...";
-            drawEdge(targetNum, sourceNum, reverseEdgeWeight,"", "black", EdgeType::Directed);
+            // Do not create the reverse edge if either endpoint node is already gone
+            if (!haveSourceNode || !haveTargetNode) {
+                return;
+            }
+            drawEdge(targetNum, sourceNum, reverseEdgeWeight, "", "black", EdgeType::Directed);
         }
     }
 }
-
 
 
 /**
