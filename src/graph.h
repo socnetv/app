@@ -520,8 +520,9 @@ public:
 
     int vertexDegreeIn(int);
 
-    QList<int> vertexNeighborhoodList(const int &v1);
-    QSet<int> vertexNeighborhoodSet(const int &v1);
+    // QSet<int> vertexOutNeighborsSet(const int &v1);
+    QList<int> vertexReciprocalNeighborsList(const int &v1);
+    QSet<int> vertexReciprocalNeighborsSet(const int &v1);
 
     bool vertexIsolated(const int &v1) const;
 

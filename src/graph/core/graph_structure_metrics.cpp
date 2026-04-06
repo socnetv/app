@@ -49,7 +49,7 @@ int Graph::vertexDegreeIn(int v1)
  * @param v1  The vertex number to query.
  * @return    QList<int> of reciprocally connected vertex numbers.
  */
-QList<int> Graph::vertexNeighborhoodList(const int &v1)
+QList<int> Graph::vertexReciprocalNeighborsList(const int &v1)
 {
     return m_graph[vpos[v1]]->reciprocalNeighborhoodList();
 }
@@ -65,7 +65,7 @@ QList<int> Graph::vertexNeighborhoodList(const int &v1)
  * @param v1  The vertex number to query.
  * @return    QSet<int> of reciprocally connected vertex numbers.
  */
-QSet<int> Graph::vertexNeighborhoodSet(const int &v1)
+QSet<int> Graph::vertexReciprocalNeighborsSet(const int &v1)
 {
     const QList<int> neighbors = m_graph[vpos[v1]]->reciprocalNeighborhoodList();
     return QSet<int>(neighbors.constBegin(), neighbors.constEnd());
