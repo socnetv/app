@@ -16,6 +16,9 @@
 /**
  * @brief Filters vertices by their score on the given centrality or prestige index.
  *
+ * Pushes a GraphVisibilitySnapshot onto m_visibilityHistory before making
+ * any changes, so vertexFilterRestoreAll() can undo this filter.
+ *
  * Performs two passes over the graph:
  *
  * - Pass 1: Enables or disables each vertex depending on whether its score
@@ -30,10 +33,6 @@
  * correctly: during pass 2 all vertices are already in their final enabled
  * state, so both endpoints of any edge can be queried reliably.
  *
- * Calling this function with a threshold that no vertex satisfies (e.g.
- * DC >= 999999) effectively re-enables all vertices and their edges,
- * serving as the undo mechanism.
- *
  * Returns early with a status message if the requested index has not been
  * computed yet — the user should run the corresponding analysis first.
  *
@@ -41,10 +40,10 @@
  * @param overThreshold    If true, disable vertices with score >= threshold;
  *                         if false, disable vertices with score <= threshold.
  * @param centralityIndex  The centrality or prestige index to use, as defined
- *                         by the IndexType enum in global.h. Must match an
- *                         entry in prominenceIndexList (1-based).
+ *                         by the IndexType enum in global.h.
  *
  * @see isCentralityIndexComputed()
+ * @see vertexFilterRestoreAll()
  * @see IndexType
  */
 void Graph::vertexFilterByCentrality(const float threshold,
@@ -67,6 +66,34 @@ void Graph::vertexFilterByCentrality(const float threshold,
                "then apply the filter."));
         return;
     }
+
+    // ------------------------------------------------------------------
+    // Snapshot current visibility state BEFORE making any changes.
+    // Allows vertexFilterRestoreAll() to undo this filter.
+    // ------------------------------------------------------------------
+    GraphVisibilitySnapshot snapshot;
+    snapshot.active = true;
+
+    VList::const_iterator si;
+    for (si = m_graph.cbegin(); si != m_graph.cend(); ++si)
+    {
+        const int vnum = (*si)->number();
+        snapshot.nodeVisible.insert(vnum, (*si)->isEnabled());
+
+        H_edges::const_iterator ei = (*si)->m_outEdges.constBegin();
+        while (ei != (*si)->m_outEdges.constEnd())
+        {
+            if (ei.value().first == m_curRelation)
+            {
+                snapshot.arcVisible.insert(
+                    QPair<int, int>(vnum, ei.key()),
+                    ei.value().second.second);
+            }
+            ++ei;
+        }
+    }
+
+    m_visibilityHistory.push(snapshot);
 
     const QString condition = overThreshold ? QStringLiteral(">=") : QStringLiteral("<=");
     const qreal thresh = static_cast<qreal>(threshold);

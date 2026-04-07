@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>689</width>
-    <height>487</height>
+    <width>695</width>
+    <height>462</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -37,7 +37,7 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Score Threshold:</string>
+        <string>Raw Score Threshold:</string>
        </property>
       </widget>
      </item>
@@ -140,9 +140,7 @@
       </font>
      </property>
      <property name="text">
-      <string>This does not delete nodes; it only hides them in the current view.
-To undo, run this action again and choose a threshold that hides no nodes (for example, a very large threshold when hiding scores ≥ threshold, or a very small threshold when hiding scores ≤ threshold).
-If you save the network while nodes are hidden, only the visible nodes and their edges will be saved.</string>
+      <string>This does not delete nodes; it only hides them in the current view. To restore hidden nodes, use Edit → Filter Nodes → Restore All Nodes. If you save the network while nodes are hidden, only the visible nodes and their edges will be saved.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -177,7 +175,7 @@ If you save the network while nodes are hidden, only the visible nodes and their
    <item row="0" column="0">
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Hide nodes based on a centrality/prestige score. &lt;/p&gt;&lt;p&gt;Choose an index and a score threshold, then choose whether to hide nodes with scores ≥ the threshold or ≤ the threshold. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Note: Indices must be computed before they can be used for filtering. Edges connected to hidden nodes will also be hidden. &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Hide nodes based on their raw (non-standardized) centrality or prestige score.&lt;/p&gt;&lt;p&gt;Choose an index and a score threshold, then choose whether to hide nodes with scores ≥ the threshold or ≤ the threshold.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Note: Indices must be computed before they can be used for filtering. The threshold applies to the raw score, not the standardized (%) value. Edges connected to hidden nodes will also be hidden.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
       <enum>Qt::TextFormat::RichText</enum>

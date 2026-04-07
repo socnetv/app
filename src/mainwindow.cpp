@@ -11290,14 +11290,13 @@ void MainWindow::slotFilterNodesDialogByCentrality()
         return;
     }
 
-    // TODO (v3.4+ UX):
-    // Revisit centrality filtering workflow.
-    // Possible improvements:
-    //  - Add a "Compute missing indices" button directly in the dialog.
-    //  - Add a "Clear filtering / Enable all nodes" button.
-    //  - Consider auto-computing selected index if not yet computed.
-    //  - Consider persisting last-used index and threshold.
-    // Current v3.3 behavior: show all indices and disable those not computed.
+    // NOTE: Filter state is snapshot-based. vertexFilterRestoreAll() undoes
+    // the last filter; filterNodesRestoreAllAct is enabled after apply.
+    //
+    //  TODO Deferred (future issues):
+    //  - Auto-compute selected index if not yet computed (#216).
+    //  - Persist last-used index and threshold (#216).
+    //  - Add "Compute missing indices" shortcut in dialog (#216).
 
     QVector<bool> computedMask;
 
@@ -11319,7 +11318,10 @@ void MainWindow::slotFilterNodesDialogByCentrality()
             activeGraph,
             &Graph::vertexFilterByCentrality);
 
-    dlg.exec();
+    if (dlg.exec() == QDialog::Accepted)
+    {
+        filterNodesRestoreAllAct->setEnabled(true);
+    }
 }
 
 /**
