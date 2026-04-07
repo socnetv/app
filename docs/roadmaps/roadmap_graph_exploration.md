@@ -91,8 +91,8 @@ Make large graphs readable and explorable.
 
 ### Phase 2 — Layout Improvements (#214)
 
-* Improved force-directed layout 
-* Radial layout
+* ✔ Improved force-directed layout 
+* ✔ Radial layout
 
 ### Phase 3 — Advanced Visualization
 
