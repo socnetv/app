@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DialogEdgeEdit</class>
+ <widget class="QDialog" name="DialogEdgeEdit">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>480</width>
+    <height>420</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>480</width>
+    <height>380</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Edge Properties</string>
+  </property>
+  <layout class="QVBoxLayout" name="mainLayout">
+
+   <!-- Edge identifier label -->
+   <item>
+    <widget class="QLabel" name="edgeTitleLabel">
+     <property name="font">
+      <font>
+       <pointsize>11</pointsize>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Edge</string>
+     </property>
+    </widget>
+   </item>
+
+   <!-- Label row -->
+   <item>
+    <layout class="QHBoxLayout" name="labelLayout">
+     <item>
+      <widget class="QLabel" name="labelLabel">
+       <property name="text">
+        <string>Label:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="labelEdit"/>
+     </item>
+    </layout>
+   </item>
+
+   <!-- Weight row -->
+   <item>
+    <layout class="QHBoxLayout" name="weightLayout">
+     <item>
+      <widget class="QLabel" name="weightLabel">
+       <property name="text">
+        <string>Weight:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="weightSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QDoubleSpinBox" name="weightSpin">
+       <property name="minimum">
+        <double>-999.000000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>999.000000000000000</double>
+       </property>
+       <property name="decimals">
+        <number>2</number>
+       </property>
+       <property name="singleStep">
+        <double>0.100000000000000</double>
+       </property>
+       <property name="value">
+        <double>1.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+
+   <!-- Color row -->
+   <item>
+    <layout class="QHBoxLayout" name="colorLayout">
+     <item>
+      <widget class="QLabel" name="colorLabel">
+       <property name="text">
+        <string>Color (click to change):</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="colorSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QToolButton" name="colorButton">
+       <property name="minimumSize">
+        <size>
+         <width>60</width>
+         <height>25</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>60</width>
+         <height>20</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+
+   <!-- Custom attributes group -->
+   <item>
+    <widget class="QGroupBox" name="customAttributesGroup">
+     <property name="title">
+      <string>Custom Attributes</string>
+     </property>
+     <layout class="QVBoxLayout" name="attrGroupLayout">
+
+      <!-- Table -->
+      <item>
+       <widget class="QTableWidget" name="customAttributesTable">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>100</height>
+         </size>
+        </property>
+        <property name="selectionBehavior">
+         <enum>QAbstractItemView::SelectRows</enum>
+        </property>
+        <column>
+         <property name="text">
+          <string>Key</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Value</string>
+         </property>
+        </column>
+       </widget>
+      </item>
+
+      <!-- Input row + Add button -->
+      <item>
+       <layout class="QGridLayout" name="attrInputLayout">
+        <item row="0" column="0">
+         <widget class="QLabel" name="keyInputLabel">
+          <property name="text">
+           <string>Key</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="keyLineEdit"/>
+        </item>
+        <item row="0" column="2">
+         <widget class="QLabel" name="valueInputLabel">
+          <property name="text">
+           <string>Value</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QLineEdit" name="valueLineEdit"/>
+        </item>
+        <item row="0" column="4">
+         <widget class="QPushButton" name="addPropertyBtn">
+          <property name="text">
+           <string>Add</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+
+      <!-- Remove button row -->
+      <item>
+       <layout class="QHBoxLayout" name="removeLayout">
+        <item>
+         <widget class="QPushButton" name="removePropertyBtn">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Remove selected</string>
+          </property>
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="removeSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+
+     </layout>
+    </widget>
+   </item>
+
+   <!-- Button box -->
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>DialogEdgeEdit</receiver>
+   <slot>accept()</slot>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>DialogEdgeEdit</receiver>
+   <slot>reject()</slot>
+  </connection>
+ </connections>
+</ui>

@@ -82,6 +82,7 @@ class DialogExportPDF;
 class DialogExportImage;
 class DialogNodeFind;
 class DialogNodeEdit;
+class DialogEdgeEdit;
 class DialogFilterNodesByCentrality;
 class DialogFilterEdgesByWeight;
 class DialogEdgeDichotomization;
@@ -328,6 +329,11 @@ public slots:
     void slotEditEdgeCreate (const int &source, const int &target,
                              const qreal &weight=1);
     void slotEditEdgeRemove();
+    void slotEditEdgePropertiesDialog();
+    void slotEditEdgeProperties(const QString &label,
+                                const double &weight,
+                                const QColor &color,
+                                const QHash<QString,QString> &customAttributes);
     void slotEditEdgeLabel();
     void slotEditEdgeColor();
     void slotEditEdgeWeight();
@@ -671,7 +677,7 @@ private:
     QAction *editNodeSelectedToLineAct, *editNodeSelectedToCliqueAct;
     QAction *editNodeFindAct,*editNodeAddAct, *editNodeRemoveAct;
     QAction *editNodePropertiesAct;
-    QAction *editEdgeAddAct, *editEdgeRemoveAct;
+    QAction *editEdgeAddAct, *editEdgeRemoveAct, *editEdgePropertiesAct;
     QAction *editNodeNumbersSizeAct, *editNodeLabelsSizeAct;
     QAction *editNodeSizeAllAct, *editNodeShapeAll;
     QAction *editEdgeLabelAct, *editEdgeColorAct, *editEdgeWeightAct;

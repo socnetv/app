@@ -184,8 +184,9 @@ set (FORMS
     src/forms/dialogsimilaritymatches.ui 
     src/forms/dialogdissimilarities.ui 
     src/forms/dialogclusteringhierarchical.ui   
-    src/forms/dialognodeedit.ui 
-    src/forms/dialognodefind.ui 
+    src/forms/dialognodeedit.ui
+    src/forms/dialogedgeedit.ui
+    src/forms/dialognodefind.ui
     src/forms/dialogedgedichotomization.ui 
     src/forms/dialogexportpdf.ui 
     src/forms/dialogexportimage.ui
@@ -217,7 +218,8 @@ set(SOURCES
     src/forms/dialogwebcrawler.cpp 
     src/forms/dialogdatasetselect.cpp 
     src/forms/dialogpreviewfile.cpp 
-    src/forms/dialognodeedit.cpp 
+    src/forms/dialognodeedit.cpp
+    src/forms/dialogedgeedit.cpp
     src/forms/dialogranderdosrenyi.cpp 
     src/forms/dialograndsmallworld.cpp 
     src/forms/dialograndregular.cpp 

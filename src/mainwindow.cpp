@@ -67,6 +67,7 @@
 #include "forms/dialogexportimage.h"
 #include "forms/dialognodefind.h"
 #include "forms/dialognodeedit.h"
+#include "forms/dialogedgeedit.h"
 #include "forms/dialogfilternodesbycentrality.h"
 #include "forms/dialogfilteredgesbyweight.h"
 #include "forms/dialogedgedichotomization.h"
@@ -1666,6 +1667,13 @@ void MainWindow::initActions(){
                                        "Otherwise, you will be prompted to enter edge source and target "
                                        "nodes for the edge to remove."));
     connect(editEdgeRemoveAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeRemove()));
+
+    editEdgePropertiesAct = new QAction(QIcon(":/images/edge_properties_24px.svg"), tr("Edge Properties"), this);
+    editEdgePropertiesAct->setStatusTip(tr("Edit the properties and custom attributes of the clicked edge"));
+    editEdgePropertiesAct->setWhatsThis(tr("Edge Properties\n\n"
+                                           "Opens a dialog to edit the label, weight, color "
+                                           "and custom attributes of the selected edge."));
+    connect(editEdgePropertiesAct, &QAction::triggered, this, &MainWindow::slotEditEdgePropertiesDialog);
 
     editEdgeLabelAct = new QAction(QIcon(":/images/format_textsize_48px.svg"), tr("Change Edge Label"), this);
     editEdgeLabelAct->setStatusTip(tr("Change the Label of an Edge"));
@@ -10449,6 +10457,8 @@ void MainWindow::slotEditEdgeOpenContextMenu(const QString &str) {
     QMenu *edgeContextMenu = new QMenu(str, this);
     edgeContextMenu->addAction( str );
     edgeContextMenu->addSeparator();
+    edgeContextMenu->addAction( editEdgePropertiesAct );
+    edgeContextMenu->addSeparator();
     edgeContextMenu->addAction( editEdgeRemoveAct );
     edgeContextMenu->addAction( editEdgeWeightAct );
     edgeContextMenu->addAction( editEdgeLabelAct );
@@ -10581,6 +10591,61 @@ void MainWindow::slotEditEdgeCreate (const int &source, const int &target, const
 }
 
 
+
+/**
+ * @brief Opens the Edge Properties dialog for the currently clicked edge.
+ */
+void MainWindow::slotEditEdgePropertiesDialog()
+{
+    qDebug() << "MainWindow::slotEditEdgePropertiesDialog()";
+    if ( !activeNodes() ) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+    const MyEdge clicked = activeGraph->edgeClicked();
+    int v1 = clicked.source;
+    int v2 = clicked.target;
+    if (v1 == 0 || v2 == 0) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL,
+                              tr("No edge selected"),
+                              tr("Please right-click an edge first to open its properties."));
+        return;
+    }
+
+    QString label  = activeGraph->edgeLabel(v1, v2);
+    double  weight = static_cast<double>(activeGraph->edgeWeight(v1, v2));
+    QColor  color  = QColor(activeGraph->edgeColor(v1, v2));
+    QHash<QString,QString> attrs = activeGraph->edgeCustomAttributes(v1, v2);
+
+    DialogEdgeEdit *dialog = new DialogEdgeEdit(this, v1, v2, label, weight, color, attrs);
+    connect(dialog, &DialogEdgeEdit::userChoices,
+            this,   &MainWindow::slotEditEdgeProperties);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->exec();
+}
+
+/**
+ * @brief Applies updated edge properties received from DialogEdgeEdit.
+ */
+void MainWindow::slotEditEdgeProperties(const QString &label,
+                                        const double &weight,
+                                        const QColor &color,
+                                        const QHash<QString,QString> &customAttributes)
+{
+    qDebug() << "MainWindow::slotEditEdgeProperties()";
+    const MyEdge clicked = activeGraph->edgeClicked();
+    int v1 = clicked.source;
+    int v2 = clicked.target;
+    if (v1 == 0 || v2 == 0)
+        return;
+
+    activeGraph->edgeLabelSet(v1, v2, label);
+    activeGraph->edgeWeightSet(v1, v2, static_cast<qreal>(weight));
+    activeGraph->edgeColorSet(v1, v2, color.name());
+    activeGraph->edgeCustomAttributesSet(v1, v2, customAttributes);
+
+    statusMessage( tr("Updated properties of edge %1 \u2192 %2.").arg(v1).arg(v2) );
+}
 
 /**
  * @brief Removes a clicked edge. Otherwise asks the user to specify one edge.
