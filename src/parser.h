@@ -122,6 +122,7 @@ private:
     QString nodeIconPath;
     QString nodeNumberColor, nodeLabelColor;
     QHash<QString, QString> nodeCustomAttributes, initNodeCustomAttributes;
+    QHash<QString, QString> edgeCustomAttributes;
     QString key_id, key_value, key_name, key_what, key_type;
     QString node_id, edge_id, edge_source, edge_target, edge_weight, edge_directed;
     int gwWidth, gwHeight;

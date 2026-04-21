@@ -132,7 +132,9 @@ public slots:
                     const int &type = 0,
                     const bool &drawArrows = true, const bool &bezier = false,
                     const QString &label = QString(),
-                    const bool &signalMW = true);
+                    const bool &signalMW = true,
+                    const QHash<QString,QString> &edgeCustomAttributes =
+                        QHash<QString,QString>());
 
     void edgeCreateWebCrawler(const int &source, const int &target);
 

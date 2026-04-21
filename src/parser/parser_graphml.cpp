@@ -573,6 +573,7 @@ void Parser::readGraphMLElementEdge(QXmlStreamAttributes &xmlStreamAttr)
     edgeWeight = initEdgeWeight;
     edgeColor = initEdgeColor;
     edgeLabel = "";
+    edgeCustomAttributes.clear();
     bool_edge = true;
 
     if (edge_directed == "false" || edge_directed.contains("false", Qt::CaseInsensitive))
@@ -642,7 +643,7 @@ void Parser::endGraphMLElementEdge(QXmlStreamReader &xml)
     if (m_parseSink)
     {
         m_parseSink->createEdge(source, target, edgeWeight, edgeColor, edgeDirType,
-                                arrows, bezier, edgeLabel);
+                                arrows, bezier, edgeLabel, false, edgeCustomAttributes);
     }
 
     totalLinks++;
@@ -829,6 +830,12 @@ void Parser::readGraphMLElementData(QXmlStreamReader &xml)
             }
             qDebug() << "Data found. Edge label: "
                      << edgeLabel << " for this edge";
+        }
+        else
+        {
+            qDebug() << "Data found for custom edge attribute:"
+                     << key_name << "value:" << key_value;
+            edgeCustomAttributes.insert(key_name, key_value);
         }
     }
 }

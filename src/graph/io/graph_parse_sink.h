@@ -73,7 +73,9 @@ namespace SocNetV::IO
                                 const bool &arrows,
                                 const bool &bezier,
                                 const QString &edgeLabel = QString(),
-                                const bool &signalMW = false) = 0;
+                                const bool &signalMW = false,
+                                const QHash<QString,QString> &edgeCustomAttributes =
+                                    QHash<QString,QString>()) = 0;
 
         // Mirrors: Parser::removeDummyNode(int)
         virtual void removeDummyNode(int num) = 0;

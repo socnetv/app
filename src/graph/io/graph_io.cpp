@@ -624,9 +624,11 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
     QString iconFileName = QString();
     QString copyIconFileNamePath = QString();
 
-    // Init custom attributes list and temp hash
+    // Init custom attributes lists and temp hashes
     QStringList vertexCustomAttributesList = graphHasVertexCustomAttributes();
     QHash<QString, QString> m_vertexCustomAttributes = QHash<QString, QString>();
+    QStringList edgeCustomAttributesList = graphHasEdgeCustomAttributes();
+    QHash<QString, QString> m_edgeCustomAttributes = QHash<QString, QString>();
 
     networkName = (networkName == "") ? getName().toHtmlEscaped() : networkName;
     networkName = (networkName == "unnamed") ? fileNameNoPath.toHtmlEscaped().left(fileNameNoPath.lastIndexOf('.')) : networkName;
@@ -739,7 +741,7 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
             << "" << "</default> \n"
                      "  </key> \n";
 
-    // Save custom attributes defaults, if any.
+    // Save custom node attribute key definitions, if any.
     if (!vertexCustomAttributesList.isEmpty())
     {
         qDebug() << "saving defaults for vertexCustomAttributesList:" << vertexCustomAttributesList;
@@ -750,8 +752,24 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
             qDebug() << "customVertexAttrId:" << customVertexAttrId
                      << "customVertexAttr" << vertexCustomAttributesList.at(i);
             outText << "  <key id=\"" + customVertexAttrId + "\" for=\"node\" attr.name=\"" + vertexCustomAttributesList.at(i) + "\" attr.type=\"string\"> \n"
-                                                                                                                                 "    <default></default> \n"
-                                                                                                                                 "  </key> \n";
+                       "    <default></default> \n"
+                       "  </key> \n";
+        }
+    }
+
+    // Save custom edge attribute key definitions, if any (IDs: d2000+).
+    if (!edgeCustomAttributesList.isEmpty())
+    {
+        qDebug() << "saving defaults for edgeCustomAttributesList:" << edgeCustomAttributesList;
+        QString customEdgeAttrId;
+        for (qsizetype i = 0; i < edgeCustomAttributesList.size(); ++i)
+        {
+            customEdgeAttrId = 'd' + QString::number(2000 + i);
+            qDebug() << "customEdgeAttrId:" << customEdgeAttrId
+                     << "customEdgeAttr" << edgeCustomAttributesList.at(i);
+            outText << "  <key id=\"" + customEdgeAttrId + "\" for=\"edge\" attr.name=\"" + edgeCustomAttributesList.at(i) + "\" attr.type=\"string\"> \n"
+                       "    <default></default> \n"
+                       "  </key> \n";
         }
     }
 
@@ -924,6 +942,25 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
                             outText << "      <data key=\"d10\">" << m_label << "</data>" << " \n";
                             openToken = false;
                         }
+                        if (!edgeCustomAttributesList.isEmpty())
+                        {
+                            m_edgeCustomAttributes = edgeCustomAttributes(source, target);
+                            if (!m_edgeCustomAttributes.isEmpty())
+                            {
+                                if (openToken)
+                                    outText << "> \n";
+                                openToken = false;
+                                QString customEdgeAttrId;
+                                for (auto cit = m_edgeCustomAttributes.cbegin(); cit != m_edgeCustomAttributes.cend(); ++cit)
+                                {
+                                    int attrIndex = edgeCustomAttributesList.indexOf(cit.key());
+                                    if (attrIndex < 0)
+                                        continue;
+                                    customEdgeAttrId = 'd' + QString::number(2000 + attrIndex);
+                                    outText << "      <data key=\"" + customEdgeAttrId + "\">" << cit.value() << "</data>\n";
+                                }
+                            }
+                        }
 
                         if (openToken)
                             outText << "/> \n";
@@ -959,11 +996,6 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
                         m_color = (*it)->outLinkColor(target);
                         m_label = edgeLabel(source, target);
                         m_label = htmlEscaped(m_label);
-                        //                        qDebug()<< "edge no"
-                        //                                << edgeCount
-                        //                                << "from n1=" << source << "to n2=" << target
-                        //                                << "with weight" << weight
-                        //                                << "and color" << m_color.toUtf8() ;
                         outText << "    <edge id=\"" << "e" + QString::number(edgeCount)
                                 << "\" directed=\"" << "false" << "\" source=\"" << source
                                 << "\" target=\"" << target << "\"";
@@ -988,6 +1020,25 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
                                 outText << "> \n";
                             outText << "      <data key=\"d10\">" << m_label << "</data>" << " \n";
                             openToken = false;
+                        }
+                        if (!edgeCustomAttributesList.isEmpty())
+                        {
+                            m_edgeCustomAttributes = edgeCustomAttributes(source, target);
+                            if (!m_edgeCustomAttributes.isEmpty())
+                            {
+                                if (openToken)
+                                    outText << "> \n";
+                                openToken = false;
+                                QString customEdgeAttrId;
+                                for (auto cit = m_edgeCustomAttributes.cbegin(); cit != m_edgeCustomAttributes.cend(); ++cit)
+                                {
+                                    int attrIndex = edgeCustomAttributesList.indexOf(cit.key());
+                                    if (attrIndex < 0)
+                                        continue;
+                                    customEdgeAttrId = 'd' + QString::number(2000 + attrIndex);
+                                    outText << "      <data key=\"" + customEdgeAttrId + "\">" << cit.value() << "</data>\n";
+                                }
+                            }
                         }
                         if (openToken)
                             outText << "/> \n";

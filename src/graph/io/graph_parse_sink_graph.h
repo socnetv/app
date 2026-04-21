@@ -64,7 +64,9 @@ namespace SocNetV::IO
                         const bool &arrows,
                         const bool &bezier,
                         const QString &edgeLabel = QString(),
-                        const bool &signalMW = false) override;
+                        const bool &signalMW = false,
+                        const QHash<QString,QString> &edgeCustomAttributes =
+                            QHash<QString,QString>()) override;
 
         void removeDummyNode(int num) override;
 

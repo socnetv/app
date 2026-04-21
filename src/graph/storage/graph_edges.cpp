@@ -78,7 +78,8 @@ bool Graph::edgeCreate(const int &v1,
                        const bool &drawArrows,
                        const bool &bezier,
                        const QString &label,
-                       const bool &signalMW)
+                       const bool &signalMW,
+                       const QHash<QString,QString> &edgeCustomAttributes)
 {
     //
     // GUARD: Check if v1->v2 already exists.
@@ -219,6 +220,9 @@ bool Graph::edgeCreate(const int &v1,
     // interactively by the user on the canvas inherit the same color
     // as the edges loaded from the file.
     initEdgeColor = color;
+
+    if (!edgeCustomAttributes.isEmpty())
+        edgeCustomAttributesSet(v1, v2, edgeCustomAttributes);
 
     // Update edge count and notify MainWindow if needed.
     setModStatus(ModStatus::EdgeCount, signalMW);

@@ -83,7 +83,8 @@ namespace SocNetV::IO
                                          const bool &arrows,
                                          const bool &bezier,
                                          const QString &edgeLabel,
-                                         const bool &signalMW)
+                                         const bool &signalMW,
+                                         const QHash<QString,QString> &edgeCustomAttributes)
     {
         m_graph.edgeCreate(source,
                            target,
@@ -93,7 +94,8 @@ namespace SocNetV::IO
                            arrows,
                            bezier,
                            edgeLabel,
-                           signalMW);
+                           signalMW,
+                           edgeCustomAttributes);
     }
 
     void GraphParseSinkGraph::removeDummyNode(int num)
