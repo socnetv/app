@@ -1803,6 +1803,14 @@ void MainWindow::initActions(){
                                     "Filters out nodes according to their score in a user-selected centrality index."));
     connect(filterNodesByCentralityAct, SIGNAL(triggered()), this, SLOT(slotFilterNodesDialogByCentrality()));
 
+    filterNodesByAttributeAct = new QAction(QIcon(":/images/node_filter_48px.svg"), tr("Filter Nodes By Attribute"), this);
+    filterNodesByAttributeAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_A));
+    filterNodesByAttributeAct->setStatusTip(tr("Show only nodes matching a custom attribute key/value pair."));
+    filterNodesByAttributeAct->setWhatsThis(tr("Filter Nodes By Attribute\n\n"
+                                               "Hides all nodes except those whose custom attribute matches "
+                                               "the key and value you enter."));
+    connect(filterNodesByAttributeAct, SIGNAL(triggered()), this, SLOT(slotFilterNodesByAttribute()));
+
     filterNodesBySelectionAct = new QAction(tr("Focus on Selection"), this);
     filterNodesBySelectionAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_S));
     filterNodesBySelectionAct->setStatusTip(tr("Show only the selected nodes and edges between them."));
@@ -3866,7 +3874,8 @@ void MainWindow::initMenuBar() {
 
     filterMenu->addAction(filterNodesBySelectionAct);
     filterMenu->addAction(filterNodesByEgoNetworkAct);
-    filterMenu->addAction(filterNodesByCentralityAct );
+    filterMenu->addAction(filterNodesByCentralityAct);
+    filterMenu->addAction(filterNodesByAttributeAct);
     filterMenu->addSeparator();
     filterMenu->addAction(filterNodesRestoreAllAct);
     filterMenu->addSeparator();
@@ -11435,6 +11444,46 @@ void MainWindow::slotFilterNodesByEgoNetwork()
         return;
     }
     activeGraph->vertexFilterByEgoNetwork(v1);
+    filterNodesRestoreAllAct->setEnabled(true);
+}
+
+/**
+ * @brief Shows only nodes matching a user-supplied custom attribute key/value.
+ */
+void MainWindow::slotFilterNodesByAttribute()
+{
+    if (!activeNodes())
+    {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    const QStringList keys = activeGraph->graphHasVertexCustomAttributes();
+    if (keys.isEmpty())
+    {
+        slotHelpMessageToUser(USER_MSG_CRITICAL,
+                              tr("No custom attributes"),
+                              tr("This network has no custom node attributes. "
+                                 "Add attributes via Node Properties first."));
+        return;
+    }
+
+    bool ok = false;
+    const QString key = QInputDialog::getItem(this,
+                                              tr("Filter Nodes By Attribute"),
+                                              tr("Attribute key:"),
+                                              keys, 0, true, &ok);
+    if (!ok || key.trimmed().isEmpty())
+        return;
+
+    const QString value = QInputDialog::getText(this,
+                                                tr("Filter Nodes By Attribute"),
+                                                tr("Value for \"%1\":").arg(key),
+                                                QLineEdit::Normal, QString(), &ok);
+    if (!ok)
+        return;
+
+    activeGraph->vertexFilterByAttribute(key.trimmed(), value.trimmed());
     filterNodesRestoreAllAct->setEnabled(true);
 }
 

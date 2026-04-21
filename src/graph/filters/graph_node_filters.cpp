@@ -467,6 +467,112 @@ void Graph::vertexFilterBySelection(const QList<int> &selectedVertices)
 }
 
 /**
+ * @brief Shows only vertices that have the given custom attribute key set to
+ *        the given value; all other vertices are hidden.
+ *
+ * Non-destructive: pushes a GraphVisibilitySnapshot onto m_visibilityHistory
+ * before making any changes. Call vertexFilterRestoreAll() to undo.
+ *
+ * Returns early with a status message if no vertex carries the requested key,
+ * or if the resulting visible set would be empty.
+ *
+ * @param key    Custom attribute key to match.
+ * @param value  Required value for that key.
+ */
+void Graph::vertexFilterByAttribute(const QString &key, const QString &value)
+{
+    qDebug() << "Graph::vertexFilterByAttribute() key:" << key << "value:" << value;
+
+    // Build visible set: vertices whose custom attribute key == value.
+    QSet<int> visibleSet;
+    VList::const_iterator vi;
+    for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
+    {
+        const QHash<QString,QString> attrs = (*vi)->customAttributes();
+        if (attrs.contains(key) && attrs.value(key) == value)
+            visibleSet.insert((*vi)->number());
+    }
+
+    if (visibleSet.isEmpty())
+    {
+        progressStatus(tr("No nodes found with attribute \"%1\" = \"%2\".").arg(key, value));
+        return;
+    }
+
+    // Snapshot current visibility state BEFORE making any changes.
+    GraphVisibilitySnapshot snapshot;
+    snapshot.active = true;
+
+    for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
+    {
+        const int vnum = (*vi)->number();
+        snapshot.nodeVisible.insert(vnum, (*vi)->isEnabled());
+
+        H_edges::const_iterator ei = (*vi)->m_outEdges.constBegin();
+        while (ei != (*vi)->m_outEdges.constEnd())
+        {
+            if (ei.value().first == m_curRelation)
+            {
+                snapshot.arcVisible.insert(
+                    QPair<int,int>(vnum, ei.key()),
+                    ei.value().second.second);
+            }
+            ++ei;
+        }
+    }
+
+    m_visibilityHistory.push(snapshot);
+
+    // PASS 1: Set vertex visibility.
+    for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
+    {
+        const int vnum = (*vi)->number();
+        const bool shouldBeVisible = visibleSet.contains(vnum);
+        if ((*vi)->isEnabled() != shouldBeVisible)
+        {
+            (*vi)->setEnabled(shouldBeVisible);
+            setModStatus(ModStatus::VertexCount);
+            emit setVertexVisibility(vnum, shouldBeVisible);
+        }
+    }
+
+    // PASS 2: Set edge visibility (both endpoints must be visible).
+    for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
+    {
+        const int source = (*vi)->number();
+
+        H_edges::iterator ei = (*vi)->m_outEdges.begin();
+        while (ei != (*vi)->m_outEdges.end())
+        {
+            if (ei.value().first != m_curRelation)
+            {
+                ++ei;
+                continue;
+            }
+            const int target = ei.key();
+            const qreal weight = ei.value().second.first;
+            const qreal reverseWeight = (*vi)->hasEdgeFrom(target);
+            const bool preserveReverse = (reverseWeight != 0);
+            const bool edgeShouldBeVisible =
+                visibleSet.contains(source) && visibleSet.contains(target);
+
+            ei.value() = pair_i_fb(m_curRelation, pair_f_b(weight, edgeShouldBeVisible));
+            edgeInboundStatusSet(target, source, edgeShouldBeVisible);
+
+            if (edgeShouldBeVisible)
+                emit signalSetEdgeVisibility(m_curRelation, source, target, true, preserveReverse);
+            else
+                emit signalSetEdgeVisibility(m_curRelation, source, target,
+                                             false, preserveReverse, weight, reverseWeight);
+            ++ei;
+        }
+    }
+
+    progressStatus(tr("Showing %1 node(s) with attribute \"%2\" = \"%3\".")
+                       .arg(visibleSet.size()).arg(key, value));
+}
+
+/**
  * @brief Restores vertex and edge visibility from the top snapshot on the
  *        history stack.
  *

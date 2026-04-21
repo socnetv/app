@@ -181,6 +181,7 @@ public slots:
 
     void vertexFilterByEgoNetwork(const int v1, const int depth = 1);
     void vertexFilterBySelection(const QList<int> &selectedVertices);
+    void vertexFilterByAttribute(const QString &key, const QString &value);
     void vertexFilterRestoreAll();
     bool visibilityHistoryEmpty() const;
 
