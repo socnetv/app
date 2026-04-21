@@ -5,23 +5,67 @@ All notable changes to this project are documented in this file.
 ## [3.5] – April 2026
 
 ### New Features
-  - Ego-centered radial layout: places a selected node at the canvas center,
-    its 1-hop out-neighbors on an inner ring, and all remaining nodes on an
-    outer ring. Available via Layout menu (Ctrl+Alt+E) and node right-click
-    context menu (#214).
+
+  - **Graph exploration filters** (WS9):
+    - Focus on Node (Ego Network): hides all nodes except the selected node
+      and its direct neighbors, and all non-incident edges. Available in the
+      Filter menu and node right-click context menu (#211).
+    - Focus on Selection: hides all nodes not in the current selection and all
+      edges whose endpoints are not both selected. Action `Ctrl+X, Ctrl+S`;
+      available in Filter menu and node right-click context menu (#210).
+    - Restore All Nodes: restores all nodes hidden by any filter. Available in
+      Filter menu and node right-click context menu.
+    - Restore All Edges: re-enables all edges hidden by the weight filter.
+      Action `Ctrl+E, Ctrl+R`; available in the Filter menu (#213).
+    - All node-visibility filters (ego network, selection, centrality) now
+      share a unified non-destructive snapshot/restore history stack — Restore
+      All works across all filter types (#216).
+
+  - **Ego-centered radial layout**: places a selected node at the canvas
+    center, its 1-hop out-neighbors on an inner ring, and all remaining nodes
+    on an outer ring. Available via Layout menu (`Ctrl+Alt+E`) and node
+    right-click context menu (#214).
 
 ### Improvements
-  - Force-directed layouts improved for large graphs (#214):
+
+  - Force-directed layouts improved for large graphs:
     - Fruchterman-Reingold: pre-cached adjacency (O(1) edge lookup in inner
       loop), initial random placement, early convergence detection.
     - Kamada-Kawai: canvas clamping replaces random teleport on out-of-bounds
       particles.
 
+### Bug Fixes
+
+  - Fixed Kamada-Kawai crash when node filters are active.
+  - Fixed crash on graph reset: guard edge creation in `setEdgeVisibility`
+    when the edge has already been removed (#231).
+  - Fixed visibility history stack not cleared on graph clear / `initApp`.
+  - Fixed custom node attribute key/id mismatch in GraphML export (#208).
+  - Fixed Pajek parser: use default node shape as fallback when no Pajek
+    shape keyword is present (#179).
+  - Fixed `DialogClusteringHierarchical` signal/slot mismatch (#194).
+  - Fixed Node Properties dialog UX issues for custom attributes (#130).
+  - Fixed `graphTriadCensus()` appending stale zeros on repeated runs.
+
 ### Refactoring
+
   - New `Graph::vertexOutNeighborsSet()`: returns enabled 1-hop out-neighbors
     in the current relation; parametric for directed/undirected use.
   - Renamed `vertexNeighborhoodList/Set` → `vertexReciprocalNeighborsList/Set`
     to reflect that only reciprocal edges are considered.
+
+### Testing / CI
+
+  - New `socnetv-cli` clustering kernel v6 with golden baselines and benchmark
+    coverage.
+  - Aligned clustering benchmarks with CLI behavior; documented `--type`
+    semantics.
+
+### Build / Packaging
+
+  - RPM spec fixes: conditional `Qt5Compat` BuildRequires per distro family,
+    correct `qt6-qttools-devel` for Fedora, dropped redundant license/doc
+    macros.
 
 ## [3.4] – March 2026
 

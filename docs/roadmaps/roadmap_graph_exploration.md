@@ -92,7 +92,7 @@ Make large graphs readable and explorable.
 ### Phase 2 — Layout Improvements (#214)
 
 * ✔ Improved force-directed layout 
-* ✔ Radial layout
+* ✔ Ego-centered radial layout (#214) — `Graph::layoutEgoRadial()`, Layout menu (`Ctrl+Alt+E`) and node right-click context menu
 
 ### Phase 3 — Advanced Visualization
 
@@ -117,8 +117,8 @@ Filtering is a **persistent graph state**, not a temporary action.
 
 ### Phase 1 — Structural Filtering
 
-* Extend existing node filtering (centrality, degree) (#216)
-* Integrate edge filtering
+* ✔ Extend existing node filtering (centrality, degree) (#216) — centrality filter integrated into snapshot/restore history stack
+* ✔ Integrate edge filtering — `Graph::edgeFilterReset()`, `editFilterEdgesRestoreAllAct` (`Ctrl+E, Ctrl+R`)
 
 ### Phase 2 — Attribute Filtering
 
