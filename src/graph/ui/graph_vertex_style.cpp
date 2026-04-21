@@ -617,3 +617,32 @@ void Graph::vertexCustomAttributesSet(const int &v1, const QHash<QString, QStrin
     m_graph[vpos[v1]]->setCustomAttributes(customAttributes);
     setModStatus(ModStatus::VertexMetadata);
 }
+
+/**
+ * @brief Sets a single custom attribute key/value on vertex @p v1,
+ * leaving all other attributes untouched.
+ * @param v1    Vertex number.
+ * @param key   Attribute key.
+ * @param value Attribute value.
+ */
+void Graph::vertexCustomAttributeSet(const int &v1, const QString &key, const QString &value)
+{
+    QHash<QString, QString> attrs = m_graph[vpos[v1]]->customAttributes();
+    attrs.insert(key, value);
+    m_graph[vpos[v1]]->setCustomAttributes(attrs);
+    setModStatus(ModStatus::VertexMetadata);
+}
+
+/**
+ * @brief Removes a single custom attribute key from vertex @p v1.
+ * Does nothing if the key does not exist.
+ * @param v1  Vertex number.
+ * @param key Attribute key to remove.
+ */
+void Graph::vertexCustomAttributeRemove(const int &v1, const QString &key)
+{
+    QHash<QString, QString> attrs = m_graph[vpos[v1]]->customAttributes();
+    attrs.remove(key);
+    m_graph[vpos[v1]]->setCustomAttributes(attrs);
+    setModStatus(ModStatus::VertexMetadata);
+}

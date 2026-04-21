@@ -170,6 +170,53 @@ QString Graph::edgeLabel(const int &v1, const int &v2) const
 }
 
 /**
+ * @brief Sets all custom attributes on edge v1→v2, replacing any previously
+ * stored attributes for that edge.
+ * @param v1    Source vertex number.
+ * @param v2    Target vertex number.
+ * @param attrs Key/value map of custom attributes.
+ */
+void Graph::edgeCustomAttributesSet(const int &v1, const int &v2,
+                                    const QHash<QString,QString> &attrs)
+{
+    m_graph[vpos[v1]]->setOutEdgeCustomAttributes(v2, attrs);
+    setModStatus(ModStatus::EdgeMetadata);
+}
+
+/**
+ * @brief Returns the custom attributes stored on edge v1→v2.
+ * Returns an empty hash if no attributes have been set for that edge.
+ * @param v1 Source vertex number.
+ * @param v2 Target vertex number.
+ */
+QHash<QString,QString> Graph::edgeCustomAttributes(const int &v1, const int &v2) const
+{
+    return m_graph[vpos[v1]]->outEdgeCustomAttributes(v2);
+}
+
+/**
+ * @brief Returns a list of all unique custom attribute keys present across
+ * all enabled edges in the current graph.
+ */
+QStringList Graph::graphHasEdgeCustomAttributes() const
+{
+    QStringList keys;
+    for (auto it = m_graph.cbegin(); it != m_graph.cend(); ++it) {
+        if (!(*it)->isEnabled())
+            continue;
+        for (auto eit = (*it)->m_outEdges.cbegin(); eit != (*it)->m_outEdges.cend(); ++eit) {
+            const int v2 = eit.key();
+            const QHash<QString,QString> attrs = (*it)->outEdgeCustomAttributes(v2);
+            for (auto ait = attrs.cbegin(); ait != attrs.cend(); ++ait) {
+                if (!keys.contains(ait.key()))
+                    keys.append(ait.key());
+            }
+        }
+    }
+    return keys;
+}
+
+/**
  * @brief Toggles the visibility of edge labels.
  * @param toggle
  */

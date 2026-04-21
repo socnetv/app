@@ -601,6 +601,27 @@ QString GraphVertex::outEdgeLabel(const int &v2) const {
     return ( m_outEdgeLabels.contains(v2) ) ? m_outEdgeLabels.value(v2) : QString();
 }
 
+/**
+ * @brief Sets all custom attributes on the outbound edge to vertex @p v2,
+ * replacing any previously stored attributes for that edge.
+ * @param v2   Target vertex number.
+ * @param attrs Key/value map of custom attributes.
+ */
+void GraphVertex::setOutEdgeCustomAttributes(const int &v2, const QHash<QString,QString> &attrs)
+{
+    m_outEdgeCustomAttributes[v2] = attrs;
+}
+
+/**
+ * @brief Returns the custom attributes stored on the outbound edge to vertex @p v2.
+ * Returns an empty hash if no attributes have been set for that edge.
+ * @param v2 Target vertex number.
+ */
+QHash<QString,QString> GraphVertex::outEdgeCustomAttributes(const int &v2) const
+{
+    return m_outEdgeCustomAttributes.value(v2);
+}
+
 
 /**
  * @brief Adds an inbound edge from vertex v1
@@ -1380,6 +1401,8 @@ GraphVertex::~GraphVertex() {
 
     m_outEdgeLabels.clear();
     m_outEdgeLabels.squeeze();
+
+    m_outEdgeCustomAttributes.clear();
 
     clearPs();
 

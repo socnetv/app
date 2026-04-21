@@ -139,6 +139,8 @@ public:
     QString outLinkColor(const int &v2);
     void setOutEdgeLabel(const int &v2, const QString &label);
     QString outEdgeLabel(const int &v2) const;
+    void setOutEdgeCustomAttributes(const int &v2, const QHash<QString,QString> &attrs);
+    QHash<QString,QString> outEdgeCustomAttributes(const int &v2) const;
 
     void addInEdge(const int &v1, const qreal &weight);
     qreal hasEdgeFrom (const int &v, const bool &allRelations=false);
@@ -325,6 +327,7 @@ private:
     L_int myPs;
     QMultiHash <int, L_int> m_cliques;
     H_IntToStr m_outLinkColors, m_outEdgeLabels;
+    QHash<int, QHash<QString,QString>> m_outEdgeCustomAttributes;
 
     //FIXME vertex coords
 

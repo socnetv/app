@@ -600,6 +600,10 @@ public:
 
     void vertexCustomAttributesSet(const int &v1, const QHash<QString, QString> &customAttributes);
 
+    void vertexCustomAttributeSet(const int &v1, const QString &key, const QString &value);
+
+    void vertexCustomAttributeRemove(const int &v1, const QString &key);
+
     QHash<QString, QString> vertexCustomAttributes(const int &v1) const;
 
     void vertexPosSet(const int &v, const int &x, const int &y);
@@ -695,6 +699,12 @@ public:
     QString edgeColor(const int &v1, const int &v2);
 
     bool edgeColorAllSet(const QString &color, const int &threshold = RAND_MAX);
+
+    void edgeCustomAttributesSet(const int &v1, const int &v2, const QHash<QString,QString> &attrs);
+
+    QHash<QString,QString> edgeCustomAttributes(const int &v1, const int &v2) const;
+
+    QStringList graphHasEdgeCustomAttributes() const;
 
     /* GRAPH methods */
     // --------------------------------------------------------------------------
