@@ -1668,7 +1668,7 @@ void MainWindow::initActions(){
                                        "nodes for the edge to remove."));
     connect(editEdgeRemoveAct, SIGNAL(triggered()), this, SLOT(slotEditEdgeRemove()));
 
-    editEdgePropertiesAct = new QAction(QIcon(":/images/edge_properties_24px.svg"), tr("Edge Properties"), this);
+    editEdgePropertiesAct = new QAction(QIcon(":/images/edge_properties_48px.svg"), tr("Edge Properties"), this);
     editEdgePropertiesAct->setStatusTip(tr("Edit the properties and custom attributes of the clicked edge"));
     editEdgePropertiesAct->setWhatsThis(tr("Edge Properties\n\n"
                                            "Opens a dialog to edit the label, weight, color "
@@ -1796,7 +1796,7 @@ void MainWindow::initActions(){
 
 
 
-    filterNodesByCentralityAct = new QAction(tr("Filter Nodes By Centrality"), this);
+    filterNodesByCentralityAct = new QAction(QIcon(":/images/node_filter_48px.svg"), tr("Filter Nodes By Centrality"), this);
     filterNodesByCentralityAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_E));
     filterNodesByCentralityAct->setStatusTip(tr("Temporarily filter out nodes according to their centrality score."));
     filterNodesByCentralityAct->setWhatsThis(tr("Filter Nodes By Centrality\n\n"
@@ -1841,7 +1841,7 @@ void MainWindow::initActions(){
     connect(editFilterNodesIsolatesAct, SIGNAL(toggled(bool)),
             this, SLOT(slotEditFilterNodesIsolates(bool)));
 
-    editFilterEdgesByWeightAct = new QAction(QIcon(":/images/filter_list_48px.svg"), tr("Filter Edges by Weight"), this);
+    editFilterEdgesByWeightAct = new QAction(QIcon(":/images/edge_filter_48px.svg"), tr("Filter Edges by Weight"), this);
     editFilterEdgesByWeightAct->setEnabled(true);
     editFilterEdgesByWeightAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_E, Qt::CTRL | Qt::Key_F));
     editFilterEdgesByWeightAct->setStatusTip(tr("Temporarily filter edges of some weight out of the network"));
@@ -4176,6 +4176,7 @@ void MainWindow::initToolBar(){
     toolBar->addAction (editNodeRemoveAct);
     toolBar->addAction (editNodeFindAct);
     toolBar->addAction(editNodePropertiesAct );
+    toolBar->addAction(filterNodesByCentralityAct);
 
     toolBar->addSeparator();
 
@@ -4185,6 +4186,7 @@ void MainWindow::initToolBar(){
 
     toolBar->addAction (editEdgeAddAct);
     toolBar->addAction (editEdgeRemoveAct);
+    toolBar->addAction(editEdgePropertiesAct);
     toolBar->addAction (editFilterEdgesByWeightAct);
 
     toolBar->addSeparator();
