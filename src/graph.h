@@ -32,6 +32,7 @@
 #include <stack>
 
 #include "global.h"
+#include "graph/filters/filter_condition.h"
 #include "graphvertex.h"
 #include "matrix.h"
 #include "parser.h"
@@ -181,7 +182,8 @@ public slots:
 
     void vertexFilterByEgoNetwork(const int v1, const int depth = 1);
     void vertexFilterBySelection(const QList<int> &selectedVertices);
-    void vertexFilterByAttribute(const QString &key, const QString &value);
+    void vertexFilterByAttribute(const FilterCondition &cond);
+    void edgeFilterByAttribute(const FilterCondition &cond);
     void vertexFilterRestoreAll();
     bool visibilityHistoryEmpty() const;
 

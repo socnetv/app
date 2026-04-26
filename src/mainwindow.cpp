@@ -69,6 +69,7 @@
 #include "forms/dialognodeedit.h"
 #include "forms/dialogedgeedit.h"
 #include "forms/dialogfilternodesbycentrality.h"
+#include "forms/dialogfilterbyattribute.h"
 #include "forms/dialogfilteredgesbyweight.h"
 #include "forms/dialogedgedichotomization.h"
 #include "forms/dialogsimilaritypearson.h"
@@ -1803,12 +1804,12 @@ void MainWindow::initActions(){
                                     "Filters out nodes according to their score in a user-selected centrality index."));
     connect(filterNodesByCentralityAct, SIGNAL(triggered()), this, SLOT(slotFilterNodesDialogByCentrality()));
 
-    filterNodesByAttributeAct = new QAction(QIcon(":/images/node_filter_48px.svg"), tr("Filter Nodes By Attribute"), this);
+    filterNodesByAttributeAct = new QAction(QIcon(":/images/node_filter_48px.svg"), tr("Filter by Attribute..."), this);
     filterNodesByAttributeAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_A));
-    filterNodesByAttributeAct->setStatusTip(tr("Show only nodes matching a custom attribute key/value pair."));
-    filterNodesByAttributeAct->setWhatsThis(tr("Filter Nodes By Attribute\n\n"
-                                               "Hides all nodes except those whose custom attribute matches "
-                                               "the key and value you enter."));
+    filterNodesByAttributeAct->setStatusTip(tr("Show only nodes or edges matching a custom attribute condition (key, operator, value)."));
+    filterNodesByAttributeAct->setWhatsThis(tr("Filter by Attribute\n\n"
+                                               "Opens a dialog to filter nodes, edges, or both by a custom attribute. "
+                                               "Non-matching elements are hidden (reversible via Restore All Nodes)."));
     connect(filterNodesByAttributeAct, SIGNAL(triggered()), this, SLOT(slotFilterNodesByAttribute()));
 
     filterNodesBySelectionAct = new QAction(tr("Focus on Selection"), this);
@@ -3842,6 +3843,8 @@ void MainWindow::initMenuBar() {
     editNodeMenu->addSeparator();
     editNodeMenu->addAction (editNodeLabelsSizeAct);
     editNodeMenu->addAction (editNodeLabelsColorAct);
+    editNodeMenu->addSeparator();
+    editNodeMenu->addAction (editFilterNodesIsolatesAct);
 
 
     editEdgeMenu = new QMenu(tr("Edges..."));
@@ -3859,6 +3862,8 @@ void MainWindow::initMenuBar() {
     editEdgeMenu->addSeparator();
     editEdgeMenu->addAction (editEdgeDichotomizeAct);
     editEdgeMenu->addSeparator();
+    editEdgeMenu->addAction (editFilterEdgesUnilateralAct);
+    editEdgeMenu->addSeparator();
     editEdgeMenu->addAction(editEdgeLabelAct);
     editEdgeMenu->addAction(editEdgeColorAct);
     editEdgeMenu->addAction(editEdgeWeightAct);
@@ -3872,18 +3877,20 @@ void MainWindow::initMenuBar() {
     filterMenu->setIcon(QIcon(":/images/filter_list_48px.svg"));
     editMenu->addMenu(filterMenu);
 
+    // — Node filters —
     filterMenu->addAction(filterNodesBySelectionAct);
     filterMenu->addAction(filterNodesByEgoNetworkAct);
     filterMenu->addAction(filterNodesByCentralityAct);
+    filterMenu->addSeparator();
+    // — Edge filters —
+    filterMenu->addAction(editFilterEdgesByWeightAct);
+    filterMenu->addSeparator();
+    // — Attribute filter (nodes + edges) —
     filterMenu->addAction(filterNodesByAttributeAct);
     filterMenu->addSeparator();
+    // — Restore —
     filterMenu->addAction(filterNodesRestoreAllAct);
-    filterMenu->addSeparator();
-    filterMenu->addAction(editFilterNodesIsolatesAct );
-    filterMenu->addSeparator();
-    filterMenu->addAction(editFilterEdgesByWeightAct );
     filterMenu->addAction(editFilterEdgesRestoreAllAct);
-    filterMenu->addAction(editFilterEdgesUnilateralAct);
 
     // ANALYZE MENU
     analysisMenu = menuBar()->addMenu(tr("&Analyze"));
@@ -11448,7 +11455,10 @@ void MainWindow::slotFilterNodesByEgoNetwork()
 }
 
 /**
- * @brief Shows only nodes matching a user-supplied custom attribute key/value.
+ * @brief Opens the Filter By Attribute dialog and applies the chosen condition.
+ *
+ * Handles both node and edge attribute filtering depending on the scope
+ * selected in the dialog.
  */
 void MainWindow::slotFilterNodesByAttribute()
 {
@@ -11458,33 +11468,34 @@ void MainWindow::slotFilterNodesByAttribute()
         return;
     }
 
-    const QStringList keys = activeGraph->graphHasVertexCustomAttributes();
-    if (keys.isEmpty())
+    const QStringList nodeKeys = activeGraph->graphHasVertexCustomAttributes();
+    const QStringList edgeKeys = activeGraph->graphHasEdgeCustomAttributes();
+
+    if (nodeKeys.isEmpty() && edgeKeys.isEmpty())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL,
                               tr("No custom attributes"),
-                              tr("This network has no custom node attributes. "
-                                 "Add attributes via Node Properties first."));
+                              tr("This network has no custom node or edge attributes. "
+                                 "Add attributes via the Node or Edge Properties dialogs first."));
         return;
     }
 
-    bool ok = false;
-    const QString key = QInputDialog::getItem(this,
-                                              tr("Filter Nodes By Attribute"),
-                                              tr("Attribute key:"),
-                                              keys, 0, true, &ok);
-    if (!ok || key.trimmed().isEmpty())
-        return;
+    DialogFilterByAttribute dlg(nodeKeys, edgeKeys, this);
 
-    const QString value = QInputDialog::getText(this,
-                                                tr("Filter Nodes By Attribute"),
-                                                tr("Value for \"%1\":").arg(key),
-                                                QLineEdit::Normal, QString(), &ok);
-    if (!ok)
-        return;
+    connect(&dlg, &DialogFilterByAttribute::userChoices,
+            this, [this](const FilterCondition &cond) {
+        if (cond.scope == FilterCondition::Scope::Edges) {
+            activeGraph->edgeFilterByAttribute(cond);
+        } else if (cond.scope == FilterCondition::Scope::Both) {
+            activeGraph->vertexFilterByAttribute(cond);
+            activeGraph->edgeFilterByAttribute(cond);
+        } else {
+            activeGraph->vertexFilterByAttribute(cond);
+        }
+        filterNodesRestoreAllAct->setEnabled(true);
+    });
 
-    activeGraph->vertexFilterByAttribute(key.trimmed(), value.trimmed());
-    filterNodesRestoreAllAct->setEnabled(true);
+    dlg.exec();
 }
 
 /**

@@ -187,7 +187,8 @@ set (FORMS
     src/forms/dialognodeedit.ui
     src/forms/dialogedgeedit.ui
     src/forms/dialognodefind.ui
-    src/forms/dialogedgedichotomization.ui 
+    src/forms/dialogfilterbyattribute.ui
+    src/forms/dialogedgedichotomization.ui
     src/forms/dialogexportpdf.ui 
     src/forms/dialogexportimage.ui
     # Other UI files
@@ -213,7 +214,8 @@ set(SOURCES
     src/graphicsnodelabel.cpp 
     src/graphicsnodenumber.cpp 
     src/forms/dialogfilternodesbycentrality.cpp
-    src/forms/dialogfilteredgesbyweight.cpp 
+    src/forms/dialogfilteredgesbyweight.cpp
+    src/forms/dialogfilterbyattribute.cpp
     src/forms/dialogedgedichotomization.cpp 
     src/forms/dialogwebcrawler.cpp 
     src/forms/dialogdatasetselect.cpp 

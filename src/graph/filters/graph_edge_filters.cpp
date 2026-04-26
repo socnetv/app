@@ -15,6 +15,7 @@
  */
 
 #include "graph.h"
+#include "filter_condition.h"
 
 
 /**
@@ -219,5 +220,131 @@ void Graph::edgeFilterUnilateral(const bool &toggle)
     }
     setModStatus(ModStatus::EdgeCount);
     progressStatus(tr("Unilateral edges have been temporarily disabled."));
+}
+
+/**
+ * @brief Hides all edges whose custom attribute does not satisfy @p cond.
+ *
+ * Non-destructive: pushes a GraphVisibilitySnapshot onto m_visibilityHistory
+ * before making any changes. Call vertexFilterRestoreAll() to undo.
+ *
+ * Returns early with a status message if no edge satisfies the condition.
+ *
+ * @param cond  The filter condition (key, operator, value).
+ */
+void Graph::edgeFilterByAttribute(const FilterCondition &cond)
+{
+    qDebug() << "Graph::edgeFilterByAttribute() key:" << cond.key
+             << "op:" << static_cast<int>(cond.op) << "value:" << cond.value;
+
+    // Build visible set: (source, target) pairs whose custom attribute satisfies cond.
+    // We use matchesCondition from graph_node_filters.cpp via a local lambda here.
+    auto matches = [&](const QString &attrVal) -> bool {
+        switch (cond.op) {
+        case FilterCondition::Op::Eq:       return attrVal == cond.value;
+        case FilterCondition::Op::Neq:      return attrVal != cond.value;
+        case FilterCondition::Op::Contains: return attrVal.contains(cond.value, Qt::CaseInsensitive);
+        default: break;
+        }
+        bool okA = false, okB = false;
+        const double a = attrVal.toDouble(&okA);
+        const double b = cond.value.toDouble(&okB);
+        if (okA && okB) {
+            switch (cond.op) {
+            case FilterCondition::Op::Gt:  return a >  b;
+            case FilterCondition::Op::Lt:  return a <  b;
+            case FilterCondition::Op::Gte: return a >= b;
+            case FilterCondition::Op::Lte: return a <= b;
+            default: break;
+            }
+        }
+        switch (cond.op) {
+        case FilterCondition::Op::Gt:  return attrVal >  cond.value;
+        case FilterCondition::Op::Lt:  return attrVal <  cond.value;
+        case FilterCondition::Op::Gte: return attrVal >= cond.value;
+        case FilterCondition::Op::Lte: return attrVal <= cond.value;
+        default: break;
+        }
+        return false;
+    };
+
+    // Count matching edges (for early-exit guard).
+    int matchCount = 0;
+    VList::const_iterator vi;
+    for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
+    {
+        H_edges::const_iterator ei = (*vi)->m_outEdges.constBegin();
+        while (ei != (*vi)->m_outEdges.constEnd())
+        {
+            if (ei.value().first == m_curRelation && ei.value().second.second)
+            {
+                const QHash<QString,QString> attrs =
+                    (*vi)->outEdgeCustomAttributes(ei.key());
+                if (attrs.contains(cond.key) && matches(attrs.value(cond.key)))
+                    ++matchCount;
+            }
+            ++ei;
+        }
+    }
+
+    if (matchCount == 0)
+    {
+        progressStatus(tr("No edges found matching: %1.").arg(cond.label()));
+        return;
+    }
+
+    // Snapshot BEFORE making changes.
+    GraphVisibilitySnapshot snapshot;
+    snapshot.active = true;
+
+    for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
+    {
+        const int vnum = (*vi)->number();
+        snapshot.nodeVisible.insert(vnum, (*vi)->isEnabled());
+
+        H_edges::const_iterator ei = (*vi)->m_outEdges.constBegin();
+        while (ei != (*vi)->m_outEdges.constEnd())
+        {
+            if (ei.value().first == m_curRelation)
+                snapshot.arcVisible.insert(QPair<int,int>(vnum, ei.key()),
+                                           ei.value().second.second);
+            ++ei;
+        }
+    }
+
+    m_visibilityHistory.push(snapshot);
+
+    // Apply: hide edges that do NOT match the condition.
+    for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
+    {
+        const int source = (*vi)->number();
+
+        H_edges::iterator ei = (*vi)->m_outEdges.begin();
+        while (ei != (*vi)->m_outEdges.end())
+        {
+            if (ei.value().first != m_curRelation) { ++ei; continue; }
+
+            const int target = ei.key();
+            const qreal weight = ei.value().second.first;
+            const qreal reverseWeight = (*vi)->hasEdgeFrom(target);
+            const bool preserveReverse = (reverseWeight != 0);
+
+            const QHash<QString,QString> attrs = (*vi)->outEdgeCustomAttributes(target);
+            const bool condMet = attrs.contains(cond.key) && matches(attrs.value(cond.key));
+
+            ei.value() = pair_i_fb(m_curRelation, pair_f_b(weight, condMet));
+            edgeInboundStatusSet(target, source, condMet);
+
+            if (condMet)
+                emit signalSetEdgeVisibility(m_curRelation, source, target, true, preserveReverse);
+            else
+                emit signalSetEdgeVisibility(m_curRelation, source, target,
+                                             false, preserveReverse, weight, reverseWeight);
+            ++ei;
+        }
+    }
+
+    progressStatus(tr("Showing %1 edge(s) matching: %2.")
+                       .arg(matchCount).arg(cond.label()));
 }
 

@@ -11,6 +11,7 @@
  */
 
 #include "graph.h"
+#include "filter_condition.h"
 #include <QDebug>
 
 /**
@@ -466,36 +467,91 @@ void Graph::vertexFilterBySelection(const QList<int> &selectedVertices)
                        .arg(visibleSet.size()));
 }
 
+// ---------------------------------------------------------------------------
+// Internal helper
+// ---------------------------------------------------------------------------
+
 /**
- * @brief Shows only vertices that have the given custom attribute key set to
- *        the given value; all other vertices are hidden.
+ * @brief Returns true if @p attrValue satisfies the condition described by
+ *        @p cond.
+ *
+ * Numeric operators (>, <, ≥, ≤) attempt a double conversion of both sides
+ * and fall back to lexicographic comparison when either side is not numeric.
+ * Eq / Neq always use exact string comparison.
+ * Contains uses case-insensitive substring search.
+ */
+static bool matchesCondition(const QString &attrValue, const FilterCondition &cond)
+{
+    switch (cond.op) {
+    case FilterCondition::Op::Eq:
+        return attrValue == cond.value;
+    case FilterCondition::Op::Neq:
+        return attrValue != cond.value;
+    case FilterCondition::Op::Contains:
+        return attrValue.contains(cond.value, Qt::CaseInsensitive);
+    default:
+        break;
+    }
+
+    // Numeric branch
+    bool okA = false, okB = false;
+    const double a = attrValue.toDouble(&okA);
+    const double b = cond.value.toDouble(&okB);
+
+    if (okA && okB) {
+        switch (cond.op) {
+        case FilterCondition::Op::Gt:  return a >  b;
+        case FilterCondition::Op::Lt:  return a <  b;
+        case FilterCondition::Op::Gte: return a >= b;
+        case FilterCondition::Op::Lte: return a <= b;
+        default: break;
+        }
+    }
+
+    // Lexicographic fallback
+    switch (cond.op) {
+    case FilterCondition::Op::Gt:  return attrValue >  cond.value;
+    case FilterCondition::Op::Lt:  return attrValue <  cond.value;
+    case FilterCondition::Op::Gte: return attrValue >= cond.value;
+    case FilterCondition::Op::Lte: return attrValue <= cond.value;
+    default: break;
+    }
+    return false;
+}
+
+// ---------------------------------------------------------------------------
+// Node attribute filter
+// ---------------------------------------------------------------------------
+
+/**
+ * @brief Shows only vertices whose custom attribute satisfies @p cond;
+ *        all other vertices are hidden.
  *
  * Non-destructive: pushes a GraphVisibilitySnapshot onto m_visibilityHistory
  * before making any changes. Call vertexFilterRestoreAll() to undo.
  *
- * Returns early with a status message if no vertex carries the requested key,
- * or if the resulting visible set would be empty.
+ * Returns early with a status message if the resulting visible set is empty.
  *
- * @param key    Custom attribute key to match.
- * @param value  Required value for that key.
+ * @param cond  The filter condition (key, operator, value).
  */
-void Graph::vertexFilterByAttribute(const QString &key, const QString &value)
+void Graph::vertexFilterByAttribute(const FilterCondition &cond)
 {
-    qDebug() << "Graph::vertexFilterByAttribute() key:" << key << "value:" << value;
+    qDebug() << "Graph::vertexFilterByAttribute() key:" << cond.key
+             << "op:" << static_cast<int>(cond.op) << "value:" << cond.value;
 
-    // Build visible set: vertices whose custom attribute key == value.
+    // Build visible set: vertices that satisfy the condition.
     QSet<int> visibleSet;
     VList::const_iterator vi;
     for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
     {
         const QHash<QString,QString> attrs = (*vi)->customAttributes();
-        if (attrs.contains(key) && attrs.value(key) == value)
+        if (attrs.contains(cond.key) && matchesCondition(attrs.value(cond.key), cond))
             visibleSet.insert((*vi)->number());
     }
 
     if (visibleSet.isEmpty())
     {
-        progressStatus(tr("No nodes found with attribute \"%1\" = \"%2\".").arg(key, value));
+        progressStatus(tr("No nodes found matching: %1.").arg(cond.label()));
         return;
     }
 
@@ -568,8 +624,8 @@ void Graph::vertexFilterByAttribute(const QString &key, const QString &value)
         }
     }
 
-    progressStatus(tr("Showing %1 node(s) with attribute \"%2\" = \"%3\".")
-                       .arg(visibleSet.size()).arg(key, value));
+    progressStatus(tr("Showing %1 node(s) matching: %2.")
+                       .arg(visibleSet.size()).arg(cond.label()));
 }
 
 /**

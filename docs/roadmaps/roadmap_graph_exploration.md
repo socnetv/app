@@ -127,17 +127,25 @@ Filtering is a **persistent graph state**, not a temporary action.
   * `Graph::vertexFilterByAttribute(key, value)` — node filtering by exact match (`Ctrl+X, Ctrl+A`)
   * Custom attribute storage for both nodes and edges; GraphML roundtrip
 * Remaining work for full #217:
-  * Edge attribute filtering (`edgeFilterByAttribute`)
-  * Extended comparison operators (≠, >, <, ≥, ≤)
-  * Dedicated filter builder dialog (attribute selector, operator, value)
+  * `FilterCondition` struct (scope, key, operator, value; `label()` for chip text) in `src/graph/filters/filter_condition.h`
+  * `DialogFilterByAttribute` — scope radio (Nodes/Edges/Both), editable key combo, operator dropdown (`=` `≠` `>` `<` `≥` `≤` `contains`), value field
+  * `Graph::edgeFilterByAttribute(const FilterCondition &)` — same snapshot/restore stack as node filters
+  * Refactor `vertexFilterByAttribute` to accept `FilterCondition`
+  * Numeric-aware evaluation: tries `toDouble()`, falls back to lexicographic
 * Requires:
   * Attribute system (#96) — partially fulfilled by #224
   * Metadata system (#130)
 
 ### Phase 3 — Unified Filtering System
 
-* Combine node + edge + attribute filters (#219)
-* Introduce logical composition (AND / OR)
+* Unify all filter types (structural, weight, attribute) under `FilterCondition` model (#219)
+* UI: persistent **filter bar** — thin strip between toolbar and canvas, hidden when no filter is active
+  * Each active condition shown as a chip: `Nodes: type = investor ×`
+  * ×-close on chip pops that condition off the stack
+  * "Clear all" at the right end calls `vertexFilterRestoreAll()` to completion
+* All existing filter actions (centrality, weight, ego, selection, attribute) emit a chip to the bar
+* Logical composition: AND / OR across conditions
+* **Not** a single unified dialog — each filter type keeps its own dialog; the bar is the unifying UI layer
 
 ### Phase 4 — Subgraph Extraction
 
