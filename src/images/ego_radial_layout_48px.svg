@@ -1,0 +1,81 @@
+<svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+  <title>Ego radial layout</title>
+  <desc>SocNetV-style ego radial layout icon with many red nodes, inner ego circle, outer radial node ring, and thin black edges.</desc>
+
+  <defs>
+    <circle id="outerNode" cx="24" cy="6.5" r="1.45" fill="#e60000" stroke="#b00000" stroke-width="0.35"/>
+    <circle id="innerNode" cx="24" cy="15.6" r="2.05" fill="#e60000" stroke="#b00000" stroke-width="0.35"/>
+    <line id="shortOuterEdge" x1="24" y1="6.5" x2="27.41" y2="6.84"/>
+  </defs>
+
+  <!-- guide rings -->
+  <circle cx="24" cy="24" r="17.5" fill="none" stroke="#e60000" stroke-width="0.7" opacity="0.9"/>
+  <circle cx="24" cy="24" r="8.4" fill="none" stroke="#e60000" stroke-width="0.65" stroke-dasharray="1.5 1.5" opacity="0.85"/>
+
+  <!-- many thin graph edges, behind nodes -->
+  <g fill="none" stroke="#111" stroke-width="0.55" stroke-linecap="round" stroke-linejoin="round" opacity="0.9">
+    <!-- outer ring segments -->
+    <use href="#shortOuterEdge"/><use href="#shortOuterEdge" transform="rotate(11.25 24 24)"/><use href="#shortOuterEdge" transform="rotate(22.5 24 24)"/><use href="#shortOuterEdge" transform="rotate(33.75 24 24)"/>
+    <use href="#shortOuterEdge" transform="rotate(45 24 24)"/><use href="#shortOuterEdge" transform="rotate(56.25 24 24)"/><use href="#shortOuterEdge" transform="rotate(67.5 24 24)"/><use href="#shortOuterEdge" transform="rotate(78.75 24 24)"/>
+    <use href="#shortOuterEdge" transform="rotate(90 24 24)"/><use href="#shortOuterEdge" transform="rotate(101.25 24 24)"/><use href="#shortOuterEdge" transform="rotate(112.5 24 24)"/><use href="#shortOuterEdge" transform="rotate(123.75 24 24)"/>
+    <use href="#shortOuterEdge" transform="rotate(135 24 24)"/><use href="#shortOuterEdge" transform="rotate(146.25 24 24)"/><use href="#shortOuterEdge" transform="rotate(157.5 24 24)"/><use href="#shortOuterEdge" transform="rotate(168.75 24 24)"/>
+    <use href="#shortOuterEdge" transform="rotate(180 24 24)"/><use href="#shortOuterEdge" transform="rotate(191.25 24 24)"/><use href="#shortOuterEdge" transform="rotate(202.5 24 24)"/><use href="#shortOuterEdge" transform="rotate(213.75 24 24)"/>
+    <use href="#shortOuterEdge" transform="rotate(225 24 24)"/><use href="#shortOuterEdge" transform="rotate(236.25 24 24)"/><use href="#shortOuterEdge" transform="rotate(247.5 24 24)"/><use href="#shortOuterEdge" transform="rotate(258.75 24 24)"/>
+    <use href="#shortOuterEdge" transform="rotate(270 24 24)"/><use href="#shortOuterEdge" transform="rotate(281.25 24 24)"/><use href="#shortOuterEdge" transform="rotate(292.5 24 24)"/><use href="#shortOuterEdge" transform="rotate(303.75 24 24)"/>
+    <use href="#shortOuterEdge" transform="rotate(315 24 24)"/><use href="#shortOuterEdge" transform="rotate(326.25 24 24)"/><use href="#shortOuterEdge" transform="rotate(337.5 24 24)"/><use href="#shortOuterEdge" transform="rotate(348.75 24 24)"/>
+
+    <!-- ego spokes -->
+    <line x1="24" y1="24" x2="24" y2="15.6"/>
+    <line x1="24" y1="24" x2="31.99" y2="21.40"/>
+    <line x1="24" y1="24" x2="28.94" y2="30.80"/>
+    <line x1="24" y1="24" x2="19.06" y2="30.80"/>
+    <line x1="24" y1="24" x2="16.01" y2="21.40"/>
+
+    <!-- inner ring -->
+    <line x1="24" y1="15.6" x2="31.99" y2="21.40"/>
+    <line x1="31.99" y1="21.40" x2="28.94" y2="30.80"/>
+    <line x1="28.94" y1="30.80" x2="19.06" y2="30.80"/>
+    <line x1="19.06" y1="30.80" x2="16.01" y2="21.40"/>
+    <line x1="16.01" y1="21.40" x2="24" y2="15.6"/>
+
+    <!-- radial links from inner to outer ring -->
+    <line x1="24" y1="15.6" x2="24" y2="6.5"/>
+    <line x1="31.99" y1="21.40" x2="41.16" y2="20.59"/>
+    <line x1="28.94" y1="30.80" x2="35.24" y2="37.41"/>
+    <line x1="19.06" y1="30.80" x2="12.76" y2="37.41"/>
+    <line x1="16.01" y1="21.40" x2="6.84" y2="20.59"/>
+
+    <!-- a few cross-network chords like the screenshot -->
+    <line x1="24" y1="6.5" x2="38.55" y2="33.72"/>
+    <line x1="30.70" y1="7.83" x2="20.59" y2="41.16"/>
+    <line x1="38.55" y1="14.28" x2="11.63" y2="36.37"/>
+    <line x1="41.16" y1="27.41" x2="9.45" y2="14.28"/>
+    <line x1="35.24" y1="37.41" x2="16.30" y2="8.29"/>
+    <line x1="24" y1="41.5" x2="41.5" y2="24"/>
+    <line x1="6.5" y1="24" x2="30.70" y2="40.17"/>
+    <line x1="7.83" y1="17.30" x2="36.37" y2="11.63"/>
+  </g>
+
+  <!-- nodes -->
+  <g>
+    <!-- central ego -->
+    <circle cx="24" cy="24" r="2.8" fill="#e60000" stroke="#b00000" stroke-width="0.35"/>
+
+    <!-- inner ego-neighborhood nodes -->
+    <use href="#innerNode"/>
+    <use href="#innerNode" transform="rotate(72 24 24)"/>
+    <use href="#innerNode" transform="rotate(144 24 24)"/>
+    <use href="#innerNode" transform="rotate(216 24 24)"/>
+    <use href="#innerNode" transform="rotate(288 24 24)"/>
+
+    <!-- dense outer ring -->
+    <use href="#outerNode"/><use href="#outerNode" transform="rotate(11.25 24 24)"/><use href="#outerNode" transform="rotate(22.5 24 24)"/><use href="#outerNode" transform="rotate(33.75 24 24)"/>
+    <use href="#outerNode" transform="rotate(45 24 24)"/><use href="#outerNode" transform="rotate(56.25 24 24)"/><use href="#outerNode" transform="rotate(67.5 24 24)"/><use href="#outerNode" transform="rotate(78.75 24 24)"/>
+    <use href="#outerNode" transform="rotate(90 24 24)"/><use href="#outerNode" transform="rotate(101.25 24 24)"/><use href="#outerNode" transform="rotate(112.5 24 24)"/><use href="#outerNode" transform="rotate(123.75 24 24)"/>
+    <use href="#outerNode" transform="rotate(135 24 24)"/><use href="#outerNode" transform="rotate(146.25 24 24)"/><use href="#outerNode" transform="rotate(157.5 24 24)"/><use href="#outerNode" transform="rotate(168.75 24 24)"/>
+    <use href="#outerNode" transform="rotate(180 24 24)"/><use href="#outerNode" transform="rotate(191.25 24 24)"/><use href="#outerNode" transform="rotate(202.5 24 24)"/><use href="#outerNode" transform="rotate(213.75 24 24)"/>
+    <use href="#outerNode" transform="rotate(225 24 24)"/><use href="#outerNode" transform="rotate(236.25 24 24)"/><use href="#outerNode" transform="rotate(247.5 24 24)"/><use href="#outerNode" transform="rotate(258.75 24 24)"/>
+    <use href="#outerNode" transform="rotate(270 24 24)"/><use href="#outerNode" transform="rotate(281.25 24 24)"/><use href="#outerNode" transform="rotate(292.5 24 24)"/><use href="#outerNode" transform="rotate(303.75 24 24)"/>
+    <use href="#outerNode" transform="rotate(315 24 24)"/><use href="#outerNode" transform="rotate(326.25 24 24)"/><use href="#outerNode" transform="rotate(337.5 24 24)"/><use href="#outerNode" transform="rotate(348.75 24 24)"/>
+  </g>
+</svg>

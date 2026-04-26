@@ -1928,7 +1928,7 @@ void MainWindow::initActions(){
                 tr("Random Circles Layout\n\n Repositions the nodes randomly on circles"));
     connect(layoutRandomRadialAct, SIGNAL(triggered()), this, SLOT(slotLayoutRadialRandom()));
 
-    layoutEgoRadialAct = new QAction(tr("Ego Radial layout"), this);
+    layoutEgoRadialAct = new QAction(QIcon(":/images/ego_radial_layout_48px.svg"), tr("Ego Radial layout"), this);
     layoutEgoRadialAct->setShortcut(QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_E));
     layoutEgoRadialAct->setStatusTip(tr("Place the selected vertex at center, its neighbors on an inner ring, all others on an outer ring"));
     layoutEgoRadialAct->setWhatsThis(tr("Ego Radial Layout\n\nPlaces the selected vertex at the canvas center, its 1-hop out-neighbors on an inner ring, and all remaining nodes on an outer ring."));
