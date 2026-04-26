@@ -120,21 +120,16 @@ Filtering is a **persistent graph state**, not a temporary action.
 * ✔ Extend existing node filtering (centrality, degree) (#216) — centrality filter integrated into snapshot/restore history stack
 * ✔ Integrate edge filtering — `Graph::edgeFilterReset()`, `editFilterEdgesRestoreAllAct` (`Ctrl+E, Ctrl+R`)
 
-### Phase 2 — Attribute Filtering
+### Phase 2 — Attribute Filtering ✔
 
-* Filter by node/edge attributes (#217)
-* Foundation in place (from #224 Phase E):
-  * `Graph::vertexFilterByAttribute(key, value)` — node filtering by exact match (`Ctrl+X, Ctrl+A`)
-  * Custom attribute storage for both nodes and edges; GraphML roundtrip
-* Remaining work for full #217:
-  * `FilterCondition` struct (scope, key, operator, value; `label()` for chip text) in `src/graph/filters/filter_condition.h`
-  * `DialogFilterByAttribute` — scope radio (Nodes/Edges/Both), editable key combo, operator dropdown (`=` `≠` `>` `<` `≥` `≤` `contains`), value field
+* ✔ Filter nodes and edges by attribute (#217):
+  * `FilterCondition` struct (scope, key, op, value; `label()` for chip text) in `src/graph/filters/filter_condition.h`
+  * `DialogFilterByAttribute` — scope radio (Nodes/Edges/Both), editable key combo populated from graph attributes, operator dropdown (`=` `≠` `>` `<` `≥` `≤` `contains`), value field; emits `userChoices(FilterCondition)`
+  * `Graph::vertexFilterByAttribute(const FilterCondition &)` — non-destructive, snapshot/restore stack (`Ctrl+X, Ctrl+A`)
   * `Graph::edgeFilterByAttribute(const FilterCondition &)` — same snapshot/restore stack as node filters
-  * Refactor `vertexFilterByAttribute` to accept `FilterCondition`
-  * Numeric-aware evaluation: tries `toDouble()`, falls back to lexicographic
-* Requires:
-  * Attribute system (#96) — partially fulfilled by #224
-  * Metadata system (#130)
+  * Numeric-aware evaluation: compares as `double` when both sides parse; falls back to lexicographic; `contains` is case-insensitive substring
+  * Filter: combo added to Control Panel (Network group) for quick access
+  * Filter toolbar group: dedicated icons for each filter action
 
 ### Phase 3 — Unified Filtering System
 

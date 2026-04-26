@@ -1797,14 +1797,14 @@ void MainWindow::initActions(){
 
 
 
-    filterNodesByCentralityAct = new QAction(QIcon(":/images/node_filter_48px.svg"), tr("Filter Nodes By Centrality"), this);
+    filterNodesByCentralityAct = new QAction(QIcon(":/images/filter_centrality_48px.svg"), tr("Filter Nodes By Centrality"), this);
     filterNodesByCentralityAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_E));
     filterNodesByCentralityAct->setStatusTip(tr("Temporarily filter out nodes according to their centrality score."));
     filterNodesByCentralityAct->setWhatsThis(tr("Filter Nodes By Centrality\n\n"
                                     "Filters out nodes according to their score in a user-selected centrality index."));
     connect(filterNodesByCentralityAct, SIGNAL(triggered()), this, SLOT(slotFilterNodesDialogByCentrality()));
 
-    filterNodesByAttributeAct = new QAction(QIcon(":/images/node_filter_48px.svg"), tr("Filter by Attribute..."), this);
+    filterNodesByAttributeAct = new QAction(QIcon(":/images/filter_attribute_48px.svg"), tr("Filter by Attribute..."), this);
     filterNodesByAttributeAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_A));
     filterNodesByAttributeAct->setStatusTip(tr("Show only nodes or edges matching a custom attribute condition (key, operator, value)."));
     filterNodesByAttributeAct->setWhatsThis(tr("Filter by Attribute\n\n"
@@ -1831,7 +1831,7 @@ void MainWindow::initActions(){
     filterNodesByEgoNetworkAct->setEnabled(false); // enabled only when exactly 1 node selected
     connect(filterNodesByEgoNetworkAct, SIGNAL(triggered()), this, SLOT(slotFilterNodesByEgoNetwork()));
 
-    filterNodesRestoreAllAct = new QAction(tr("Restore All Nodes"), this);
+    filterNodesRestoreAllAct = new QAction(QIcon(":/images/filter_restore_nodes_48px.svg"), tr("Restore All Nodes"), this);
     filterNodesRestoreAllAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_R));
     filterNodesRestoreAllAct->setStatusTip(tr("Restore all nodes hidden by the last filter."));
     filterNodesRestoreAllAct->setEnabled(false); // enabled only when history stack is non-empty
@@ -1850,7 +1850,7 @@ void MainWindow::initActions(){
     connect(editFilterNodesIsolatesAct, SIGNAL(toggled(bool)),
             this, SLOT(slotEditFilterNodesIsolates(bool)));
 
-    editFilterEdgesByWeightAct = new QAction(QIcon(":/images/edge_filter_48px.svg"), tr("Filter Edges by Weight"), this);
+    editFilterEdgesByWeightAct = new QAction(QIcon(":/images/filter_edges_48px.svg"), tr("Filter Edges by Weight"), this);
     editFilterEdgesByWeightAct->setEnabled(true);
     editFilterEdgesByWeightAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_E, Qt::CTRL | Qt::Key_F));
     editFilterEdgesByWeightAct->setStatusTip(tr("Temporarily filter edges of some weight out of the network"));
@@ -1859,7 +1859,7 @@ void MainWindow::initActions(){
     connect(editFilterEdgesByWeightAct , SIGNAL(triggered()),
             this, SLOT(slotEditFilterEdgesByWeightDialog()));
 
-    editFilterEdgesRestoreAllAct = new QAction(tr("Restore All Edges"), this);
+    editFilterEdgesRestoreAllAct = new QAction(QIcon(":/images/filter_restore_edges_48px.svg"), tr("Restore All Edges"), this);
     editFilterEdgesRestoreAllAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_E, Qt::CTRL | Qt::Key_R));
     editFilterEdgesRestoreAllAct->setStatusTip(tr("Restore all edges hidden by the weight filter."));
     editFilterEdgesRestoreAllAct->setWhatsThis(tr("Restore All Edges\n\n"
@@ -4191,8 +4191,7 @@ void MainWindow::initToolBar(){
     toolBar->addAction (editNodeAddAct);
     toolBar->addAction (editNodeRemoveAct);
     toolBar->addAction (editNodeFindAct);
-    toolBar->addAction(editNodePropertiesAct );
-    toolBar->addAction(filterNodesByCentralityAct);
+    toolBar->addAction(editNodePropertiesAct);
 
     toolBar->addSeparator();
 
@@ -4203,7 +4202,15 @@ void MainWindow::initToolBar(){
     toolBar->addAction (editEdgeAddAct);
     toolBar->addAction (editEdgeRemoveAct);
     toolBar->addAction(editEdgePropertiesAct);
-    toolBar->addAction (editFilterEdgesByWeightAct);
+
+    toolBar->addSeparator();
+
+    // — Filter group —
+    toolBar->addAction(filterNodesByCentralityAct);
+    toolBar->addAction(filterNodesByAttributeAct);
+    toolBar->addAction(editFilterEdgesByWeightAct);
+    toolBar->addAction(filterNodesRestoreAllAct);
+    toolBar->addAction(editFilterEdgesRestoreAllAct);
 
     toolBar->addSeparator();
 
@@ -4392,6 +4399,33 @@ void MainWindow::initPanels(){
     editGrid->addWidget(toolBoxEditEdgeTransformSelectLabel,3,0);
     editGrid->addWidget(toolBoxEditEdgeTransformSelect,3,1);
 
+    QLabel *toolBoxFilterSelectLabel = new QLabel;
+    toolBoxFilterSelectLabel->setText(tr("Filter:"));
+    toolBoxFilterSelectLabel->setMinimumWidth(90);
+    toolBoxFilterSelect = new QComboBox;
+    toolBoxFilterSelect->setStatusTip(
+                tr("Select a filter to apply to nodes or edges. Filters are non-destructive and reversible."));
+    toolBoxFilterSelect->setToolTip(
+                tr("<p><b>Filter Nodes / Edges</b></p>"
+                   "<p>Apply a non-destructive, reversible filter to the network. Available options:</p>"
+                   "<p><em>Filter by Centrality</em> — hide nodes below a centrality score threshold.</p>"
+                   "<p><em>Filter by Attribute</em> — hide nodes or edges whose attribute does not match a condition.</p>"
+                   "<p><em>Filter Edges by Weight</em> — hide edges below a weight threshold.</p>"
+                   "<p><em>Restore All Nodes</em> — undo the last node filter.</p>"
+                   "<p><em>Restore All Edges</em> — undo the last edge filter.</p>"));
+    QStringList filterCommands;
+    filterCommands << "Select"
+                   << "Nodes by Centrality"
+                   << "Nodes/Edges by Attribute"
+                   << "Edges by Weight"
+                   << "Restore All Nodes"
+                   << "Restore All Edges";
+    toolBoxFilterSelect->addItems(filterCommands);
+    toolBoxFilterSelect->setMinimumWidth(120);
+
+    editGrid->addWidget(toolBoxFilterSelectLabel, 4, 0);
+    editGrid->addWidget(toolBoxFilterSelect, 4, 1);
+
     editGrid->setSpacing(5);
     editGrid->setContentsMargins(5, 5, 5, 5);
 
@@ -4399,7 +4433,7 @@ void MainWindow::initPanels(){
     QGroupBox *editGroupBox= new QGroupBox(tr("Network"));
     editGroupBox->setLayout(editGrid);
     editGroupBox->setMaximumWidth(255);
-    editGroupBox->setMinimumHeight(130);
+    editGroupBox->setMinimumHeight(160);
 
     //create widgets for the "Analysis" box
     QLabel *toolBoxAnalysisMatricesSelectLabel = new QLabel;
@@ -5627,6 +5661,9 @@ void MainWindow::initSignalSlots() {
     connect(toolBoxEditEdgeTransformSelect, SIGNAL (currentIndexChanged(int) ),
             this, SLOT(toolBoxEditEdgeTransformSelectChanged(int) ) );
 
+    connect(toolBoxFilterSelect, SIGNAL (currentIndexChanged(int) ),
+            this, SLOT(toolBoxFilterSelectChanged(int) ) );
+
     connect(toolBoxAnalysisMatricesSelect, SIGNAL (currentIndexChanged(int) ),
             this, SLOT(toolBoxAnalysisMatricesSelectChanged(int) ) );
 
@@ -6122,6 +6159,41 @@ void MainWindow::toolBoxEditEdgeTransformSelectChanged(const int &selectedIndex)
         break;
 
     };
+}
+
+
+
+
+/**
+ * @brief Called when user selects a filter action in the Filter
+ * selectbox of the toolbox Network group
+ * @param selectedIndex
+ */
+void MainWindow::toolBoxFilterSelectChanged(const int &selectedIndex) {
+    qDebug()<< "selected filter action, index: " << selectedIndex;
+    switch(selectedIndex){
+    case 0:
+        break;
+    case 1:
+        slotFilterNodesDialogByCentrality();
+        break;
+    case 2:
+        slotFilterNodesByAttribute();
+        break;
+    case 3:
+        slotEditFilterEdgesByWeightDialog();
+        break;
+    case 4:
+        slotFilterNodesRestoreAll();
+        break;
+    case 5:
+        slotEditFilterEdgesReset();
+        break;
+    };
+    // Reset to placeholder after dispatching
+    toolBoxFilterSelect->blockSignals(true);
+    toolBoxFilterSelect->setCurrentIndex(0);
+    toolBoxFilterSelect->blockSignals(false);
 }
 
 

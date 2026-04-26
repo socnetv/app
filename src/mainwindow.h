@@ -543,6 +543,7 @@ public slots:
     void toolBoxNetworkAutoCreateSelectChanged(const int &selectedIndex);
     void toolBoxEditNodeSubgraphSelectChanged(const int&selectedIndex);
     void toolBoxEditEdgeTransformSelectChanged(const int&selectedIndex);
+    void toolBoxFilterSelectChanged(const int &selectedIndex);
     void toolBoxAnalysisMatricesSelectChanged(const int&selectedIndex);
     void toolBoxAnalysisCohesionSelectChanged(const int&selectedIndex);
     void toolBoxAnalysisStrEquivalenceSelectChanged(const int&selectedIndex);
@@ -639,7 +640,8 @@ private:
     QMenu *colorationMenu;
 
     QComboBox *toolBoxNetworkAutoCreateSelect, *toolBoxEditNodeSubgraphSelect,
-    *toolBoxEditEdgeModeSelect, *toolBoxEditEdgeTransformSelect;
+    *toolBoxEditEdgeModeSelect, *toolBoxEditEdgeTransformSelect,
+    *toolBoxFilterSelect;
     QComboBox *toolBoxAnalysisCohesionSelect, *toolBoxAnalysisStrEquivalenceSelect,
     *toolBoxAnalysisProminenceSelect, *toolBoxAnalysisCommunitiesSelect,
     *toolBoxAnalysisMatricesSelect;

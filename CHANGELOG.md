@@ -40,6 +40,22 @@ All notable changes to this project are documented in this file.
     - Filter Nodes By Attribute: `Graph::vertexFilterByAttribute(key, value)` —
       non-destructive snapshot/restore filter; available in the Filter menu
       (`Ctrl+X, Ctrl+A`).
+  - **Attribute-based filtering** (#217):
+    - `FilterCondition` struct: scope (Nodes/Edges/Both), key, operator
+      (`=` `≠` `>` `<` `≥` `≤` `contains`), value; `label()` for future
+      filter bar chips.
+    - `DialogFilterByAttribute`: scope selector, editable key combo populated
+      from the graph's existing node/edge attribute keys, operator dropdown,
+      free-text value field.
+    - `Graph::vertexFilterByAttribute(FilterCondition)`: refactored to accept
+      the full condition struct; numeric-aware comparison (tries `toDouble()`,
+      falls back to lexicographic).
+    - `Graph::edgeFilterByAttribute(FilterCondition)`: hides edges not
+      matching the condition; uses the same snapshot/restore stack as node
+      filters.
+    - Filter combo added to the Control Panel (Network group) for one-click
+      access to all filter actions.
+    - Dedicated toolbar filter group with distinct icons for each filter action.
 
 ### Improvements
 
