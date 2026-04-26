@@ -26,6 +26,21 @@ All notable changes to this project are documented in this file.
     on an outer ring. Available via Layout menu (`Ctrl+Alt+E`) and node
     right-click context menu (#214).
 
+  - **Node/edge attribute system** (#224):
+    - Single-key node attribute API: `Graph::vertexCustomAttributeSet()` /
+      `vertexCustomAttributeRemove()`.
+    - Edge custom attribute storage: `GraphVertex::m_outEdgeCustomAttributes`,
+      `Graph::edgeCustomAttributesSet()` / `edgeCustomAttributes()`.
+    - Edge Properties dialog (`DialogEdgeEdit`): edit label, weight, color and
+      arbitrary custom key/value pairs; accessible from the toolbar and edge
+      right-click context menu.
+    - GraphML roundtrip for edge custom attributes: unique keys exported as
+      `d2000+` `<key for="edge">` definitions; per-edge `<data>` tags written
+      on save and parsed back on load.
+    - Filter Nodes By Attribute: `Graph::vertexFilterByAttribute(key, value)` —
+      non-destructive snapshot/restore filter; available in the Filter menu
+      (`Ctrl+X, Ctrl+A`).
+
 ### Improvements
 
   - Force-directed layouts improved for large graphs:

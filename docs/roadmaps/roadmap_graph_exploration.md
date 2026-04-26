@@ -123,9 +123,15 @@ Filtering is a **persistent graph state**, not a temporary action.
 ### Phase 2 — Attribute Filtering
 
 * Filter by node/edge attributes (#217)
+* Foundation in place (from #224 Phase E):
+  * `Graph::vertexFilterByAttribute(key, value)` — node filtering by exact match (`Ctrl+X, Ctrl+A`)
+  * Custom attribute storage for both nodes and edges; GraphML roundtrip
+* Remaining work for full #217:
+  * Edge attribute filtering (`edgeFilterByAttribute`)
+  * Extended comparison operators (≠, >, <, ≥, ≤)
+  * Dedicated filter builder dialog (attribute selector, operator, value)
 * Requires:
-
-  * Attribute system (#96)
+  * Attribute system (#96) — partially fulfilled by #224
   * Metadata system (#130)
 
 ### Phase 3 — Unified Filtering System
@@ -169,9 +175,14 @@ Treat graphs as structured datasets.
 
 ## Phases
 
-### Phase 1 — Attribute Editing
+### Phase 1 — Attribute Editing ✔
 
-* Improve node/edge attribute editing (#224)
+* ✔ Improve node/edge attribute editing (#224) — closes #224
+  * Phase A: Single-key node attribute API (`Graph::vertexCustomAttributeSet`, `vertexCustomAttributeRemove`)
+  * Phase B: Edge custom attribute storage (`GraphVertex::m_outEdgeCustomAttributes`, `Graph::edgeCustomAttributesSet`)
+  * Phase C: `DialogEdgeEdit` — edge properties dialog with custom key/value table (label, weight, color, attributes)
+  * Phase D: GraphML roundtrip for edge custom attributes (`d2000+` key definitions on export; parser collects and stores on import)
+  * Phase E: `Graph::vertexFilterByAttribute(key, value)` — Filter menu `Ctrl+X, Ctrl+A`; foundation for #217
 
 ### Phase 2 — Table Views
 

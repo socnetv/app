@@ -34,6 +34,8 @@ field data from a file in a supported format (GraphML, GraphViz, EdgeList, GML, 
 
 - Vertex filtering by centrality: hide nodes above or below a centrality threshold to focus your analysis on the most (or least) prominent actors in the network.
 
+- Custom node and edge attribute editing: inspect, add, edit and remove arbitrary key/value attributes via the Node and Edge Properties dialogs. Filter nodes by attribute value (non-destructive, reversible). Custom attributes are fully persisted in GraphML files.
+
 - Community detection algorithms such as triad census, clique census, etc.
 
 - Structural equivalence analysis, using hierarchical clustering, actor similarities and tie profile dissimilarities, pearson coefficients, etc.
