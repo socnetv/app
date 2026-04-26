@@ -72,7 +72,12 @@
     <file>images/edge_add_48px.svg</file>
     <file>images/edge_remove_48px.svg</file>
     <file>images/edge_properties_48px.svg</file>
-    <file>images/edge_filter_48px.svg</file>
+    <file>images/filter_edges_48px.svg</file>
+    <file>images/filter_close_48.svg</file>
+    <file>images/filter_centrality_48px.svg</file>
+    <file>images/filter_attribute_48px.svg</file>
+    <file>images/filter_restore_nodes_48px.svg</file>
+    <file>images/filter_restore_edges_48px.svg</file>
     <file>images/help_48px.svg</file>
     <file>images/node_remove_48px.svg</file>
     <file>images/node_add_48px.svg</file>

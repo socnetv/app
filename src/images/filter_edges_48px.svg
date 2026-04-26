@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <title>Filter edges</title>
+  <!-- Base filter funnel: same geometry/style as the SocNetV filtering toolbar set -->
+  <path d="M6 9.2c0-1.12 0-1.68.218-2.108a2 2 0 0 1 .874-.874C7.52 6 8.08 6 9.2 6h29.6c1.12 0 1.68 0 2.108.218a2 2 0 0 1 .874.874C42 7.52 42 8.08 42 9.2v3.475c0 .489 0 .734-.055.964a2 2 0 0 1-.24.579c-.123.202-.296.375-.642.721L28.937 27.063c-.346.346-.519.519-.642.721a2 2 0 0 0-.24.579c-.055.23-.055.475-.055.964V34l-8 8V29.325c0-.489 0-.733-.055-.963a2 2 0 0 0-.24-.58c-.123-.201-.296-.374-.642-.72L6.937 14.938c-.346-.346-.519-.519-.642-.72a2 2 0 0 1-.24-.58C6 13.41 6 13.164 6 12.675V9.2Z" stroke="#1f2937" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Edge-focused badge: a clear link with two endpoint nodes, intentionally larger than the node-filter variant -->
+  <circle cx="36" cy="32" r="10" fill="#f8fafc" stroke="#1f2937" stroke-width="2"/>
+  <path d="M29.8 36.2 C32.1 30.3 35.2 27.7 42.2 27.8" stroke="#2563eb" stroke-width="3.6" stroke-linecap="round" fill="none"/>
+  <circle cx="29" cy="37" r="3.2" fill="#ffffff" stroke="#1f2937" stroke-width="2"/>
+  <circle cx="43" cy="27" r="3.2" fill="#ffffff" stroke="#1f2937" stroke-width="2"/>
+  <!-- tiny arrow/head tick to imply edge direction without cluttering the toolbar icon -->
+  <path d="M39.8 27.5 42.4 27.8 40.8 30" stroke="#1f2937" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

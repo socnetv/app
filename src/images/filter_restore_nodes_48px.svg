@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <title>Restore all filtered nodes</title>
+  <path d="M6 9.2c0-1.12 0-1.68.218-2.108a2 2 0 0 1 .874-.874C7.52 6 8.08 6 9.2 6h29.6c1.12 0 1.68 0 2.108.218a2 2 0 0 1 .874.874C42 7.52 42 8.08 42 9.2v3.475c0 .489 0 .734-.055.964a2 2 0 0 1-.24.579c-.123.202-.296.375-.642.721L28.937 27.063c-.346.346-.519.519-.642.721a2 2 0 0 0-.24.579c-.055.23-.055.475-.055.964V34l-8 8V29.325c0-.489 0-.733-.055-.963a2 2 0 0 0-.24-.58c-.123-.201-.296-.374-.642-.72L6.937 14.938c-.346-.346-.519-.519-.642-.72a2 2 0 0 1-.24-.58C6 13.41 6 13.164 6 12.675V9.2Z" stroke="#1f2937" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M31 17l11 11m0-11L31 28" stroke="#dc2626" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="36" cy="36" r="7" fill="#dbeafe" stroke="#1f2937" stroke-width="2"/>
+  <path d="M31 35.5c1.3-3.8 8.4-3.8 10 0M32.5 39.8h7" stroke="#1f2937" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="36" cy="33.5" r="2" fill="#1f2937"/>
+</svg>
