@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DialogFilterByAttribute</class>
+ <widget class="QDialog" name="DialogFilterByAttribute">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>420</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>380</width>
+    <height>260</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Filter by Attribute</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout" >
+   <property name="margin">
+    <number>12</number>
+   </property>
+   <property name="spacing">
+    <number>10</number>
+   </property>
+
+   <!-- Description -->
+   <item>
+    <widget class="QLabel" name="descLabel">
+     <property name="text">
+      <string>Show only nodes or edges whose custom attribute matches the condition below. Non-matching elements are hidden (reversible).</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+
+   <!-- Scope -->
+   <item>
+    <widget class="QGroupBox" name="scopeGroup">
+     <property name="title">
+      <string>Scope</string>
+     </property>
+     <layout class="QHBoxLayout" name="scopeLayout">
+      <item>
+       <widget class="QRadioButton" name="nodesRadio">
+        <property name="text">
+         <string>Nodes</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="edgesRadio">
+        <property name="text">
+         <string>Edges</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="bothRadio">
+        <property name="text">
+         <string>Both</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer>
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size><width>40</width><height>20</height></size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- Condition row -->
+   <item>
+    <widget class="QGroupBox" name="conditionGroup">
+     <property name="title">
+      <string>Condition</string>
+     </property>
+     <layout class="QFormLayout" name="conditionLayout">
+      <property name="formAlignment">
+       <set>Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+      </property>
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::FieldGrowthPolicy::ExpandingFieldsGrow</enum>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="keyLabel">
+        <property name="text"><string>Key:</string></property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="keyCombo">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>1</horstretch><verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="editable"><bool>true</bool></property>
+        <property name="toolTip">
+         <string>Select an attribute key or type a custom one.</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="opLabel">
+        <property name="text"><string>Operator:</string></property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="opCombo">
+        <item><property name="text"><string>= (equals)</string></property></item>
+        <item><property name="text"><string>≠ (not equals)</string></property></item>
+        <item><property name="text"><string>&gt; (greater than)</string></property></item>
+        <item><property name="text"><string>&lt; (less than)</string></property></item>
+        <item><property name="text"><string>≥ (greater or equal)</string></property></item>
+        <item><property name="text"><string>≤ (less or equal)</string></property></item>
+        <item><property name="text"><string>contains</string></property></item>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="valueLabel">
+        <property name="text"><string>Value:</string></property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="valueEdit">
+        <property name="placeholderText">
+         <string>Enter value…</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+   <!-- Buttons -->
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
+     </property>
+    </widget>
+   </item>
+
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender><signal>accepted()</signal>
+   <receiver>DialogFilterByAttribute</receiver><slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel"><x>200</x><y>280</y></hint>
+    <hint type="destinationlabel"><x>200</x><y>150</y></hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender><signal>rejected()</signal>
+   <receiver>DialogFilterByAttribute</receiver><slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel"><x>200</x><y>280</y></hint>
+    <hint type="destinationlabel"><x>200</x><y>150</y></hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
