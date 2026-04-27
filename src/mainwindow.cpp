@@ -4416,9 +4416,11 @@ void MainWindow::initPanels(){
                    "<p><em>Restore All Edges</em> — undo the last edge filter.</p>"));
     QStringList filterCommands;
     filterCommands << "Select"
-                   << "Nodes by Centrality"
-                   << "Nodes/Edges by Attribute"
-                   << "Edges by Weight"
+                   << "Focus on Node (Ego Network)"
+                   << "Focus on Selection"
+                   << "Filter Nodes by Centrality"
+                   << "Filter Nodes/Edges by Attribute"
+                   << "Filter Edges by Weight"
                    << "Restore All Nodes"
                    << "Restore All Edges";
     toolBoxFilterSelect->addItems(filterCommands);
@@ -6209,18 +6211,24 @@ void MainWindow::toolBoxFilterSelectChanged(const int &selectedIndex) {
     case 0:
         break;
     case 1:
-        slotFilterNodesDialogByCentrality();
+        slotFilterNodesByEgoNetwork();
         break;
     case 2:
-        slotFilterNodesByAttribute();
+        slotFilterNodesBySelection();
         break;
     case 3:
-        slotEditFilterEdgesByWeightDialog();
+        slotFilterNodesDialogByCentrality();
         break;
     case 4:
-        slotFilterNodesRestoreAll();
+        slotFilterNodesByAttribute();
         break;
     case 5:
+        slotEditFilterEdgesByWeightDialog();
+        break;
+    case 6:
+        slotFilterNodesRestoreAll();
+        break;
+    case 7:
         slotEditFilterEdgesReset();
         break;
     };

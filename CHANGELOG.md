@@ -56,6 +56,19 @@ All notable changes to this project are documented in this file.
     - Filter combo added to the Control Panel (Network group) for one-click
       access to all filter actions.
     - Dedicated toolbar filter group with distinct icons for each filter action.
+  - **Filter bar with chips** (#219):
+    - Persistent `FilterBarWidget` strip between toolbar and canvas; hidden when
+      no filter is active, auto-shows when any filter is applied.
+    - Each active filter condition appears as a labelled chip (e.g.
+      `Nodes: ego network`, `Edges: weight filter`, `Nodes: type = investor`).
+    - ×-close on the most recently applied chip removes it and pops one entry
+      from the snapshot/restore stack. Earlier chips show a disabled × with a
+      tooltip explaining the order constraint.
+    - "Clear all" button drains the full node filter stack and resets the edge
+      filter in one click.
+    - All five filter actions emit chips: centrality, ego network, selection,
+      attribute (Nodes/Edges/Both), and edge weight filter.
+    - Bar stays in sync when filters are removed via menu or toolbar actions.
 
 ### Improvements
 

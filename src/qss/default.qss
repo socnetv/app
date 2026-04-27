@@ -723,6 +723,10 @@ FilterBarWidget QToolButton#ChipCloseButton:hover {
     background-color: #c5cae9;
 }
 
+FilterBarWidget QToolButton#ChipCloseButton:disabled {
+    opacity: 0.3;
+}
+
 FilterBarWidget QPushButton#ClearAllButton {
     background: transparent;
     color: #3949ab;

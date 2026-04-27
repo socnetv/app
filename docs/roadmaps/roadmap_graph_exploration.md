@@ -131,16 +131,17 @@ Filtering is a **persistent graph state**, not a temporary action.
   * Filter: combo added to Control Panel (Network group) for quick access
   * Filter toolbar group: dedicated icons for each filter action
 
-### Phase 3 — Unified Filtering System
+### Phase 3 — Unified Filtering System ✔
 
-* Unify all filter types (structural, weight, attribute) under `FilterCondition` model (#219)
-* UI: persistent **filter bar** — thin strip between toolbar and canvas, hidden when no filter is active
+* ✔ Persistent **filter bar** (#219) — thin strip between toolbar and canvas, auto-shows/hides:
   * Each active condition shown as a chip: `Nodes: type = investor ×`
-  * ×-close on chip pops that condition off the stack
-  * "Clear all" at the right end calls `vertexFilterRestoreAll()` to completion
-* All existing filter actions (centrality, weight, ego, selection, attribute) emit a chip to the bar
-* Logical composition: AND / OR across conditions
-* **Not** a single unified dialog — each filter type keeps its own dialog; the bar is the unifying UI layer
+  * `FilterBarWidget` (`src/widgets/filterbarwidget.h/.cpp`): chips + "Clear all" button
+  * ×-close enabled only on the most recently applied chip (stack limitation — arbitrary removal deferred to #221)
+  * "Clear all" drains the full node snapshot stack and resets the edge filter
+  * All filter actions emit a chip: centrality, ego network, selection, weight, attribute
+  * Bar syncs with menu/toolbar restore actions (`Restore All Nodes`, `Restore All Edges`)
+  * Styled via `default.qss`
+* Logical composition (AND/OR): deferred to #221 (query system); sequential stack already gives AND semantics by effect
 
 ### Phase 4 — Subgraph Extraction
 

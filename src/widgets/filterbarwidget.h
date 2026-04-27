@@ -19,6 +19,7 @@
 class QHBoxLayout;
 class QPushButton;
 class QFrame;
+class QToolButton;
 
 /**
  * @brief Thin strip between toolbar and canvas showing one chip per active filter.
@@ -54,6 +55,7 @@ private:
     struct ChipData {
         FilterCondition::Scope scope;
         QFrame *frame = nullptr;
+        QToolButton *closeBtn = nullptr;
     };
 
     QHBoxLayout *m_chipsLayout;
@@ -62,4 +64,5 @@ private:
 
     void removeChip(QFrame *chip);
     void updateVisibility();
+    void updateCloseButtons();
 };

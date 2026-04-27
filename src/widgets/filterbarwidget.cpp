@@ -73,7 +73,7 @@ void FilterBarWidget::addChip(const QString &label, FilterCondition::Scope scope
     lay->addWidget(closeBtn);
 
     m_chipsLayout->addWidget(chip);
-    m_chips.append({scope, chip});
+    m_chips.append({scope, chip, closeBtn});
 
     connect(closeBtn, &QToolButton::clicked, this, [this, chip, scope]() {
         removeChip(chip);
@@ -134,4 +134,17 @@ void FilterBarWidget::clearAllChips()
 void FilterBarWidget::updateVisibility()
 {
     setVisible(!m_chips.isEmpty());
+    updateCloseButtons();
+}
+
+void FilterBarWidget::updateCloseButtons()
+{
+    const int last = m_chips.size() - 1;
+    for (int i = 0; i <= last; ++i) {
+        const bool isLast = (i == last);
+        m_chips[i].closeBtn->setEnabled(isLast);
+        m_chips[i].closeBtn->setToolTip(
+            isLast ? tr("Remove this filter")
+                   : tr("Remove the most recently applied filter first"));
+    }
 }
