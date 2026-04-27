@@ -70,6 +70,7 @@
 #include "forms/dialogedgeedit.h"
 #include "forms/dialogfilternodesbycentrality.h"
 #include "forms/dialogfilterbyattribute.h"
+#include "widgets/filterbarwidget.h"
 #include "forms/dialogfilteredgesbyweight.h"
 #include "forms/dialogedgedichotomization.h"
 #include "forms/dialogsimilaritypearson.h"
@@ -5350,11 +5351,21 @@ void MainWindow::initWindowLayout() {
     resetSlidersBtn->setIconSize(iconSize);
     resetSlidersBtn->setEnabled(true);
 
+    // Filter bar — sits between toolbar and canvas, hidden when no filter is active
+    m_filterBar = new FilterBarWidget(this);
+
+    // Wrap filter bar + canvas in a vertical container for grid cell [0,1]
+    QVBoxLayout *canvasVBox = new QVBoxLayout;
+    canvasVBox->setContentsMargins(0, 0, 0, 0);
+    canvasVBox->setSpacing(0);
+    canvasVBox->addWidget(m_filterBar);
+    canvasVBox->addWidget(graphicsWidget, 1);
+
     // Create a layout for the toolbox and the canvas.
     // This will be the layout of our MW central widget
     QGridLayout *layout = new QGridLayout;
     layout->addWidget(leftPanel, 0, 0, 2,1);
-    layout->addWidget(graphicsWidget,0,1);
+    layout->addLayout(canvasVBox, 0, 1);
     layout->addLayout(zoomSliderLayout, 0, 2);
     layout->addWidget(rightPanel, 0, 3,2,1);
     layout->addLayout(rotateSliderLayout, 1, 1, 1, 1);
@@ -5664,6 +5675,28 @@ void MainWindow::initSignalSlots() {
     connect(toolBoxFilterSelect, SIGNAL (currentIndexChanged(int) ),
             this, SLOT(toolBoxFilterSelectChanged(int) ) );
 
+    // Filter bar chip signals
+    connect(m_filterBar, &FilterBarWidget::chipCloseRequested,
+            this, [this](FilterCondition::Scope scope) {
+        if (scope == FilterCondition::Scope::Edges) {
+            activeGraph->edgeFilterReset();
+            editFilterEdgesRestoreAllAct->setEnabled(false);
+        } else {
+            activeGraph->vertexFilterRestoreAll();
+            if (activeGraph->visibilityHistoryEmpty())
+                filterNodesRestoreAllAct->setEnabled(false);
+        }
+    });
+    connect(m_filterBar, &FilterBarWidget::clearAllRequested,
+            this, [this]() {
+        while (!activeGraph->visibilityHistoryEmpty())
+            activeGraph->vertexFilterRestoreAll();
+        filterNodesRestoreAllAct->setEnabled(false);
+        activeGraph->edgeFilterReset();
+        editFilterEdgesRestoreAllAct->setEnabled(false);
+        m_filterBar->clearAllChips();
+    });
+
     connect(toolBoxAnalysisMatricesSelect, SIGNAL (currentIndexChanged(int) ),
             this, SLOT(toolBoxAnalysisMatricesSelectChanged(int) ) );
 
@@ -5846,6 +5879,7 @@ void MainWindow::initApp(){
     setWindowTitle("SocNetV");
 
     filterNodesRestoreAllAct->setEnabled(false);
+    m_filterBar->clearAllChips();
 
     statusMessage( tr("Ready"));
 
@@ -11476,6 +11510,7 @@ void MainWindow::slotFilterNodesDialogByCentrality()
     if (dlg.exec() == QDialog::Accepted)
     {
         filterNodesRestoreAllAct->setEnabled(true);
+        m_filterBar->addChip(tr("Nodes: centrality filter"), FilterCondition::Scope::Nodes);
     }
 }
 
@@ -11502,6 +11537,7 @@ void MainWindow::slotFilterNodesBySelection()
     }
     activeGraph->vertexFilterBySelection(selection);
     filterNodesRestoreAllAct->setEnabled(true);
+    m_filterBar->addChip(tr("Nodes: selection"), FilterCondition::Scope::Nodes);
 }
 
 /**
@@ -11524,6 +11560,7 @@ void MainWindow::slotFilterNodesByEgoNetwork()
     }
     activeGraph->vertexFilterByEgoNetwork(v1);
     filterNodesRestoreAllAct->setEnabled(true);
+    m_filterBar->addChip(tr("Nodes: ego network"), FilterCondition::Scope::Nodes);
 }
 
 /**
@@ -11558,11 +11595,18 @@ void MainWindow::slotFilterNodesByAttribute()
             this, [this](const FilterCondition &cond) {
         if (cond.scope == FilterCondition::Scope::Edges) {
             activeGraph->edgeFilterByAttribute(cond);
+            m_filterBar->addChip(cond.label(), FilterCondition::Scope::Edges);
         } else if (cond.scope == FilterCondition::Scope::Both) {
             activeGraph->vertexFilterByAttribute(cond);
             activeGraph->edgeFilterByAttribute(cond);
+            // Split into two chips so each scope can be closed independently
+            FilterCondition nc = cond; nc.scope = FilterCondition::Scope::Nodes;
+            FilterCondition ec = cond; ec.scope = FilterCondition::Scope::Edges;
+            m_filterBar->addChip(nc.label(), FilterCondition::Scope::Nodes);
+            m_filterBar->addChip(ec.label(), FilterCondition::Scope::Edges);
         } else {
             activeGraph->vertexFilterByAttribute(cond);
+            m_filterBar->addChip(cond.label(), FilterCondition::Scope::Nodes);
         }
         filterNodesRestoreAllAct->setEnabled(true);
     });
@@ -11576,11 +11620,9 @@ void MainWindow::slotFilterNodesByAttribute()
 void MainWindow::slotFilterNodesRestoreAll()
 {
     activeGraph->vertexFilterRestoreAll();
-    // Disable restore action if history stack is now empty
+    m_filterBar->removeLatestChipForScope(FilterCondition::Scope::Nodes);
     if (activeGraph->visibilityHistoryEmpty())
-    {
         filterNodesRestoreAllAct->setEnabled(false);
-    }
 }
 
 /**
@@ -11622,9 +11664,12 @@ void MainWindow::slotEditFilterEdgesByWeightDialog() {
     connect( m_DialogEdgeFilterByWeight, &DialogFilterEdgesByWeight::userChoices,
              activeGraph, &Graph::edgeFilterByWeight);
 
-    // Enable restore action after filter is applied
+    // Enable restore action and add filter bar chip after filter is applied
     connect( m_DialogEdgeFilterByWeight, &DialogFilterEdgesByWeight::userChoices,
-             this, [this](){ editFilterEdgesRestoreAllAct->setEnabled(true); });
+             this, [this](){
+        editFilterEdgesRestoreAllAct->setEnabled(true);
+        m_filterBar->addChip(tr("Edges: weight filter"), FilterCondition::Scope::Edges);
+    });
 
     // Show the dialog
     m_DialogEdgeFilterByWeight->exec() ;
@@ -11638,6 +11683,7 @@ void MainWindow::slotEditFilterEdgesReset()
 {
     activeGraph->edgeFilterReset();
     editFilterEdgesRestoreAllAct->setEnabled(false);
+    m_filterBar->removeAllChipsForScope(FilterCondition::Scope::Edges);
 }
 
 

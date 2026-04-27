@@ -216,6 +216,7 @@ set(SOURCES
     src/forms/dialogfilternodesbycentrality.cpp
     src/forms/dialogfilteredgesbyweight.cpp
     src/forms/dialogfilterbyattribute.cpp
+    src/widgets/filterbarwidget.cpp
     src/forms/dialogedgedichotomization.cpp 
     src/forms/dialogwebcrawler.cpp 
     src/forms/dialogdatasetselect.cpp 

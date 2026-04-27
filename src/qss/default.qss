@@ -686,3 +686,54 @@ QLineEdit:disabled {
     background-color: #eee;
     color: #787878;
 }
+
+
+/* -----------------------------------------------------------------------
+ * Filter Bar (#219)
+ * ----------------------------------------------------------------------- */
+
+FilterBarWidget {
+    background-color: #e8eaf6;
+    border-bottom: 1px solid #c5cae9;
+    min-height: 28px;
+    max-height: 36px;
+}
+
+FilterBarWidget QFrame#FilterChip {
+    background-color: #ffffff;
+    border: 1px solid #9fa8da;
+    border-radius: 11px;
+}
+
+FilterBarWidget QLabel#ChipLabel {
+    background: transparent;
+    color: #1a237e;
+    font-size: 90%;
+    padding: 0 2px;
+}
+
+FilterBarWidget QToolButton#ChipCloseButton {
+    background: transparent;
+    border: none;
+    border-radius: 7px;
+    padding: 1px;
+}
+
+FilterBarWidget QToolButton#ChipCloseButton:hover {
+    background-color: #c5cae9;
+}
+
+FilterBarWidget QPushButton#ClearAllButton {
+    background: transparent;
+    color: #3949ab;
+    border: 1px solid #9fa8da;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 90%;
+    min-height: 0;
+}
+
+FilterBarWidget QPushButton#ClearAllButton:hover {
+    background-color: #c5cae9;
+    border-color: #5c6bc0;
+}

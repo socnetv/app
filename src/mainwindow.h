@@ -89,6 +89,7 @@ class DialogEdgeDichotomization;
 class DialogSettings;
 class DialogSystemInfo;
 class TextEditor;
+class FilterBarWidget;
 
 typedef QHash <QString, int> H_StrToInt;
 
@@ -610,6 +611,7 @@ private:
     DialogNodeFind *m_nodeFindDialog;
     DialogEdgeDichotomization *m_edgeDichotomizationDialog;
     DialogFilterEdgesByWeight *m_DialogEdgeFilterByWeight;
+    FilterBarWidget *m_filterBar;
     DialogRandErdosRenyi *m_randErdosRenyiDialog;
     DialogRandSmallWorld *m_randSmallWorldDialog;
     DialogRandScaleFree *m_randScaleFreeDialog;
