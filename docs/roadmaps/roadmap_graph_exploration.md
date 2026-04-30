@@ -188,10 +188,24 @@ Treat graphs as structured datasets.
   * Phase D: GraphML roundtrip for edge custom attributes (`d2000+` key definitions on export; parser collects and stores on import)
   * Phase E: `Graph::vertexFilterByAttribute(key, value)` — Filter menu `Ctrl+X, Ctrl+A`; foundation for #217
 
-### Phase 2 — Table Views
+### Phase 2 — Table Views ✔
 
-* Node table
-* Edge table (#225)
+* ✔ Node/edge data table dock (#225) — closes #225
+  * `NodeTableModel` (`QAbstractTableModel`): caches all node rows; fixed
+    columns (#, Label, Visible, Shape, Size, Color) plus dynamic custom attrs.
+    Read-only cells (#, Visible, Shape) rendered with a muted background.
+    `setData()` writes back via `vertexLabelSet`, `vertexSizeSet`, `vertexColorSet`,
+    `vertexCustomAttributeSet`.
+  * `EdgeTableModel`: caches edge rows for the current relation; fixed columns
+    (Source, Target, Relation, Weight, Label, Color) plus dynamic custom attrs.
+    Read-only cells (Source, Target, Relation) shaded. `setData()` writes back
+    via `edgeWeightSet`, `edgeLabelSet`, `edgeColorSet`, `edgeCustomAttributesSet`.
+  * `GraphTableWidget`: `QTabWidget` (Nodes | Edges); each tab has a live-search
+    bar (QSortFilterProxyModel, all columns, case-insensitive), a Refresh button,
+    and a sortable `QTableView` with inline editing on double-click.
+    Emits `nodeSelected(int)` on row click.
+  * `QDockWidget` at `BottomDockWidgetArea`; toggled by **Ctrl+T** (`Options` menu,
+    `viewDataTableAct`). Auto-refreshes on file load and graph reset when visible.
 
 ### Phase 3 — Structured Export
 

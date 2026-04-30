@@ -70,6 +70,21 @@ All notable changes to this project are documented in this file.
       attribute (Nodes/Edges/Both), and edge weight filter.
     - Bar stays in sync when filters are removed via menu or toolbar actions.
 
+  - **Node/edge data table dock** (#225):
+    - New `GraphTableWidget` dockable panel (Ctrl+T, Options menu) with two
+      tabs — Nodes and Edges — each backed by a `QAbstractTableModel` cache.
+    - Node tab: fixed columns (#, Label, Visible, Shape, Size, Color) plus one
+      column per custom attribute key. Label, Size, Color and custom attribute
+      cells are inline-editable (double-click); #, Visible, Shape are read-only
+      and rendered with a muted background.
+    - Edge tab: fixed columns (Source, Target, Relation, Weight, Label, Color)
+      plus custom attrs. Weight, Label, Color and custom attribute cells are
+      editable; Source, Target, Relation are read-only and shaded.
+    - All edits write back to the graph immediately via the Graph API.
+    - Live search bar filters all columns (case-insensitive); column headers
+      are sortable; a Refresh button reloads data from the current graph.
+    - Panel auto-refreshes on file load and graph reset when it is open.
+
 ### Improvements
 
   - Force-directed layouts improved for large graphs:

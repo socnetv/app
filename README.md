@@ -38,6 +38,8 @@ field data from a file in a supported format (GraphML, GraphViz, EdgeList, GML, 
 
 - Attribute-based filtering: filter nodes and/or edges by any custom attribute using a flexible condition (key, operator, value). Supported operators: `=`, `≠`, `>`, `<`, `≥`, `≤`, `contains`. Numeric comparisons are automatic when both sides parse as numbers. Filters are non-destructive and fully reversible via the snapshot/restore stack.
 
+- Data table panel: a dockable Nodes/Edges table (Ctrl+T) lets you inspect and inline-edit all node and edge properties — including custom attributes — with live search, sortable columns, and immediate write-back to the graph.
+
 - Community detection algorithms such as triad census, clique census, etc.
 
 - Structural equivalence analysis, using hierarchical clustering, actor similarities and tie profile dissimilarities, pearson coefficients, etc.
