@@ -90,6 +90,8 @@ class DialogSettings;
 class DialogSystemInfo;
 class TextEditor;
 class FilterBarWidget;
+class GraphTableWidget;
+class QDockWidget;
 
 typedef QHash <QString, int> H_StrToInt;
 
@@ -491,6 +493,7 @@ public slots:
     void slotOptionsWindowLeftPanelVisibility(bool toggle);
     void slotOptionsWindowRightPanelVisibility(bool toggle);
     void slotOptionsWindowFullScreen(bool toggle);
+    void slotViewDataTable(bool checked);
 
     void slotOptionsDebugMessages(bool toggle);
 
@@ -611,7 +614,9 @@ private:
     DialogNodeFind *m_nodeFindDialog;
     DialogEdgeDichotomization *m_edgeDichotomizationDialog;
     DialogFilterEdgesByWeight *m_DialogEdgeFilterByWeight;
-    FilterBarWidget *m_filterBar;
+    FilterBarWidget  *m_filterBar;
+    QDockWidget      *m_tableDock;
+    GraphTableWidget *m_tableWidget;
     DialogRandErdosRenyi *m_randErdosRenyiDialog;
     DialogRandSmallWorld *m_randSmallWorldDialog;
     DialogRandScaleFree *m_randScaleFreeDialog;
@@ -706,6 +711,7 @@ private:
     QAction *backgroundImageAct,*changeBackColorAct;
     QAction *fullScreenModeAct;
     QAction *openSettingsAct;
+    QAction *viewDataTableAct;
 
     QAction *helpAboutApp, *helpAboutQt, *helpApp, *tipsApp;
     QAction *helpSystemInfoAct, *helpCheckUpdatesApp;

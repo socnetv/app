@@ -71,6 +71,8 @@
 #include "forms/dialogfilternodesbycentrality.h"
 #include "forms/dialogfilterbyattribute.h"
 #include "widgets/filterbarwidget.h"
+#include "widgets/graphtablewidget.h"
+#include <QDockWidget>
 #include "forms/dialogfilteredgesbyweight.h"
 #include "forms/dialogedgedichotomization.h"
 #include "forms/dialogsimilaritypearson.h"
@@ -3647,6 +3649,14 @@ void MainWindow::initActions(){
     connect(openSettingsAct, SIGNAL(triggered()),
             this, SLOT(slotOpenSettingsDialog()));
 
+    viewDataTableAct = new QAction(tr("Data Table"), this);
+    viewDataTableAct->setCheckable(true);
+    viewDataTableAct->setChecked(false);
+    viewDataTableAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_T));
+    viewDataTableAct->setStatusTip(tr("Show/hide the node and edge data table panel"));
+    viewDataTableAct->setToolTip(tr("Toggle the node/edge data table panel (Ctrl+T)"));
+    connect(viewDataTableAct, &QAction::toggled,
+            this, &MainWindow::slotViewDataTable);
 
 
 
@@ -4115,6 +4125,7 @@ void MainWindow::initMenuBar() {
 
     optionsMenu->addSeparator();
     optionsMenu->addAction(fullScreenModeAct);
+    optionsMenu->addAction(viewDataTableAct);
 
     optionsMenu->addSeparator();
     optionsMenu->addAction (openSettingsAct);
@@ -5380,6 +5391,17 @@ void MainWindow::initWindowLayout() {
     //now set this as central widget of MW
     setCentralWidget(widget);
 
+    // Data Table dock — docked at the bottom, hidden by default
+    m_tableWidget = new GraphTableWidget(this);
+    m_tableDock = new QDockWidget(tr("Data Table"), this);
+    m_tableDock->setObjectName("tableDock");
+    m_tableDock->setWidget(m_tableWidget);
+    m_tableDock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::TopDockWidgetArea);
+    addDockWidget(Qt::BottomDockWidgetArea, m_tableDock);
+    m_tableDock->hide();
+    connect(m_tableDock, &QDockWidget::visibilityChanged,
+            viewDataTableAct, &QAction::setChecked);
+
     // set panels visibility
     if ( appSettings["showRightPanel"] == "false") {
         slotOptionsWindowRightPanelVisibility(false);
@@ -5475,6 +5497,11 @@ void MainWindow::initSignalSlots() {
 
     connect (activeGraph, &Graph::signalGraphLoaded,
              this, &MainWindow::slotNetworkFileLoaded);
+
+    connect(m_tableWidget, &GraphTableWidget::nodeSelected,
+            this, [this](int number) {
+        statusMessage(tr("Node %1 selected from data table").arg(number));
+    });
 
     connect( activeGraph, &Graph::signalGraphSavedStatus,
              this, &MainWindow::slotNetworkSavedStatus);
@@ -5882,6 +5909,10 @@ void MainWindow::initApp(){
 
     filterNodesRestoreAllAct->setEnabled(false);
     m_filterBar->clearAllChips();
+
+    // Clear the data table if it is visible (graph was reset)
+    if (m_tableWidget && m_tableDock->isVisible())
+        m_tableWidget->refresh(activeGraph);
 
     statusMessage( tr("Ready"));
 
@@ -7642,6 +7673,10 @@ void MainWindow::slotNetworkFileLoaded (const int &type,
 
     networkSaveAct->setIcon(QIcon(":/images/file_download_48px.svg"));
     networkSaveAct->setEnabled(false);
+
+    // Refresh the data table panel if it is visible
+    if (m_tableWidget && m_tableDock->isVisible())
+        m_tableWidget->refresh(activeGraph);
 
     QApplication::restoreOverrideCursor();
 }
@@ -15170,6 +15205,25 @@ void MainWindow::slotOptionsWindowRightPanelVisibility(bool toggle) {
         statusMessage( tr("Right Panel on.") );
     }
 
+}
+
+
+/**
+ * @brief Shows or hides the Data Table dock panel (#225).
+ *
+ * When shown, the node and edge models are immediately refreshed from the
+ * current graph state.
+ *
+ * @param checked  true → show panel; false → hide panel.
+ */
+void MainWindow::slotViewDataTable(bool checked)
+{
+    if (checked) {
+        m_tableDock->show();
+        m_tableWidget->refresh(activeGraph);
+    } else {
+        m_tableDock->hide();
+    }
 }
 
 

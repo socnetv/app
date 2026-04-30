@@ -69,7 +69,7 @@ UI (GraphicsWidget, dialogs, tables)
 
 ---
 
-# Feature 1 — Visualization & Decluttering (#209)
+# Feature 1 — Visualization & Decluttering (#209) ✔
 
 ## Goal
 
