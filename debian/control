@@ -1,0 +1,46 @@
+Source: socnetv
+Section: math
+Priority: optional
+Maintainer: Dimitris B. Kalamaras <dimitris.kalamaras@gmail.com>
+Original-Maintainer: Dimitris B. Kalamaras <dimitris.kalamaras@gmail.com>
+Build-Depends: debhelper-compat (= 12),
+               cmake,
+               ninja-build,
+               pkg-config,
+               qt6-base-dev,
+               qt6-base-dev-tools,
+               qt6-tools-dev-tools,
+               qt6-tools-dev,
+               qt6-l10n-tools,
+               qt6-charts-dev | libqt6charts6-dev,
+               qt6-svg-dev    | libqt6svg6-dev,
+               qt6-5compat-dev | libqt6core5compat6-dev,
+               libqt6opengl6-dev,
+               libgl-dev | libgl1-mesa-dev,
+               libvulkan-dev,
+               libxkbcommon-dev
+Standards-Version: 4.6.2
+Homepage: https://socnetv.org
+Vcs-Git: https://github.com/socnetv/app.git
+Vcs-Browser: https://github.com/socnetv/app/tree/master/
+
+Package: socnetv
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Social Networks Analysis and Visualization software
+ SocNetV (Social Network Visualiser) is a flexible and
+ user-friendly tool for Social Networks Analysis and Visualisation.
+ It lets you create new networks (graphs) with a few clicks on a
+ virtual canvas or load networks of various formats (GraphML,
+ GraphViz, Adjacency, UCINET, Pajek, etc) and modify them to suit
+ your needs.
+ .
+ The application can compute network properties, such as density,
+ diameter and geodesic distances, as well as node-wise and network
+ indices such as various types of Centrality and Prestige.
+ Various layout algorithms (i.e. Spring-embedder, circular and in
+ levels according to prominence indices) are supported for
+ meaningful visualisations of your networks. Furthermore, it can
+ create various random networks (Erdos-Renyi, Watts-Strogatz,
+ ring lattice, etc) with a few clicks.
+ .
