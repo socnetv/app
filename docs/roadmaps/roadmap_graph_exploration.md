@@ -226,12 +226,25 @@ Treat graphs as structured datasets.
     bar (QSortFilterProxyModel, all columns, case-insensitive), a Refresh button,
     and a sortable `QTableView` with inline editing on double-click.
     Emits `nodeSelected(int)` on row click.
-  * `QDockWidget` at `BottomDockWidgetArea`; toggled by **Ctrl+T** (`Options` menu,
-    `viewDataTableAct`). Auto-refreshes on file load and graph reset when visible.
+  * `QDockWidget` at `BottomDockWidgetArea`; toggled by **Ctrl+T** (`Options`
+    menu and `Edit` menu, `viewDataTableAct`). Auto-refreshes on file load and
+    graph reset when visible.
+  * `viewDataTableAct` has a dedicated `data_table_48px.svg` icon.
 
-### Phase 3 — Structured Export
+### Phase 3 — Structured Export ✔
 
-* CSV / JSON export (#226)
+* ✔ CSV / JSON export (#226) — closes #226
+  * `TableExport::toCSV(model, path)` / `TableExport::toJSON(model, path)` —
+    free functions in `src/graph/io/table_export.*`; accept any
+    `QAbstractItemModel*`; QtCore only, no UI.
+  * **Export CSV** / **Export JSON** buttons in each tab of `GraphTableWidget`;
+    export the proxy model (currently visible/search-filtered rows); tooltip
+    makes the scope explicit.
+  * `Network → Export to other...` gains **Nodes as CSV**, **Edges as CSV**,
+    **Nodes as JSON**, **Edges as JSON** — always export all rows (source
+    model, unfiltered); models are refreshed from `activeGraph` before writing.
+  * `GraphTableWidget::exportStatusMessage` signal wired to the MainWindow
+    status bar.
 
 ### Phase 4 — Structured Import
 

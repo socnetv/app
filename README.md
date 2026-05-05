@@ -38,7 +38,9 @@ field data from a file in a supported format (GraphML, GraphViz, EdgeList, GML, 
 
 - Attribute-based filtering: filter nodes and/or edges by any custom attribute using a flexible condition (key, operator, value). Supported operators: `=`, `≠`, `>`, `<`, `≥`, `≤`, `contains`. Numeric comparisons are automatic when both sides parse as numbers. Filters are non-destructive and fully reversible via the snapshot/restore stack.
 
-- Data table panel: a dockable Nodes/Edges table (Ctrl+T) lets you inspect and inline-edit all node and edge properties — including custom attributes — with live search, sortable columns, and immediate write-back to the graph.
+- Data table panel: a dockable Nodes/Edges table (Ctrl+T, Options menu and Edit menu) lets you inspect and inline-edit all node and edge properties — including custom attributes — with live search, sortable columns, and immediate write-back to the graph. Each tab has **Export CSV** and **Export JSON** buttons that save the currently visible rows.
+
+- Structured export: export node or edge data to CSV or JSON via `Network → Export to other...` (exports all rows) or the Export buttons in the Data Table dock (exports the currently visible/filtered rows).
 
 - Community detection algorithms such as triad census, clique census, etc.
 

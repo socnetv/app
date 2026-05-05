@@ -71,8 +71,9 @@ All notable changes to this project are documented in this file.
     - Bar stays in sync when filters are removed via menu or toolbar actions.
 
   - **Node/edge data table dock** (#225):
-    - New `GraphTableWidget` dockable panel (Ctrl+T, Options menu) with two
-      tabs — Nodes and Edges — each backed by a `QAbstractTableModel` cache.
+    - New `GraphTableWidget` dockable panel (Ctrl+T, Options menu and Edit
+      menu) with two tabs — Nodes and Edges — each backed by a
+      `QAbstractTableModel` cache.
     - Node tab: fixed columns (#, Label, Visible, Shape, Size, Color) plus one
       column per custom attribute key. Label, Size, Color and custom attribute
       cells are inline-editable (double-click); #, Visible, Shape are read-only
@@ -84,6 +85,18 @@ All notable changes to this project are documented in this file.
     - Live search bar filters all columns (case-insensitive); column headers
       are sortable; a Refresh button reloads data from the current graph.
     - Panel auto-refreshes on file load and graph reset when it is open.
+    - Action now has a dedicated `data_table_48px.svg` icon.
+
+  - **Structured CSV/JSON export** (#226):
+    - `TableExport::toCSV()` and `TableExport::toJSON()` free functions
+      (`src/graph/io/table_export.*`) — QtCore only, no UI dependency.
+    - Each tab in the Data Table dock gains **Export CSV** and **Export JSON**
+      buttons; they export the currently visible (search-filtered) rows so
+      what you see is what you get. Tooltip makes the scope explicit.
+    - `Network → Export to other...` gains four new actions: **Nodes as CSV**,
+      **Edges as CSV**, **Nodes as JSON**, **Edges as JSON** — these always
+      export all rows regardless of any active search filter.
+    - Status bar reports the export path on success.
 
 ### Improvements
 
