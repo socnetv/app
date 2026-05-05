@@ -105,20 +105,34 @@ Make large graphs readable and explorable.
 
 ## Goal
 
-Enable meaningful exploration of large graphs.
+Enable exploration of large graphs through non-destructive filtering, attribute-based and structural queries, and subgraph extraction.
 
-## Core Concept
+## Key Concept
 
-Filtering is a **persistent graph state**, not a temporary action.
+Introduce a **Graph View / Projection Layer**:
+
+```
+Graph (data) → Filter / Projection Layer → UI
+```
+
+The underlying graph remains unchanged; filtering operates on visibility state.
+
+## Dependencies
+
+* Node/edge attribute system (#96, #130)
+* Structured data workflows (#223)
+* Graph façade (WS3)
+* Parser improvements (WS4)
 
 ---
 
 ## Phases
 
-### Phase 1 — Structural Filtering
+### Phase 1 — Structural Filtering ✔
 
 * ✔ Extend existing node filtering (centrality, degree) (#216) — centrality filter integrated into snapshot/restore history stack
-* ✔ Integrate edge filtering — `Graph::edgeFilterReset()`, `editFilterEdgesRestoreAllAct` (`Ctrl+E, Ctrl+R`)
+* ✔ Integrate edge filtering by weight — `Graph::edgeFilterReset()`, `editFilterEdgesRestoreAllAct` (`Ctrl+E, Ctrl+R`)
+* Filter edges by relation type — switch active relation hides cross-relation edges (existing behaviour); dedicated "show only relation X" action is future work
 
 ### Phase 2 — Attribute Filtering ✔
 
@@ -143,29 +157,37 @@ Filtering is a **persistent graph state**, not a temporary action.
   * Styled via `default.qss`
 * Logical composition (AND/OR): deferred to #221 (query system); sequential stack already gives AND semantics by effect
 
-### Phase 4 — Subgraph Extraction
+### Phase 4 — Subgraph Extraction (#218)
 
-* Create subgraphs from:
-
-  * selection
-  * filtered view (#218)
+* Create subgraph from selection or current filtered view (#218)
 
 **Current approach:**
+* Subgraph = visible subset (same graph object); no copy created
 
-* Subgraph = visible subset (same graph)
+**Future options:**
+* Copy-out as independent `Graph` object (serialise visible nodes/edges)
+* Optional: open subgraph in a new window
+* Preferred long-term: tab-based multi-graph UI (switch between subgraphs)
 
-**Future:**
+### Phase 5 — Export Filtered / Extracted Graph (#220)
 
-* Tab-based subgraph views
+* Export the currently visible (filtered) subset to any supported format (#220)
+* Save a named subgraph to file for later reload
+* Basis for save/load subgraph workflows (see Phase 6)
 
-### Phase 5 — Export Filtered Graph
+### Phase 6 — Persistent Named Subgraphs
 
-* Export visible subset (#220)
+* Maintain multiple named subgraph views derived from the same base graph
+* Switch between subgraphs without reloading
+* Save and reload named subgraphs (persisted alongside or inside the graph file)
+* Relates to: tab-based multi-graph UI (Feature 1 Phase 3), MDI long-term plan
 
-### Phase 6 — Query System
+### Phase 7 — Query System (#221)
 
-* Visual query builder (#221)
-* Optional DSL (long-term)
+* Visual no-code query builder — compose conditions across structural and attribute dimensions
+* Example query: `degree > 5 AND type = "investor"`
+* Arbitrary chip removal (pop any snapshot from the stack, replay remaining — prerequisite for full query semantics)
+* Optional DSL (long-term): text-based query language for scripting and the CLI tool
 
 ---
 

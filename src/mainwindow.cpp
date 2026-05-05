@@ -72,6 +72,7 @@
 #include "forms/dialogfilterbyattribute.h"
 #include "widgets/filterbarwidget.h"
 #include "widgets/graphtablewidget.h"
+#include "graph/io/table_export.h"
 #include <QDockWidget>
 #include "forms/dialogfilteredgesbyweight.h"
 #include "forms/dialogedgedichotomization.h"
@@ -1124,6 +1125,30 @@ void MainWindow::initActions(){
     networkExportGWAct->setWhatsThis(tr("Export\n\n"
                                      "Exports the active network to a GW formatted file"));
     connect(networkExportGWAct, SIGNAL(triggered()), this, SLOT(slotNetworkExportGW()));
+
+    networkExportNodesCSVAct = new QAction(QIcon(":/images/file_download_48px.svg"),
+                                           tr("Nodes as &CSV..."), this);
+    networkExportNodesCSVAct->setStatusTip(tr("Export all node data to a CSV file"));
+    connect(networkExportNodesCSVAct, &QAction::triggered,
+            this, &MainWindow::slotNetworkExportNodesCSV);
+
+    networkExportEdgesCSVAct = new QAction(QIcon(":/images/file_download_48px.svg"),
+                                           tr("Edges as C&SV..."), this);
+    networkExportEdgesCSVAct->setStatusTip(tr("Export all edge data to a CSV file"));
+    connect(networkExportEdgesCSVAct, &QAction::triggered,
+            this, &MainWindow::slotNetworkExportEdgesCSV);
+
+    networkExportNodesJSONAct = new QAction(QIcon(":/images/file_download_48px.svg"),
+                                            tr("Nodes as &JSON..."), this);
+    networkExportNodesJSONAct->setStatusTip(tr("Export all node data to a JSON file"));
+    connect(networkExportNodesJSONAct, &QAction::triggered,
+            this, &MainWindow::slotNetworkExportNodesJSON);
+
+    networkExportEdgesJSONAct = new QAction(QIcon(":/images/file_download_48px.svg"),
+                                            tr("Edges as J&SON..."), this);
+    networkExportEdgesJSONAct->setStatusTip(tr("Export all edge data to a JSON file"));
+    connect(networkExportEdgesJSONAct, &QAction::triggered,
+            this, &MainWindow::slotNetworkExportEdgesJSON);
 
     networkCloseAct = new QAction(QIcon(":/images/close_24px.svg"), tr("&Close"), this);
     networkCloseAct->setShortcut(QKeySequence::Close);
@@ -3649,7 +3674,7 @@ void MainWindow::initActions(){
     connect(openSettingsAct, SIGNAL(triggered()),
             this, SLOT(slotOpenSettingsDialog()));
 
-    viewDataTableAct = new QAction(tr("Data Table"), this);
+    viewDataTableAct = new QAction(QIcon(":/images/data_table_48px.svg"), tr("Data Table"), this);
     viewDataTableAct->setCheckable(true);
     viewDataTableAct->setChecked(false);
     viewDataTableAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_T));
@@ -3791,6 +3816,12 @@ void MainWindow::initMenuBar() {
     //exportSubMenu->addAction (networkExportDL);
     //exportSubMenu->addAction (networkExportGW);
 
+    exportSubMenu->addSeparator();
+    exportSubMenu->addAction(networkExportNodesCSVAct);
+    exportSubMenu->addAction(networkExportEdgesCSVAct);
+    exportSubMenu->addAction(networkExportNodesJSONAct);
+    exportSubMenu->addAction(networkExportEdgesJSONAct);
+
     networkMenu->addSeparator();
     networkMenu->addAction(networkPrintAct);
     networkMenu->addSeparator();
@@ -3902,6 +3933,9 @@ void MainWindow::initMenuBar() {
     // — Restore —
     filterMenu->addAction(filterNodesRestoreAllAct);
     filterMenu->addAction(editFilterEdgesRestoreAllAct);
+
+    editMenu->addSeparator();
+    editMenu->addAction(viewDataTableAct);
 
     // ANALYZE MENU
     analysisMenu = menuBar()->addMenu(tr("&Analyze"));
@@ -5502,6 +5536,9 @@ void MainWindow::initSignalSlots() {
             this, [this](int number) {
         statusMessage(tr("Node %1 selected from data table").arg(number));
     });
+
+    connect(m_tableWidget, &GraphTableWidget::exportStatusMessage,
+            this, &MainWindow::statusMessage);
 
     connect( activeGraph, &Graph::signalGraphSavedStatus,
              this, &MainWindow::slotNetworkSavedStatus);
@@ -8347,6 +8384,73 @@ bool MainWindow::slotNetworkExportList(){
 }
 
 
+/**
+ * @brief Exports all node data (unfiltered) to a CSV file chosen by the user.
+ */
+void MainWindow::slotNetworkExportNodesCSV()
+{
+    m_tableWidget->refresh(activeGraph);
+    const QString path = QFileDialog::getSaveFileName(
+        this, tr("Export Nodes as CSV"), tr("nodes.csv"),
+        tr("CSV files (*.csv)"));
+    if (path.isEmpty())
+        return;
+    if (TableExport::toCSV(m_tableWidget->nodeModel(), path))
+        statusMessage(tr("Nodes exported to %1").arg(path));
+    else
+        statusMessage(tr("Export failed: could not write to %1").arg(path));
+}
+
+/**
+ * @brief Exports all edge data (unfiltered) to a CSV file chosen by the user.
+ */
+void MainWindow::slotNetworkExportEdgesCSV()
+{
+    m_tableWidget->refresh(activeGraph);
+    const QString path = QFileDialog::getSaveFileName(
+        this, tr("Export Edges as CSV"), tr("edges.csv"),
+        tr("CSV files (*.csv)"));
+    if (path.isEmpty())
+        return;
+    if (TableExport::toCSV(m_tableWidget->edgeModel(), path))
+        statusMessage(tr("Edges exported to %1").arg(path));
+    else
+        statusMessage(tr("Export failed: could not write to %1").arg(path));
+}
+
+/**
+ * @brief Exports all node data (unfiltered) to a JSON file chosen by the user.
+ */
+void MainWindow::slotNetworkExportNodesJSON()
+{
+    m_tableWidget->refresh(activeGraph);
+    const QString path = QFileDialog::getSaveFileName(
+        this, tr("Export Nodes as JSON"), tr("nodes.json"),
+        tr("JSON files (*.json)"));
+    if (path.isEmpty())
+        return;
+    if (TableExport::toJSON(m_tableWidget->nodeModel(), path))
+        statusMessage(tr("Nodes exported to %1").arg(path));
+    else
+        statusMessage(tr("Export failed: could not write to %1").arg(path));
+}
+
+/**
+ * @brief Exports all edge data (unfiltered) to a JSON file chosen by the user.
+ */
+void MainWindow::slotNetworkExportEdgesJSON()
+{
+    m_tableWidget->refresh(activeGraph);
+    const QString path = QFileDialog::getSaveFileName(
+        this, tr("Export Edges as JSON"), tr("edges.json"),
+        tr("JSON files (*.json)"));
+    if (path.isEmpty())
+        return;
+    if (TableExport::toJSON(m_tableWidget->edgeModel(), path))
+        statusMessage(tr("Edges exported to %1").arg(path));
+    else
+        statusMessage(tr("Export failed: could not write to %1").arg(path));
+}
 
 
 

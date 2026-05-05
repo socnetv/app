@@ -205,6 +205,10 @@ public slots:
     bool slotNetworkExportDL();
     bool slotNetworkExportGW();
     bool slotNetworkExportList();
+    void slotNetworkExportNodesCSV();
+    void slotNetworkExportEdgesCSV();
+    void slotNetworkExportNodesJSON();
+    void slotNetworkExportEdgesJSON();
     void slotNetworkTextEditor();
     void slotNetworkDataSetSelect();
     void slotNetworkDataSetRecreate(const QString);
@@ -667,6 +671,8 @@ private:
     QAction *networkExportImageAct, *networkExportPajek,
     *networkExportPDFAct, *networkExportDLAct, *networkExportGWAct, *networkExportSMAct,
     *networkExportListAct;
+    QAction *networkExportNodesCSVAct, *networkExportEdgesCSVAct,
+    *networkExportNodesJSONAct, *networkExportEdgesJSONAct;
     QAction *networkImportPajekAct, *networkImportGMLAct, *networkImportAdjAct, *networkImportListAct,
     *networkImportGraphvizAct , *networkImportUcinetAct, *networkImportTwoModeSM;
     QAction *networkViewFileAct, *openTextEditorAct, *networkViewSociomatrixAct,

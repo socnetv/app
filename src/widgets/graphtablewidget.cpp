@@ -14,6 +14,7 @@
 #include "graphtablewidget.h"
 #include "nodetablemodel.h"
 #include "edgetablemodel.h"
+#include "../graph/io/table_export.h"
 
 #include <QTabWidget>
 #include <QTableView>
@@ -24,6 +25,8 @@
 #include <QSortFilterProxyModel>
 #include <QHeaderView>
 #include <QLabel>
+#include <QFileDialog>
+#include <QMessageBox>
 
 /**
  * @brief Constructs the GraphTableWidget.
@@ -84,9 +87,17 @@ GraphTableWidget::GraphTableWidget(QWidget *parent)
     QPushButton *nodeRefreshBtn = new QPushButton(tr("Refresh"), this);
     nodeRefreshBtn->setToolTip(tr("Reload node data from the current graph"));
 
+    QPushButton *nodeExportCSVBtn = new QPushButton(tr("Export CSV"), this);
+    nodeExportCSVBtn->setToolTip(tr("Export currently visible rows as CSV"));
+
+    QPushButton *nodeExportJSONBtn = new QPushButton(tr("Export JSON"), this);
+    nodeExportJSONBtn->setToolTip(tr("Export currently visible rows as JSON"));
+
     QHBoxLayout *nodeTopBar = new QHBoxLayout;
     nodeTopBar->addWidget(m_nodeSearch, 1);
     nodeTopBar->addWidget(nodeRefreshBtn);
+    nodeTopBar->addWidget(nodeExportCSVBtn);
+    nodeTopBar->addWidget(nodeExportJSONBtn);
 
     QWidget *nodeTab = new QWidget(this);
     QVBoxLayout *nodeLayout = new QVBoxLayout(nodeTab);
@@ -108,9 +119,17 @@ GraphTableWidget::GraphTableWidget(QWidget *parent)
     QPushButton *edgeRefreshBtn = new QPushButton(tr("Refresh"), this);
     edgeRefreshBtn->setToolTip(tr("Reload edge data from the current graph"));
 
+    QPushButton *edgeExportCSVBtn = new QPushButton(tr("Export CSV"), this);
+    edgeExportCSVBtn->setToolTip(tr("Export currently visible rows as CSV"));
+
+    QPushButton *edgeExportJSONBtn = new QPushButton(tr("Export JSON"), this);
+    edgeExportJSONBtn->setToolTip(tr("Export currently visible rows as JSON"));
+
     QHBoxLayout *edgeTopBar = new QHBoxLayout;
     edgeTopBar->addWidget(m_edgeSearch, 1);
     edgeTopBar->addWidget(edgeRefreshBtn);
+    edgeTopBar->addWidget(edgeExportCSVBtn);
+    edgeTopBar->addWidget(edgeExportJSONBtn);
 
     QWidget *edgeTab = new QWidget(this);
     QVBoxLayout *edgeLayout = new QVBoxLayout(edgeTab);
@@ -154,6 +173,12 @@ GraphTableWidget::GraphTableWidget(QWidget *parent)
     // Node row click → nodeSelected signal
     connect(m_nodeView, &QTableView::clicked,
             this, &GraphTableWidget::onNodeRowClicked);
+
+    // Export buttons
+    connect(nodeExportCSVBtn,  &QPushButton::clicked, this, &GraphTableWidget::exportNodesCSV);
+    connect(nodeExportJSONBtn, &QPushButton::clicked, this, &GraphTableWidget::exportNodesJSON);
+    connect(edgeExportCSVBtn,  &QPushButton::clicked, this, &GraphTableWidget::exportEdgesCSV);
+    connect(edgeExportJSONBtn, &QPushButton::clicked, this, &GraphTableWidget::exportEdgesJSON);
 }
 
 /**
@@ -182,4 +207,68 @@ void GraphTableWidget::onNodeRowClicked(const QModelIndex &proxyIndex)
     const QVariant num =
         m_nodeModel->data(m_nodeModel->index(src.row(), 0), Qt::DisplayRole);
     emit nodeSelected(num.toInt());
+}
+
+QAbstractItemModel *GraphTableWidget::nodeModel() const
+{
+    return m_nodeModel;
+}
+
+QAbstractItemModel *GraphTableWidget::edgeModel() const
+{
+    return m_edgeModel;
+}
+
+void GraphTableWidget::exportNodesCSV()
+{
+    doExport(m_nodeProxy, tr("nodes"), true);
+}
+
+void GraphTableWidget::exportNodesJSON()
+{
+    doExport(m_nodeProxy, tr("nodes"), false);
+}
+
+void GraphTableWidget::exportEdgesCSV()
+{
+    doExport(m_edgeProxy, tr("edges"), true);
+}
+
+void GraphTableWidget::exportEdgesJSON()
+{
+    doExport(m_edgeProxy, tr("edges"), false);
+}
+
+/**
+ * @brief Opens a save dialog and writes @p proxyModel via TableExport.
+ *
+ * @p defaultName is used to suggest a filename ("nodes" or "edges").
+ * @p csv selects CSV (true) or JSON (false) format.
+ */
+void GraphTableWidget::doExport(QAbstractItemModel *proxyModel,
+                                const QString &defaultName,
+                                bool csv)
+{
+    const QString ext    = csv ? tr("csv")  : tr("json");
+    const QString filter = csv ? tr("CSV files (*.csv)") : tr("JSON files (*.json)");
+
+    const QString path = QFileDialog::getSaveFileName(
+        this,
+        tr("Export %1 as %2").arg(defaultName.toUpper(), ext.toUpper()),
+        defaultName + QLatin1Char('.') + ext,
+        filter);
+
+    if (path.isEmpty())
+        return;
+
+    const bool ok = csv ? TableExport::toCSV(proxyModel, path)
+                        : TableExport::toJSON(proxyModel, path);
+
+    if (ok) {
+        emit exportStatusMessage(tr("Exported %1 to %2").arg(defaultName, path));
+    } else {
+        QMessageBox::warning(this,
+                             tr("Export failed"),
+                             tr("Could not write to %1").arg(path));
+    }
 }

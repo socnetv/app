@@ -17,6 +17,7 @@
 class Graph;
 class NodeTableModel;
 class EdgeTableModel;
+class QAbstractItemModel;
 class QTabWidget;
 class QTableView;
 class QLineEdit;
@@ -36,6 +37,11 @@ class GraphTableWidget : public QWidget
 public:
     explicit GraphTableWidget(QWidget *parent = nullptr);
 
+    /** Returns the raw (unfiltered) node source model. */
+    QAbstractItemModel *nodeModel() const;
+    /** Returns the raw (unfiltered) edge source model. */
+    QAbstractItemModel *edgeModel() const;
+
 public slots:
     /**
      * @brief Repopulates both the node and edge models from @p graph.
@@ -44,14 +50,30 @@ public slots:
      */
     void refresh(Graph *graph);
 
+    /** Prompts for a file path and exports visible node rows as CSV. */
+    void exportNodesCSV();
+    /** Prompts for a file path and exports visible node rows as JSON. */
+    void exportNodesJSON();
+    /** Prompts for a file path and exports visible edge rows as CSV. */
+    void exportEdgesCSV();
+    /** Prompts for a file path and exports visible edge rows as JSON. */
+    void exportEdgesJSON();
+
 signals:
     /** Emitted when the user clicks a row in the Nodes tab. */
     void nodeSelected(int number);
+
+    /** Emitted with a status message after an export attempt. */
+    void exportStatusMessage(const QString &message);
 
 private slots:
     void onNodeRowClicked(const QModelIndex &proxyIndex);
 
 private:
+    void doExport(QAbstractItemModel *proxyModel,
+                  const QString &defaultName,
+                  bool csv);
+
     Graph                 *m_graph  = nullptr;
     QTabWidget            *m_tabs;
     QTableView            *m_nodeView;
