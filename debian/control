@@ -3,10 +3,10 @@ Section: math
 Priority: optional
 Maintainer: Dimitris B. Kalamaras <dimitris.kalamaras@gmail.com>
 Original-Maintainer: Dimitris B. Kalamaras <dimitris.kalamaras@gmail.com>
-Build-Depends: debhelper-compat (= 12),
+Build-Depends: debhelper-compat (= 13),
                cmake,
                ninja-build,
-               pkg-config,
+               pkgconf,
                qt6-base-dev,
                qt6-base-dev-tools,
                qt6-tools-dev-tools,
