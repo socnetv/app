@@ -48,12 +48,13 @@ struct ParsedTable {
  * Quoted fields (RFC 4180) are handled: embedded double-quotes are written
  * as two consecutive double-quotes ("").
  *
- * Node attributes example — ID column is "#", remaining columns become attributes:
+ * Node attributes example — ID column is "#", native columns (Label, Size, Color,
+ * Shape) are routed to their setters; everything else becomes a custom attribute:
  * @code
- * #,Label,type,year_founded
- * 1,Alice,investor,2010
- * 2,Bob,founder,2018
- * 3,Carol,advisor,2015
+ * #,Label,Shape,type,year_founded
+ * 1,Alice,diamond,investor,2010
+ * 2,Bob,circle,founder,2018
+ * 3,Carol,box,advisor,2015
  * @endcode
  *
  * Edge attributes example — Source/Target identify the edge, rest become attributes:

@@ -26,39 +26,21 @@ field data from a file in a supported format (GraphML, GraphViz, EdgeList, GML, 
 
 ## 2. Features
 
-- Standard graph-theoretic and network cohesion metrics, such as density, diameter, geodesics and distances, connectedness, eccentricity, clustering coefficient, walks, reciprocity etc.
-
-- Matrix routines: Adjacency plot, Laplacian matrix, Degree matrix, Cocitation, etc.
-
-- Advanced structural measures for social network analysis such as centrality and prestige indices (i.e. eigenvector and closeness centrality, betweenness centrality, information centrality, power centrality, proximity and pagerank prestige).
-
-- Vertex filtering by centrality: hide nodes above or below a centrality threshold to focus your analysis on the most (or least) prominent actors in the network.
-
-- Custom node and edge attribute editing: inspect, add, edit and remove arbitrary key/value attributes via the Node and Edge Properties dialogs. Custom attributes are fully persisted in GraphML files.
-
-- Attribute-based filtering: filter nodes and/or edges by any custom attribute using a flexible condition (key, operator, value). Supported operators: `=`, `≠`, `>`, `<`, `≥`, `≤`, `contains`. Numeric comparisons are automatic when both sides parse as numbers. Filters are non-destructive and fully reversible via the snapshot/restore stack.
-
-- Data table panel: a dockable Nodes/Edges table (Ctrl+T, Options menu and Edit menu) lets you inspect and inline-edit all node and edge properties — including custom attributes — with live search, sortable columns, and immediate write-back to the graph. Each tab has **Export CSV** and **Export JSON** buttons that save the currently visible rows.
-
-- Structured export: export node or edge data to CSV or JSON via `Network → Export to other...` (exports all rows) or the Export buttons in the Data Table dock (exports the currently visible/filtered rows).
-
-- Structured import: import node or edge attributes from CSV or JSON files via the **Import CSV** / **Import JSON** buttons in the Data Table dock. A column-mapping dialog lets you select the ID column (by node number or label) and preview the first rows before committing. Native properties (Label, Size, Color, Weight) are updated directly; all other columns become custom attributes. Re-importing a previously exported file is a full lossless roundtrip — no duplicate columns, no data loss. Combined with export, this enables a **spreadsheet bulk editing workflow**: export → edit in any spreadsheet tool → re-import to update attributes in bulk.
-
-- Community detection algorithms such as triad census, clique census, etc.
-
-- Structural equivalence analysis, using hierarchical clustering, actor similarities and tie profile dissimilarities, pearson coefficients, etc.
-
-- Random network creation, i.e. Erdos-Renyi, Watts-Strogatz, scale-free, lattice, etc.
-
+- Standard graph-theoretic and network cohesion metrics: density, diameter, geodesics, connectedness, eccentricity, clustering coefficient, walks, reciprocity, and more.
+- Matrix routines: Adjacency, Laplacian, Degree, Cocitation, and more.
+- Advanced centrality and prestige indices: eigenvector, closeness, betweenness, information, power centrality, PageRank prestige, and more.
+- Community detection algorithms: triad census, clique census, and more.
+- Structural equivalence analysis using hierarchical clustering, actor similarities, and Pearson coefficients.
+- Multiple layout algorithms: prominence-based (circular, nodal sizes by centrality), force-directed (Kamada-Kawai, Fruchterman-Reingold), and ego-centered radial layout.
+- Non-destructive graph exploration filters: focus on selection, ego network, centrality threshold, attribute-based filtering (with `=`, `≠`, `>`, `<`, `≥`, `≤`, `contains` operators), and edge weight threshold. All filters are reversible and stack non-destructively. Active filters shown in a persistent filter bar.
+- Custom node and edge attributes: add, edit and remove arbitrary key/value pairs. Fully persisted in GraphML.
+- Data table dock (Ctrl+T): inspect and inline-edit all node and edge properties — including custom attributes — with live search and sortable columns.
+- Structured import/export: export node or edge data to CSV or JSON; re-import to update attributes in bulk (supports a full spreadsheet editing workflow). See the [manual](https://socnetv.org/manual/intro/) for details.
+- Random network generators: Erdős–Rényi, Watts–Strogatz, scale-free, regular lattice, and more.
 - One-click recreation of well-known social network datasets such as Padgett's Florentine families.
-
-- Layout algorithms based on either prominence indices (i.e. circular, level and nodal sizes by centrality score) or force-directed models (i.e. Kamada-Kawai, Fruchterman-Reingold, etc) for meaningful visualizations of your social network data. Also Ego-centered radial layout (focus on any node and its neighborhood).
-
-- Multirelational loading and editing. You can load a network consisting of multiple relations or create a network on your own and add multiple relations to it.
-
-- Built-in web crawler allowing you to automatically create networks from links found in a given initial URL.
-
-- Comprehensive documentation both online and while running the application explaining each feature and algorithm of SocNetV in detail.
+- Multirelational networks: load or build networks with multiple relations and switch between them.
+- Built-in web crawler for automatic network construction from URLs.
+- Comprehensive documentation available [online](https://socnetv.org/manual/intro/) and within the application.
 
 - Binary packages and installers for Windows, Linux and macOS.
 

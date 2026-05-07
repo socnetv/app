@@ -656,8 +656,8 @@ void Graph::vertexCustomAttributeRemove(const int &v1, const QString &key)
  * matched vertex.  Rows that do not match any vertex are silently skipped.
  *
  * Example — CSV input with idColumn=0, matchByLabel=false.
- * Native editable columns (Label, Size, Color) are routed to their setters;
- * read-only native columns (Visible, Shape) are silently skipped:
+ * Native columns are routed to their proper setters (Label, Size, Color, Shape);
+ * only Visible is silently skipped (it is a filter state, not a persistent attribute):
  * @code
  * #,Label,Size,Color,type,year_founded
  * 1,Alice,12,#ff0000,investor,2010   ← Label/Size/Color updated; type/year_founded → custom attrs
@@ -697,7 +697,7 @@ int Graph::vertexAttributesImport(const QStringList &headers,
             const QString &h = headers.at(c);
             const QString &v = row.at(c);
             // Route editable native columns to their proper setters;
-            // silently skip read-only native columns (#, Visible, Shape).
+            // silently skip read-only/state columns (# is the id key, Visible is filter state).
             if (h.compare(QLatin1String("Label"), Qt::CaseInsensitive) == 0)
                 vertexLabelSet(vn, v);
             else if (h.compare(QLatin1String("Size"), Qt::CaseInsensitive) == 0) {
@@ -706,9 +706,10 @@ int Graph::vertexAttributesImport(const QStringList &headers,
                 if (ok) vertexSizeSet(vn, sz);
             } else if (h.compare(QLatin1String("Color"), Qt::CaseInsensitive) == 0)
                 vertexColorSet(vn, v);
-            else if (h.compare(QLatin1String("Visible"), Qt::CaseInsensitive) == 0
-                     || h.compare(QLatin1String("Shape"), Qt::CaseInsensitive) == 0)
-                continue; // read-only in the table — skip
+            else if (h.compare(QLatin1String("Shape"), Qt::CaseInsensitive) == 0)
+                vertexShapeSet(vn, v);
+            else if (h.compare(QLatin1String("Visible"), Qt::CaseInsensitive) == 0)
+                continue; // filter state — skip
             else
                 vertexCustomAttributeSet(vn, h, v);
         }
