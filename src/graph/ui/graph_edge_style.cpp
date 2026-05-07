@@ -201,11 +201,13 @@ QHash<QString,QString> Graph::edgeCustomAttributes(const int &v1, const int &v2)
  * @p srcColumn and @p tgtColumn.  All other columns become custom attributes
  * on the matched edge.  Rows that do not match any existing edge are skipped.
  *
- * Example — CSV input with srcColumn=0, tgtColumn=1:
+ * Example — CSV input with srcColumn=0, tgtColumn=1.
+ * Native editable columns (Weight, Label, Color) are routed to their setters;
+ * read-only native columns (Relation) are silently skipped:
  * @code
- * Source,Target,relationship,weight
- * 1,2,invested_in,0.8    ← sets edge 1→2: relationship="invested_in", weight="0.8"
- * 2,3,mentors,0.5        ← sets edge 2→3: relationship="mentors",     weight="0.5"
+ * Source,Target,Weight,Label,Color,relationship,strength
+ * 1,2,0.8,,#666666,invested_in,strong   ← Weight/Color updated; relationship/strength → custom attrs
+ * 2,3,0.5,,#666666,mentors,medium
  * @endcode
  *
  * @return Number of edges that received at least one attribute update.
@@ -229,13 +231,29 @@ int Graph::edgeAttributesImport(const QStringList &headers,
         if (edgeExists(src, tgt) == 0)
             continue;
 
-        QHash<QString,QString> attrs = edgeCustomAttributes(src, tgt);
+        QHash<QString,QString> newCustomAttrs = edgeCustomAttributes(src, tgt);
         for (int c = 0; c < headers.size(); ++c) {
             if (c == srcColumn || c == tgtColumn || c >= row.size())
                 continue;
-            attrs.insert(headers.at(c), row.at(c));
+            const QString &h = headers.at(c);
+            const QString &v = row.at(c);
+            // Route editable native columns to their proper setters;
+            // silently skip read-only native columns (Source, Target, Relation).
+            if (h.compare(QLatin1String("Weight"), Qt::CaseInsensitive) == 0) {
+                bool ok = false;
+                const qreal w = v.toDouble(&ok);
+                if (ok) edgeWeightSet(src, tgt, w);
+            } else if (h.compare(QLatin1String("Label"), Qt::CaseInsensitive) == 0)
+                edgeLabelSet(src, tgt, v);
+            else if (h.compare(QLatin1String("Color"), Qt::CaseInsensitive) == 0)
+                edgeColorSet(src, tgt, v);
+            else if (h.compare(QLatin1String("Relation"), Qt::CaseInsensitive) == 0)
+                continue; // read-only — skip
+            else
+                newCustomAttrs.insert(h, v);
         }
-        edgeCustomAttributesSet(src, tgt, attrs);
+        if (!newCustomAttrs.isEmpty())
+            edgeCustomAttributesSet(src, tgt, newCustomAttrs);
         ++matched;
     }
     qDebug() << "edgeAttributesImport: matched" << matched << "of" << rows.size() << "rows";

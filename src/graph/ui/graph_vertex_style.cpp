@@ -655,11 +655,13 @@ void Graph::vertexCustomAttributeRemove(const int &v1, const QString &key)
  * in column @p idColumn.  All other columns become custom attributes on the
  * matched vertex.  Rows that do not match any vertex are silently skipped.
  *
- * Example — CSV input with idColumn=0, matchByLabel=false:
+ * Example — CSV input with idColumn=0, matchByLabel=false.
+ * Native editable columns (Label, Size, Color) are routed to their setters;
+ * read-only native columns (Visible, Shape) are silently skipped:
  * @code
- * #,type,year_founded
- * 1,investor,2010       ← sets vertex 1: type="investor", year_founded="2010"
- * 2,founder,2018        ← sets vertex 2: type="founder",  year_founded="2018"
+ * #,Label,Size,Color,type,year_founded
+ * 1,Alice,12,#ff0000,investor,2010   ← Label/Size/Color updated; type/year_founded → custom attrs
+ * 2,Bob,10,#0000ff,founder,2018
  * @endcode
  *
  * @return Number of vertices that received at least one attribute update.
@@ -692,7 +694,23 @@ int Graph::vertexAttributesImport(const QStringList &headers,
         for (int c = 0; c < headers.size(); ++c) {
             if (c == idColumn || c >= row.size())
                 continue;
-            vertexCustomAttributeSet(vn, headers.at(c), row.at(c));
+            const QString &h = headers.at(c);
+            const QString &v = row.at(c);
+            // Route editable native columns to their proper setters;
+            // silently skip read-only native columns (#, Visible, Shape).
+            if (h.compare(QLatin1String("Label"), Qt::CaseInsensitive) == 0)
+                vertexLabelSet(vn, v);
+            else if (h.compare(QLatin1String("Size"), Qt::CaseInsensitive) == 0) {
+                bool ok = false;
+                const int sz = v.toInt(&ok);
+                if (ok) vertexSizeSet(vn, sz);
+            } else if (h.compare(QLatin1String("Color"), Qt::CaseInsensitive) == 0)
+                vertexColorSet(vn, v);
+            else if (h.compare(QLatin1String("Visible"), Qt::CaseInsensitive) == 0
+                     || h.compare(QLatin1String("Shape"), Qt::CaseInsensitive) == 0)
+                continue; // read-only in the table — skip
+            else
+                vertexCustomAttributeSet(vn, h, v);
         }
         ++matched;
     }
