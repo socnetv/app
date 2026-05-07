@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file. 
 
-## [3.5] – April 2026
+## [3.5] – May 2026
 
 ### New Features
 
