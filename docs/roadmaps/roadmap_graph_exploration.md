@@ -212,7 +212,7 @@ Treat graphs as structured datasets.
 
 ### Phase 2 — Table Views ✔
 
-* ✔ Node/edge data table dock (#225) — closes #225
+* ✔ Node/edge data table dock (#225) 
   * `NodeTableModel` (`QAbstractTableModel`): caches all node rows; fixed
     columns (#, Label, Visible, Shape, Size, Color) plus dynamic custom attrs.
     Read-only cells (#, Visible, Shape) rendered with a muted background.
@@ -246,9 +246,16 @@ Treat graphs as structured datasets.
   * `GraphTableWidget::exportStatusMessage` signal wired to the MainWindow
     status bar.
 
-### Phase 4 — Structured Import
+### Phase 4 — Structured Import ✔
 
-* CSV / JSON import (#227)
+* ✔ CSV / JSON attribute import (#227) — closes #227, closes #169
+  * `TableImport::fromCSV(path)` / `TableImport::fromJSON(path)` — free functions in `src/graph/io/table_import.*`; return `ParsedTable{headers, rows, ok, errorString}`; QtCore only, no UI
+  * `DialogImportAttributes` (`src/forms/dialogimportattributes.*`) — file-browse + preview table (first 8 rows) + column-mapping controls; parameterised by scope (Nodes / Edges) and format (CSV / JSON); `Import` button disabled until a valid file is loaded
+    * Nodes scope: **ID column** combo + **Match by** radio (Node number / Node label)
+    * Edges scope: **Source column** + **Target column** combos; auto-selects columns named `source`/`target`/`src`/`tgt`/`dest`
+  * `Graph::vertexAttributesImport(headers, rows, idColumn, matchByLabel)` in `graph_vertex_style.cpp` — iterates rows, matches vertices by number or label, calls `vertexCustomAttributeSet()` for each non-ID column; returns matched count
+  * `Graph::edgeAttributesImport(headers, rows, srcColumn, tgtColumn)` in `graph_edge_style.cpp` — matches edges by source/target number, merges new attributes via `edgeCustomAttributesSet()`; returns matched count
+  * **Import CSV** / **Import JSON** buttons added to each tab of `GraphTableWidget`; invoke `DialogImportAttributes`, call the appropriate Graph method, refresh the table, emit `importStatusMessage`; MainWindow wires `importStatusMessage` → status bar
 
 ### Phase 5 — Bulk Editing
 

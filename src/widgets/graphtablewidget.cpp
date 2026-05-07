@@ -15,6 +15,9 @@
 #include "nodetablemodel.h"
 #include "edgetablemodel.h"
 #include "../graph/io/table_export.h"
+#include "../graph/io/table_import.h"
+#include "../forms/dialogimportattributes.h"
+#include "../graph.h"
 
 #include <QTabWidget>
 #include <QTableView>
@@ -93,11 +96,19 @@ GraphTableWidget::GraphTableWidget(QWidget *parent)
     QPushButton *nodeExportJSONBtn = new QPushButton(tr("Export JSON"), this);
     nodeExportJSONBtn->setToolTip(tr("Export currently visible rows as JSON"));
 
+    QPushButton *nodeImportCSVBtn = new QPushButton(tr("Import CSV"), this);
+    nodeImportCSVBtn->setToolTip(tr("Import node attributes from a CSV file"));
+
+    QPushButton *nodeImportJSONBtn = new QPushButton(tr("Import JSON"), this);
+    nodeImportJSONBtn->setToolTip(tr("Import node attributes from a JSON file"));
+
     QHBoxLayout *nodeTopBar = new QHBoxLayout;
     nodeTopBar->addWidget(m_nodeSearch, 1);
     nodeTopBar->addWidget(nodeRefreshBtn);
     nodeTopBar->addWidget(nodeExportCSVBtn);
     nodeTopBar->addWidget(nodeExportJSONBtn);
+    nodeTopBar->addWidget(nodeImportCSVBtn);
+    nodeTopBar->addWidget(nodeImportJSONBtn);
 
     QWidget *nodeTab = new QWidget(this);
     QVBoxLayout *nodeLayout = new QVBoxLayout(nodeTab);
@@ -125,11 +136,19 @@ GraphTableWidget::GraphTableWidget(QWidget *parent)
     QPushButton *edgeExportJSONBtn = new QPushButton(tr("Export JSON"), this);
     edgeExportJSONBtn->setToolTip(tr("Export currently visible rows as JSON"));
 
+    QPushButton *edgeImportCSVBtn = new QPushButton(tr("Import CSV"), this);
+    edgeImportCSVBtn->setToolTip(tr("Import edge attributes from a CSV file"));
+
+    QPushButton *edgeImportJSONBtn = new QPushButton(tr("Import JSON"), this);
+    edgeImportJSONBtn->setToolTip(tr("Import edge attributes from a JSON file"));
+
     QHBoxLayout *edgeTopBar = new QHBoxLayout;
     edgeTopBar->addWidget(m_edgeSearch, 1);
     edgeTopBar->addWidget(edgeRefreshBtn);
     edgeTopBar->addWidget(edgeExportCSVBtn);
     edgeTopBar->addWidget(edgeExportJSONBtn);
+    edgeTopBar->addWidget(edgeImportCSVBtn);
+    edgeTopBar->addWidget(edgeImportJSONBtn);
 
     QWidget *edgeTab = new QWidget(this);
     QVBoxLayout *edgeLayout = new QVBoxLayout(edgeTab);
@@ -179,6 +198,12 @@ GraphTableWidget::GraphTableWidget(QWidget *parent)
     connect(nodeExportJSONBtn, &QPushButton::clicked, this, &GraphTableWidget::exportNodesJSON);
     connect(edgeExportCSVBtn,  &QPushButton::clicked, this, &GraphTableWidget::exportEdgesCSV);
     connect(edgeExportJSONBtn, &QPushButton::clicked, this, &GraphTableWidget::exportEdgesJSON);
+
+    // Import buttons
+    connect(nodeImportCSVBtn,  &QPushButton::clicked, this, &GraphTableWidget::importNodesCSV);
+    connect(nodeImportJSONBtn, &QPushButton::clicked, this, &GraphTableWidget::importNodesJSON);
+    connect(edgeImportCSVBtn,  &QPushButton::clicked, this, &GraphTableWidget::importEdgesCSV);
+    connect(edgeImportJSONBtn, &QPushButton::clicked, this, &GraphTableWidget::importEdgesJSON);
 }
 
 /**
@@ -271,4 +296,47 @@ void GraphTableWidget::doExport(QAbstractItemModel *proxyModel,
                              tr("Export failed"),
                              tr("Could not write to %1").arg(path));
     }
+}
+
+void GraphTableWidget::importNodesCSV()  { doImport(true,  true);  }
+void GraphTableWidget::importNodesJSON() { doImport(true,  false); }
+void GraphTableWidget::importEdgesCSV()  { doImport(false, true);  }
+void GraphTableWidget::importEdgesJSON() { doImport(false, false); }
+
+/**
+ * @brief Opens DialogImportAttributes and, on acceptance, calls the
+ *        appropriate Graph import method then refreshes the table.
+ *
+ * @p forNodes  true → import node attributes; false → import edge attributes.
+ * @p csv       true → CSV format; false → JSON format.
+ */
+void GraphTableWidget::doImport(bool forNodes, bool csv)
+{
+    if (!m_graph)
+        return;
+
+    const auto scope = forNodes ? DialogImportAttributes::Scope::Nodes
+                                : DialogImportAttributes::Scope::Edges;
+
+    DialogImportAttributes dlg(scope, csv, this);
+    if (dlg.exec() != QDialog::Accepted)
+        return;
+
+    const TableImport::ParsedTable &table = dlg.parsedTable();
+
+    int matched = 0;
+    if (forNodes) {
+        matched = m_graph->vertexAttributesImport(
+            table.headers, table.rows, dlg.idColumn(), dlg.matchByLabel());
+    } else {
+        matched = m_graph->edgeAttributesImport(
+            table.headers, table.rows, dlg.srcColumn(), dlg.tgtColumn());
+    }
+
+    refresh(m_graph);
+
+    const QString kind = forNodes ? tr("node") : tr("edge");
+    emit importStatusMessage(
+        tr("Imported attributes into %1 %2(s) from %3 rows")
+            .arg(matched).arg(kind).arg(table.rows.size()));
 }

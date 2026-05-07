@@ -59,12 +59,24 @@ public slots:
     /** Prompts for a file path and exports visible edge rows as JSON. */
     void exportEdgesJSON();
 
+    /** Opens the column-mapping dialog and imports node attributes from a CSV. */
+    void importNodesCSV();
+    /** Opens the column-mapping dialog and imports node attributes from a JSON. */
+    void importNodesJSON();
+    /** Opens the column-mapping dialog and imports edge attributes from a CSV. */
+    void importEdgesCSV();
+    /** Opens the column-mapping dialog and imports edge attributes from a JSON. */
+    void importEdgesJSON();
+
 signals:
     /** Emitted when the user clicks a row in the Nodes tab. */
     void nodeSelected(int number);
 
     /** Emitted with a status message after an export attempt. */
     void exportStatusMessage(const QString &message);
+
+    /** Emitted with a status message after an import attempt. */
+    void importStatusMessage(const QString &message);
 
 private slots:
     void onNodeRowClicked(const QModelIndex &proxyIndex);
@@ -73,6 +85,7 @@ private:
     void doExport(QAbstractItemModel *proxyModel,
                   const QString &defaultName,
                   bool csv);
+    void doImport(bool forNodes, bool csv);
 
     Graph                 *m_graph  = nullptr;
     QTabWidget            *m_tabs;

@@ -5540,6 +5540,9 @@ void MainWindow::initSignalSlots() {
     connect(m_tableWidget, &GraphTableWidget::exportStatusMessage,
             this, &MainWindow::statusMessage);
 
+    connect(m_tableWidget, &GraphTableWidget::importStatusMessage,
+            this, &MainWindow::statusMessage);
+
     connect( activeGraph, &Graph::signalGraphSavedStatus,
              this, &MainWindow::slotNetworkSavedStatus);
 

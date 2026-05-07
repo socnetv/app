@@ -611,6 +611,11 @@ public:
 
     QHash<QString, QString> vertexCustomAttributes(const int &v1) const;
 
+    int vertexAttributesImport(const QStringList &headers,
+                               const QVector<QStringList> &rows,
+                               int idColumn,
+                               bool matchByLabel);
+
     void vertexPosSet(const int &v, const int &x, const int &y);
 
     QPointF vertexPos(const int &v1) const;
@@ -708,6 +713,11 @@ public:
     void edgeCustomAttributesSet(const int &v1, const int &v2, const QHash<QString,QString> &attrs);
 
     QHash<QString,QString> edgeCustomAttributes(const int &v1, const int &v2) const;
+
+    int edgeAttributesImport(const QStringList &headers,
+                             const QVector<QStringList> &rows,
+                             int srcColumn,
+                             int tgtColumn);
 
     QStringList graphHasEdgeCustomAttributes() const;
 

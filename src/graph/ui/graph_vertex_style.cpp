@@ -646,3 +646,49 @@ void Graph::vertexCustomAttributeRemove(const int &v1, const QString &key)
     m_graph[vpos[v1]]->setCustomAttributes(attrs);
     setModStatus(ModStatus::VertexMetadata);
 }
+
+/**
+ * @brief Imports custom attributes from a parsed table into existing vertices.
+ *
+ * Each row in @p rows is matched to a vertex either by node number
+ * (matchByLabel == false) or by label (matchByLabel == true) using the value
+ * in column @p idColumn.  All other columns become custom attributes on the
+ * matched vertex.  Rows that do not match any vertex are silently skipped.
+ *
+ * @return Number of vertices that received at least one attribute update.
+ */
+int Graph::vertexAttributesImport(const QStringList &headers,
+                                  const QVector<QStringList> &rows,
+                                  int idColumn,
+                                  bool matchByLabel)
+{
+    int matched = 0;
+    for (const QStringList &row : rows) {
+        if (idColumn >= row.size())
+            continue;
+
+        int vn = -1;
+        if (matchByLabel) {
+            const int idx = vertexExists(row.at(idColumn));
+            if (idx != -1)
+                vn = m_graph[idx]->number();
+        } else {
+            bool ok = false;
+            const int num = row.at(idColumn).toInt(&ok);
+            if (ok && vertexExists(num) != -1)
+                vn = num;
+        }
+
+        if (vn < 0)
+            continue;
+
+        for (int c = 0; c < headers.size(); ++c) {
+            if (c == idColumn || c >= row.size())
+                continue;
+            vertexCustomAttributeSet(vn, headers.at(c), row.at(c));
+        }
+        ++matched;
+    }
+    qDebug() << "vertexAttributesImport: matched" << matched << "of" << rows.size() << "rows";
+    return matched;
+}

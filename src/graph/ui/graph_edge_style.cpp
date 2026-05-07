@@ -195,6 +195,47 @@ QHash<QString,QString> Graph::edgeCustomAttributes(const int &v1, const int &v2)
 }
 
 /**
+ * @brief Imports custom attributes from a parsed table into existing edges.
+ *
+ * Each row is matched to an edge by looking up vertex numbers from
+ * @p srcColumn and @p tgtColumn.  All other columns become custom attributes
+ * on the matched edge.  Rows that do not match any existing edge are skipped.
+ *
+ * @return Number of edges that received at least one attribute update.
+ */
+int Graph::edgeAttributesImport(const QStringList &headers,
+                                const QVector<QStringList> &rows,
+                                int srcColumn,
+                                int tgtColumn)
+{
+    int matched = 0;
+    for (const QStringList &row : rows) {
+        if (srcColumn >= row.size() || tgtColumn >= row.size())
+            continue;
+
+        bool okSrc = false, okTgt = false;
+        const int src = row.at(srcColumn).toInt(&okSrc);
+        const int tgt = row.at(tgtColumn).toInt(&okTgt);
+        if (!okSrc || !okTgt)
+            continue;
+
+        if (edgeExists(src, tgt) == 0)
+            continue;
+
+        QHash<QString,QString> attrs = edgeCustomAttributes(src, tgt);
+        for (int c = 0; c < headers.size(); ++c) {
+            if (c == srcColumn || c == tgtColumn || c >= row.size())
+                continue;
+            attrs.insert(headers.at(c), row.at(c));
+        }
+        edgeCustomAttributesSet(src, tgt, attrs);
+        ++matched;
+    }
+    qDebug() << "edgeAttributesImport: matched" << matched << "of" << rows.size() << "rows";
+    return matched;
+}
+
+/**
  * @brief Returns a list of all unique custom attribute keys present across
  * all enabled edges in the current graph.
  */

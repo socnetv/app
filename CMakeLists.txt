@@ -113,6 +113,7 @@ set(GRAPH_SOURCES
     src/graph/io/graph_io.cpp
     src/graph/io/graph_parse_sink_graph.cpp
     src/graph/io/table_export.cpp
+    src/graph/io/table_import.cpp
     src/graph/relations/graph_relations.cpp
     src/graph/filters/graph_edge_filters.cpp
     src/graph/filters/graph_node_filters.cpp
@@ -217,6 +218,7 @@ set(SOURCES
     src/forms/dialogfilternodesbycentrality.cpp
     src/forms/dialogfilteredgesbyweight.cpp
     src/forms/dialogfilterbyattribute.cpp
+    src/forms/dialogimportattributes.cpp
     src/widgets/filterbarwidget.cpp
     src/widgets/nodetablemodel.cpp
     src/widgets/edgetablemodel.cpp
