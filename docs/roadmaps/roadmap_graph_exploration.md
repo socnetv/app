@@ -248,7 +248,9 @@ Treat graphs as structured datasets.
 
 ### Phase 4 — Structured Import ✔
 
-* ✔ CSV / JSON attribute import (#227) — closes #227, closes #169
+**Cross-cutting workflow unlocked by Phases 3+4:** spreadsheet-based bulk attribute editing (#232) — export table to CSV/JSON, edit freely in any spreadsheet tool, re-import. Each node/edge gets its own values; native columns (Label, Size, Color, Weight) are routed to their proper setters; read-only columns (Visible, Shape, Relation) are silently skipped; full roundtrip with no data loss or duplicate columns.
+
+* ✔ CSV / JSON attribute import (#227) — refs #169
   * `TableImport::fromCSV(path)` / `TableImport::fromJSON(path)` — free functions in `src/graph/io/table_import.*`; return `ParsedTable{headers, rows, ok, errorString}`; QtCore only, no UI
   * `DialogImportAttributes` (`src/forms/dialogimportattributes.*`) — file-browse + preview table (first 8 rows) + column-mapping controls; parameterised by scope (Nodes / Edges) and format (CSV / JSON); `Import` button disabled until a valid file is loaded
     * Nodes scope: **ID column** combo + **Match by** radio (Node number / Node label)
@@ -257,14 +259,34 @@ Treat graphs as structured datasets.
   * `Graph::edgeAttributesImport(headers, rows, srcColumn, tgtColumn)` in `graph_edge_style.cpp` — matches edges by source/target number, merges new attributes via `edgeCustomAttributesSet()`; returns matched count
   * **Import CSV** / **Import JSON** buttons added to each tab of `GraphTableWidget`; invoke `DialogImportAttributes`, call the appropriate Graph method, refresh the table, emit `importStatusMessage`; MainWindow wires `importStatusMessage` → status bar
 
-### Phase 5 — Bulk Editing
+### Phase 5 — Bulk Editing (#228)
 
-* Batch attribute operations (#228)
+**Goal:** in-app same-value-to-many-targets operations — complementary to the spreadsheet workflow (#232) which already handles heterogeneous per-row editing.
 
-### Phase 6 — Transformations
+* Assign a single attribute value to all currently selected or filtered nodes/edges
+  * Context menu entry: "Set attribute for selection…"
+  * Bulk-edit dialog: attribute name field (combo from existing keys) + value field + scope (selection / visible subset)
+  * Calls `vertexCustomAttributeSet` / `edgeCustomAttributesSet` for each target in a single transaction
+* Remove an attribute key from multiple nodes/edges at once
+  * "Remove attribute from selection" — calls `vertexCustomAttributeRemove` per target
+* Add a new attribute key (with an optional default value) to all nodes/edges
+  * Useful for initialising a new column before importing real values
 
-* Derived fields
-* Value normalization (#229)
+**Selection sources:**
+* Nodes/edges manually selected on canvas
+* Current filtered/visible subset (integrates with #215 filter stack)
+* Multi-row selection in the Data Table (#225)
+
+**UX rules:**
+* Operations must not alter the filter stack (non-destructive)
+* Table auto-refreshes after each bulk operation
+* All operations must be undoable (undo stack integration — dependency on future undo/redo system)
+
+### Phase 6 — Transformations (#229)
+
+* Derived fields: compute a new attribute value from one or more existing attributes (e.g. `full_name = first + " " + last`)
+* Value normalization: min-max or z-score scaling of a numeric attribute across all nodes/edges
+* Type coercion: convert stored string values to canonical types (integer, float, boolean) — useful before filtering with numeric operators
 
 ---
 
@@ -347,4 +369,38 @@ SocNetV evolves into:
 * Avoid duplicating filtering logic
 * Reuse attribute system consistently
 * Keep UI simple and incremental
+
+---
+
+## Documentation Debt — Website & Manual Updates
+
+The SocNetV website and manual live in a separate public repo at `~/socnetv/website/`
+(GitHub: `https://github.com/socnetv/website`). Core pages and manual content are under
+`src/content/docs/`.
+
+The following WS9 features are **implemented and shipped in v3.5** but not yet reflected
+in the website or manual:
+
+| Feature | Issue | Manual page(s) to update |
+|---|---|---|
+| Focus on selection (hide non-selected nodes) | #210 | Filtering & exploration section |
+| Ego network (k=1) filter | #211 | Filtering & exploration section |
+| Edge filtering by weight | #213 | Filtering & exploration section |
+| Non-destructive node filter restore (Restore All Nodes) | #216 | Filtering & exploration section |
+| Ego-centered radial layout | #214 | Layouts reference |
+| Right-click context menu: ego, focus, restore | #209/#211 | Usage / interaction reference |
+| Attribute-based filtering (nodes + edges) | #217 | Filtering & exploration section |
+| Filter bar with chips | #219 | Filtering & exploration section |
+| Edge Properties dialog with custom attributes | #224 | Attributes & metadata section (new) |
+| Node/edge data table dock (Ctrl+T) | #225 | Data management section (new) |
+| Structured CSV/JSON export | #226 | Data management section, Export reference |
+| Structured CSV/JSON import | #227 | Data management section, Import reference |
+| Spreadsheet bulk editing workflow | #232 | Data management section (new workflow page) |
+
+**Priority order for documentation:**
+1. Data table dock + export/import (most user-facing, no equivalent docs exist)
+2. Attribute-based filtering + filter bar (users will search for "how do I filter by attribute")
+3. Spreadsheet workflow (new pattern, deserves its own how-to page)
+4. Ego network, focus on selection, restore all nodes
+5. Remaining layout and edge-weight filtering entries
 

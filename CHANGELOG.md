@@ -98,6 +98,35 @@ All notable changes to this project are documented in this file.
       export all rows regardless of any active search filter.
     - Status bar reports the export path on success.
 
+  - **Structured CSV/JSON attribute import** (#227, refs #169):
+    - `TableImport::fromCSV()` and `TableImport::fromJSON()` free functions
+      (`src/graph/io/table_import.*`) — RFC 4180 CSV parser and JSON
+      array-of-objects parser; QtCore only, no UI dependency.
+    - `DialogImportAttributes`: file-browse + 8-row preview table +
+      column-mapping controls. Nodes scope: **ID column** selector (node
+      number or label matching). Edges scope: **Source** and **Target** column
+      selectors with auto-detection of common names (`source`, `src`, `target`,
+      `tgt`, `dest`). Import button is disabled until a valid file is loaded.
+    - `Graph::vertexAttributesImport()` and `Graph::edgeAttributesImport()`:
+      smart column routing — editable native columns (`Label`, `Size`, `Color`
+      for nodes; `Weight`, `Label`, `Color` for edges) are routed to their
+      proper setters; read-only native columns (`Visible`, `Shape`, `Relation`)
+      are silently skipped; all other columns become custom attributes.
+    - Each tab in the Data Table dock gains **Import CSV** and **Import JSON**
+      buttons; the table auto-refreshes and the status bar reports the number
+      of matched rows after import.
+    - Enables a full lossless export→import roundtrip: re-importing an
+      exported file produces no duplicate columns and no data loss.
+
+  - **Spreadsheet-based bulk attribute editing workflow** (#232):
+    - Emergent capability unlocked by combining #226 (export) and #227
+      (import): export the data table to CSV or JSON, edit it freely in any
+      spreadsheet tool (Excel, LibreOffice, Google Sheets), and re-import to
+      update attributes in bulk. Each node/edge can carry different values —
+      unlike in-app bulk operations (#228) which assign one value to many.
+    - Native columns updated via their proper setters on re-import; no
+      duplicate custom-attribute columns created.
+
 ### Improvements
 
   - Force-directed layouts improved for large graphs:

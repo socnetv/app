@@ -138,6 +138,14 @@ Examples of high-value additions:
 - random network generators (deterministic via fixed seeds)
 - layout / visualization computations runnable headlessly (compute-only; no QtWidgets/QtCharts)
 - additional analysis workflows that users typically trigger from UI
+- **kernel_attribute_import_v7** — CSV/JSON attribute import + export roundtrip (#227, #232):
+  - Load a graph with known node/edge attributes
+  - Export nodes and edges to CSV and JSON via `TableExport`
+  - Mutate specific attribute values in the exported files
+  - Re-import via `TableImport` + `Graph::vertexAttributesImport` / `edgeAttributesImport`
+  - Assert: mutated attributes are present with correct values; native columns (Label, Size, Color, Weight) were routed to their proper setters; read-only columns were not stored as custom attributes; no duplicate column keys
+  - Assert roundtrip fidelity: export without modification → re-import → golden compare (no change)
+  - Save as GraphML and reload; assert attribute persistence survives the full pipeline
 
 Rules:
 

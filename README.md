@@ -42,6 +42,8 @@ field data from a file in a supported format (GraphML, GraphViz, EdgeList, GML, 
 
 - Structured export: export node or edge data to CSV or JSON via `Network → Export to other...` (exports all rows) or the Export buttons in the Data Table dock (exports the currently visible/filtered rows).
 
+- Structured import: import node or edge attributes from CSV or JSON files via the **Import CSV** / **Import JSON** buttons in the Data Table dock. A column-mapping dialog lets you select the ID column (by node number or label) and preview the first rows before committing. Native properties (Label, Size, Color, Weight) are updated directly; all other columns become custom attributes. Re-importing a previously exported file is a full lossless roundtrip — no duplicate columns, no data loss. Combined with export, this enables a **spreadsheet bulk editing workflow**: export → edit in any spreadsheet tool → re-import to update attributes in bulk.
+
 - Community detection algorithms such as triad census, clique census, etc.
 
 - Structural equivalence analysis, using hierarchical clustering, actor similarities and tie profile dissimilarities, pearson coefficients, etc.
