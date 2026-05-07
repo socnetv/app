@@ -48,6 +48,8 @@ FORMS += src/forms/dialogfilteredgesbyweight.ui \
     src/forms/dialognodeedit.ui \
     src/forms/dialognodefind.ui \
     src/forms/dialogedgedichotomization.ui \
+    src/forms/dialogedgeedit.ui \
+    src/forms/dialogfilterbyattribute.ui \
     src/forms/dialogexportpdf.ui \
     src/forms/dialogexportimage.ui
 
@@ -67,6 +69,16 @@ HEADERS += src/mainwindow.h \
     src/graphicsnode.h \
     src/graphicsnodelabel.h \
     src/graphicsnodenumber.h \
+    src/widgets/filterbarwidget.h \
+    src/widgets/graphtablewidget.h \
+    src/widgets/nodetablemodel.h \
+    src/widgets/edgetablemodel.h \
+    src/forms/dialogedgeedit.h \
+    src/forms/dialogfilterbyattribute.h \
+    src/forms/dialogimportattributes.h \
+    src/graph/filters/filter_condition.h \
+    src/graph/io/table_export.h \
+    src/graph/io/table_import.h \
     src/forms/dialogfilteredgesbyweight.h \
     src/forms/dialogfilternodesbycentrality.h \
     src/forms/dialogedgedichotomization.h \
@@ -104,6 +116,8 @@ SOURCES += src/main.cpp \
     src/graph/storage/graph_edges.cpp \
     src/graph/io/graph_io.cpp \
     src/graph/io/graph_parse_sink_graph.cpp \
+    src/graph/io/table_export.cpp \
+    src/graph/io/table_import.cpp \
     src/graph/relations/graph_relations.cpp \
     src/graph/filters/graph_edge_filters.cpp \
     src/graph/filters/graph_node_filters.cpp \
@@ -152,6 +166,13 @@ SOURCES += src/main.cpp \
     src/graphicsnode.cpp \
     src/graphicsnodelabel.cpp \
     src/graphicsnodenumber.cpp \
+    src/widgets/filterbarwidget.cpp \
+    src/widgets/graphtablewidget.cpp \
+    src/widgets/nodetablemodel.cpp \
+    src/widgets/edgetablemodel.cpp \
+    src/forms/dialogedgeedit.cpp \
+    src/forms/dialogfilterbyattribute.cpp \
+    src/forms/dialogimportattributes.cpp \
     src/forms/dialogfilteredgesbyweight.cpp \
     src/forms/dialogfilternodesbycentrality.cpp \
     src/forms/dialogedgedichotomization.cpp \
