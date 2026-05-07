@@ -201,6 +201,13 @@ QHash<QString,QString> Graph::edgeCustomAttributes(const int &v1, const int &v2)
  * @p srcColumn and @p tgtColumn.  All other columns become custom attributes
  * on the matched edge.  Rows that do not match any existing edge are skipped.
  *
+ * Example — CSV input with srcColumn=0, tgtColumn=1:
+ * @code
+ * Source,Target,relationship,weight
+ * 1,2,invested_in,0.8    ← sets edge 1→2: relationship="invested_in", weight="0.8"
+ * 2,3,mentors,0.5        ← sets edge 2→3: relationship="mentors",     weight="0.5"
+ * @endcode
+ *
  * @return Number of edges that received at least one attribute update.
  */
 int Graph::edgeAttributesImport(const QStringList &headers,

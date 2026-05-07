@@ -47,6 +47,22 @@ struct ParsedTable {
  * The first non-empty line is treated as the header row.
  * Quoted fields (RFC 4180) are handled: embedded double-quotes are written
  * as two consecutive double-quotes ("").
+ *
+ * Node attributes example — ID column is "#", remaining columns become attributes:
+ * @code
+ * #,Label,type,year_founded
+ * 1,Alice,investor,2010
+ * 2,Bob,founder,2018
+ * 3,Carol,advisor,2015
+ * @endcode
+ *
+ * Edge attributes example — Source/Target identify the edge, rest become attributes:
+ * @code
+ * Source,Target,relationship,weight
+ * 1,2,invested_in,0.8
+ * 2,3,mentors,0.5
+ * 1,3,co_founded,1.0
+ * @endcode
  */
 ParsedTable fromCSV(const QString &filePath);
 
@@ -56,6 +72,22 @@ ParsedTable fromCSV(const QString &filePath);
  * Expects a top-level JSON array of objects — the format produced by
  * TableExport::toJSON().  Column order follows the key order of the
  * first object in the array.
+ *
+ * Node attributes example:
+ * @code
+ * [
+ *   { "#": "1", "Label": "Alice", "type": "investor", "year_founded": "2010" },
+ *   { "#": "2", "Label": "Bob",   "type": "founder",  "year_founded": "2018" }
+ * ]
+ * @endcode
+ *
+ * Edge attributes example:
+ * @code
+ * [
+ *   { "Source": "1", "Target": "2", "relationship": "invested_in", "weight": "0.8" },
+ *   { "Source": "2", "Target": "3", "relationship": "mentors",     "weight": "0.5" }
+ * ]
+ * @endcode
  */
 ParsedTable fromJSON(const QString &filePath);
 

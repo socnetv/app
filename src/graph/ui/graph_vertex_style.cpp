@@ -655,6 +655,13 @@ void Graph::vertexCustomAttributeRemove(const int &v1, const QString &key)
  * in column @p idColumn.  All other columns become custom attributes on the
  * matched vertex.  Rows that do not match any vertex are silently skipped.
  *
+ * Example — CSV input with idColumn=0, matchByLabel=false:
+ * @code
+ * #,type,year_founded
+ * 1,investor,2010       ← sets vertex 1: type="investor", year_founded="2010"
+ * 2,founder,2018        ← sets vertex 2: type="founder",  year_founded="2018"
+ * @endcode
+ *
  * @return Number of vertices that received at least one attribute update.
  */
 int Graph::vertexAttributesImport(const QStringList &headers,
