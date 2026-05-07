@@ -139,7 +139,7 @@ Examples of high-value additions:
 - layout / visualization computations runnable headlessly (compute-only; no QtWidgets/QtCharts)
 - additional analysis workflows that users typically trigger from UI
 - **kernel_attribute_import_v7** — CSV/JSON attribute import + export roundtrip (#227, #232):
-  - Load a graph with known node/edge attributes
+  - Use `src/data/TinyDir_N2_E1_Attributes.graphml` as the seed graph (2 nodes, 1 edge; heterogeneous custom attrs `Age`/`Party` using `d1000+` keys — also covers #208 regression)
   - Export nodes and edges to CSV and JSON via `TableExport`
   - Mutate specific attribute values in the exported files
   - Re-import via `TableImport` + `Graph::vertexAttributesImport` / `edgeAttributesImport`
