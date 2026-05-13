@@ -1,0 +1,9 @@
+% Test fixture for issue #233: quoted node labels with spaces/commas/special chars
+*Network TinyPajek_Comma_Label_Quoted_N2
+
+*Vertices 2
+1 "Bureau of Alcohol, Tobacco, & Firearms"
+2 "Federal Bureau of Investigation"
+
+*Arcs
+1 2 1

@@ -357,13 +357,28 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
             }
             else
             { /** NODELABEL */
-                label = lineElement[1];
-                // qDebug()<< "node label: " << lineElement[1].toLatin1();
-                str.remove(0, str.lastIndexOf(label) + label.size());
-                // qDebug()<<"cropped str: "<< str.toLatin1();
-                if (label.contains('"', Qt::CaseInsensitive))
-                    label = label.remove('\"');
-                // qDebug()<<"node label now: " << label.toLatin1();
+                // If the label is quoted, extract the full string between the
+                // quotes so that labels containing spaces or commas are preserved.
+                int quoteStart = str.indexOf('"');
+                if (quoteStart != -1)
+                {
+                    int quoteEnd = str.indexOf('"', quoteStart + 1);
+                    if (quoteEnd != -1)
+                    {
+                        label = str.mid(quoteStart + 1, quoteEnd - quoteStart - 1);
+                        str.remove(0, quoteEnd + 1);
+                    }
+                    else
+                    {
+                        label = str.mid(quoteStart + 1).trimmed();
+                        str.clear();
+                    }
+                }
+                else
+                {
+                    label = lineElement[1];
+                    str.remove(0, str.lastIndexOf(label) + label.size());
+                }
 
                 /** NODESHAPE: There are five possible . */
                 if (str.contains("Ellipse", Qt::CaseInsensitive))
