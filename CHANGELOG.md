@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file. 
 
+## [3.6] – Jun 2026
+
+### New Features
+
+  - _TODO: add release notes_
+
 ## [3.5] – May 2026
 
 ### New Features
