@@ -4252,28 +4252,20 @@ void MainWindow::initToolBar(){
 //    QLabel *labelEditNodes= new QLabel;
 //    labelEditNodes->setText(tr("Nodes:"));
 //    toolBar->addWidget (labelEditNodes);
-    toolBar->addAction (editNodeAddAct);
-    toolBar->addAction (editNodeRemoveAct);
-    toolBar->addAction (editNodeFindAct);
+    toolBar->addAction(editNodeAddAct);
+    toolBar->addAction(editNodeRemoveAct);
+    toolBar->addAction(editNodeFindAct);
     toolBar->addAction(editNodePropertiesAct);
-
-    toolBar->addSeparator();
-
-//    QLabel *labelEditEdges= new QLabel;
-//    labelEditEdges->setText(tr("Edges:"));
-//    toolBar->addWidget (labelEditEdges);
-
-    toolBar->addAction (editEdgeAddAct);
-    toolBar->addAction (editEdgeRemoveAct);
-    toolBar->addAction(editEdgePropertiesAct);
-
-    toolBar->addSeparator();
-
-    // — Filter group —
     toolBar->addAction(filterNodesByCentralityAct);
     toolBar->addAction(filterNodesByAttributeAct);
-    toolBar->addAction(editFilterEdgesByWeightAct);
     toolBar->addAction(filterNodesRestoreAllAct);
+
+    toolBar->addSeparator();
+
+    toolBar->addAction(editEdgeAddAct);
+    toolBar->addAction(editEdgeRemoveAct);
+    toolBar->addAction(editEdgePropertiesAct);
+    toolBar->addAction(editFilterEdgesByWeightAct);
     toolBar->addAction(editFilterEdgesRestoreAllAct);
 
     toolBar->addSeparator();
