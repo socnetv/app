@@ -259,28 +259,29 @@ Treat graphs as structured datasets.
   * `Graph::edgeAttributesImport(headers, rows, srcColumn, tgtColumn)` in `graph_edge_style.cpp` — matches edges by source/target number, merges new attributes via `edgeCustomAttributesSet()`; returns matched count
   * **Import CSV** / **Import JSON** buttons added to each tab of `GraphTableWidget`; invoke `DialogImportAttributes`, call the appropriate Graph method, refresh the table, emit `importStatusMessage`; MainWindow wires `importStatusMessage` → status bar
 
-### Phase 5 — Bulk Editing (#228)
+### Phase 5 — Bulk Editing (#228) ✔
 
 **Goal:** in-app same-value-to-many-targets operations — complementary to the spreadsheet workflow (#232) which already handles heterogeneous per-row editing.
 
-* Assign a single attribute value to all currently selected or filtered nodes/edges
-  * Context menu entry: "Set attribute for selection…"
-  * Bulk-edit dialog: attribute name field (combo from existing keys) + value field + scope (selection / visible subset)
-  * Calls `vertexCustomAttributeSet` / `edgeCustomAttributesSet` for each target in a single transaction
-* Remove an attribute key from multiple nodes/edges at once
-  * "Remove attribute from selection" — calls `vertexCustomAttributeRemove` per target
-* Add a new attribute key (with an optional default value) to all nodes/edges
-  * Useful for initialising a new column before importing real values
+* ✔ `DialogBulkEdit` (`src/forms/dialogbulkedit.*`) — adaptive stacked-widget dialog; scope-dependent property combo (Label, Size, Color, Shape for nodes; Label, Weight, Color for edges) plus all existing custom attribute keys; value widget switches per property type (QLineEdit, QSpinBox, QDoubleSpinBox, color picker, shape combo).
+* ✔ **Set property** on selected/visible nodes — `GraphTableWidget::onNodeSetPropertyClicked`; routes built-in properties to `vertexLabelSet` / `vertexSizeSet` / `vertexColorSet` / `vertexShapeSet`; custom keys to `vertexCustomAttributeSet`. Also available from canvas context menu via `MainWindow::slotEditNodeSetPropertyForSelection`.
+* ✔ **Set property** on selected/visible edges — `GraphTableWidget::onEdgeSetPropertyClicked`; routes to `edgeLabelSet` / `edgeWeightSet` / `edgeColorSet` / `edgeCustomAttributesSet`. Canvas shortcut: `slotEditEdgeSetPropertyForSelection`.
+* ✔ **Add attribute** — `onNodeAddAttributeClicked` / `onEdgeAddAttributeClicked`; two `QInputDialog` prompts (key, value); calls `vertexCustomAttributeSet` / `edgeCustomAttributesSet` for all targets.
+* ✔ **Remove attribute** — `onNodeRemoveAttributeClicked` / `onEdgeRemoveAttributeClicked`; collects unique keys across targets, offers `QInputDialog::getItem`, calls `vertexCustomAttributeRemove` (nodes) or get-remove-set pattern (edges, no dedicated API).
 
-**Selection sources:**
-* Nodes/edges manually selected on canvas
-* Current filtered/visible subset (integrates with #215 filter stack)
-* Multi-row selection in the Data Table (#225)
+**Selection sources (all three implemented):**
+* Canvas selection → table sync via `slotCacheSelection` → `syncNodeSelection` / `syncEdgeSelection` (O(model rows + selected), always runs even when dock is hidden).
+* Filtered/visible subset — `resolveNodeTargets` / `resolveEdgeTargets` fall back to all proxy-visible rows when no table rows are explicitly selected (integrates with #215 filter stack).
+* Multi-row table selection — `ExtendedSelection` on both views; `Ctrl+click` and drag-select supported.
 
-**UX rules:**
-* Operations must not alter the filter stack (non-destructive)
-* Table auto-refreshes after each bulk operation
-* All operations must be undoable (undo stack integration — dependency on future undo/redo system)
+**Canvas ↔ table sync:**
+* `GraphicsWidget::userSelectedItems` → `slotCacheSelection`: auto-switches Data Table to Nodes tab unless selection is *entirely* edges; syncs selection into table even when dock is hidden so bulk operations target the correct rows when the user later opens the dock.
+* `GraphTableWidget::refresh()` re-applies `graph->getSelectedVertices()` / `getSelectedEdges()` after each model reset (model reset clears all view selections).
+* Clicking a node row emits `nodeSelected(int)`; clicking an edge row emits `edgeSelected(int, int)` — both wired to the status bar.
+* Context menu: "Edit Selection in Data Table" (≥ 1 selected item) and "Set property for selection…" wired for both node and edge selections.
+* Data Table emptied on `initApp()` (new network or close) regardless of dock visibility.
+
+**Known gap — undo:** bulk operations bypass the undo stack. Undo support for attribute mutations is a broader infrastructure gap tracked under #224 (attribute system) and is deferred until a general undo/redo architecture is introduced.
 
 ### Phase 6 — Transformations (#229)
 
@@ -378,29 +379,13 @@ The SocNetV website and manual live in a separate public repo at `~/socnetv/webs
 (GitHub: `https://github.com/socnetv/website`). Core pages and manual content are under
 `src/content/docs/`.
 
-The following WS9 features are **implemented and shipped in v3.5** but not yet reflected
-in the website or manual:
+All WS9 features shipped up to and including v3.5 (#209–#227, #232) have been
+documented in the manual. No outstanding documentation debt for those issues.
 
-| Feature | Issue | Manual page(s) to update |
+The following feature is **implemented in the v3.6 development cycle** and will need
+manual coverage before the next release:
+
+| Feature | Issue | Notes |
 |---|---|---|
-| Focus on selection (hide non-selected nodes) | #210 | Filtering & exploration section |
-| Ego network (k=1) filter | #211 | Filtering & exploration section |
-| Edge filtering by weight | #213 | Filtering & exploration section |
-| Non-destructive node filter restore (Restore All Nodes) | #216 | Filtering & exploration section |
-| Ego-centered radial layout | #214 | Layouts reference |
-| Right-click context menu: ego, focus, restore | #209/#211 | Usage / interaction reference |
-| Attribute-based filtering (nodes + edges) | #217 | Filtering & exploration section |
-| Filter bar with chips | #219 | Filtering & exploration section |
-| Edge Properties dialog with custom attributes | #224 | Attributes & metadata section (new) |
-| Node/edge data table dock (Ctrl+T) | #225 | Data management section (new) |
-| Structured CSV/JSON export | #226 | Data management section, Export reference |
-| Structured CSV/JSON import | #227 | Data management section, Import reference |
-| Spreadsheet bulk editing workflow | #232 | Data management section (new workflow page) |
-
-**Priority order for documentation:**
-1. Data table dock + export/import (most user-facing, no equivalent docs exist)
-2. Attribute-based filtering + filter bar (users will search for "how do I filter by attribute")
-3. Spreadsheet workflow (new pattern, deserves its own how-to page)
-4. Ego network, focus on selection, restore all nodes
-5. Remaining layout and edge-weight filtering entries
+| In-app bulk editing of node and edge attributes | #228 | New Data Table toolbar buttons (Set property, Add attribute, Remove attribute); canvas context menu entries; `DialogBulkEdit`; canvas ↔ table selection sync |
 
