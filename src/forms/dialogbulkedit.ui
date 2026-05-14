@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DialogBulkEdit</class>
+ <widget class="QDialog" name="DialogBulkEdit">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>420</width>
+    <height>220</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>360</width>
+    <height>200</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Set Property for Selection</string>
+  </property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <property name="margin">
+    <number>12</number>
+   </property>
+   <property name="spacing">
+    <number>10</number>
+   </property>
+
+   <!-- Description -->
+   <item>
+    <widget class="QLabel" name="descLabel">
+     <property name="text">
+      <string>Apply to selected items.</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+
+   <!-- Property + Value form -->
+   <item>
+    <layout class="QFormLayout" name="formLayout">
+     <property name="spacing">
+      <number>8</number>
+     </property>
+
+     <!-- Row 0: Property -->
+     <item row="0" column="0">
+      <widget class="QLabel" name="propertyLabel">
+       <property name="text">
+        <string>Property:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QComboBox" name="propertyCombo">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>1</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+
+     <!-- Row 1: Value (adaptive stacked widget) -->
+     <item row="1" column="0">
+      <widget class="QLabel" name="valueLabel">
+       <property name="text">
+        <string>Value:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QStackedWidget" name="valueStack">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>1</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+
+       <!-- Page 0: text — Label, custom attributes -->
+       <widget class="QWidget" name="textPage">
+        <layout class="QVBoxLayout" name="textLayout">
+         <property name="margin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLineEdit" name="textEdit">
+           <property name="placeholderText">
+            <string>Enter value...</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+
+       <!-- Page 1: int — Size -->
+       <widget class="QWidget" name="intPage">
+        <layout class="QVBoxLayout" name="intLayout">
+         <property name="margin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QSpinBox" name="intSpin">
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>200</number>
+           </property>
+           <property name="value">
+            <number>8</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+
+       <!-- Page 2: double — Weight -->
+       <widget class="QWidget" name="doublePage">
+        <layout class="QVBoxLayout" name="doubleLayout">
+         <property name="margin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QDoubleSpinBox" name="doubleSpin">
+           <property name="minimum">
+            <double>0.000000</double>
+           </property>
+           <property name="maximum">
+            <double>99999.990000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.100000</double>
+           </property>
+           <property name="decimals">
+            <number>2</number>
+           </property>
+           <property name="value">
+            <double>1.000000</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+
+       <!-- Page 3: color -->
+       <widget class="QWidget" name="colorPage">
+        <layout class="QHBoxLayout" name="colorLayout">
+         <property name="margin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QToolButton" name="colorButton">
+           <property name="text">
+            <string>Select color...</string>
+           </property>
+           <property name="toolButtonStyle">
+            <enum>Qt::ToolButtonTextBesideIcon</enum>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+
+       <!-- Page 4: shape (nodes only) -->
+       <widget class="QWidget" name="shapePage">
+        <layout class="QVBoxLayout" name="shapeLayout">
+         <property name="margin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QComboBox" name="shapeCombo">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+
+      </widget>
+     </item>
+    </layout>
+   </item>
+
+   <!-- Button box -->
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+
+  </layout>
+ </widget>
+</ui>
