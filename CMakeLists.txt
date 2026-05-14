@@ -190,6 +190,7 @@ set (FORMS
     src/forms/dialogedgeedit.ui
     src/forms/dialognodefind.ui
     src/forms/dialogfilterbyattribute.ui
+    src/forms/dialogbulkedit.ui
     src/forms/dialogedgedichotomization.ui
     src/forms/dialogexportpdf.ui 
     src/forms/dialogexportimage.ui
@@ -229,6 +230,7 @@ set(SOURCES
     src/forms/dialogpreviewfile.cpp 
     src/forms/dialognodeedit.cpp
     src/forms/dialogedgeedit.cpp
+    src/forms/dialogbulkedit.cpp
     src/forms/dialogranderdosrenyi.cpp 
     src/forms/dialograndsmallworld.cpp 
     src/forms/dialograndregular.cpp 
