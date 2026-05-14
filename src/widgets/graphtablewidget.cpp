@@ -47,12 +47,6 @@ GraphTableWidget::GraphTableWidget(QWidget *parent)
 {
     setObjectName("GraphTableWidget");
 
-    // Compact button/search styling — reduces toolbar height
-    setStyleSheet(
-        "QPushButton { padding: 1px 5px; font-size: 11px; }"
-        "QLineEdit   { font-size: 11px; }"
-        "QComboBox   { font-size: 11px; }"
-    );
 
     // -----------------------------------------------------------------------
     // Create models

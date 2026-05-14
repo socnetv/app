@@ -363,6 +363,7 @@ QComboBox:disabled {
 QGroupBox#leftPanel QComboBox {
     min-width: 120px;
     max-width: 120px;
+    min-height: 22px;
 }
 
 QComboBox::drop-down {
@@ -740,4 +741,23 @@ FilterBarWidget QPushButton#ClearAllButton {
 FilterBarWidget QPushButton#ClearAllButton:hover {
     background-color: #c5cae9;
     border-color: #5c6bc0;
+}
+
+
+/* -----------------------------------------------------------------------
+ * Data Table toolbar (#228)
+ * Compact button and search-box appearance inside GraphTableWidget so the
+ * toolbar row stays slim while the global QPushButton style (padding 5px 16px,
+ * min-width 100px) is left untouched everywhere else.
+ * ----------------------------------------------------------------------- */
+
+GraphTableWidget QPushButton {
+    padding: 1px 5px;
+    min-width: 0;
+    font-size: 11px;
+}
+
+GraphTableWidget QLineEdit {
+    font-size: 11px;
+    min-height: 0;
 }
