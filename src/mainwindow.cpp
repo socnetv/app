@@ -9837,103 +9837,37 @@ void MainWindow::slotEditNodePropertiesDialog()
 {
     qDebug() << "Request to open the node properties dialog...";
 
-    if (!activeNodes())
-    {
+    if (!activeNodes()) {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
-    int min = -1, max = -1, size = appSettings["initNodeSize"].toInt(nullptr, 10);
-    int nodeNumber = 0;
-    int selectedNodesCount = activeGraph->getSelectedVerticesCount();
-    QColor color = QColor(appSettings["initNodeColor"]);
-    QString shape = appSettings["initNodeShape"];
-    QString iconPath = QString();
-    QString label = "";
-    bool ok = false;
-    QHash<QString, QString> customAttributes = QHash<QString, QString>();
+    const int selectedNodesCount = activeGraph->getSelectedVerticesCount();
 
-    if (selectedNodesCount == 0)
-    {
-
-        min = activeGraph->vertexNumberMin();
-        max = activeGraph->vertexNumberMax();
-
-        qDebug() << "no node selected"
-                 << "min node number " << min
-                 << "max node number " << max
-                 << "opening inputdialog";
-
-        if (min == -1 || max == -1)
-        {
-            qDebug("ERROR in finding min max nodeNumbers. Abort");
-            return;
-        }
-
-        nodeNumber = QInputDialog::getInt(
-            this,
-            "Node Properties",
-            tr("Choose a node between (" + QString::number(min).toLatin1() + "..." + QString::number(max).toLatin1() + "):"), min, 1, max, 1, &ok);
-        if (!ok)
-        {
-            statusMessage("Node properties cancelled.");
-            return;
-        }
-        label = activeGraph->vertexLabel(nodeNumber);
-        color = activeGraph->vertexColor(nodeNumber);
-        shape = activeGraph->vertexShape(nodeNumber);
-        size = activeGraph->vertexSize(nodeNumber);
-        iconPath = activeGraph->vertexShapeIconPath(nodeNumber);
-        customAttributes=activeGraph->vertexCustomAttributes(nodeNumber);
-    }
-    else
-    {
-        qDebug() << "selectedNodesCount" << selectedNodesCount;
-
-        foreach (const int &nodeNumber, activeGraph->getSelectedVertices())
-        {
-            qDebug() << "reading properties of selected node"<< nodeNumber;
-
-            if (selectedNodesCount > 1)
-            {
-                color = activeGraph->vertexColor(nodeNumber);
-                shape = activeGraph->vertexShape(nodeNumber);
-                iconPath = activeGraph->vertexShapeIconPath(nodeNumber);
-                size = activeGraph->vertexSize(nodeNumber);
-            }
-            else
-            {
-                label = activeGraph->vertexLabel(nodeNumber);
-                color = activeGraph->vertexColor(nodeNumber);
-                shape = activeGraph->vertexShape(nodeNumber);
-                iconPath = activeGraph->vertexShapeIconPath(nodeNumber);
-                size = activeGraph->vertexSize(nodeNumber);
-                customAttributes=activeGraph->vertexCustomAttributes(nodeNumber);
-            }
-        }
+    if (selectedNodesCount == 0) {
+        statusMessage(tr("Select a node first to edit its properties."));
+        return;
     }
 
-    // @todo Add a function to group multiple nodes' properties changes together
-    // This function should allow setting properties like color, size, and shape for multiple nodes at once.
+    if (selectedNodesCount > 1) {
+        slotEditNodeSetPropertyForSelection();
+        return;
+    }
 
-    qDebug() << "opening DialogNodeEdit."
-             << "label" << label
-             << "size" << size
-             << "color" << color
-             << "shape" << shape
-             << "iconPath" << iconPath
-             << "customAttributes" << customAttributes;
+    // Exactly one node selected — open the full properties dialog
+    const int nodeNumber = activeGraph->getSelectedVertices().constFirst();
+    const QString label      = activeGraph->vertexLabel(nodeNumber);
+    const QColor  color      = activeGraph->vertexColor(nodeNumber);
+    const QString shape      = activeGraph->vertexShape(nodeNumber);
+    const int     size       = activeGraph->vertexSize(nodeNumber);
+    const QString iconPath   = activeGraph->vertexShapeIconPath(nodeNumber);
+    const QHash<QString,QString> customAttributes = activeGraph->vertexCustomAttributes(nodeNumber);
 
-    std::unique_ptr<DialogNodeEdit> m_nodeEditDialog = std::make_unique<DialogNodeEdit>(this,
-                                                                                        nodeShapeList,
-                                                                                        iconPathList,
-                                                                                        label,
-                                                                                        size,
-                                                                                        color,
-                                                                                        shape,
-                                                                                        iconPath,
-                                                                                        customAttributes);
-                                                                                       
+    qDebug() << "opening DialogNodeEdit for node" << nodeNumber;
+
+    std::unique_ptr<DialogNodeEdit> m_nodeEditDialog = std::make_unique<DialogNodeEdit>(
+        this, nodeShapeList, iconPathList, label, size, color, shape, iconPath, customAttributes);
+
     connect(m_nodeEditDialog.get(), &DialogNodeEdit::userChoices,
             this, &MainWindow::slotEditNodeProperties);
 
@@ -11105,24 +11039,32 @@ void MainWindow::slotEditEdgeCreate (const int &source, const int &target, const
 void MainWindow::slotEditEdgePropertiesDialog()
 {
     qDebug() << "MainWindow::slotEditEdgePropertiesDialog()";
-    if ( !activeNodes() ) {
+    if (!activeNodes()) {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    const MyEdge clicked = activeGraph->edgeClicked();
-    int v1 = clicked.source;
-    int v2 = clicked.target;
-    if (v1 == 0 || v2 == 0) {
-        slotHelpMessageToUser(USER_MSG_CRITICAL,
-                              tr("No edge selected"),
-                              tr("Please right-click an edge first to open its properties."));
+
+    const QList<SelectedEdge> selectedEdges = activeGraph->getSelectedEdges();
+    const int selectedEdgesCount = selectedEdges.size();
+
+    if (selectedEdgesCount == 0) {
+        statusMessage(tr("Select an edge first to edit its properties."));
         return;
     }
 
-    QString label  = activeGraph->edgeLabel(v1, v2);
-    double  weight = static_cast<double>(activeGraph->edgeWeight(v1, v2));
-    QColor  color  = QColor(activeGraph->edgeColor(v1, v2));
-    QHash<QString,QString> attrs = activeGraph->edgeCustomAttributes(v1, v2);
+    if (selectedEdgesCount > 1) {
+        slotEditEdgeSetPropertyForSelection();
+        return;
+    }
+
+    // Exactly one edge selected — open the full properties dialog
+    const int v1 = selectedEdges.constFirst().first;
+    const int v2 = selectedEdges.constFirst().second;
+
+    const QString label  = activeGraph->edgeLabel(v1, v2);
+    const double  weight = static_cast<double>(activeGraph->edgeWeight(v1, v2));
+    const QColor  color  = QColor(activeGraph->edgeColor(v1, v2));
+    const QHash<QString,QString> attrs = activeGraph->edgeCustomAttributes(v1, v2);
 
     DialogEdgeEdit *dialog = new DialogEdgeEdit(this, v1, v2, label, weight, color, attrs);
     connect(dialog, &DialogEdgeEdit::userChoices,
