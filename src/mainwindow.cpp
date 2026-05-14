@@ -4499,7 +4499,7 @@ void MainWindow::initPanels(){
     QGroupBox *editGroupBox= new QGroupBox(tr("Network"));
     editGroupBox->setLayout(editGrid);
     editGroupBox->setMaximumWidth(255);
-    editGroupBox->setMinimumHeight(160);
+    editGroupBox->setMinimumHeight(100);
 
     //create widgets for the "Analysis" box
     QLabel *toolBoxAnalysisMatricesSelectLabel = new QLabel;
@@ -4779,7 +4779,7 @@ void MainWindow::initPanels(){
 
     //create a box and set the above layout inside
     QGroupBox *analysisBox= new QGroupBox(tr("Analyze"));
-    analysisBox->setMinimumHeight(180);
+    analysisBox->setMinimumHeight(120);
     analysisBox->setMaximumWidth(255);
     analysisBox->setLayout (analysisGrid );
 
@@ -5231,6 +5231,8 @@ void MainWindow::initPanels(){
 
     //create a grid layout
     QGridLayout *propertiesGrid = new QGridLayout();
+    propertiesGrid->setSpacing(3);
+    propertiesGrid->setContentsMargins(4, 4, 4, 4);
     propertiesGrid->setColumnMinimumWidth(0, 10);
     propertiesGrid->setColumnMinimumWidth(1, 10);
 
@@ -5272,7 +5274,7 @@ void MainWindow::initPanels(){
 
     // Create our mini miniChart
     miniChart = new Chart(this);
-    int chartHeight = 140;
+    int chartHeight = 100;
     miniChart->setThemeSmallWidget(chartHeight,chartHeight);
 
     // Nothing else to do with miniChart.
@@ -5282,11 +5284,10 @@ void MainWindow::initPanels(){
     propertiesGrid->setRowMinimumHeight(20, (int) floor( 1.5 * chartHeight ) );
     propertiesGrid->setRowStretch(20,0);
 
-    // We need some margin form the edge of the miniChart to the messageLabel below,
-    // but setRowStretch is not enough. So, we add a spacer!
-    QSpacerItem *spacer = new QSpacerItem (100, 10,
-                                           QSizePolicy::MinimumExpanding,
-                                           QSizePolicy::MinimumExpanding);
+    // Small spacer between miniChart and the message label at the bottom.
+    QSpacerItem *spacer = new QSpacerItem (100, 4,
+                                           QSizePolicy::Minimum,
+                                           QSizePolicy::Preferred);
     propertiesGrid->addItem(spacer, 22,0,3,2);
     propertiesGrid->setRowStretch(22,1);   //allow this row to stretch
 
@@ -5450,6 +5451,8 @@ void MainWindow::initWindowLayout() {
     m_tableDock->setObjectName("tableDock");
     m_tableDock->setWidget(m_tableWidget);
     m_tableDock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::TopDockWidgetArea);
+    // Minimum height prevents the dock from collapsing to zero when the splitter is dragged
+    m_tableWidget->setMinimumHeight(80);
     addDockWidget(Qt::BottomDockWidgetArea, m_tableDock);
     m_tableDock->hide();
     connect(m_tableDock, &QDockWidget::visibilityChanged,
@@ -10040,11 +10043,12 @@ void MainWindow::slotCacheSelection(const QList<int> &nodes,
     if (!m_tableWidget)
         return;
 
-    // Auto-switch tab when dock is visible
+    // Auto-switch tab when dock is visible:
+    // only go to Edges tab when the selection is entirely edges (no nodes).
     if (m_tableDock && m_tableDock->isVisible()) {
         if (!edges.isEmpty() && nodes.isEmpty())
             m_tableWidget->showEdgesTab();
-        else if (!nodes.isEmpty() && edges.isEmpty())
+        else
             m_tableWidget->showNodesTab();
     }
 
@@ -10066,8 +10070,8 @@ void MainWindow::slotEditNodeEditSelectionInTable()
     const QList<int> nodes = activeGraph->getSelectedVertices();
     const QList<SelectedEdge> edges = activeGraph->getSelectedEdges();
 
-    // Switch to the tab that has the most selected items
-    if (edges.size() > nodes.size())
+    // Only switch to Edges tab when the selection is entirely edges (no nodes)
+    if (!edges.isEmpty() && nodes.isEmpty())
         m_tableWidget->showEdgesTab();
     else
         m_tableWidget->showNodesTab();
