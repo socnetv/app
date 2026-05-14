@@ -143,6 +143,11 @@ GraphTableWidget::GraphTableWidget(QWidget *parent)
     nodeSep3->setFrameShape(QFrame::VLine);
     nodeSep3->setFrameShadow(QFrame::Sunken);
 
+    // VLine: Set property | Remove/Add attribute
+    QFrame *nodeSep4 = new QFrame(this);
+    nodeSep4->setFrameShape(QFrame::VLine);
+    nodeSep4->setFrameShadow(QFrame::Sunken);
+
     QHBoxLayout *nodeTopBar = new QHBoxLayout;
     nodeTopBar->addWidget(m_nodeSearch);
     nodeTopBar->addWidget(nodeSep1);
@@ -154,6 +159,7 @@ GraphTableWidget::GraphTableWidget(QWidget *parent)
     nodeTopBar->addWidget(nodeImportJSONBtn);
     nodeTopBar->addWidget(nodeSep3);
     nodeTopBar->addWidget(nodeSetPropBtn);
+    nodeTopBar->addWidget(nodeSep4);
     nodeTopBar->addWidget(nodeRemoveAttrBtn);
     nodeTopBar->addWidget(nodeAddAttrBtn);
     nodeTopBar->addStretch();
@@ -219,6 +225,11 @@ GraphTableWidget::GraphTableWidget(QWidget *parent)
     edgeSep3->setFrameShape(QFrame::VLine);
     edgeSep3->setFrameShadow(QFrame::Sunken);
 
+    // VLine: Set property | Remove/Add attribute
+    QFrame *edgeSep4 = new QFrame(this);
+    edgeSep4->setFrameShape(QFrame::VLine);
+    edgeSep4->setFrameShadow(QFrame::Sunken);
+
     QHBoxLayout *edgeTopBar = new QHBoxLayout;
     edgeTopBar->addWidget(m_edgeSearch);
     edgeTopBar->addWidget(edgeSep1);
@@ -230,6 +241,7 @@ GraphTableWidget::GraphTableWidget(QWidget *parent)
     edgeTopBar->addWidget(edgeImportJSONBtn);
     edgeTopBar->addWidget(edgeSep3);
     edgeTopBar->addWidget(edgeSetPropBtn);
+    edgeTopBar->addWidget(edgeSep4);
     edgeTopBar->addWidget(edgeRemoveAttrBtn);
     edgeTopBar->addWidget(edgeAddAttrBtn);
     edgeTopBar->addStretch();
@@ -302,6 +314,9 @@ GraphTableWidget::GraphTableWidget(QWidget *parent)
 
 /**
  * @brief Repopulates both models from @p graph and resizes columns.
+ *
+ * Also re-syncs the table selection from the graph's current selection state,
+ * because beginResetModel/endResetModel clears all view selections.
  */
 void GraphTableWidget::refresh(Graph *graph)
 {
@@ -312,6 +327,10 @@ void GraphTableWidget::refresh(Graph *graph)
 
     m_nodeView->resizeColumnsToContents();
     m_edgeView->resizeColumnsToContents();
+
+    // Re-apply graph selection so resolveNodeTargets/resolveEdgeTargets are correct
+    syncNodeSelection(graph->getSelectedVertices());
+    syncEdgeSelection(graph->getSelectedEdges());
 }
 
 /**

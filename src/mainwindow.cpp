@@ -10026,21 +10026,27 @@ void MainWindow::slotEditNodeProperties(const QString &label,
 /**
  * @brief Syncs the Data Table selection to match the canvas selection.
  *
- * Connected to GraphicsWidget::userSelectedItems. When only nodes are selected,
- * switches the table to the Nodes tab. When only edges are selected, switches
- * to the Edges tab. Runs on every selection change — O(selected items).
+ * Connected to GraphicsWidget::userSelectedItems. Always updates the table's
+ * selection model (even when the dock is hidden) so that resolveNodeTargets /
+ * resolveEdgeTargets return correct rows when the user later opens the dock
+ * and clicks "Set property..." or "Remove attribute...".
+ *
+ * When only nodes are selected, switches the visible tab to Nodes; when only
+ * edges are selected, switches to Edges.
  */
 void MainWindow::slotCacheSelection(const QList<int> &nodes,
                                     const QList<SelectedEdge> &edges)
 {
-    if (!m_tableDock || !m_tableDock->isVisible() || !m_tableWidget)
+    if (!m_tableWidget)
         return;
 
-    // Auto-switch tab based on what was just selected
-    if (!edges.isEmpty() && nodes.isEmpty())
-        m_tableWidget->showEdgesTab();
-    else if (!nodes.isEmpty() && edges.isEmpty())
-        m_tableWidget->showNodesTab();
+    // Auto-switch tab when dock is visible
+    if (m_tableDock && m_tableDock->isVisible()) {
+        if (!edges.isEmpty() && nodes.isEmpty())
+            m_tableWidget->showEdgesTab();
+        else if (!nodes.isEmpty() && edges.isEmpty())
+            m_tableWidget->showNodesTab();
+    }
 
     m_tableWidget->syncNodeSelection(nodes);
     m_tableWidget->syncEdgeSelection(edges);
