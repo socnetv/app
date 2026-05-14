@@ -4858,7 +4858,6 @@ void MainWindow::initPanels(){
     layoutCommandsList << "None" << "Random" << prominenceIndexList;
 
     toolBoxLayoutByIndexSelect->addItems(layoutCommandsList);
-    toolBoxLayoutByIndexSelect->setMinimumHeight(20);
     toolBoxLayoutByIndexSelect->setMinimumWidth(100);
 
 
@@ -4876,17 +4875,9 @@ void MainWindow::initPanels(){
     toolBoxLayoutByIndexTypeSelect->setToolTip( helpMessage );
     toolBoxLayoutByIndexTypeSelect->setWhatsThis( helpMessage );
     QStringList layoutTypes;
-    layoutTypes << "Radial" << "On Levels" << "Node Size"<< "Node Color";
+    layoutTypes << "None" << "Radial" << "On Levels" << "Node Size" << "Node Color";
     toolBoxLayoutByIndexTypeSelect->addItems(layoutTypes);
-    toolBoxLayoutByIndexTypeSelect->setMinimumHeight(20);
     toolBoxLayoutByIndexTypeSelect->setMinimumWidth(100);
-
-    toolBoxLayoutByIndexApplyButton = new QPushButton(tr("Apply"));
-    toolBoxLayoutByIndexApplyButton->setObjectName ("toolBoxLayoutByIndexApplyButton");
-    toolBoxLayoutByIndexApplyButton->setFocusPolicy(Qt::NoFocus);
-    toolBoxLayoutByIndexApplyButton->setMinimumHeight(20);
-    toolBoxLayoutByIndexApplyButton->setMaximumWidth(60);
-
 
     //create layout for visualisation by index options
     QGridLayout *layoutByIndexGrid = new QGridLayout();
@@ -4894,13 +4885,12 @@ void MainWindow::initPanels(){
     layoutByIndexGrid->addWidget(toolBoxLayoutByIndexSelect, 0,1);
     layoutByIndexGrid->addWidget(toolBoxLayoutByIndexTypeLabel, 1,0);
     layoutByIndexGrid->addWidget(toolBoxLayoutByIndexTypeSelect, 1,1);
-    layoutByIndexGrid->addWidget(toolBoxLayoutByIndexApplyButton, 2,1);
     layoutByIndexGrid->setSpacing(5);
     layoutByIndexGrid->setContentsMargins(5, 5, 5, 5);
 
     //create a box and set the above layout inside
     QGroupBox *layoutByIndexBox= new QGroupBox(tr("By Prominence Index"));
-    layoutByIndexBox->setMinimumHeight(120);
+    layoutByIndexBox->setMinimumHeight(80);
     helpMessage = tr("<p><b>Visualize by prominence index</b/></p>"
                      "<p>Apply a prominence-based layout model to the network. </p>"
                      "<p>For instance, you can apply a Degree Centrality layout. </p>"
@@ -4926,7 +4916,6 @@ void MainWindow::initPanels(){
                   ;
 
     toolBoxLayoutForceDirectedSelect->addItems(modelsList);
-    toolBoxLayoutForceDirectedSelect->setMinimumHeight(20);
     toolBoxLayoutForceDirectedSelect->setMinimumWidth(100);
     toolBoxLayoutForceDirectedSelect->setStatusTip (
                 tr("Select a Force-Directed layout model. "));
@@ -4960,17 +4949,10 @@ void MainWindow::initPanels(){
     toolBoxLayoutForceDirectedSelect->setToolTip ( helpMessage );
     toolBoxLayoutForceDirectedSelect->setWhatsThis( helpMessage );
 
-    toolBoxLayoutForceDirectedApplyButton = new QPushButton(tr("Apply"));
-    toolBoxLayoutForceDirectedApplyButton->setObjectName ("toolBoxLayoutForceDirectedApplyButton");
-    toolBoxLayoutForceDirectedApplyButton->setFocusPolicy(Qt::NoFocus);
-    toolBoxLayoutForceDirectedApplyButton->setMinimumHeight(20);
-    toolBoxLayoutForceDirectedApplyButton->setMaximumWidth(60);
-
     //create layout for dynamic visualisation
     QGridLayout *layoutForceDirectedGrid = new QGridLayout();
     layoutForceDirectedGrid->addWidget(toolBoxLayoutForceDirectedSelectLabel, 0,0);
     layoutForceDirectedGrid->addWidget(toolBoxLayoutForceDirectedSelect, 0,1);
-    layoutForceDirectedGrid->addWidget(toolBoxLayoutForceDirectedApplyButton, 1,1);
     layoutForceDirectedGrid->setSpacing(5);
     layoutForceDirectedGrid->setContentsMargins(5, 5, 5, 5);
 
@@ -5812,11 +5794,14 @@ void MainWindow::initSignalSlots() {
             this, SLOT(toolBoxAnalysisProminenceSelectChanged(int) ) );
 
 
-    connect(toolBoxLayoutByIndexApplyButton, SIGNAL (clicked() ),
-            this, SLOT(toolBoxLayoutByIndexApplyBtnPressed() ) );
+    connect(toolBoxLayoutByIndexSelect, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(toolBoxLayoutByIndexApplyBtnPressed()));
 
-    connect(toolBoxLayoutForceDirectedApplyButton, SIGNAL (clicked() ),
-            this, SLOT(toolBoxLayoutForceDirectedApplyBtnPressed() ) );
+    connect(toolBoxLayoutByIndexTypeSelect, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(toolBoxLayoutByIndexApplyBtnPressed()));
+
+    connect(toolBoxLayoutForceDirectedSelect, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(toolBoxLayoutForceDirectedApplyBtnPressed()));
 
 }
 
@@ -5939,9 +5924,15 @@ void MainWindow::initApp(){
 
     initComboBoxes();
 
+    toolBoxLayoutByIndexSelect->blockSignals(true);
     toolBoxLayoutByIndexSelect->setCurrentIndex(0);
+    toolBoxLayoutByIndexSelect->blockSignals(false);
+    toolBoxLayoutByIndexTypeSelect->blockSignals(true);
     toolBoxLayoutByIndexTypeSelect->setCurrentIndex(0);
+    toolBoxLayoutByIndexTypeSelect->blockSignals(false);
+    toolBoxLayoutForceDirectedSelect->blockSignals(true);
     toolBoxLayoutForceDirectedSelect->setCurrentIndex(0);
+    toolBoxLayoutForceDirectedSelect->blockSignals(false);
 
     optionsEdgeWeightNumbersAct->setChecked(
                 (appSettings["initEdgeWeightNumbersVisibility"] == "true") ? true:false
@@ -6569,28 +6560,25 @@ void MainWindow::toolBoxLayoutByIndexApplyBtnPressed(){
            << selectedIndexText << " : " << selectedIndex
            << " selected layout type is " << selectedLayoutType;
     switch(selectedIndex) {
-    case 0:
+    case 0: // None
         break;
-    case 1:
-        if (selectedLayoutType==0)
+    case 1: // Random
+        if (selectedLayoutType==1)
             slotLayoutRadialRandom();
-        else if (selectedLayoutType==1)
+        else if (selectedLayoutType==2)
             slotLayoutRandom();
         break;
     default:
-        if (selectedLayoutType==0)  { // radial
+        if (selectedLayoutType==0)       // None type — do nothing
+            break;
+        else if (selectedLayoutType==1)  // Radial
             slotLayoutRadialByProminenceIndex(selectedIndexText);
-        }
-        else if (selectedLayoutType==1)  { // on levels
+        else if (selectedLayoutType==2)  // On Levels
             slotLayoutLevelByProminenceIndex(selectedIndexText);
-        }
-        else if (selectedLayoutType==2) { //  node size
+        else if (selectedLayoutType==3)  // Node Size
             slotLayoutNodeSizeByProminenceIndex(selectedIndexText);
-            // re-init other options for node sizes...
-        }
-        else if (selectedLayoutType==3){  // node color
+        else if (selectedLayoutType==4)  // Node Color
             slotLayoutNodeColorByProminenceIndex(selectedIndexText);
-        }
         break;
     };
 }
@@ -6624,9 +6612,22 @@ void MainWindow::toolBoxLayoutForceDirectedApplyBtnPressed(){
         slotLayoutSpringEmbedder();
         break;
     default:
+        toolBoxLayoutForceDirectedSelect->blockSignals(true);
         toolBoxLayoutForceDirectedSelect->setCurrentIndex(0);
+        toolBoxLayoutForceDirectedSelect->blockSignals(false);
         break;
     };
+
+    // FD model controls node positions — reset prominence Type if it was
+    // Radial (1) or On Levels (2), but leave Node Size/Color (3/4) intact.
+    if (selectedModel > 0) {
+        int currentType = toolBoxLayoutByIndexTypeSelect->currentIndex();
+        if (currentType == 1 || currentType == 2) {
+            toolBoxLayoutByIndexTypeSelect->blockSignals(true);
+            toolBoxLayoutByIndexTypeSelect->setCurrentIndex(0);
+            toolBoxLayoutByIndexTypeSelect->blockSignals(false);
+        }
+    }
 }
 
 
@@ -12309,8 +12310,15 @@ void MainWindow::slotLayoutRadialByProminenceIndex(QString prominenceIndexName="
 
     qDebug() << "indexType" << indexType;
 
+    toolBoxLayoutByIndexSelect->blockSignals(true);
     toolBoxLayoutByIndexSelect->setCurrentIndex(indexType+1);
-    toolBoxLayoutByIndexTypeSelect->setCurrentIndex(0);
+    toolBoxLayoutByIndexSelect->blockSignals(false);
+    toolBoxLayoutByIndexTypeSelect->blockSignals(true);
+    toolBoxLayoutByIndexTypeSelect->setCurrentIndex(1); // Radial
+    toolBoxLayoutByIndexTypeSelect->blockSignals(false);
+    toolBoxLayoutForceDirectedSelect->blockSignals(true);
+    toolBoxLayoutForceDirectedSelect->setCurrentIndex(0); // None — FD position overridden
+    toolBoxLayoutForceDirectedSelect->blockSignals(false);
 
     bool dropIsolates=false;
 
@@ -12404,8 +12412,15 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString prominenceIndexName=""
 
     qDebug() << "indexType" << indexType ;
 
+    toolBoxLayoutByIndexSelect->blockSignals(true);
     toolBoxLayoutByIndexSelect->setCurrentIndex(indexType+1);
-    toolBoxLayoutByIndexTypeSelect->setCurrentIndex(1);
+    toolBoxLayoutByIndexSelect->blockSignals(false);
+    toolBoxLayoutByIndexTypeSelect->blockSignals(true);
+    toolBoxLayoutByIndexTypeSelect->setCurrentIndex(2); // On Levels
+    toolBoxLayoutByIndexTypeSelect->blockSignals(false);
+    toolBoxLayoutForceDirectedSelect->blockSignals(true);
+    toolBoxLayoutForceDirectedSelect->setCurrentIndex(0); // None — FD position overridden
+    toolBoxLayoutForceDirectedSelect->blockSignals(false);
 
     bool dropIsolates=false;
 
@@ -12498,9 +12513,13 @@ void MainWindow::slotLayoutNodeSizeByProminenceIndex(QString prominenceIndexName
 
     qDebug() << "indexType" << indexType;
 
+    toolBoxLayoutByIndexSelect->blockSignals(true);
     toolBoxLayoutByIndexSelect->setCurrentIndex(indexType+1);
-
-    toolBoxLayoutByIndexTypeSelect->setCurrentIndex(2);
+    toolBoxLayoutByIndexSelect->blockSignals(false);
+    toolBoxLayoutByIndexTypeSelect->blockSignals(true);
+    toolBoxLayoutByIndexTypeSelect->setCurrentIndex(3); // Node Size
+    toolBoxLayoutByIndexTypeSelect->blockSignals(false);
+    // Node size coexists with FD positional layout — don't reset FD combobox
 
     bool dropIsolates=false;
 
@@ -12590,8 +12609,13 @@ void MainWindow::slotLayoutNodeColorByProminenceIndex(QString prominenceIndexNam
 
     qDebug() << "indexType" << indexType;
 
+    toolBoxLayoutByIndexSelect->blockSignals(true);
     toolBoxLayoutByIndexSelect->setCurrentIndex(indexType+1);
-    toolBoxLayoutByIndexTypeSelect->setCurrentIndex(3);
+    toolBoxLayoutByIndexSelect->blockSignals(false);
+    toolBoxLayoutByIndexTypeSelect->blockSignals(true);
+    toolBoxLayoutByIndexTypeSelect->setCurrentIndex(4); // Node Color
+    toolBoxLayoutByIndexTypeSelect->blockSignals(false);
+    // Node color coexists with FD positional layout — don't reset FD combobox
 
     bool dropIsolates=false;
 
