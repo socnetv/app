@@ -83,6 +83,7 @@ class DialogExportImage;
 class DialogNodeFind;
 class DialogNodeEdit;
 class DialogEdgeEdit;
+class DialogBulkEdit;
 class DialogFilterNodesByCentrality;
 class DialogFilterEdgesByWeight;
 class DialogEdgeDichotomization;
@@ -305,6 +306,10 @@ public slots:
     void slotEditNodeRemove();
     void slotEditNodeOpenContextMenu();
     void slotEditNodePropertiesDialog();
+    void slotCacheSelection(const QList<int> &nodes, const QList<SelectedEdge> &edges);
+    void slotEditNodeEditSelectionInTable();
+    void slotEditNodeSetPropertyForSelection();
+    void slotEditEdgeSetPropertyForSelection();
     void slotEditNodeProperties( const QString &label,
                                  const int &size,
                                  const QColor &color,
@@ -693,6 +698,9 @@ private:
     QAction *editNodeSelectedToLineAct, *editNodeSelectedToCliqueAct;
     QAction *editNodeFindAct,*editNodeAddAct, *editNodeRemoveAct;
     QAction *editNodePropertiesAct;
+    QAction *editNodeEditSelectionInTableAct;
+    QAction *editNodeSetPropertyForSelectionAct;
+    QAction *editEdgeSetPropertyForSelectionAct;
     QAction *editEdgeAddAct, *editEdgeRemoveAct, *editEdgePropertiesAct;
     QAction *editNodeNumbersSizeAct, *editNodeLabelsSizeAct;
     QAction *editNodeSizeAllAct, *editNodeShapeAll;

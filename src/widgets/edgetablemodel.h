@@ -39,6 +39,9 @@ public:
      */
     void populate(Graph *graph);
 
+    /** Custom attribute keys present in the current graph (dynamic columns). */
+    QStringList attrKeys() const { return m_attrKeys; }
+
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;

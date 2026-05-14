@@ -68,6 +68,7 @@
 #include "forms/dialognodefind.h"
 #include "forms/dialognodeedit.h"
 #include "forms/dialogedgeedit.h"
+#include "forms/dialogbulkedit.h"
 #include "forms/dialogfilternodesbycentrality.h"
 #include "forms/dialogfilterbyattribute.h"
 #include "widgets/filterbarwidget.h"
@@ -1549,6 +1550,23 @@ void MainWindow::initActions(){
                                            "You must have some node selected."));
     connect(editNodePropertiesAct, SIGNAL(triggered()), this, SLOT(slotEditNodePropertiesDialog()));
 
+    editNodeEditSelectionInTableAct = new QAction(tr("Edit Selection in Data Table"), this);
+    editNodeEditSelectionInTableAct->setStatusTip(
+        tr("Open the Data Table and pre-select the rows matching the current canvas selection."));
+    connect(editNodeEditSelectionInTableAct, &QAction::triggered,
+            this, &MainWindow::slotEditNodeEditSelectionInTable);
+
+    editNodeSetPropertyForSelectionAct = new QAction(tr("Set property on selected nodes..."), this);
+    editNodeSetPropertyForSelectionAct->setStatusTip(
+        tr("Set a single property (built-in or custom attribute) on all selected nodes."));
+    connect(editNodeSetPropertyForSelectionAct, &QAction::triggered,
+            this, &MainWindow::slotEditNodeSetPropertyForSelection);
+
+    editEdgeSetPropertyForSelectionAct = new QAction(tr("Set property on selected edges..."), this);
+    editEdgeSetPropertyForSelectionAct->setStatusTip(
+        tr("Set a single property (built-in or custom attribute) on all selected edges."));
+    connect(editEdgeSetPropertyForSelectionAct, &QAction::triggered,
+            this, &MainWindow::slotEditEdgeSetPropertyForSelection);
 
     editNodeSelectedToCliqueAct = new QAction(QIcon(":/images/cliquenew.png"),
                                               tr("Create a clique from selected nodes "), this);
@@ -5427,6 +5445,7 @@ void MainWindow::initWindowLayout() {
 
     // Data Table dock — docked at the bottom, hidden by default
     m_tableWidget = new GraphTableWidget(this);
+    m_tableWidget->setNodeShapeLists(nodeShapeList, iconPathList);
     m_tableDock = new QDockWidget(tr("Data Table"), this);
     m_tableDock->setObjectName("tableDock");
     m_tableDock->setWidget(m_tableWidget);
@@ -5535,6 +5554,11 @@ void MainWindow::initSignalSlots() {
     connect(m_tableWidget, &GraphTableWidget::nodeSelected,
             this, [this](int number) {
         statusMessage(tr("Node %1 selected from data table").arg(number));
+    });
+
+    connect(m_tableWidget, &GraphTableWidget::edgeSelected,
+            this, [this](int source, int target) {
+        statusMessage(tr("Edge %1→%2 selected from data table").arg(source).arg(target));
     });
 
     connect(m_tableWidget, &GraphTableWidget::exportStatusMessage,
@@ -5688,6 +5712,9 @@ void MainWindow::initSignalSlots() {
 
     connect( graphicsWidget, &GraphicsWidget::userSelectedItems,
              activeGraph,&Graph::setSelectionChanged);
+
+    connect( graphicsWidget, &GraphicsWidget::userSelectedItems,
+             this, &MainWindow::slotCacheSelection);
 
     connect( graphicsWidget, &GraphicsWidget::userClickedNode,
              activeGraph, &Graph::vertexClickedSet );
@@ -5950,8 +5977,8 @@ void MainWindow::initApp(){
     filterNodesRestoreAllAct->setEnabled(false);
     m_filterBar->clearAllChips();
 
-    // Clear the data table if it is visible (graph was reset)
-    if (m_tableWidget && m_tableDock->isVisible())
+    // Always reset the data table so it shows an empty graph when next opened
+    if (m_tableWidget)
         m_tableWidget->refresh(activeGraph);
 
     statusMessage( tr("Ready"));
@@ -9517,9 +9544,18 @@ void MainWindow::slotNetworkChanged(const bool &directed,
 
 
 /**
- * @brief Popups a context menu with options when the user right-clicks on the canvas
+ * @brief Shows a context menu when the user right-clicks on an empty area of the canvas
+ *        (i.e. not directly on a node or edge).
  *
- * @param mPos
+ * The menu is selection-aware:
+ * - When exactly one node is selected and no edges: offers Node Properties.
+ * - When multiple nodes are selected: offers Remove + structural transforms (clique, star, …).
+ * - When any nodes or edges are selected (≥ 1 total): offers "Edit Selection in Data Table",
+ *   "Set property on selected nodes…", and/or "Set property on selected edges…".
+ * - Always offers Add Node, Add Edge, and the Options sub-menu.
+ *
+ * @param mPos  The canvas position where the right-click occurred (unused — menu is shown
+ *              at cursor position via QCursor::pos()).
  */
 void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
     Q_UNUSED(mPos);
@@ -9527,17 +9563,24 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
     Q_CHECK_PTR( contextMenu );  //displays "out of memory" if needed
 
     int nodesSelected = activeGraph->getSelectedVerticesCount();
+    int edgesSelected = activeGraph->getSelectedEdgesCount();
+    int totalSelected = nodesSelected + edgesSelected;
 
     contextMenu->addAction( "## Selected nodes: "
-                              + QString::number(  nodesSelected ) + " ##  ");
+                              + QString::number( nodesSelected )
+                              + "  edges: "
+                              + QString::number( edgesSelected ) + " ##  ");
 
     contextMenu->addSeparator();
 
     if (nodesSelected > 0) {
-        contextMenu->addAction(editNodePropertiesAct );
+        if (nodesSelected == 1 && edgesSelected == 0) {
+            // Single node: offer per-node properties dialog
+            contextMenu->addAction(editNodePropertiesAct);
+        }
         contextMenu->addSeparator();
-        contextMenu->addAction(editNodeRemoveAct );
-        if (nodesSelected > 1 ){
+        contextMenu->addAction(editNodeRemoveAct);
+        if (nodesSelected > 1) {
             editNodeRemoveAct->setText(tr("Remove ")
                                        + QString::number(nodesSelected)
                                        + tr(" nodes"));
@@ -9546,13 +9589,22 @@ void MainWindow::slotEditOpenContextMenu( const QPointF &mPos) {
             contextMenu->addAction(editNodeSelectedToStarAct);
             contextMenu->addAction(editNodeSelectedToCycleAct);
             contextMenu->addAction(editNodeSelectedToLineAct);
-
         }
         else {
             editNodeRemoveAct->setText(tr("Remove ")
                                        + QString::number(nodesSelected)
                                        + tr(" node"));
         }
+        contextMenu->addSeparator();
+    }
+
+    // Table / bulk actions — shown whenever at least one item is selected
+    if (totalSelected >= 1) {
+        contextMenu->addAction(editNodeEditSelectionInTableAct);
+        if (nodesSelected > 0)
+            contextMenu->addAction(editNodeSetPropertyForSelectionAct);
+        if (edgesSelected > 0)
+            contextMenu->addAction(editEdgeSetPropertyForSelectionAct);
         contextMenu->addSeparator();
     }
 
@@ -9969,6 +10021,148 @@ void MainWindow::slotEditNodeProperties(const QString &label,
 
 }
 
+
+
+/**
+ * @brief Syncs the Data Table selection to match the canvas selection.
+ *
+ * Connected to GraphicsWidget::userSelectedItems. When only nodes are selected,
+ * switches the table to the Nodes tab. When only edges are selected, switches
+ * to the Edges tab. Runs on every selection change — O(selected items).
+ */
+void MainWindow::slotCacheSelection(const QList<int> &nodes,
+                                    const QList<SelectedEdge> &edges)
+{
+    if (!m_tableDock || !m_tableDock->isVisible() || !m_tableWidget)
+        return;
+
+    // Auto-switch tab based on what was just selected
+    if (!edges.isEmpty() && nodes.isEmpty())
+        m_tableWidget->showEdgesTab();
+    else if (!nodes.isEmpty() && edges.isEmpty())
+        m_tableWidget->showNodesTab();
+
+    m_tableWidget->syncNodeSelection(nodes);
+    m_tableWidget->syncEdgeSelection(edges);
+}
+
+/**
+ * @brief Raises the Data Table dock and pre-selects rows matching the current canvas selection.
+ */
+void MainWindow::slotEditNodeEditSelectionInTable()
+{
+    if (!m_tableDock || !m_tableWidget)
+        return;
+
+    m_tableDock->show();
+    m_tableDock->raise();
+
+    const QList<int> nodes = activeGraph->getSelectedVertices();
+    const QList<SelectedEdge> edges = activeGraph->getSelectedEdges();
+
+    // Switch to the tab that has the most selected items
+    if (edges.size() > nodes.size())
+        m_tableWidget->showEdgesTab();
+    else
+        m_tableWidget->showNodesTab();
+
+    m_tableWidget->syncNodeSelection(nodes);
+    m_tableWidget->syncEdgeSelection(edges);
+}
+
+/**
+ * @brief Opens DialogBulkEdit for the currently selected nodes (canvas shortcut).
+ */
+void MainWindow::slotEditNodeSetPropertyForSelection()
+{
+    const QList<int> selectedNodes = activeGraph->getSelectedVertices();
+    const int count = selectedNodes.size();
+    if (count == 0) {
+        statusMessage(tr("No nodes selected."));
+        return;
+    }
+
+    // Collect unique custom attribute keys across the selection
+    QSet<QString> keySet;
+    for (const int v : selectedNodes)
+        for (const QString &k : activeGraph->vertexCustomAttributes(v).keys())
+            keySet.insert(k);
+    const QStringList existingKeys(keySet.begin(), keySet.end());
+
+    auto dlg = std::make_unique<DialogBulkEdit>(
+        DialogBulkEdit::Scope::Nodes, existingKeys,
+        nodeShapeList, iconPathList, count, false, this);
+
+    connect(dlg.get(), &DialogBulkEdit::userChoices,
+            this, [this, selectedNodes](const QString &property, const QString &value) {
+        for (const int v : selectedNodes) {
+            if (property == QLatin1String("Label")) {
+                activeGraph->vertexLabelSet(v, value);
+            } else if (property == QLatin1String("Size")) {
+                activeGraph->vertexSizeSet(v, value.toInt());
+            } else if (property == QLatin1String("Color")) {
+                activeGraph->vertexColorSet(v, value);
+            } else if (property == QLatin1String("Shape")) {
+                const int idx = nodeShapeList.indexOf(value);
+                const QString iconPath = (idx >= 0 && idx < iconPathList.size())
+                                            ? iconPathList[idx] : QString();
+                activeGraph->vertexShapeSet(v, value, iconPath);
+            } else {
+                activeGraph->vertexCustomAttributeSet(v, property, value);
+            }
+        }
+        statusMessage(tr("Set '%1' on %2 node(s).").arg(property).arg(selectedNodes.size()));
+        if (m_tableDock && m_tableDock->isVisible())
+            m_tableWidget->refresh(activeGraph);
+    });
+
+    dlg->exec();
+}
+
+/**
+ * @brief Opens DialogBulkEdit for the currently selected edges (canvas shortcut).
+ */
+void MainWindow::slotEditEdgeSetPropertyForSelection()
+{
+    const QList<SelectedEdge> selectedEdges = activeGraph->getSelectedEdges();
+    const int count = selectedEdges.size();
+    if (count == 0) {
+        statusMessage(tr("No edges selected."));
+        return;
+    }
+
+    // Collect unique custom attribute keys across the selection
+    QSet<QString> keySet;
+    for (const SelectedEdge &e : selectedEdges)
+        for (const QString &k : activeGraph->edgeCustomAttributes(e.first, e.second).keys())
+            keySet.insert(k);
+    const QStringList existingKeys(keySet.begin(), keySet.end());
+
+    auto dlg = std::make_unique<DialogBulkEdit>(
+        DialogBulkEdit::Scope::Edges, existingKeys,
+        QStringList(), QStringList(), count, false, this);
+
+    connect(dlg.get(), &DialogBulkEdit::userChoices,
+            this, [this, selectedEdges](const QString &property, const QString &value) {
+        for (const SelectedEdge &e : selectedEdges) {
+            if (property == QLatin1String("Label")) {
+                activeGraph->edgeLabelSet(e.first, e.second, value);
+            } else if (property == QLatin1String("Weight")) {
+                activeGraph->edgeWeightSet(e.first, e.second, value.toDouble());
+            } else if (property == QLatin1String("Color")) {
+                activeGraph->edgeColorSet(e.first, e.second, value);
+            } else {
+                activeGraph->edgeCustomAttributesSet(
+                    e.first, e.second, {{property, value}});
+            }
+        }
+        statusMessage(tr("Set '%1' on %2 edge(s).").arg(property).arg(selectedEdges.size()));
+        if (m_tableDock && m_tableDock->isVisible())
+            m_tableWidget->refresh(activeGraph);
+    });
+
+    dlg->exec();
+}
 
 
 /**
@@ -10468,9 +10662,16 @@ void MainWindow::slotEditNodeLabelDistance(int v1, int newDistance) {
 
 
 /**
- * @brief MainWindow::slotEditNodeOpenContextMenu
- * Called from GW when the user has right-clicked on a node
- * Opens a node context menu with some options when the user right-clicks on a node
+ * @brief Shows a context menu when the user right-clicks directly on a node.
+ *
+ * The menu is always selection-aware — it reflects the total number of currently
+ * selected nodes, not just the node that was right-clicked:
+ * - Single node selected: offers Node Properties (full per-node dialog) and
+ *   "Edit Selection in Data Table" to navigate to that row in the table.
+ * - Multiple nodes selected: offers "Edit Selection in Data Table",
+ *   "Set property on selected nodes…", and structural transforms instead of
+ *   per-node properties (which would be ambiguous for mixed selections).
+ * - Always offers Add Edge, Remove, filter actions, and Ego Radial Layout.
  */
 void MainWindow::slotEditNodeOpenContextMenu() {
 
@@ -10494,7 +10695,16 @@ void MainWindow::slotEditNodeOpenContextMenu() {
 
     nodeContextMenu->addSeparator();
 
-    nodeContextMenu->addAction(editNodePropertiesAct );
+    if (nodesSelected == 1) {
+        // Single node: full per-node properties dialog is appropriate
+        nodeContextMenu->addAction(editNodePropertiesAct);
+    } else {
+        // Multiple nodes: bulk-set shortcut instead of the ambiguous single-node dialog
+        nodeContextMenu->addAction(editNodeSetPropertyForSelectionAct);
+    }
+    // Always offer "Edit in Data Table" so the user can inspect or bulk-edit
+    // the selected row(s) regardless of how many nodes are selected
+    nodeContextMenu->addAction(editNodeEditSelectionInTableAct);
 
     nodeContextMenu->addSeparator();
 
@@ -10502,7 +10712,7 @@ void MainWindow::slotEditNodeOpenContextMenu() {
 
     nodeContextMenu->addSeparator();
 
-    nodeContextMenu->addAction(editNodeRemoveAct );
+    nodeContextMenu->addAction(editNodeRemoveAct);
 
     nodeContextMenu->addSeparator();
 
@@ -10720,19 +10930,39 @@ void MainWindow::slotEditEdgeClicked (const MyEdge &edge,
 
 
 /**
-* @brief Popups a context menu with edge-related options
- * Called when the user right-clicks on an edge
-* @param str
-*/
+ * @brief Shows a context menu when the user right-clicks directly on an edge.
+ *
+ * The menu is selection-aware — it reflects the total number of currently
+ * selected edges:
+ * - Single edge selected: offers Edge Properties (per-edge dialog for label,
+ *   weight, color, custom attributes) plus Remove, Weight, Label, Color actions.
+ * - Multiple edges selected: offers "Edit Selection in Data Table" and
+ *   "Set property on selected edges…" at the top, followed by per-edge actions.
+ *
+ * @param str  A human-readable identifier for the edge shown as the menu title
+ *             (e.g. "3 --> 7").
+ */
 void MainWindow::slotEditEdgeOpenContextMenu(const QString &str) {
     qDebug()<< "MW: slotEditEdgeOpenContextMenu() for" << str
             << "at"<< QCursor::pos().x() << "," << QCursor::pos().y();
-    //make the menu
+
+    const int edgesSelected = activeGraph->getSelectedEdgesCount();
+
     QMenu *edgeContextMenu = new QMenu(str, this);
     edgeContextMenu->addAction( str );
     edgeContextMenu->addSeparator();
-    edgeContextMenu->addAction( editEdgePropertiesAct );
-    edgeContextMenu->addSeparator();
+
+    if (edgesSelected > 1) {
+        // Multiple edges selected: offer bulk actions first
+        edgeContextMenu->addAction(editNodeEditSelectionInTableAct);
+        edgeContextMenu->addAction(editEdgeSetPropertyForSelectionAct);
+        edgeContextMenu->addSeparator();
+    } else {
+        // Single edge: per-edge properties
+        edgeContextMenu->addAction( editEdgePropertiesAct );
+        edgeContextMenu->addSeparator();
+    }
+
     edgeContextMenu->addAction( editEdgeRemoveAct );
     edgeContextMenu->addAction( editEdgeWeightAct );
     edgeContextMenu->addAction( editEdgeLabelAct );
