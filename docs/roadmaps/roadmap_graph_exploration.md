@@ -77,7 +77,7 @@ Make large graphs readable and explorable.
 
 ## Phases
 
-### Phase 1 — Immediate UX
+### Phase 1 — Immediate UX (#209) ✔
 
 * ✔ Focus on selection (#210) — `Graph::vertexFilterBySelection()`, `filterNodesBySelectionAct` (Ctrl+X, Ctrl+S)
 * ✔ Ego networks (k=1) (#211) — `Graph::vertexFilterByEgoNetwork()`, `filterNodesByEgoNetworkAct` (Ctrl+X, Ctrl+F)
@@ -89,10 +89,17 @@ Make large graphs readable and explorable.
 * ✔ Right-click on node auto-selects it before context menu opens (`GraphicsWidget::mousePressEvent`)
 * ✔ Ego network + Focus on Selection + Restore All Nodes wired into node right-click context menu
 
-### Phase 2 — Layout Improvements (#214)
+### Phase 2 — Layout Improvements (#214, #234) ✔
 
 * ✔ Improved force-directed layout 
 * ✔ Ego-centered radial layout (#214) — `Graph::layoutEgoRadial()`, Layout menu (`Ctrl+Alt+E`) and node right-click context menu
+* ✔ Remove Apply buttons from Layout panel (#234) — all three comboboxes (Prominence Index, Type, Force-Directed Model) apply immediately on change; Type defaults to "None"; selecting a Force-Directed model resets Type to None and vice versa
+
+**Cross-cutting UX (#234):**
+* ✔ Toolbar filter actions regrouped — node-filter icons sit alongside node actions; edge-filter icons alongside edge actions
+* ✔ Node Properties / Edge Properties toolbar actions are selection-aware — nothing selected → status-bar hint; exactly one node/edge → single-item dialog; multiple selected → `DialogBulkEdit`
+* ✔ Statistics Panel sectioned into five collapsible groups (▾/▴ toggle): NETWORK, SELECTION, CLICKED NODE, CLICKED EDGE, DISTRIBUTION — each section collapses/expands independently; In-Degree/Out-Degree rows and Weight/Reciprocal rows auto-hide until a node/edge is clicked
+* ✔ Left Control Panel wrapped in `QScrollArea` — panel scrolls rather than overlapping when the Data Table dock reduces available vertical space
 
 ### Phase 3 — Advanced Visualization
 
@@ -382,13 +389,14 @@ The SocNetV website and manual live in a separate public repo at `~/socnetv/webs
 All WS9 features shipped up to and including v3.5 (#209–#227, #232) have been
 documented in the manual. No outstanding documentation debt for those issues.
 
-The following features are **implemented in the v3.6 development cycle** and will need
-manual coverage before the next release:
+The following features are **implemented in the v3.6 development cycle** (also tracked
+with full detail in the roadmap phases above) and will need manual coverage before the
+next release:
 
-| Feature | Issue | Notes |
-|---|---|---|
-| In-app bulk editing of node and edge attributes | #228 | New Data Table toolbar buttons (Set property, Add attribute, Remove attribute); canvas context menu entries; `DialogBulkEdit`; canvas ↔ table selection sync |
-| UI declutter & UX improvements | #234 | See notes below |
+| Feature | Issue | Roadmap section | Notes |
+|---|---|---|---|
+| In-app bulk editing of node and edge attributes | #228 | Feature 3 Phase 5 | New Data Table toolbar buttons (Set property, Add attribute, Remove attribute); canvas context menu entries; `DialogBulkEdit`; canvas ↔ table selection sync |
+| UI declutter & UX improvements | #234 | Feature 1 Phase 2 + Cross-cutting UX | See notes below |
 
 ### #234 — UI/UX changes requiring manual & screenshot updates
 

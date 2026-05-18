@@ -8,7 +8,7 @@ If you are new to the codebase, start here, then read the high-level refactoring
 
 Then read the current product-oriented roadmap:
 
-* [`docs/roadmaps/roadmap_graph_exploration.md`](docs/roadmaps/roadmap_graph_exploration.md)
+* [`docs/roadmaps/roadmap_graph_exploration.md`](roadmaps/roadmap_graph_exploration.md)
 
 Detailed execution plans live under:
 

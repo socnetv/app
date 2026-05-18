@@ -105,7 +105,7 @@ WS9 consolidates the following GitHub issue tracks:
 
 Concrete sub-features are tracked in:
 
-- #210–#214 (visualization)
+- #210–#214, #234 (visualization & UX)
 - #216–#221 (filtering & querying)
 - #224–#229 (data workflows)
 
