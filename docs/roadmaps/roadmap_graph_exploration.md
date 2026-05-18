@@ -382,10 +382,36 @@ The SocNetV website and manual live in a separate public repo at `~/socnetv/webs
 All WS9 features shipped up to and including v3.5 (#209–#227, #232) have been
 documented in the manual. No outstanding documentation debt for those issues.
 
-The following feature is **implemented in the v3.6 development cycle** and will need
+The following features are **implemented in the v3.6 development cycle** and will need
 manual coverage before the next release:
 
 | Feature | Issue | Notes |
 |---|---|---|
 | In-app bulk editing of node and edge attributes | #228 | New Data Table toolbar buttons (Set property, Add attribute, Remove attribute); canvas context menu entries; `DialogBulkEdit`; canvas ↔ table selection sync |
+| UI declutter & UX improvements | #234 | See notes below |
+
+### #234 — UI/UX changes requiring manual & screenshot updates
+
+The following UI areas changed visually and/or behaviourally and need updated
+screenshots and text in the manual:
+
+- **Control Panel → Layout section**: Apply buttons are gone. Screenshots showing
+  the old Apply buttons must be replaced. Text should explain that selecting from
+  any combobox applies the layout immediately; that Type defaults to "None"; and
+  that choosing a Force-Directed model clears a Radial/Level type and vice versa.
+
+- **Toolbar**: Filter actions are no longer in a single flat group — node-filter
+  icons appear alongside node actions, edge-filter icons alongside edge actions.
+  Any toolbar screenshot in the manual needs updating.
+
+- **Node Properties / Edge Properties toolbar buttons**: Behaviour is now
+  context-sensitive (hint / single dialog / bulk-edit). The manual section
+  describing how to edit node or edge properties should document all three
+  states.
+
+- **Statistics Panel**: The panel is now divided into five collapsible sections
+  (NETWORK, SELECTION, CLICKED NODE, CLICKED EDGE, DISTRIBUTION), each with a
+  ▾/▴ toggle header. The In-Degree/Out-Degree rows and Weight/Reciprocal rows
+  are hidden until a node/edge is clicked. Any manual screenshot of the right
+  panel needs to be retaken.
 

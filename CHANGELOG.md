@@ -4,9 +4,32 @@ All notable changes to this project are documented in this file.
 
 ## [3.6] – Jun 2026
 
-### New Features
+### Improvements
 
-  - _TODO: add release notes_
+  - **UI declutter & UX improvements** (#234):
+    - Removed the two "Apply" buttons from the Layout section of the Control
+      Panel. All three layout comboboxes (Prominence Index, Type, Force-Directed
+      Model) now apply immediately on selection change, with no extra click
+      required.
+    - Layout Type defaults to "None" (was "Radial") so opening the panel no
+      longer implies a radial layout is pending.
+    - Mutual exclusion enforced between By-Prominence-Index (Radial/Level types)
+      and Force-Directed Model: selecting a force-directed model resets the Type
+      to None, and vice versa.
+    - Toolbar filter actions regrouped: node-filter icons sit alongside other
+      node actions; edge-filter icons sit alongside edge actions.
+    - Node Properties and Edge Properties toolbar actions are now
+      selection-aware: nothing selected → status-bar hint; exactly one
+      node/edge → single-item dialog; multiple selected → bulk-edit dialog.
+    - Statistics Panel sectioned into five collapsible groups (▾/▴ toggle):
+      NETWORK, SELECTION, CLICKED NODE, CLICKED EDGE, DISTRIBUTION. Each
+      section collapses and expands independently.
+    - In-Degree/Out-Degree rows in the Clicked Node section and
+      Weight/Reciprocal rows in the Clicked Edge section auto-hide until
+      a node or edge is clicked.
+    - Left Control Panel wrapped in a scroll area: when the Data Table dock
+      reduces available vertical space the panel scrolls rather than
+      overlapping its widgets.
 
 ## [3.5] – May 2026
 
