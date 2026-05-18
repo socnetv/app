@@ -29,13 +29,13 @@ QStatusBar {
 }
 
 QMainWindow::separator {
-    background: yellow;
-    width: 10px; /* when vertical */
-    height: 10px; /* when horizontal */
+    background: #d4d4d4;
+    width: 3px;
+    height: 3px;
 }
 
 QMainWindow::separator:hover {
-    background: #babdbe;
+    background: #03a9f4;
 }
 
 QGridLayout {
@@ -250,27 +250,7 @@ QPushButton:disabled {
     padding: 3px;
 }
 
-QPushButton#toolBoxLayoutByIndexApplyButton,
-QPushButton#toolBoxLayoutForceDirectedApplyButton {
-    subcontrol-origin: padding;
-    background: #fff;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    color: #222;
-    padding: 3px 0px;
-    margin:0;
-    min-width: 128px;
-    min-height: 2.5ex;
-    text-align:center;
-}
-QPushButton#toolBoxLayoutForceDirectedApplyButton:hover,
-QPushButton#toolBoxLayoutByIndexApplyButton:hover {
-   background-color: #eaeaea;
-}
-QPushButton#toolBoxLayoutForceDirectedApplyButton:pressed,
-QPushButton#toolBoxLayoutByIndexApplyButton:pressed {
-   background-color:#007ac1;
-   color: #fff;
-}
+
 QPushButton#removePropertyBtn {
     background-color:#de0000;
     color: #fff;
@@ -343,6 +323,7 @@ QComboBox {
     padding-bottom: 2px;
     padding-left: 4px;
     padding-right: 4px;
+    min-height: 22px;
 }
 
 QComboBox:focus, QComboBox:hover {
@@ -363,7 +344,7 @@ QComboBox:disabled {
 QGroupBox#leftPanel QComboBox {
     min-width: 120px;
     max-width: 120px;
-    min-height: 22px;
+    min-height: 20px;
 }
 
 QComboBox::drop-down {
@@ -760,4 +741,26 @@ GraphTableWidget QPushButton {
 GraphTableWidget QLineEdit {
     font-size: 11px;
     min-height: 0;
+}
+
+
+/* -----------------------------------------------------------------------
+ * Statistics Panel — section headers and chart toggle (#234)
+ * ----------------------------------------------------------------------- */
+
+QPushButton#sectionToggleBtn {
+    font-size: 10px;
+    font-weight: bold;
+    color: #666;
+    text-align: left;
+    border: none;
+    border-bottom: 1px solid #ddd;
+    padding: 2px 0;
+    background: transparent;
+    min-width: 0;
+}
+
+QPushButton#sectionToggleBtn:hover {
+    color: #03a9f4;
+    border-bottom-color: #03a9f4;
 }

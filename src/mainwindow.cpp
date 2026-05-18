@@ -4984,27 +4984,25 @@ void MainWindow::initPanels(){
     //
     // Create widgets for Properties/Statistics group/tab
     //
-    QLabel *rightPanelNetworkHeader = new QLabel;
-    QFont labelFont = rightPanelNetworkHeader->font();
-    labelFont.setWeight(QFont::Bold);
-    rightPanelNetworkHeader->setText (tr("Network"));
-    rightPanelNetworkHeader->setFont(labelFont);
+
+    // Helper: uniform collapsible section toggle button
+    auto makeSectionBtn = [this](const QString &title) -> QPushButton* {
+        QPushButton *btn = new QPushButton(tr("▾ ") + title, this);
+        btn->setObjectName("sectionToggleBtn");
+        btn->setFocusPolicy(Qt::NoFocus);
+        btn->setFlat(true);
+        return btn;
+    };
 
 
-    QLabel *rightPanelNetworkTypeLabel = new QLabel;
-    rightPanelNetworkTypeLabel->setText ("Type:");
+    // ── Network section ───────────────────────────────────────────────────────
+    m_networkToggleBtn = makeSectionBtn(tr("NETWORK"));
+
+    QLabel *rightPanelNetworkTypeLabel = new QLabel("Type:");
     rightPanelNetworkTypeLabel->setStatusTip(
                 tr("The type of the network: directed or undirected. "
                    "Toggle the menu option Edit->Edges->Undirected Edges to change it"));
-
     rightPanelNetworkTypeLabel->setToolTip(
-                tr("The loaded network, if any, is directed and \n"
-                   "any link you add between nodes will be a directed arc.\n"
-                   "If you want to work with undirected edges and/or \n"
-                   "transform the loaded network (if any) to undirected \n"
-                   "toggle the option Edit->Edges->Undirected \n"
-                   "or press CTRL+E+U"));
-    rightPanelNetworkTypeLabel->setWhatsThis(
                 tr("The loaded network, if any, is directed and \n"
                    "any link you add between nodes will be a directed arc.\n"
                    "If you want to work with undirected edges and/or \n"
@@ -5015,267 +5013,207 @@ void MainWindow::initPanels(){
 
     rightPanelNetworkTypeLCD = new QLabel;
     rightPanelNetworkTypeLCD->setAlignment(Qt::AlignRight);
-    rightPanelNetworkTypeLCD->setText (tr("Directed"));
+    rightPanelNetworkTypeLCD->setText(tr("Directed"));
     rightPanelNetworkTypeLCD->setStatusTip(
                 tr("Directed data mode. "
                    "Toggle the menu option Edit->Edges->Undirected Edges to change it"));
-
     rightPanelNetworkTypeLCD->setToolTip(
                 tr("The loaded network, if any, is directed and \n"
                    "any link you add between nodes will be a directed arc.\n"
                    "If you want to work with undirected edges and/or \n"
                    "transform the loaded network (if any) to undirected \n"
                    "toggle the option Edit->Edges->Undirected."));
-    rightPanelNetworkTypeLCD->setWhatsThis(
-                tr("The loaded network, if any, is directed and \n"
-                   "any link you add between nodes will be a directed arc.\n"
-                   "If you want to work with undirected edges and/or \n"
-                   "transform the loaded network (if any) to undirected \n"
-                   "toggle the option Edit->Edges->Undirected"));
 
-    rightPanelNetworkTypeLCD->setMinimumWidth(75);
+    QLabel *rightPanelNodesLabel = new QLabel(tr("Nodes:"));
+    rightPanelNodesLabel->setStatusTip(tr("Each actor in a social network is visualized as a node (aka vertex)."));
+    rightPanelNodesLabel->setToolTip(tr("<p><b>Nodes</b></p>"
+                   "<p>Total number of actors (nodes/vertices) in this social network.</p>"));
 
-
-    QLabel *rightPanelNodesLabel = new QLabel;
-    rightPanelNodesLabel->setText(tr("Nodes:"));
-    rightPanelNodesLabel->setStatusTip(
-                tr("Each actor in a social netwok is visualized as a node (aka vertex)."));
-    rightPanelNodesLabel->setToolTip(
-                tr("<p><b>Nodes</b></p>"
-                   "<p>Each actor in a social netwok is visualized as a node (aka vertex) "
-                   "in a graph. This is total number of actors "
-                   "(aka nodes or vertices) in this social network.</p>"));
-    rightPanelNodesLabel->setMinimumWidth(80);
-
-    rightPanelNodesLCD=new QLabel;
+    rightPanelNodesLCD = new QLabel;
     rightPanelNodesLCD->setAlignment(Qt::AlignRight);
-    rightPanelNodesLCD->setStatusTip(
-                tr("The total number of actors (aka nodes or vertices) in the social network."));
-    rightPanelNodesLCD->setToolTip(
-                tr("This is the total number of actors \n"
-                   "(aka nodes or vertices) in the social network."));
+    rightPanelNodesLCD->setStatusTip(tr("The total number of actors (aka nodes or vertices) in the social network."));
 
-    rightPanelEdgesLabel = new QLabel;
-    rightPanelEdgesLabel->setText(tr("Arcs:"));
-    rightPanelEdgesLabel->setStatusTip(tr("Each link between a pair of actors in a social network is visualized as an edge or arc."));
-    rightPanelEdgesLabel->setToolTip(
-                tr("<p><b>Edges</b></p>"
-                   "Each link between a pair of actors in a social network is visualized as an undirected edge or a directed edge (aka arc)." )
-                );
+    rightPanelEdgesLabel = new QLabel(tr("Arcs:"));
+    rightPanelEdgesLabel->setStatusTip(tr("Each link between a pair of actors is visualized as an edge or arc."));
+    rightPanelEdgesLabel->setToolTip(tr("<p><b>Edges</b></p>"
+                   "Each link between actors is visualized as an undirected edge or a directed arc."));
 
-    rightPanelEdgesLCD=new QLabel;
+    rightPanelEdgesLCD = new QLabel;
     rightPanelEdgesLCD->setAlignment(Qt::AlignRight);
     rightPanelEdgesLCD->setStatusTip(tr("The total number of directed edges in the social network."));
-    rightPanelEdgesLCD->setToolTip(tr("This is the total number of directed edges \n"
-                                      "(links between actors) in the social network."));
 
-
-    QLabel *rightPanelDensityLabel = new QLabel;
-    rightPanelDensityLabel->setText(tr("Density:"));
-    rightPanelDensityLabel->setStatusTip(tr("The density d is the ratio of existing edges to all possible edges"));
+    QLabel *rightPanelDensityLabel = new QLabel(tr("Density:"));
     helpMessage = tr("<p><b>Density</b></p>"
-                     "<p>The density <em>d</em> of a social network is the ratio of "
-                     "existing edges to all possible edges ( n*(n-1) ) between the "
-                     "nodes of the network</p>.");
-    rightPanelDensityLabel->setToolTip( helpMessage );
-    rightPanelDensityLabel->setWhatsThis( helpMessage );
+                     "<p>The density <em>d</em> is the ratio of existing edges to all possible edges ( n*(n-1) ).</p>");
+    rightPanelDensityLabel->setStatusTip(tr("The density d is the ratio of existing edges to all possible edges"));
+    rightPanelDensityLabel->setToolTip(helpMessage);
 
-    rightPanelDensityLCD=new QLabel;
+    rightPanelDensityLCD = new QLabel;
     rightPanelDensityLCD->setAlignment(Qt::AlignRight);
-    rightPanelDensityLCD->setStatusTip(tr("The network density, the ratio of existing "
-                                          "edges to all possible edges ( n*(n-1) ) between nodes."));
-    rightPanelDensityLCD->setToolTip(
-                tr("<p>This is the density of the network. "
-                   "<p>The density of a network is the ratio of existing "
-                   "edges to all possible edges ( n*(n-1) ) between nodes.</p>"));
+    rightPanelDensityLCD->setStatusTip(tr("The network density, the ratio of existing edges to all possible edges."));
 
+    QGridLayout *networkGrid = new QGridLayout;
+    networkGrid->setSpacing(3);
+    networkGrid->setContentsMargins(0, 2, 0, 4);
+    networkGrid->addWidget(rightPanelNetworkTypeLabel, 0, 0);
+    networkGrid->addWidget(rightPanelNetworkTypeLCD,   0, 1);
+    networkGrid->addWidget(rightPanelNodesLabel,       1, 0);
+    networkGrid->addWidget(rightPanelNodesLCD,         1, 1);
+    networkGrid->addWidget(rightPanelEdgesLabel,       2, 0);
+    networkGrid->addWidget(rightPanelEdgesLCD,         2, 1);
+    networkGrid->addWidget(rightPanelDensityLabel,     3, 0);
+    networkGrid->addWidget(rightPanelDensityLCD,       3, 1);
+    m_networkSection = new QWidget;
+    m_networkSection->setLayout(networkGrid);
 
+    // ── Selection section ─────────────────────────────────────────────────────
+    m_selectionToggleBtn = makeSectionBtn(tr("SELECTION"));
 
-    QLabel *verticalSpaceLabel1 = new QLabel;
-    verticalSpaceLabel1->setText ("");
-    QLabel *rightPanelSelectedHeaderLabel = new QLabel;
-    rightPanelSelectedHeaderLabel->setText (tr("Selection"));
-    rightPanelSelectedHeaderLabel->setFont(labelFont);
-
-    QLabel *rightPanelSelectedNodesLabel = new QLabel;
-    rightPanelSelectedNodesLabel->setText(tr("Nodes:"));
+    QLabel *rightPanelSelectedNodesLabel = new QLabel(tr("Nodes:"));
     rightPanelSelectedNodesLabel->setStatusTip(tr("Selected nodes."));
-    rightPanelSelectedNodesLabel->setToolTip(tr("Selected nodes."));
 
-    rightPanelSelectedNodesLCD=new QLabel;
+    rightPanelSelectedNodesLCD = new QLabel("0");
     rightPanelSelectedNodesLCD->setAlignment(Qt::AlignRight);
-    rightPanelSelectedNodesLCD->setText("0");
     rightPanelSelectedNodesLCD->setStatusTip(tr("The number of selected nodes (vertices)."));
-    rightPanelSelectedNodesLCD->setToolTip(tr("The number of selected nodes (vertices)."));
 
-    rightPanelSelectedEdgesLabel = new QLabel;
-    rightPanelSelectedEdgesLabel->setText(tr("Arcs:"));
+    rightPanelSelectedEdgesLabel = new QLabel(tr("Arcs:"));
     rightPanelSelectedEdgesLabel->setStatusTip(tr("Selected edges."));
-    rightPanelSelectedEdgesLabel->setToolTip(tr("Selected edges."));
 
-    rightPanelSelectedEdgesLCD=new QLabel;
-    rightPanelSelectedEdgesLCD->setText("0");
+    rightPanelSelectedEdgesLCD = new QLabel("0");
     rightPanelSelectedEdgesLCD->setAlignment(Qt::AlignRight);
     rightPanelSelectedEdgesLCD->setStatusTip(tr("The number of selected edges."));
-    rightPanelSelectedEdgesLCD->setToolTip(tr("The number of selected edges."));
 
+    QGridLayout *selectionGrid = new QGridLayout;
+    selectionGrid->setSpacing(3);
+    selectionGrid->setContentsMargins(0, 2, 0, 4);
+    selectionGrid->addWidget(rightPanelSelectedNodesLabel, 0, 0);
+    selectionGrid->addWidget(rightPanelSelectedNodesLCD,   0, 1);
+    selectionGrid->addWidget(rightPanelSelectedEdgesLabel, 1, 0);
+    selectionGrid->addWidget(rightPanelSelectedEdgesLCD,   1, 1);
+    m_selectionSection = new QWidget;
+    m_selectionSection->setLayout(selectionGrid);
 
-    QLabel *verticalSpaceLabel2 = new QLabel;
-    verticalSpaceLabel2->setText ("");
+    // ── Clicked Node section ──────────────────────────────────────────────────
+    m_clickedNodeToggleBtn = makeSectionBtn(tr("CLICKED NODE"));
 
-    rightPanelClickedNodeHeaderLabel = new QLabel;
-    rightPanelClickedNodeHeaderLabel->setText (tr("Clicked Node"));
-    rightPanelClickedNodeHeaderLabel->setFont(labelFont);
+    QLabel *rightPanelClickedNodeLabel = new QLabel(tr("Number:"));
+    rightPanelClickedNodeLabel->setToolTip(tr("The node number of the last clicked node."));
+    rightPanelClickedNodeLabel->setStatusTip(tr("The node number of the last clicked node. Zero means no node clicked."));
 
-    QLabel *rightPanelClickedNodeLabel = new QLabel;
-    rightPanelClickedNodeLabel->setText (tr("Number:"));
-    rightPanelClickedNodeLabel->setToolTip (tr("The node number of the last clicked node."));
-    rightPanelClickedNodeLabel->setStatusTip( tr("The node number of the last clicked node. Zero means no node clicked."));
     rightPanelClickedNodeLCD = new QLabel;
     rightPanelClickedNodeLCD->setAlignment(Qt::AlignRight);
-    rightPanelClickedNodeLCD->setToolTip (tr("This is the node number of the last clicked node. \n"
-                                               "Becomes zero when you click on something other than a node."));
-    rightPanelClickedNodeLCD->setStatusTip( tr("The node number of the last clicked node. Zero if you clicked something else."));
+    rightPanelClickedNodeLCD->setToolTip(tr("Node number of the last clicked node. Zero when nothing is clicked."));
 
-    QLabel *rightPanelClickedNodeInDegreeLabel = new QLabel;
-    rightPanelClickedNodeInDegreeLabel->setText (tr("In-Degree:"));
-    rightPanelClickedNodeInDegreeLabel->setToolTip (tr("The inDegree of a node is the sum of all inbound edge weights."));
-    rightPanelClickedNodeInDegreeLabel->setStatusTip (tr("The inDegree of a node is the sum of all inbound edge weights."));
+    rightPanelClickedNodeInDegreeLabel = new QLabel(tr("In-Degree:"));
+    rightPanelClickedNodeInDegreeLabel->setToolTip(tr("The inDegree of a node is the sum of all inbound edge weights."));
     rightPanelClickedNodeInDegreeLCD = new QLabel;
     rightPanelClickedNodeInDegreeLCD->setAlignment(Qt::AlignRight);
-    rightPanelClickedNodeInDegreeLCD->setStatusTip (tr("The sum of all inbound edge weights of the last clicked node. "
-                                                         "Zero if you clicked something else."));
-    rightPanelClickedNodeInDegreeLCD->setToolTip (tr("This is the sum of all inbound edge weights of last clicked node. \n"
-                                                       "Becomes zero when you click on something other than a node."));
 
-    QLabel *rightPanelClickedNodeOutDegreeLabel = new QLabel;
-    rightPanelClickedNodeOutDegreeLabel->setText (tr("Out-Degree:"));
-    rightPanelClickedNodeOutDegreeLabel->setToolTip (tr("The outDegree of a node is the sum of all outbound edge weights."));
-    rightPanelClickedNodeOutDegreeLabel->setStatusTip (tr("The outDegree of a node is the sum of all outbound edge weights."));
-    rightPanelClickedNodeOutDegreeLCD=new QLabel;
+    rightPanelClickedNodeOutDegreeLabel = new QLabel(tr("Out-Degree:"));
+    rightPanelClickedNodeOutDegreeLabel->setToolTip(tr("The outDegree of a node is the sum of all outbound edge weights."));
+    rightPanelClickedNodeOutDegreeLCD = new QLabel;
     rightPanelClickedNodeOutDegreeLCD->setAlignment(Qt::AlignRight);
-    rightPanelClickedNodeOutDegreeLCD->setStatusTip (tr("The sum of all outbound edge weights of the last clicked node. "
-                                                          "Zero if you clicked something else."));
-    rightPanelClickedNodeOutDegreeLCD->setToolTip (tr("This is the sum of all outbound edge weights of the last clicked node. \n"
-                                                        "Becomes zero when you click on something other than a node."));
 
-    QLabel *verticalSpaceLabel3 = new QLabel;
-    verticalSpaceLabel3->setText ("");
+    // Detail rows hidden until a node is clicked
+    rightPanelClickedNodeInDegreeLabel->setVisible(false);
+    rightPanelClickedNodeInDegreeLCD->setVisible(false);
+    rightPanelClickedNodeOutDegreeLabel->setVisible(false);
+    rightPanelClickedNodeOutDegreeLCD->setVisible(false);
 
-    QLabel * rightPanelClickedEdgeHeaderLabel = new QLabel;
-    rightPanelClickedEdgeHeaderLabel->setText (tr("Clicked Edge"));
-    rightPanelClickedEdgeHeaderLabel->setFont(labelFont);
+    QGridLayout *clickedNodeGrid = new QGridLayout;
+    clickedNodeGrid->setSpacing(3);
+    clickedNodeGrid->setContentsMargins(0, 2, 0, 4);
+    clickedNodeGrid->addWidget(rightPanelClickedNodeLabel,        0, 0);
+    clickedNodeGrid->addWidget(rightPanelClickedNodeLCD,          0, 1);
+    clickedNodeGrid->addWidget(rightPanelClickedNodeInDegreeLabel,  1, 0);
+    clickedNodeGrid->addWidget(rightPanelClickedNodeInDegreeLCD,    1, 1);
+    clickedNodeGrid->addWidget(rightPanelClickedNodeOutDegreeLabel, 2, 0);
+    clickedNodeGrid->addWidget(rightPanelClickedNodeOutDegreeLCD,   2, 1);
+    m_clickedNodeSection = new QWidget;
+    m_clickedNodeSection->setLayout(clickedNodeGrid);
 
-    rightPanelClickedEdgeNameLabel = new QLabel;
-    rightPanelClickedEdgeNameLabel->setText (tr("Name:"));
-    rightPanelClickedEdgeNameLabel->setToolTip (tr("The name of the last clicked edge."));
-    rightPanelClickedEdgeNameLabel->setStatusTip (tr("The name of the last clicked edge."));
+    // ── Clicked Edge section ──────────────────────────────────────────────────
+    m_clickedEdgeToggleBtn = makeSectionBtn(tr("CLICKED EDGE"));
+
+    rightPanelClickedEdgeNameLabel = new QLabel(tr("Name:"));
+    rightPanelClickedEdgeNameLabel->setToolTip(tr("The name of the last clicked edge."));
     rightPanelClickedEdgeNameLCD = new QLabel;
     rightPanelClickedEdgeNameLCD->setAlignment(Qt::AlignRight);
-    rightPanelClickedEdgeNameLCD->setToolTip (tr("This is the name of the last clicked edge. \n"
-                                                   "Becomes zero when you click on somethingto other than an edge"));
-    rightPanelClickedEdgeNameLCD->setStatusTip (tr("The name of the last clicked edge."
-                                                     "Zero when you click on something else."));
 
-
-    rightPanelClickedEdgeWeightLabel = new QLabel;
-    rightPanelClickedEdgeWeightLabel->setText (tr("Weight:"));
-    rightPanelClickedEdgeWeightLabel->setStatusTip (tr("The weight of the clicked edge."));
-    rightPanelClickedEdgeWeightLabel->setToolTip (tr("The weight of the clicked edge."));
-
-    rightPanelClickedEdgeWeightLCD =new QLabel;
+    rightPanelClickedEdgeWeightLabel = new QLabel(tr("Weight:"));
+    rightPanelClickedEdgeWeightLabel->setStatusTip(tr("The weight of the clicked edge."));
+    rightPanelClickedEdgeWeightLCD = new QLabel;
     rightPanelClickedEdgeWeightLCD->setAlignment(Qt::AlignRight);
-    rightPanelClickedEdgeWeightLCD->setToolTip (tr("This is the weight of the last clicked edge. \n"
-                                                     "Becomes zero when you click on something other than an edge"));
-    rightPanelClickedEdgeWeightLCD->setStatusTip (tr("The weight of the last clicked edge. "
-                                                       "Zero when you click on something else."));
-
 
     rightPanelClickedEdgeReciprocalWeightLabel = new QLabel;
-    rightPanelClickedEdgeReciprocalWeightLabel->setText (tr(""));
-    rightPanelClickedEdgeReciprocalWeightLabel->setToolTip (tr("The weight of the reciprocal edge."));
-    rightPanelClickedEdgeReciprocalWeightLabel->setStatusTip (tr("The weight of the reciprocal edge."));
-    rightPanelClickedEdgeReciprocalWeightLCD =new QLabel;
+    rightPanelClickedEdgeReciprocalWeightLabel->setToolTip(tr("The weight of the reciprocal edge."));
+    rightPanelClickedEdgeReciprocalWeightLCD = new QLabel;
     rightPanelClickedEdgeReciprocalWeightLCD->setAlignment(Qt::AlignRight);
-    rightPanelClickedEdgeReciprocalWeightLCD->setToolTip (tr("This is the reciprocal weight of the last clicked reciprocated edge. \n"
-                                                               "Becomes zero when you click on something other than an edge"));
-    rightPanelClickedEdgeReciprocalWeightLCD->setStatusTip (tr("The reciprocal weight of the last clicked reciprocated edge. \n"
-                                                                 "Becomes zero when you click on something other than an edge"));
 
+    // Detail rows hidden until an edge is clicked
+    rightPanelClickedEdgeWeightLabel->setVisible(false);
+    rightPanelClickedEdgeWeightLCD->setVisible(false);
+    rightPanelClickedEdgeReciprocalWeightLabel->setVisible(false);
+    rightPanelClickedEdgeReciprocalWeightLCD->setVisible(false);
 
-    //create a grid layout
-    QGridLayout *propertiesGrid = new QGridLayout();
-    propertiesGrid->setSpacing(3);
-    propertiesGrid->setContentsMargins(4, 4, 4, 4);
-    propertiesGrid->setColumnMinimumWidth(0, 10);
-    propertiesGrid->setColumnMinimumWidth(1, 10);
+    QGridLayout *clickedEdgeGrid = new QGridLayout;
+    clickedEdgeGrid->setSpacing(3);
+    clickedEdgeGrid->setContentsMargins(0, 2, 0, 4);
+    clickedEdgeGrid->addWidget(rightPanelClickedEdgeNameLabel,             0, 0);
+    clickedEdgeGrid->addWidget(rightPanelClickedEdgeNameLCD,               0, 1);
+    clickedEdgeGrid->addWidget(rightPanelClickedEdgeWeightLabel,           1, 0);
+    clickedEdgeGrid->addWidget(rightPanelClickedEdgeWeightLCD,             1, 1);
+    clickedEdgeGrid->addWidget(rightPanelClickedEdgeReciprocalWeightLabel, 2, 0);
+    clickedEdgeGrid->addWidget(rightPanelClickedEdgeReciprocalWeightLCD,   2, 1);
+    m_clickedEdgeSection = new QWidget;
+    m_clickedEdgeSection->setLayout(clickedEdgeGrid);
 
-    propertiesGrid->addWidget(rightPanelNetworkHeader , 0,0);
-    propertiesGrid->addWidget(rightPanelNetworkTypeLabel , 1,0);
-    propertiesGrid->addWidget(rightPanelNetworkTypeLCD , 1,1);
-    propertiesGrid->addWidget(rightPanelNodesLabel, 2,0);
-    propertiesGrid->addWidget(rightPanelNodesLCD,2,1);
-    propertiesGrid->addWidget(rightPanelEdgesLabel, 3,0);
-    propertiesGrid->addWidget(rightPanelEdgesLCD,3,1);
-    propertiesGrid->addWidget(rightPanelDensityLabel, 4,0);
-    propertiesGrid->addWidget(rightPanelDensityLCD,4,1);
+    // ── Distribution (chart) section ──────────────────────────────────────────
+    m_chartToggleBtn = makeSectionBtn(tr("DISTRIBUTION"));
 
-    propertiesGrid->addWidget(verticalSpaceLabel1, 5,0);
-
-    propertiesGrid->addWidget(rightPanelSelectedHeaderLabel, 6,0,1,2);
-    propertiesGrid->addWidget(rightPanelSelectedNodesLabel , 7,0);
-    propertiesGrid->addWidget(rightPanelSelectedNodesLCD ,7,1);
-    propertiesGrid->addWidget(rightPanelSelectedEdgesLabel, 8,0);
-    propertiesGrid->addWidget(rightPanelSelectedEdgesLCD, 8,1);
-
-    propertiesGrid->addWidget(verticalSpaceLabel2, 9,0);
-    propertiesGrid->addWidget(rightPanelClickedNodeHeaderLabel, 10,0,1,2);
-    propertiesGrid->addWidget(rightPanelClickedNodeLabel , 11,0);
-    propertiesGrid->addWidget(rightPanelClickedNodeLCD ,11,1);
-    propertiesGrid->addWidget(rightPanelClickedNodeInDegreeLabel, 12,0);
-    propertiesGrid->addWidget(rightPanelClickedNodeInDegreeLCD,12,1);
-    propertiesGrid->addWidget(rightPanelClickedNodeOutDegreeLabel, 13,0);
-    propertiesGrid->addWidget(rightPanelClickedNodeOutDegreeLCD,13,1);
-
-    propertiesGrid->addWidget(verticalSpaceLabel3, 15,0);
-    propertiesGrid->addWidget(rightPanelClickedEdgeHeaderLabel, 16,0,1,2);
-    propertiesGrid->addWidget(rightPanelClickedEdgeNameLabel , 17,0);
-    propertiesGrid->addWidget(rightPanelClickedEdgeNameLCD ,17,1);
-    propertiesGrid->addWidget(rightPanelClickedEdgeWeightLabel , 18,0);
-    propertiesGrid->addWidget(rightPanelClickedEdgeWeightLCD ,18,1);
-    propertiesGrid->addWidget(rightPanelClickedEdgeReciprocalWeightLabel , 19,0);
-    propertiesGrid->addWidget(rightPanelClickedEdgeReciprocalWeightLCD ,19,1);
-
-    // Create our mini miniChart
     miniChart = new Chart(this);
     int chartHeight = 100;
-    miniChart->setThemeSmallWidget(chartHeight,chartHeight);
+    miniChart->setThemeSmallWidget(chartHeight, chartHeight);
 
-    // Nothing else to do with miniChart.
-    // MW::initApp() will populate it with a dummy point.
+    // ── Outer grid ────────────────────────────────────────────────────────────
+    QGridLayout *propertiesGrid = new QGridLayout;
+    propertiesGrid->setSpacing(2);
+    propertiesGrid->setContentsMargins(4, 4, 4, 4);
 
-    propertiesGrid->addWidget(miniChart,20,0,1,2);
-    propertiesGrid->setRowMinimumHeight(20, (int) floor( 1.5 * chartHeight ) );
-    propertiesGrid->setRowStretch(20,0);
+    propertiesGrid->addWidget(m_networkToggleBtn,     0, 0);
+    propertiesGrid->addWidget(m_networkSection,       1, 0);
+    propertiesGrid->addWidget(m_selectionToggleBtn,   2, 0);
+    propertiesGrid->addWidget(m_selectionSection,     3, 0);
+    propertiesGrid->addWidget(m_clickedNodeToggleBtn, 4, 0);
+    propertiesGrid->addWidget(m_clickedNodeSection,   5, 0);
+    propertiesGrid->addWidget(m_clickedEdgeToggleBtn, 6, 0);
+    propertiesGrid->addWidget(m_clickedEdgeSection,   7, 0);
+    propertiesGrid->addWidget(m_chartToggleBtn,       8, 0);
+    propertiesGrid->addWidget(miniChart,              9, 0);
+    propertiesGrid->setRowMinimumHeight(9, (int) floor(1.5 * chartHeight));
+    propertiesGrid->setRowStretch(10, 1);
 
-    // Small spacer between miniChart and the message label at the bottom.
-    QSpacerItem *spacer = new QSpacerItem (100, 4,
-                                           QSizePolicy::Minimum,
-                                           QSizePolicy::Preferred);
-    propertiesGrid->addItem(spacer, 22,0,3,2);
-    propertiesGrid->setRowStretch(22,1);   //allow this row to stretch
-
-    // Add the message label, this will be displayed in the down-right corner.
-    QLabel *rightPanelMessageLabel = new QLabel;
-    rightPanelMessageLabel->setText ("https://socnetv.org");
-    propertiesGrid->addWidget(rightPanelMessageLabel, 25, 0, 1, 2);
-    propertiesGrid->setRowStretch(25,0);   // stop row from stretching
+    // Toggle connections
+    auto connectToggle = [](QPushButton *btn, QWidget *section,
+                            const QString &title) {
+        QObject::connect(btn, &QPushButton::clicked, btn, [btn, section, title]() {
+            const bool show = !section->isVisible();
+            section->setVisible(show);
+            btn->setText((show ? QString("▾ ") : QString("▴ ")) + title);
+        });
+    };
+    connectToggle(m_networkToggleBtn,     m_networkSection,     tr("NETWORK"));
+    connectToggle(m_selectionToggleBtn,   m_selectionSection,   tr("SELECTION"));
+    connectToggle(m_clickedNodeToggleBtn, m_clickedNodeSection, tr("CLICKED NODE"));
+    connectToggle(m_clickedEdgeToggleBtn, m_clickedEdgeSection, tr("CLICKED EDGE"));
+    connectToggle(m_chartToggleBtn,       miniChart,            tr("DISTRIBUTION"));
 
     // Create a panel with title
     rightPanel = new QGroupBox(tr("Statistics Panel"));
+    rightPanel->setMinimumWidth(170);
     rightPanel->setMaximumWidth(190);
     rightPanel->setObjectName("rightPanel");
-    rightPanel->setLayout (propertiesGrid);
+    rightPanel->setLayout(propertiesGrid);
 
 
     qDebug()<< "Finished panels init.";
@@ -5401,10 +5339,21 @@ void MainWindow::initWindowLayout() {
     canvasVBox->addWidget(m_filterBar);
     canvasVBox->addWidget(graphicsWidget, 1);
 
+    // Wrap the left panel in a scroll area so it scrolls vertically when
+    // the bottom dock (Data Table) reduces available height, preventing widget overlap.
+    m_leftScrollArea = new QScrollArea;
+    m_leftScrollArea->setWidget(leftPanel);
+    m_leftScrollArea->setWidgetResizable(true);
+    m_leftScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_leftScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    m_leftScrollArea->setFrameShape(QFrame::NoFrame);
+    m_leftScrollArea->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+    m_leftScrollArea->setMinimumWidth(leftPanel->minimumWidth() + 4);
+
     // Create a layout for the toolbox and the canvas.
     // This will be the layout of our MW central widget
     QGridLayout *layout = new QGridLayout;
-    layout->addWidget(leftPanel, 0, 0, 2,1);
+    layout->addWidget(m_leftScrollArea, 0, 0, 2,1);
     layout->addLayout(canvasVBox, 0, 1);
     layout->addLayout(zoomSliderLayout, 0, 2);
     layout->addWidget(rightPanel, 0, 3,2,1);
@@ -5901,12 +5850,16 @@ void MainWindow::initApp(){
     /** Clear LCDs **/
     qDebug()<<"### Clearing Statistics panel LCDs. Please wait...";
 
-    rightPanelClickedNodeInDegreeLCD->setText("-");
-    rightPanelClickedNodeOutDegreeLCD->setText("-");
     rightPanelClickedNodeLCD->setText("-");
+    rightPanelClickedNodeInDegreeLabel->setVisible(false);
+    rightPanelClickedNodeInDegreeLCD->setVisible(false);
+    rightPanelClickedNodeOutDegreeLabel->setVisible(false);
+    rightPanelClickedNodeOutDegreeLCD->setVisible(false);
     rightPanelClickedEdgeNameLCD->setText("-");
-    rightPanelClickedEdgeWeightLCD->setText("-");
-    rightPanelClickedEdgeReciprocalWeightLCD->setText("");
+    rightPanelClickedEdgeWeightLabel->setVisible(false);
+    rightPanelClickedEdgeWeightLCD->setVisible(false);
+    rightPanelClickedEdgeReciprocalWeightLabel->setVisible(false);
+    rightPanelClickedEdgeReciprocalWeightLCD->setVisible(false);
 
 
     /** Clear toolbox and menu checkboxes **/
@@ -10746,9 +10699,16 @@ void MainWindow::slotEditNodeInfoStatusBar (const int &number,
                                             const int &outDegree) {
 
     qDebug()<<"Updating node info in status bar...";
-    rightPanelClickedNodeLCD->setText (QString::number(number));
-    rightPanelClickedNodeInDegreeLCD->setText ( QString::number (inDegree) ) ;
-    rightPanelClickedNodeOutDegreeLCD->setText ( QString::number (outDegree) ) ;
+    rightPanelClickedNodeLCD->setText(QString::number(number));
+    const bool nodeClicked = (number != 0);
+    rightPanelClickedNodeInDegreeLabel->setVisible(nodeClicked);
+    rightPanelClickedNodeInDegreeLCD->setVisible(nodeClicked);
+    rightPanelClickedNodeOutDegreeLabel->setVisible(nodeClicked);
+    rightPanelClickedNodeOutDegreeLCD->setVisible(nodeClicked);
+    if (nodeClicked) {
+        rightPanelClickedNodeInDegreeLCD->setText(QString::number(inDegree));
+        rightPanelClickedNodeOutDegreeLCD->setText(QString::number(outDegree));
+    }
 
     if (number!=0)  {
 
@@ -10795,13 +10755,17 @@ void MainWindow::slotEditEdgeClicked (const MyEdge &edge,
 //           << "openMenu"<<openMenu;
 
 
-    if (v1 ==0 || v2 == 0) {
+    if (v1 == 0 || v2 == 0) {
         rightPanelClickedEdgeNameLCD->setText("-");
-        rightPanelClickedEdgeWeightLCD->setText("-");
-        rightPanelClickedEdgeReciprocalWeightLCD->setText("");
-
+        rightPanelClickedEdgeWeightLabel->setVisible(false);
+        rightPanelClickedEdgeWeightLCD->setVisible(false);
+        rightPanelClickedEdgeReciprocalWeightLabel->setVisible(false);
+        rightPanelClickedEdgeReciprocalWeightLCD->setVisible(false);
         return;
     }
+
+    rightPanelClickedEdgeWeightLabel->setVisible(true);
+    rightPanelClickedEdgeWeightLCD->setVisible(true);
 
     QString edgeName;
 
@@ -10815,8 +10779,8 @@ void MainWindow::slotEditEdgeClicked (const MyEdge &edge,
         rightPanelClickedEdgeNameLCD->setText(QString::number(v1)+QString(" -- ")+QString::number(v2));
         rightPanelClickedEdgeWeightLabel->setText(tr("Weight:"));
         rightPanelClickedEdgeWeightLCD->setText(QString::number(weight));
-        rightPanelClickedEdgeReciprocalWeightLabel->setText("");
-        rightPanelClickedEdgeReciprocalWeightLCD->setText("");
+        rightPanelClickedEdgeReciprocalWeightLabel->setVisible(false);
+        rightPanelClickedEdgeReciprocalWeightLCD->setVisible(false);
         if (openMenu) {
             edgeName=QString("EDGE: ") + QString::number(v1)+QString(" -- ")+QString::number(v2);
         }
@@ -10834,7 +10798,9 @@ void MainWindow::slotEditEdgeClicked (const MyEdge &edge,
         rightPanelClickedEdgeWeightLabel->setText(tr("Weight:"));
         rightPanelClickedEdgeWeightLCD->setText(QString::number(weight));
         rightPanelClickedEdgeReciprocalWeightLabel->setText("Recipr.:");
+        rightPanelClickedEdgeReciprocalWeightLabel->setVisible(true);
         rightPanelClickedEdgeReciprocalWeightLCD->setText(QString::number(reverseWeight));
+        rightPanelClickedEdgeReciprocalWeightLCD->setVisible(true);
         if (openMenu) {
             edgeName=QString("RECIPROCATED EDGE: ") + QString::number(v1)+QString(" <-->")+QString::number(v2);
         }
@@ -10849,8 +10815,8 @@ void MainWindow::slotEditEdgeClicked (const MyEdge &edge,
         rightPanelClickedEdgeNameLCD->setText(QString::number(v1)+QString(" -->")+QString::number(v2));
         rightPanelClickedEdgeWeightLabel->setText(tr("Weight:"));
         rightPanelClickedEdgeWeightLCD->setText(QString::number(weight));
-        rightPanelClickedEdgeReciprocalWeightLabel->setText("");
-        rightPanelClickedEdgeReciprocalWeightLCD->setText("");
+        rightPanelClickedEdgeReciprocalWeightLabel->setVisible(false);
+        rightPanelClickedEdgeReciprocalWeightLCD->setVisible(false);
 
         if (openMenu) {
             edgeName=QString("DIRECTED EDGE: ") + QString::number(v1)+QString(" -->")+QString::number(v2);
@@ -15479,12 +15445,12 @@ void MainWindow::slotOptionsWindowLeftPanelVisibility(bool toggle) {
     statusMessage( tr("Toggle left panel..."));
 
     if (toggle == false)   {
-        leftPanel->hide();
+        m_leftScrollArea->hide();
         appSettings["showLeftPanel"] = "false";
         statusMessage( tr("Left Panel off.") );
     }
     else   {
-        leftPanel->show();
+        m_leftScrollArea->show();
         appSettings["showLeftPanel"] = "true";
         statusMessage( tr("Left Panel on.") );
     }

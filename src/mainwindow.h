@@ -26,6 +26,7 @@
 #include <QMainWindow>
 #include <QPrinter>
 #include <QMessageBox>
+#include <QScrollArea>
 #include <QStack>
 #include <QThread>
 #include <QNetworkReply>
@@ -642,6 +643,7 @@ private:
     QToolBar *toolBar;
 
     QGroupBox *leftPanel, *rightPanel ;
+    QScrollArea *m_leftScrollArea;
 
     QComboBox *editRelationChangeCombo;
 
@@ -776,20 +778,19 @@ private:
 
     QLabel *rightPanelNetworkTypeLCD ;
     QLabel *rightPanelEdgesLabel;
-
-    QLabel *rightPanelClickedNodeHeaderLabel;
     QLabel *rightPanelNodesLCD;
     QLabel *rightPanelEdgesLCD;
     QLabel *rightPanelDensityLCD;
-
-    QLabel *rightPanelClickedNodeLCD;
-    QLabel *rightPanelClickedNodeInDegreeLCD;
-    QLabel *rightPanelClickedNodeOutDegreeLCD;
 
     QLabel *rightPanelSelectedNodesLCD;
     QLabel *rightPanelSelectedEdgesLCD;
     QLabel *rightPanelSelectedEdgesLabel;
 
+    QLabel *rightPanelClickedNodeLCD;
+    QLabel *rightPanelClickedNodeInDegreeLabel;
+    QLabel *rightPanelClickedNodeInDegreeLCD;
+    QLabel *rightPanelClickedNodeOutDegreeLabel;
+    QLabel *rightPanelClickedNodeOutDegreeLCD;
 
     QLabel *rightPanelClickedEdgeNameLabel;
     QLabel *rightPanelClickedEdgeNameLCD;
@@ -797,6 +798,17 @@ private:
     QLabel *rightPanelClickedEdgeWeightLCD;
     QLabel *rightPanelClickedEdgeReciprocalWeightLabel;
     QLabel *rightPanelClickedEdgeReciprocalWeightLCD;
+
+    QPushButton *m_networkToggleBtn;
+    QPushButton *m_selectionToggleBtn;
+    QPushButton *m_clickedNodeToggleBtn;
+    QPushButton *m_clickedEdgeToggleBtn;
+    QPushButton *m_chartToggleBtn;
+
+    QWidget *m_networkSection;
+    QWidget *m_selectionSection;
+    QWidget *m_clickedNodeSection;
+    QWidget *m_clickedEdgeSection;
 
 
 
