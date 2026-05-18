@@ -4,6 +4,24 @@ All notable changes to this project are documented in this file.
 
 ## [3.6] – Jun 2026
 
+### New Features
+
+  - **Subgraph extraction** (#218):
+    - New **Edit → Subgraphs** submenu with two actions:
+      - **Save visible nodes as subgraph…** — extracts all nodes currently
+        visible on the canvas (i.e. not hidden by any filter) and the edges
+        that run between them into an independent graph file. Always enabled
+        when a network is loaded.
+      - **Save selected nodes as subgraph…** — extracts the currently selected
+        nodes and their inter-edges. Enabled when at least one node is selected.
+    - Both actions prompt for a network name, pre-fill the save dialog filename
+      from that name, and save to GraphML (which preserves all custom attributes
+      and relations).
+    - Vertices are renumbered from 1 in the extracted graph; all visual
+      properties, custom node/edge attributes, and multi-relation structure
+      are preserved.
+    - Original graph remains unchanged (non-destructive).
+
 ### Improvements
 
   - **UI declutter & UX improvements** (#234):

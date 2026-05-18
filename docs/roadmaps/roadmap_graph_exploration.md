@@ -164,17 +164,13 @@ The underlying graph remains unchanged; filtering operates on visibility state.
   * Styled via `default.qss`
 * Logical composition (AND/OR): deferred to #221 (query system); sequential stack already gives AND semantics by effect
 
-### Phase 4 — Subgraph Extraction (#218)
+### Phase 4 — Subgraph Extraction (#218) ✔
 
-* Create subgraph from selection or current filtered view (#218)
-
-**Current approach:**
-* Subgraph = visible subset (same graph object); no copy created
-
-**Future options:**
-* Copy-out as independent `Graph` object (serialise visible nodes/edges)
-* Optional: open subgraph in a new window
-* Preferred long-term: tab-based multi-graph UI (switch between subgraphs)
+* ✔ Save visible nodes as subgraph — `Graph::subgraphExtract()`, **Edit → Subgraphs → Save visible nodes as subgraph…** (always enabled)
+* ✔ Save selected nodes as subgraph — `Graph::subgraphExtractFromSelection()`, **Edit → Subgraphs → Save selected nodes as subgraph…** (enabled when ≥ 1 node selected)
+* ✔ Shared extraction logic in private `Graph::subgraphFromVertexList()`: vertices renumbered from 1; all relations mirrored; custom node/edge attributes preserved; canvas dimensions propagated via `canvasSizeSetQuiet()` so GraphML export produces correct normalized coordinates
+* Output: save to GraphML file (preserves all attributes and relations)
+* Deferred: open subgraph in new window/tab — preferred long-term direction is tab-based multi-graph UI (Phase 6)
 
 ### Phase 5 — Export Filtered / Extracted Graph (#220)
 

@@ -33,6 +33,7 @@ field data from a file in a supported format (GraphML, GraphViz, EdgeList, GML, 
 - Structural equivalence analysis using hierarchical clustering, actor similarities, and Pearson coefficients.
 - Multiple layout algorithms: prominence-based (circular, nodal sizes by centrality), force-directed (Kamada-Kawai, Fruchterman-Reingold), and ego-centered radial layout.
 - Non-destructive graph exploration filters: focus on selection, ego network, centrality threshold, attribute-based filtering (with `=`, `≠`, `>`, `<`, `≥`, `≤`, `contains` operators), and edge weight threshold. All filters are reversible and stack non-destructively. Active filters shown in a persistent filter bar.
+- Subgraph extraction: save the currently visible (filtered) nodes or the currently selected nodes — together with their inter-edges — as an independent GraphML file. All visual properties, custom attributes, and multi-relation structure are preserved.
 - Custom node and edge attributes: add, edit and remove arbitrary key/value pairs. Fully persisted in GraphML.
 - Data table dock (Ctrl+T): inspect and inline-edit all node and edge properties — including custom attributes — with live search and sortable columns.
 - Structured import/export: export node or edge data to CSV or JSON; re-import to update attributes in bulk (supports a full spreadsheet editing workflow). See the [manual](https://socnetv.org/manual/intro/) for details.
