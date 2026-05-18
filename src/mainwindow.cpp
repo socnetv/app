@@ -11910,7 +11910,8 @@ void MainWindow::slotFilterNodesByAttribute()
         slotHelpMessageToUser(USER_MSG_CRITICAL,
                               tr("No custom attributes"),
                               tr("This network has no custom node or edge attributes. "
-                                 "Add attributes via the Node or Edge Properties dialogs first."));
+                                 "Add attributes via the Data Table (Ctrl+T) using "
+                                 "\"Add attribute…\", or via the Node / Edge Properties dialogs."));
         return;
     }
 

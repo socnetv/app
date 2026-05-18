@@ -657,18 +657,22 @@ void GraphTableWidget::onNodeAddAttributeClicked()
     const QList<int> targets = resolveNodeTargets();
     if (targets.isEmpty()) return;
 
-    bool ok = false;
-    const QString key = QInputDialog::getText(
-        this, tr("Add Attribute"),
-        tr("Attribute name:"), QLineEdit::Normal, QString(), &ok);
-    if (!ok || key.trimmed().isEmpty()) return;
+    // Use object-based QInputDialog to enforce a readable minimum width on all platforms.
+    QInputDialog keyDlg(this);
+    keyDlg.setWindowTitle(tr("Add Attribute"));
+    keyDlg.setLabelText(tr("Attribute name:"));
+    keyDlg.setMinimumWidth(360);
+    if (keyDlg.exec() != QDialog::Accepted || keyDlg.textValue().trimmed().isEmpty())
+        return;
+    const QString trimmedKey = keyDlg.textValue().trimmed();
 
-    const QString value = QInputDialog::getText(
-        this, tr("Add Attribute"),
-        tr("Value for '%1':").arg(key.trimmed()), QLineEdit::Normal, QString(), &ok);
-    if (!ok) return;
+    QInputDialog valDlg(this);
+    valDlg.setWindowTitle(tr("Add Attribute"));
+    valDlg.setLabelText(tr("Value for '%1':").arg(trimmedKey));
+    valDlg.setMinimumWidth(360);
+    if (valDlg.exec() != QDialog::Accepted) return;
+    const QString value = valDlg.textValue();
 
-    const QString trimmedKey = key.trimmed();
     for (const int v : targets)
         m_graph->vertexCustomAttributeSet(v, trimmedKey, value);
 
@@ -762,18 +766,21 @@ void GraphTableWidget::onEdgeAddAttributeClicked()
     const QList<SocNetV::SelectedEdge> targets = resolveEdgeTargets();
     if (targets.isEmpty()) return;
 
-    bool ok = false;
-    const QString key = QInputDialog::getText(
-        this, tr("Add Attribute"),
-        tr("Attribute name:"), QLineEdit::Normal, QString(), &ok);
-    if (!ok || key.trimmed().isEmpty()) return;
+    QInputDialog keyDlg(this);
+    keyDlg.setWindowTitle(tr("Add Attribute"));
+    keyDlg.setLabelText(tr("Attribute name:"));
+    keyDlg.setMinimumWidth(360);
+    if (keyDlg.exec() != QDialog::Accepted || keyDlg.textValue().trimmed().isEmpty())
+        return;
+    const QString trimmedKey = keyDlg.textValue().trimmed();
 
-    const QString value = QInputDialog::getText(
-        this, tr("Add Attribute"),
-        tr("Value for '%1':").arg(key.trimmed()), QLineEdit::Normal, QString(), &ok);
-    if (!ok) return;
+    QInputDialog valDlg(this);
+    valDlg.setWindowTitle(tr("Add Attribute"));
+    valDlg.setLabelText(tr("Value for '%1':").arg(trimmedKey));
+    valDlg.setMinimumWidth(360);
+    if (valDlg.exec() != QDialog::Accepted) return;
+    const QString value = valDlg.textValue();
 
-    const QString trimmedKey = key.trimmed();
     for (const SocNetV::SelectedEdge &e : targets)
         m_graph->edgeCustomAttributesSet(e.first, e.second, {{trimmedKey, value}});
 
