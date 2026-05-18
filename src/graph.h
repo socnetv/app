@@ -198,6 +198,9 @@ public slots:
     Graph *subgraphExtract(const QString &name,
                            const bool &includeCustomAttributes = true);
 
+    Graph *subgraphExtractFromSelection(const QString &name,
+                                        const bool &includeCustomAttributes = true);
+
     void startWebCrawler(
         const QUrl &startUrl,
         const QStringList &urlPatternsIncluded,
@@ -1266,6 +1269,10 @@ protected:
 
 private:
     /** private member functions */
+
+    Graph *subgraphFromVertexList(const QList<int> &vertexNums,
+                                   const QString &name,
+                                   const bool &includeCustomAttributes = true);
 
     void edgeAdd(const int &v1,
                  const int &v2,

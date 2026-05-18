@@ -1946,6 +1946,17 @@ void MainWindow::initActions(){
     connect(editSubgraphExtractAct, &QAction::triggered,
             this, &MainWindow::slotEditSubgraphExtract);
 
+    editSubgraphExtractFromSelectionAct = new QAction(tr("Save selected nodes as subgraph..."), this);
+    editSubgraphExtractFromSelectionAct->setEnabled(false);   // enabled when >= 1 node selected
+    editSubgraphExtractFromSelectionAct->setStatusTip(tr("Copy the currently selected nodes and their inter-edges into a new graph file."));
+    editSubgraphExtractFromSelectionAct->setWhatsThis(tr("Save selected nodes as subgraph\n\n"
+                                                          "Creates an independent copy of the selected nodes and the edges "
+                                                          "that run between them. Vertices are renumbered from 1; all visual "
+                                                          "properties and custom attributes are preserved. You will be "
+                                                          "prompted for a name and a save location."));
+    connect(editSubgraphExtractFromSelectionAct, &QAction::triggered,
+            this, &MainWindow::slotEditSubgraphExtractFromSelection);
+
 
 
 
@@ -3969,6 +3980,8 @@ void MainWindow::initMenuBar() {
     subgraphMenu->setIcon(QIcon(":/images/filter_list_48px.svg"));
     editMenu->addMenu(subgraphMenu);
     subgraphMenu->addAction(editSubgraphExtractAct);
+    subgraphMenu->addSeparator();
+    subgraphMenu->addAction(editSubgraphExtractFromSelectionAct);
 
     editMenu->addSeparator();
     editMenu->addAction(viewDataTableAct);
@@ -5932,6 +5945,7 @@ void MainWindow::initApp(){
     setWindowTitle("SocNetV");
 
     filterNodesRestoreAllAct->setEnabled(false);
+    editSubgraphExtractFromSelectionAct->setEnabled(false);
     m_filterBar->clearAllChips();
 
     // Always reset the data table so it shows an empty graph when next opened
@@ -10689,6 +10703,8 @@ void MainWindow::slotEditSelectionChanged(const int &selNodes, const int &selEdg
     filterNodesBySelectionAct->setEnabled(selNodes >= 1);
     // Enable ego network focus only when exactly 1 node is selected
     filterNodesByEgoNetworkAct->setEnabled(selNodes == 1);
+    // Enable subgraph-from-selection whenever at least 1 node is selected
+    editSubgraphExtractFromSelectionAct->setEnabled(selNodes >= 1);
     
     //
     // NOTE:
@@ -12071,6 +12087,70 @@ void MainWindow::slotEditSubgraphExtract()
 
     // Extract and save.
     Graph *sub = activeGraph->subgraphExtract(subgraphName.trimmed());
+    if (!sub) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    sub->saveToFile(fn, FileType::GRAPHML);
+
+    const int n = sub->vertices();
+    const int e = sub->edgesEnabled();
+    delete sub;
+
+    statusMessage(tr("Subgraph saved: %1 nodes, %2 edges → %3")
+                      .arg(n).arg(e).arg(QFileInfo(fn).fileName()));
+}
+
+
+/**
+ * @brief Extracts currently selected nodes and their inter-edges into an
+ *        independent Graph object and saves it to a user-chosen file.
+ */
+void MainWindow::slotEditSubgraphExtractFromSelection()
+{
+    if (!activeNodes()) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    // Ask for a subgraph name (pre-fill with current network name).
+    bool ok = false;
+    const QString defaultName = tr("Subgraph of %1").arg(activeGraph->getName());
+    const QString subgraphName = QInputDialog::getText(
+        this,
+        tr("Name the subgraph"),
+        tr("Subgraph name:"),
+        QLineEdit::Normal,
+        defaultName,
+        &ok);
+    if (!ok || subgraphName.trimmed().isEmpty())
+        return;
+
+    // Build a filesystem-safe default filename from the subgraph name.
+    QString sanitized = subgraphName.trimmed();
+    sanitized.replace(QRegularExpression("[/\\\\:*?\"<>|\\s]+"), "_");
+
+    // Ask where to save (GraphML preserves all attributes).
+    const QString defaultPath = QFileInfo(getLastPath()).dir().filePath(sanitized + ".graphml");
+    QString fn = QFileDialog::getSaveFileName(
+        this,
+        tr("Save Subgraph to GraphML File Named..."),
+        defaultPath,
+        tr("GraphML (*.graphml *.xml);;All (*)"));
+
+    if (fn.isEmpty()) {
+        statusMessage(tr("Saving aborted."));
+        return;
+    }
+
+    if (QFileInfo(fn).suffix().isEmpty())
+        fn.append(".graphml");
+
+    setLastPath(fn);
+
+    // Extract and save.
+    Graph *sub = activeGraph->subgraphExtractFromSelection(subgraphName.trimmed());
     if (!sub) {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;

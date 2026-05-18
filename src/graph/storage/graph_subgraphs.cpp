@@ -20,48 +20,44 @@
 #include <QHash>
 
 /**
- * @brief Extracts currently visible (non-filtered) nodes and their
- *        inter-edges into an independent Graph copy.
+ * @brief Core helper: builds an independent Graph copy from an explicit list
+ *        of vertex numbers.
  *
- * Iterates all enabled vertices and, for every relation, copies edges
- * whose enabled flag is true and whose target is also visible.
- * Vertices are renumbered from 1; all visual properties and custom
- * attributes are preserved when @p includeCustomAttributes is true.
+ * Shared by subgraphExtract() (visible nodes) and subgraphExtractFromSelection()
+ * (selected nodes). Vertices are renumbered from 1. For every relation, enabled
+ * edges whose both endpoints are in @p vertexNums are copied. All visual
+ * properties and, when @p includeCustomAttributes is true, node and edge custom
+ * attribute maps are preserved verbatim.
  *
  * The caller takes ownership of the returned Graph object.
  *
+ * @param vertexNums            Source vertex numbers to include.
  * @param name                  Name assigned to the new graph.
  * @param includeCustomAttributes  When true, node and edge custom
  *                              attribute maps are copied verbatim.
  * @return Heap-allocated Graph* containing the subgraph, or nullptr
- *         if no visible vertices exist.
+ *         if @p vertexNums is empty.
  */
-Graph *Graph::subgraphExtract(const QString &name,
-                               const bool &includeCustomAttributes)
+Graph *Graph::subgraphFromVertexList(const QList<int> &vertexNums,
+                                      const QString &name,
+                                      const bool &includeCustomAttributes)
 {
-    // --- Collect visible vertices ----------------------------------------
-    QList<int> visibleNums;
-    for (VList::const_iterator vi = verticesBegin(); vi != verticesEnd(); ++vi) {
-        if ((*vi)->isEnabled())
-            visibleNums.append((*vi)->number());
-    }
-
-    if (visibleNums.isEmpty()) {
-        qDebug() << "subgraphExtract(): no visible vertices — returning nullptr";
+    if (vertexNums.isEmpty()) {
+        qDebug() << "subgraphFromVertexList(): vertex list is empty — returning nullptr";
         return nullptr;
     }
 
     // Build old-number → new-number map (renumber from 1)
     QHash<int, int> oldToNew;
     int newNum = 1;
-    for (int oldNum : visibleNums)
+    for (int oldNum : vertexNums)
         oldToNew[oldNum] = newNum++;
 
     // --- Create the new graph -------------------------------------------
     // No UI signals: signalMW is false throughout; the new graph has no
     // GraphicsWidget attached, so emitting draw signals would be a no-op
     // anyway, but passing false is explicit and safe.
-    Graph *sub = new Graph(visibleNums.size(), m_reserveEdgesPerVertexSize);
+    Graph *sub = new Graph(vertexNums.size(), m_reserveEdgesPerVertexSize);
     sub->setName(name);
     sub->setDirected(isDirected(), false);
     sub->setWeighted(isWeighted());
@@ -80,7 +76,7 @@ Graph *Graph::subgraphExtract(const QString &name,
     sub->relationSet(0, false);
 
     // --- Pass 1: create vertices -----------------------------------------
-    for (int oldNum : visibleNums) {
+    for (int oldNum : vertexNums) {
         GraphVertex *v = vertexPtr(oldNum);
         sub->vertexCreate(
             oldToNew[oldNum],
@@ -100,24 +96,24 @@ Graph *Graph::subgraphExtract(const QString &name,
     }
 
     // --- Pass 2: create edges --------------------------------------------
-    // Iterate every visible source vertex; for each out-edge whose enabled
-    // flag is true and whose target is also visible, add it to the subgraph.
+    // Iterate every source vertex; for each out-edge whose enabled flag is
+    // true and whose target is also in the vertex list, add it to the subgraph.
     // We handle each relation index independently so multi-relation networks
     // are preserved correctly.
-    for (int oldSrc : visibleNums) {
+    for (int oldSrc : vertexNums) {
         GraphVertex *sv = vertexPtr(oldSrc);
         const H_edges &oe = sv->outEdges();
 
         for (auto ei = oe.constBegin(); ei != oe.constEnd(); ++ei) {
-            const int oldTgt      = ei.key();
-            const int relIdx      = ei.value().first;
-            const qreal weight    = ei.value().second.first;
+            const int oldTgt       = ei.key();
+            const int relIdx       = ei.value().first;
+            const qreal weight     = ei.value().second.first;
             const bool edgeEnabled = ei.value().second.second;
 
             if (!edgeEnabled)
                 continue;
             if (!oldToNew.contains(oldTgt))
-                continue;   // target is filtered out
+                continue;   // target is not in the vertex list
 
             const int newSrc = oldToNew[oldSrc];
             const int newTgt = oldToNew[oldTgt];
@@ -145,9 +141,63 @@ Graph *Graph::subgraphExtract(const QString &name,
     // Restore subgraph to relation 0 before handing it back.
     sub->relationSet(0, false);
 
-    qDebug() << "subgraphExtract(): created subgraph" << name
+    qDebug() << "subgraphFromVertexList(): created subgraph" << name
              << "— vertices:" << sub->vertices()
              << "edges:"      << sub->edgesEnabled();
 
     return sub;
+}
+
+
+/**
+ * @brief Extracts currently visible (non-filtered) nodes and their
+ *        inter-edges into an independent Graph copy.
+ *
+ * Collects all enabled vertices, then delegates to subgraphFromVertexList().
+ *
+ * @param name                  Name assigned to the new graph.
+ * @param includeCustomAttributes  When true, node and edge custom
+ *                              attribute maps are copied verbatim.
+ * @return Heap-allocated Graph* containing the subgraph, or nullptr
+ *         if no visible vertices exist.
+ */
+Graph *Graph::subgraphExtract(const QString &name,
+                               const bool &includeCustomAttributes)
+{
+    // --- Collect visible vertices ----------------------------------------
+    QList<int> visibleNums;
+    for (VList::const_iterator vi = verticesBegin(); vi != verticesEnd(); ++vi) {
+        if ((*vi)->isEnabled())
+            visibleNums.append((*vi)->number());
+    }
+
+    if (visibleNums.isEmpty())
+        qDebug() << "subgraphExtract(): no visible vertices";
+
+    return subgraphFromVertexList(visibleNums, name, includeCustomAttributes);
+}
+
+
+/**
+ * @brief Extracts currently selected nodes and their inter-edges into an
+ *        independent Graph copy.
+ *
+ * Uses the current canvas selection (getSelectedVertices()), then delegates
+ * to subgraphFromVertexList(). Only edges between selected nodes are included.
+ *
+ * @param name                  Name assigned to the new graph.
+ * @param includeCustomAttributes  When true, node and edge custom
+ *                              attribute maps are copied verbatim.
+ * @return Heap-allocated Graph* containing the subgraph, or nullptr
+ *         if no nodes are selected.
+ */
+Graph *Graph::subgraphExtractFromSelection(const QString &name,
+                                            const bool &includeCustomAttributes)
+{
+    const QList<int> selected = getSelectedVertices();
+
+    if (selected.isEmpty())
+        qDebug() << "subgraphExtractFromSelection(): no selected vertices";
+
+    return subgraphFromVertexList(selected, name, includeCustomAttributes);
 }

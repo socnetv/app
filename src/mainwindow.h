@@ -372,6 +372,7 @@ public slots:
     void slotEditFilterEdgesUnilateral(bool checked);
 
     void slotEditSubgraphExtract();
+    void slotEditSubgraphExtractFromSelection();
 
     void slotEditTransformNodes2Edges();
 
@@ -712,7 +713,7 @@ private:
         *filterNodesRestoreAllAct, *editFilterNodesIsolatesAct,
         *editFilterEdgesByWeightAct, *editFilterEdgesRestoreAllAct;
     QAction *editFilterEdgesUnilateralAct;
-    QAction *editSubgraphExtractAct;
+    QAction *editSubgraphExtractAct, *editSubgraphExtractFromSelectionAct;
     QAction *transformNodes2EdgesAct, *editEdgeSymmetrizeAllAct;
     QAction *editEdgeSymmetrizeStrongTiesAct, *editEdgeUndirectedAllAct;
     QAction *editEdgeDichotomizeAct;
