@@ -1934,6 +1934,18 @@ void MainWindow::initActions(){
     connect(editFilterEdgesUnilateralAct , SIGNAL(triggered(bool)),
             this, SLOT(slotEditFilterEdgesUnilateral(bool)));
 
+    editSubgraphExtractAct = new QAction(tr("Save visible nodes as subgraph..."), this);
+    editSubgraphExtractAct->setEnabled(true);
+    editSubgraphExtractAct->setStatusTip(tr("Copy the currently visible (non-filtered) nodes and their inter-edges into a new graph file."));
+    editSubgraphExtractAct->setWhatsThis(tr("Save visible nodes as subgraph\n\n"
+                                            "Creates an independent copy of the nodes and edges that are currently "
+                                            "visible on the canvas (i.e. not hidden by any filter). "
+                                            "Vertices are renumbered from 1; all visual properties and custom "
+                                            "attributes are preserved. You will be prompted for a name and a "
+                                            "save location."));
+    connect(editSubgraphExtractAct, &QAction::triggered,
+            this, &MainWindow::slotEditSubgraphExtract);
+
 
 
 
@@ -3951,6 +3963,12 @@ void MainWindow::initMenuBar() {
     // — Restore —
     filterMenu->addAction(filterNodesRestoreAllAct);
     filterMenu->addAction(editFilterEdgesRestoreAllAct);
+
+    editMenu->addSeparator();
+    subgraphMenu = new QMenu(tr("Subgraphs..."));
+    subgraphMenu->setIcon(QIcon(":/images/filter_list_48px.svg"));
+    editMenu->addMenu(subgraphMenu);
+    subgraphMenu->addAction(editSubgraphExtractAct);
 
     editMenu->addSeparator();
     editMenu->addAction(viewDataTableAct);
@@ -12005,6 +12023,70 @@ void MainWindow::slotEditFilterEdgesUnilateral(bool checked) {
 *	Transforms all nodes to edges
     TODO slotEditTransformNodes2Edges
 */
+/**
+ * @brief Extracts the currently visible nodes and their inter-edges into an
+ *        independent Graph object and saves it to a user-chosen file.
+ */
+void MainWindow::slotEditSubgraphExtract()
+{
+    if (!activeNodes()) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    // Ask for a subgraph name (pre-fill with current network name).
+    bool ok = false;
+    const QString defaultName = tr("Subgraph of %1").arg(activeGraph->getName());
+    const QString subgraphName = QInputDialog::getText(
+        this,
+        tr("Name the subgraph"),
+        tr("Subgraph name:"),
+        QLineEdit::Normal,
+        defaultName,
+        &ok);
+    if (!ok || subgraphName.trimmed().isEmpty())
+        return;
+
+    // Build a filesystem-safe default filename from the subgraph name.
+    QString sanitized = subgraphName.trimmed();
+    sanitized.replace(QRegularExpression("[/\\\\:*?\"<>|\\s]+"), "_");
+
+    // Ask where to save (GraphML preserves all attributes).
+    const QString defaultPath = QFileInfo(getLastPath()).dir().filePath(sanitized + ".graphml");
+    QString fn = QFileDialog::getSaveFileName(
+        this,
+        tr("Save Subgraph to GraphML File Named..."),
+        defaultPath,
+        tr("GraphML (*.graphml *.xml);;All (*)"));
+
+    if (fn.isEmpty()) {
+        statusMessage(tr("Saving aborted."));
+        return;
+    }
+
+    if (QFileInfo(fn).suffix().isEmpty())
+        fn.append(".graphml");
+
+    setLastPath(fn);
+
+    // Extract and save.
+    Graph *sub = activeGraph->subgraphExtract(subgraphName.trimmed());
+    if (!sub) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    sub->saveToFile(fn, FileType::GRAPHML);
+
+    const int n = sub->vertices();
+    const int e = sub->edgesEnabled();
+    delete sub;
+
+    statusMessage(tr("Subgraph saved: %1 nodes, %2 edges → %3")
+                      .arg(n).arg(e).arg(QFileInfo(fn).fileName()));
+}
+
+
 void MainWindow::slotEditTransformNodes2Edges(){
 
 

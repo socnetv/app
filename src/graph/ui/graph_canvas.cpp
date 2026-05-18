@@ -54,6 +54,22 @@ void Graph::canvasSizeSet(const int &width, const int &height)
 }
 
 /**
+ * @brief Sets the canvas size without rescaling node positions.
+ *
+ * Used by Graph::subgraphExtract() to propagate the source graph's canvas
+ * dimensions to the new Graph object so that IO routines normalize
+ * coordinates correctly on export.
+ *
+ * @param width   New canvas width in pixels.
+ * @param height  New canvas height in pixels.
+ */
+void Graph::canvasSizeSetQuiet(const qreal &width, const qreal &height)
+{
+    canvasWidth  = width;
+    canvasHeight = height;
+}
+
+/**
  * @brief Gets the max radius of the canvas
  * @return double
  */

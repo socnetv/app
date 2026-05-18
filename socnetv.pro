@@ -116,6 +116,7 @@ SOURCES += src/main.cpp \
     src/graph/core/graph_metadata.cpp \
     src/graph/storage/graph_vertices.cpp \
     src/graph/storage/graph_edges.cpp \
+    src/graph/storage/graph_subgraphs.cpp \
     src/graph/io/graph_io.cpp \
     src/graph/io/graph_parse_sink_graph.cpp \
     src/graph/io/table_export.cpp \

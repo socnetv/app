@@ -157,6 +157,7 @@ public slots:
     void relationPrev();
 
     void canvasSizeSet(const int &width, const int &height);
+    void canvasSizeSetQuiet(const qreal &width, const qreal &height);
 
     double canvasMaxRadius() const;
 
@@ -193,6 +194,9 @@ public slots:
     void edgeFilterByRelation(int relation, bool status);
 
     void edgeFilterUnilateral(const bool &toggle);
+
+    Graph *subgraphExtract(const QString &name,
+                           const bool &includeCustomAttributes = true);
 
     void startWebCrawler(
         const QUrl &startUrl,

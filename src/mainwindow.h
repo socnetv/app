@@ -371,6 +371,7 @@ public slots:
     void slotEditFilterEdgesReset();
     void slotEditFilterEdgesUnilateral(bool checked);
 
+    void slotEditSubgraphExtract();
 
     void slotEditTransformNodes2Edges();
 
@@ -652,7 +653,7 @@ private:
     QMenu *editNodeMenu, *editEdgeMenu, *centrlMenu,  *viewOptionsMenu, *layoutMenu;
     QMenu *cohesionMenu, *strEquivalenceMenu, *communitiesMenu, *connectivityMenu;
     QMenu *matrixMenu;
-    QMenu *networkMenu, *randomNetworkMenu, *filterMenu, *recentFilesSubMenu;
+    QMenu *networkMenu, *randomNetworkMenu, *filterMenu, *subgraphMenu, *recentFilesSubMenu;
     QMenu *randomLayoutMenu, *layoutRadialProminenceMenu, *layoutLevelProminenceMenu;
     QMenu *layoutForceDirectedMenu, *layoutNodeSizeProminenceMenu, *layoutNodeColorProminenceMenu;
     QMenu *colorationMenu;
@@ -711,6 +712,7 @@ private:
         *filterNodesRestoreAllAct, *editFilterNodesIsolatesAct,
         *editFilterEdgesByWeightAct, *editFilterEdgesRestoreAllAct;
     QAction *editFilterEdgesUnilateralAct;
+    QAction *editSubgraphExtractAct;
     QAction *transformNodes2EdgesAct, *editEdgeSymmetrizeAllAct;
     QAction *editEdgeSymmetrizeStrongTiesAct, *editEdgeUndirectedAllAct;
     QAction *editEdgeDichotomizeAct;
