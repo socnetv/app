@@ -100,7 +100,7 @@ jobs:
       - name: Determined build version ${{ env.VERSION }}
         run: echo "VERSION is set to ${{ env.VERSION }}"
       - name: Check Rate Limit
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         id: get_ratelimit
         with:
           script: |
@@ -110,7 +110,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Use script to get continuous release Upload URL
         id: get_release
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const { data: releases } = await github.rest.repos.listReleases({
@@ -721,7 +721,7 @@ jobs:
       #
       - if: matrix.os == 'ubuntu-latest' && matrix.qt-version == '6.8.0'
         name: 🔄 Update continuous release description
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const commitSha = context.sha;

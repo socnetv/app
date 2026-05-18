@@ -63,7 +63,7 @@ jobs:
           echo "✅ Tag commit is on master. Proceeding."
 
       - name: 🏷️ Create GitHub Release if it doesn't exist
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const tagName = context.ref.replace('refs/tags/', '');
