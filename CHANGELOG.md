@@ -66,6 +66,27 @@ All notable changes to this project are documented in this file.
       reduces available vertical space the panel scrolls rather than
       overlapping its widgets.
 
+### Bug Fixes
+
+  - **DOT parser: self-contained `graph [...]` block skips next node** (#236
+    follow-up): when our exporter writes `graph [label="Name"];` on a single
+    line, the parser was entering multi-line netProperties mode and then
+    treating the very next node declaration as the block terminator, silently
+    discarding it. The skipped node was re-created with its DOT identifier as
+    label ("n1" instead of "1") when the first edge statement was processed,
+    producing wrong edge endpoints in the reloaded graph. Fix: only enter
+    multi-line mode when `]` is absent from the `graph [` line. All three
+    TinyGraphviz DOT io_roundtrip tests now show `ROUNDTRIP_EQUIV=1`.
+
+  - **Multi-relation graph incorrectly reported as non-weighted** (#236
+    follow-up): `isWeighted()` correctly scans only the current relation
+    (fixed in #82). However, the io_roundtrip regression kernel queried
+    `isWeighted()` after iterating all relations and restoring to relation 0,
+    so a graph whose relation 0 is binary but relation 1 is weighted was
+    reported as `weighted: false`. Added `Graph::isAnyRelationWeighted()`,
+    which checks every relation, and updated the kernel to use it for the
+    `graph.weighted` JSON field.
+
 ## [3.5] – May 2026
 
 ### New Features
