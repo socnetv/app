@@ -394,6 +394,23 @@ next release:
 | In-app bulk editing of node and edge attributes | #228 | Feature 3 Phase 5 | New Data Table toolbar buttons (Set property, Add attribute, Remove attribute); canvas context menu entries; `DialogBulkEdit`; canvas ↔ table selection sync |
 | UI declutter & UX improvements | #234 | Feature 1 Phase 2 + Cross-cutting UX | See notes below |
 
+### Export format capability matrix
+
+What each supported export format can preserve from a SocNetV graph.
+Use this table when writing manual copy and when deciding which format to recommend to users.
+
+| Format | Node labels | Node colors/shapes | Custom node attrs | Edge weights | Edge labels | Custom edge attrs | Multi-relation |
+|--------|:-----------:|:------------------:|:-----------------:|:------------:|:-----------:|:-----------------:|:--------------:|
+| GraphML | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Pajek | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✓ (matrix blocks) |
+| Adjacency | ✗ | ✗ | ✗ | optional | ✗ | ✗ | ✗ (active only) |
+| GraphViz DOT | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ (active only) |
+| UCINET DL | ✓ | ✗ | ✗ | ✓ | ✗ | ✗ | ✓ (NM blocks) |
+| Edge List (weighted) | ✓ (label col) | ✗ | ✗ | ✓ | ✗ | ✗ | ✗ (active only) |
+| Edge List (simple) | ✓ (label col) | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ (active only) |
+
+When a format cannot preserve something the graph contains, the export dialog warns the user before writing the file.
+
 ### #234 — UI/UX changes requiring manual & screenshot updates
 
 The following UI areas changed visually and/or behaviourally and need updated
