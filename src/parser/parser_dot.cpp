@@ -77,6 +77,8 @@ bool Parser::parseAsDot(const QByteArray &rawData)
 
     bool netProperties = false;
 
+    QHash<QString, QString> edgeCustomAttrs;
+
     QList<QString> nodeSequence;    // holds nodes in an edge chain: a -- b -- c ...
     QList<QString> nodesDiscovered; // holds *raw* node identifiers encountered
 
@@ -146,11 +148,19 @@ bool Parser::parseAsDot(const QByteArray &rawData)
 
             lineElement = str.split(" ", Qt::SkipEmptyParts);
 
+            // Strip surrounding double-quotes from graph name so a round-tripped
+            // file (our writer always quotes the name) parses back correctly.
+            auto stripQuotes = [](const QString &s) -> QString {
+                if (s.size() >= 2 && s.startsWith('"') && s.endsWith('"'))
+                    return s.mid(1, s.size() - 2);
+                return s;
+            };
+
             if (str.contains("digraph", Qt::CaseInsensitive))
             {
                 graphDirType = EdgeType::Directed;
                 if (lineElement.size() > 1 && lineElement[1] != "{")
-                    networkName = lineElement[1];
+                    networkName = stripQuotes(lineElement[1]);
                 qDebug() << "This is a DOT DIGRAPH named " << networkName;
                 continue;
             }
@@ -158,7 +168,7 @@ bool Parser::parseAsDot(const QByteArray &rawData)
             {
                 graphDirType = EdgeType::Undirected;
                 if (lineElement.size() > 1 && lineElement[1] != "{")
-                    networkName = lineElement[1];
+                    networkName = stripQuotes(lineElement[1]);
                 qDebug() << "This is a DOT GRAPH named " << networkName;
                 continue;
             }
@@ -218,9 +228,10 @@ bool Parser::parseAsDot(const QByteArray &rawData)
         if (str.startsWith("node [", Qt::CaseInsensitive))
         {
             qDebug() << "🔵 Detected global node settings...";
+            QHash<QString, QString> ignored;
             readDotProperties(
                 str.mid(str.indexOf('[') + 1, str.indexOf(']') - str.indexOf('[') - 1),
-                nodeValue, nodeLabel, initNodeShape, initNodeColor, fontName, fontColor);
+                nodeValue, nodeLabel, initNodeShape, initNodeColor, fontName, fontColor, ignored);
             qDebug() << "✅ Default node color set to:" << initNodeColor;
             continue;
         }
@@ -229,9 +240,10 @@ bool Parser::parseAsDot(const QByteArray &rawData)
         if (str.startsWith("edge [", Qt::CaseInsensitive))
         {
             qDebug() << "🔵 Detected global edge settings...";
+            QHash<QString, QString> ignored;
             readDotProperties(
                 str.mid(str.indexOf('[') + 1, str.indexOf(']') - str.indexOf('[') - 1),
-                edgeWeight, edgeLabel, edgeShape, initEdgeColor, fontName, fontColor);
+                edgeWeight, edgeLabel, edgeShape, initEdgeColor, fontName, fontColor, ignored);
             qDebug() << "✅ Default edge color set to:" << initEdgeColor;
             continue;
         }
@@ -266,21 +278,33 @@ bool Parser::parseAsDot(const QByteArray &rawData)
             temp = str.mid(start + 1, end - start - 1);
             nodeLabel = node; // default label
 
-            readDotProperties(temp, nodeValue, nodeLabel, initNodeShape, initNodeColor, fontName, fontColor);
+            QHash<QString, QString> nodeCustomAttrs;
+            readDotProperties(temp, nodeValue, nodeLabel, initNodeShape, initNodeColor, fontName, fontColor, nodeCustomAttrs);
             if (nodeLabel.isEmpty())
                 nodeLabel = node;
 
             totalNodes++;
             randX = rand() % gwWidth;
             randY = rand() % gwHeight;
+            QPointF nodePos(randX, randY);
+            if (nodeCustomAttrs.contains("pos")) {
+                const QStringList xy = nodeCustomAttrs.take("pos").split(',');
+                if (xy.size() == 2) {
+                    bool okX, okY;
+                    const qreal px = xy[0].toDouble(&okX);
+                    const qreal py = xy[1].toDouble(&okY);
+                    if (okX && okY)
+                        nodePos = QPointF(px, py);
+                }
+            }
             if (m_parseSink)
             {
                 m_parseSink->createNode(
                     totalNodes, initNodeSize, initNodeColor,
                     initNodeNumberColor, initNodeNumberSize,
                     nodeLabel, initNodeLabelColor, initNodeLabelSize,
-                    QPointF(randX, randY),
-                    initNodeShape, QString());
+                    nodePos,
+                    initNodeShape, QString(), false, nodeCustomAttrs);
             }
 
             nodesDiscovered.push_back(node);
@@ -337,7 +361,8 @@ bool Parser::parseAsDot(const QByteArray &rawData)
             {
                 temp = str.right(str.size() - end - 1);
                 temp = temp.remove(']').remove(';');
-                readDotProperties(temp, edgeWeight, edgeLabel, edgeShape, edgeColor, fontName, fontColor);
+                edgeCustomAttrs.clear();
+                readDotProperties(temp, edgeWeight, edgeLabel, edgeShape, edgeColor, fontName, fontColor, edgeCustomAttrs);
                 initEdgeColor = edgeColor;
             }
             else
@@ -411,7 +436,8 @@ bool Parser::parseAsDot(const QByteArray &rawData)
                     if (m_parseSink)
                     {
                         m_parseSink->createEdge(source, target, edgeWeight, edgeColor,
-                                                edgeTypeThisLine, arrows, bezier);
+                                                edgeTypeThisLine, arrows, bezier,
+                                                edgeLabel, false, edgeCustomAttrs);
                     }
                 }
 
@@ -431,7 +457,8 @@ bool Parser::parseAsDot(const QByteArray &rawData)
                 continue;
 
             temp = str.mid(start + 1, end - start - 1).simplified();
-            readDotProperties(temp, nodeValue, label, nodeShape, nodeColor, fontName, fontColor);
+            QHash<QString, QString> nodeCustomAttrs2;
+            readDotProperties(temp, nodeValue, label, nodeShape, nodeColor, fontName, fontColor, nodeCustomAttrs2);
 
             if (start > 2)
             {
@@ -441,14 +468,25 @@ bool Parser::parseAsDot(const QByteArray &rawData)
                     totalNodes++;
                     randX = rand() % gwWidth;
                     randY = rand() % gwHeight;
+                    QPointF nodePos2(randX, randY);
+                    if (nodeCustomAttrs2.contains("pos")) {
+                        const QStringList xy = nodeCustomAttrs2.take("pos").split(',');
+                        if (xy.size() == 2) {
+                            bool okX, okY;
+                            const qreal px = xy[0].toDouble(&okX);
+                            const qreal py = xy[1].toDouble(&okY);
+                            if (okX && okY)
+                                nodePos2 = QPointF(px, py);
+                        }
+                    }
                     if (m_parseSink)
                     {
                         m_parseSink->createNode(
                             totalNodes, initNodeSize, nodeColor,
                             initNodeNumberColor, initNodeNumberSize,
                             label, initNodeLabelColor, initNodeLabelSize,
-                            QPointF(randX, randY),
-                            nodeShape, QString());
+                            nodePos2,
+                            nodeShape, QString(), false, nodeCustomAttrs2);
                     }
 
                     nodesDiscovered.push_back(node);
@@ -597,7 +635,8 @@ QString Parser::preprocessDotContent(const QString &dotContent)
  */
 void Parser::readDotProperties(QString str, qreal &nValue, QString &label,
                                QString &shape, QString &color, QString &fontName,
-                               QString &fontColor)
+                               QString &fontColor,
+                               QHash<QString, QString> &customAttrs)
 {
     qDebug() << "Reading DOT properties from:" << str;
 
@@ -739,7 +778,8 @@ void Parser::readDotProperties(QString str, qreal &nValue, QString &label,
         }
         else
         {
-            qDebug() << "Ignoring unknown property:" << prop << "=" << value;
+            qDebug() << "Storing unknown property as custom attribute:" << prop << "=" << value;
+            customAttrs[prop] = value;
         }
     }
 }

@@ -484,7 +484,7 @@ public:
                              QString networkName = "",
                              int maxWidth = 0, int maxHeight = 0);
 
-    bool saveToDotFormat(QString fileName);
+    bool saveToDotFormat(const QString &fileName);
 
     QString graphMatrixTypeToString(const int &matrixType) const;
 

@@ -1127,6 +1127,16 @@ void MainWindow::initActions(){
                                      "Exports the active network to a GW formatted file"));
     connect(networkExportGWAct, SIGNAL(triggered()), this, SLOT(slotNetworkExportGW()));
 
+    networkExportDotAct = new QAction(QIcon(":/images/file_download_48px.svg"),
+                                      tr("&GraphViz DOT..."), this);
+    networkExportDotAct->setStatusTip(tr("Export the active relation to a GraphViz DOT (.dot) file"));
+    networkExportDotAct->setWhatsThis(tr("Export GraphViz DOT\n\n"
+                                         "Exports the currently active relation to a GraphViz DOT file. "
+                                         "Node labels, colors, shapes, and custom attributes are preserved. "
+                                         "Only the active relation is exported."));
+    connect(networkExportDotAct, &QAction::triggered,
+            this, &MainWindow::slotNetworkExportDot);
+
     networkExportNodesCSVAct = new QAction(QIcon(":/images/file_download_48px.svg"),
                                            tr("Nodes as &CSV..."), this);
     networkExportNodesCSVAct->setStatusTip(tr("Export all node data to a CSV file"));
@@ -3853,6 +3863,7 @@ void MainWindow::initMenuBar() {
 
     exportSubMenu->addAction (networkExportSMAct);
     exportSubMenu->addAction (networkExportPajek);
+    exportSubMenu->addAction (networkExportDotAct);
     //exportSubMenu->addAction (networkExportList);
     //exportSubMenu->addAction (networkExportDL);
     //exportSubMenu->addAction (networkExportGW);
@@ -8313,6 +8324,49 @@ void MainWindow::slotNetworkExportSM(){
 
 
 
+
+
+/**
+ * @brief Exports the active relation to a GraphViz DOT (.dot) file.
+ *
+ * Warns the user if the graph has multiple relations (only the active one is
+ * written) or if it carries custom attributes (those are preserved in DOT).
+ */
+void MainWindow::slotNetworkExportDot()
+{
+    if (!activeNodes()) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    statusMessage(tr("Exporting active relation to GraphViz DOT file…"));
+
+    if (activeGraph->relations() > 1) {
+        slotHelpMessageToUser(
+            USER_MSG_INFO,
+            tr("Only active relation will be exported"),
+            tr("Multi-relation graph — GraphViz DOT format"),
+            tr("GraphViz DOT supports a single graph. "
+               "Only the currently active relation \"%1\" will be written.")
+                .arg(activeGraph->relationCurrentName()));
+    }
+
+    QString fn = QFileDialog::getSaveFileName(
+        this,
+        tr("Export Network to GraphViz DOT File…"),
+        getLastPath(),
+        tr("GraphViz DOT (*.dot);;All (*)"));
+
+    if (fn.isEmpty()) {
+        statusMessage(tr("Export aborted."));
+        return;
+    }
+    if (QFileInfo(fn).suffix().isEmpty())
+        fn.append(".dot");
+
+    setLastPath(fn);
+    activeGraph->saveToFile(fn, FileType::GRAPHVIZ);
+}
 
 
 /**

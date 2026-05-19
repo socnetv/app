@@ -18,6 +18,7 @@
 #include <QDebug>
 #include <QFile>
 #include <QFileInfo>
+#include <QRegularExpression>
 #include <QTextStream>
 #include <QDir>
 #include <QStringEncoder>
@@ -548,15 +549,127 @@ bool Graph::saveToAdjacencyFormat(const QString &fileName,
 }
 
 /**
- * @brief TODO Saves the active graph to a UCINET-formatted file
+ * @brief Saves the active graph (current relation) to a GraphViz DOT file.
  *
- * @param fileName
+ * Produces a valid digraph or graph block. Node identifiers are n<num> to
+ * avoid issues with labels that contain spaces or special characters. All
+ * standard visual properties (label, color, shape) and custom node/edge
+ * attributes are written as DOT attribute lists so the file round-trips
+ * through parseAsDot() without data loss.
  *
- * @return bool
+ * Only the currently active relation is exported. If the graph has multiple
+ * relations the caller is responsible for warning the user before invoking
+ * this method.
+ *
+ * @param fileName  Destination file path.
+ * @return true on success, false if the file could not be opened.
  */
-bool Graph::saveToDotFormat(QString fileName)
+bool Graph::saveToDotFormat(const QString &fileName)
 {
-    Q_UNUSED(fileName);
+    qDebug() << "Saving graph to GraphViz DOT file:" << fileName;
+
+    QFile f(fileName);
+    if (!f.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qDebug() << "Could not open (for writing) file:" << fileName;
+        progressStatus(tr("Error. Could not write to ") + fileName);
+        return false;
+    }
+
+    QTextStream t(&f);
+    t.setLocale(QLocale::c());
+    t.setRealNumberNotation(QTextStream::SmartNotation);
+    t.setRealNumberPrecision(6);
+
+    const QString graphKeyword = isDirected() ? "digraph" : "graph";
+    const QString edgeOp      = isDirected() ? " -> " : " -- ";
+
+    QString netName = getName();
+    netName.replace('"', '\'');
+
+    t << graphKeyword << " \"" << netName << "\" {\n";
+    t << "    graph [label=\"" << netName << "\"];\n\n";
+
+    // Sanitise a custom attribute key to a valid DOT identifier.
+    auto sanitiseKey = [](const QString &k) -> QString {
+        QString s = k;
+        s.replace(QRegularExpression("[^A-Za-z0-9_]"), "_");
+        if (!s.isEmpty() && s[0].isDigit())
+            s.prepend('_');
+        return s;
+    };
+
+    // Escape a value string for DOT double-quoted literals.
+    auto escapeVal = [](const QString &v) -> QString {
+        QString s = v;
+        s.replace('\\', "\\\\");
+        s.replace('"', "\\\"");
+        return s;
+    };
+
+    const bool hasVertexAttrs = !graphHasVertexCustomAttributes().isEmpty();
+    const bool hasEdgeAttrs   = !graphHasEdgeCustomAttributes().isEmpty();
+    const int  activeRel      = relationCurrent();
+
+    // ---- Nodes ----------------------------------------------------------------
+    for (VList::const_iterator it = m_graph.cbegin(); it != m_graph.cend(); ++it) {
+        GraphVertex *v = *it;
+        t << "    n" << v->number()
+          << " [label=\""  << escapeVal(v->label())  << "\""
+          << ", color=\""  << escapeVal(v->color())  << "\""
+          << ", shape=\""  << escapeVal(v->shape())  << "\""
+          << ", pos=\""    << v->x() << "," << v->y() << "\"";
+
+        if (hasVertexAttrs) {
+            const QHash<QString, QString> attrs = v->customAttributes();
+            for (auto ai = attrs.constBegin(); ai != attrs.constEnd(); ++ai)
+                t << ", " << sanitiseKey(ai.key()) << "=\"" << escapeVal(ai.value()) << "\"";
+        }
+
+        t << "];\n";
+    }
+
+    t << "\n";
+
+    // ---- Edges (active relation only) -----------------------------------------
+    for (VList::const_iterator it = m_graph.cbegin(); it != m_graph.cend(); ++it) {
+        GraphVertex *sv = *it;
+        const H_edges &oe = sv->outEdges();
+
+        for (auto ei = oe.constBegin(); ei != oe.constEnd(); ++ei) {
+            const int    tgt     = ei.key();
+            const int    relIdx  = ei.value().first;
+            const qreal  weight  = ei.value().second.first;
+            const bool   enabled = ei.value().second.second;
+
+            if (!enabled || relIdx != activeRel)
+                continue;
+
+            // For undirected graphs each edge is stored in both directions;
+            // only emit the lower-numbered endpoint to avoid duplicates.
+            if (!isDirected() && sv->number() > tgt)
+                continue;
+
+            t << "    n" << sv->number() << edgeOp << "n" << tgt
+              << " [weight=" << weight
+              << ", label=\""  << escapeVal(sv->outEdgeLabel(tgt))  << "\""
+              << ", color=\""  << escapeVal(sv->outLinkColor(tgt))  << "\"";
+
+            if (hasEdgeAttrs) {
+                const QHash<QString, QString> eAttrs = sv->outEdgeCustomAttributes(tgt);
+                for (auto ai = eAttrs.constBegin(); ai != eAttrs.constEnd(); ++ai)
+                    t << ", " << sanitiseKey(ai.key()) << "=\"" << escapeVal(ai.value()) << "\"";
+            }
+
+            t << "];\n";
+        }
+    }
+
+    t << "}\n";
+    f.close();
+
+    setFileName(fileName);
+    setFileFormat(FileType::GRAPHVIZ);
+    progressStatus(tr("File %1 saved").arg(QFileInfo(fileName).fileName()));
     return true;
 }
 

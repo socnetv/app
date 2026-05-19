@@ -204,6 +204,7 @@ public slots:
                               const QPageSize &pageSize);
     void slotNetworkExportPajek();
     void slotNetworkExportSM();
+    void slotNetworkExportDot();
     bool slotNetworkExportDL();
     bool slotNetworkExportGW();
     bool slotNetworkExportList();
@@ -679,7 +680,7 @@ private:
     *networkCloseAct, *networkPrintAct,*networkQuitAct;
     QAction *networkExportImageAct, *networkExportPajek,
     *networkExportPDFAct, *networkExportDLAct, *networkExportGWAct, *networkExportSMAct,
-    *networkExportListAct;
+    *networkExportListAct, *networkExportDotAct;
     QAction *networkExportNodesCSVAct, *networkExportEdgesCSVAct,
     *networkExportNodesJSONAct, *networkExportEdgesJSONAct;
     QAction *networkImportPajekAct, *networkImportGMLAct, *networkImportAdjAct, *networkImportListAct,

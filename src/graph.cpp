@@ -123,7 +123,8 @@ Graph::Graph(const int &reserveVerticesSize, const int &reserveEdgesPerVertexSiz
 
     m_graphFileFormatExportSupported << FileType::GRAPHML
                                      << FileType::PAJEK
-                                     << FileType::ADJACENCY;
+                                     << FileType::ADJACENCY
+                                     << FileType::GRAPHVIZ;
 
     randomizeThings();
 
