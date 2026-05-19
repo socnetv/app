@@ -6,6 +6,23 @@ All notable changes to this project are documented in this file.
 
 ### New Features
 
+  - **GraphViz DOT export with full roundtrip** (#236):
+    - New **File → Export → GraphViz DOT…** action writes a `.dot` file for
+      the active relation (DOT has no native multi-relation concept; a warning
+      is shown when more than one relation is present).
+    - Export preserves: node label, color, shape, canvas coordinates
+      (`pos="x,y"` — compatible with neato/fdp), and all custom node/edge
+      attributes as DOT key=value pairs.
+    - Edge weight, label, color, and custom attributes are written per edge.
+      Undirected graphs suppress the reverse half of each symmetric pair.
+    - Parser extended to read back everything that is written:
+      `readDotProperties` now returns unknown attributes as a
+      `QHash<QString,QString>` rather than discarding them; `pos=` is
+      converted to node canvas coordinates; graph name quote-stripping fixes
+      the roundtrip for quoted identifiers (`digraph "Name" { … }`).
+    - `FileType::GRAPHVIZ` added to the supported export list so the CLI
+      io_roundtrip regression kernel exercises the format automatically.
+
   - **Subgraph extraction** (#218):
     - New **Edit → Subgraphs** submenu with two actions:
       - **Save visible nodes as subgraph…** — extracts all nodes currently
