@@ -373,6 +373,7 @@ public slots:
 
     void slotEditSubgraphExtract();
     void slotEditSubgraphExtractFromSelection();
+    void saveSubgraphToFile(Graph *sub, const QString &subgraphName);
 
     void slotEditTransformNodes2Edges();
 

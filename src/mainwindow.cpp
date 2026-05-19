@@ -12051,7 +12051,6 @@ void MainWindow::slotEditSubgraphExtract()
         return;
     }
 
-    // Ask for a subgraph name (pre-fill with current network name).
     bool ok = false;
     const QString defaultName = tr("Subgraph of %1").arg(activeGraph->getName());
     const QString subgraphName = QInputDialog::getText(
@@ -12064,43 +12063,13 @@ void MainWindow::slotEditSubgraphExtract()
     if (!ok || subgraphName.trimmed().isEmpty())
         return;
 
-    // Build a filesystem-safe default filename from the subgraph name.
-    QString sanitized = subgraphName.trimmed();
-    sanitized.replace(QRegularExpression("[/\\\\:*?\"<>|\\s]+"), "_");
-
-    // Ask where to save (GraphML preserves all attributes).
-    const QString defaultPath = QFileInfo(getLastPath()).dir().filePath(sanitized + ".graphml");
-    QString fn = QFileDialog::getSaveFileName(
-        this,
-        tr("Save Subgraph to GraphML File Named..."),
-        defaultPath,
-        tr("GraphML (*.graphml *.xml);;All (*)"));
-
-    if (fn.isEmpty()) {
-        statusMessage(tr("Saving aborted."));
-        return;
-    }
-
-    if (QFileInfo(fn).suffix().isEmpty())
-        fn.append(".graphml");
-
-    setLastPath(fn);
-
-    // Extract and save.
     Graph *sub = activeGraph->subgraphExtract(subgraphName.trimmed());
     if (!sub) {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
-    sub->saveToFile(fn, FileType::GRAPHML);
-
-    const int n = sub->vertices();
-    const int e = sub->edgesEnabled();
-    delete sub;
-
-    statusMessage(tr("Subgraph saved: %1 nodes, %2 edges → %3")
-                      .arg(n).arg(e).arg(QFileInfo(fn).fileName()));
+    saveSubgraphToFile(sub, subgraphName.trimmed());
 }
 
 
@@ -12115,7 +12084,6 @@ void MainWindow::slotEditSubgraphExtractFromSelection()
         return;
     }
 
-    // Ask for a subgraph name (pre-fill with current network name).
     bool ok = false;
     const QString defaultName = tr("Subgraph of %1").arg(activeGraph->getName());
     const QString subgraphName = QInputDialog::getText(
@@ -12128,36 +12096,121 @@ void MainWindow::slotEditSubgraphExtractFromSelection()
     if (!ok || subgraphName.trimmed().isEmpty())
         return;
 
-    // Build a filesystem-safe default filename from the subgraph name.
-    QString sanitized = subgraphName.trimmed();
-    sanitized.replace(QRegularExpression("[/\\\\:*?\"<>|\\s]+"), "_");
-
-    // Ask where to save (GraphML preserves all attributes).
-    const QString defaultPath = QFileInfo(getLastPath()).dir().filePath(sanitized + ".graphml");
-    QString fn = QFileDialog::getSaveFileName(
-        this,
-        tr("Save Subgraph to GraphML File Named..."),
-        defaultPath,
-        tr("GraphML (*.graphml *.xml);;All (*)"));
-
-    if (fn.isEmpty()) {
-        statusMessage(tr("Saving aborted."));
-        return;
-    }
-
-    if (QFileInfo(fn).suffix().isEmpty())
-        fn.append(".graphml");
-
-    setLastPath(fn);
-
-    // Extract and save.
     Graph *sub = activeGraph->subgraphExtractFromSelection(subgraphName.trimmed());
     if (!sub) {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
 
-    sub->saveToFile(fn, FileType::GRAPHML);
+    saveSubgraphToFile(sub, subgraphName.trimmed());
+}
+
+
+/**
+ * @brief Shows a format-selection save dialog for @p sub, writes the file, then
+ *        deletes the graph object.
+ *
+ * Offered formats: GraphML (full fidelity), Pajek, Adjacency.
+ * Warns the user when the chosen format cannot preserve custom attributes or
+ * when only the active relation will be written.
+ *
+ * Takes ownership of @p sub — the pointer is invalid after this call.
+ */
+void MainWindow::saveSubgraphToFile(Graph *sub, const QString &subgraphName)
+{
+    // Build filesystem-safe default base name.
+    QString sanitized = subgraphName;
+    sanitized.replace(QRegularExpression("[/\\\\:*?\"<>|\\s]+"), "_");
+
+    // Default to GraphML (preserves all attributes).
+    const QString defaultPath =
+        QFileInfo(getLastPath()).dir().filePath(sanitized + ".graphml");
+
+    const QString filterGraphML   = tr("GraphML (*.graphml *.xml)");
+    const QString filterPajek     = tr("Pajek (*.net *.paj)");
+    const QString filterAdjacency = tr("Adjacency (*.csv *.sm *.adj)");
+    const QString allFormats =
+        filterGraphML + ";;" + filterPajek + ";;" + filterAdjacency + ";;All (*)";
+
+    QString selectedFilter;
+    QString fn = QFileDialog::getSaveFileName(
+        this,
+        tr("Save Subgraph As…"),
+        defaultPath,
+        allFormats,
+        &selectedFilter);
+
+    if (fn.isEmpty()) {
+        statusMessage(tr("Saving aborted."));
+        delete sub;
+        return;
+    }
+
+    // Map selected filter → FileType and canonical extension.
+    int fileType = FileType::GRAPHML;
+    QString defaultExt = ".graphml";
+
+    if (selectedFilter.startsWith("Pajek")) {
+        fileType   = FileType::PAJEK;
+        defaultExt = ".net";
+    } else if (selectedFilter.startsWith("Adjacency")) {
+        fileType   = FileType::ADJACENCY;
+        defaultExt = ".csv";
+    }
+    // else: GraphML or "All (*)" → keep GRAPHML
+
+    // Append a default extension when the user typed a bare name.
+    if (QFileInfo(fn).suffix().isEmpty())
+        fn.append(defaultExt);
+
+    setLastPath(fn);
+
+    // --- Fidelity warnings -------------------------------------------------
+    const bool hasCustomAttrs =
+        !sub->graphHasVertexCustomAttributes().isEmpty() ||
+        !sub->graphHasEdgeCustomAttributes().isEmpty();
+    const bool multiRelation = sub->relations() > 1;
+
+    if (fileType != FileType::GRAPHML && hasCustomAttrs) {
+        const int answer = slotHelpMessageToUser(
+            USER_MSG_QUESTION,
+            tr("Custom attributes will not be saved"),
+            tr("Format limitation: custom node/edge attributes"),
+            tr("The chosen format does not support custom node or edge attributes. "
+               "Those attributes will be lost in the exported file.\n\n"
+               "Use GraphML to preserve all attributes.\n\n"
+               "Continue with the chosen format?"));
+        if (answer != QMessageBox::Yes) {
+            statusMessage(tr("Saving aborted."));
+            delete sub;
+            return;
+        }
+    }
+
+    if (fileType == FileType::ADJACENCY && multiRelation) {
+        slotHelpMessageToUser(
+            USER_MSG_INFO,
+            tr("Only active relation will be exported"),
+            tr("Multi-relation graph — Adjacency format"),
+            tr("The Adjacency format supports a single matrix. "
+               "Only the currently active relation will be written to the file."));
+    }
+
+    // --- Format-specific options -------------------------------------------
+    bool saveEdgeWeights = true;
+    if (fileType == FileType::ADJACENCY && sub->isWeighted()) {
+        const int answer = slotHelpMessageToUser(
+            USER_MSG_QUESTION,
+            tr("Save edge weights?"),
+            tr("Weighted graph"),
+            tr("This graph has weighted edges. "
+               "Include edge weights in the adjacency file?\n\n"
+               "Select Yes to save weights, No to write 0/1 values only."));
+        saveEdgeWeights = (answer == QMessageBox::Yes);
+    }
+
+    // --- Write -------------------------------------------------------------
+    sub->saveToFile(fn, fileType, saveEdgeWeights);
 
     const int n = sub->vertices();
     const int e = sub->edgesEnabled();
