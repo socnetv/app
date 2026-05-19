@@ -752,6 +752,7 @@ public:
     qreal graphDensity();
 
     bool isWeighted();
+    bool isAnyRelationWeighted();
 
     void setWeighted(const bool &toggle = true);
 

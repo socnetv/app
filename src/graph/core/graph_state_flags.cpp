@@ -17,10 +17,18 @@
 #include "graph.h"
 
 /**
- * @brief Returns true if the graph is weighted (valued),
- * i.e. if any e in |E| has value not 0 or 1
- *  Complexity: O(n^2)
- * @return
+ * @brief Returns true if the **current relation** has at least one edge
+ *        with weight other than 0 or 1 (i.e. the relation is valued/weighted).
+ *
+ * The result is cached via @c calculatedGraphWeighted and invalidated on
+ * every relation switch (@see relationSet()). Consequently, for multi-relation
+ * graphs this method only reflects the active relation — switching to a
+ * non-weighted relation after a weighted one will return false.
+ *
+ * When you need to know whether *any* relation is weighted, use
+ * @see isAnyRelationWeighted() instead.
+ *
+ * Complexity: O(n²) on cache miss, O(1) on hit.
  */
 bool Graph::isWeighted()
 {
@@ -63,6 +71,31 @@ bool Graph::isWeighted()
     qDebug() << "graph is weighted:" << m_graphIsWeighted;
 
     return m_graphIsWeighted;
+}
+
+/**
+ * @brief Returns true if any relation in the graph has at least one edge
+ *        with weight other than 0 or 1.
+ *
+ * Unlike isWeighted(), which only scans the current relation, this method
+ * iterates every relation. It is used to report overall graph weightedness
+ * independently of which relation is currently active.
+ */
+bool Graph::isAnyRelationWeighted()
+{
+    const int savedRel = m_curRelation;
+    const int numRels = relations();
+    bool anyWeighted = false;
+
+    for (int r = 0; r < numRels && !anyWeighted; ++r) {
+        relationSet(r, false);
+        anyWeighted = isWeighted();
+    }
+
+    if (m_curRelation != savedRel)
+        relationSet(savedRel, false);
+
+    return anyWeighted;
 }
 
 /**
