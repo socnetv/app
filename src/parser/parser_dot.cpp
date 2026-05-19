@@ -182,11 +182,13 @@ bool Parser::parseAsDot(const QByteArray &rawData)
             }
         }
 
-        // Global graph settings block starts
+        // Global graph settings block starts.
+        // If the closing ']' is on the same line, skip without entering multi-line mode.
         if (str.contains("graph [", Qt::CaseInsensitive))
         {
-            netProperties = true;
             qDebug() << "🔵 Detected global graph settings. Skipping...";
+            if (!str.contains(']'))
+                netProperties = true;
             continue;
         }
 
