@@ -39,73 +39,73 @@
             "CLC": "0.20000000000000001",
             "hasCLC": true,
             "id": 1,
-            "label": "Adult"
+            "label": "Adult Female"
         },
         {
             "CLC": "0",
             "hasCLC": true,
             "id": 2,
-            "label": "2"
+            "label": "2 years Male"
         },
         {
             "CLC": "0.38095238095238093",
             "hasCLC": true,
             "id": 3,
-            "label": "Adult"
+            "label": "Adult Female"
         },
         {
             "CLC": "0.47619047619047616",
             "hasCLC": true,
             "id": 4,
-            "label": "Adult"
+            "label": "Adult Female"
         },
         {
             "CLC": "0.40000000000000002",
             "hasCLC": true,
             "id": 5,
-            "label": "Adult"
+            "label": "Adult Male"
         },
         {
             "CLC": "0.69999999999999996",
             "hasCLC": true,
             "id": 6,
-            "label": "3"
+            "label": "3 years Female"
         },
         {
             "CLC": "0.33333333333333331",
             "hasCLC": true,
             "id": 7,
-            "label": "3"
+            "label": "3 years Male"
         },
         {
             "CLC": "0",
             "hasCLC": true,
             "id": 8,
-            "label": "Adult"
+            "label": "Adult Female"
         },
         {
             "CLC": "0",
             "hasCLC": true,
             "id": 9,
-            "label": "1"
+            "label": "1 year Male"
         },
         {
             "CLC": "0.5",
             "hasCLC": true,
             "id": 10,
-            "label": "3"
+            "label": "3 years Female"
         },
         {
             "CLC": "0",
             "hasCLC": true,
             "id": 11,
-            "label": "2"
+            "label": "2 years Female"
         },
         {
             "CLC": "0.66666666666666663",
             "hasCLC": true,
             "id": 12,
-            "label": "1"
+            "label": "1 year Male"
         }
     ],
     "run": {
