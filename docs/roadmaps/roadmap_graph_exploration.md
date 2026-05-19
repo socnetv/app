@@ -393,6 +393,7 @@ next release:
 |---|---|---|---|
 | In-app bulk editing of node and edge attributes | #228 | Feature 3 Phase 5 | New Data Table toolbar buttons (Set property, Add attribute, Remove attribute); canvas context menu entries; `DialogBulkEdit`; canvas ↔ table selection sync |
 | UI declutter & UX improvements | #234 | Feature 1 Phase 2 + Cross-cutting UX | See notes below |
+| GraphViz DOT export & parser roundtrip | #236 | Feature 4 Phase B1 | Manual's "Supported Formats" page needs: describe DOT export, note single-relation limitation, document `pos=` coordinate roundtrip and custom-attribute passthrough; see capability matrix below |
 
 ### Export format capability matrix
 
