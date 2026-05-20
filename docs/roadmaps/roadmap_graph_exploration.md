@@ -172,11 +172,11 @@ The underlying graph remains unchanged; filtering operates on visibility state.
 * Output: save to GraphML file (preserves all attributes and relations)
 * Deferred: open subgraph in new window/tab — preferred long-term direction is tab-based multi-graph UI (Phase 6)
 
-### Phase 5 — Export Filtered / Extracted Graph (#220)
+### Phase 5 — Export Filtered / Extracted Graph (#220) ✔
 
-* Export the currently visible (filtered) subset to any supported format (#220)
-* Save a named subgraph to file for later reload
-* Basis for save/load subgraph workflows (see Phase 6)
+* ✔ Export the currently visible (filtered) subset to any supported format — **Network → Export** menu now supports GraphML, Pajek, Adjacency, GraphViz DOT, UCINET DL, Weighted Edge List, and Simple Edge List (#236, #237, #238)
+* ✔ Save a named subgraph to file for later reload — **Edit → Subgraphs → Save visible / Save selected** dialog now offers all seven formats with format-aware fidelity warnings (#218, #220)
+* ✔ Basis for save/load subgraph workflows established (see Phase 6 for persistent named subgraphs)
 
 ### Phase 6 — Persistent Named Subgraphs
 
@@ -396,6 +396,7 @@ next release:
 | GraphViz DOT export & parser roundtrip | #236 | Feature 4 Phase B1 | Manual's "Supported Formats" page needs: describe DOT export, note single-relation limitation, document `pos=` coordinate roundtrip and custom-attribute passthrough; see capability matrix below |
 | UCINET DL export | #237 | Feature 2 Phase 5 | Manual's "Supported Formats" page needs: describe DL export, note FULLMATRIX format used, multi-relation support via NM blocks, node-labels preserved in ROW/COLUMN LABELS; see capability matrix below |
 | Edge List export (weighted + simple) | #238 | Feature 2 Phase 5 | Manual's "Supported Formats" page needs: describe weighted (source target weight) and simple (source target) variants; note active-relation-only limitation; note spaces in labels are exported as underscores; see capability matrix below |
+| Subgraph save format expansion | #220 | Feature 2 Phase 5 | Manual's "Save subgraph" section needs: update to show all 7 formats now available in the Save Subgraph As… dialog; document which formats lose custom attributes (all except GraphML/DOT); document which formats export only the active relation (Adjacency, DOT, both Edge List variants) |
 
 ### Export format capability matrix
 

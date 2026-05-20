@@ -52,6 +52,18 @@ All notable changes to this project are documented in this file.
     - `FileType::GRAPHVIZ` added to the supported export list so the CLI
       io_roundtrip regression kernel exercises the format automatically.
 
+  - **Subgraph save format expansion** (#220):
+    - The **Save Subgraph As…** dialog (reached via **Edit → Subgraphs →
+      Save visible / Save selected**) now offers all seven supported export
+      formats: **GraphML**, **Pajek**, **Adjacency**, **GraphViz DOT**,
+      **UCINET DL**, **Weighted Edge List**, and **Simple Edge List**.
+    - Format-aware fidelity warnings fire automatically before writing:
+      - Custom node/edge attributes: a confirmation prompt is shown for any
+        format that cannot preserve them (all formats except GraphML and DOT).
+      - Single-relation-only formats (Adjacency, DOT, both Edge List variants)
+        show an info notice when the subgraph has more than one relation.
+    - Previously the dialog only offered GraphML, Pajek, and Adjacency.
+
   - **Subgraph extraction** (#218):
     - New **Edit → Subgraphs** submenu with two actions:
       - **Save visible nodes as subgraph…** — extracts all nodes currently
