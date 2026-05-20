@@ -3864,8 +3864,8 @@ void MainWindow::initMenuBar() {
     exportSubMenu->addAction (networkExportSMAct);
     exportSubMenu->addAction (networkExportPajek);
     exportSubMenu->addAction (networkExportDotAct);
-    //exportSubMenu->addAction (networkExportList);
-    //exportSubMenu->addAction (networkExportDL);
+    exportSubMenu->addAction (networkExportDLAct);
+    exportSubMenu->addAction (networkExportListAct);
     //exportSubMenu->addAction (networkExportGW);
 
     exportSubMenu->addSeparator();
@@ -8370,31 +8370,36 @@ void MainWindow::slotNetworkExportDot()
 
 
 /**
- * @brief TODO Exports the network to a DL-formatted file
- * @return
+ * @brief Exports the current graph to a UCINET DL-formatted file.
+ *
+ * Uses FULLMATRIX format.  Multi-relation graphs are fully supported:
+ * all relations are written as consecutive matrices in the DATA section.
  */
-bool MainWindow::slotNetworkExportDL(){
-    if ( !activeNodes() )  {
+bool MainWindow::slotNetworkExportDL()
+{
+    if (!activeNodes()) {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return false;
     }
 
-    if (fileName.isEmpty()) {
-        statusMessage( tr("Saving network under new filename..."));
-        QString fn = QFileDialog::getSaveFileName(
-                    this, "Export UCINET", getLastPath(), 0);
-        if (!fn.isEmpty())  {
-            fileName=fn;
-            setLastPath(fileName);
-        }
-        else  {
-            statusMessage( tr("Saving aborted"));
-            return false;
-        }
+    statusMessage(tr("Exporting network to UCINET DL file…"));
+
+    QString fn = QFileDialog::getSaveFileName(
+        this,
+        tr("Export Network to UCINET DL File…"),
+        getLastPath(),
+        tr("UCINET DL (*.dl *.dat);;All (*)"));
+
+    if (fn.isEmpty()) {
+        statusMessage(tr("Export aborted."));
+        return false;
     }
+    if (QFileInfo(fn).suffix().isEmpty())
+        fn.append(".dl");
 
+    setLastPath(fn);
+    activeGraph->saveToFile(fn, FileType::UCINET);
     return true;
-
 }
 
 
@@ -8428,23 +8433,73 @@ bool MainWindow::slotNetworkExportGW(){
 
 
 /**
-    TODO: Exports the network to a list-formatted file
-*/
-bool MainWindow::slotNetworkExportList(){
-    if (fileName.isEmpty()) {
-        statusMessage( tr("Saving network under new filename..."));
-        QString fn = QFileDialog::getSaveFileName(
-                    this, "Export List", getLastPath(), 0);
-        if (!fn.isEmpty())  {
-            fileName=fn;
-            setLastPath(fileName);
-        }
-        else  {
-            statusMessage( tr("Saving aborted"));
+ * @brief Exports the active relation to a simple or weighted edge list file.
+ *
+ * Asks the user whether to include edge weights.  Warns when multiple
+ * relations are present (only the active relation is written).  Node labels
+ * are used as identifiers; spaces are replaced with underscores.
+ */
+bool MainWindow::slotNetworkExportList()
+{
+    if (!activeNodes()) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return false;
+    }
+
+    if (activeGraph->relations() > 1) {
+        slotHelpMessageToUser(
+            USER_MSG_INFO,
+            tr("Only active relation will be exported"),
+            tr("Multi-relation graph — Edge List format"),
+            tr("Edge List format supports a single relation. "
+               "Only the currently active relation \"%1\" will be written.")
+                .arg(activeGraph->relationCurrentName()));
+    }
+
+    // Ask weighted or simple
+    bool weighted = false;
+    if (activeGraph->isWeighted()) {
+        switch (slotHelpMessageToUser(
+                    USER_MSG_QUESTION,
+                    tr("Include edge weights?"),
+                    tr("Weighted graph"),
+                    tr("This network has weighted edges. "
+                       "Do you want to include edge weights in the exported file?\n\n"
+                       "Yes → weighted edge list (source target weight)\n"
+                       "No  → simple edge list (source target)"))) {
+        case QMessageBox::Yes:
+            weighted = true;
+            break;
+        case QMessageBox::No:
+            weighted = false;
+            break;
+        case QMessageBox::Cancel:
+            statusMessage(tr("Export aborted."));
             return false;
         }
     }
 
+    statusMessage(tr("Exporting active relation to Edge List file…"));
+
+    const QString filter = weighted
+        ? tr("Weighted Edge List (*.wlst *.csv *.txt);;All (*)")
+        : tr("Simple Edge List (*.lst *.csv *.txt);;All (*)");
+    const QString defaultExt = weighted ? ".wlst" : ".lst";
+
+    QString fn = QFileDialog::getSaveFileName(
+        this, tr("Export Network to Edge List File…"), getLastPath(), filter);
+
+    if (fn.isEmpty()) {
+        statusMessage(tr("Export aborted."));
+        return false;
+    }
+    if (QFileInfo(fn).suffix().isEmpty())
+        fn.append(defaultExt);
+
+    setLastPath(fn);
+    activeGraph->saveToFile(
+        fn,
+        weighted ? FileType::EDGELIST_WEIGHTED : FileType::EDGELIST_SIMPLE);
     return true;
 }
 

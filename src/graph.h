@@ -486,6 +486,12 @@ public:
 
     bool saveToDotFormat(const QString &fileName);
 
+    bool saveToUCINETDLFormat(const QString &fileName);
+
+    bool saveToEdgeListWeightedFormat(const QString &fileName);
+
+    bool saveToEdgeListSimpleFormat(const QString &fileName);
+
     QString graphMatrixTypeToString(const int &matrixType) const;
 
     int graphMatrixStrToType(const QString &matrix) const;

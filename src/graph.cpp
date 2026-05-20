@@ -124,7 +124,10 @@ Graph::Graph(const int &reserveVerticesSize, const int &reserveEdgesPerVertexSiz
     m_graphFileFormatExportSupported << FileType::GRAPHML
                                      << FileType::PAJEK
                                      << FileType::ADJACENCY
-                                     << FileType::GRAPHVIZ;
+                                     << FileType::GRAPHVIZ
+                                     << FileType::UCINET
+                                     << FileType::EDGELIST_WEIGHTED
+                                     << FileType::EDGELIST_SIMPLE;
 
     randomizeThings();
 
