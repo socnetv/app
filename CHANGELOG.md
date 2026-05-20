@@ -6,6 +6,35 @@ All notable changes to this project are documented in this file.
 
 ### New Features
 
+  - **UCINET DL export** (#237):
+    - New **Network → Export → DL…** action writes the current graph to a
+      UCINET DL file in `FULLMATRIX DIAGONAL PRESENT` format.
+    - Multi-relation graphs are fully supported: all relations are written as
+      consecutive matrices in the `DATA:` section under a single `NM=k`
+      header (no file-level separator needed — the parser already advances
+      its relation counter when the source row counter exceeds N).
+    - Node labels are exported in `ROW LABELS` / `COLUMN LABELS` sections,
+      enabling label-preserving roundtrip.
+    - `FileType::UCINET` added to `m_graphFileFormatExportSupported`; the
+      CLI io_roundtrip kernel now exercises the format automatically.  Two
+      existing baselines (`Bernard_Killworth_Fraternity__FT5`,
+      `StokmanZiegler_Netherlands__FT5`) updated from `performed: false` to
+      `performed: true, equivalent: true`.
+
+  - **Edge List export — weighted and simple** (#238):
+    - New **Network → Export → List…** action writes the active relation as a
+      space-separated edge list file.
+    - When the graph is weighted the user is asked whether to include weights:
+      **Yes** → `source target weight` per line (`.wlst`),
+      **No** → `source target` per line (`.lst`).
+    - Node labels are used as identifiers; spaces in labels are replaced with
+      underscores to keep the delimiter unambiguous.
+    - A warning is shown when multiple relations are present (only the active
+      relation is written).
+    - Both `FileType::EDGELIST_WEIGHTED` and `FileType::EDGELIST_SIMPLE`
+      added to the supported export list; three Tiny edge-list io_roundtrip
+      baselines show `performed: true, equivalent: true`.
+
   - **GraphViz DOT export with full roundtrip** (#236):
     - New **File → Export → GraphViz DOT…** action writes a `.dot` file for
       the active relation (DOT has no native multi-relation concept; a warning

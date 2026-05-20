@@ -20,6 +20,8 @@ With SocNetV you can:
 - Draw social networks with a few clicks on a virtual canvas, load your
 field data from a file in a supported format (GraphML, GraphViz, EdgeList, GML, Adjacency, Edgelist, Pajek, UCINET, etc.), automatically recreate famous data sets or crawl the internet to create a social network of connected webpages.
 
+- Export graphs to any of the supported formats: **GraphML**, **Pajek**, **Adjacency Matrix**, **GraphViz DOT**, **UCINET DL**, **Edge List (weighted or simple)**.
+
 - Edit actors and ties through point-and-click, analyse graph and social network properties, produce beautiful HTML reports and embed visualization layouts to the network.
 
 [![socnetv](https://socnetv.org/data/uploads/screenshots/25/socnetv-25-padget-power-centrality-size-distribution.png)](https://socnetv.org)
@@ -36,6 +38,7 @@ field data from a file in a supported format (GraphML, GraphViz, EdgeList, GML, 
 - Subgraph extraction: save the currently visible (filtered) nodes or the currently selected nodes — together with their inter-edges — as an independent GraphML file. All visual properties, custom attributes, and multi-relation structure are preserved.
 - Custom node and edge attributes: add, edit and remove arbitrary key/value pairs. Fully persisted in GraphML.
 - Data table dock (Ctrl+T): inspect and inline-edit all node and edge properties — including custom attributes — with live search and sortable columns.
+- Graph format export: save the current graph (or just the active relation) to **GraphML**, **Pajek**, **Adjacency Matrix**, **GraphViz DOT**, **UCINET DL**, **Weighted Edge List**, or **Simple Edge List** via the **Network → Export** menu.
 - Structured import/export: export node or edge data to CSV or JSON; re-import to update attributes in bulk (supports a full spreadsheet editing workflow). See the [manual](https://socnetv.org/manual/intro/) for details.
 - Random network generators: Erdős–Rényi, Watts–Strogatz, scale-free, regular lattice, and more.
 - One-click recreation of well-known social network datasets such as Padgett's Florentine families.
