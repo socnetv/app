@@ -394,6 +394,8 @@ next release:
 | In-app bulk editing of node and edge attributes | #228 | Feature 3 Phase 5 | New Data Table toolbar buttons (Set property, Add attribute, Remove attribute); canvas context menu entries; `DialogBulkEdit`; canvas ↔ table selection sync |
 | UI declutter & UX improvements | #234 | Feature 1 Phase 2 + Cross-cutting UX | See notes below |
 | GraphViz DOT export & parser roundtrip | #236 | Feature 4 Phase B1 | Manual's "Supported Formats" page needs: describe DOT export, note single-relation limitation, document `pos=` coordinate roundtrip and custom-attribute passthrough; see capability matrix below |
+| UCINET DL export | #237 | Feature 2 Phase 5 | Manual's "Supported Formats" page needs: describe DL export, note FULLMATRIX format used, multi-relation support via NM blocks, node-labels preserved in ROW/COLUMN LABELS; see capability matrix below |
+| Edge List export (weighted + simple) | #238 | Feature 2 Phase 5 | Manual's "Supported Formats" page needs: describe weighted (source target weight) and simple (source target) variants; note active-relation-only limitation; note spaces in labels are exported as underscores; see capability matrix below |
 
 ### Export format capability matrix
 
