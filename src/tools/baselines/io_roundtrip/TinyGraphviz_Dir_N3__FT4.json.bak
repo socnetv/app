@@ -5,9 +5,9 @@
         "ties_graph": 2
     },
     "dataset": {
-        "filetype": 8,
-        "name": "TinyEdgeList_Simple_Dir_N3.lst",
-        "path": "src/data/TinyEdgeList_Simple_Dir_N3.lst"
+        "filetype": 4,
+        "name": "TinyGraphviz_Dir_N3.dot",
+        "path": "src/data/TinyGraphviz_Dir_N3.dot"
     },
     "graph": {
         "directed": true,
@@ -16,10 +16,10 @@
     },
     "kernel": "io_roundtrip",
     "load_report": {
-        "fileType_signal": 8,
+        "fileType_signal": 4,
         "load_ms": 0,
         "load_msg": "",
-        "net_name": "TinyEdgeList_Simple_Dir_N3.lst",
+        "net_name": "TinyGraphviz_Dir_N3",
         "ok": true
     },
     "metrics": {
@@ -28,7 +28,7 @@
     "relations_bundle": [
         {
             "index": 0,
-            "name": "unnamed",
+            "name": "TinyGraphviz_Dir_N3",
             "signature": {
                 "edge_list": [
                     {

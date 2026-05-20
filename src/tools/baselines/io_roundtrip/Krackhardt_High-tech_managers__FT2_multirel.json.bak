@@ -17,7 +17,7 @@
     "kernel": "io_roundtrip",
     "load_report": {
         "fileType_signal": 2,
-        "load_ms": 2,
+        "load_ms": 1,
         "load_msg": "",
         "net_name": "Krackhardt's High-tech managers",
         "ok": true
@@ -2852,9 +2852,9 @@
         ]
     },
     "timings": {
-        "load_ms": 2,
+        "load_ms": 1,
         "reload_ms": 2,
         "save_ms": 1,
-        "total_ms": 8
+        "total_ms": 11
     }
 }

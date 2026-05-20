@@ -1,13 +1,13 @@
 {
     "counts": {
-        "links_sna": 2,
+        "links_sna": 4,
         "nodes": 3,
-        "ties_graph": 2
+        "ties_graph": 4
     },
     "dataset": {
         "filetype": 8,
-        "name": "TinyEdgeList_Simple_Dir_N3.lst",
-        "path": "src/data/TinyEdgeList_Simple_Dir_N3.lst"
+        "name": "TinyEdgeList_Symmetric_Undir_N3.lst",
+        "path": "src/data/TinyEdgeList_Symmetric_Undir_N3.lst"
     },
     "graph": {
         "directed": true,
@@ -19,11 +19,11 @@
         "fileType_signal": 8,
         "load_ms": 0,
         "load_msg": "",
-        "net_name": "TinyEdgeList_Simple_Dir_N3.lst",
+        "net_name": "TinyEdgeList_Symmetric_Undir_N3.lst",
         "ok": true
     },
     "metrics": {
-        "density": "0.33333333333333331"
+        "density": "0.66666666666666663"
     },
     "relations_bundle": [
         {
@@ -38,11 +38,21 @@
                     },
                     {
                         "u": 2,
+                        "v": 1,
+                        "w": "1"
+                    },
+                    {
+                        "u": 2,
                         "v": 3,
+                        "w": "1"
+                    },
+                    {
+                        "u": 3,
+                        "v": 2,
                         "w": "1"
                     }
                 ],
-                "hash_sha256": "6b2700675a6f5366c74caec85e9c7a728364fdaad47bdb8f02f0a9bd8517360d",
+                "hash_sha256": "985ee9e0f5789b14deb79487aab2d8ea39aba8e29a34813d145d23fc459fc0cc",
                 "node_custom_attributes": [
                     {
                     },
@@ -57,12 +67,12 @@
                     "3"
                 ]
             },
-            "ties_graph": 2
+            "ties_graph": 4
         }
     ],
     "roundtrip_result": {
         "equivalent": true,
-        "performed": true
+        "performed": false
     },
     "run": {
         "considerWeights": false,
@@ -80,11 +90,21 @@
             },
             {
                 "u": 2,
+                "v": 1,
+                "w": "1"
+            },
+            {
+                "u": 2,
                 "v": 3,
+                "w": "1"
+            },
+            {
+                "u": 3,
+                "v": 2,
                 "w": "1"
             }
         ],
-        "hash_sha256": "6b2700675a6f5366c74caec85e9c7a728364fdaad47bdb8f02f0a9bd8517360d",
+        "hash_sha256": "985ee9e0f5789b14deb79487aab2d8ea39aba8e29a34813d145d23fc459fc0cc",
         "node_custom_attributes": [
             {
             },

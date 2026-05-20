@@ -17,7 +17,7 @@
     "kernel": "io_roundtrip",
     "load_report": {
         "fileType_signal": 2,
-        "load_ms": 10,
+        "load_ms": 14,
         "load_msg": "",
         "net_name": "scale-free",
         "ok": true
@@ -15252,9 +15252,9 @@
         ]
     },
     "timings": {
-        "load_ms": 10,
+        "load_ms": 14,
         "reload_ms": 13,
-        "save_ms": 53,
-        "total_ms": 81
+        "save_ms": 50,
+        "total_ms": 78
     }
 }

@@ -17,7 +17,7 @@
     "kernel": "io_roundtrip",
     "load_report": {
         "fileType_signal": 6,
-        "load_ms": 4,
+        "load_ms": 0,
         "load_msg": "",
         "net_name": "TinyGML_Dir_N3.gml",
         "ok": true
@@ -104,7 +104,7 @@
         ]
     },
     "timings": {
-        "load_ms": 4,
+        "load_ms": 0,
         "reload_ms": 0,
         "save_ms": 0,
         "total_ms": 0

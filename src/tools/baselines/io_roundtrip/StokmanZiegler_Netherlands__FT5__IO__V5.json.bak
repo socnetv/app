@@ -17,7 +17,7 @@
     "kernel": "io_roundtrip",
     "load_report": {
         "fileType_signal": 5,
-        "load_ms": 0,
+        "load_ms": 1,
         "load_msg": "",
         "net_name": "Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl",
         "ok": true
@@ -691,7 +691,7 @@
     ],
     "roundtrip_result": {
         "equivalent": true,
-        "performed": true
+        "performed": false
     },
     "run": {
         "considerWeights": false,
@@ -1358,9 +1358,9 @@
         ]
     },
     "timings": {
-        "load_ms": 0,
+        "load_ms": 1,
         "reload_ms": 0,
         "save_ms": 0,
-        "total_ms": 2
+        "total_ms": 1
     }
 }

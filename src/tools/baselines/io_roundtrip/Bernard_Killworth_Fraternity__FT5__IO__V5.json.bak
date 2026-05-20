@@ -17,7 +17,7 @@
     "kernel": "io_roundtrip",
     "load_report": {
         "fileType_signal": 5,
-        "load_ms": 19,
+        "load_ms": 28,
         "load_msg": "",
         "net_name": "Bernard_Killworth_Fraternity.dl",
         "ok": true
@@ -26605,7 +26605,7 @@
     ],
     "roundtrip_result": {
         "equivalent": true,
-        "performed": true
+        "performed": false
     },
     "run": {
         "considerWeights": false,
@@ -36468,9 +36468,9 @@
         ]
     },
     "timings": {
-        "load_ms": 19,
-        "reload_ms": 18,
-        "save_ms": 6,
-        "total_ms": 54
+        "load_ms": 28,
+        "reload_ms": 0,
+        "save_ms": 0,
+        "total_ms": 30
     }
 }

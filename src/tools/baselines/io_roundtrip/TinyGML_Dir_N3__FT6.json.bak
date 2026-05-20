@@ -5,9 +5,9 @@
         "ties_graph": 2
     },
     "dataset": {
-        "filetype": 8,
-        "name": "TinyEdgeList_Simple_Dir_N3.lst",
-        "path": "src/data/TinyEdgeList_Simple_Dir_N3.lst"
+        "filetype": 6,
+        "name": "TinyGML_Dir_N3.gml",
+        "path": "src/data/TinyGML_Dir_N3.gml"
     },
     "graph": {
         "directed": true,
@@ -16,10 +16,10 @@
     },
     "kernel": "io_roundtrip",
     "load_report": {
-        "fileType_signal": 8,
-        "load_ms": 0,
+        "fileType_signal": 6,
+        "load_ms": 4,
         "load_msg": "",
-        "net_name": "TinyEdgeList_Simple_Dir_N3.lst",
+        "net_name": "TinyGML_Dir_N3.gml",
         "ok": true
     },
     "metrics": {
@@ -32,17 +32,19 @@
             "signature": {
                 "edge_list": [
                     {
+                        "label": "1->2",
                         "u": 1,
                         "v": 2,
                         "w": "1"
                     },
                     {
+                        "label": "2->3",
                         "u": 2,
                         "v": 3,
                         "w": "1"
                     }
                 ],
-                "hash_sha256": "6b2700675a6f5366c74caec85e9c7a728364fdaad47bdb8f02f0a9bd8517360d",
+                "hash_sha256": "2f05549545c77d217eb28be15bb595ff66fb3807b50a0af50cbdbbac243ad018",
                 "node_custom_attributes": [
                     {
                     },
@@ -62,7 +64,7 @@
     ],
     "roundtrip_result": {
         "equivalent": true,
-        "performed": true
+        "performed": false
     },
     "run": {
         "considerWeights": false,
@@ -74,17 +76,19 @@
     "signature": {
         "edge_list": [
             {
+                "label": "1->2",
                 "u": 1,
                 "v": 2,
                 "w": "1"
             },
             {
+                "label": "2->3",
                 "u": 2,
                 "v": 3,
                 "w": "1"
             }
         ],
-        "hash_sha256": "6b2700675a6f5366c74caec85e9c7a728364fdaad47bdb8f02f0a9bd8517360d",
+        "hash_sha256": "2f05549545c77d217eb28be15bb595ff66fb3807b50a0af50cbdbbac243ad018",
         "node_custom_attributes": [
             {
             },
@@ -100,7 +104,7 @@
         ]
     },
     "timings": {
-        "load_ms": 0,
+        "load_ms": 4,
         "reload_ms": 0,
         "save_ms": 0,
         "total_ms": 0

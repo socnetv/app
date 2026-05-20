@@ -1,29 +1,29 @@
 {
     "counts": {
-        "links_sna": 2,
+        "links_sna": 3,
         "nodes": 3,
-        "ties_graph": 2
+        "ties_graph": 3
     },
     "dataset": {
-        "filetype": 8,
-        "name": "TinyEdgeList_Simple_Dir_N3.lst",
-        "path": "src/data/TinyEdgeList_Simple_Dir_N3.lst"
+        "filetype": 3,
+        "name": "TinyAdj_Weighted_Dir_N3.adj",
+        "path": "src/data/TinyAdj_Weighted_Dir_N3.adj"
     },
     "graph": {
         "directed": true,
         "relations": 1,
-        "weighted": false
+        "weighted": true
     },
     "kernel": "io_roundtrip",
     "load_report": {
-        "fileType_signal": 8,
-        "load_ms": 0,
+        "fileType_signal": 3,
+        "load_ms": 2,
         "load_msg": "",
-        "net_name": "TinyEdgeList_Simple_Dir_N3.lst",
+        "net_name": "TinyAdj_Weighted_Dir_N3.adj",
         "ok": true
     },
     "metrics": {
-        "density": "0.33333333333333331"
+        "density": "0.5"
     },
     "relations_bundle": [
         {
@@ -34,15 +34,20 @@
                     {
                         "u": 1,
                         "v": 2,
-                        "w": "1"
+                        "w": "2.5"
                     },
                     {
                         "u": 2,
                         "v": 3,
-                        "w": "1"
+                        "w": "1.5"
+                    },
+                    {
+                        "u": 3,
+                        "v": 1,
+                        "w": "3"
                     }
                 ],
-                "hash_sha256": "6b2700675a6f5366c74caec85e9c7a728364fdaad47bdb8f02f0a9bd8517360d",
+                "hash_sha256": "774e15f0235c758b1441dd2e766ee1cc9c35f768f36bd678183111126c4934bc",
                 "node_custom_attributes": [
                     {
                     },
@@ -57,7 +62,7 @@
                     "3"
                 ]
             },
-            "ties_graph": 2
+            "ties_graph": 3
         }
     ],
     "roundtrip_result": {
@@ -76,15 +81,20 @@
             {
                 "u": 1,
                 "v": 2,
-                "w": "1"
+                "w": "2.5"
             },
             {
                 "u": 2,
                 "v": 3,
-                "w": "1"
+                "w": "1.5"
+            },
+            {
+                "u": 3,
+                "v": 1,
+                "w": "3"
             }
         ],
-        "hash_sha256": "6b2700675a6f5366c74caec85e9c7a728364fdaad47bdb8f02f0a9bd8517360d",
+        "hash_sha256": "774e15f0235c758b1441dd2e766ee1cc9c35f768f36bd678183111126c4934bc",
         "node_custom_attributes": [
             {
             },
@@ -100,7 +110,7 @@
         ]
     },
     "timings": {
-        "load_ms": 0,
+        "load_ms": 2,
         "reload_ms": 0,
         "save_ms": 0,
         "total_ms": 0

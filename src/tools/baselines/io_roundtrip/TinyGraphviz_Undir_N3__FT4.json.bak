@@ -1,34 +1,34 @@
 {
     "counts": {
-        "links_sna": 2,
+        "links_sna": 4,
         "nodes": 3,
         "ties_graph": 2
     },
     "dataset": {
-        "filetype": 8,
-        "name": "TinyEdgeList_Simple_Dir_N3.lst",
-        "path": "src/data/TinyEdgeList_Simple_Dir_N3.lst"
+        "filetype": 4,
+        "name": "TinyGraphviz_Undir_N3.dot",
+        "path": "src/data/TinyGraphviz_Undir_N3.dot"
     },
     "graph": {
-        "directed": true,
+        "directed": false,
         "relations": 1,
         "weighted": false
     },
     "kernel": "io_roundtrip",
     "load_report": {
-        "fileType_signal": 8,
+        "fileType_signal": 4,
         "load_ms": 0,
         "load_msg": "",
-        "net_name": "TinyEdgeList_Simple_Dir_N3.lst",
+        "net_name": "TinyGraphviz_Undir_N3",
         "ok": true
     },
     "metrics": {
-        "density": "0.33333333333333331"
+        "density": "0.66666666666666663"
     },
     "relations_bundle": [
         {
             "index": 0,
-            "name": "unnamed",
+            "name": "TinyGraphviz_Undir_N3",
             "signature": {
                 "edge_list": [
                     {

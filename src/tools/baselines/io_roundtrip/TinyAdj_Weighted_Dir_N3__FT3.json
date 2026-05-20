@@ -17,7 +17,7 @@
     "kernel": "io_roundtrip",
     "load_report": {
         "fileType_signal": 3,
-        "load_ms": 2,
+        "load_ms": 0,
         "load_msg": "",
         "net_name": "TinyAdj_Weighted_Dir_N3.adj",
         "ok": true
@@ -110,7 +110,7 @@
         ]
     },
     "timings": {
-        "load_ms": 2,
+        "load_ms": 0,
         "reload_ms": 0,
         "save_ms": 0,
         "total_ms": 0
