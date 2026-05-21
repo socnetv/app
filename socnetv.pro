@@ -76,6 +76,8 @@ HEADERS += src/mainwindow.h \
     src/widgets/edgetablemodel.h \
     src/forms/dialogedgeedit.h \
     src/forms/dialogfilterbyattribute.h \
+    src/forms/dialogquerybuilder.h \
+    src/graph/filters/graph_query.h \
     src/forms/dialogimportattributes.h \
     src/graph/filters/filter_condition.h \
     src/graph/io/table_export.h \
@@ -124,6 +126,7 @@ SOURCES += src/main.cpp \
     src/graph/relations/graph_relations.cpp \
     src/graph/filters/graph_edge_filters.cpp \
     src/graph/filters/graph_node_filters.cpp \
+    src/graph/filters/graph_query_filters.cpp \
     src/graph/ui/graph_ui_facade.cpp \
     src/graph/ui/graph_ui_prominence_distribution.cpp \
     src/graph/ui/graph_canvas.cpp \
@@ -175,6 +178,7 @@ SOURCES += src/main.cpp \
     src/widgets/edgetablemodel.cpp \
     src/forms/dialogedgeedit.cpp \
     src/forms/dialogfilterbyattribute.cpp \
+    src/forms/dialogquerybuilder.cpp \
     src/forms/dialogimportattributes.cpp \
     src/forms/dialogfilteredgesbyweight.cpp \
     src/forms/dialogfilternodesbycentrality.cpp \

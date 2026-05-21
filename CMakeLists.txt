@@ -118,6 +118,7 @@ set(GRAPH_SOURCES
     src/graph/relations/graph_relations.cpp
     src/graph/filters/graph_edge_filters.cpp
     src/graph/filters/graph_node_filters.cpp
+    src/graph/filters/graph_query_filters.cpp
     src/graph/ui/graph_ui_facade.cpp
     src/graph/ui/graph_ui_prominence_distribution.cpp
     src/graph/ui/graph_canvas.cpp
@@ -220,6 +221,7 @@ set(SOURCES
     src/forms/dialogfilternodesbycentrality.cpp
     src/forms/dialogfilteredgesbyweight.cpp
     src/forms/dialogfilterbyattribute.cpp
+    src/forms/dialogquerybuilder.cpp
     src/forms/dialogimportattributes.cpp
     src/widgets/filterbarwidget.cpp
     src/widgets/nodetablemodel.cpp
