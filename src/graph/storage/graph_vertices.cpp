@@ -933,6 +933,11 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
         prestigeProximity(considerWeights, inverseWeights);
         break;
     }
+    case IndexType::CLC:
+    {
+        clusteringCoefficient();
+        break;
+    }
     default:
         graphDistancesGeodesic(true, considerWeights,
                                inverseWeights, dropIsolates);
@@ -1067,6 +1072,11 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
             case IndexType::PP:
             {
                 score = (*it)->SPP();
+                break;
+            }
+            case IndexType::CLC:
+            {
+                score = (*it)->CLC();
                 break;
             }
             }
