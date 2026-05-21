@@ -1870,7 +1870,7 @@ void MainWindow::initActions(){
     connect(filterNodesByAttributeAct, SIGNAL(triggered()), this, SLOT(slotFilterNodesByAttribute()));
 
     filterByQueryBuilderAct = new QAction(QIcon(":/images/filter_list_48px.svg"), tr("Query Builder..."), this);
-    filterByQueryBuilderAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_Q));
+    filterByQueryBuilderAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_B));
     filterByQueryBuilderAct->setStatusTip(tr("Build a multi-condition AND filter for nodes or edges."));
     filterByQueryBuilderAct->setWhatsThis(tr("Query Builder\n\n"
                                              "Opens the Query Builder dialog to compose a filter with "
@@ -1879,7 +1879,7 @@ void MainWindow::initActions(){
     connect(filterByQueryBuilderAct, SIGNAL(triggered()), this, SLOT(slotFilterByQueryBuilder()));
 
     filterNodesBySelectionAct = new QAction(tr("Focus on Selection"), this);
-    filterNodesBySelectionAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_S));
+    filterNodesBySelectionAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_O));
     filterNodesBySelectionAct->setStatusTip(tr("Show only the selected nodes and edges between them."));
     filterNodesBySelectionAct->setWhatsThis(tr("Focus on Selection\n\n"
                                                "Hides all nodes except the currently selected ones. "
@@ -3738,9 +3738,9 @@ void MainWindow::initActions(){
     viewDataTableAct = new QAction(QIcon(":/images/data_table_48px.svg"), tr("Data Table"), this);
     viewDataTableAct->setCheckable(true);
     viewDataTableAct->setChecked(false);
-    viewDataTableAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_T));
+    viewDataTableAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
     viewDataTableAct->setStatusTip(tr("Show/hide the node and edge data table panel"));
-    viewDataTableAct->setToolTip(tr("Toggle the node/edge data table panel (Ctrl+T)"));
+    viewDataTableAct->setToolTip(tr("Toggle the node/edge data table panel (Ctrl+D)"));
     connect(viewDataTableAct, &QAction::toggled,
             this, &MainWindow::slotViewDataTable);
 
@@ -5338,7 +5338,6 @@ void MainWindow::initWindowLayout() {
     //
     rotateLeftBtn = new QToolButton;
     rotateLeftBtn->setAutoRepeat(true);
-    rotateLeftBtn->setShortcut(Qt::SHIFT | Qt::CTRL | Qt::Key_Left);
     rotateLeftBtn->setIcon(QPixmap(":/images/rotate_left_48px.svg"));
     rotateLeftBtn->setToolTip(tr("Rotates the canvas counterclockwise"));
     rotateLeftBtn->setStatusTip(tr("Rotate counterclockwise"));
@@ -5347,7 +5346,6 @@ void MainWindow::initWindowLayout() {
 
     rotateRightBtn = new QToolButton;
     rotateRightBtn->setAutoRepeat(true);
-    rotateRightBtn->setShortcut(Qt::SHIFT | Qt::CTRL | Qt::Key_Right);
     rotateRightBtn->setIcon(QPixmap(":/images/rotate_right_48px.svg"));
     rotateRightBtn->setToolTip(tr("Rotates the canvas clockwise."));
     rotateRightBtn->setStatusTip(tr("Rotate clockwise"));
@@ -12041,7 +12039,7 @@ void MainWindow::slotFilterNodesByAttribute()
         slotHelpMessageToUser(USER_MSG_CRITICAL,
                               tr("No custom attributes"),
                               tr("This network has no custom node or edge attributes. "
-                                 "Add attributes via the Data Table (Ctrl+T) using "
+                                 "Add attributes via the Data Table (Ctrl+D) using "
                                  "\"Add attribute…\", or via the Node / Edge Properties dialogs."));
         return;
     }
@@ -12077,6 +12075,9 @@ void MainWindow::slotFilterNodesByAttribute()
     });
 
     dlg.exec();
+
+    if (dlg.wasQueryBuilderRequested())
+        slotFilterByQueryBuilder();
 }
 
 /**
@@ -12101,7 +12102,7 @@ void MainWindow::slotFilterByQueryBuilder()
         slotHelpMessageToUser(USER_MSG_CRITICAL,
                               tr("No custom attributes"),
                               tr("This network has no custom node or edge attributes. "
-                                 "Add attributes via the Data Table (Ctrl+T)."));
+                                 "Add attributes via the Data Table (Ctrl+D)."));
         return;
     }
 
