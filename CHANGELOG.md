@@ -80,6 +80,26 @@ All notable changes to this project are documented in this file.
       are preserved.
     - Original graph remains unchanged (non-destructive).
 
+  - **Compound AND-logic query filter** (#221):
+    - New **Filter → Filter by Query…** action (`Ctrl+X, Ctrl+B`) opens the
+      **Query Builder** dialog — a dynamic multi-condition filter composer
+      that supports both nodes and edges.
+    - The user picks a scope (Nodes or Edges), then adds one or more condition
+      rows. Each row specifies an attribute key, an operator (=, ≠, >, <, ≥,
+      ≤, contains), and a value. All rows are ANDed: only nodes/edges that
+      satisfy every condition are kept visible.
+    - Rows can be added ("+  Add condition" button) or removed (per-row "−"
+      button; the last row's remove button disables itself automatically).
+      The attribute key combo is populated from the graph's current node or
+      edge attribute keys and is also freely editable.
+    - Applies the same non-destructive snapshot/restore mechanism as all other
+      filters: the result appears as a chip in the filter bar and can be
+      individually removed or cleared with Restore All.
+    - Numeric comparisons (>, <, ≥, ≤) automatically downcast to `double`
+      when both sides are valid numbers; string comparisons fall back to
+      case-insensitive lexicographic order; "contains" is always
+      case-insensitive substring search.
+
 ### Improvements
 
   - **UI declutter & UX improvements** (#234):
@@ -136,6 +156,19 @@ All notable changes to this project are documented in this file.
     reported as `weighted: false`. Added `Graph::isAnyRelationWeighted()`,
     which checks every relation, and updated the kernel to use it for the
     `graph.weighted` JSON field.
+
+  - **Keyboard shortcut conflicts resolved**:
+    - `Ctrl+T` (Data Table toggle) conflicted with the `Ctrl+T, Ctrl+*` prefix
+      used by all four Structural Equivalence analysis actions — those sequences
+      were silently unreachable on every platform. Data Table is now `Ctrl+D`.
+    - `Ctrl+X, Ctrl+S` (Focus on Selection filter, WS9) duplicated the
+      pre-existing `Ctrl+X, Ctrl+S` shortcut for "Selected nodes → Star"
+      subgraph operation. Focus on Selection is now `Ctrl+X, Ctrl+O`.
+    - `Ctrl+X, Ctrl+Q` (Query Builder filter) mapped to `⌘+Q` on macOS —
+      the system-level Quit — when used as the second chord of a sequence.
+      Query Builder is now `Ctrl+X, Ctrl+B`.
+    - Duplicate `Ctrl+Shift+Left/Right` shortcuts removed from the rotate
+      toolbar buttons (the menu actions already own those sequences).
 
 ## [3.5] – May 2026
 

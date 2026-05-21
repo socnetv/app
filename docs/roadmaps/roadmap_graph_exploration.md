@@ -192,30 +192,36 @@ The underlying graph remains unchanged; filtering operates on visibility state.
 * Save and reload named subgraphs (persisted alongside or inside the graph file)
 * **Blocked on**: tab-based multi-graph UI (Feature 1 Phase 3, no issue yet) — a significant infrastructure investment. Deferred until the tab UI is designed and implemented.
 
-### Phase 7 — Query System (#221) *(v3.6 target)*
+### Phase 7 — Query System (#221) ✔
 
-Planned in two phases (both for v3.6):
+Both phases shipped for v3.6.
 
-**Phase 0 — Arbitrary chip removal (prerequisite):**
+**Phase 0 — Arbitrary chip removal ✔:**
 
-* Extend `GraphVisibilitySnapshot` with a `FilterSpec` field that records replay parameters (type + condition) for each filter applied.
-* Store the spec alongside every push to `m_visibilityHistory`.
-* On arbitrary chip removal: drain the stack to the base state, then replay the remaining filter specs in order.
-* Enable `×` on all replayable chips (attribute and query types). Selection/ego/centrality chips retain top-only removal because their parameters may have changed since application (selected vertices, computed scores).
-* `chipCloseRequested` signal extended to carry chip index so MainWindow can identify which spec to skip during replay.
+* `FilterSpec` struct (`src/graph/filters/filter_spec.h`) — replay descriptor embedded in every `GraphVisibilitySnapshot`; types: `Attribute`, `Selection`, `Ego`, `Centrality`, `EdgeAttribute`, `EdgeWeight`, `Query`, `EdgeQuery`.
+* Every filter (node AND edge) pushes exactly one snapshot with a fully populated spec, establishing a strict `barIndex == stackIndex` invariant.
+* `FilterCondition::matches()` inline method — shared by all filter/query implementations; eliminates duplicated matching logic.
+* `Graph::vertexFilterRemoveAt(int stackIndex)` — drain stack → restore base → replay all remaining specs; handles mixed node/edge stacks correctly.
+* `Graph::vertexFilterReplaySpec()` — dispatch table covering all eight spec types including `EdgeAttribute` and `EdgeWeight`.
+* `edgeFilterByWeight()` now snapshot-backed (was non-destructive UI reset only before).
+* `chipCloseRequested` now carries `(barIndex, scope)`; MainWindow uses `barIndex` directly as `stackIndex`.
+* `m_filterChips: QList<QPair<QString,Scope>>` in MainWindow — unified chip tracking replaces separate `m_nodeFilterChips` + `m_edgeFilterChipLabel`; bar rebuild preserves original application order.
+* `slotFilterNodesRestoreAll` and `slotEditFilterEdgesReset` now use `vertexFilterRemoveAt` (no more orphaned snapshots when edge chips are removed).
 
-**Phase 1 — Visual Query Builder:**
+**Phase 1 — Visual Query Builder ✔:**
 
-* `DialogQueryBuilder` (`src/forms/dialogquerybuilder.*`) — dynamic list of condition rows (scope + key + op + value), Add / Remove row buttons, AND logic (OR deferred as post-3.6 DSL item).
-* `GraphQuery` struct (`src/graph/filters/graph_query.h`) — `QList<FilterCondition>` + `Logic` enum.
-* `Graph::vertexFilterByQuery(const GraphQuery &)` — intersects visible sets from all conditions; pushes a single compound snapshot carrying a query-type `FilterSpec`.
-* Menu: **Edit → Filter → Query Builder…** (`Ctrl+X, Q`).
-* Filter bar: one chip `"Query: N conditions ×"`; clicking the label reopens the dialog with current conditions prefilled for editing.
+* `GraphQuery` struct (`src/graph/filters/graph_query.h`) — `QList<FilterCondition>`; all conditions carry the same scope (set by dialog).
+* `Graph::vertexFilterByQuery(const GraphQuery &)` — AND logic for nodes; pushes single compound snapshot with `FilterSpec::Type::Query`.
+* `Graph::edgeFilterByQuery(const GraphQuery &)` — AND logic for edges; pushes single compound snapshot with `FilterSpec::Type::EdgeQuery`.
+* `DialogQueryBuilder` (`src/forms/dialogquerybuilder.{h,cpp}`) — pure-C++ dialog (no .ui), dynamic condition rows (key combo / op combo / value edit / − button), scope radio (Nodes / Edges), "Add condition" button, Apply. Opens with one row; at least one row always kept.
+* Menu: **Edit → Filter → Query Builder…** (`Ctrl+X, Ctrl+B`).
+* Filter bar: one chip `"Nodes: query (N condition(s)) ×"` or `"Edges: query (N condition(s)) ×"`; arbitrary removal via the unified replay stack.
 
 **Deferred from #221:**
 
 * OR logic between conditions.
 * Text-based DSL for scripting / CLI tool.
+* Clicking a query chip label to reopen the dialog with current conditions prefilled.
 * Arbitrary removal for selection / ego / centrality chips (depends on #31 structural undo or explicit parameter storage for those filter types).
 
 ---
@@ -232,7 +238,7 @@ Treat graphs as structured datasets.
 
 ### Phase 1 — Attribute Editing ✔
 
-* ✔ Improve node/edge attribute editing (#224) — closes #224
+* ✔ Improve node/edge attribute editing (#224)
   * Phase A: Single-key node attribute API (`Graph::vertexCustomAttributeSet`, `vertexCustomAttributeRemove`)
   * Phase B: Edge custom attribute storage (`GraphVertex::m_outEdgeCustomAttributes`, `Graph::edgeCustomAttributesSet`)
   * Phase C: `DialogEdgeEdit` — edge properties dialog with custom key/value table (label, weight, color, attributes)
@@ -262,7 +268,7 @@ Treat graphs as structured datasets.
 
 ### Phase 3 — Structured Export ✔
 
-* ✔ CSV / JSON export (#226) — closes #226
+* ✔ CSV / JSON export (#226) 
   * `TableExport::toCSV(model, path)` / `TableExport::toJSON(model, path)` —
     free functions in `src/graph/io/table_export.*`; accept any
     `QAbstractItemModel*`; QtCore only, no UI.
@@ -380,11 +386,11 @@ Future extension — consumer of #221 query infrastructure:
 
 The roadmap is largely done. The remaining v3.6 work in priority order:
 
-1. **#235** — Canvas: Shift+click node adds to current selection (multi-select). Small change; enables better use of the subgraph extraction workflow.
-2. **#221 Phase 0** — Arbitrary chip removal: extend `GraphVisibilitySnapshot` with `FilterSpec`; enable × on replayable chips; replay on removal.
-3. **#221 Phase 1** — `DialogQueryBuilder`: multi-condition composer → one compound snapshot.
+1. ✔ **#235** — Canvas: Shift+click node adds to current selection (multi-select). Small change; enables better use of the subgraph extraction workflow.
+2. ✔ **#221 Phase 0** — Arbitrary chip removal: extend `GraphVisibilitySnapshot` with `FilterSpec`; enable × on replayable chips; replay on removal.
+3. ✔ **#221 Phase 1** — `DialogQueryBuilder`: multi-condition composer → one compound snapshot.
 4. **#37** — Color nodes by clustering coefficient and other non-prominence metrics (extend the existing gradient machinery).
-5. **Documentation debt** — manual updates for #228, #234, #236–#238, #220 (table already tracked at the end of this roadmap).
+5. **Documentation debt** — manual updates for #228, #234, #235, #236–#238, #220 (table already tracked at the end of this roadmap) and #221.
 
 ### Short-term
 
@@ -445,6 +451,7 @@ next release:
 | UCINET DL export | #237 | Feature 2 Phase 5 | Manual's "Supported Formats" page needs: describe DL export, note FULLMATRIX format used, multi-relation support via NM blocks, node-labels preserved in ROW/COLUMN LABELS; see capability matrix below |
 | Edge List export (weighted + simple) | #238 | Feature 2 Phase 5 | Manual's "Supported Formats" page needs: describe weighted (source target weight) and simple (source target) variants; note active-relation-only limitation; note spaces in labels are exported as underscores; see capability matrix below |
 | Subgraph save format expansion | #220 | Feature 2 Phase 5 | Manual's "Save subgraph" section needs: update to show all 7 formats now available in the Save Subgraph As… dialog; document which formats lose custom attributes (all except GraphML/DOT); document which formats export only the active relation (Adjacency, DOT, both Edge List variants) |
+| Compound AND-logic query filter / Query Builder | #221 | Phase 7 | Manual's "Filtering" section needs: document **Filter → Query Builder…** (`Ctrl+X, Ctrl+B`); explain scope radio (Nodes/Edges), dynamic condition rows, AND logic, operator set (=, ≠, >, <, ≥, ≤, contains), numeric-aware matching; note the "Use Query Builder…" shortcut button inside Filter by Attribute dialog; show chip label format `"Nodes: query (N condition(s))"` and how to remove via ×. |
 
 ### Export format capability matrix
 
