@@ -127,7 +127,8 @@ enum IndexType
     EVC = 9,  ///< Eigenvector Centrality
     DP = 10,  ///< Degree Prestige
     PRP = 11, ///< PageRank Prestige
-    PP = 12   ///< Proximity Prestige
+    PP = 12,  ///< Proximity Prestige
+    CLC = 13  ///< Clustering Coefficient (Watts-Strogatz)
 };
 
 /**
