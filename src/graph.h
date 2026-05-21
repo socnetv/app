@@ -33,6 +33,7 @@
 
 #include "global.h"
 #include "graph/filters/filter_condition.h"
+#include "graph/filters/filter_spec.h"
 #include "graphvertex.h"
 #include "matrix.h"
 #include "parser.h"
@@ -186,6 +187,8 @@ public slots:
     void vertexFilterByAttribute(const FilterCondition &cond);
     void edgeFilterByAttribute(const FilterCondition &cond);
     void vertexFilterRestoreAll();
+    void vertexFilterRemoveAt(int stackIndex);
+    QList<FilterSpec> filterSpecList() const;
     bool visibilityHistoryEmpty() const;
 
     void edgeFilterByWeight(const qreal, const bool);
@@ -419,6 +422,7 @@ public:
         QHash<int, bool> nodeVisible;            // vertex number  → was enabled
         QHash<QPair<int, int>, bool> arcVisible; // (source,target)→ was visible
         bool active = false;                     // true when this snapshot holds real data
+        FilterSpec spec;                         // replay descriptor for arbitrary chip removal
     };
 
     /* INIT AND CLEAR*/
@@ -1280,6 +1284,9 @@ private:
     Graph *subgraphFromVertexList(const QList<int> &vertexNums,
                                    const QString &name,
                                    const bool &includeCustomAttributes = true);
+
+    void applyVisibilitySnapshot(const GraphVisibilitySnapshot &snap);
+    void vertexFilterReplaySpec(const FilterSpec &spec);
 
     void edgeAdd(const int &v1,
                  const int &v2,

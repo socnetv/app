@@ -35,6 +35,7 @@
 #include <QtCharts/QChartGlobal>
 
 #include "global.h"
+#include "graph/filters/filter_condition.h"
 
 QT_BEGIN_NAMESPACE
 class QGraphicsScene;
@@ -629,6 +630,8 @@ private:
     DialogEdgeDichotomization *m_edgeDichotomizationDialog;
     DialogFilterEdgesByWeight *m_DialogEdgeFilterByWeight;
     FilterBarWidget  *m_filterBar;
+    QList<QPair<QString, FilterCondition::Scope>> m_nodeFilterChips; // parallel to vertex stack
+    QString m_edgeFilterChipLabel;
     QDockWidget      *m_tableDock;
     GraphTableWidget *m_tableWidget;
     DialogRandErdosRenyi *m_randErdosRenyiDialog;
