@@ -152,6 +152,10 @@ int Graph::getProminenceIndexByName(const QString &prominenceIndexName)
     {
         return IndexType::PP;
     }
+    else if (prominenceIndexName.contains("Clustering Coefficient"))
+    {
+        return IndexType::CLC;
+    }
     else
         return 0;
 }
@@ -257,6 +261,12 @@ void Graph::prominenceDistribution(const int &index,
     {
         seriesName = ("Proximity");
         discreteClasses = discretePPs;
+        break;
+    }
+    case IndexType::CLC:
+    {
+        seriesName = ("Clustering");
+        discreteClasses = discreteCLCs;
         break;
     }
     }
