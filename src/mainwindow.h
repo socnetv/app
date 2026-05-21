@@ -777,7 +777,8 @@ private:
     *layoutNodeColorProminence_CC_Act, *layoutNodeColorProminence_SC_Act, *layoutNodeColorProminence_EC_Act,
     *layoutNodeColorProminence_PC_Act, *layoutNodeColorProminence_BC_Act, *layoutNodeColorProminence_IC_Act,
     *layoutNodeColorProminence_EVC_Act,
-    *layoutNodeColorProminence_IRCC_Act,*layoutNodeColorProminence_PRP_Act, *layoutNodeColorProminence_PP_Act;
+    *layoutNodeColorProminence_IRCC_Act,*layoutNodeColorProminence_PRP_Act, *layoutNodeColorProminence_PP_Act,
+    *layoutNodeColorProminence_CLC_Act;
 
     QAction *strongColorationAct, *regularColorationAct;
     QAction *layoutFDP_Eades_Act, *layoutFDP_FR_Act;

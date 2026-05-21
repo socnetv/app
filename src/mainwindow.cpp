@@ -2824,6 +2824,22 @@ void MainWindow::initActions(){
     connect(layoutNodeColorProminence_PP_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutNodeColorByProminenceIndex()));
 
+    layoutNodeColorProminence_CLC_Act = new QAction( tr("Clustering Coefficient"), this);
+    layoutNodeColorProminence_CLC_Act->setEnabled(true);
+    layoutNodeColorProminence_CLC_Act->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_C, Qt::CTRL | Qt::Key_G));
+    layoutNodeColorProminence_CLC_Act->setStatusTip(
+                tr("Change the color of all nodes to "
+                   "reflect their local Clustering Coefficient."));
+    layoutNodeColorProminence_CLC_Act->
+            setWhatsThis(
+                tr("Clustering Coefficient Node Color Layout\n\n"
+                   "Changes the color of all nodes to reflect their local "
+                   "Clustering Coefficient (Watts-Strogatz). "
+                   "Nodes with higher clustering will have warmer color (i.e. red)."
+                   ));
+    connect(layoutNodeColorProminence_CLC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutNodeColorByProminenceIndex()));
+
 
 
 
@@ -4179,6 +4195,7 @@ void MainWindow::initMenuBar() {
     layoutNodeColorProminenceMenu->addAction (layoutNodeColorProminence_DP_Act);
     layoutNodeColorProminenceMenu->addAction (layoutNodeColorProminence_PRP_Act);
     layoutNodeColorProminenceMenu->addAction (layoutNodeColorProminence_PP_Act);
+    layoutNodeColorProminenceMenu->addAction (layoutNodeColorProminence_CLC_Act);
 
 
     layoutMenu->addSeparator();
@@ -4739,7 +4756,8 @@ void MainWindow::initPanels(){
                          << "Eigenvector Centrality"
                          << "Degree Prestige"
                          << "PageRank Prestige"
-                         << "Proximity Prestige";
+                         << "Proximity Prestige"
+                         << "Clustering Coefficient";
 
     QStringList prominenceCommands;
     prominenceCommands << "Select" << prominenceIndexList;
