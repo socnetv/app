@@ -88,6 +88,7 @@ class DialogEdgeEdit;
 class DialogBulkEdit;
 class DialogFilterNodesByCentrality;
 class DialogFilterEdgesByWeight;
+class DialogQueryBuilder;
 class DialogEdgeDichotomization;
 class DialogSettings;
 class DialogSystemInfo;
@@ -368,6 +369,7 @@ public slots:
     void slotFilterNodesByEgoNetwork();
     void slotFilterNodesBySelection();
     void slotFilterNodesByAttribute();
+    void slotFilterByQueryBuilder();
     void slotFilterNodesRestoreAll();
     void slotEditFilterEdgesByWeightDialog();
     void slotEditFilterEdgesReset();
@@ -630,8 +632,8 @@ private:
     DialogEdgeDichotomization *m_edgeDichotomizationDialog;
     DialogFilterEdgesByWeight *m_DialogEdgeFilterByWeight;
     FilterBarWidget  *m_filterBar;
-    QList<QPair<QString, FilterCondition::Scope>> m_nodeFilterChips; // parallel to vertex stack
-    QString m_edgeFilterChipLabel;
+    // All snapshot-backed filter chips in bar/stack order (barIndex == stackIndex invariant).
+    QList<QPair<QString, FilterCondition::Scope>> m_filterChips;
     QDockWidget      *m_tableDock;
     GraphTableWidget *m_tableWidget;
     DialogRandErdosRenyi *m_randErdosRenyiDialog;
@@ -715,6 +717,7 @@ private:
     QAction *editEdgeLabelAct, *editEdgeColorAct, *editEdgeWeightAct;
     QAction *filterNodesByCentralityAct,  *filterNodesByEgoNetworkAct,
         *filterNodesBySelectionAct, *filterNodesByAttributeAct,
+        *filterByQueryBuilderAct,
         *filterNodesRestoreAllAct, *editFilterNodesIsolatesAct,
         *editFilterEdgesByWeightAct, *editFilterEdgesRestoreAllAct;
     QAction *editFilterEdgesUnilateralAct;

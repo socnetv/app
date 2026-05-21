@@ -34,6 +34,7 @@
 #include "global.h"
 #include "graph/filters/filter_condition.h"
 #include "graph/filters/filter_spec.h"
+#include "graph/filters/graph_query.h"
 #include "graphvertex.h"
 #include "matrix.h"
 #include "parser.h"
@@ -190,6 +191,9 @@ public slots:
     void vertexFilterRemoveAt(int stackIndex);
     QList<FilterSpec> filterSpecList() const;
     bool visibilityHistoryEmpty() const;
+
+    void vertexFilterByQuery(const GraphQuery &query);
+    void edgeFilterByQuery(const GraphQuery &query);
 
     void edgeFilterByWeight(const qreal, const bool);
     void edgeFilterReset();

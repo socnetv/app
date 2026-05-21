@@ -71,6 +71,7 @@
 #include "forms/dialogbulkedit.h"
 #include "forms/dialogfilternodesbycentrality.h"
 #include "forms/dialogfilterbyattribute.h"
+#include "forms/dialogquerybuilder.h"
 #include "widgets/filterbarwidget.h"
 #include "widgets/graphtablewidget.h"
 #include "graph/io/table_export.h"
@@ -1867,6 +1868,15 @@ void MainWindow::initActions(){
                                                "Opens a dialog to filter nodes, edges, or both by a custom attribute. "
                                                "Non-matching elements are hidden (reversible via Restore All Nodes)."));
     connect(filterNodesByAttributeAct, SIGNAL(triggered()), this, SLOT(slotFilterNodesByAttribute()));
+
+    filterByQueryBuilderAct = new QAction(QIcon(":/images/filter_list_48px.svg"), tr("Query Builder..."), this);
+    filterByQueryBuilderAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_Q));
+    filterByQueryBuilderAct->setStatusTip(tr("Build a multi-condition AND filter for nodes or edges."));
+    filterByQueryBuilderAct->setWhatsThis(tr("Query Builder\n\n"
+                                             "Opens the Query Builder dialog to compose a filter with "
+                                             "multiple attribute conditions (AND logic). All conditions "
+                                             "must match for a node or edge to remain visible."));
+    connect(filterByQueryBuilderAct, SIGNAL(triggered()), this, SLOT(slotFilterByQueryBuilder()));
 
     filterNodesBySelectionAct = new QAction(tr("Focus on Selection"), this);
     filterNodesBySelectionAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X, Qt::CTRL | Qt::Key_S));
@@ -3981,6 +3991,7 @@ void MainWindow::initMenuBar() {
     filterMenu->addSeparator();
     // — Attribute filter (nodes + edges) —
     filterMenu->addAction(filterNodesByAttributeAct);
+    filterMenu->addAction(filterByQueryBuilderAct);
     filterMenu->addSeparator();
     // — Restore —
     filterMenu->addAction(filterNodesRestoreAllAct);
@@ -5741,39 +5752,29 @@ void MainWindow::initSignalSlots() {
 
     // Filter bar chip signals
     connect(m_filterBar, &FilterBarWidget::chipCloseRequested,
-            this, [this](int barIndex, FilterCondition::Scope scope) {
-        if (scope == FilterCondition::Scope::Edges) {
-            activeGraph->edgeFilterReset();
-            m_edgeFilterChipLabel.clear();
-            editFilterEdgesRestoreAllAct->setEnabled(false);
-            m_filterBar->removeChipAt(barIndex);
-        } else {
-            // Count node-scoped chips before barIndex to get the vertex stack index.
-            int stackIndex = 0;
-            for (int i = 0; i < barIndex; ++i) {
-                if (m_filterBar->chipScopeAt(i) != FilterCondition::Scope::Edges)
-                    ++stackIndex;
-            }
-            activeGraph->vertexFilterRemoveAt(stackIndex);
-            m_nodeFilterChips.removeAt(stackIndex);
-            // Rebuild the bar from the remaining node chips + edge chip.
-            m_filterBar->clearAllChips();
-            for (const auto &chip : std::as_const(m_nodeFilterChips))
-                m_filterBar->addChip(chip.first, chip.second);
-            if (!m_edgeFilterChipLabel.isEmpty())
-                m_filterBar->addChip(m_edgeFilterChipLabel, FilterCondition::Scope::Edges);
-            if (activeGraph->visibilityHistoryEmpty())
-                filterNodesRestoreAllAct->setEnabled(false);
+            this, [this](int barIndex, FilterCondition::Scope /*scope*/) {
+        // barIndex == stackIndex: every filter (node or edge) pushes exactly one snapshot.
+        activeGraph->vertexFilterRemoveAt(barIndex);
+        m_filterChips.removeAt(barIndex);
+        // Rebuild bar from remaining chips (preserves original application order).
+        m_filterBar->clearAllChips();
+        for (const auto &chip : std::as_const(m_filterChips))
+            m_filterBar->addChip(chip.first, chip.second);
+        // Update restore-action states.
+        bool hasNodeFilters = false, hasEdgeFilters = false;
+        for (const auto &chip : std::as_const(m_filterChips)) {
+            if (chip.second != FilterCondition::Scope::Edges) hasNodeFilters = true;
+            else                                               hasEdgeFilters = true;
         }
+        filterNodesRestoreAllAct->setEnabled(hasNodeFilters);
+        editFilterEdgesRestoreAllAct->setEnabled(hasEdgeFilters);
     });
     connect(m_filterBar, &FilterBarWidget::clearAllRequested,
             this, [this]() {
         while (!activeGraph->visibilityHistoryEmpty())
             activeGraph->vertexFilterRestoreAll();
-        m_nodeFilterChips.clear();
+        m_filterChips.clear();
         filterNodesRestoreAllAct->setEnabled(false);
-        activeGraph->edgeFilterReset();
-        m_edgeFilterChipLabel.clear();
         editFilterEdgesRestoreAllAct->setEnabled(false);
         m_filterBar->clearAllChips();
     });
@@ -5974,8 +5975,7 @@ void MainWindow::initApp(){
 
     filterNodesRestoreAllAct->setEnabled(false);
     editSubgraphExtractFromSelectionAct->setEnabled(false);
-    m_nodeFilterChips.clear();
-    m_edgeFilterChipLabel.clear();
+    m_filterChips.clear();
     m_filterBar->clearAllChips();
 
     // Always reset the data table so it shows an empty graph when next opened
@@ -11963,7 +11963,7 @@ void MainWindow::slotFilterNodesDialogByCentrality()
     if (dlg.exec() == QDialog::Accepted)
     {
         filterNodesRestoreAllAct->setEnabled(true);
-        m_nodeFilterChips.append({tr("Nodes: centrality filter"), FilterCondition::Scope::Nodes});
+        m_filterChips.append({tr("Nodes: centrality filter"), FilterCondition::Scope::Nodes});
         m_filterBar->addChip(tr("Nodes: centrality filter"), FilterCondition::Scope::Nodes);
     }
 }
@@ -11991,7 +11991,7 @@ void MainWindow::slotFilterNodesBySelection()
     }
     activeGraph->vertexFilterBySelection(selection);
     filterNodesRestoreAllAct->setEnabled(true);
-    m_nodeFilterChips.append({tr("Nodes: selection"), FilterCondition::Scope::Nodes});
+    m_filterChips.append({tr("Nodes: selection"), FilterCondition::Scope::Nodes});
     m_filterBar->addChip(tr("Nodes: selection"), FilterCondition::Scope::Nodes);
 }
 
@@ -12015,7 +12015,7 @@ void MainWindow::slotFilterNodesByEgoNetwork()
     }
     activeGraph->vertexFilterByEgoNetwork(v1);
     filterNodesRestoreAllAct->setEnabled(true);
-    m_nodeFilterChips.append({tr("Nodes: ego network"), FilterCondition::Scope::Nodes});
+    m_filterChips.append({tr("Nodes: ego network"), FilterCondition::Scope::Nodes});
     m_filterBar->addChip(tr("Nodes: ego network"), FilterCondition::Scope::Nodes);
 }
 
@@ -12052,21 +12052,21 @@ void MainWindow::slotFilterNodesByAttribute()
             this, [this](const FilterCondition &cond) {
         if (cond.scope == FilterCondition::Scope::Edges) {
             activeGraph->edgeFilterByAttribute(cond);
-            m_edgeFilterChipLabel = cond.label();
+            m_filterChips.append({cond.label(), FilterCondition::Scope::Edges});
             m_filterBar->addChip(cond.label(), FilterCondition::Scope::Edges);
         } else if (cond.scope == FilterCondition::Scope::Both) {
             activeGraph->vertexFilterByAttribute(cond);
             activeGraph->edgeFilterByAttribute(cond);
-            // Split into two chips so each scope can be closed independently
+            // Split into two chips so each scope can be closed independently.
             FilterCondition nc = cond; nc.scope = FilterCondition::Scope::Nodes;
             FilterCondition ec = cond; ec.scope = FilterCondition::Scope::Edges;
-            m_nodeFilterChips.append({nc.label(), FilterCondition::Scope::Nodes});
-            m_edgeFilterChipLabel = ec.label();
+            m_filterChips.append({nc.label(), FilterCondition::Scope::Nodes});
+            m_filterChips.append({ec.label(), FilterCondition::Scope::Edges});
             m_filterBar->addChip(nc.label(), FilterCondition::Scope::Nodes);
             m_filterBar->addChip(ec.label(), FilterCondition::Scope::Edges);
         } else {
             activeGraph->vertexFilterByAttribute(cond);
-            m_nodeFilterChips.append({cond.label(), FilterCondition::Scope::Nodes});
+            m_filterChips.append({cond.label(), FilterCondition::Scope::Nodes});
             m_filterBar->addChip(cond.label(), FilterCondition::Scope::Nodes);
         }
         if (cond.scope != FilterCondition::Scope::Edges)
@@ -12080,16 +12080,84 @@ void MainWindow::slotFilterNodesByAttribute()
 }
 
 /**
+ * @brief Opens the Query Builder dialog for multi-condition AND filtering.
+ *
+ * Scope (Nodes / Edges) is selected inside the dialog.
+ * Applies one compound filter that counts as a single chip and one snapshot.
+ */
+void MainWindow::slotFilterByQueryBuilder()
+{
+    if (!activeNodes())
+    {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    const QStringList nodeKeys = activeGraph->graphHasVertexCustomAttributes();
+    const QStringList edgeKeys = activeGraph->graphHasEdgeCustomAttributes();
+
+    if (nodeKeys.isEmpty() && edgeKeys.isEmpty())
+    {
+        slotHelpMessageToUser(USER_MSG_CRITICAL,
+                              tr("No custom attributes"),
+                              tr("This network has no custom node or edge attributes. "
+                                 "Add attributes via the Data Table (Ctrl+T)."));
+        return;
+    }
+
+    DialogQueryBuilder *dlg = new DialogQueryBuilder(nodeKeys, edgeKeys, this);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+
+    connect(dlg, &DialogQueryBuilder::userChoices,
+            this, [this](const GraphQuery &query) {
+        if (query.conditions.isEmpty()) return;
+
+        const FilterCondition::Scope scope = query.conditions.first().scope;
+        const int n = query.conditions.size();
+
+        if (scope == FilterCondition::Scope::Edges) {
+            activeGraph->edgeFilterByQuery(query);
+            const QString label = tr("Edges: query (%1 condition(s))").arg(n);
+            m_filterChips.append({label, FilterCondition::Scope::Edges});
+            m_filterBar->addChip(label, FilterCondition::Scope::Edges);
+            editFilterEdgesRestoreAllAct->setEnabled(true);
+        } else {
+            activeGraph->vertexFilterByQuery(query);
+            const QString label = tr("Nodes: query (%1 condition(s))").arg(n);
+            m_filterChips.append({label, FilterCondition::Scope::Nodes});
+            m_filterBar->addChip(label, FilterCondition::Scope::Nodes);
+            filterNodesRestoreAllAct->setEnabled(true);
+        }
+    });
+
+    dlg->exec();
+}
+
+/**
  * @brief Restores all nodes hidden by the last filter.
  */
 void MainWindow::slotFilterNodesRestoreAll()
 {
-    activeGraph->vertexFilterRestoreAll();
-    if (!m_nodeFilterChips.isEmpty())
-        m_nodeFilterChips.removeLast();
-    m_filterBar->removeLatestChipForScope(FilterCondition::Scope::Nodes);
-    if (activeGraph->visibilityHistoryEmpty())
-        filterNodesRestoreAllAct->setEnabled(false);
+    // Find the last non-edge chip and remove it via the unified stack mechanism.
+    int lastNodeIdx = -1;
+    for (int i = m_filterChips.size() - 1; i >= 0; --i) {
+        if (m_filterChips[i].second != FilterCondition::Scope::Edges) {
+            lastNodeIdx = i;
+            break;
+        }
+    }
+    if (lastNodeIdx < 0) return;
+
+    activeGraph->vertexFilterRemoveAt(lastNodeIdx);
+    m_filterChips.removeAt(lastNodeIdx);
+    m_filterBar->clearAllChips();
+    for (const auto &chip : std::as_const(m_filterChips))
+        m_filterBar->addChip(chip.first, chip.second);
+
+    bool hasNodeFilters = false;
+    for (const auto &chip : std::as_const(m_filterChips))
+        if (chip.second != FilterCondition::Scope::Edges) { hasNodeFilters = true; break; }
+    filterNodesRestoreAllAct->setEnabled(hasNodeFilters);
 }
 
 /**
@@ -12135,7 +12203,7 @@ void MainWindow::slotEditFilterEdgesByWeightDialog() {
     connect( m_DialogEdgeFilterByWeight, &DialogFilterEdgesByWeight::userChoices,
              this, [this](){
         editFilterEdgesRestoreAllAct->setEnabled(true);
-        m_edgeFilterChipLabel = tr("Edges: weight filter");
+        m_filterChips.append({tr("Edges: weight filter"), FilterCondition::Scope::Edges});
         m_filterBar->addChip(tr("Edges: weight filter"), FilterCondition::Scope::Edges);
     });
 
@@ -12149,10 +12217,18 @@ void MainWindow::slotEditFilterEdgesByWeightDialog() {
  */
 void MainWindow::slotEditFilterEdgesReset()
 {
-    activeGraph->edgeFilterReset();
-    m_edgeFilterChipLabel.clear();
+    // Remove all edge-scope chips via the snapshot stack (highest index first
+    // so each vertexFilterRemoveAt operates on the correct stack position).
+    for (int i = m_filterChips.size() - 1; i >= 0; --i) {
+        if (m_filterChips[i].second == FilterCondition::Scope::Edges) {
+            activeGraph->vertexFilterRemoveAt(i);
+            m_filterChips.removeAt(i);
+        }
+    }
+    m_filterBar->clearAllChips();
+    for (const auto &chip : std::as_const(m_filterChips))
+        m_filterBar->addChip(chip.first, chip.second);
     editFilterEdgesRestoreAllAct->setEnabled(false);
-    m_filterBar->removeAllChipsForScope(FilterCondition::Scope::Edges);
 }
 
 
