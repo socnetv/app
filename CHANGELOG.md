@@ -109,6 +109,15 @@ All notable changes to this project are documented in this file.
 
 ### Bug Fixes
 
+  - **Canvas: Shift+click now adds a node to the current selection** (#235):
+    Shift+left-clicking a node toggles it into or out of the selection without
+    clearing previously selected nodes. Qt's item-level mouse handler in
+    `RubberBandDrag` mode only treats `Ctrl` as additive; the fix intercepts
+    `Shift+LeftButton` in `GraphicsWidget::mousePressEvent` and calls
+    `node->setSelected(!node->isSelected())` directly, bypassing Qt's
+    default clear-and-select path. Shift+click on empty canvas space (rubber-
+    band extension) and plain click behaviour are unchanged.
+
   - **DOT parser: self-contained `graph [...]` block skips next node** (#236
     follow-up): when our exporter writes `graph [label="Name"];` on a single
     line, the parser was entering multi-line netProperties mode and then
