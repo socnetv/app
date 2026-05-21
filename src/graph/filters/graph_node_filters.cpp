@@ -13,6 +13,7 @@
 #include "graph.h"
 #include "filter_condition.h"
 #include "filter_spec.h"
+#include "graph_query.h"
 #include <QDebug>
 
 /**
@@ -478,58 +479,6 @@ void Graph::vertexFilterBySelection(const QList<int> &selectedVertices)
 }
 
 // ---------------------------------------------------------------------------
-// Internal helper
-// ---------------------------------------------------------------------------
-
-/**
- * @brief Returns true if @p attrValue satisfies the condition described by
- *        @p cond.
- *
- * Numeric operators (>, <, ≥, ≤) attempt a double conversion of both sides
- * and fall back to lexicographic comparison when either side is not numeric.
- * Eq / Neq always use exact string comparison.
- * Contains uses case-insensitive substring search.
- */
-static bool matchesCondition(const QString &attrValue, const FilterCondition &cond)
-{
-    switch (cond.op) {
-    case FilterCondition::Op::Eq:
-        return attrValue == cond.value;
-    case FilterCondition::Op::Neq:
-        return attrValue != cond.value;
-    case FilterCondition::Op::Contains:
-        return attrValue.contains(cond.value, Qt::CaseInsensitive);
-    default:
-        break;
-    }
-
-    // Numeric branch
-    bool okA = false, okB = false;
-    const double a = attrValue.toDouble(&okA);
-    const double b = cond.value.toDouble(&okB);
-
-    if (okA && okB) {
-        switch (cond.op) {
-        case FilterCondition::Op::Gt:  return a >  b;
-        case FilterCondition::Op::Lt:  return a <  b;
-        case FilterCondition::Op::Gte: return a >= b;
-        case FilterCondition::Op::Lte: return a <= b;
-        default: break;
-        }
-    }
-
-    // Lexicographic fallback
-    switch (cond.op) {
-    case FilterCondition::Op::Gt:  return attrValue >  cond.value;
-    case FilterCondition::Op::Lt:  return attrValue <  cond.value;
-    case FilterCondition::Op::Gte: return attrValue >= cond.value;
-    case FilterCondition::Op::Lte: return attrValue <= cond.value;
-    default: break;
-    }
-    return false;
-}
-
-// ---------------------------------------------------------------------------
 // Node attribute filter
 // ---------------------------------------------------------------------------
 
@@ -555,7 +504,7 @@ void Graph::vertexFilterByAttribute(const FilterCondition &cond)
     for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
     {
         const QHash<QString,QString> attrs = (*vi)->customAttributes();
-        if (attrs.contains(cond.key) && matchesCondition(attrs.value(cond.key), cond))
+        if (attrs.contains(cond.key) && cond.matches(attrs.value(cond.key)))
             visibleSet.insert((*vi)->number());
     }
 
@@ -782,6 +731,21 @@ void Graph::vertexFilterReplaySpec(const FilterSpec &spec)
         vertexFilterByCentrality(spec.centralityThreshold,
                                  spec.centralityOverThreshold,
                                  spec.centralityIndex);
+        break;
+    case FilterSpec::Type::EdgeAttribute:
+        edgeFilterByAttribute(spec.condition);
+        break;
+    case FilterSpec::Type::EdgeWeight:
+        edgeFilterByWeight(static_cast<qreal>(spec.edgeWeightThreshold),
+                           spec.edgeWeightOverThreshold);
+        break;
+    case FilterSpec::Type::Query:
+        if (!spec.queryConditions.isEmpty())
+            vertexFilterByQuery(GraphQuery{spec.queryConditions});
+        break;
+    case FilterSpec::Type::EdgeQuery:
+        if (!spec.queryConditions.isEmpty())
+            edgeFilterByQuery(GraphQuery{spec.queryConditions});
         break;
     default:
         break;
