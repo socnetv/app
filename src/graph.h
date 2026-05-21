@@ -1372,6 +1372,7 @@ private:
     H_StrToInt discreteDPs, discreteSDCs, discreteCCs, discreteBCs, discreteSCs;
     H_StrToInt discreteIRCCs, discreteECs, discreteEccentricities;
     H_StrToInt discretePCs, discreteICs, discretePRPs, discretePPs, discreteEVCs;
+    H_StrToInt discreteCLCs;
 
     QString m_reportsDataDir;
     int m_reportsRealPrecision;
@@ -1423,6 +1424,7 @@ private:
     int classesIC, maxNodeIC, minNodeIC;
     int classesPRP, maxNodePRP, minNodePRP;
     int classesPP, maxNodePP, minNodePP;
+    int classesCLC, maxNodeCLC, minNodeCLC;
     int classesEVC, maxNodeEVC, minNodeEVC;
     qreal sizeOfComponent;
 
