@@ -19,3 +19,9 @@ Introduce a domain model that is independent from UI concerns and can be tested 
 
 ## Work Rules
 - Prefer adapters/wrappers first, not data migrations.
+
+## Cross-cutting dependency — Undo/Redo (#31)
+
+Structural undo (add/delete nodes, weight changes, attribute mutations on the canvas) requires a `QUndoStack` integrated across the full Graph mutation API. This is a WS3 concern: a proper command pattern can only be introduced cleanly once the domain model and mutation API are stable. #31 is explicitly deferred until at least M2 of this roadmap.
+
+Note: filter-level undo (non-destructive visibility operations) is already handled by the `m_visibilityHistory` snapshot stack in `Graph` and is not blocked on WS3.
