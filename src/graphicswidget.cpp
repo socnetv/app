@@ -1508,9 +1508,19 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
                         node->setSelected(true);
                     emit openNodeMenu();
                 }
-                if ( e->button()==Qt::MiddleButton) {
+                else if ( e->button()==Qt::MiddleButton) {
                     qDebug() << "This was a middle-click on node. Calling to start or conclude a new edge...";
                     handleDoubleClickOnNode(node);
+                }
+                else if ( e->button()==Qt::LeftButton
+                          && (e->modifiers() & Qt::ShiftModifier) ) {
+                    // Shift+left-click: toggle this node in/out of the current
+                    // selection without clearing other selected nodes.
+                    // Qt's default item handler only treats Ctrl as additive;
+                    // we intercept Shift here and return early to skip that path.
+                    qDebug() << "Shift+left-click on node. Toggling selection.";
+                    node->setSelected(!node->isSelected());
+                    return;
                 }
                 QGraphicsView::mousePressEvent(e);
                 return;
