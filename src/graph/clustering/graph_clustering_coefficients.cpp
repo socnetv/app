@@ -229,6 +229,8 @@ qreal Graph::clusteringCoefficient(const bool updateProgress)
     varianceCLC = 0;
     maxCLC = 0;
     minCLC = 1;
+    classesCLC = 0;
+    discreteCLCs.clear();
     qreal temp = 0;
     qreal x = 0;
     qreal N = vertices();
@@ -254,6 +256,8 @@ qreal Graph::clusteringCoefficient(const bool updateProgress)
         }
 
         temp = clusteringCoefficientLocal((*vertex)->number());
+
+        resolveClasses(temp, discreteCLCs, classesCLC);
 
         if (temp > maxCLC)
         {
