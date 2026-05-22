@@ -1424,7 +1424,7 @@ private:
     int classesIC, maxNodeIC, minNodeIC;
     int classesPRP, maxNodePRP, minNodePRP;
     int classesPP, maxNodePP, minNodePP;
-    int classesCLC, maxNodeCLC, minNodeCLC;
+    int classesCLC;
     int classesEVC, maxNodeEVC, minNodeEVC;
     qreal sizeOfComponent;
 
