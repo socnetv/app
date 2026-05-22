@@ -100,6 +100,19 @@ All notable changes to this project are documented in this file.
       case-insensitive lexicographic order; "contains" is always
       case-insensitive substring search.
 
+  - **Clustering Coefficient added to node color layout** (#37):
+    - **Layout → Node Color by prominence index → Clustering Coefficient**
+      (`Ctrl+L, Ctrl+C, Ctrl+G`) colors nodes by their local Watts-Strogatz
+      clustering coefficient using the same blue→red gradient as all other
+      prominence indices: nodes with higher clustering are warmer (red), lower
+      clustering are cooler (blue).
+    - Fully integrated at the same depth as the 12 existing centrality/prestige
+      indices: appears in the Layout control panel combo, the analysis prominence
+      combo, **Filter Nodes by Centrality** (filter and find by CLC threshold),
+      and the prominence distribution chart.
+    - `IndexType::CLC = 13` added to the index enum; `clusteringCoefficient()`
+      now builds the `discreteCLCs` distribution map for charting.
+
 ### Improvements
 
   - **UI declutter & UX improvements** (#234):

@@ -105,8 +105,7 @@ Make large graphs readable and explorable.
 
 **Scoped deliverable for v3.6:**
 
-* **#37** — Color nodes by metric: extend the existing Node Color gradient mechanism (currently only covers the 12 centrality/prestige indices in `slotLayoutNodeColorByProminenceIndex`) to also include clustering coefficient and other cohesion measures. The gradient machinery is already in place; the work is adding the missing index types to the mapping options.
-  * Note: this is distinct from the existing "Visualize by prominence index → Node Color" layout type, which already maps centrality scores to a blue→red gradient. #37 is about extending the same mechanism to non-prominence metrics (clustering coefficient, community membership, custom numeric attributes).
+* ✔ **#37** — Color nodes by metric: `IndexType::CLC = 13` added to the prominence index enum; `clusteringCoefficient()` now populates `discreteCLCs` via `resolveClasses`; `layoutByProminenceIndex`, `isCentralityIndexComputed`, `vertexFilterByCentrality`, `prominenceDistribution`, and the vertex find/filter switches all handle `CLC`; `layoutNodeColorProminence_CLC_Act` (`Ctrl+L, Ctrl+C, Ctrl+G`) added to the Node Color menu and `prominenceIndexList`. Clustering Coefficient now appears in the Layout control panel combo, the analysis combo, Filter Nodes by Centrality, and the distribution chart — identical integration depth as the 12 centrality/prestige indices.
 
 **Deferred post-3.6:**
 
@@ -389,7 +388,7 @@ The roadmap is largely done. The remaining v3.6 work in priority order:
 1. ✔ **#235** — Canvas: Shift+click node adds to current selection (multi-select). Small change; enables better use of the subgraph extraction workflow.
 2. ✔ **#221 Phase 0** — Arbitrary chip removal: extend `GraphVisibilitySnapshot` with `FilterSpec`; enable × on replayable chips; replay on removal.
 3. ✔ **#221 Phase 1** — `DialogQueryBuilder`: multi-condition composer → one compound snapshot.
-4. **#37** — Color nodes by clustering coefficient and other non-prominence metrics (extend the existing gradient machinery).
+4. ✔ **#37** — Color nodes by clustering coefficient and other non-prominence metrics (extend the existing gradient machinery).
 5. **Documentation debt** — manual updates for #228, #234, #235, #236–#238, #220 (table already tracked at the end of this roadmap) and #221.
 
 ### Short-term
