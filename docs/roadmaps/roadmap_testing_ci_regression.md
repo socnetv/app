@@ -46,6 +46,8 @@ kernel_reachability_v2.cpp
 kernel_walks_v3.cpp
 kernel_prominence_v4.cpp
 kernel_io_roundtrip_v5.cpp
+kernel_clustering_v6.cpp
+kernel_connectivity_v7.cpp
 
 ```
 
@@ -134,10 +136,24 @@ Expose more “UI-visible” functionality through deterministic CLI kernels, so
 
 Examples of high-value additions:
 
-- clustering metrics / coefficients
 - random network generators (deterministic via fixed seeds)
 - layout / visualization computations runnable headlessly (compute-only; no QtWidgets/QtCharts)
 - additional analysis workflows that users typically trigger from UI
+- **kernel_connectivity_v7** ✔ — weakly connected component count + per-node component IDs (#85):
+  - `Graph::graphWeaklyConnectedComponents()` — BFS treating all edges as undirected (weak connectivity); caches count in `m_graphWeaklyConnectedComponents` and per-node IDs in `m_vertexComponentId`. Cache invalidated with `resetDistanceCentralityCacheFlags()`.
+  - Three baselines committed: `TinyDisconnected_Undir_N6_E4` (3 components), `TinyDisconnected_Dir_N5_E3` (2 weak components), `TinyPath_N3_E2` (1 component / connected).
+  - **Connectivity semantics table** (what the kernel computes and what the UI reports):
+
+    | Graph type | Topology | Components | `connected` | UI message |
+    |---|---|---|---|---|
+    | Undirected | All nodes reachable | 1 | true | "connected (1 component)" |
+    | Undirected | N isolated islands | >1 | false | "disconnected (N components)" |
+    | Directed | Every pair has a directed path | 1 | true | "weakly connected (1 component)" |
+    | Directed | A→B only (not B→A) | 1 | true | "weakly connected (1 component)" — one island, not strongly connected |
+    | Directed | Two separate islands | >1 | false | "disconnected (N weakly connected components)" |
+
+    **Design rationale:** `connected = (components == 1)` uses weak connectivity throughout. For directed graphs this is weaker than strong connectivity (all-pairs directed reachability), but it answers the practical "how many islands?" question consistently for both directed and undirected networks. Strong connectivity remains available via `isConnected()` / SSSP.
+
 - **kernel_attribute_import_v7** — CSV/JSON attribute import + export roundtrip (#227, #232):
   - Use `src/data/TinyDir_N2_E1_Attributes.graphml` as the seed graph (2 nodes, 1 edge; heterogeneous custom attrs `Age`/`Party` using `d1000+` keys — also covers #208 regression)
   - Export nodes and edges to CSV and JSON via `TableExport`

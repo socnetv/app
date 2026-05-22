@@ -17,6 +17,7 @@
 #                       (export skipped for formats without exporter;
 #                        baseline locks in the skipped outcome too)
 #   v6  clustering    — clustering coefficient + triad census + clique census
+#   v7  connectivity  — weakly connected components count + per-node component IDs
 #
 # Baselines:
 #   src/tools/baselines/             (distance v1)
@@ -25,6 +26,7 @@
 #   src/tools/baselines/prominence/   (v4)
 #   src/tools/baselines/io_roundtrip/ (v5)
 #   src/tools/baselines/clustering/   (v6)
+#   src/tools/baselines/connectivity/ (v7)
 #
 # To add a new case:
 #   1. Run socnetv-cli --kernel <k> ... --dump-json <baseline.json>
@@ -62,6 +64,7 @@ BASE_WALKS="${ROOT_DIR}/src/tools/baselines/walks"
 BASE_PROM="${ROOT_DIR}/src/tools/baselines/prominence"
 BASE_IO="${ROOT_DIR}/src/tools/baselines/io_roundtrip"
 BASE_CLUST="${ROOT_DIR}/src/tools/baselines/clustering"
+BASE_CONN="${ROOT_DIR}/src/tools/baselines/connectivity"
 DATA="${ROOT_DIR}/src/data"
 
 if [[ ! -x "$CLI" ]]; then
@@ -133,6 +136,18 @@ run_case_clustering() {
 
   echo "==> $(basename "$baseline")"
   if ! "$CLI" --kernel clustering -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
+    echo "[FAIL] $(basename "$baseline")"
+    FAILS=$((FAILS+1))
+  fi
+}
+
+run_case_connectivity() {
+  local input="$1"
+  local ftype="$2"
+  local baseline="${!#}"
+
+  echo "==> $(basename "$baseline")"
+  if ! "$CLI" --kernel connectivity -i "$input" -f "$ftype" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
   fi
@@ -317,7 +332,23 @@ run_case_clustering \
   2 \
   -w 1 -x 1 -k 0 \
   "${BASE_CLUST}/DunbarGelada_H22a__CLUST__V6__FT2__W1_IW1_DI0.json"
-  
+
+# CONNECTIVITY (schema v7)
+run_case_connectivity \
+  "${DATA}/TinyDisconnected_Undir_N6_E4.paj" \
+  2 \
+  "${BASE_CONN}/TinyDisconnected_Undir_N6_E4__CONN__V7__FT2.json"
+
+run_case_connectivity \
+  "${DATA}/TinyDisconnected_Dir_N5_E3.paj" \
+  2 \
+  "${BASE_CONN}/TinyDisconnected_Dir_N5_E3__CONN__V7__FT2.json"
+
+run_case_connectivity \
+  "${DATA}/TinyPath_N3_E2.paj" \
+  2 \
+  "${BASE_CONN}/TinyPath_N3_E2__CONN__V7__FT2.json"
+
 echo
 if [[ "$FAILS" -eq 0 ]]; then
   echo "[OK] All golden comparisons passed."
