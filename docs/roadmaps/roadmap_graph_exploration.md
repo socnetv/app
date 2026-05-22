@@ -1,20 +1,18 @@
-# Roadmap: Graph Exploration (WS9)
+# Roadmap: Graph Exploration (WS9) ✔
 
 ## Overview
 
-This roadmap defines the evolution of SocNetV from a visualization-focused application into a full **graph exploration and data workflow platform**.
+This roadmap documents the evolution of SocNetV from a visualization-focused application into a full **graph exploration and data workflow platform**. All three feature tracks shipped in v3.5–v3.6.
 
-It consolidates three major feature tracks:
-
-* **Feature 1 (#209)**: Visualization & decluttering
-* **Feature 2 (#215)**: Filtering, querying & subgraphs
-* **Feature 3 (#223)**: Structured data workflows
+* **Feature 1 (#209)**: Visualization & decluttering ✔
+* **Feature 2 (#215)**: Filtering, querying & subgraphs ✔
+* **Feature 3 (#223)**: Structured data workflows ✔
 
 ---
 
 ## Core Vision
 
-SocNetV should support the full workflow:
+SocNetV now supports the full workflow:
 
 ```
 Load → Visualize → Filter → Explore → Extract → Edit → Export
@@ -24,27 +22,27 @@ Load → Visualize → Filter → Explore → Extract → Edit → Export
 
 ## Architectural Direction
 
-### Current State
+### State at WS9 start (v3.4)
 
-* Graph is tightly coupled with UI (MainWindow)
-* Many operations are dialog-driven
+* Graph tightly coupled with UI (MainWindow)
+* Operations dialog-driven
 * No unified filtering or projection layer
 
-### Target Model
+### Achieved Architecture
 
 ```
 Graph (data)
     ↓
-Filter / Projection Layer
+Filter / Projection Layer  (m_visibilityHistory snapshot stack)
     ↓
-UI (GraphicsWidget, dialogs, tables)
+UI (GraphicsWidget, dialogs, tables, filter bar, data table dock)
 ```
 
-### Key Principles
+### Key Principles (applied throughout)
 
 * **Non-destructive operations** (visibility instead of deletion)
-* **Stateful filtering** (not one-off dialogs)
-* **Reusable logic** across UI components
+* **Stateful filtering** (snapshot/restore stack, not one-off dialogs)
+* **Reusable logic** across UI components (`FilterCondition`, `FilterSpec`, `GraphQuery`)
 
 ---
 
@@ -54,14 +52,10 @@ UI (GraphicsWidget, dialogs, tables)
 * Graph is currently owned by MainWindow
 * No multi-document interface (MDI)
 
-### Design Decision (Current)
+### Design Decision (v3.6)
 
 * Subgraphs are handled as **filtered views (in-place)**
-* No new windows for subgraphs (yet)
-
-### Future Direction
-
-* Explore **tab-based multi-graph UI** (preferred over multiple windows)
+* No new windows for subgraphs — tab-based multi-graph UI is the preferred long-term direction (see WS9 Debt)
 
 ---
 
@@ -114,7 +108,7 @@ Make large graphs readable and explorable.
 
 ---
 
-# Feature 2 — Filtering & Subgraphs (#215)
+# Feature 2 — Filtering & Subgraphs (#215) ✔
 
 ## Goal
 
@@ -260,7 +254,7 @@ Treat graphs as structured datasets.
     bar (QSortFilterProxyModel, all columns, case-insensitive), a Refresh button,
     and a sortable `QTableView` with inline editing on double-click.
     Emits `nodeSelected(int)` on row click.
-  * `QDockWidget` at `BottomDockWidgetArea`; toggled by **Ctrl+T** (`Options`
+  * `QDockWidget` at `BottomDockWidgetArea`; toggled by **Ctrl+D** (`Options`
     menu and `Edit` menu, `viewDataTableAct`). Auto-refreshes on file load and
     graph reset when visible.
   * `viewDataTableAct` has a dedicated `data_table_48px.svg` icon.
@@ -346,72 +340,36 @@ Defines:
 
 ### Undo / Redo (#31)
 
-#31 is a long-standing user request for general undo on canvas operations. Its relationship to WS9:
+#31 is a long-standing user request for general undo on canvas operations.
 
-* **Filter-level undo** is already implemented via the `m_visibilityHistory` snapshot stack — every non-destructive filter (centrality, ego, selection, attribute) can be undone via "Restore All" or, after Phase 7 Phase 0, via arbitrary chip removal.
-* **Structural edit undo** (add/delete nodes, attribute mutations, weight changes) requires a proper `QUndoStack` integrated across the full Graph mutation API. This is a WS3-level concern (domain model split) and is explicitly deferred post-3.6.
-* The bulk edit gap (noted in Feature 3 Phase 5) is part of structural undo and similarly deferred.
+* **Filter-level undo** ✔ — implemented via the `m_visibilityHistory` snapshot stack; every non-destructive filter can be undone via "Restore All" or arbitrary chip removal (×).
+* **Structural edit undo** (add/delete nodes, attribute mutations, weight changes) — requires a proper `QUndoStack` across the full Graph mutation API; WS3-level concern, deferred post-3.6 (see WS9 Debt).
 
 ### Temporal Data (#222)
 
-Future extension — consumer of #221 query infrastructure:
-
-* Date / datetime attributes (ISO 8601); time intervals (start + end).
-* Filtering by date ranges and interval overlap (e.g. `start_date ≤ 1900 AND end_date ≥ 1850`) maps directly to the `Lte`/`Gte` operators in `FilterCondition` — implement #221 first and #222 gets basic date range filtering for free.
-* Timeline slider UI and network-over-time animation are complex and **deferred post-3.6**.
-* No implementation work needed before #221 is complete.
+Deferred post-3.6 (see WS9 Debt). The `Lte`/`Gte` operators in `FilterCondition` (shipped in #221) already support date-range queries once attributes carry typed date values — the query infrastructure is ready; the timeline animation layer is what remains.
 
 ---
 
 ## UI Evolution
 
-### Current
+### v3.5–v3.6 (shipped)
 
-* Dialog-driven workflows
+* Filter bar (persistent, chip-based) ✔
+* Data table dock (node + edge, live-search) ✔
+* Dialog-driven filtering and attribute editing ✔
 
-### Target
+### Post-3.6 (deferred — see WS9 Debt)
 
-* Persistent panels:
-
-  * Filter panel
-  * Table views
-  * Attribute inspector
-
----
-
-## Implementation Strategy
-
-### v3.6 completion sequence
-
-The roadmap is largely done. The remaining v3.6 work in priority order:
-
-1. ✔ **#235** — Canvas: Shift+click node adds to current selection (multi-select). Small change; enables better use of the subgraph extraction workflow.
-2. ✔ **#221 Phase 0** — Arbitrary chip removal: extend `GraphVisibilitySnapshot` with `FilterSpec`; enable × on replayable chips; replay on removal.
-3. ✔ **#221 Phase 1** — `DialogQueryBuilder`: multi-condition composer → one compound snapshot.
-4. ✔ **#37** — Color nodes by clustering coefficient and other non-prominence metrics (extend the existing gradient machinery).
-5. **Documentation debt** — manual updates for #228, #234, #235, #236–#238, #220 (table already tracked at the end of this roadmap) and #221.
-
-### Short-term
-
-* Reuse existing functionality
-* Refactor incrementally
-
-### Mid-term
-
-* Introduce shared filtering logic
-* Decouple UI from graph operations
-
-### Long-term
-
-* Introduce explicit projection layer
-* Support multiple graph views (tabs)
-* Structural undo / redo (#31) — depends on WS3 domain model split
+* Persistent filter panel dock
+* Attribute inspector panel
+* Tab-based multi-graph UI
 
 ---
 
 ## Outcome
 
-SocNetV evolves into:
+WS9 is **complete**. SocNetV has evolved into:
 
 * Graph visualization tool ✔
 * Graph analysis tool ✔
@@ -420,12 +378,31 @@ SocNetV evolves into:
 
 ---
 
-## Notes for Contributors
+## WS9 Debt — Deferred Items
 
-* Prefer non-destructive operations
-* Avoid duplicating filtering logic
-* Reuse attribute system consistently
-* Keep UI simple and incremental
+Items explicitly deferred out of WS9 scope. Each has a home in the roadmap phase that generated it.
+
+### Filtering & Query (#221)
+* **OR logic** between conditions in the Query Builder — `GraphQuery` currently evaluates all conditions as AND. OR requires a mode toggle in `DialogQueryBuilder` and a separate evaluation path in `vertexFilterByQuery` / `edgeFilterByQuery`.
+* **Text-based query DSL** — scripting / CLI tool interface for query filters; depends on the CLI regression tool infrastructure.
+* **Chip-label click to reopen dialog** — clicking a query or attribute chip label should reopen the originating dialog pre-filled with the saved conditions from the `FilterSpec`.
+* **Arbitrary removal for selection / ego / centrality chips** — these filter types do not store enough parameters in `FilterSpec` to replay after removal; requires either `#31` structural undo or explicit parameter storage per type.
+
+### Subgraphs & Multi-graph UI (#215 Phase 6)
+* **Persistent named subgraphs** — maintain multiple named derived views from the same base graph; switch without reloading; persist alongside or inside the graph file. **Blocked on tab-based multi-graph UI** (no issue yet — open one when scoping begins).
+* **Tab-based multi-graph UI** — preferred long-term direction over multiple windows; significant infrastructure investment.
+
+### Layouts (Feature 1 Phase 3)
+* **Community-based node coloring** — color by community membership (Louvain / modularity); requires a community-detection algorithm wired to the layout engine. No dedicated issue yet.
+* **Edge bundling** — complex QPainter/GPU rendering concern. No dedicated issue yet.
+
+### Data Workflows (Feature 3 Phase 6)
+* **In-app derived fields** — compute a new attribute from existing ones (e.g. `full_name = first + " " + last`); value normalization (min-max, z-score); type coercion. Deferred: the CSV/JSON roundtrip workflow already covers the practical need via external spreadsheet tools.
+
+### Infrastructure
+* **Structural undo / redo (#31)** — general `QUndoStack` across the full Graph mutation API; WS3-level concern (domain model split), explicitly deferred post-3.6. Filter-level undo is already covered by the `m_visibilityHistory` snapshot stack.
+* **Temporal data (#222)** — date/datetime attributes, interval filtering, timeline slider, network-over-time animation. The `Lte`/`Gte` operators in `FilterCondition` already support date-range queries once attributes are typed; the animation layer is the deferred part.
+* **Attribute inspector panel** and **persistent filter panel** as docked widgets — currently dialog-driven; full panel approach deferred until the UI decomposition (WS7) is underway.
 
 ---
 
