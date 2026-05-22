@@ -349,6 +349,26 @@ run_case_connectivity \
   2 \
   "${BASE_CONN}/TinyPath_N3_E2__CONN__V7__FT2.json"
 
+run_case_connectivity \
+  "${DATA}/TinyIsolated_Dir_N2_E0.paj" \
+  2 \
+  "${BASE_CONN}/TinyIsolated_Dir_N2_E0__CONN__V7__FT2.json"
+
+run_case_connectivity \
+  "${DATA}/TinyArc_Dir_N2_E1.paj" \
+  2 \
+  "${BASE_CONN}/TinyArc_Dir_N2_E1__CONN__V7__FT2.json"
+
+run_case_connectivity \
+  "${DATA}/TinyWeaklyConn_Dir_N3_E2.paj" \
+  2 \
+  "${BASE_CONN}/TinyWeaklyConn_Dir_N3_E2__CONN__V7__FT2.json"
+
+run_case_connectivity \
+  "${DATA}/TinyIsolated_Undir_N3_E0.paj" \
+  2 \
+  "${BASE_CONN}/TinyIsolated_Undir_N3_E0__CONN__V7__FT2.json"
+
 echo
 if [[ "$FAILS" -eq 0 ]]; then
   echo "[OK] All golden comparisons passed."
