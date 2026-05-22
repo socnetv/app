@@ -355,12 +355,16 @@ void Graph::resetDistanceCentralityCacheFlags()
 {
     calculatedDistances = false;
     calculatedCentralities = false;
+    m_graphWeaklyConnectedComponents = 0;
+    m_vertexComponentId.clear();
 }
 
 void Graph::setSymmetricCached(bool v) { m_graphIsSymmetric = v; }
 bool Graph::symmetricCached() const { return m_graphIsSymmetric; }
 
 void Graph::setConnectedCached(bool v) { m_graphIsConnected = v; }
+
+int Graph::graphWeaklyConnectedComponentsCached() const { return m_graphWeaklyConnectedComponents; }
 void Graph::setDiameterCached(int v) { m_graphDiameter = v; }
 
 void Graph::resetDistanceAggregates()

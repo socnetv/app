@@ -794,6 +794,12 @@ public:
 
     bool isConnectedCached() const;
 
+    int graphWeaklyConnectedComponents();
+
+    int graphWeaklyConnectedComponentsCached() const;
+
+    const QHash<int,int> &vertexComponentId() const { return m_vertexComponentId; }
+
     void createMatrixAdjacency(const bool dropIsolates = false,
                                const bool considerWeights = true,
                                const bool inverseWeights = false,
@@ -1464,6 +1470,8 @@ private:
     bool calculatedGraphDensity, calculatedGraphWeighted;
     bool m_progressCanceled;
     bool m_graphIsDirected, m_graphIsSymmetric, m_graphIsWeighted, m_graphIsConnected;
+    int m_graphWeaklyConnectedComponents;
+    QHash<int,int> m_vertexComponentId;
 
     int csRecDepth;
 

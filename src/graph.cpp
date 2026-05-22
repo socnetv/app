@@ -80,6 +80,8 @@ Graph::Graph(const int &reserveVerticesSize, const int &reserveEdgesPerVertexSiz
     m_graphIsWeighted = false;
     m_graphIsConnected = true; // empty/null graph is considered connected
     m_graphIsSymmetric = true;
+    m_graphWeaklyConnectedComponents = 0;
+    m_vertexComponentId.clear();
 
     m_graphDensity = -1;
     m_fileName = "";
@@ -379,6 +381,8 @@ void Graph::clear(const QString &reason)
     m_graphIsWeighted = false;
     m_graphIsConnected = true; // empty/null graph is considered connected.
     m_graphIsSymmetric = true;
+    m_graphWeaklyConnectedComponents = 0;
+    m_vertexComponentId.clear();
 
     m_graphDensity = -1;
     m_graphDiameter = 0;

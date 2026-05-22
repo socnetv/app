@@ -398,6 +398,7 @@ public slots:
 
     void slotLayoutNodeColorByProminenceIndex();
     void slotLayoutNodeColorByProminenceIndex(QString prominenceIndexName);
+    void slotLayoutNodeColorByComponent();
 
     void slotLayoutSpringEmbedder();
     void slotLayoutFruchterman();
@@ -779,6 +780,7 @@ private:
     *layoutNodeColorProminence_EVC_Act,
     *layoutNodeColorProminence_IRCC_Act,*layoutNodeColorProminence_PRP_Act, *layoutNodeColorProminence_PP_Act,
     *layoutNodeColorProminence_CLC_Act;
+    QAction *layoutNodeColorByComponentAct;
 
     QAction *strongColorationAct, *regularColorationAct;
     QAction *layoutFDP_Eades_Act, *layoutFDP_FR_Act;

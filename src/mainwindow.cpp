@@ -2840,7 +2840,17 @@ void MainWindow::initActions(){
     connect(layoutNodeColorProminence_CLC_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutNodeColorByProminenceIndex()));
 
-
+    layoutNodeColorByComponentAct = new QAction( tr("Node Color by Connected Component"), this);
+    layoutNodeColorByComponentAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_C, Qt::CTRL | Qt::Key_0));
+    layoutNodeColorByComponentAct->setStatusTip(
+                tr("Color nodes by their weakly connected component."));
+    layoutNodeColorByComponentAct->setWhatsThis(
+                tr("Node Color by Connected Component\n\n"
+                   "Assigns a distinct color to each weakly connected component. "
+                   "All nodes in the same component share the same color, making "
+                   "isolated sub-networks immediately visible."));
+    connect(layoutNodeColorByComponentAct, &QAction::triggered,
+            this, &MainWindow::slotLayoutNodeColorByComponent);
 
 
 
@@ -4197,6 +4207,8 @@ void MainWindow::initMenuBar() {
     layoutNodeColorProminenceMenu->addAction (layoutNodeColorProminence_PP_Act);
     layoutNodeColorProminenceMenu->addAction (layoutNodeColorProminence_CLC_Act);
 
+    layoutMenu->addSeparator();
+    layoutMenu->addAction(layoutNodeColorByComponentAct);
 
     layoutMenu->addSeparator();
 
@@ -13062,6 +13074,51 @@ void MainWindow::slotLayoutNodeColorByProminenceIndex(QString prominenceIndexNam
 }
 
 
+/**
+ * @brief Colors nodes by their weakly connected component.
+ *
+ * Runs a BFS to identify weakly connected components and assigns a distinct
+ * color to each one. If the network is already fully connected (1 component),
+ * reports that and leaves colors unchanged.
+ */
+void MainWindow::slotLayoutNodeColorByComponent()
+{
+    qDebug() << "MW::slotLayoutNodeColorByComponent()";
+
+    if (!activeNodes()) {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    const int components = activeGraph->graphWeaklyConnectedComponents();
+
+    if (components <= 1) {
+        slotHelpMessageToUser(
+                    USER_MSG_INFO,
+                    tr("Network is fully connected — only one component."),
+                    tr("Network is fully connected."),
+                    tr("All nodes belong to a single connected component. No coloring applied.")
+                    );
+        return;
+    }
+
+    // Visually distinct palette — cycles if there are more components than entries
+    static const QStringList palette = {
+        "#e74c3c", "#3498db", "#2ecc71", "#f39c12", "#9b59b6",
+        "#1abc9c", "#e67e22", "#34495e", "#e91e63", "#00bcd4",
+        "#8bc34a", "#ff5722", "#673ab7", "#009688", "#ffc107"
+    };
+
+    const QHash<int,int> &compMap = activeGraph->vertexComponentId();
+    for (auto it = activeGraph->verticesBegin(); it != activeGraph->verticesEnd(); ++it) {
+        if (!(*it)->isEnabled()) continue;
+        const int compId = compMap.value((*it)->number(), 1);
+        activeGraph->vertexColorSet((*it)->number(),
+                                    palette.at((compId - 1) % palette.size()));
+    }
+
+    statusMessage(tr("Nodes colored by component: %1 components found.").arg(components));
+}
 
 
 
@@ -13786,50 +13843,60 @@ void MainWindow::slotAnalyzeConnectedness(){
                     );
     }
     else {
-        bool isConnected=activeGraph->isConnected();
+        int components   = activeGraph->graphWeaklyConnectedComponents();
+        // We use weak connectivity throughout: a graph is "connected" iff it has
+        // exactly 1 weakly connected component. For directed graphs this is weaker
+        // than strong connectivity (which requires all-pairs directed reachability),
+        // but it answers the practical question "how many disconnected islands are
+        // there?" consistently for both directed and undirected networks.
+        bool isConnected = (components == 1);
 
-        qDebug() << "MW::slotAnalyzeConnectedness result " << isConnected;
+        qDebug() << "MW::slotAnalyzeConnectedness result connected:" << isConnected
+                 << "components:" << components;
 
-        if(isConnected){
-            if (activeGraph->isDirected()){
-                slotHelpMessageToUser (
+        const QString compStr = QString::number(components);
+        if (isConnected) {
+            if (activeGraph->isDirected()) {
+                slotHelpMessageToUser(
                             USER_MSG_INFO,
-                            tr("This directed network is strongly connected."),
-                            tr("This directed network is strongly connected."),
-                            tr("A 1-actor network (singleton graph) is considered connected.")
+                            tr("This directed network is weakly connected (1 component)."),
+                            tr("This directed network is weakly connected."),
+                            tr("All nodes belong to a single weakly connected component. "
+                               "Note: weak connectivity ignores edge direction. "
+                               "Use Analyze > Distances > Connectedness to check strong connectivity.")
                             );
-
+            } else {
+                slotHelpMessageToUser(
+                            USER_MSG_INFO,
+                            tr("This undirected network is connected (1 component)."),
+                            tr("This undirected network is connected."),
+                            tr("All nodes belong to a single connected component. "
+                               "There is a path between every pair of nodes.")
+                            );
             }
-            else {
-                slotHelpMessageToUser (
+        } else {
+            if (activeGraph->isDirected()) {
+                slotHelpMessageToUser(
                             USER_MSG_INFO,
-                            tr("This undirected network is connected."),
-                            tr("This undirected network is connected."),
-                            tr("This network has an undirected graph which is connected.")
+                            tr("This directed network is disconnected (%1 weakly connected components).").arg(compStr),
+                            tr("This directed network is disconnected."),
+                            tr("There are %1 weakly connected components. "
+                               "Some node pairs are unreachable from each other. "
+                               "Use Layout > Node Color by Connected Component "
+                               "to visualize the components.").arg(compStr)
                             );
-
+            } else {
+                slotHelpMessageToUser(
+                            USER_MSG_INFO,
+                            tr("This undirected network is disconnected (%1 connected components).").arg(compStr),
+                            tr("This undirected network is disconnected."),
+                            tr("There are %1 connected components. "
+                               "Some node pairs have no path between them. "
+                               "Use Layout > Node Color by Connected Component "
+                               "to visualize the components.").arg(compStr)
+                            );
             }
         }
-        else {
-            if (activeGraph->isDirected()){
-                slotHelpMessageToUser (
-                            USER_MSG_INFO,
-                            tr("This directed network is disconnected."),
-                            tr("This directed network is disconnected."),
-                            tr("There are pairs of nodes that are not connected with any directed path.")
-                            );
-
-            }
-            else {
-                slotHelpMessageToUser (
-                            USER_MSG_INFO,
-                            tr("This undirected network is not connected."),
-                            tr("This undirected network is not connected."),
-                            tr("There are pairs of nodes that are not connected with any path.")
-                            );
-            }
-        }
-
     }
 
 }
