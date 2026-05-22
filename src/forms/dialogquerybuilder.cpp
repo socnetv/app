@@ -34,9 +34,20 @@ DialogQueryBuilder::DialogQueryBuilder(const QStringList &nodeKeys,
 {
     setWindowTitle(tr("Query Builder"));
     setMinimumWidth(500);
+    setMinimumHeight(380);
 
     QVBoxLayout *main = new QVBoxLayout(this);
+    main->setContentsMargins(12, 12, 12, 12);
     main->setSpacing(10);
+
+    // Description
+    QLabel *descLabel = new QLabel(
+        tr("Build a multi-condition filter for nodes or edges. "
+           "All conditions are combined with AND logic — "
+           "elements not matching every condition are hidden (reversible)."),
+        this);
+    descLabel->setWordWrap(true);
+    main->addWidget(descLabel);
 
     // Scope group
     QGroupBox *scopeGroup = new QGroupBox(tr("Scope"), this);
