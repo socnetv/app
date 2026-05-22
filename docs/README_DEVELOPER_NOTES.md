@@ -86,16 +86,17 @@ The regression harness is organized around **kernel modules**.
 
 Each kernel protects a specific algorithm family and emits a deterministic JSON schema.
 
-Current kernels include:
+Current kernels:
 
 ```
 
-kernel_distance_v1
-kernel_reachability_v2
-kernel_walks_v3
-kernel_prominence_v4
-kernel_io_roundtrip_v5
-kernel_clustering_v6.cpp (Clustering, Triads, Cliques)
+kernel_distance_v1      — geodesic distances + centralities
+kernel_reachability_v2  — reachability matrix
+kernel_walks_v3         — walks matrix A^K
+kernel_prominence_v4    — all node-level centrality + prestige indices
+kernel_io_roundtrip_v5  — load → export → reload signature comparison
+kernel_clustering_v6    — clustering coefficient, triad census, clique census
+kernel_connectivity_v7  — weakly connected components count + per-node IDs
 
 ```
 
@@ -114,38 +115,28 @@ architectural refactors.
 
 # Current Architectural State
 
-Refactoring workstreams **WS1, WS2, and WS4 are complete**.
+Refactoring workstreams **WS1, WS2, WS4, and WS9 are complete** (WS9 shipped as v3.5/v3.6).
 
 The project now has:
 
 * engine-based algorithms
 * a thin Graph façade
-* a deterministic regression harness
+* a deterministic regression harness (7 CLI kernels)
 * unified GUI/CLI parsing via `IGraphParseSink`
+* non-destructive filter layer (visibility-based, snapshot/restore)
+* structured data workflows (attribute editing, tables, import/export)
 
 ---
 
 # Current Development Focus
 
-## Primary Workstream
+## Primary focus: bug fixes and issue triage
 
-**WS9 — Graph Exploration & Data Workflows**
+WS9 is complete. Active development is focused on closing long-standing
+GitHub issues — particularly old, low-effort fixes — before the next feature
+workstream begins.
 
-Defined in:
-
-```
-
-docs/roadmaps/roadmap_graph_exploration.md
-
-```
-
-Focus areas:
-
-* graph filtering (structural + attribute-based)
-* subgraph exploration workflows
-* structured data editing (nodes/edges as tables)
-* CSV / JSON import-export
-* future query system and temporal filtering
+See the open issues list on GitHub for the current queue.
 
 ---
 

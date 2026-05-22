@@ -42,13 +42,17 @@ Domain model + services
 
 # Current Architectural State
 
-SocNetV has reached a stable baseline:
+SocNetV has reached a stable, feature-rich baseline (as of v3.5/v3.6):
 
 - Algorithms extracted into testable components (engines)
 - Graph acts as façade and coordinator
 - IO layer uses explicit mutation pipeline (Parser → Sink → Graph)
-- Deterministic regression harness (CLI + golden baselines) is in place
+- Deterministic regression harness (CLI + 7 golden-baseline kernels) is in place
 - Parser is modularized by format
+- Non-destructive filter and subgraph layer in place
+- Structured data workflows (attribute editing, tables, import/export) in place
+
+**WS9 is complete.** Current development focus is **bug fixes and issue triage**.
 
 This allows safe, incremental evolution without breaking behavior.
 
@@ -76,7 +80,7 @@ Engineering approach:
 
 ---
 
-## WS9 — Graph Exploration & Data Workflows (PRIMARY)
+## WS9 — Graph Exploration & Data Workflows (COMPLETE — shipped v3.5/v3.6)
 
 Defined in:
 
@@ -246,7 +250,8 @@ Possible direction:
 
 # Workstream Priorities
 
-1. **WS9 — Graph Exploration & Data Workflows**
+0. **Bug fixes & issue triage** (current focus — post-WS9)
+1. ~~**WS9 — Graph Exploration & Data Workflows**~~ (complete)
 2. **WS6 — Testing / CI / Regression**
 3. **WS3 — Domain Model Split**
 4. **WS7 — MainWindow Decomposition**
