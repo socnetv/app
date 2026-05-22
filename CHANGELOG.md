@@ -100,6 +100,45 @@ All notable changes to this project are documented in this file.
       case-insensitive lexicographic order; "contains" is always
       case-insensitive substring search.
 
+  - **Connected components count and color-by-component layout** (#85):
+    - **Analyze → Cohesion → Connectedness** now reports the number of weakly
+      connected components when the network is disconnected, alongside a hint
+      pointing to the new colorize action.
+    - New **Layout → Node Color by Connected Component**
+      (`Ctrl+L, Ctrl+C, Ctrl+0`) colors every node by its weakly connected
+      component: nodes in the same component share the same color, making
+      isolated sub-networks immediately visible. Up to 15 visually distinct
+      palette colors are used; the palette cycles for networks with more
+      components. If the network is already fully connected the action reports
+      "one component" and leaves colors unchanged.
+    - Both directed and undirected networks are supported. Weak connectivity is
+      used throughout: two nodes are in the same component when there is an
+      undirected path between them (edge directions are ignored). This is
+      consistent with Gephi, igraph, and NetworkX defaults and answers the
+      practical "how many disconnected islands?" question for both graph types.
+      Strong connectivity (all-pairs directed reachability) remains available
+      via the SSSP engine.
+    - `Graph::graphWeaklyConnectedComponents()` implements the BFS, caches the
+      count in `m_graphWeaklyConnectedComponents` and per-node component IDs in
+      `m_vertexComponentId`. Cache is invalidated whenever the graph is
+      structurally modified (same trigger as distances / centralities).
+    - **Connectivity semantics** — what the app computes and reports:
+
+      | Graph type | Topology | Components | Connected? | UI message |
+      |---|---|---|---|---|
+      | Undirected | All nodes reachable | 1 | yes | "connected (1 component)" |
+      | Undirected | Isolated sub-networks | >1 | no | "disconnected (N components)" |
+      | Directed | Every pair has a directed path | 1 | yes | "weakly connected (1 component)" |
+      | Directed | A→B only, not B→A | 1 | yes | "weakly connected (1 component)" — one island, not strongly connected |
+      | Directed | Two separate islands | >1 | no | "disconnected (N weakly connected components)" |
+
+      The "connected" determination uses weak connectivity (`components == 1`)
+      throughout, for both directed and undirected networks. Weak connectivity
+      ignores edge direction and answers the practical "how many disconnected
+      islands?" question consistently. Strong connectivity (all-pairs directed
+      reachability) is a separate, stricter property available via the geodesic
+      distances computation.
+
   - **Clustering Coefficient added to node color layout** (#37):
     - **Layout → Node Color by prominence index → Clustering Coefficient**
       (`Ctrl+L, Ctrl+C, Ctrl+G`) colors nodes by their local Watts-Strogatz

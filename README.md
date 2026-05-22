@@ -28,12 +28,12 @@ field data from a file in a supported format (GraphML, GraphViz, EdgeList, GML, 
 
 ## 2. Features
 
-- Standard graph-theoretic and network cohesion metrics: density, diameter, geodesics, connectedness, eccentricity, clustering coefficient, walks, reciprocity, and more.
+- Standard graph-theoretic and network cohesion metrics: density, diameter, geodesics, connectedness (with weakly connected component count), eccentricity, clustering coefficient, walks, reciprocity, and more.
 - Matrix routines: Adjacency, Laplacian, Degree, Cocitation, and more.
 - Advanced centrality and prestige indices: eigenvector, closeness, betweenness, information, power centrality, PageRank prestige, and more.
 - Community detection algorithms: triad census, clique census, and more.
 - Structural equivalence analysis using hierarchical clustering, actor similarities, and Pearson coefficients.
-- Multiple layout algorithms: prominence-based (circular, nodal sizes by centrality), force-directed (Kamada-Kawai, Fruchterman-Reingold), and ego-centered radial layout.
+- Multiple layout algorithms: prominence-based (circular, nodal sizes by centrality), force-directed (Kamada-Kawai, Fruchterman-Reingold), and ego-centered radial layout. Node colors can also be assigned by connected component, making disconnected sub-networks immediately visible.
 - Non-destructive graph exploration filters: focus on selection, ego network, centrality threshold, attribute-based filtering (with `=`, `≠`, `>`, `<`, `≥`, `≤`, `contains` operators), and edge weight threshold. All filters are reversible and stack non-destructively. Active filters shown in a persistent filter bar.
 - Subgraph extraction: save the currently visible (filtered) nodes or the currently selected nodes — together with their inter-edges — as an independent GraphML file. All visual properties, custom attributes, and multi-relation structure are preserved.
 - Custom node and edge attributes: add, edit and remove arbitrary key/value pairs. Fully persisted in GraphML.
