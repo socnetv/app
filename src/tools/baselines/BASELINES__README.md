@@ -14,12 +14,15 @@ Baselines are schema-versioned and kernel-specific.
 
 Each algorithm family owns a dedicated schema version.
 
-| Kernel       | Schema Version | Folder                              |
-| ------------ | -------------- | ----------------------------------- |
-| distance     | v1             | `src/tools/baselines/`              |
-| reachability | v2             | `src/tools/baselines/reachability/` |
-| walks_matrix | v3             | `src/tools/baselines/walks/`        |
-| prominence   | v4             | `src/tools/baselines/prominence/`   |
+| Kernel        | Schema | Folder |
+|---------------|--------|--------|
+| distance      | v1     | `src/tools/baselines/` |
+| reachability  | v2     | `src/tools/baselines/reachability/` |
+| walks_matrix  | v3     | `src/tools/baselines/walks/` |
+| prominence    | v4     | `src/tools/baselines/prominence/` |
+| io_roundtrip  | v5     | `src/tools/baselines/io_roundtrip/` |
+| clustering    | v6     | `src/tools/baselines/clustering/` |
+| connectivity  | v7     | `src/tools/baselines/connectivity/` |
 
 Schemas are never modified retroactively.
 
@@ -35,19 +38,13 @@ New algorithm families must use a new schema version.
 <DATASET>__FT<filetype>__C<0|1>_W<0|1>_IW<0|1>_DI<0|1>.json
 ```
 
-Where:
-
 * `FT`  → file type (`-f` argument)
 * `C`   → computeCentralities
 * `W`   → considerWeights
 * `IW`  → inverseWeights
 * `DI`  → dropIsolates
 
-Example:
-
-```
-SmallWorld_N10_E12__FT1__C1_W0_IW1_DI0.json
-```
+Example: `SmallWorld_N10_E12__FT1__C1_W0_IW1_DI0.json`
 
 ---
 
@@ -57,11 +54,7 @@ SmallWorld_N10_E12__FT1__C1_W0_IW1_DI0.json
 <DATASET>__REACH__V2.json
 ```
 
-Example:
-
-```
-StokmanZiegler_Netherlands__REACH__V2.json
-```
+Example: `StokmanZiegler_Netherlands__REACH__V2.json`
 
 ---
 
@@ -71,12 +64,7 @@ StokmanZiegler_Netherlands__REACH__V2.json
 <DATASET>__WALKS_K<length>__V3.json
 ```
 
-Example:
-
-```
-TinyPath_N3_E2__WALKS_K2__V3.json
-DunbarGelada_H22a__WALKS_K6__V3.json
-```
+Example: `TinyPath_N3_E2__WALKS_K2__V3.json`
 
 ---
 
@@ -86,24 +74,41 @@ DunbarGelada_H22a__WALKS_K6__V3.json
 <DATASET>__PROM__V4__FT<filetype>__W<0|1>_IW<0|1>_DI<0|1>.json
 ```
 
-Where:
+Note: `C` is not encoded — prominence always computes the full index set.
 
-* `FT`  → file type (`-f` argument)
-* `W`   → considerWeights
-* `IW`  → inverseWeights
-* `DI`  → dropIsolates
+Example: `Krackhardt_Kite_N10__PROM__V4__FT2__W0_IW1_DI0.json`
 
-Example:
+---
+
+## IO Roundtrip Kernel (schema v5)
 
 ```
-Krackhardt_Kite_N10__PROM__V4__FT2__W0_IW1_DI0.json
-Krackhardt_Kite_N10__PROM__V4__FT2__W1_IW1_DI0.json
+<DATASET>__FT<filetype>.json
 ```
 
-Note:
+Example: `TinyGraphML_Weighted_Dir_N3__FT1.json`
 
-* `C` is not encoded for prominence.
-* Prominence always computes the full set of centrality + prestige indices.
+---
+
+## Clustering Kernel (schema v6)
+
+```
+<DATASET>__CLUST__V6__FT<filetype>__W<0|1>_IW<0|1>_DI<0|1>.json
+```
+
+Example: `Krackhardt_Kite_N10__CLUST__V6__FT2__W0_IW1_DI0.json`
+
+---
+
+## Connectivity Kernel (schema v7)
+
+```
+<DATASET>__CONN__V7__FT<filetype>.json
+```
+
+No weight/centrality flags — connectivity is topology-only.
+
+Example: `TinyDisconnected_Undir_N6_E4__CONN__V7__FT2.json`
 
 ---
 
@@ -112,14 +117,8 @@ Note:
 Before tagging a release:
 
 1. Build `socnetv-cli`
-2. Run all golden comparisons
+2. Run all golden comparisons: `scripts/run_golden_compares.sh`
 3. Ensure **no mismatches**
-
-Recommended:
-
-```
-scripts/run_golden_compares.sh
-```
 
 If any case reports a mismatch:
 
@@ -131,80 +130,65 @@ If any case reports a mismatch:
 
 # 4. How to Add a New Baseline
 
-## Step 1 — Generate JSON
-
-### Distance (v1)
+## Distance (v1)
 
 ```bash
 ./build/socnetv-cli \
-  -i <dataset> \
-  -f <filetype> \
+  -i <dataset> -f <filetype> \
   -c <0|1> -w <0|1> -x <0|1> -k <0|1> \
   --dump-json src/tools/baselines/<NAME>.json
 ```
 
-### Reachability (v2)
+## Reachability (v2)
 
 ```bash
-./build/socnetv-cli \
-  --kernel reachability \
+./build/socnetv-cli --kernel reachability \
   -i <dataset> -f <filetype> \
   -c 0 -w <0|1> -x <0|1> -k <0|1> \
   --dump-json src/tools/baselines/reachability/<NAME>.json
 ```
 
-### Walks (v3)
+## Walks (v3)
 
 ```bash
-./build/socnetv-cli \
-  --kernel walks_matrix \
+./build/socnetv-cli --kernel walks_matrix \
   --walks-length <K> \
   -i <dataset> -f <filetype> \
-  -c 0 -w <0|1> -x <0|1> -k <0|1> \
   --dump-json src/tools/baselines/walks/<NAME>.json
 ```
 
-### Prominence (v4)
+## Prominence (v4)
 
 ```bash
-./build/socnetv-cli \
-  --kernel prominence \
+./build/socnetv-cli --kernel prominence \
   -i <dataset> -f <filetype> \
   -w <0|1> -x <0|1> -k <0|1> \
   --dump-json src/tools/baselines/prominence/<NAME>.json
 ```
 
----
+## IO Roundtrip (v5)
 
-## Step 2 — Review
-
-* Check graph-level metrics
-* Confirm deterministic vertex ordering
-* Confirm numeric plausibility
-
-For walks:
-
-* Small test networks (e.g., TinyPath_N3_E2) are strongly recommended
-* Validate known combinatorial results manually
-
-For prominence:
-
-* Validate well-known datasets (e.g., Krackhardt Kite, Sampson Monks)
-* Confirm directed vs undirected semantics
-* Confirm prestige behaves correctly for directed graphs
-
----
-
-## Step 3 — Commit
-
-* Add JSON file
-* Mention dataset + flags in commit message
-* If replacing an existing baseline, explain why
-
-Baselines must correspond to datasets in:
-
+```bash
+./build/socnetv-cli --kernel io_roundtrip \
+  -i <dataset> -f <filetype> \
+  --dump-json src/tools/baselines/io_roundtrip/<NAME>.json
 ```
-src/data/
+
+## Clustering (v6)
+
+```bash
+./build/socnetv-cli --kernel clustering \
+  -i <dataset> -f <filetype> \
+  -w <0|1> -x <0|1> -k <0|1> \
+  --dump-json src/tools/baselines/clustering/<NAME>.json
+```
+
+## Connectivity (v7)
+
+```bash
+./build/socnetv-cli --kernel connectivity \
+  -i <dataset> -f <filetype> \
+  --dump-json src/tools/baselines/connectivity/<NAME>.json
 ```
 
 ---
@@ -213,28 +197,9 @@ src/data/
 
 ## Distance Kernel (v1)
 
-### Graph-Level Metrics
+Graph-level: nodes, links_sna, ties_graph, directed, weighted, average geodesic distance, diameter, disconnected_pairs, connected
 
-* nodes (N)
-* links_sna
-* ties_graph
-* directed / weighted
-* average geodesic distance
-* diameter
-* disconnected_pairs
-* connected
-
-### Per-Node Metrics (when C=1)
-
-For each vertex (ascending deterministic id):
-
-* CC / SCC
-* BC / SBC
-* SC / SSC
-* EC / SEC
-* PC / SPC
-* distance_sum
-* eccentricity
+Per-node (when C=1): CC/SCC, BC/SBC, SC/SSC, EC/SEC, PC/SPC, distance_sum, eccentricity
 
 Floating-point values are serialized as strings.
 
@@ -242,70 +207,64 @@ Floating-point values are serialized as strings.
 
 ## Reachability Kernel (v2)
 
-* nodes
-* matrix (0/1)
-* reachable_pairs
-* reachable_density
+nodes, matrix (0/1), reachable_pairs, reachable_density
 
-Diagonal convention:
-
-```
-R(i,i) = 1
-```
+Diagonal convention: R(i,i) = 1
 
 ---
 
 ## Walks Kernel (v3)
 
-* nodes
-* matrix (integer counts)
-* walks.length
-* walks.total_walks
+nodes, matrix (integer counts), walks.length, walks.total_walks
 
-Walk semantics:
-
-```
-XM = A^K
-XM(i,j) = number of walks of exact length K from i to j
-```
-
-Note:
-
-A long-standing bug in `walksBetween()` was fixed.
-Older baselines may reflect adjacency values instead of true A^K results.
+Walk semantics: XM(i,j) = number of walks of exact length K from i to j
 
 ---
 
 ## Prominence Kernel (v4)
 
-### Graph-Level
+Graph-level: nodes, links_sna, ties_graph, directed, weighted
 
-* nodes
-* links_sna
-* ties_graph
-* directed / weighted
+Per-node centrality: DC/SDC, CC/SCC, IRCC/SIRCC, BC/SBC, SC/SSC, PC/SPC, IC/SIC, EVC/SEVC, eccentricity
 
-### Per-Node (deterministic ascending id)
-
-Centrality:
-
-* DC / SDC
-* CC / SCC
-* IRCC / SIRCC
-* BC / SBC
-* SC / SSC
-* PC / SPC
-* IC / SIC
-* EVC / SEVC
-* eccentricity (+ eccentricity_inf)
-
-Prestige:
-
-* DP / SDP
-* PP / SPP
-* PRP / SPRP
+Per-node prestige: DP/SDP, PP/SPP, PRP/SPRP
 
 All floating-point values are serialized as strings.
+
+---
+
+## IO Roundtrip Kernel (v5)
+
+Graph-level: nodes, relations, directed, symmetric, weighted, ties_graph, links_sna
+
+Roundtrip: performed vs skipped export, ROUNDTRIP_EQUIV, per-relation signature bundle for multi-relational datasets
+
+---
+
+## Clustering Kernel (v6)
+
+Graph-level: nodes, links_sna, ties_graph, directed, weighted
+
+Metrics: averageCLC, nodesWithCLC
+
+Per-node: CLC, hasCLC
+
+Triad census (16 MAN classes): 003, 012, 102, 021D, 021U, 021C, 111D, 111U, 030T, 030C, 201, 120D, 120U, 120C, 210, 300
+
+Cliques: counts by size, max_clique_size, total_cliques
+
+---
+
+## Connectivity Kernel (v7)
+
+Graph-level: component_count, connected (bool), type ("weak" for directed / "connected" for undirected)
+
+Per-node: component_id (1-based integer)
+
+Connectivity semantics:
+
+* Undirected: standard BFS — connected if 1 component
+* Directed: BFS treating all arcs as undirected (weak connectivity) — connected if 1 weak component
 
 ---
 
@@ -316,61 +275,21 @@ All floating-point values are serialized as strings.
 * `0` → match
 * non-zero → mismatch or runtime error
 
-This makes it suitable for:
-
-* CI pipelines
-* pre-merge validation
-* pre-release checklist
-
 `scripts/run_golden_compares.sh` aggregates failures and exits non-zero if any mismatch occurs.
 
 ---
 
 # 7. Existing Baselines
 
-## Distance (v1)
-
-Located under:
-
-```
-src/tools/baselines/
-```
-
----
-
-## Reachability (v2)
-
-Located under:
-
-```
-src/tools/baselines/reachability/
-```
-
----
-
-## Walks (v3)
-
-Located under:
-
-```
-src/tools/baselines/walks/
-```
-
----
-
-## Prominence (v4)
-
-Located under:
-
-```
-src/tools/baselines/prominence/
-```
-
-Includes:
-
-* Tiny validation networks
-* Krackhardt Kite
-* Sampson Monks
+| Kernel        | Directory |
+|---------------|-----------|
+| distance v1   | `src/tools/baselines/` |
+| reachability v2 | `src/tools/baselines/reachability/` |
+| walks v3      | `src/tools/baselines/walks/` |
+| prominence v4 | `src/tools/baselines/prominence/` |
+| io_roundtrip v5 | `src/tools/baselines/io_roundtrip/` |
+| clustering v6 | `src/tools/baselines/clustering/` |
+| connectivity v7 | `src/tools/baselines/connectivity/` |
 
 ---
 
@@ -378,8 +297,7 @@ Includes:
 
 * `LINKS_SNA` reflects loader semantics.
 * `TIES_GRAPH` reflects canonical Graph model.
-* Baselines must be generated from identical datasets.
+* Baselines must be generated from identical datasets in `src/data/`.
 * Deterministic ordering is mandatory.
 * Never update baselines silently.
 * Schema structures must remain immutable once committed.
-

@@ -181,7 +181,7 @@ SocNetV ships a headless CLI tool for deterministic regression testing:
 socnetv-cli
 ```
 
-Documentation: `src/tools/SOCNETV_CLI_REGRESSION_TOOL.md`
+Documentation: [`docs/SOCNETV_CLI_REGRESSION_TOOL.md`](SOCNETV_CLI_REGRESSION_TOOL.md)
 
 Scripts:
 
