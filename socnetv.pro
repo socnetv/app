@@ -57,6 +57,10 @@ FORMS += src/forms/dialogfilteredgesbyweight.ui \
 HEADERS += src/mainwindow.h \
     src/texteditor.h \
     src/graph.h \
+    src/engine/distance_engine.h \
+    src/engine/distance_progress_sink.h \
+    src/engine/graph_distance_progress_sink.h \
+    src/engine/null_distance_progress_sink.h \
     src/graphvertex.h \
     src/matrix.h \
     src/parser.h \
@@ -78,10 +82,13 @@ HEADERS += src/mainwindow.h \
     src/forms/dialogfilterbyattribute.h \
     src/forms/dialogquerybuilder.h \
     src/graph/filters/graph_query.h \
-    src/forms/dialogimportattributes.h \
     src/graph/filters/filter_condition.h \
+    src/graph/filters/filter_spec.h \
+    src/graph/io/graph_parse_sink.h \
+    src/graph/io/graph_parse_sink_graph.h \
     src/graph/io/table_export.h \
     src/graph/io/table_import.h \
+    src/forms/dialogimportattributes.h \
     src/forms/dialogfilteredgesbyweight.h \
     src/forms/dialogfilternodesbycentrality.h \
     src/forms/dialogedgedichotomization.h \

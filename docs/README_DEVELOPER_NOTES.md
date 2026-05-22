@@ -1,193 +1,53 @@
 # SocNetV Developer Notes
 
-This folder documents the **current architecture** of SocNetV and the **ongoing modernization effort**.
-
-If you are new to the codebase, start here, then read the high-level refactoring roadmap:
+Technical reference for contributors. For the architectural direction and workstream roadmap, see:
 
 * [`ARCHITECTURAL_REFACTORING_ROADMAP.md`](ARCHITECTURAL_REFACTORING_ROADMAP.md)
 
-Then read the current product-oriented roadmap:
-
-* [`docs/roadmaps/roadmap_graph_exploration.md`](roadmaps/roadmap_graph_exploration.md)
-
-Detailed execution plans live under:
+Detailed workstream plans:
 
 ```
-
 docs/roadmaps/
-
 ```
 
 ---
 
-# Project Snapshot
+# Architecture Overview
 
 SocNetV is a Qt-based desktop application for social network analysis and visualization.
 
-Historically, most functionality flowed through a central `Graph` object which acted as:
-
-* domain model (network storage)
-* algorithm host (distances, centralities, clustering, etc.)
-* UI bridge (signals/progress)
-* I/O coordinator (loading datasets)
-
-This design worked but made testing, modularization, and safe refactoring difficult.
-
----
-
-# Regression Safety Harness
-
-To safeguard the modernization effort, SocNetV includes a **headless regression harness**:
+The architecture is layered:
 
 ```
-
-socnetv-cli
-
+UI (MainWindow + dialogs + graphics)
+↓
+Graph (thin façade / coordinator)
+↓
+Algorithm slices / engines
+↓
+UI façade layer (rendering, chart export)
+↓
+Signal to MainWindow
 ```
 
-This tool allows deterministic execution of algorithms and parsing pipelines.
-
-It supports:
-
-* golden output comparisons
-* performance benchmarking
-* IO roundtrip validation
-
-Documentation:
-
-```
-
-src/tools/SOCNETV_CLI_REGRESSION_TOOL.md
-
-```
-
-Scripts:
-
-```
-
-scripts/run_golden_compares.sh
-scripts/run_benchmarks.sh
-scripts/run_golden_io_roundtrip.sh
-scripts/run_io_roundtrip_shipped_datasets.sh
-
-```
-
-These scripts must pass after structural refactors.
-
-The CLI tool executes deterministic algorithm kernels and compares results
-against committed JSON baselines. This guarantees that architectural
-refactors do not change algorithm outputs or graph semantics.
-
----
-
-# CLI Kernel Architecture
-
-The regression harness is organized around **kernel modules**.
-
-Each kernel protects a specific algorithm family and emits a deterministic JSON schema.
-
-Current kernels:
-
-```
-
-kernel_distance_v1      — geodesic distances + centralities
-kernel_reachability_v2  — reachability matrix
-kernel_walks_v3         — walks matrix A^K
-kernel_prominence_v4    — all node-level centrality + prestige indices
-kernel_io_roundtrip_v5  — load → export → reload signature comparison
-kernel_clustering_v6    — clustering coefficient, triad census, clique census
-kernel_connectivity_v7  — weakly connected components count + per-node IDs
-
-```
-
-Each kernel owns:
-
-* its execution logic
-* JSON schema definition
-* strict comparison logic
-
-Schemas are versioned and never modified after release.
-
-This ensures deterministic verification of algorithm correctness during
-architectural refactors.
-
----
-
-# Current Architectural State
-
-Refactoring workstreams **WS1, WS2, WS4, and WS9 are complete** (WS9 shipped as v3.5/v3.6).
-
-The project now has:
-
-* engine-based algorithms
-* a thin Graph façade
-* a deterministic regression harness (7 CLI kernels)
-* unified GUI/CLI parsing via `IGraphParseSink`
-* non-destructive filter layer (visibility-based, snapshot/restore)
-* structured data workflows (attribute editing, tables, import/export)
-
----
-
-# Current Development Focus
-
-## Primary focus: bug fixes and issue triage
-
-WS9 is complete. Active development is focused on closing long-standing
-GitHub issues — particularly old, low-effort fixes — before the next feature
-workstream begins.
-
-See the open issues list on GitHub for the current queue.
-
----
-
-## Supporting Workstream
-
-**WS6 — Testing / CI / Regression**
-
-All development must be validated through:
-
-* CLI regression harness
-* golden comparisons
-* benchmarks
-
-WS6 ensures:
-
-* safe refactoring
-* deterministic behavior
-* performance stability
+Do **not bypass this flow** when adding new features.
 
 ---
 
 # Graph as Façade
 
-`Graph` now acts primarily as:
-
-* state holder and invariants guardian
-* explicit façade API for UI and CLI
-* delegator to algorithm slices
-* central UI signal coordinator
+`Graph` is a state coordinator and invariant guardian — not a monolith. It holds graph state and delegates all computation to algorithm slices.
 
 `graph.cpp` contains only:
 
 ```
-
 Graph::Graph(...)
 Graph::clear(...)
-
 ```
 
-All other functionality lives under:
+Everything else lives under `src/graph/`, organized by responsibility:
 
 ```
-
-src/graph/
-
-```
-
-organized by responsibility:
-
-```
-
 centrality/
 clustering/
 cohesion/
@@ -206,60 +66,47 @@ similarity/
 storage/
 ui/
 util/
-
 ```
 
 ---
 
 # Structural Boundary Inside `src/graph/`
 
-A strict separation is enforced.
+A strict separation is enforced between computation and rendering.
 
 ## Algorithm slices
 
-Responsibilities:
-
-* compute data only
-* may use QtCore
-* must **not** construct QtWidgets / QtCharts objects
-* must **not** emit UI signals directly
+- compute data only
+- may use QtCore
+- must **not** construct QtWidgets / QtCharts objects
+- must **not** emit UI signals directly
 
 Examples:
 
 ```
-
 src/graph/prominence/graph_prominence_distribution.cpp
 src/graph/centrality/graph_centrality.cpp
-
 ```
-
----
 
 ## UI façade layer (`src/graph/ui/`)
 
-Responsibilities:
-
-* construct QtWidgets / QtCharts objects
-* render visualizations
-* export PNG charts
-* emit UI update signals to `MainWindow`
+- constructs QtWidgets / QtCharts objects
+- renders visualizations
+- exports PNG charts
+- emits UI update signals to `MainWindow`
 
 Example:
 
 ```
-
 src/graph/ui/graph_ui_prominence_distribution.cpp
-
 ```
-
----
 
 ## Rule for New Code
 
 If you add new analytics:
 
 1. **compute results in algorithm slices**
-2. **perform rendering in the UI façade**
+2. **render in the UI façade**
 
 This separation is mandatory.
 
@@ -267,212 +114,136 @@ This separation is mandatory.
 
 # Distance Engine
 
-Shortest-path algorithms were extracted into:
+Shortest-path algorithms run through a dedicated engine:
 
 ```
-
 src/engine/
-
+  distance_engine.cpp
+  distance_progress_sink.h
+  graph_distance_progress_sink.cpp
 ```
 
-Main components:
-
-```
-
-distance_engine.cpp
-distance_progress_sink.h
-graph_distance_progress_sink.cpp
-
-```
-
-These engines can run:
-
-* from the GUI
-* from the CLI regression harness
+The engine runs from both the GUI and the CLI regression harness.
 
 ---
 
 # Parsing and I/O
 
-The parser architecture was modernized during **WS4**.
-
----
-
-## Current Parsing Architecture
+The parsing pipeline:
 
 ```
-
 Parser
 ↓
 IGraphParseSink
 ↓
 Graph
-
 ```
 
 Key components:
 
 ```
-
 src/graph/io/graph_parse_sink.h
 src/graph/io/graph_parse_sink_graph.cpp
-
 ```
 
 Typical mutation calls:
 
 ```
-
 createNode(...)
 createEdge(...)
 setRelation(...)
 addNewRelation(...)
 removeDummyNode(...)
 fileLoaded(...)
-
 ```
 
-GUI and CLI share the same mutation pipeline → deterministic behavior.
+GUI and CLI share the same mutation pipeline — deterministic behavior is guaranteed.
 
 ---
 
-# Code Shape (High-Level)
+# Filter Layer
 
-## UI Layer
+Non-destructive node/edge visibility filtering via snapshot/restore:
 
-```
+- `vertexFilterByEgoNetwork()`, `vertexFilterBySelection()`, `vertexFilterByAttribute()`
+- `edgeFilterByWeight()`, `edgeFilterByAttribute()`, `vertexFilterByQuery()`
+- `vertexFilterRestore()` — replays the filter stack in reverse
 
-MainWindow
-dialogs
-graphics widgets/items
-
-```
+All filters push a `FilterSpec` onto `m_visibilityHistory`. Undo restores the prior snapshot.
 
 ---
 
-## Core Coordinator
+# Regression Safety Harness
+
+SocNetV ships a headless CLI tool for deterministic regression testing:
 
 ```
+socnetv-cli
+```
 
-Graph (façade)
+Documentation: `src/tools/SOCNETV_CLI_REGRESSION_TOOL.md`
+
+Scripts:
 
 ```
+scripts/run_golden_compares.sh
+scripts/run_benchmarks.sh
+scripts/run_golden_io_roundtrip.sh
+scripts/run_io_roundtrip_shipped_datasets.sh
+```
+
+These must pass after any structural change.
 
 ---
 
-## Data Structures
+# CLI Kernel Architecture
+
+The harness is organized around **kernel modules**. Each kernel covers a specific algorithm family and emits a versioned, deterministic JSON schema. Schemas are never modified after release.
+
+Current kernels:
 
 ```
-
-GraphVertex
-edge storage
-analysis caches
-
+kernel_distance_v1      — geodesic distances + centralities
+kernel_reachability_v2  — reachability matrix
+kernel_walks_v3         — walks matrix A^K
+kernel_prominence_v4    — all node-level centrality + prestige indices
+kernel_io_roundtrip_v5  — load → export → reload signature comparison
+kernel_clustering_v6    — clustering coefficient, triad census, clique census
+kernel_connectivity_v7  — weakly connected components count + per-node IDs
 ```
+
+Each kernel owns its execution logic, JSON schema, and comparison logic.
 
 ---
 
-## Engines / Algorithm Slices
-
-Examples:
-
-```
-
-DistanceEngine
-centrality
-clustering
-prominence
-similarity
-layouts
-generators
-reporting
-reachability
-
-```
-
----
-
-## IO
-
-```
-
-Parser
-IGraphParseSink
-GraphParseSinkGraph
-
-```
-
----
-
-# Development Workflow Notes
+# Development Workflow
 
 ## Build
 
-* CMake + Qt6 (Linux / macOS / Windows)
-* Refactors must remain incremental
+CMake + Qt6 (Linux / macOS / Windows). Keep changes incremental.
 
----
+## Regression discipline
 
-## Regression Discipline
-
-After structural changes:
+After any structural change:
 
 ```
-
 ./scripts/run_golden_compares.sh
 ./scripts/run_benchmarks.sh
-
 ```
 
 Golden outputs and performance must remain stable.
+
+## Current focus
+
+Bug fixes and issue triage. See the open issues on GitHub.
+
+All changes are validated through the WS6 regression harness.
 
 ---
 
 # Launchpad PPA builds
 
-Supported:
-
 ```
-
 Ubuntu 22.04 LTS (Jammy)
 Ubuntu 24.04 LTS (Noble)
-
 ```
-
----
-
-# Mental Model for Contributors
-
-```
-
-UI
-↓
-Graph (façade)
-↓
-Algorithm slice / engine
-↓
-UI façade (if rendering required)
-↓
-Signal to MainWindow
-
-```
-
-Do **not bypass this flow**.
-
----
-
-# Development Philosophy (Important)
-
-SocNetV evolves through:
-
-### 1. Product-driven development (WS9)
-
-- deliver real user value
-- enable large-network exploration
-- build on existing systems
-
-### 2. Incremental architectural evolution
-
-- refactor safely using WS6 harness
-- avoid large disruptive rewrites
-- let real usage guide abstraction (WS3, WS7)
