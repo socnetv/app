@@ -181,6 +181,8 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW)
         calculatedAdjacencyMatrix = false;
         calculatedDistances = false;
         calculatedCentralities = false;
+        m_graphWeaklyConnectedComponents = 0;
+        m_vertexComponentId.clear();
         calculatedDP = false;
         calculatedDC = false;
         calculatedPP = false;

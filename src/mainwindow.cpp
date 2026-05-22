@@ -13878,9 +13878,9 @@ void MainWindow::slotAnalyzeConnectedness(){
             if (activeGraph->isDirected()) {
                 slotHelpMessageToUser(
                             USER_MSG_INFO,
-                            tr("This directed network is disconnected (%1 weakly connected components).").arg(compStr),
+                            tr("This directed network is disconnected (%1 components).").arg(compStr),
                             tr("This directed network is disconnected."),
-                            tr("There are %1 weakly connected components. "
+                            tr("There are %1 disconnected components. "
                                "Some node pairs are unreachable from each other. "
                                "Use Layout > Node Color by Connected Component "
                                "to visualize the components.").arg(compStr)
@@ -13888,9 +13888,9 @@ void MainWindow::slotAnalyzeConnectedness(){
             } else {
                 slotHelpMessageToUser(
                             USER_MSG_INFO,
-                            tr("This undirected network is disconnected (%1 connected components).").arg(compStr),
+                            tr("This undirected network is disconnected (%1 components).").arg(compStr),
                             tr("This undirected network is disconnected."),
-                            tr("There are %1 connected components. "
+                            tr("There are %1 disconnected components. "
                                "Some node pairs have no path between them. "
                                "Use Layout > Node Color by Connected Component "
                                "to visualize the components.").arg(compStr)
