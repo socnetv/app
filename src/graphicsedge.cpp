@@ -116,6 +116,7 @@ GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
     // Leave the default cache option (NoCache)
     // setCacheMode(QGraphicsItem::NoCache);
 
+    rebuildPens();
     adjust();
 }
 
@@ -187,6 +188,7 @@ void GraphicsEdge::removeRefs(){
 void GraphicsEdge::setColor( const QString &str) {
     m_color=QColor(str);
     prepareGeometryChange();
+    rebuildPens();
 }
 
 
@@ -232,6 +234,7 @@ void GraphicsEdge::setWeight(const qreal &w) {
     else {
         m_width = fabs(m_weight) ;
     }
+    rebuildPens();
     if (m_drawWeightNumber)
         weightNumber->setPlainText (QString::number(w));
 }
@@ -615,6 +618,24 @@ int GraphicsEdge::directionType() {
  */
 void GraphicsEdge::setStyle( const Qt::PenStyle  &style ) {
     m_style = style;
+    rebuildPens();
+}
+
+
+/**
+ * @brief Rebuilds the three cached QPens and the cached QBrush.
+ *
+ * Called from the constructor and from any setter that changes a pen-relevant
+ * field (color, weight/width, style).  This keeps paint() free of per-repaint
+ * object construction.
+ */
+void GraphicsEdge::rebuildPens() {
+    // Negative-weight edges are always drawn dashed regardless of m_style.
+    const Qt::PenStyle regStyle = (m_weight < 0) ? Qt::DashLine : m_style;
+    m_penRegular   = QPen(m_color,          m_width,     regStyle, Qt::RoundCap, Qt::RoundJoin);
+    m_penHighlight = QPen(QColor("red"),    m_width,     m_style,  Qt::RoundCap, Qt::RoundJoin);
+    m_penHover     = QPen(QColor("red"),    m_width + 1, m_style,  Qt::RoundCap, Qt::RoundJoin);
+    m_brush        = QBrush(m_color);
 }
 
 
@@ -706,11 +727,14 @@ void GraphicsEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
         setZValue(ZValueEdge);
         setState(EDGE_STATE_REGULAR);
     }
-    // set painter pen to correct edge pen
-    painter->setPen(pen());
+    // Select cached pen for current state — no QPen construction per repaint.
+    switch (m_state) {
+    case EDGE_STATE_HIGHLIGHT: painter->setPen(m_penHighlight); break;
+    case EDGE_STATE_HOVER:     painter->setPen(m_penHover);     break;
+    default:                   painter->setPen(m_penRegular);   break;
+    }
 
-    // set painter brush to paint inside the arrow
-    painter->setBrush( m_color );
+    painter->setBrush(m_brush);
 
     painter->drawPath(m_path);
 

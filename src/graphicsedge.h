@@ -20,6 +20,8 @@
 
 #include <QGraphicsItem>
 #include <QObject>
+#include <QBrush>
+#include <QPen>
 #include <utility> //declares pair construct
 
 
@@ -177,6 +179,13 @@ private:
     bool m_isClicked;
 
     void computeArrowPoints();
+    void rebuildPens();
+
+    // Cached pens — rebuilt in rebuildPens(), selected in paint() by m_state.
+    QPen   m_penRegular;
+    QPen   m_penHighlight;
+    QPen   m_penHover;
+    QBrush m_brush;
 };
 
 #endif

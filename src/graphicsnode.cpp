@@ -90,6 +90,8 @@ GraphicsNode::GraphicsNode ( GraphicsWidget* gw,
     m_col_orig=m_col=QColor(color);
 
     m_col_outline = QColor(0,0,0,50);
+    m_colHover    = m_col.darker(120);
+    m_penOutline  = QPen(m_col_outline, 0);
 
     m_hasNumber=showNumbers;
     m_hasNumberInside = numbersInside;
@@ -146,6 +148,7 @@ void GraphicsNode::setColor(const QString &colorName) {
 //    qDebug()<< "Changing the node color to named color:" << colorName << "setting mcol:" << QColor(colorName);
     prepareGeometryChange();
     m_col_orig=m_col=QColor(colorName);
+    m_colHover = m_col.darker(120);
 //    qDebug()<< "Calling update()";
     update();
 }
@@ -162,6 +165,7 @@ void GraphicsNode::setColor(QColor color){
 //    qDebug()<< "Changing the node Qcolor to:" << color;
     prepareGeometryChange();
     m_col=color;
+    m_colHover = m_col.darker(120);
 //    qDebug()<< "Calling update()";
     update();
 }
@@ -321,6 +325,15 @@ void GraphicsNode::setShape(const QString shape, const QString &iconPath) {
         path.addEllipse (-m_size, -m_size, 2*m_size, 2*m_size);
     }
     m_path = path;
+
+    // Cache the pixmap for icon-based shapes so paint() does no file I/O.
+    if (m_shape == "custom"    || m_shape == "person" || m_shape == "person-b" ||
+        m_shape == "bugs"      || m_shape == "heart"  || m_shape == "dice") {
+        m_pixmap = QPixmap(m_iconPath);
+    } else {
+        m_pixmap = QPixmap();
+    }
+
     update();
 }
 
@@ -372,7 +385,7 @@ void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 
     if (option->state & QStyle::State_MouseOver) {
 //        qDebug()<< "Highlighting node because of mouse hover ";
-        painter->setBrush(m_col.darker(120));
+        painter->setBrush(m_colHover);
         setZValue(ZValueNodeHighlighted);
     }
     else {
@@ -382,8 +395,7 @@ void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
     }
 
     if (m_shape == "custom") {
-        QPixmap pix(m_iconPath);
-        painter->drawPixmap(-m_size, -m_size, 2*m_size, 2*m_size, pix);
+        painter->drawPixmap(-m_size, -m_size, 2*m_size, 2*m_size, m_pixmap);
     }
     else if ( m_shape == "person"  ||
               m_shape == "person-b"  ||
@@ -393,11 +405,10 @@ void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 
 //        QImage image(m_iconPath);
 //        painter->drawImage(QRectF(-m_size, -m_size, 2*m_size, 2*m_size) , image);
-        QPixmap pix(m_iconPath);
-        painter->drawPixmap(-m_size, -m_size, 2*m_size, 2*m_size, pix);
+        painter->drawPixmap(-m_size, -m_size, 2*m_size, 2*m_size, m_pixmap);
     }
     else {
-        painter->setPen(QPen(m_col_outline, 0));
+        painter->setPen(m_penOutline);
         painter->drawPath (m_path);
     }
 
