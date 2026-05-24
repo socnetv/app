@@ -346,7 +346,9 @@ public slots:
                              const qreal &weight=1);
     void slotEditEdgeRemove();
     void slotEditEdgePropertiesDialog();
-    void slotEditEdgeProperties(const QString &label,
+    void slotEditEdgeProperties(const int &v1,
+                                const int &v2,
+                                const QString &label,
                                 const double &weight,
                                 const QColor &color,
                                 const QHash<QString,QString> &customAttributes);

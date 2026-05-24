@@ -11235,7 +11235,11 @@ void MainWindow::slotEditEdgePropertiesDialog()
 
     DialogEdgeEdit *dialog = new DialogEdgeEdit(this, v1, v2, label, weight, color, attrs);
     connect(dialog, &DialogEdgeEdit::userChoices,
-            this,   &MainWindow::slotEditEdgeProperties);
+            this, [this, v1, v2](const QString &label, const double &weight,
+                                  const QColor &color,
+                                  const QHash<QString,QString> &customAttributes) {
+                slotEditEdgeProperties(v1, v2, label, weight, color, customAttributes);
+            });
     dialog->setAttribute(Qt::WA_DeleteOnClose);
     dialog->exec();
 }
@@ -11243,15 +11247,14 @@ void MainWindow::slotEditEdgePropertiesDialog()
 /**
  * @brief Applies updated edge properties received from DialogEdgeEdit.
  */
-void MainWindow::slotEditEdgeProperties(const QString &label,
+void MainWindow::slotEditEdgeProperties(const int &v1,
+                                        const int &v2,
+                                        const QString &label,
                                         const double &weight,
                                         const QColor &color,
                                         const QHash<QString,QString> &customAttributes)
 {
     qDebug() << "MainWindow::slotEditEdgeProperties()";
-    const MyEdge clicked = activeGraph->edgeClicked();
-    int v1 = clicked.source;
-    int v2 = clicked.target;
     if (v1 == 0 || v2 == 0)
         return;
 
