@@ -169,6 +169,7 @@ public slots:
                                const int &target,
                                const int &offset);
     void setEdgeArrowsVisibility(const bool &toggle);
+    void setEdgeArrowSize(const int &size);
     void setEdgeWeightNumbersVisibility (const bool &toggle);
     void setEdgeLabelsVisibility(const bool &toggle);
 
@@ -221,6 +222,7 @@ private:
     int m_zoomIndex, m_zoomIndexInit, m_zoomIndexMax;
     int markedEdgeSourceOrigSize, markedEdgeTargetOrigSize;
     int m_edgeMinOffsetFromNode;
+    int m_arrowSize;
     double m_currentScaleFactor;
     qreal fX,fY, factor;
     QString m_nodeLabel, m_numberColor, m_labelColor;

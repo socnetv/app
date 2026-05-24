@@ -56,7 +56,8 @@ public:
          const Qt::PenStyle &style,
          const int&type, const bool & drawArrows, const bool &bezier,
          const bool &weightNumbers=false,
-                 const bool &highlighting=true);
+         const bool &highlighting=true,
+         const int &arrowSize=6);
     ~GraphicsEdge();
 
     enum { Type = UserType + 2 };
@@ -97,6 +98,9 @@ public:
     void setLabelVisibility  (const bool &toggle);
 
     void showArrows(const bool &);
+
+    void setArrowSize(const int &size);
+    int arrowSize() const;
 
     void setDirectionType(const int &dirType=0);
     int directionType();
@@ -146,6 +150,11 @@ private:
 
     QPointF edgeOffset;
 
+    // Cached arrow corner points — computed in adjust() and recomputed in
+    // setArrowSize() so paint() needs no trig of its own.
+    QPointF m_destArrowP1, m_destArrowP2;
+    QPointF m_srcArrowP1,  m_srcArrowP2;
+
     qreal m_arrowSize;
 
     qreal m_minOffsetFromNode;
@@ -166,6 +175,8 @@ private:
     bool m_Bezier, m_drawArrows, m_drawWeightNumber;
     bool m_drawLabel, m_hoverHighlighting;
     bool m_isClicked;
+
+    void computeArrowPoints();
 };
 
 #endif

@@ -319,6 +319,9 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
                 (m_appSettings["initEdgeArrows"] == "true") ? true: false
                                                                    );
 
+    ui->edgeArrowSizeSpin->setValue(
+                m_appSettings["initEdgeArrowSize"].toInt(nullptr, 10));
+
     m_edgeColor = QColor (m_appSettings["initEdgeColor"]);
     m_pixmap = QPixmap(60,20) ;
     m_pixmap.fill( m_edgeColor );
@@ -490,6 +493,8 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
                      this, &DialogSettings::getEdgesVisibility);
     connect (ui->edgeArrowsChkBox, &QCheckBox::stateChanged,
                      this, &DialogSettings::getEdgeArrowsVisibility);
+    connect (ui->edgeArrowSizeSpin, QOverload<int>::of(&QSpinBox::valueChanged),
+             this, &DialogSettings::getEdgeArrowSize);
     connect (ui->edgeColorBtn, &QToolButton::clicked,
              this, &DialogSettings::getEdgeColor);
     connect (ui->edgeColorNegativeBtn, &QToolButton::clicked,
@@ -906,6 +911,16 @@ void DialogSettings::getEdgeArrowsVisibility(const bool &toggle){
     emit setEdgeArrowsVisibility(toggle);
 }
 
+
+
+/**
+ * @brief Saves the new arrow size to settings and notifies the canvas.
+ * @param size  New arrow size in pixels (2–20).
+ */
+void DialogSettings::getEdgeArrowSize(const int size){
+    m_appSettings["initEdgeArrowSize"] = QString::number(size);
+    emit setEdgeArrowSize(size);
+}
 
 
 /**

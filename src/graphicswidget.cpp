@@ -70,6 +70,7 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
 
         m_edgeHighlighting = true;
         m_edgeMinOffsetFromNode=6;
+        m_arrowSize = 6;
         m_nodeNumberVisibility = true;
         m_nodeLabelVisibility = true;
 
@@ -308,7 +309,8 @@ void GraphicsWidget::drawEdge(const int &sourceNum, const int &targetNum,
             drawArrows,
             (sourceNum == targetNum) ? true : bezier,
             weightNumbers,
-            m_edgeHighlighting);
+            m_edgeHighlighting,
+            m_arrowSize);
         edgesHash.insert(edgeName, edge);
     }
     else
@@ -1101,6 +1103,22 @@ void GraphicsWidget::setEdgeArrowsVisibility(const bool &toggle){
 
 }
 
+
+
+/**
+ * @brief Sets the arrow size for all edges and stores it as the default for
+ * new edges.
+ *
+ * Each edge only recomputes its four cached arrow-corner QPointFs and
+ * schedules a repaint — no full path rebuild is triggered.
+ *
+ * @param size  Arrow size in pixels (typically 2–20).
+ */
+void GraphicsWidget::setEdgeArrowSize(const int &size) {
+    m_arrowSize = size;
+    foreach (GraphicsEdge *edge, edgesHash)
+        edge->setArrowSize(size);
+}
 
 
 /**

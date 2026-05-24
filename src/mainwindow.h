@@ -500,6 +500,7 @@ public slots:
     void slotOptionsEdgeThicknessPerWeight(bool toggle);
     void slotOptionsEdgesBezier(bool toggle);
     void slotOptionsEdgeArrowsVisibility(bool toggle);
+    void slotOptionsEdgeArrowSize(const int &size);
 
     void slotOptionsSaveZeroWeightEdges(bool toggle);
     void slotOptionsShowZeroWeightEdges(bool toggle);  // #30

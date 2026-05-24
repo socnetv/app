@@ -1260,6 +1260,58 @@ p, li { white-space: pre-wrap; }
            </layout>
           </item>
           <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_arrowSize">
+            <item>
+             <widget class="QLabel" name="label_arrowSize">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Arrow size&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Controls the size of the arrowheads drawn on directed edges. A larger value produces bigger arrowheads.&lt;/p&gt;&lt;p&gt;Any change will apply to all existing edges immediately and saved for future sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Arrow size</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_arrowSize">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="edgeArrowSizeSpin">
+              <property name="minimumSize">
+               <size>
+                <width>60</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="cursor">
+               <cursorShape>SizeVerCursor</cursorShape>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Arrow size&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Controls the size of the arrowheads on directed edges.&lt;/p&gt;&lt;p&gt;Any change will apply to all existing edges immediately and saved for future sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="minimum">
+               <number>2</number>
+              </property>
+              <property name="maximum">
+               <number>20</number>
+              </property>
+              <property name="value">
+               <number>6</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
            <layout class="QHBoxLayout" name="horizontalLayout_14">
             <item>
              <widget class="QLabel" name="label_14">

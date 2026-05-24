@@ -476,6 +476,7 @@ QMap<QString,QString> MainWindow::initSettings(const int &debugLevel, const bool
     appSettings["initEdgeColorZero"]="blue";
     appSettings["showZeroWeightEdges"]="true";   // #30: show by default; user can disable in Settings
     appSettings["initEdgeArrows"]="true";
+    appSettings["initEdgeArrowSize"] = "6";
     appSettings["initEdgeOffsetFromNode"] = "7";
     appSettings["initEdgeThicknessPerWeight"]="true";
     appSettings["initEdgeWeightNumbersVisibility"]="false";
@@ -823,6 +824,8 @@ void MainWindow::slotOpenSettingsDialog() {
 
     connect( m_settingsDialog, &DialogSettings::setEdgeArrowsVisibility,
              this, &MainWindow::slotOptionsEdgeArrowsVisibility);
+    connect( m_settingsDialog, &DialogSettings::setEdgeArrowSize,
+             this, &MainWindow::slotOptionsEdgeArrowSize);
 
     connect( m_settingsDialog, &DialogSettings::setEdgeOffsetFromNode,
              this, &MainWindow::slotOptionsEdgeOffsetFromNode);
@@ -5924,6 +5927,7 @@ void MainWindow::initApp(){
     graphicsWidget->setEdgeHighlighting(
                 ( appSettings["canvasEdgeHighlighting"] == "true" ) ? true: false
                                                                       );
+    graphicsWidget->setEdgeArrowSize( appSettings["initEdgeArrowSize"].toInt(nullptr, 10) );
 
     if (appSettings["initBackgroundImage"] != ""
             && QFileInfo::exists(appSettings["initBackgroundImage"])) {
@@ -15333,6 +15337,18 @@ void MainWindow::slotOptionsEdgeArrowsVisibility(bool toggle){
         statusMessage( tr("Arrows in edges: off."));
     }
 
+}
+
+
+/**
+ * @brief Applies a new arrow size to all edges and persists the setting.
+ * @param size  Arrow size in pixels (2–20).
+ */
+void MainWindow::slotOptionsEdgeArrowSize(const int &size){
+    qDebug() << "MW::slotOptionsEdgeArrowSize - new size" << size;
+    appSettings["initEdgeArrowSize"] = QString::number(size);
+    graphicsWidget->setEdgeArrowSize(size);
+    statusMessage( tr("Changed edge arrow size to %1.").arg(size) );
 }
 
 
