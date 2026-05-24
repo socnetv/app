@@ -162,6 +162,12 @@ All notable changes to this project are documented in this file.
       **Settings → Edges → Zero valued edge color** picker which was already
       present but disconnected from `edgeCreate()`.
 
+  - **Configurable edge arrow size** (#32):
+    - New **Settings → Edges → Arrow size** spinbox (range 2–20, default 6)
+      lets the user control the size of arrowheads on directed edges.
+    - The change applies to all edges on the canvas immediately and is
+      persisted for future sessions.
+
 ### Improvements
 
   - **UI declutter & UX improvements** (#234):

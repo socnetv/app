@@ -423,4 +423,5 @@ The following screenshots still need to be taken and inserted at the locations b
 | 8 | `data.mdx` | `#set-property` | Bulk Edit dialog (nodes) — property combo open showing Label / Size / Color / Shape + custom keys |
 | 9 | `formats.mdx` | `#exporting-to-graphviz-dot` | Network → Export submenu — all export options visible (GraphViz DOT, UCINET DL, Weighted Edge List, Simple Edge List, …) |
 | 10 | `formats.mdx` | `#saving-subgraphs` | Save Subgraph As… dialog — format dropdown open showing all 7 format choices |
+| 11 | `gui.mdx` | `#edge-settings` | Settings dialog → Edge settings section — Arrow size spinbox visible alongside the Display edge arrows checkbox; show a value other than the default (e.g. 12) with arrows visibly enlarged on the canvas behind the dialog |
 
