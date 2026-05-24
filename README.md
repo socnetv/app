@@ -39,6 +39,7 @@ field data from a file in a supported format (GraphML, GraphViz, EdgeList, GML, 
 - Custom node and edge attributes: add, edit and remove arbitrary key/value pairs. Fully persisted in GraphML.
 - Data table dock (Ctrl+T): inspect and inline-edit all node and edge properties — including custom attributes — with live search and sortable columns.
 - Graph format export: save the current graph (or just the active relation) to **GraphML**, **Pajek**, **Adjacency Matrix**, **GraphViz DOT**, **UCINET DL**, **Weighted Edge List**, or **Simple Edge List** via the **Network → Export** menu.
+- Zero-weight edge support: edges with weight `0` are drawn (configurable color, set in Settings) but excluded from all SNA computations. Optionally saved to GraphML for full data fidelity.
 - Structured import/export: export node or edge data to CSV or JSON; re-import to update attributes in bulk (supports a full spreadsheet editing workflow). See the [manual](https://socnetv.org/manual/intro/) for details.
 - Random network generators: Erdős–Rényi, Watts–Strogatz, scale-free, regular lattice, and more.
 - One-click recreation of well-known social network datasets such as Padgett's Florentine families.

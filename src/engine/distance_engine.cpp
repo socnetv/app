@@ -974,7 +974,7 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si, const bool &computeCen
     int u = 0, ui = 0, w = 0, wi = 0;
     int dist_u = 0, temp = 0, dist_w = 0;
     int relation = 0;
-    // int  weight=0;
+    qreal weight = 0; // Fix #30: needed to skip zero-weight edges
     bool edgeStatus = false;
     H_edges::const_iterator it1;
 
@@ -1025,8 +1025,16 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si, const bool &computeCen
                 ++it1;
                 continue;
             }
+            // Fix #30: zero-weight edges are visual-only and must not be
+            // traversed as structural connections. Without this guard, BFS
+            // would report incorrect geodesic distances and reachability.
+            weight = it1.value().second.first;
+            if (weight == 0)
+            {
+                ++it1;
+                continue;
+            }
             w = it1.key();
-            //  weight = it1.value().second.first;
             wi = graph.vertexIndexByNumber(w);
             qDebug("BFS: u=%i is connected with node w=%i of graph.vertexIndexByNumber wi=%i. ", u, w, wi);
 
@@ -1258,6 +1266,16 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
 
             // Get the edge weight
             weight = it1.value().second.first;
+
+            // Fix #30: zero-weight edges are visual-only and must not be
+            // traversed. Normal weights: a zero-weight path would be "free"
+            // (dist_w = dist_u + 0), collapsing distances incorrectly.
+            // Inverse weights: 1/0 is undefined — potential crash or +inf.
+            if (weight == 0)
+            {
+                ++it1;
+                continue;
+            }
 
             qDebug() << "    --- dijkstra: edge (u, w) = (" << u << "," << w << ") =" << weight;
 

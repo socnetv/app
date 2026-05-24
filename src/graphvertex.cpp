@@ -785,7 +785,10 @@ int GraphVertex::outEdgesCount()
         if (relation == m_curRelation)
         {
             const bool edgeStatus = it1.value().second.second;
-            if (edgeStatus)
+            // Fix #30: zero-weight edges are stored but must not count as
+            // structural edges (density, reachability, etc. would be wrong).
+            const qreal edgeWeight = it1.value().second.first;
+            if (edgeStatus && edgeWeight != 0)
             {
                 m_outEdgesCounter++;
             }
