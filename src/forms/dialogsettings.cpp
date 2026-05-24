@@ -131,6 +131,10 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
     ui->showZeroWeightEdgesChkBox->setChecked(  // #30
         (appSettings["showZeroWeightEdges"] == "true") ? true:false
         );
+    // #30: keep color picker in sync with the show-toggle at open time
+    bool showZero = (appSettings["showZeroWeightEdges"] == "true");
+    ui->label_20->setEnabled(showZero);
+    ui->edgeColorZeroBtn->setEnabled(showZero);
 
 
 
@@ -514,6 +518,12 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
 
     connect (ui->showZeroWeightEdgesChkBox, &QCheckBox::stateChanged,  // #30
             this, &DialogSettings::getShowZeroWeightEdges);
+
+    // #30: disable color picker when zero-weight edges are hidden
+    connect (ui->showZeroWeightEdgesChkBox, &QCheckBox::toggled,
+             ui->label_20,       &QLabel::setEnabled);
+    connect (ui->showZeroWeightEdgesChkBox, &QCheckBox::toggled,
+             ui->edgeColorZeroBtn, &QToolButton::setEnabled);
 
 
     connect ( ui->buttonBox, &QDialogButtonBox::accepted,

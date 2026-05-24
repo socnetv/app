@@ -152,6 +152,16 @@ All notable changes to this project are documented in this file.
     - `IndexType::CLC = 13` added to the index enum; `clusteringCoefficient()`
       now builds the `discreteCLCs` distribution map for charting.
 
+  - **Zero-weight edge display settings** (#30):
+    - New **Settings → Edges → Show zero-weight edges** checkbox (default: on):
+      when unchecked, zero-weight edges are silently skipped on load — no ghost
+      edges, no artifacts. The **Zero valued edge color** picker is automatically
+      disabled when the checkbox is off.
+    - Zero-weight edge color is now **user-configurable**: the hardcoded `"blue"`
+      is replaced by `initEdgeColorZero`, driven by the existing
+      **Settings → Edges → Zero valued edge color** picker which was already
+      present but disconnected from `edgeCreate()`.
+
 ### Improvements
 
   - **UI declutter & UX improvements** (#234):
@@ -180,6 +190,21 @@ All notable changes to this project are documented in this file.
       overlapping its widgets.
 
 ### Bug Fixes
+
+  - **Zero-weight edges: five pre-existing computation bugs fixed** (#30):
+    - `outEdgesCount()` now skips weight-0 edges → **density** no longer
+      overcounted.
+    - `graphReciprocity()` now skips weight-0 edges, preventing a false
+      `edgeExists(v2,v1)==0` match against absent reverse edges that inflated
+      the reciprocated-ties count and could produce a 0/0 arc-reciprocity ratio.
+    - `clusteringCoefficientLocal()` now excludes weight-0 neighbours from the
+      neighbourhood *k*, keeping the k*(k−1) denominator correct.
+    - BFS (`bfsSSSP`) now skips weight-0 edges so they are not traversed as valid
+      1-hop connections (affected geodesic distances, reachability, and all
+      BFS-derived centralities).
+    - Dijkstra (`dijkstraSSSP`) now skips weight-0 edges, preventing free paths
+      (`dist_w = dist_u + 0`) and a division-by-zero crash when `inverseWeights`
+      is enabled (`1/0 = ∞`).
 
   - **Canvas: Shift+click now adds a node to the current selection** (#235):
     Shift+left-clicking a node toggles it into or out of the selection without
