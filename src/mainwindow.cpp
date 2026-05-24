@@ -474,6 +474,7 @@ QMap<QString,QString> MainWindow::initSettings(const int &debugLevel, const bool
     appSettings["initEdgeColor"]="#666666";
     appSettings["initEdgeColorNegative"]="red";
     appSettings["initEdgeColorZero"]="blue";
+    appSettings["showZeroWeightEdges"]="true";   // #30: show by default; user can disable in Settings
     appSettings["initEdgeArrows"]="true";
     appSettings["initEdgeOffsetFromNode"] = "7";
     appSettings["initEdgeThicknessPerWeight"]="true";
@@ -837,6 +838,9 @@ void MainWindow::slotOpenSettingsDialog() {
 
     connect( m_settingsDialog, &DialogSettings::setSaveZeroWeightEdges,
              this, &MainWindow::slotOptionsSaveZeroWeightEdges);
+
+    connect( m_settingsDialog, &DialogSettings::setShowZeroWeightEdges,  // #30
+             this, &MainWindow::slotOptionsShowZeroWeightEdges);
 
     // show settings dialog
     m_settingsDialog->exec();
@@ -5884,6 +5888,9 @@ void MainWindow::initApp(){
     activeGraph->vertexLabelDistanceInit(appSettings["initNodeLabelDistance"].toInt(0,10));
 
     activeGraph->edgeColorInit(appSettings["initEdgeColor"]);
+    activeGraph->edgeColorZeroInit(appSettings["initEdgeColorZero"]);  // #30
+    activeGraph->showZeroWeightEdgesSet(
+        appSettings["showZeroWeightEdges"] == "true");  // #30
 
     activeGraph->edgeWeightNumbersVisibilitySet(
                 (appSettings["initEdgeWeightNumbersVisibility"] == "true") ? true:false
@@ -15520,6 +15527,20 @@ void MainWindow::slotOptionsSaveZeroWeightEdges(bool toggle) {
     }
     QApplication::restoreOverrideCursor();
 
+}
+
+
+/**
+ * @brief Turns on/off drawing of zero-weight edges on the canvas (#30)
+ * @param toggle
+ */
+void MainWindow::slotOptionsShowZeroWeightEdges(bool toggle) {
+    qDebug() << "MW::slotOptionsShowZeroWeightEdges - toggle:" << toggle;
+    appSettings["showZeroWeightEdges"] = (toggle) ? "true" : "false";
+    activeGraph->showZeroWeightEdgesSet(toggle);
+    statusMessage( toggle
+                   ? tr("Zero-weight edges will be drawn on the canvas.")
+                   : tr("Zero-weight edges will not be drawn on the canvas.") );
 }
 
 

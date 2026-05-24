@@ -502,6 +502,7 @@ public slots:
     void slotOptionsEdgeArrowsVisibility(bool toggle);
 
     void slotOptionsSaveZeroWeightEdges(bool toggle);
+    void slotOptionsShowZeroWeightEdges(bool toggle);  // #30
 
     void slotOptionsEmbedLogoExporting(bool toggle);
     void slotOptionsProgressDialogVisibility(bool toggle);

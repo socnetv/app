@@ -724,6 +724,8 @@ public:
     void edgeLabelsVisibilitySet(const bool &toggle);
 
     void edgeColorInit(const QString &);
+    void edgeColorZeroInit(const QString &);  // #30: configurable zero-weight edge color
+    void showZeroWeightEdgesSet(const bool &toggle); // #30: show/hide zero-weight edges
 
     void edgeColorSet(const int &v1, const int &v2, const QString &color);
 
@@ -1475,8 +1477,9 @@ private:
 
     int csRecDepth;
 
-    QString m_fileName, m_graphName, initEdgeColor, initVertexColor,
-        initVertexNumberColor, initVertexLabelColor;
+    QString m_fileName, m_graphName, initEdgeColor, initEdgeColorZero,
+        initVertexColor, initVertexNumberColor, initVertexLabelColor;
+    bool initShowZeroWeightEdges;
     QString initVertexShape, initVertexIconPath;
     QString htmlHead, htmlHeadLight, htmlEnd;
 
