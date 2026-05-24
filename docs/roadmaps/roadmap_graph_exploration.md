@@ -406,69 +406,21 @@ Items explicitly deferred out of WS9 scope. Each has a home in the roadmap phase
 
 ---
 
-## Documentation Debt — Website & Manual Updates
+## Documentation Debt — Screenshots Needed
 
-The SocNetV website and manual live in a separate public repo at `~/socnetv/website/`
-(GitHub: `https://github.com/socnetv/website`). Core pages and manual content are under
-`src/content/docs/`.
+All v3.6 manual text has been written (`~/socnetv/website/src/content/docs/`).
+The following screenshots still need to be taken and inserted at the locations below.
 
-All WS9 features shipped up to and including v3.5 (#209–#227, #232) have been
-documented in the manual. No outstanding documentation debt for those issues.
-
-The following features are **implemented in the v3.6 development cycle** (also tracked
-with full detail in the roadmap phases above) and will need manual coverage before the
-next release:
-
-| Feature | Issue | Roadmap section | Notes |
+| # | Manual file | Section anchor | What to capture |
 |---|---|---|---|
-| In-app bulk editing of node and edge attributes | #228 | Feature 3 Phase 5 | New Data Table toolbar buttons (Set property, Add attribute, Remove attribute); canvas context menu entries; `DialogBulkEdit`; canvas ↔ table selection sync |
-| UI declutter & UX improvements | #234 | Feature 1 Phase 2 + Cross-cutting UX | See notes below |
-| GraphViz DOT export & parser roundtrip | #236 | Feature 4 Phase B1 | Manual's "Supported Formats" page needs: describe DOT export, note single-relation limitation, document `pos=` coordinate roundtrip and custom-attribute passthrough; see capability matrix below |
-| UCINET DL export | #237 | Feature 2 Phase 5 | Manual's "Supported Formats" page needs: describe DL export, note FULLMATRIX format used, multi-relation support via NM blocks, node-labels preserved in ROW/COLUMN LABELS; see capability matrix below |
-| Edge List export (weighted + simple) | #238 | Feature 2 Phase 5 | Manual's "Supported Formats" page needs: describe weighted (source target weight) and simple (source target) variants; note active-relation-only limitation; note spaces in labels are exported as underscores; see capability matrix below |
-| Subgraph save format expansion | #220 | Feature 2 Phase 5 | Manual's "Save subgraph" section needs: update to show all 7 formats now available in the Save Subgraph As… dialog; document which formats lose custom attributes (all except GraphML/DOT); document which formats export only the active relation (Adjacency, DOT, both Edge List variants) |
-| Compound AND-logic query filter / Query Builder | #221 | Phase 7 | Manual's "Filtering" section needs: document **Filter → Query Builder…** (`Ctrl+X, Ctrl+B`); explain scope radio (Nodes/Edges), dynamic condition rows, AND logic, operator set (=, ≠, >, <, ≥, ≤, contains), numeric-aware matching; note the "Use Query Builder…" shortcut button inside Filter by Attribute dialog; show chip label format `"Nodes: query (N condition(s))"` and how to remove via ×. |
-| Clustering Coefficient node color layout | #37 | Feature 1 (node color gradient extension) | Manual's "Layout" section needs: document **Layout → Node Color → Clustering Coefficient** (`Ctrl+L, Ctrl+C, Ctrl+G`); explain the blue→red gradient (higher CLC = warmer); note it also appears in the Layout control panel combo, the analysis prominence combo, Filter Nodes by Centrality, and the distribution chart. |
-
-### Export format capability matrix
-
-What each supported export format can preserve from a SocNetV graph.
-Use this table when writing manual copy and when deciding which format to recommend to users.
-
-| Format | Node labels | Node colors/shapes | Custom node attrs | Edge weights | Edge labels | Custom edge attrs | Multi-relation |
-|--------|:-----------:|:------------------:|:-----------------:|:------------:|:-----------:|:-----------------:|:--------------:|
-| GraphML | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Pajek | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✓ (matrix blocks) |
-| Adjacency | ✗ | ✗ | ✗ | optional | ✗ | ✗ | ✗ (active only) |
-| GraphViz DOT | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ (active only) |
-| UCINET DL | ✓ | ✗ | ✗ | ✓ | ✗ | ✗ | ✓ (NM blocks) |
-| Edge List (weighted) | ✓ (label col) | ✗ | ✗ | ✓ | ✗ | ✗ | ✗ (active only) |
-| Edge List (simple) | ✓ (label col) | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ (active only) |
-
-When a format cannot preserve something the graph contains, the export dialog warns the user before writing the file.
-
-### #234 — UI/UX changes requiring manual & screenshot updates
-
-The following UI areas changed visually and/or behaviourally and need updated
-screenshots and text in the manual:
-
-- **Control Panel → Layout section**: Apply buttons are gone. Screenshots showing
-  the old Apply buttons must be replaced. Text should explain that selecting from
-  any combobox applies the layout immediately; that Type defaults to "None"; and
-  that choosing a Force-Directed model clears a Radial/Level type and vice versa.
-
-- **Toolbar**: Filter actions are no longer in a single flat group — node-filter
-  icons appear alongside node actions, edge-filter icons alongside edge actions.
-  Any toolbar screenshot in the manual needs updating.
-
-- **Node Properties / Edge Properties toolbar buttons**: Behaviour is now
-  context-sensitive (hint / single dialog / bulk-edit). The manual section
-  describing how to edit node or edge properties should document all three
-  states.
-
-- **Statistics Panel**: The panel is now divided into five collapsible sections
-  (NETWORK, SELECTION, CLICKED NODE, CLICKED EDGE, DISTRIBUTION), each with a
-  ▾/▴ toggle header. The In-Degree/Out-Degree rows and Weight/Reciprocal rows
-  are hidden until a node/edge is clicked. Any manual screenshot of the right
-  panel needs to be retaken.
+| 1 | `gui.mdx` | `#query-builder` | Query Builder dialog — Nodes scope, 2 rows filled (e.g. `type = investor`, `score > 0.5`), before clicking Apply |
+| 2 | `gui.mdx` | `#query-builder` | Canvas after Query Builder filter — filter bar showing chip `Nodes: query (2 condition(s)) ×`, some nodes hidden |
+| 3 | `gui.mdx` | `#statistics-panel` | Statistics Panel — all 5 collapsible sections (NETWORK, SELECTION, CLICKED NODE, CLICKED EDGE, DISTRIBUTION) with ▾/▴ toggles visible; replaces `socnetv-25-65-actors-KW-BC-levels.png` |
+| 4 | `gui.mdx` | overview / `#the-menu` | Main Window — updated toolbar with filter icons in their new positions (next to node/edge actions), filter bar visible; replaces `socnetv-25-131-actors-...png` |
+| 5 | `gui.mdx` | `#control-panel` | Control Panel → Layout section — prominence combo, type combo (set to "None"), force-directed combo; no Apply button |
+| 6 | `visualization.mdx` | `#node-color-by-clustering-coefficient` | Network with CLC color gradient — nodes blue→red by Clustering Coefficient score (Padgett or Karate Club recommended) |
+| 7 | `data.mdx` | `#in-app-bulk-editing` | Data Table Nodes tab — Set Property / Add Attribute / Remove Attribute toolbar buttons visible; replaces `socnetv-35-F7__Data_Table_Dock_(Nodes_tab).webp` |
+| 8 | `data.mdx` | `#set-property` | Bulk Edit dialog (nodes) — property combo open showing Label / Size / Color / Shape + custom keys |
+| 9 | `formats.mdx` | `#exporting-to-graphviz-dot` | Network → Export submenu — all export options visible (GraphViz DOT, UCINET DL, Weighted Edge List, Simple Edge List, …) |
+| 10 | `formats.mdx` | `#saving-subgraphs` | Save Subgraph As… dialog — format dropdown open showing all 7 format choices |
 
