@@ -69,6 +69,7 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         nodeHash.reserve(10000);
 
         m_edgeHighlighting = true;
+        m_edgesBezier = false;
         m_edgeMinOffsetFromNode=6;
         m_arrowSize = 6;
         m_nodeNumberVisibility = true;
@@ -308,7 +309,7 @@ void GraphicsWidget::drawEdge(const int &sourceNum, const int &targetNum,
             Qt::SolidLine,
             type,
             drawArrows,
-            (sourceNum == targetNum) ? true : bezier,
+            (sourceNum == targetNum) ? true : (bezier || m_edgesBezier),
             weightNumbers,
             m_edgeHighlighting,
             m_arrowSize);
@@ -1218,6 +1219,15 @@ void GraphicsWidget::setEdgeHighlighting(const bool &toggle){
     }
     viewport()->setUpdatesEnabled(true);
     m_edgeHighlighting = toggle;
+}
+
+
+void GraphicsWidget::setEdgesBezier(const bool &toggle) {
+    m_edgesBezier = toggle;
+    viewport()->setUpdatesEnabled(false);
+    foreach (GraphicsEdge *edge, edgesHash)
+        edge->toggleBezier(toggle);
+    viewport()->setUpdatesEnabled(true);
 }
 
 

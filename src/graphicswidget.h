@@ -173,6 +173,8 @@ public slots:
     void setEdgeWeightNumbersVisibility (const bool &toggle);
     void setEdgeLabelsVisibility(const bool &toggle);
 
+    void setEdgesBezier(const bool &toggle);
+
     void setEdgeHighlighting(const bool &toggle);
 
     void handleDoubleClickOnNode(GraphicsNode *node);
@@ -231,6 +233,7 @@ private:
     bool hasDoubleClickedNode, clickedEdgeExists;
     bool m_nodeNumbersInside, m_nodeNumberVisibility, m_nodeLabelVisibility;
     bool m_edgeHighlighting;
+    bool m_edgesBezier;
     GraphicsNode *firstDoubleClickedNode, *secondDoubleClickedNode;
     GraphicsNode *markedEdgeSource;
     GraphicsNode *markedEdgeTarget;

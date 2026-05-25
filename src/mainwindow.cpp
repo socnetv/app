@@ -3714,7 +3714,6 @@ void MainWindow::initActions(){
     drawEdgesBezier->setChecked (
                 (appSettings["initEdgeShape"]=="bezier") ? true: false
                                                            );
-    drawEdgesBezier->setEnabled(false);
     connect(drawEdgesBezier, SIGNAL(triggered(bool)),
             this, SLOT(slotOptionsEdgesBezier(bool)) );
 
@@ -5938,6 +5937,8 @@ void MainWindow::initApp(){
                 ( appSettings["canvasEdgeHighlighting"] == "true" ) ? true: false
                                                                       );
     graphicsWidget->setEdgeArrowSize( appSettings["initEdgeArrowSize"].toInt(nullptr, 10) );
+    graphicsWidget->setEdgesBezier( appSettings["initEdgeShape"] == "bezier" );
+    drawEdgesBezier->setChecked( appSettings["initEdgeShape"] == "bezier" );
 
     if (appSettings["initBackgroundImage"] != ""
             && QFileInfo::exists(appSettings["initBackgroundImage"])) {
@@ -15400,43 +15401,15 @@ void MainWindow::slotOptionsEdgeWeightsDuringComputation(bool toggle) {
 
 
 
-/**
-*  FIXME edges Bezier
-*/
 void MainWindow::slotOptionsEdgesBezier(bool toggle){
     if ( !activeNodes() ) {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
     statusMessage( tr("Toggle edges bezier. Please wait...") );
-    // //	graphicsWidget->setBezier(toggle);
-    if (!toggle) 	{
-        // 		QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        // 		QList<QGraphicsItem *> list = scene->items();
-        // 		for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
-        // 			if ( (*item)->type() ==TypeEdge ){
-        // 				GraphicsEdge *edge = (GraphicsEdge*) (*item);
-        // //				edge->toggleBezier(false);
-        // 				(*item)->hide();(*item)->show();
-        // 			}
-        //
-        // 		}
-        // 		QApplication::restoreOverrideCursor();
-        // 		return;
-    }
-    else{
-        // 		QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-        // 		QList<QGraphicsItem *> list = scene->items();
-        // 		for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++){
-        // 			if ( (*item)->type() ==TypeEdge ){
-        // 				GraphicsEdge *edge = (GraphicsEdge*) (*item);
-        // //				edge->toggleBezier(true);
-        // 				(*item)->hide();(*item)->show();
-        // 			}
-        // 		}
-        // 		QApplication::restoreOverrideCursor();
-    }
-
+    appSettings["initEdgeShape"] = toggle ? "bezier" : "line";
+    graphicsWidget->setEdgesBezier(toggle);
+    statusMessage( tr("Edges drawn as %1.").arg(toggle ? tr("Bezier curves") : tr("straight lines")) );
 }
 
 

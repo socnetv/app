@@ -71,6 +71,8 @@ GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
     m_offsetFromTargetNode=target->size()+m_minOffsetFromNode;  // offsets edge from the centre of target node
 
     m_arrowSize=arrowSize;
+    angle = 0.0;
+    m_srcAngle = 0.0;
 
     m_weight = weight ;              // saves the weight/value of this edge
 
@@ -132,11 +134,23 @@ void GraphicsEdge::showArrows(const bool &drawArrows){
 }
 
 
+void GraphicsEdge::toggleBezier(const bool &toggle) {
+    m_Bezier = toggle;
+    adjust();
+}
+
 
 /**
- * @brief Recomputes the four cached arrow-corner QPointFs from the current
- * angle, endpoint positions, and m_arrowSize.  Called by adjust() and by
- * setArrowSize() so paint() never has to do trig itself.
+ * @brief Fills the four cached arrow-corner QPointFs.
+ *
+ * Uses @c angle (curve tangent direction at @c targetPoint, in the source→target
+ * sense) for the destination arrowhead wings, and @c m_srcAngle (tangent
+ * direction at @c sourcePoint) for the source arrowhead on undirected /
+ * reciprocated edges.  For straight edges @c m_srcAngle == @c angle; for
+ * bezier curves they differ because the tangent varies along the arc.
+ *
+ * Called by @c adjust() and by @c setArrowSize() so @c paint() performs no
+ * trigonometry of its own.
  */
 void GraphicsEdge::computeArrowPoints() {
     if (!m_drawArrows || source == target || line_length <= 10)
@@ -146,10 +160,10 @@ void GraphicsEdge::computeArrowPoints() {
     m_destArrowP2 = targetPoint + QPointF(sin(angle - M_PI + M_PI_3)   * m_arrowSize,
                                           cos(angle - M_PI + M_PI_3)   * m_arrowSize);
     if (m_edgeDirType == EdgeType::Undirected || m_edgeDirType == EdgeType::Reciprocated) {
-        m_srcArrowP1 = sourcePoint + QPointF(sin(angle + M_PI_3)        * m_arrowSize,
-                                             cos(angle + M_PI_3)        * m_arrowSize);
-        m_srcArrowP2 = sourcePoint + QPointF(sin(angle + M_PI - M_PI_3) * m_arrowSize,
-                                             cos(angle + M_PI - M_PI_3) * m_arrowSize);
+        m_srcArrowP1 = sourcePoint + QPointF(sin(m_srcAngle + M_PI_3)        * m_arrowSize,
+                                             cos(m_srcAngle + M_PI_3)        * m_arrowSize);
+        m_srcArrowP2 = sourcePoint + QPointF(sin(m_srcAngle + M_PI - M_PI_3) * m_arrowSize,
+                                             cos(m_srcAngle + M_PI - M_PI_3) * m_arrowSize);
     }
 }
 
@@ -458,15 +472,26 @@ qreal GraphicsEdge::length() const
 /**
  * @brief Recomputes all geometry for this edge.
  *
- * Called whenever a connected node moves or a geometric property changes
- * (node size, edge offset, etc.).  Rebuilds @c m_path (the line or
- * self-loop path), caches the edge angle, and delegates arrow-corner
- * computation to @c computeArrowPoints() so that @c paint() can draw
- * arrows from pre-computed values without any per-repaint trigonometry.
+ * Called whenever a connected node moves or any geometric property changes
+ * (node size, offset, bezier mode, etc.).  Executes four steps in order:
  *
- * Arrow polygons are intentionally @b not added to @c m_path so that
- * changing @c m_arrowSize only requires recomputing four QPointFs and a
- * repaint — not a full path rebuild.
+ * 1. Snapshots @c line_dx / @c line_dy / @c line_length from current node centres.
+ * 2. Sets @c sourcePoint / @c targetPoint — offset from node centres along the
+ *    chord direction (straight mode) or along the curve tangent at each endpoint
+ *    (bezier mode), so arrowheads land on the node boundary in the correct direction.
+ * 3. Rebuilds @c m_path:
+ *    - straight edge:        @c lineTo()
+ *    - quadratic bezier arc: @c quadTo() with curvature capped at
+ *                            min(40 px, line_length × 0.3) to avoid extreme
+ *                            bowing on short edges
+ *    - self-loop:            @c cubicTo() with fixed ±30 px control offsets
+ * 4. Caches @c angle (tangent at @c targetPoint) and @c m_srcAngle (tangent at
+ *    @c sourcePoint), then calls @c computeArrowPoints() to fill the four cached
+ *    arrow-corner QPointFs.
+ *
+ * Arrow polygons are intentionally @b not added to @c m_path so that changing
+ * @c m_arrowSize only requires recomputing four QPointFs and a repaint —
+ * not a full path rebuild.
  */
 void GraphicsEdge::adjust(){
     // qDebug() << "GraphicsEdge::adjust()";
@@ -474,72 +499,101 @@ void GraphicsEdge::adjust(){
         return;
     }
 
-    //    QLineF line(source->x(), source->y(), target->x(), target->y());
-    //QPointF edgeOffset;
-
-    //line_length = line.length();
-    //    line_dx = line.dx();
-    //    line_dy = line.dy();
-
     line_length = length();
     line_dx = dx();
     line_dy = dy();
 
-    if (source!=target) {
-        edgeOffset = QPointF(
-                    (line_dx * m_offsetFromTargetNode) / line_length,
-                    (line_dy * m_offsetFromTargetNode) / line_length);
-    }
-    else edgeOffset = QPointF(0, 0);
+    // Curvature for bezier mode: capped so short edges don't bow excessively.
+    // Computed once here and reused for both endpoint offsetting and path ctrl.
+    const qreal curvature = (m_Bezier && line_length > 0)
+                            ? qMin(40.0, line_length * 0.3) : 0.0;
 
     prepareGeometryChange();
 
-    //    sourcePoint = line.p1() + edgeOffset ;
-    //    targetPoint = line.p2() - edgeOffset ;
-
-    sourcePoint = source->pos() + edgeOffset ;
-    targetPoint = target->pos() - edgeOffset ;
-
+    if (source != target && line_length > 0) {
+        if (!m_Bezier) {
+            // Straight line: offset both endpoints along the chord direction.
+            edgeOffset = QPointF((line_dx * m_offsetFromTargetNode) / line_length,
+                                 (line_dy * m_offsetFromTargetNode) / line_length);
+            sourcePoint = source->pos() + edgeOffset;
+            targetPoint = target->pos() - edgeOffset;
+        } else {
+            // Bezier: offset endpoints along the curve's tangent at each end
+            // so the arrowhead sits on the node boundary in the arrival direction.
+            // Use an approximate ctrl from node centers to derive tangent vectors.
+            QPointF srcPos  = source->pos();
+            QPointF tgtPos  = target->pos();
+            QPointF approxCtrl = (srcPos + tgtPos) / 2.0
+                                 + QPointF(-line_dy, line_dx) * (curvature / line_length);
+            QPointF sTan = approxCtrl - srcPos;
+            qreal   sTLen = qSqrt(sTan.x()*sTan.x() + sTan.y()*sTan.y());
+            sourcePoint = (sTLen > 0) ? srcPos + sTan * (m_offsetFromSourceNode / sTLen)
+                                      : srcPos;
+            QPointF tTan = tgtPos - approxCtrl;
+            qreal   tTLen = qSqrt(tTan.x()*tTan.x() + tTan.y()*tTan.y());
+            targetPoint = (tTLen > 0) ? tgtPos - tTan * (m_offsetFromTargetNode / tTLen)
+                                      : tgtPos;
+        }
+    } else {
+        edgeOffset = QPointF(0, 0);
+        sourcePoint = source->pos();
+        targetPoint = target->pos();
+    }
 
     if (m_drawWeightNumber) {
         weightNumber->setPos(
                     -20 + (source->x()+target->x())/2.0,
-                    -20+ (source->y()+target->y())/2.0 );
+                    -20 + (source->y()+target->y())/2.0 );
     }
     if (m_drawLabel) {
         edgeLabel->setPos(
-                    5+ (source->x()+target->x())/2.0,
-                    5+ (source->y()+target->y())/2.0 );
+                    5 + (source->x()+target->x())/2.0,
+                    5 + (source->y()+target->y())/2.0 );
     }
 
-    //Define the path upon which we' ll draw the line
     QPainterPath path(sourcePoint);
 
-    //Construct the path
-    if (source!=target) {
-        if ( !m_Bezier){
-            //   qDebug()<< "*** GraphicsEdge::paint(). Constructing a line";
+    if (source != target) {
+        if (!m_Bezier) {
             path.lineTo(targetPoint);
+            if (line_length > 0) {
+                angle = ::acos( line_dx / line_length );
+                if (line_dy >= 0)
+                    angle = M_PI_X_2 - angle;
+            }
+            m_srcAngle = angle; // chord is uniform — same angle at both ends
         }
         else {
-            qDebug() << "*** GraphicsEdge::paint(). Constructing a bezier curve";
-            QPointF c = QPointF( targetPoint.x() - sourcePoint.x(),
-                                 targetPoint.y() - targetPoint.y());
-            path.cubicTo( sourcePoint, c, targetPoint);
+            // Control point: midpoint of the offset endpoints shifted
+            // curvature pixels perpendicular to the chord direction.
+            QPointF mid  = (sourcePoint + targetPoint) / 2.0;
+            QPointF ctrl = mid + QPointF(-line_dy, line_dx) * (curvature / line_length);
+            path.quadTo(ctrl, targetPoint);
+
+            // Dest arrow: tangent at targetPoint = direction ctrl → target.
+            qreal tdx = targetPoint.x() - ctrl.x();
+            qreal tdy = targetPoint.y() - ctrl.y();
+            qreal tlen = qSqrt(tdx * tdx + tdy * tdy);
+            if (tlen > 0) {
+                angle = ::acos( tdx / tlen );
+                if (tdy >= 0)
+                    angle = M_PI_X_2 - angle;
+            }
+            // Src arrow: tangent at sourcePoint = direction source → ctrl.
+            qreal sdx = ctrl.x() - sourcePoint.x();
+            qreal sdy = ctrl.y() - sourcePoint.y();
+            qreal slen = qSqrt(sdx * sdx + sdy * sdy);
+            if (slen > 0) {
+                m_srcAngle = ::acos( sdx / slen );
+                if (sdy >= 0)
+                    m_srcAngle = M_PI_X_2 - m_srcAngle;
+            }
         }
     }
-    else { //self-link
+    else { // self-loop
         QPointF c1 = QPointF( targetPoint.x() -30,  targetPoint.y() -30 );
         QPointF c2 = QPointF( targetPoint.x() +30,  targetPoint.y() -30 );
-        //        qDebug()<< "*** GraphicsEdge::paint(). Constructing a bezier self curve c1 "
-        //                <<c1.x()<<","<<c1.y()  << " and c2 "<<c2.x()<<","<<c2.y();
         path.cubicTo( c1, c2, targetPoint);
-    }
-
-    if (source != target && line_length > 0) {
-        angle = ::acos( line_dx / line_length );
-        if (line_dy >= 0)
-            angle = M_PI_X_2 - angle;
     }
 
     m_path = path;
@@ -734,11 +788,11 @@ void GraphicsEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
     default:                   painter->setPen(m_penRegular);   break;
     }
 
-    painter->setBrush(m_brush);
-
+    painter->setBrush(Qt::NoBrush);
     painter->drawPath(m_path);
 
     if (m_drawArrows && source != target && line_length > 10) {
+        painter->setBrush(m_brush);
         painter->drawPolygon(QPolygonF() << targetPoint << m_destArrowP1 << m_destArrowP2);
         if (m_edgeDirType == EdgeType::Undirected || m_edgeDirType == EdgeType::Reciprocated)
             painter->drawPolygon(QPolygonF() << sourcePoint << m_srcArrowP1 << m_srcArrowP2);

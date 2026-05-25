@@ -101,6 +101,8 @@ public:
 
     void showArrows(const bool &);
 
+    void toggleBezier(const bool &toggle);
+
     void setArrowSize(const int &size);
     int arrowSize() const;
 
@@ -172,7 +174,7 @@ private:
 
     int m_edgeDirType;
 
-    qreal angle, line_length, line_dx, line_dy;
+    qreal angle, m_srcAngle, line_length, line_dx, line_dy;
 
     bool m_Bezier, m_drawArrows, m_drawWeightNumber;
     bool m_drawLabel, m_hoverHighlighting;
