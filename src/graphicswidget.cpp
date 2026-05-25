@@ -81,9 +81,8 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
          * can outweight the fast lookup speeds."
          * The user can change this from Settings.
         */
-        // Default applied via appSettings["canvasIndexMethod"] at startup (slotOptionsCanvasIndexMethod).
-        // NoIndex is the better default for large dynamic scenes; BspTreeIndex suits small static ones.
-        scene()->setItemIndexMethod(QGraphicsScene::NoIndex);
+        // Scene index method is set at startup via slotOptionsCanvasIndexMethod(appSettings["canvasIndexMethod"]).
+        // Default appSetting is NoIndex; user can override via Settings > Canvas.
 
         // Connect scene change signal to the slot that handles selected items
         connect ( scene() , &QGraphicsScene::selectionChanged,
