@@ -266,6 +266,33 @@ Heavier suites can run nightly or on-demand.
 
 ---
 
+### WS6.6 — Canvas rendering performance kernel (#240)
+
+Goal:
+
+The existing golden harness covers computation kernels (distance, prominence, clustering, etc.) but has no coverage of the graphics layer.  A headless rendering-performance kernel would let us catch regressions in `GraphicsWidget` / `GraphicsEdge` / `GraphicsNode` paint paths automatically.
+
+Approach:
+
+- Build a new CLI kernel (`kernel_render_perf_v8` or similar) that:
+  - Loads a fixed, large-ish reference network (e.g. `Bernard_Killworth_Fraternity` or a synthetic dense graph) into a `QGraphicsScene` without showing a window (`QOffscreenSurface` / `QImage` render target)
+  - Drives a fixed sequence of operations: full scene render, bulk node-size change, bulk edge-color change, simulated node drag (move one high-degree node N steps)
+  - Measures wall-clock time for each operation and writes a JSON result (`"render_ms"`, `"bulk_node_size_ms"`, etc.)
+- Baselines store the JSON with **timing upper bounds** (not exact values) so the comparison is a "must be faster than X ms" guard, not a brittle equality check
+- `run_benchmarks.sh` gains a `--render` flag to include this kernel; CI keeps it off by default (GPU/display availability varies)
+
+Why this matters:
+
+`GraphicsWidget` bulk operations (`setNodeSizeAll`, `setEdgeArrowSize`, etc.) currently fire thousands of individual `prepareGeometryChange()` calls without batching.  Phase 1–5 of #240 fix the worst offenders, but without a regression kernel there is no automated guard to prevent the problems returning.
+
+Rules:
+
+- kernel must not open any visible window (offscreen rendering only)
+- timing thresholds set conservatively (2× measured baseline on reference hardware) to tolerate CI noise
+- add new threshold fields to the existing benchmark JSON schema
+
+---
+
 ## Notes
 
 - Baseline regeneration should be treated as exceptional.
