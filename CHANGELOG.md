@@ -170,6 +170,31 @@ All notable changes to this project are documented in this file.
 
 ### Improvements
 
+  - **Canvas rendering performance for large networks** (#180, #240):
+    - The dominant bottleneck on large networks (2000+ nodes, 40000+ edges)
+      was `QGraphicsScene::BspTreeIndex` (the previous default): every
+      `prepareGeometryChange()` call — triggered O(E) times per rubber-band
+      drag or CTRL+A — paid an O(log N) BSP tree update. Result: selection
+      and drag were nearly unresponsive on large networks.
+    - **Scene index now defaults to `NoIndex`**, eliminating BSP overhead
+      entirely. Rubber-band drag, CTRL+A, and full-network moves are now
+      fast on large networks. Memory consumption is also reduced
+       since the BSP tree structure is not built.
+    - Existing users are migrated automatically on first launch
+      (`settingsMigration = 2`); the setting remains user-controllable via
+      **Settings → Canvas → Scene index method**.
+    - `QPen` and `QBrush` objects in `GraphicsEdge` and `GraphicsNode` are
+      now cached and rebuilt only on property changes, avoiding per-`paint()`
+      heap allocations.
+    - Nine bulk visibility-toggle methods (`setNodeLabelsVisibility`,
+      `setEdgeArrowSize`, `setEdgeHighlighting`, etc.) now wrap their loops
+      with `viewport()->setUpdatesEnabled(false/true)`, coalescing per-item
+      `update()` calls into a single viewport repaint.
+    - `scene()->items()` loops replaced with direct `edgesHash`/`nodeHash`
+      iteration in `setEdgeOffsetFromNode` and `setAllItemsVisibility`.
+    - Hot-path `qDebug` calls removed from `handleSelectionChanged`,
+      `selectedNodes`, and `selectedEdges` (fired on every selection event).
+
   - **UI declutter & UX improvements** (#234):
     - Removed the two "Apply" buttons from the Layout section of the Control
       Panel. All three layout comboboxes (Prominence Index, Type, Force-Directed

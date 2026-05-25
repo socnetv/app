@@ -16,21 +16,29 @@ docs/roadmaps/
 
 SocNetV is a Qt-based desktop application for social network analysis and visualization.
 
-The architecture is layered:
+The architecture is layered across two threads:
 
 ```
-UI (MainWindow + dialogs + graphics)
-↓
-Graph (thin façade / coordinator)
-↓
-Algorithm slices / engines
-↓
-UI façade layer (rendering, chart export)
-↓
-Signal to MainWindow
+┌─ main thread ──────────────────────────────────────────────────┐
+│                                                                 │
+│  MainWindow + dialogs          (menus, panels, status bar)      │
+│       ↕ signals                                                 │
+│  GraphicsWidget                (QGraphicsView canvas)           │
+│    └─ GraphicsNode / GraphicsEdge  (QGraphicsItem scene items)  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+         ↕ queued cross-thread signals (setNodePos, etc.)
+┌─ graphThread ──────────────────────────────────────────────────┐
+│                                                                 │
+│  Graph                         (façade — state, invariants)     │
+│    └─ Algorithm slices         (src/graph/<domain>/)            │
+│    └─ UI façade layer          (src/graph/ui/ — charts, export) │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-Do **not bypass this flow** when adding new features.
+`Graph` runs on `graphThread`; all canvas mutation goes through queued
+signals to the main thread. Do **not bypass this flow** when adding new features.
 
 ---
 
@@ -42,6 +50,7 @@ Do **not bypass this flow** when adding new features.
 
 ```
 Graph::Graph(...)
+Graph::~Graph()
 Graph::clear(...)
 ```
 
@@ -167,9 +176,81 @@ Non-destructive node/edge visibility filtering via snapshot/restore:
 
 - `vertexFilterByEgoNetwork()`, `vertexFilterBySelection()`, `vertexFilterByAttribute()`
 - `edgeFilterByWeight()`, `edgeFilterByAttribute()`, `vertexFilterByQuery()`
-- `vertexFilterRestore()` — replays the filter stack in reverse
+- `vertexFilterRestoreAll()` — replays the filter stack in reverse
 
 All filters push a `FilterSpec` onto `m_visibilityHistory`. Undo restores the prior snapshot.
+
+---
+
+# Graph → Canvas Rendering System
+
+## Threading model
+
+`Graph` runs on a dedicated `graphThread`. All communication with
+`GraphicsWidget` (canvas) is via **queued signal/slot connections** across
+the thread boundary.
+
+```
+graphThread: Graph
+     ↓  emit setNodePos(nodeNum, x, y)   [queued — cross-thread]
+main thread: GraphicsWidget::moveNode()
+     ↓  node->setPos(x, y)
+     ↓  ItemPositionHasChanged → adjust() on all connected edges
+```
+
+`moveNode()` is intentionally one line. Do not add logic there.
+
+## Layout signal discipline
+
+Force-directed layouts (Eades, Fruchterman-Reingold, Kamada-Kawai) run all
+iterations on `graphThread` and emit `setNodePos` **once per node at the
+end**, not once per node per iteration. This avoids flooding the main
+thread's event queue.
+
+Static layouts (radial, levels, BC-based) emit exactly N signals in a
+single pass — the minimum possible without a new bulk signal type.
+
+**Do not add per-iteration `setNodePos` emissions** to any layout.
+
+## Scene index method
+
+`QGraphicsScene` defaults to `BspTreeIndex`, which rebuilds a spatial BSP
+tree on every `prepareGeometryChange()` call. On large networks this is the
+dominant performance cost: selecting or dragging nodes triggers O(E) edge
+`adjust()` calls, each paying an O(log N) BSP update.
+
+**The app defaults to `NoIndex`** (set via `appSettings["canvasIndexMethod"]`
+at startup). This eliminates BSP overhead entirely. Hit-test cost becomes
+O(N) per click, which is imperceptible for network analysis workloads.
+
+The setting is user-controllable via **Settings > Canvas**. `BspTreeIndex`
+remains available for small, static networks where fast hit-testing matters.
+
+## Known hot path: node selection
+
+`GraphicsNode::itemChange(ItemSelectedHasChanged)` calls `setSize()` and
+`setColor()`, both of which call `prepareGeometryChange()` and trigger
+`adjust()` on every connected edge. For N selected nodes this is O(N × avg
+degree) geometry work, synchronous on the main thread. With `NoIndex` this
+is fast in practice; with `BspTreeIndex` on large networks it causes
+visible lag.
+
+## Canvas performance knobs
+
+All rendering flags are user-configurable via **Settings > Canvas**:
+
+| Setting | Key | Default |
+|---------|-----|---------|
+| Scene index method | `canvasIndexMethod` | `NoIndex` |
+| Viewport update mode | `canvasUpdateMode` | `Full` |
+| Antialiasing | `antialiasing` | `true` |
+| Cache background | `canvasCacheBackground` | `false` |
+| Save painter state | `canvasPainterStateSave` | `false` |
+| Edge highlighting | `canvasEdgeHighlighting` | `true` |
+
+Do not hard-code scene rendering flags in `GraphicsWidget`'s constructor.
+Apply them via the corresponding `slotOptionsCanvas*` methods, which read
+from `appSettings` at startup.
 
 ---
 
