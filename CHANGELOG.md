@@ -222,6 +222,20 @@ All notable changes to this project are documented in this file.
 
 ### Bug Fixes
 
+  - **Galaskiewicz famous network now loads correctly** (#15): the `.2sm`
+    data file was missing from `data.qrc`, so `writeFamousNetwork()` returned
+    early with an empty temp file — causing "no data rows found" for all three
+    import modes. Added the resource entry and removed the now-dead hardcoded
+    data rows from `graph_reports.cpp`.
+
+  - **Edge mode now follows relation switches** (#53): switching to a
+    different relation now restores that relation's directed/undirected
+    state. Each relation tracks its own flag in `m_relationsDirected`;
+    `relationSet()` saves the departing state and restores the incoming
+    one, recomputes `m_graphIsSymmetric` from actual edges, and emits
+    `signalGraphDirectedChanged` so the edge-mode combo and the arrows
+    action in the toolbar update without mutating any edges.
+
   - **Zero-weight edges: five pre-existing computation bugs fixed** (#30):
     - `outEdgesCount()` now skips weight-0 edges → **density** no longer
       overcounted.

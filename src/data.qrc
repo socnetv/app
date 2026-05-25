@@ -22,6 +22,7 @@
         <file>data/Thurman_Office_Networks_Coalitions.dl</file>
         <file>data/Wasserman_Faust_7actors_star_circle_line_graphs.paj</file>
         <file>data/Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek</file>
+        <file>data/Galaskiewicz_CEOs_and_clubs_affiliation_network_data.2sm</file>
         <file>data/Zachary_Karate_Club.dl</file>
     </qresource>
 </RCC>
