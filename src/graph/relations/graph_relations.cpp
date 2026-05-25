@@ -80,15 +80,33 @@ void Graph::relationSet(int relNum, const bool &updateUI)
     }
 
     //
+    // Save the current relation's directed state before switching.
+    //
+    if (m_curRelation >= 0 && m_curRelation < m_relationsDirected.size())
+        m_relationsDirected[m_curRelation] = m_graphIsDirected;
+
+    //
     // now store the selected relation
     //
     m_curRelation = relNum;
+
+    //
+    // Restore directed state for the new relation.
+    //
+    m_graphIsDirected = m_relationsDirected.value(relNum, true);
 
     //
     // Invalidate the weighted cache so isWeighted() re-scans the new relation's edges.
     // Without this, isWeighted() returns the cached result from the previous relation.
     //
     calculatedGraphWeighted = false;
+
+    //
+    // Invalidate the symmetry cache and recompute from actual edges of the new relation,
+    // so m_graphIsSymmetric is correct for any subsequent setUndirected() call.
+    //
+    calculatedGraphSymmetry = false;
+    isSymmetric();
 
     //
     // Check if isWeighted so that multiple-relation networks are properly loaded.
@@ -103,6 +121,8 @@ void Graph::relationSet(int relNum, const bool &updateUI)
         qDebug() << "++ Signaling to update UI and GW and setting graph mod status to edge count changed.";
         // Notify MW to change combo box relation name
         emit signalRelationChangedToMW(m_curRelation);
+        // Notify MW to update the edge-mode combo to match the new relation's directed state
+        emit signalGraphDirectedChanged(m_graphIsDirected);
         // notify GW to disable/enable the on screen edges.
         emit signalRelationChangedToGW(m_curRelation);
         // update graph mod status
@@ -156,6 +176,7 @@ void Graph::relationAdd(const QString &relName, const bool &changeRelation)
 
     // Add the new relation to our relations list
     m_relationsList << relName;
+    m_relationsDirected << m_graphIsDirected;
 
     // Emit signal for the new relation to be added to the MW UI combo...
     emit signalRelationAddToMW(relName);
@@ -262,6 +283,7 @@ void Graph::relationsClear()
 {
     int oldRelationsCounter = m_relationsList.size();
     m_relationsList.clear();
+    m_relationsDirected.clear();
     m_curRelation = 0;
     qDebug() << "Cleared" << oldRelationsCounter << "relation(s)"
              << "Emitting signalRelationsClear()";

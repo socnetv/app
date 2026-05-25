@@ -5619,6 +5619,9 @@ void MainWindow::initSignalSlots() {
     connect ( activeGraph, &Graph::signalRelationChangedToMW,
               this, &MainWindow::slotEditRelationChange );
 
+    connect ( activeGraph, &Graph::signalGraphDirectedChanged,
+              this, &MainWindow::slotEditGraphDirectedChanged );
+
     connect ( activeGraph, &Graph::signalRelationsClear,
               this, &MainWindow::slotEditRelationsClear );
 
@@ -11961,6 +11964,26 @@ void MainWindow::slotEditEdgeMode(const int &mode){
         }
     }
 
+}
+
+
+/**
+ * @brief Updates the edge-mode combo and arrows action to reflect the directed
+ *        state of the newly selected relation, without calling setDirected/setUndirected.
+ *
+ * Connected to Graph::signalGraphDirectedChanged, which is emitted by relationSet()
+ * whenever the user switches to a different relation.
+ *
+ * @param directed true if the new relation is directed
+ */
+void MainWindow::slotEditGraphDirectedChanged(const bool &directed) {
+    qDebug() << "MainWindow::slotEditGraphDirectedChanged - directed:" << directed;
+    // Block the combo's signal so we don't re-enter slotEditEdgeMode and
+    // accidentally call setDirected/setUndirected (which mutate edges).
+    toolBoxEditEdgeModeSelect->blockSignals(true);
+    toolBoxEditEdgeModeSelect->setCurrentIndex(directed ? 0 : 1);
+    toolBoxEditEdgeModeSelect->blockSignals(false);
+    optionsEdgeArrowsAct->setChecked(directed);
 }
 
 

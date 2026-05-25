@@ -291,6 +291,8 @@ signals:
 
     void signalRelationChangedToMW(const int &relIndex = RAND_MAX);
 
+    void signalGraphDirectedChanged(const bool &directed);
+
     void signalSelectionChanged(const int &selectedVertices,
                                 const int &selectedEdges);
 
@@ -1342,6 +1344,7 @@ private:
     int m_crawler_visited_urls; // A counter of the urls visited.
 
     QList<QString> m_relationsList;
+    QList<bool> m_relationsDirected;
 
     QList<int> m_graphFileFormatExportSupported;
 

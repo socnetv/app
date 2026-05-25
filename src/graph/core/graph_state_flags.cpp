@@ -234,6 +234,8 @@ void Graph::setDirected(const bool &toggle, const bool &signalMW)
         return;
     }
     m_graphIsDirected = true;
+    if (m_curRelation >= 0 && m_curRelation < m_relationsDirected.size())
+        m_relationsDirected[m_curRelation] = true;
     setModStatus(ModStatus::EdgeCount, signalMW);
 }
 
@@ -264,6 +266,8 @@ void Graph::setUndirected(const bool &toggle, const bool &signalMW)
     // NOTE: We set m_graphIsDirected = false BEFORE the loop so that
     // edgeTypeSet() and other callers see the correct state immediately.
     m_graphIsDirected = false;
+    if (m_curRelation >= 0 && m_curRelation < m_relationsDirected.size())
+        m_relationsDirected[m_curRelation] = false;
 
     // Only add reverse arcs if the graph was previously directed.
     // If the graph was already loaded with symmetric (undirected) arcs

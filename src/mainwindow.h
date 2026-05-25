@@ -358,6 +358,7 @@ public slots:
     void slotEditEdgeColorAll(QColor color=QColor(), const int threshold=RAND_MAX);
 
     void slotEditEdgeMode(const int &mode);
+    void slotEditGraphDirectedChanged(const bool &directed);
     void slotEditEdgeSymmetrizeAll();
     void slotEditEdgeSymmetrizeStrongTies();
     void slotEditEdgeSymmetrizeCocitation();
