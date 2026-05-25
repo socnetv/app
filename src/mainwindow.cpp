@@ -499,7 +499,7 @@ QMap<QString,QString> MainWindow::initSettings(const int &debugLevel, const bool
     appSettings["canvasPainterStateSave"] = "false";
     appSettings["canvasCacheBackground"] = "false";
     appSettings["canvasUpdateMode"] = "Full";
-    appSettings["canvasIndexMethod"] = "BspTreeIndex";
+    appSettings["canvasIndexMethod"] = "NoIndex";
     appSettings["canvasEdgeHighlighting"] = "true";
     appSettings["canvasNodeHighlighting"] = "true";
     appSettings["dataDir"]= dataDir ;
@@ -564,6 +564,13 @@ QMap<QString,QString> MainWindow::initSettings(const int &debugLevel, const bool
             }
         }
         file.close();
+
+        // Migration 2: switch old BspTreeIndex default → NoIndex (better for large dynamic scenes)
+        if (appSettings.value("settingsMigration", "0").toInt() < 2) {
+            if (appSettings["canvasIndexMethod"] == "BspTreeIndex")
+                appSettings["canvasIndexMethod"] = "NoIndex";
+            appSettings["settingsMigration"] = "2";
+        }
     }
 
     // Override progress bar setting if the user has requested it (through a command-line parameter)
