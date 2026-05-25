@@ -81,7 +81,9 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
          * can outweight the fast lookup speeds."
          * The user can change this from Settings.
         */
-        scene()->setItemIndexMethod(QGraphicsScene::BspTreeIndex); //NoIndex (for anime)
+        // Default applied via appSettings["canvasIndexMethod"] at startup (slotOptionsCanvasIndexMethod).
+        // NoIndex is the better default for large dynamic scenes; BspTreeIndex suits small static ones.
+        scene()->setItemIndexMethod(QGraphicsScene::NoIndex);
 
         // Connect scene change signal to the slot that handles selected items
         connect ( scene() , &QGraphicsScene::selectionChanged,
@@ -661,9 +663,11 @@ bool GraphicsWidget::setNodeShape(const int &nodeNum,
  */
 void GraphicsWidget::setNodeLabelsVisibility (const bool &toggle){
 //    qDebug()<< "Toggling node labels visibility to:" << toggle;
+    viewport()->setUpdatesEnabled(false);
     foreach ( GraphicsNode *m_node, nodeHash) {
         m_node->setLabelVisibility(toggle);
     }
+    viewport()->setUpdatesEnabled(true);
     m_nodeLabelVisibility = toggle;
 }
 
@@ -691,9 +695,11 @@ bool GraphicsWidget::setNodeLabel(const int &nodeNumber, const QString &label){
  */
 void GraphicsWidget::setNumbersInsideNodes(const bool &toggle){
 //    qDebug()<< "Toggling node numbers inside:" << toggle;
+    viewport()->setUpdatesEnabled(false);
     foreach ( GraphicsNode *m_node, nodeHash) {
         m_node->setNumberInside(toggle);
     }
+    viewport()->setUpdatesEnabled(true);
     m_nodeNumbersInside=toggle;
 }
 
@@ -789,9 +795,11 @@ bool GraphicsWidget::setNodeSize(const int &nodeNum, const int &size ){
  */
 void GraphicsWidget::setNodeSizeAll(const int &size ){
 //    qDebug() << "Changing all nodes size... ";
+    viewport()->setUpdatesEnabled(false);
     foreach ( GraphicsNode *m_node, nodeHash ) {
             m_node->setSize(size);
     }
+    viewport()->setUpdatesEnabled(true);
 }
 
 
@@ -804,9 +812,11 @@ void GraphicsWidget::setNodeSizeAll(const int &size ){
  */
 void GraphicsWidget::setNodeNumberVisibility(const bool &toggle){
 //    qDebug()<< "toggling visibility of all node numbers to" << toggle;
+    viewport()->setUpdatesEnabled(false);
     foreach ( GraphicsNode *m_node, nodeHash) {
         m_node->setNumberVisibility(toggle);
     }
+    viewport()->setUpdatesEnabled(true);
     m_nodeNumberVisibility = toggle;
 }
 
@@ -1097,10 +1107,11 @@ bool GraphicsWidget::setEdgeWeight(const int &source,
  */
 void GraphicsWidget::setEdgeArrowsVisibility(const bool &toggle){
 //    qDebug()<< "Setting visibility of all edge arrows to:" << toggle;
+    viewport()->setUpdatesEnabled(false);
     foreach ( GraphicsEdge *m_edge, edgesHash) {
         m_edge->showArrows(toggle);
     }
-
+    viewport()->setUpdatesEnabled(true);
 }
 
 
@@ -1116,8 +1127,10 @@ void GraphicsWidget::setEdgeArrowsVisibility(const bool &toggle){
  */
 void GraphicsWidget::setEdgeArrowSize(const int &size) {
     m_arrowSize = size;
+    viewport()->setUpdatesEnabled(false);
     foreach (GraphicsEdge *edge, edgesHash)
         edge->setArrowSize(size);
+    viewport()->setUpdatesEnabled(true);
 }
 
 
@@ -1148,15 +1161,8 @@ void GraphicsWidget::setEdgeOffsetFromNode(const int &source,
     }
     // if source == target == 0, then we change all edges'offset.
     else {
-        QList<QGraphicsItem *> list = scene()->items();
-        for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
-            if ( (*item)->type() ==TypeEdge){
-                GraphicsEdge *edge = (GraphicsEdge*) (*item);
-                edge->setMinimumOffsetFromNode(offset);
-            }
-        }
-
-
+        foreach (GraphicsEdge *edge, edgesHash)
+            edge->setMinimumOffsetFromNode(offset);
     }
 
 
@@ -1168,9 +1174,11 @@ void GraphicsWidget::setEdgeOffsetFromNode(const int &source,
  */
 void GraphicsWidget::setEdgeWeightNumbersVisibility (const bool &toggle){
 //    qDebug()<< "Toggling all edge weight numbers' visibility" << toggle;
+    viewport()->setUpdatesEnabled(false);
     foreach ( GraphicsEdge *m_edge, edgesHash) {
         m_edge->setWeightNumberVisibility(toggle);
     }
+    viewport()->setUpdatesEnabled(true);
 }
 
 
@@ -1182,9 +1190,11 @@ void GraphicsWidget::setEdgeWeightNumbersVisibility (const bool &toggle){
 void GraphicsWidget::setEdgeLabelsVisibility (const bool &toggle){
 //    qDebug()<< "GW::setEdgeLabelsVisibility() " << toggle
 //               << "for edgesHash.count: " << edgesHash.size();
+    viewport()->setUpdatesEnabled(false);
     foreach ( GraphicsEdge *m_edge, edgesHash) {
         m_edge->setLabelVisibility(toggle);
     }
+    viewport()->setUpdatesEnabled(true);
 }
 
 
@@ -1200,14 +1210,14 @@ void GraphicsWidget::setEdgeLabelsVisibility (const bool &toggle){
  */
 void GraphicsWidget::setEdgeHighlighting(const bool &toggle){
 //    qDebug()<< "Toggling edge highlighting" << toggle;
+    viewport()->setUpdatesEnabled(false);
     foreach ( GraphicsNode *m_node, nodeHash) {
         m_node->setEdgeHighLighting(toggle);
     }
-
     foreach ( GraphicsEdge *m_edge, edgesHash) {
         m_edge->setHighlighting(toggle);
     }
-
+    viewport()->setUpdatesEnabled(true);
     m_edgeHighlighting = toggle;
 }
 
@@ -1299,12 +1309,22 @@ void GraphicsWidget::setEdgeVisibility(const int &relation,
  * @param visible
  */
 void GraphicsWidget::setAllItemsVisibility(int type, bool visible){
-    QList<QGraphicsItem *> list = scene()->items();
-    for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
-        qDebug()<< "GW::setAllItemsVisibility. item type is " << (*item)->type();
-        if ( (*item)->type() == type){
-            if (visible)	(*item)->show();
-            else	(*item)->hide();
+    if (type == TypeEdge) {
+        foreach (GraphicsEdge *edge, edgesHash) {
+            if (visible) edge->show();
+            else         edge->hide();
+        }
+    } else if (type == TypeNode) {
+        foreach (GraphicsNode *node, nodeHash) {
+            if (visible) node->show();
+            else         node->hide();
+        }
+    } else {
+        foreach (QGraphicsItem *item, scene()->items()) {
+            if (item->type() == type) {
+                if (visible) item->show();
+                else         item->hide();
+            }
         }
     }
 }
@@ -1398,10 +1418,7 @@ void GraphicsWidget::selectNone(){
  *
  */
 void GraphicsWidget::handleSelectionChanged() {
-
-    qDebug() <<"Scene selection has been changed. Getting selected nodes/edges and passing them to Graph...";
     emit userSelectedItems(selectedNodes(), selectedEdges());
-
 }
 
 
@@ -1412,7 +1429,6 @@ void GraphicsWidget::handleSelectionChanged() {
  * @return QList<QGraphicsItem*>
  */
 QList<QGraphicsItem *> GraphicsWidget::selectedItems(){
-    qDebug() <<"GW::selectedItems()";
     return scene()->selectedItems();
 }
 
@@ -1430,7 +1446,6 @@ QList<int> GraphicsWidget::selectedNodes() {
             m_selectedNodes.append(node->nodeNumber());
         }
     }
-    qDebug() <<"Selected nodes count:" << m_selectedNodes.size();
     return m_selectedNodes;
 }
 
@@ -1449,7 +1464,6 @@ QList<SelectedEdge> GraphicsWidget::selectedEdges() {
             m_selectedEdges << selEdge;
         }
     }
-    qDebug() <<"Selected edges count:" << m_selectedEdges.size();
     return m_selectedEdges;
 }
 
