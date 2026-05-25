@@ -305,6 +305,13 @@ All notable changes to this project are documented in this file.
     - Duplicate `Ctrl+Shift+Left/Right` shortcuts removed from the rotate
       toolbar buttons (the menu actions already own those sequences).
 
+  - **Bezier curve edges now work** (#149): the **Options → Edges → Bezier
+    Curves** toggle was present but non-functional. Fixed and fully implemented:
+    edges now draw as smooth quadratic arcs, arrowheads follow the curve tangent
+    at each endpoint (including on reciprocated edges), the lens-shaped fill
+    artifact is gone, new edges drawn while the toggle is on are born as curves,
+    and the setting persists across sessions.
+
 ## [3.5] – May 2026
 
 ### New Features
