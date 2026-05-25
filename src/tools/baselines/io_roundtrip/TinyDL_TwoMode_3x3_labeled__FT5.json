@@ -1,0 +1,166 @@
+{
+    "counts": {
+        "links_sna": 6,
+        "nodes": 6,
+        "ties_graph": 6
+    },
+    "dataset": {
+        "filetype": 5,
+        "name": "TinyDL_TwoMode_3x3_labeled.dl",
+        "path": "src/data/TinyDL_TwoMode_3x3_labeled.dl"
+    },
+    "graph": {
+        "directed": true,
+        "relations": 1,
+        "weighted": false
+    },
+    "kernel": "io_roundtrip",
+    "load_report": {
+        "fileType_signal": 5,
+        "load_ms": 0,
+        "load_msg": "",
+        "net_name": "TinyDL_TwoMode_3x3_labeled.dl",
+        "ok": true
+    },
+    "metrics": {
+        "density": "0.20000000000000001"
+    },
+    "relations_bundle": [
+        {
+            "index": 0,
+            "name": "unnamed",
+            "signature": {
+                "edge_list": [
+                    {
+                        "u": 1,
+                        "v": 4,
+                        "w": "1"
+                    },
+                    {
+                        "u": 1,
+                        "v": 5,
+                        "w": "1"
+                    },
+                    {
+                        "u": 2,
+                        "v": 4,
+                        "w": "1"
+                    },
+                    {
+                        "u": 2,
+                        "v": 6,
+                        "w": "1"
+                    },
+                    {
+                        "u": 3,
+                        "v": 5,
+                        "w": "1"
+                    },
+                    {
+                        "u": 3,
+                        "v": 6,
+                        "w": "1"
+                    }
+                ],
+                "hash_sha256": "4579aeef81a5f9a8e5c04bf0e24a3e251c81c8b2d4dc94dac57654e5054413eb",
+                "node_custom_attributes": [
+                    {
+                    },
+                    {
+                    },
+                    {
+                    },
+                    {
+                    },
+                    {
+                    },
+                    {
+                    }
+                ],
+                "node_labels": [
+                    "person1",
+                    "person2",
+                    "person3",
+                    "event1",
+                    "event2",
+                    "event3"
+                ]
+            },
+            "ties_graph": 6
+        }
+    ],
+    "roundtrip_result": {
+        "equivalent": true,
+        "performed": true
+    },
+    "run": {
+        "considerWeights": false,
+        "dropIsolates": false,
+        "inverseWeights": true,
+        "operation": "io_roundtrip_same_format"
+    },
+    "schema_version": 5,
+    "signature": {
+        "edge_list": [
+            {
+                "u": 1,
+                "v": 4,
+                "w": "1"
+            },
+            {
+                "u": 1,
+                "v": 5,
+                "w": "1"
+            },
+            {
+                "u": 2,
+                "v": 4,
+                "w": "1"
+            },
+            {
+                "u": 2,
+                "v": 6,
+                "w": "1"
+            },
+            {
+                "u": 3,
+                "v": 5,
+                "w": "1"
+            },
+            {
+                "u": 3,
+                "v": 6,
+                "w": "1"
+            }
+        ],
+        "hash_sha256": "4579aeef81a5f9a8e5c04bf0e24a3e251c81c8b2d4dc94dac57654e5054413eb",
+        "node_custom_attributes": [
+            {
+            },
+            {
+            },
+            {
+            },
+            {
+            },
+            {
+            },
+            {
+            }
+        ],
+        "node_labels": [
+            "person1",
+            "person2",
+            "person3",
+            "event1",
+            "event2",
+            "event3"
+        ]
+    },
+    "timings": {
+        "load_ms": 0,
+        "reload_ms": 0,
+        "save_ms": 0,
+        "total_ms": 0
+    }
+}

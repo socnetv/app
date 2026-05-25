@@ -222,6 +222,19 @@ All notable changes to this project are documented in this file.
 
 ### Bug Fixes
 
+  - **UCINET DL two-mode networks now load correctly** (#63): three bugs in
+    `parser_dl.cpp` caused two-mode (NR × NC affiliation) files to silently
+    produce wrong node counts, wrong node numbers, and misrouted labels.
+    Fixed: (1) `totalNodes` is now set to `NR + NC` when two-mode is detected;
+    (2) row and col nodes are created with explicit sequential numbers (1..NR
+    and NR+1..NR+NC) instead of a broken auto-numbered batch; (3) `COL LABELS:`
+    is recognised as an alias for `COLUMN LABELS:`. Two golden IO-roundtrip
+    baselines added (`TinyDL_TwoMode_3x3_labeled`, `TinyDL_TwoMode_3x3_nolabels`).
+    **Note:** UCINET two-mode files always load as a bipartite directed graph
+    in SocNetV (directed edges from mode-1 row nodes to mode-2 column nodes).
+    Projection to person-network or event-network is not yet supported for the
+    DL format; it is tracked as a separate feature request.
+
   - **Galaskiewicz famous network now loads correctly** (#15): the `.2sm`
     data file was missing from `data.qrc`, so `writeFamousNetwork()` returned
     early with an empty temp file — causing "no data rows found" for all three
