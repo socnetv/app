@@ -377,4 +377,5 @@ void Graph::resetDistanceAggregates()
 
 void Graph::addToDistanceSum(qreal delta) { m_graphSumDistance += delta; }
 void Graph::incGeodesicsCount() { ++m_graphGeodesicsCount; }
+void Graph::addGeodesicsCount(int n) { m_graphGeodesicsCount += n; }
 void Graph::setAverageDistanceCached(qreal v) { m_graphAverageDistance = v; }

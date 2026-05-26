@@ -281,7 +281,7 @@ endif()
 # 4. Qt Integration
 # ==============================================================================
 # Find Qt6 packages
-find_package(Qt6 REQUIRED COMPONENTS Core OpenGLWidgets Gui Core5Compat Widgets PrintSupport Network Charts Svg Xml LinguistTools)
+find_package(Qt6 REQUIRED COMPONENTS Core OpenGLWidgets Gui Core5Compat Widgets PrintSupport Network Charts Svg Xml LinguistTools Concurrent)
 # find_package_handle_standard_args(Qt6 DEFAULT_MSG Qt6_FOUND)
 
 # Check if Qt6 was found
@@ -345,13 +345,14 @@ target_link_libraries(${TARGET_NAME} PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets
-    Qt6::OpenGLWidgets  
-    Qt6::Core5Compat 
-    Qt6::PrintSupport 
-    Qt6::Network 
-    Qt6::Charts 
-    Qt6::Svg 
+    Qt6::OpenGLWidgets
+    Qt6::Core5Compat
+    Qt6::PrintSupport
+    Qt6::Network
+    Qt6::Charts
+    Qt6::Svg
     Qt6::Xml
+    Qt6::Concurrent
 )
 
 
@@ -518,6 +519,7 @@ if(BUILD_CLI)
         Qt6::Widgets
         Qt6::Gui
         Qt6::Charts
+        Qt6::Concurrent
     )
 
     set_target_properties(${CLI_TARGET} PROPERTIES

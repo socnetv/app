@@ -1046,6 +1046,9 @@ public:
     void resetDistanceAggregates(); // sets avg/sum/geodesics/diameter to 0
     void addToDistanceSum(qreal delta);
     void incGeodesicsCount();
+    // Bulk-add n to the geodesics count — used by the post-parallel-loop reduction
+    // so each thread contributes its total in one call instead of n individual increments.
+    void addGeodesicsCount(int n);
     void setAverageDistanceCached(qreal v);
 
     bool graphMatrixDistanceGeodesicCreate(const bool &considerWeights = false,
