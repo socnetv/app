@@ -48,23 +48,21 @@ Details: [`docs/roadmaps/roadmap_graph_exploration.md`](roadmaps/roadmap_graph_e
 
 # Current Focus
 
-**Bug fixes and issue triage** — closing long-standing GitHub issues before the next feature workstream begins.
+**WS3 — Domain Model Split, first execution: DistanceEngine parallelisation.**
 
-All changes go through the WS6 regression harness (CLI golden compares + benchmarks).
+The immediate goal is to extract per-source SSSP scratch state from `Graph` and `GraphVertex`
+into a self-contained `PerSourceScratch` struct, then parallelize the source loop across all
+available CPU cores using `QtConcurrent`. This delivers the first concrete domain-model
+separation and a significant performance improvement for large networks.
 
----
-
-# Upcoming Workstreams
-
-## WS6 — Testing / CI / Regression (SUPPORTING, ongoing)
-
-Roadmap: [`docs/roadmaps/roadmap_testing_ci_regression.md`](roadmaps/roadmap_testing_ci_regression.md)
-
-Expand golden baselines, dataset coverage, and benchmarking. Supports all other workstreams.
+Bug fixes and issue triage continue in parallel on the same branch; all changes go through
+the WS6 regression harness.
 
 ---
 
-## WS3 — Domain Model Split (MID-TERM)
+# Active Workstreams
+
+## WS3 — Domain Model Split ← **ACTIVE**
 
 Roadmap: [`docs/roadmaps/roadmap_domain_model_split.md`](roadmaps/roadmap_domain_model_split.md)
 
@@ -76,7 +74,17 @@ vs
 algorithms / services / caches
 ```
 
-Proceed incrementally. Let real usage (post-WS9 patterns) drive abstraction boundaries.
+**First execution:** extract per-source SSSP scratch from `Graph`/`GraphVertex` into
+`PerSourceScratch`; parallelise `DistanceEngine` source loop. Proceed incrementally;
+every phase is validated by the WS6 regression harness before the next begins.
+
+---
+
+## WS6 — Testing / CI / Regression (SUPPORTING, ongoing)
+
+Roadmap: [`docs/roadmaps/roadmap_testing_ci_regression.md`](roadmaps/roadmap_testing_ci_regression.md)
+
+Expand golden baselines, dataset coverage, and benchmarking. Supports all other workstreams.
 
 ---
 
@@ -106,11 +114,10 @@ Simplify the parser/IO dispatch model:
 
 # Priorities
 
-0. **Bug fixes & issue triage** ← current
-1. **WS6** — regression safety (ongoing support)
-2. **WS3** — domain model split
+1. **WS3** — domain model split / DistanceEngine parallelisation ← **current**
+2. **WS6** — regression safety (ongoing support)
 3. **WS7** — MainWindow decomposition
-4. **WS5** — matrices
+4. **WS5** — matrices (receives Phase 3 APSP migration from WS3)
 5. **WS8** — IO
 
 ---
