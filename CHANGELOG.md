@@ -170,6 +170,36 @@ All notable changes to this project are documented in this file.
 
 ### Improvements
 
+  - **SSSP parallelisation — major performance boost for large networks** (#241, #242):
+    - All shortest-path computations (distances, betweenness centrality, stress
+      centrality, closeness, eccentricity, power centrality) now run concurrently
+      across all available CPU cores via `QtConcurrent::blockingMap`.
+    - **Phase 1** (#241): per-source SSSP scratch state (BFS stack, predecessor lists,
+      dependency accumulators, distance and sigma arrays, nth-order neighbourhood map)
+      was extracted from `Graph` and `GraphVertex` into a self-contained
+      `PerSourceScratch` struct. Replacing per-edge `QHash` lookups with contiguous
+      `QVector` index reads improved cache locality and gave an immediate 14–23%
+      speedup even on a single thread.
+    - **Phase 2** (#242): the source loop in `DistanceEngine::runAllSources()` is now
+      distributed across all CPU cores. Each worker thread owns a `ThreadLocalState`
+      holding its own `PerSourceScratch`, partial BC/SC accumulator arrays, and running
+      totals for graph-wide aggregates. A single-threaded reduction step after the loop
+      merges everything into graph state with zero contention. APSP write-back is
+      race-free without any mutex because each source vertex is processed by exactly
+      one thread.
+    - **Measured speedup** (Debug build, 24-core Linux):
+
+      | Network | Centralities | Before | After | Speedup |
+      |---------|-------------|--------|-------|---------|
+      | BA directed N=500 E=1219 | ON | 679 ms | 255 ms | **2.7×** |
+      | N=1000 A=10000 | OFF | 28 423 ms | 3 431 ms | **8.3×** |
+      | N=1000 A=10000 | ON | 47 020 ms | 5 949 ms | **7.9×** |
+
+      Speedup scales near-linearly with core count because sources are fully
+      independent once per-source scratch state is thread-local.
+    - All 36 golden regression baselines pass; numeric results are bit-for-bit
+      identical to the sequential implementation.
+
   - **Canvas rendering performance for large networks** (#180, #240):
     - The dominant bottleneck on large networks (2000+ nodes, 40000+ edges)
       was `QGraphicsScene::BspTreeIndex` (the previous default): every
