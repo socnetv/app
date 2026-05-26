@@ -12810,6 +12810,8 @@ void MainWindow::slotLayoutRadialByProminenceIndex(QString prominenceIndexName="
 
     graphicsWidget->clearGuides();
 
+    statusMessage( tr("Computing %1 radial layout. Please wait...").arg(prominenceIndexName) );
+
     activeGraph->layoutByProminenceIndex(
                 indexType, 0,
                 optionsEdgeWeightConsiderAct->isChecked(),
@@ -12912,6 +12914,8 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString prominenceIndexName=""
 
     graphicsWidget->clearGuides();
 
+    statusMessage( tr("Computing %1 level layout. Please wait...").arg(prominenceIndexName) );
+
     activeGraph->layoutByProminenceIndex(
                 indexType , 1,
                 optionsEdgeWeightConsiderAct->isChecked(),
@@ -13011,6 +13015,8 @@ void MainWindow::slotLayoutNodeSizeByProminenceIndex(QString prominenceIndexName
 
     graphicsWidget->clearGuides();
 
+    statusMessage( tr("Computing %1 node size layout. Please wait...").arg(prominenceIndexName) );
+
     activeGraph->layoutByProminenceIndex(
                 indexType, 2,
                 optionsEdgeWeightConsiderAct->isChecked(),
@@ -13107,6 +13113,7 @@ void MainWindow::slotLayoutNodeColorByProminenceIndex(QString prominenceIndexNam
 
     graphicsWidget->clearGuides();
 
+    statusMessage( tr("Computing %1 node color layout. Please wait...").arg(prominenceIndexName) );
 
     activeGraph->layoutByProminenceIndex(
                 indexType, 3,
@@ -13231,6 +13238,8 @@ void MainWindow::slotAnalyzeReciprocity(){
 
     askAboutEdgeWeights();
 
+    statusMessage( tr("Computing Reciprocity. Please wait...") );
+
     activeGraph->writeReciprocity(fn, optionsEdgeWeightConsiderAct->isChecked());
 
     if ( appSettings["viewReportsInSystemBrowser"] == "true" ) {
@@ -13291,7 +13300,7 @@ void MainWindow::slotAnalyzeMatrixAdjacencyInverse(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-inverse-"+dateTime+".html";
 
-    statusMessage(tr ("Inverting adjacency matrix.") );
+    statusMessage(tr ("Inverting adjacency matrix. Please wait...") );
 
     if ( !activeGraph->writeMatrix(fn,MATRIX_ADJACENCY_INVERSE) ) {
         statusMessage(tr("Computation canceled."));
@@ -13327,7 +13336,7 @@ void MainWindow::slotAnalyzeMatrixAdjacencyTranspose(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-transpose-"+dateTime+".html";
 
-    statusMessage( tr ("Transposing adjacency matrix.") );
+    statusMessage( tr ("Transposing adjacency matrix. Please wait...") );
 
     if ( !activeGraph->writeMatrix(fn,MATRIX_ADJACENCY_TRANSPOSE) ) {
         statusMessage(tr("Computation canceled."));
@@ -13361,7 +13370,7 @@ void MainWindow::slotAnalyzeMatrixAdjacencyCocitation(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-cocitation-"+dateTime+".html";
 
-    statusMessage( tr ("Computing Cocitation matrix.") );
+    statusMessage( tr ("Computing Cocitation matrix. Please wait...") );
 
     if ( !activeGraph->writeMatrix(fn,MATRIX_COCITATION) ) {
         statusMessage(tr("Computation canceled."));
@@ -13395,7 +13404,7 @@ void MainWindow::slotAnalyzeMatrixDegree(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-degree-"+dateTime+".html";
 
-    statusMessage(tr ("Computing Degree matrix.") );
+    statusMessage(tr ("Computing Degree matrix. Please wait...") );
 
     if ( !activeGraph->writeMatrix(fn, MATRIX_DEGREE) ) {
         statusMessage(tr("Computation canceled."));
@@ -13431,7 +13440,7 @@ void MainWindow::slotAnalyzeMatrixLaplacian(){
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-laplacian-"+dateTime+".html";
 
-    statusMessage(tr ("Computing Laplacian matrix") );
+    statusMessage(tr ("Computing Laplacian matrix. Please wait...") );
 
     if ( !activeGraph->writeMatrix(fn, MATRIX_LAPLACIAN) ) {
         statusMessage(tr("Computation canceled."));
@@ -13834,6 +13843,8 @@ void MainWindow::slotAnalyzeEccentricity(){
 
     askAboutEdgeWeights();
 
+    statusMessage( tr("Computing Eccentricity. Please wait...") );
+
     if ( ! activeGraph->writeEccentricity(
                 fn,
                 optionsEdgeWeightConsiderAct->isChecked(),
@@ -13971,6 +13982,8 @@ void MainWindow::slotAnalyzeWalksLength(){
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-walks-length-"+QString::number(length)+"-"+dateTime+".html";
 
 
+    statusMessage( tr("Computing walks of length %1. Please wait...").arg(length) );
+
     activeGraph->writeMatrixWalks(fn, length);
     if ( activeGraph->progressCanceled() ) {
         statusMessage(tr("Computation canceled."));
@@ -14103,6 +14116,8 @@ void MainWindow::slotAnalyzeClusteringCoefficient (){
 
     bool considerWeights=true;
 
+    statusMessage( tr("Computing Clustering Coefficients. Please wait...") );
+
     if ( ! activeGraph->writeClusteringCoefficient(fn, considerWeights) )  {
         return;
     }
@@ -14146,6 +14161,8 @@ void MainWindow::slotAnalyzeCommunitiesCliqueCensus(){
 
     bool considerWeights=true;
 
+    statusMessage( tr("Computing Clique Census. Please wait...") );
+
     if (! activeGraph->writeCliqueCensus(fn, considerWeights) ) {
         return;
     }
@@ -14179,6 +14196,8 @@ void MainWindow::slotAnalyzeCommunitiesTriadCensus() {
     QString fn = appSettings["dataDir"] + "socnetv-report-triad-census-"+dateTime+".html";
 
     bool considerWeights=true;
+
+    statusMessage( tr("Computing Triad Census. Please wait...") );
 
     if ( ! activeGraph->writeTriadCensus(fn, considerWeights)) {
         return;
@@ -14260,6 +14279,8 @@ void MainWindow::slotAnalyzeStrEquivalenceSimilarityByMeasure(const QString &mat
     QString fn = appSettings["dataDir"] + "socnetv-report-equivalence-similarity-"+metric+"-"+dateTime+".html";
 
     bool considerWeights=true;
+
+    statusMessage( tr("Computing Similarity Matrix. Please wait...") );
 
     if ( ! activeGraph->writeMatrixSimilarityMatching( fn,
                                                 measure,
@@ -14347,6 +14368,8 @@ void MainWindow::slotAnalyzeStrEquivalenceDissimilaritiesTieProfile(const QStrin
 
     askAboutEdgeWeights();
 
+    statusMessage( tr("Computing Tie Profile Dissimilarities. Please wait...") );
+
     if (!activeGraph->writeMatrixDissimilarities(fn, metric, varLocation, diagonal,
                                                  optionsEdgeWeightConsiderAct->isChecked()))
     {
@@ -14403,6 +14426,8 @@ void MainWindow::slotAnalyzeStrEquivalencePearson(const QString &matrix,
     QString fn = appSettings["dataDir"] + "socnetv-report-equivalence-pearson-coefficients-"+dateTime+".html";
 
     bool considerWeights=true;
+
+    statusMessage( tr("Computing Pearson Correlation Coefficients. Please wait...") );
 
     if ( ! activeGraph->writeMatrixSimilarityPearson( fn, considerWeights, matrix, varLocation, diagonal) )
     {
@@ -14475,6 +14500,8 @@ void MainWindow::slotAnalyzeStrEquivalenceClusteringHierarchical(const QString &
     bool inverseWeights=false;
     bool dropIsolates=true;
 
+    statusMessage( tr("Computing Hierarchical Cluster Analysis. Please wait...") );
+
     if (! activeGraph->writeClusteringHierarchical(fn,
                                                    varLocation,
                                                    matrix,
@@ -14517,6 +14544,8 @@ void MainWindow::slotAnalyzeCentralityDegree(){
 
     askAboutEdgeWeights(false);
 
+    statusMessage( tr("Computing Degree Centralities. Please wait...") );
+
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-out-degree-"+dateTime+".html";
 
@@ -14556,6 +14585,8 @@ void MainWindow::slotAnalyzeCentralityCloseness(){
     }
     bool dropIsolates=false;
     askAboutEdgeWeights();
+
+    statusMessage( tr("Computing Closeness Centralities. Please wait...") );
 
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-closeness-"+dateTime+".html";
@@ -14603,6 +14634,8 @@ void MainWindow::slotAnalyzeCentralityClosenessIR(){
 
     askAboutEdgeWeights();
 
+    statusMessage( tr("Computing Influence Range Closeness Centralities. Please wait...") );
+
     if (! activeGraph->writeCentralityClosenessInfluenceRange(
                 fn,
                 optionsEdgeWeightConsiderAct->isChecked(),
@@ -14642,6 +14675,8 @@ void MainWindow::slotAnalyzeCentralityBetweenness(){
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-betweenness-"+dateTime+".html";
 
     askAboutEdgeWeights();
+
+    statusMessage( tr("Computing Betweenness Centralities. Please wait...") );
 
     if (!activeGraph->writeCentralityBetweenness(
             fn, optionsEdgeWeightConsiderAct->isChecked(),
@@ -14691,6 +14726,8 @@ void MainWindow::slotAnalyzePrestigeDegree(){
 
     askAboutEdgeWeights(false);
 
+    statusMessage( tr("Computing Degree Prestige. Please wait...") );
+
     QString dateTime=QDateTime::currentDateTime().toString ( QString ("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-prestige-degree-"+dateTime+".html";
 
@@ -14731,6 +14768,8 @@ void MainWindow::slotAnalyzePrestigePageRank(){
 
     askAboutEdgeWeights();
 
+    statusMessage( tr("Computing PageRank Prestige. Please wait...") );
+
     if ( ! activeGraph->writePrestigePageRank(fn, editFilterNodesIsolatesAct->isChecked()) ) {
         return;
     }
@@ -14765,6 +14804,8 @@ void MainWindow::slotAnalyzePrestigeProximity(){
     QString fn = appSettings["dataDir"] + "socnetv-report-prestige-proximity-"+dateTime+".html";
 
     askAboutEdgeWeights();
+
+    statusMessage( tr("Computing Proximity Prestige. Please wait...") );
 
     if (!activeGraph->writePrestigeProximity(fn, true, false,
                                              editFilterNodesIsolatesAct->isChecked()))
@@ -14834,6 +14875,8 @@ void MainWindow::slotAnalyzeCentralityInformation(){
 
     askAboutEdgeWeights();
 
+    statusMessage( tr("Computing Information Centralities. Please wait...") );
+
     if (!activeGraph->writeCentralityInformation(
             fn,
             optionsEdgeWeightConsiderAct->isChecked(),
@@ -14874,6 +14917,8 @@ void MainWindow::slotAnalyzeCentralityEigenvector(){
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-eigenvector-"+dateTime+".html";
 
     askAboutEdgeWeights();
+
+    statusMessage( tr("Computing Eigenvector Centralities. Please wait...") );
 
     bool dropIsolates = false;
 
@@ -14918,6 +14963,8 @@ void MainWindow::slotAnalyzeCentralityStress(){
 
     askAboutEdgeWeights();
 
+    statusMessage( tr("Computing Stress Centralities. Please wait...") );
+
     if (!activeGraph->writeCentralityStress(
             fn,
             optionsEdgeWeightConsiderAct->isChecked(),
@@ -14960,6 +15007,8 @@ void MainWindow::slotAnalyzeCentralityPower(){
 
     askAboutEdgeWeights();
 
+    statusMessage( tr("Computing Power Centralities. Please wait...") );
+
     if (!activeGraph->writeCentralityPower(
             fn,
             optionsEdgeWeightConsiderAct->isChecked(),
@@ -14999,6 +15048,8 @@ void MainWindow::slotAnalyzeCentralityEccentricity(){
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-eccentricity-"+dateTime+".html";
 
     askAboutEdgeWeights();
+
+    statusMessage( tr("Computing Eccentricity Centralities. Please wait...") );
 
     if (!activeGraph->writeCentralityEccentricity(
             fn,
