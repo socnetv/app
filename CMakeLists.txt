@@ -55,7 +55,7 @@ set(APP_NAME SocNetV)
 set(APP_NAME_LOWER socnetv)
 
 project(SocNetV 
-    VERSION 3.6
+    VERSION 3.7
     DESCRIPTION "SocNetV: Open-source social network analysis application based on Qt."
     HOMEPAGE_URL "https://socnetv.org"
     LANGUAGES CXX

@@ -14,7 +14,7 @@
 #
 
 Name:		socnetv
-Version:	3.6
+Version:	3.7
 Release:	1%{?dist}
 Summary:	A Social Networks Analyser and Visualiser
 License:	GPL-3.0-or-later
@@ -134,6 +134,8 @@ pwd
 ### CHANGELOG SECTION
 ###
 %changelog
+* Fri Jun 26 2026 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 3.7-1
+- Upstream v3.7
 * Mon Jun 15 2026 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 3.6-1
 - Upstream v3.6
 * Fri May 08 2026 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 3.5-1
