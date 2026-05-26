@@ -20,6 +20,8 @@
 
 #include <QGraphicsItem>
 #include <QObject>
+#include <QBrush>
+#include <QPen>
 #include <utility> //declares pair construct
 
 
@@ -56,7 +58,8 @@ public:
          const Qt::PenStyle &style,
          const int&type, const bool & drawArrows, const bool &bezier,
          const bool &weightNumbers=false,
-                 const bool &highlighting=true);
+         const bool &highlighting=true,
+         const int &arrowSize=6);
     ~GraphicsEdge();
 
     enum { Type = UserType + 2 };
@@ -97,6 +100,11 @@ public:
     void setLabelVisibility  (const bool &toggle);
 
     void showArrows(const bool &);
+
+    void toggleBezier(const bool &toggle);
+
+    void setArrowSize(const int &size);
+    int arrowSize() const;
 
     void setDirectionType(const int &dirType=0);
     int directionType();
@@ -146,6 +154,11 @@ private:
 
     QPointF edgeOffset;
 
+    // Cached arrow corner points — computed in adjust() and recomputed in
+    // setArrowSize() so paint() needs no trig of its own.
+    QPointF m_destArrowP1, m_destArrowP2;
+    QPointF m_srcArrowP1,  m_srcArrowP2;
+
     qreal m_arrowSize;
 
     qreal m_minOffsetFromNode;
@@ -161,11 +174,20 @@ private:
 
     int m_edgeDirType;
 
-    qreal angle, line_length, line_dx, line_dy;
+    qreal angle, m_srcAngle, line_length, line_dx, line_dy;
 
     bool m_Bezier, m_drawArrows, m_drawWeightNumber;
     bool m_drawLabel, m_hoverHighlighting;
     bool m_isClicked;
+
+    void computeArrowPoints();
+    void rebuildPens();
+
+    // Cached pens — rebuilt in rebuildPens(), selected in paint() by m_state.
+    QPen   m_penRegular;
+    QPen   m_penHighlight;
+    QPen   m_penHover;
+    QBrush m_brush;
 };
 
 #endif

@@ -5493,32 +5493,6 @@ void Graph::writeDataSetToFile(const QString dir, const QString fileName)
                                 "This data  was originally collected by Galaskiewicz (1985) "
                                 "and is used by Wasserman and Faust in Social Network Analysis: Methods and Applications (1994).\n\n"
                                 "Galaskiewicz, J. (1985). Social Organization of an Urban Grants Economy. New York: Academic Press. ");
-        outText << "0 0 1 1 0 0 0 0 1 0 0 0 0 0 0" << "\n"
-                << "0 0 1 0 1 0 1 0 0 0 0 0 0 0 0" << "\n"
-                << "0 0 1 0 0 0 0 0 0 0 0 1 0 0 0" << "\n"
-                << "0 1 1 0 0 0 0 0 0 0 0 0 0 0 1" << "\n"
-                << "0 0 1 0 0 0 0 0 0 0 0 0 1 1 0" << "\n"
-                << "0 1 1 0 0 0 0 0 0 0 0 0 0 1 0" << "\n"
-                << "0 0 1 1 0 0 0 0 0 1 1 0 0 0 0" << "\n"
-                << "0 0 0 1 0 0 1 0 0 1 0 0 0 0 0" << "\n"
-                << "1 0 0 1 0 0 0 1 0 1 0 0 0 0 0" << "\n"
-                << "0 0 1 0 0 0 0 0 1 0 0 0 0 0 0" << "\n"
-                << "0 1 1 0 0 0 0 0 1 0 0 0 0 0 0" << "\n"
-                << "0 0 0 1 0 0 1 0 0 0 0 0 0 0 0" << "\n"
-                << "0 0 1 1 1 0 0 0 1 0 0 0 0 0 0" << "\n"
-                << "0 1 1 1 0 0 0 0 0 0 1 1 1 0 1" << "\n"
-                << "0 1 1 0 0 1 0 0 0 0 0 0 1 0 1" << "\n"
-                << "0 1 1 0 0 1 0 1 0 0 0 0 0 1 0" << "\n"
-                << "0 1 1 0 1 0 0 0 0 0 1 1 0 0 1" << "\n"
-                << "0 0 0 1 0 0 0 0 1 0 0 1 1 0 1" << "\n"
-                << "1 0 1 1 0 0 1 0 1 0 0 0 0 0 0" << "\n"
-                << "0 1 1 1 0 0 0 0 0 0 1 0 0 0 1" << "\n"
-                << "0 0 1 1 0 0 0 1 0 0 0 0 0 0 0" << "\n"
-                << "0 0 1 0 0 0 0 1 0 0 0 0 0 0 1" << "\n"
-                << "0 1 1 0 0 1 0 0 0 0 0 0 0 0 1" << "\n"
-                << "1 0 1 1 0 1 0 0 0 0 0 0 0 0 1" << "\n"
-                << "0 1 1 0 0 0 0 0 0 0 0 0 1 0 0" << "\n"
-                << "0 1 1 0 0 0 0 0 0 0 0 1 0 0 0";
     }
     else if (fileName == "Thurman_Office_Networks_Coalitions.dl")
     {

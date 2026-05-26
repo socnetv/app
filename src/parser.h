@@ -169,9 +169,10 @@ public:
                         bool &edgelist1Format,
                         bool &diagonalPresent);
 
-    void readDotProperties(QString str, qreal &, QString &label,
+    void readDotProperties(QString str, qreal &nValue, QString &label,
                            QString &shape, QString &color, QString &fontName,
-                           QString &fontColor);
+                           QString &fontColor,
+                           QHash<QString, QString> &customAttrs);
 
     bool readGraphML(QXmlStreamReader &);
     void readGraphMLElementGraph(QXmlStreamReader &);

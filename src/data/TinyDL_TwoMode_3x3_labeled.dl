@@ -1,0 +1,14 @@
+DL NR=3 NC=3
+FORMAT=FULLMATRIX
+ROW LABELS:
+person1
+person2
+person3
+COL LABELS:
+event1
+event2
+event3
+DATA:
+1 1 0
+1 0 1
+0 1 1

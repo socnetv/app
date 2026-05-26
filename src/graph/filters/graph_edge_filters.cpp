@@ -16,14 +16,18 @@
 
 #include "graph.h"
 #include "filter_condition.h"
+#include "filter_spec.h"
 
 
 /**
- * @brief Filters (disables) edges according the specified threshold weight
+ * @brief Hides edges whose weight does not satisfy the threshold condition.
  *
+ * Non-destructive: pushes a GraphVisibilitySnapshot onto m_visibilityHistory
+ * before making any changes, so the filter can be undone via vertexFilterRemoveAt().
  *
- * @param m_threshold
- * @param overThreshold
+ * @param m_threshold   The weight threshold.
+ * @param overThreshold If true, keep edges with weight >= threshold (hide the rest);
+ *                      if false, keep edges with weight <= threshold.
  */
 void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold)
 {
@@ -39,6 +43,30 @@ void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold
         qDebug() << "Filtering edges with weight below or equal" << m_threshold;
         words = "equal or under";
     }
+
+    // Snapshot BEFORE making changes so the filter can be undone via vertexFilterRemoveAt().
+    GraphVisibilitySnapshot snapshot;
+    snapshot.active                       = true;
+    snapshot.spec.type                    = FilterSpec::Type::EdgeWeight;
+    snapshot.spec.edgeWeightThreshold     = static_cast<float>(m_threshold);
+    snapshot.spec.edgeWeightOverThreshold = overThreshold;
+
+    VList::const_iterator si;
+    for (si = m_graph.cbegin(); si != m_graph.cend(); ++si)
+    {
+        const int vnum = (*si)->number();
+        snapshot.nodeVisible.insert(vnum, (*si)->isEnabled());
+
+        H_edges::const_iterator ei = (*si)->m_outEdges.constBegin();
+        while (ei != (*si)->m_outEdges.constEnd())
+        {
+            if (ei.value().first == m_curRelation)
+                snapshot.arcVisible.insert(QPair<int,int>(vnum, ei.key()),
+                                           ei.value().second.second);
+            ++ei;
+        }
+    }
+    m_visibilityHistory.push(snapshot);
 
     VList::const_iterator it;
 
@@ -82,22 +110,18 @@ void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold
                         // reverse edge exists and doesn't match. It must be preserved.
                         preserveReverseEdge = true;
                     }
-                    //                    qDebug() << source << "->" << target << "weight:" << weight << "will be disabled - preserveReverseEdge:" << preserveReverseEdge << ". Emitting signal...";
                     // Disable the edge
                     ed.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false));
                     // Disable the inedge of the target vertex too (needed for inDegree)
-                    //                    qDebug() << "disabling the inedge of the target vertex: " << target << "<-" << source;
                     this->edgeInboundStatusSet(target, source, false);
 
                     emit signalSetEdgeVisibility(m_curRelation, source, target, false, preserveReverseEdge, weight, reverseEdgeWeight);
                 }
                 else
                 {
-                    //                    qDebug() << source << "->" << target << "weight:" << weight << "will be enabled. Emitting signal...";
                     // Enable the edge
                     ed.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true));
                     // Enable the inedge of the target vertex too (needed for inDegree)
-                    //                    qDebug() << "enabling the inedge of the target vertex: " << target << "<-" << source;
                     this->edgeInboundStatusSet(target, source, true);
                     emit signalSetEdgeVisibility(m_curRelation, source, target, true, preserveReverseEdge);
                 }
@@ -114,22 +138,18 @@ void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold
                         // reverse edge exists and doesn't match. It must be preserved.
                         preserveReverseEdge = true;
                     }
-                    //                    qDebug() << source << "->" << target << "weight:" << weight << "will be disabled - preserveReverseEdge:" << preserveReverseEdge << ". Emitting signal...";
                     // Disable the edge
                     ed.value() = pair_i_fb(m_curRelation, pair_f_b(weight, false));
                     // Disable the inedge of the target vertex too (needed for inDegree)
-                    //                    qDebug() << "disabling the inedge of the target vertex: " << target << "<-" << source;
                     this->edgeInboundStatusSet(target, source, false);
 
                     emit signalSetEdgeVisibility(m_curRelation, source, target, false, preserveReverseEdge, weight, reverseEdgeWeight);
                 }
                 else
                 {
-                    //                    qDebug() << source << "->" << target << "weight:" << weight << "will be enabled. Emitting signal...";
                     // Enable the edge
                     ed.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true));
                     // Enable the inedge of the target vertex too (needed for inDegree)
-                    //                    qDebug() << "enabling the inedge of the target vertex: " << target << "<-" << source;
                     this->edgeInboundStatusSet(target, source, true);
 
                     emit signalSetEdgeVisibility(m_curRelation, source, target, true, preserveReverseEdge);
@@ -226,7 +246,7 @@ void Graph::edgeFilterUnilateral(const bool &toggle)
  * @brief Hides all edges whose custom attribute does not satisfy @p cond.
  *
  * Non-destructive: pushes a GraphVisibilitySnapshot onto m_visibilityHistory
- * before making any changes. Call vertexFilterRestoreAll() to undo.
+ * before making any changes. Undo via vertexFilterRemoveAt() or vertexFilterRestoreAll().
  *
  * Returns early with a status message if no edge satisfies the condition.
  *
@@ -236,37 +256,6 @@ void Graph::edgeFilterByAttribute(const FilterCondition &cond)
 {
     qDebug() << "Graph::edgeFilterByAttribute() key:" << cond.key
              << "op:" << static_cast<int>(cond.op) << "value:" << cond.value;
-
-    // Build visible set: (source, target) pairs whose custom attribute satisfies cond.
-    // We use matchesCondition from graph_node_filters.cpp via a local lambda here.
-    auto matches = [&](const QString &attrVal) -> bool {
-        switch (cond.op) {
-        case FilterCondition::Op::Eq:       return attrVal == cond.value;
-        case FilterCondition::Op::Neq:      return attrVal != cond.value;
-        case FilterCondition::Op::Contains: return attrVal.contains(cond.value, Qt::CaseInsensitive);
-        default: break;
-        }
-        bool okA = false, okB = false;
-        const double a = attrVal.toDouble(&okA);
-        const double b = cond.value.toDouble(&okB);
-        if (okA && okB) {
-            switch (cond.op) {
-            case FilterCondition::Op::Gt:  return a >  b;
-            case FilterCondition::Op::Lt:  return a <  b;
-            case FilterCondition::Op::Gte: return a >= b;
-            case FilterCondition::Op::Lte: return a <= b;
-            default: break;
-            }
-        }
-        switch (cond.op) {
-        case FilterCondition::Op::Gt:  return attrVal >  cond.value;
-        case FilterCondition::Op::Lt:  return attrVal <  cond.value;
-        case FilterCondition::Op::Gte: return attrVal >= cond.value;
-        case FilterCondition::Op::Lte: return attrVal <= cond.value;
-        default: break;
-        }
-        return false;
-    };
 
     // Count matching edges (for early-exit guard).
     int matchCount = 0;
@@ -280,7 +269,7 @@ void Graph::edgeFilterByAttribute(const FilterCondition &cond)
             {
                 const QHash<QString,QString> attrs =
                     (*vi)->outEdgeCustomAttributes(ei.key());
-                if (attrs.contains(cond.key) && matches(attrs.value(cond.key)))
+                if (attrs.contains(cond.key) && cond.matches(attrs.value(cond.key)))
                     ++matchCount;
             }
             ++ei;
@@ -295,7 +284,9 @@ void Graph::edgeFilterByAttribute(const FilterCondition &cond)
 
     // Snapshot BEFORE making changes.
     GraphVisibilitySnapshot snapshot;
-    snapshot.active = true;
+    snapshot.active         = true;
+    snapshot.spec.type      = FilterSpec::Type::EdgeAttribute;
+    snapshot.spec.condition = cond;
 
     for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
     {
@@ -330,7 +321,7 @@ void Graph::edgeFilterByAttribute(const FilterCondition &cond)
             const bool preserveReverse = (reverseWeight != 0);
 
             const QHash<QString,QString> attrs = (*vi)->outEdgeCustomAttributes(target);
-            const bool condMet = attrs.contains(cond.key) && matches(attrs.value(cond.key));
+            const bool condMet = attrs.contains(cond.key) && cond.matches(attrs.value(cond.key));
 
             ei.value() = pair_i_fb(m_curRelation, pair_f_b(weight, condMet));
             edgeInboundStatusSet(target, source, condMet);
@@ -347,4 +338,3 @@ void Graph::edgeFilterByAttribute(const FilterCondition &cond)
     progressStatus(tr("Showing %1 edge(s) matching: %2.")
                        .arg(matchCount).arg(cond.label()));
 }
-

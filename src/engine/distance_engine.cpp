@@ -17,8 +17,12 @@
 
 #include "graph.h"
 #include "engine/graph_distance_progress_sink.h"
+#include "engine/thread_local_state.h"
 
 #include <QDebug>
+#include <QMutex>
+#include <QThread>
+#include <QtConcurrent/QtConcurrent>
 #include <cstdlib>
 #include <queue>
 
@@ -152,7 +156,6 @@ void DistanceEngine::compute(const bool computeCentralities,
                       inverseWeights,
                       dropIsolates,
                       ds,
-                      csssp,
                       sink);
         if (sink.progressCanceled())
         {
@@ -399,240 +402,244 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
                                    const bool inverseWeights,
                                    const bool dropIsolates,
                                    DistanceScratch &ds,
-                                   CentralityScratchSSSP &csssp,
                                    IDistanceProgressSink &sink)
 {
-    qDebug() << "*********** MAIN LOOP: "
-                "for every s in V solve the Single Source Shortest Path (SSSP) problem...";
-    for (ds.it = graph.verticesBegin(); ds.it != graph.verticesEnd(); ++ds.it)
+    qDebug() << "*********** MAIN LOOP (parallel): "
+                "solving SSSP from every source vertex across CPU cores...";
+
+    // Count total VList positions (includes disabled vertices) for scratch-array sizing.
+    // Scratch indices come from vertexIndexByNumber(), which returns VList positions,
+    // so arrays must be sized by totalV (not ds.N which counts enabled-only).
+    int totalV = 0;
+    for (auto it = graph.verticesBegin(); it != graph.verticesEnd(); ++it)
+        ++totalV;
+
+    // Over-allocate the state vector generously.  The pool has at most
+    // idealThreadCount() workers; doubling + 4 guards against unexpected
+    // pool growth (e.g., other Qt internals adding threads mid-run) without
+    // wasting meaningful memory on the per-thread scratch arrays.
+    int threadCount = QThread::idealThreadCount();
+    QVector<ThreadLocalState> allStates(threadCount * 2 + 4);
+    for (auto &tls : allStates)
+        tls.allocate(totalV);
+
+    // Collect enabled source vertices upfront so the lambda receives a plain value
+    // (QPair<int,int>) instead of iterating a shared container from multiple threads.
+    // Element: (vertex_number, VList_position).
+    QVector<QPair<int, int>> sources;
+    sources.reserve(ds.N);
+    for (auto it = graph.verticesBegin(); it != graph.verticesEnd(); ++it)
     {
-        ds.s = (*ds.it)->number();
-        ds.si = graph.vertexIndexByNumber(ds.s);
-        ds.distances_sum_for_s = 0;
+        if ((*it)->isEnabled())
+            sources.append({(*it)->number(), graph.vertexIndexByNumber((*it)->number())});
+    }
 
-        qDebug() << "***** PHASE 1 (SSSP): "
-                 << "Source vertex s" << ds.s << "vpos" << ds.si;
+    // Thread-ID → slot map: guarantees each distinct OS thread gets a unique, stable
+    // slot index into allStates across all lambda invocations within this call.
+    // Using a per-call map (not thread_local) avoids the "stale slot" bug that occurs
+    // when runAllSources is called multiple times (e.g., warmup + bench runs):
+    // thread_local would carry over a slot index from the previous call's allStates,
+    // and any newly created pool thread would receive the same index — data race.
+    QMutex slotMutex;
+    QHash<Qt::HANDLE, int> threadSlots;
+    QAtomicInt nextSlot{0};
 
-        sink.progressUpdate(++ds.progressCounter);
-        if (sink.progressCanceled())
+    // ---- Parallel SSSP source loop ----
+    // Safety analysis:
+    //   - Source-vertex writes (APSP, CC, eccentricity, PC, SPC): safe — si is unique.
+    //   - Intermediate-vertex writes (BC, SC): unsafe → go to tls.partialBC / tls.partialSC.
+    //   - Graph-wide aggregates (distanceSum, geodesicsCount, diameter, sumPC, sumSPC):
+    //     unsafe → go to tls accumulators; reduced into graph state after the map.
+    //   - All graph reads (edges, vertex numbers, relation) are read-only during SSSP.
+    //   - Cancel signals cannot be delivered while graphThread's event loop is blocked
+    //     here, so we skip the cancel check inside the lambda; UX shows 0%→100% jump.
+    QtConcurrent::blockingMap(sources, [&](const QPair<int, int> &src) {
+        // Map this OS thread to a unique slot on first entry; reuse the slot on
+        // subsequent invocations (same thread processes multiple sources).
+        // slotMutex is held only for the brief hash lookup — never during SSSP.
+        int mySlot;
         {
-            qDebug() << "DistanceEngine::runAllSources() - canceled by user. Aborting.";
-            return;
-        }
-        if (!(*ds.it)->isEnabled())
-        {
-            qDebug() << "***** PHASE 1 (SSSP): s" << ds.s << "disabled. SKIP/CONTINUE";
-            continue;
-        }
-
-        if (computeCentralities)
-        {
-            qDebug() << "***** PHASE 1 (SSSP): "
-                        "Empty Stack which will return vertices in "
-                        "order of their (non increasing) distance from s ...";
-            //- Complexity linear O(n)
-            graph.ssspStackClear();
-
-            qDebug() << "***** PHASE 1 (SSSP): "
-                        "...and for each vertex: empty list Ps of predecessors";
-            for (ds.it1 = graph.verticesBegin(); ds.it1 != graph.verticesEnd(); ++ds.it1)
-            {
-                (*ds.it1)->clearPs();
+            QMutexLocker lock(&slotMutex);
+            Qt::HANDLE me = QThread::currentThreadId();
+            auto it = threadSlots.find(me);
+            if (it != threadSlots.end()) {
+                mySlot = it.value();
+            } else {
+                mySlot = nextSlot.fetchAndAddOrdered(1);
+                threadSlots[me] = mySlot;
             }
-            graph.ssspNthOrderClear();
         }
+        ThreadLocalState &tls = allStates[mySlot];
 
-        qDebug() << "***** PHASE 1 (SSSP): "
-                    "Call BFS or dijkstra for s"
-                 << ds.s << " vpos " << ds.si
-                 << " to compute distance and shortest paths to every vertex t";
+        const int s  = src.first;
+        const int si = src.second;
 
+        qDebug() << "***** PHASE 1 (SSSP) [thread slot" << mySlot << "]: source s" << s << "vpos" << si;
+
+        // Reset per-source scratch (dist, sigma, and optionally Stack/Ps/nthOrder).
+        // Also resets pss.sourceDistanceSum / sourceGeodesicsCount / sourceDiameter.
+        tls.pss.resetPerSource(computeCentralities);
+
+        // Run BFS or Dijkstra; unsafe graph calls go to tls.pss scratch fields / tls.partialSC.
         if (!considerWeights)
-        {
-            bfsSSSP(ds.s, ds.si, computeCentralities, dropIsolates);
-        }
+            bfsSSSP(s, si, computeCentralities, dropIsolates, tls.pss, tls.partialSC);
         else
-        {
-            dijkstraSSSP(ds.s, ds.si, computeCentralities, inverseWeights, dropIsolates);
-        }
+            dijkstraSSSP(s, si, computeCentralities, inverseWeights, dropIsolates, tls.pss, tls.partialSC);
 
-        qDebug() << "***** PHASE 1 (SSSP): "
-                    "FINISHED BFS / DIJKSTRA ALGORITHM. "
-                    "Continuing to calculate centralities";
+        // Accumulate per-source aggregates into thread-local running totals.
+        // These will be reduced into graph-global state after the parallel loop.
+        tls.totalDistanceSum    += tls.pss.sourceDistanceSum;
+        tls.totalGeodesicsCount += tls.pss.sourceGeodesicsCount;
+        if (tls.pss.sourceDiameter > tls.maxDiameter)
+            tls.maxDiameter = tls.pss.sourceDiameter;
+
+        qDebug() << "***** PHASE 1 (SSSP): FINISHED BFS/DIJKSTRA for s" << s
+                 << "— writing APSP results back to vertex" << si;
+
+        // APSP write-back: persist tls.pss.dist / sigma into vertex si's per-pair storage.
+        // Safe: si is unique across all concurrent lambda invocations.
+        // Unreachable vertices (dist == RAND_MAX) are skipped; the vertex-hash default
+        // already returns RAND_MAX for missing entries.
+        for (int vi = 0; vi < totalV; ++vi)
+        {
+            if (tls.pss.dist[vi] != (qreal)RAND_MAX)
+            {
+                int vnum = graph.vertexAtIndex(vi)->number();
+                graph.vertexAtIndex(si)->setDistance(vnum, tls.pss.dist[vi]);
+                graph.vertexAtIndex(si)->setShortestPaths(vnum, tls.pss.sigma[vi]);
+            }
+        }
 
         if (computeCentralities)
         {
-            qDebug() << "***** PHASE 2 (CENTRALITIES): "
-                        "s"
-                     << ds.s << "vpos" << ds.si << "CC" << csssp.CC;
-
-            // Compute Power Centrality
-            // In = [ 1/(N-1) ] * ( Nd1 + Nd2 * 1/2 + ... + Ndi * 1/i )
-            // where
-            // Ndi (sizeOfNthOrderNeighborhood) is the number of nodes at distance i from this node.
-            // N is the sum Nd0 + Nd1 + Nd2 + ... + Ndi, that is the amount of nodes in the same component as the current node
-
-            graph.ssspComponentReset(1);
-            csssp.PC = 0;
-            csssp.hfi = graph.ssspNthOrderBegin();
-            // FIXME do we need to check for disabled nodes somewhere?
-            while (csssp.hfi != graph.ssspNthOrderEnd())
+            // ---- Power Centrality ----
+            // PC(s) = [1/(N-1)] * sum_i( nthOrder[i] / i )
+            // where nthOrder[i] = number of nodes at distance i from s.
+            tls.pss.componentSize = 1;
+            qreal pc = 0;
+            for (auto hfi = tls.pss.nthOrder.constBegin(); hfi != tls.pss.nthOrder.constEnd(); ++hfi)
             {
-                qDebug() << " sizeOfNthOrderNeighborhood.value(" << csssp.hfi.key() << ")"
-                         << csssp.hfi.value();
-                csssp.PC += (1.0 / csssp.hfi.key()) * csssp.hfi.value();
-                graph.ssspComponentAdd(csssp.hfi.value());
-                ++csssp.hfi;
+                pc += (1.0 / hfi.key()) * hfi.value();
+                tls.pss.componentSize += hfi.value();
             }
+            graph.vertexAtIndex(si)->setPC(pc);   // safe: source vertex
+            // Accumulate into thread-local sum; graph.sumPC updated in reduction.
+            tls.totalSumPC += pc;
 
-            (*ds.it)->setPC(csssp.PC);
-            graph.sumPC += csssp.PC;
-            if (graph.ssspComponentSize() != 1)
-                csssp.SPC = (1.0 / (graph.ssspComponentSize() - 1.0)) * csssp.PC;
-            else
-                csssp.SPC = 0;
+            qreal spc = (tls.pss.componentSize != 1)
+                            ? (1.0 / (tls.pss.componentSize - 1.0)) * pc
+                            : 0;
+            graph.vertexAtIndex(si)->setSPC(spc); // safe: source vertex
+            tls.totalSumSPC += spc;
 
-            (*ds.it)->setSPC(csssp.SPC); // Set std PC
+            qDebug() << "***** PHASE 2 (CENTRALITIES): s" << s << "vpos" << si << "PC" << pc;
 
-            graph.sumSPC += csssp.SPC; // add to sumSPC -- used later to compute mean and variance
-
-            qDebug() << "***** PHASE 2 (CENTRALITIES): "
-                        "s"
-                     << ds.s << "vpos" << ds.si << "PC" << csssp.PC;
-
-            // Compute Betweenness Centrality
-
-            qDebug() << "***** PHASE 2 (BC/ACCUMULATION): "
-                        "Start back propagation of dependencies."
-                     << "Set dependency delta[u]=0 on each vertex";
-
-            for (ds.it1 = graph.verticesBegin(); ds.it1 != graph.verticesEnd(); ++ds.it1)
+            // ---- Closeness Centrality + delta reset ----
+            // Walk every vertex position to zero delta[] (needed for BC back-propagation)
+            // and simultaneously sum distances for CC.  RAND_MAX propagates the
+            // disconnected-graph sentinel so CC becomes 0 when s cannot reach all others.
+            qreal distances_sum_for_s = 0;
+            for (int vi1 = 0; vi1 < totalV; ++vi1)
             {
-                (*ds.it1)->setDelta(0.0);
-
-                // compute sum of distances from current vertex to every other vertex
-                ds.distances_sum_for_s += (*ds.it)->distance((*ds.it1)->number());
-                qDebug() << "    Compute Centralities: "
-                            "For CC: sum of distances. distance("
-                         << (*ds.it)->number()
-                         << "," << (*ds.it1)->number() << ") = " << (*ds.it)->distance((*ds.it1)->number())
-                         << "new sum of distances for s =" << ds.distances_sum_for_s;
+                tls.pss.delta[vi1] = 0.0;
+                distances_sum_for_s += tls.pss.dist[vi1];
             }
-            qDebug() << "    Compute Centralities: "
-                        "For CC: total sum of distances for s ="
-                     << ds.distances_sum_for_s;
+            // Accumulate into thread-local total; graph.addToDistanceSum() in reduction.
+            tls.totalCCDistanceSum += distances_sum_for_s;
 
-            graph.addToDistanceSum(ds.distances_sum_for_s);
+            qreal cc = (distances_sum_for_s != 0 && distances_sum_for_s < RAND_MAX)
+                           ? 1.0 / distances_sum_for_s
+                           : 0;
+            graph.vertexAtIndex(si)->setCC(cc);   // safe: source vertex
 
-            // Compute Closeness Centrality
-            if (ds.distances_sum_for_s != 0 && ds.distances_sum_for_s < RAND_MAX)
+            qDebug() << "***** PHASE 2 (CENTRALITIES): s" << s << "vpos" << si << "CC" << cc;
+
+            // ---- Brandes BC back-propagation ----
+            // Visit vertices in reverse BFS/Dijkstra order (deepest first) and propagate
+            // dependency deltas up the shortest-path DAG.  Instead of writing to
+            // vertex->BC() directly (which would race across threads for intermediate
+            // vertices), accumulate into tls.partialBC[wi]; the reduction step merges all.
+            qDebug() << "***** PHASE 2 (BC/ACCUMULATION): back-propagating from s" << s
+                     << "Stack size" << (int)tls.pss.Stack.size();
+
+            while (!tls.pss.Stack.empty())
             {
-                // Connected actor:
-                // There is a path from this actor to all others
-                // Invert the sum of distances and set it as CC
-                csssp.CC = 1.0 / ds.distances_sum_for_s;
-            }
-            else
-            {
-                // Not connected actor. Cases:
-                // a) Isolated: The actor has no outbound links
-                // b) Disconnected graph: There is no path from this actor
-                // to some of the other actors, which means her distance to
-                // them is infinite
-                // For these two cases, set CC as zero.
-                csssp.CC = 0;
-            }
-            (*ds.it)->setCC(csssp.CC);
+                int w  = tls.pss.Stack.top();
+                int wi = graph.vertexIndexByNumber(w);
+                tls.pss.Stack.pop();
 
-            qDebug() << "***** PHASE 2 (BC/ACCUMULATION): "
-                        "Visit all vertices in reverse order of their discovery (from s = "
-                     << ds.s
-                     << " ) to sum dependencies. Initial Stack size " << graph.ssspStackSize();
-
-            while (!graph.ssspStackEmpty())
-            {
-                ds.w = graph.ssspStackTop();
-                ds.wi = graph.vertexIndexByNumber(ds.w);
-
-                qDebug() << "***** PHASE 2 (BC/ACCUMULATION): "
-                            "Stack top is vertex w "
-                         << ds.w
-                         << "This is the furthest vertex from s. Popping it.";
-
-                graph.ssspStackPop();
-                QList<int> lst = graph.vertexAtIndex(ds.wi)->Ps();
-
-                qDebug() << "***** PHASE 2 (BC/ACCUMULATION): "
-                            "preLOOP: Size of predecessors list Ps[w]"
-                         << lst.size();
-
-                qDebug() << "***** PHASE 2 (BC/ACCUMULATION): "
-                            "LOOP over every vertex u in Ps of w"
-                         << ds.w;
-
-                if (lst.size() > 0) // just in case...do a sanity check
-                    for (ds.it2 = lst.cbegin(); ds.it2 != lst.cend(); ds.it2++)
-                    {
-                        ds.u = (*ds.it2);
-                        ds.ui = graph.vertexIndexByNumber(ds.u);
-                        csssp.sigma_u = graph.vertexAtIndex(ds.si)->shortestPaths(ds.u);
-                        csssp.sigma_w = graph.vertexAtIndex(ds.si)->shortestPaths(ds.w);
-                        csssp.delta_u = graph.vertexAtIndex(ds.ui)->delta();
-                        csssp.delta_w = graph.vertexAtIndex(ds.wi)->delta();
-
-                        qDebug() << "***** PHASE 2 (BC/ACCUMULATION): "
-                                    "Selecting Ps[w] element u"
-                                 << ds.u
-                                 << "with delta_u" << csssp.delta_u
-                                 << "sigma(s,u)" << csssp.sigma_u
-                                 << "sigma(s,w)" << csssp.sigma_w
-                                 << "delta_w" << csssp.delta_w;
-
-                        if (graph.vertexAtIndex(ds.si)->shortestPaths(ds.w) > 0)
-                        {
-                            // delta[u]=delta[u]+(1+delta[w])*(sigma[u]/sigma[w]) ;
-                            csssp.d_su = csssp.delta_u + (1.0 + csssp.delta_w) * ((qreal)csssp.sigma_u / (qreal)csssp.sigma_w);
-                        }
-                        else
-                        {
-                            csssp.d_su = csssp.delta_u;
-                            qDebug() << "***** PHASE 2 (BC/ACCUMULATION): "
-                                        "zero shortest paths from s to w - "
-                                        "using SAME DELTA for vertex u";
-                        }
-                        qDebug() << "***** PHASE 2 (BC/ACCUMULATION): "
-                                    "Assigning new delta d_su"
-                                 << csssp.d_su
-                                 << " to u" << ds.u;
-
-                        graph.vertexAtIndex(ds.ui)->setDelta(csssp.d_su);
-
-                    } // end for
-
-                qDebug() << "***** PHASE 2 (BC/ACCUMULATION): "
-                            "Adding delta_w to BC of w";
-
-                if (ds.w != ds.s)
+                const QList<int> &lst = tls.pss.Ps[wi];
+                for (int u : lst)
                 {
-                    qDebug() << "***** PHASE 2 (BC/ACCUMULATION): "
-                                "w!=s. For this furthest vertex we need to add its new delta"
-                             << csssp.delta_w
-                             << "to old BC index:"
-                             << graph.vertexAtIndex(ds.wi)->BC();
+                    int ui = graph.vertexIndexByNumber(u);
+                    if (tls.pss.sigma[wi] > 0)
+                    {
+                        // delta[u] += (1 + delta[w]) * sigma[u] / sigma[w]
+                        tls.pss.delta[ui] += (1.0 + tls.pss.delta[wi]) *
+                                             ((qreal)tls.pss.sigma[ui] /
+                                              (qreal)tls.pss.sigma[wi]);
+                    }
+                }
 
-                    csssp.d_sw = graph.vertexAtIndex(ds.wi)->BC() + csssp.delta_w;
+                if (w != s)
+                {
+                    // Accumulate into per-thread partial BC instead of vertex->setBC().
+                    // Intermediate vertex w may be processed by multiple source threads;
+                    // partialBC[wi] is private to this thread, so no mutex needed.
+                    tls.partialBC[wi] += tls.pss.delta[wi];
+                }
+            } // END BC back-propagation
 
-                    qDebug() << "***** PHASE 2 (BC/ACCUMULATION): "
-                                "s"
-                             << ds.s << "vpos" << ds.si << "BC = d_sw" << csssp.d_sw;
-
-                    graph.vertexAtIndex(ds.wi)->setBC(csssp.d_sw);
-
-                } // END if
-            } // END while stack
         } // END if computeCentralities
 
-    } // END for SSSP problem
+        sink.progressUpdate(nextSlot.loadRelaxed()); // queued signal — OK from worker thread
+    }); // END QtConcurrent::blockingMap
+
+    qDebug() << "*********** MAIN LOOP (parallel SSSP): FINISHED. Starting reduction.";
+
+    // ---- Sequential reduction ----
+    // Merge per-thread accumulators into graph-global state.  This runs on the calling
+    // thread after blockingMap returns; no concurrent access, no mutexes needed.
+    for (auto &tls : allStates)
+    {
+        // Distance sum from BFS inner-loop discoveries (0 for Dijkstra).
+        graph.addToDistanceSum(tls.totalDistanceSum);
+        if (computeCentralities)
+            // Distance sum from the CC-denominator accumulation in the centralities block.
+            graph.addToDistanceSum(tls.totalCCDistanceSum);
+
+        // Geodesics count (reachable source-target pairs found by BFS / Dijkstra).
+        graph.addGeodesicsCount(tls.totalGeodesicsCount);
+
+        // Diameter: keep the overall maximum across all threads.
+        if (tls.maxDiameter > graph.graphDiameterCached())
+            graph.setDiameterCached(tls.maxDiameter);
+
+        if (computeCentralities)
+        {
+            graph.sumPC  += tls.totalSumPC;
+            graph.sumSPC += tls.totalSumSPC;
+        }
+    }
+
+    // Reduce partial BC and SC arrays into per-vertex scores.
+    // BC/SC were initialised to 0 in initRun; we accumulate all thread contributions here.
+    if (computeCentralities)
+    {
+        for (int wi = 0; wi < totalV; ++wi)
+        {
+            qreal totalBC = 0, totalSC = 0;
+            for (auto &tls : allStates)
+            {
+                totalBC += tls.partialBC[wi];
+                totalSC += tls.partialSC[wi];
+            }
+            if (totalBC != 0.0)
+                graph.vertexAtIndex(wi)->setBC(totalBC);
+            if (totalSC != 0.0)
+                graph.vertexAtIndex(wi)->setSC(totalSC);
+        }
+    }
 
     qDebug() << "*********** MAIN LOOP (SSSP problem): FINISHED.";
 }
@@ -643,6 +650,8 @@ void DistanceEngine::finalize(const bool computeCentralities,
                               CentralityScratchFinalize &csf,
                               IDistanceProgressSink &sink)
 {
+    Q_UNUSED(sink); // progress dialog is managed by compute(); finalize() has no steps to report
+
     // check if there are disconnected nodes
     // and get the distance sums
     qDebug() << "Checking if there are disconnected nodes";
@@ -951,22 +960,25 @@ void DistanceEngine::finalize(const bool computeCentralities,
         (Implicitly, BFS uses the m_graph structure)
 
     OUTPUT:
-        For every vertex t: d(s, t) is set to the distance of each t from s
-        For every vertex t: s(s, t) is set to the number of shortest paths between s and t
+        For every vertex t: pss.dist[ti] is set to the distance of each t from s
+        For every vertex t: pss.sigma[ti] is set to the number of shortest paths between s and t
 
         Also, if computeCentralities is true then BFS does extra operations:
             a) For source vertex s:
                 it calculates CC(s) as the sum of its distances from every other vertex.
                 it calculates eccentricity(s) as the maximum distance from all other vertices.
-                it increases sizeOfNthOrderNeighborhood [ N ] by one, to store the number of nodes at distance n from source s
+                it increases pss.nthOrder[ N ] by one, to store the number of nodes at distance n from source s
             b) For every vertex u:
                 it increases SC(u) by one, when it finds a new shor. path from s to t through u.
-                appends each neighbor y of u to the list , thus Ps stores all predecessors of y on all all shortest paths from s
-            c) Each vertex u popped from Q is pushed to a stack Stack
+                appends each neighbor y of u to pss.Ps[y], thus Ps stores all predecessors of y on all shortest paths from s
+            c) Each vertex u popped from Q is pushed to pss.Stack
 
 */
-void DistanceEngine::bfsSSSP(const int &s, const int &si, const bool &computeCentralities,
-                             const bool &dropIsolates)
+void DistanceEngine::bfsSSSP(const int &s, const int &si,
+                             const bool &computeCentralities,
+                             const bool &dropIsolates,
+                             PerSourceScratch &pss,
+                             QVector<qreal> &partialSC)
 {
     Q_UNUSED(dropIsolates);
 
@@ -974,17 +986,16 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si, const bool &computeCen
     int u = 0, ui = 0, w = 0, wi = 0;
     int dist_u = 0, temp = 0, dist_w = 0;
     int relation = 0;
-    // int  weight=0;
+    qreal weight = 0; // Fix #30: needed to skip zero-weight edges
     bool edgeStatus = false;
     H_edges::const_iterator it1;
 
     // set distance of s from s equal to 0
-    graph.vertexAtIndex(si)->setDistance(s, 0);
+    pss.dist[si] = 0;
 
     // set sigma of s from s equal to 1
-    graph.vertexAtIndex(si)->setShortestPaths(s, 1);
+    pss.sigma[si] = 1;
 
-    //    qDebug("BFS: Construct a queue Q of integers and push source vertex s=%i to Q as initial vertex", s);
     std::queue<int> Q;
 
     Q.push(s);
@@ -1006,8 +1017,8 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si, const bool &computeCen
         if (computeCentralities)
         {
             qDebug() << "BFS: Compute centralities: Pushing u" << u
-                     << "to global Stack ";
-            graph.ssspStackPush(u);
+                     << "to Stack ";
+            pss.Stack.push(u);
         }
         qDebug() << "BFS: LOOP over every edge (u,w) e E, that is all neighbors w of vertex u";
         it1 = graph.vertexAtIndex(ui)->outEdges().cbegin();
@@ -1025,92 +1036,95 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si, const bool &computeCen
                 ++it1;
                 continue;
             }
+            // Fix #30: zero-weight edges are visual-only and must not be
+            // traversed as structural connections. Without this guard, BFS
+            // would report incorrect geodesic distances and reachability.
+            weight = it1.value().second.first;
+            if (weight == 0)
+            {
+                ++it1;
+                continue;
+            }
             w = it1.key();
-            //  weight = it1.value().second.first;
             wi = graph.vertexIndexByNumber(w);
             qDebug("BFS: u=%i is connected with node w=%i of graph.vertexIndexByNumber wi=%i. ", u, w, wi);
 
             qDebug("BFS: Start path discovery");
 
-            // if distance (s,w) is infinite, w found for the first time.
-            if (graph.vertexAtIndex(si)->distance(w) == RAND_MAX)
+            // if dist[wi] is RAND_MAX, w is found for the first time.
+            if (pss.dist[wi] == (qreal)RAND_MAX)
             {
 
                 qDebug("BFS: First time visiting w=%i. Enqueuing w to the end of Q", w);
 
                 Q.push(w);
 
-                qDebug() << "BFS: First check if distance(s,u) = infinite and set it to zero";
-
-                dist_u = graph.vertexAtIndex(si)->distance(u);
+                dist_u = (int)pss.dist[ui];
                 dist_w = dist_u + 1;
 
                 qDebug() << "BFS: Setting dist_w = d ( s" << s << ", w" << w
                          << ") equal to dist_u=d(s,u) plus 1. New dist_w" << dist_w;
-                ;
-                graph.vertexAtIndex(si)->setDistance(w, dist_w);
 
-                graph.addToDistanceSum(dist_w);
-                graph.incGeodesicsCount();
+                pss.dist[wi] = (qreal)dist_w;
+
+                // Accumulate into scratch instead of calling graph methods directly.
+                // Multiple threads run bfsSSSP concurrently; these graph methods
+                // are not thread-safe.  The owning thread reduces the scratch totals
+                // into graph state after QtConcurrent::blockingMap returns.
+                pss.sourceDistanceSum += dist_w;
+                ++pss.sourceGeodesicsCount;
+                if (dist_w > pss.sourceDiameter)
+                    pss.sourceDiameter = dist_w;
 
                 qDebug() << "== BFS  - d("
                          << s << "," << w
-                         << ")=" << graph.vertexAtIndex(si)->distance(w);
+                         << ")=" << pss.dist[wi];
 
                 if (computeCentralities)
                 {
                     qDebug() << "BFS: Calculate PC: store the number of nodes at distance "
                              << dist_w << "from s";
 
-                    graph.ssspNthOrderIncrement(dist_w);
+                    pss.nthOrderIncrement((qreal)dist_w);
                     qDebug() << "BFS: Calculate CC: the sum of distances (will invert it l8r)";
+                    // Source-vertex writes (si is unique per thread): safe for parallelism.
                     graph.vertexAtIndex(si)->setCC(graph.vertexAtIndex(si)->CC() + dist_w);
 
                     qDebug() << "BFS: Calculate Eccentricity: the maximum distance ";
                     if (graph.vertexAtIndex(si)->eccentricity() < dist_w)
                         graph.vertexAtIndex(si)->setEccentricity(dist_w);
                 }
-                //                qDebug("BFS: Checking m_graphDiameter");
-                if (dist_w > graph.graphDiameterCached())
-                {
-                    graph.setDiameterCached(dist_w);
-                    //                    qDebug() << "BFS: new m_graphDiameter = " <<  m_graphDiameter ;
-                }
             }
 
             qDebug() << "BFS: Start path counting";
 
             // Is edge (u,w) on a shortest path from s to w via u?
-
-            if (graph.vertexAtIndex(si)->distance(w) == graph.vertexAtIndex(si)->distance(u) + 1)
+            if ((int)pss.dist[wi] == (int)pss.dist[ui] + 1)
             {
 
-                temp = graph.vertexAtIndex(si)->shortestPaths(w) + graph.vertexAtIndex(si)->shortestPaths(u);
+                temp = pss.sigma[wi] + pss.sigma[ui];
 
                 qDebug() << "BFS: Found a NEW SHORTEST PATH from s" << s
                          << "to w" << w << "via u" << u
                          << "Setting Sigma(s, w)" << temp;
                 if (s != w)
                 {
-                    graph.vertexAtIndex(si)->setShortestPaths(w, temp);
+                    pss.sigma[wi] = temp;
                 }
                 if (computeCentralities)
                 {
                     qDebug() << "BFS/SC: Computing centralities: Computing SC ";
                     if (s != w && s != u && u != w)
                     {
-                        qDebug() << "BFS: setSC of u=" << u << " to " << graph.vertexAtIndex(ui)->SC() + 1;
-                        graph.vertexAtIndex(ui)->setSC(graph.vertexAtIndex(ui)->SC() + 1);
+                        qDebug() << "BFS: partialSC[ui=" << ui << "] += 1";
+                        // Intermediate vertex ui may be processed by concurrent threads
+                        // (other sources pass through the same u).  Write to partialSC[ui]
+                        // — a per-thread array — instead of vertex->setSC() to avoid races.
+                        partialSC[ui] += 1.0;
                     }
-                    else
-                    {
-                        //                        qDebug() << "BFS/SC: skipping setSC of u, because s="
-                        //                                 <<s<<" w="<< w << " u="<< u;
-                    }
-                    //                    qDebug() << "BFS/SC: SC is " << graph.vertexAtIndex(u]->SC();
                     qDebug() << "BFS: appending u" << u << " to list Ps[w=" << w
                              << "] with the predecessors of w on all shortest paths from s ";
-                    graph.vertexAtIndex(wi)->appendToPs(u);
+                    pss.Ps[wi].append(u);
                 }
             }
             ++it1;
@@ -1128,24 +1142,26 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si, const bool &computeCen
         (Implicitly, the algorithm uses the m_graph structure)
 
     OUTPUT:
-        For every vertex t: d(s, t) is set to the distance of each t from s
-        For every vertex t: s(s, t) is set to the number of shortest paths between s and t
+        For every vertex t: pss.dist[ti] is set to the distance of each t from s
+        For every vertex t: pss.sigma[ti] is set to the number of shortest paths between s and t
 
         Also, if computeCentralities is true then it does extra operations:
             a) For source vertex s:
                 it calculates CC(s) as the sum of its distances from every other vertex.
                 it calculates eccentricity(s) as the maximum distance from all other vertices.
-                it increases sizeOfNthOrderNeighborhood [ N ] by one, to store the number of nodes at distance n from source s
+                it increases pss.nthOrder[ N ] by one, to store the number of nodes at distance n from source s
             b) For every vertex u:
                 it increases SC(u) by one, when it finds a new shor. path from s to t through u.
-                appends each neighbor y of u to the list Ps, thus Ps stores all predecessors of y on all all shortest paths from s
-            c) Each vertex u popped from prQ is pushed to a stack Stack
+                appends each neighbor y of u to pss.Ps[y], thus Ps stores all predecessors of y on all shortest paths from s
+            c) Each vertex u popped from prQ is pushed to pss.Stack
 
 */
 void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                                   const bool &computeCentralities,
                                   const bool &inverseWeights,
-                                  const bool &dropIsolates)
+                                  const bool &dropIsolates,
+                                  PerSourceScratch &pss,
+                                  QVector<qreal> &partialSC)
 {
 
     Q_UNUSED(dropIsolates);
@@ -1167,18 +1183,17 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
     QSet<int> visited_vertices;
 
     // set d( s, s ) = 0
-    graph.vertexAtIndex(si)->setDistance(s, 0);
+    pss.dist[si] = 0;
 
     // set sp ( s , s ) = 1
-    graph.vertexAtIndex(si)->setShortestPaths(s, 1);
+    pss.sigma[si] = 1;
 
     for (it = graph.verticesBegin(); it != graph.verticesEnd(); ++it)
     {
         v = graph.vertexIndexByNumber((*it)->number());
         if (v != s)
         {
-            // NOTE: d(i,j) init to RAND_MAX already done in graphDistancesGeodesic
-            //            qDebug() << " push " << v << " to prQ with infinite distance from s";
+            // NOTE: d(i,j) init to RAND_MAX already done via pss.dist.fill(RAND_MAX)
             //            prQ.push(GraphDistance(v,RAND_MAX));
 
             // TODO // Previous node in optimal path from source
@@ -1226,9 +1241,9 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
 
             qDebug() << "    *** dijkstra: Compute centralities: pushing u ="
                      << u
-                     << " to global Stack ";
+                     << " to Stack ";
 
-            graph.ssspStackPush(u);
+            pss.Stack.push(u);
         }
 
         // LOOP over every edge of u
@@ -1259,6 +1274,16 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
             // Get the edge weight
             weight = it1.value().second.first;
 
+            // Fix #30: zero-weight edges are visual-only and must not be
+            // traversed. Normal weights: a zero-weight path would be "free"
+            // (dist_w = dist_u + 0), collapsing distances incorrectly.
+            // Inverse weights: 1/0 is undefined — potential crash or +inf.
+            if (weight == 0)
+            {
+                ++it1;
+                continue;
+            }
+
             qDebug() << "    --- dijkstra: edge (u, w) = (" << u << "," << w << ") =" << weight;
 
             // Invert edge weight if the user told us to do so
@@ -1272,7 +1297,7 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
             qDebug() << "    --- dijkstra: Start path discovery";
 
             // Get the distance of u from source
-            dist_u = graph.vertexAtIndex(si)->distance(u);
+            dist_u = pss.dist[ui];
 
             // If dist_u not finite, this means that dist_w also not finite
             if (dist_u == RAND_MAX || dist_u < 0)
@@ -1289,7 +1314,7 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
             }
 
             // Get the currently computed distance of w from source
-            cur_dist_w = graph.vertexAtIndex(si)->distance(w);
+            cur_dist_w = pss.dist[wi];
 
             qDebug() << "    --- dijkstra: RELAXATION: check if dist_w =" << dist_w
                      << "  shorter than current d(s=" << s << ",w=" << w << ")="
@@ -1301,7 +1326,7 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                 qDebug() << "    --- dijkstra: dist_w : " << dist_w
                          << " ==  current d(s,w) : " << cur_dist_w;
 
-                sp_w = graph.vertexAtIndex(si)->shortestPaths(w) + graph.vertexAtIndex(si)->shortestPaths(u);
+                sp_w = pss.sigma[wi] + pss.sigma[ui];
 
                 // WRONG! We do not know for sure that we are in a shortest path!!!
                 qDebug() << "    --- dijkstra: (POSSIBLE BUG?) Found ANOTHER SP from s ="
@@ -1311,37 +1336,29 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
 
                 if (s != w)
                 {
-                    graph.vertexAtIndex(si)->setShortestPaths(w, sp_w);
+                    pss.sigma[wi] = sp_w;
                 }
 
                 if (computeCentralities)
                 {
-
                     if (s != w && s != u && u != w)
                     {
-
-                        qDebug() << "    --- dijkstra: Compute Centralities: "
-                                    "setSC of u"
-                                 << u
-                                 << "to" << graph.vertexAtIndex(ui)->SC() + 1;
-
-                        graph.vertexAtIndex(ui)->setSC(graph.vertexAtIndex(ui)->SC() + 1);
+                        qDebug() << "    --- dijkstra: Compute Centralities: partialSC[ui=" << ui << "] += 1";
+                        // Intermediate vertex: use partialSC to avoid race with other threads.
+                        partialSC[ui] += 1.0;
                     }
                     else
                     {
                         qDebug() << "    --- dijkstra: Compute Centralities: "
-                                    "Skipping setSC of u, because s="
+                                    "Skipping SC of u, because s="
                                  << s << " w=" << w << " u=" << u;
                     }
-                    qDebug() << "    --- dijkstra: Compute Centralities: "
-                                "SC is "
-                             << graph.vertexAtIndex(ui)->SC();
 
                     qDebug() << "    --- dijkstra: Compute Centralities: "
                                 "Appending u="
                              << u << " to list Ps[w =" << w
                              << "] with the predecessors of w on all shortest paths from s ";
-                    graph.vertexAtIndex(wi)->appendToPs(u);
+                    pss.Ps[wi].append(u);
                 }
             }
 
@@ -1357,22 +1374,24 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                 // and also provides contain()
                 prQ.push(GraphDistance(w, dist_w));
 
-                graph.vertexAtIndex(si)->setDistance(w, dist_w);
+                pss.dist[wi] = dist_w;
 
-                graph.incGeodesicsCount();
+                // Accumulate into scratch instead of calling graph.incGeodesicsCount() /
+                // graph.setDiameterCached() directly — those are not thread-safe.
+                ++pss.sourceGeodesicsCount;
 
                 qDebug() << "    --- dijkstra: "
                             "Set d ( s="
                          << s << ", w=" << w
-                         << " ) = " << dist_w << "=" << graph.vertexAtIndex(si)->distance(w);
+                         << " ) = " << dist_w << "=" << pss.dist[wi];
 
-                if (dist_w > graph.graphDiameterCached())
+                if (dist_w > (qreal)pss.sourceDiameter)
                 {
-                    graph.setDiameterCached(dist_w);
+                    pss.sourceDiameter = (int)dist_w;
 
                     qDebug() << "    --- dijkstra: "
-                                "New graph diameter ="
-                             << graph.graphDiameterCached();
+                                "New thread-local diameter ="
+                             << pss.sourceDiameter;
                 }
 
                 if (s != w)
@@ -1382,18 +1401,18 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                              << s
                              << " to w =" << w << " via u =" << u
                              << " - Setting Sigma(s, w) = 1 ";
-                    graph.vertexAtIndex(si)->setShortestPaths(w, 1);
+                    pss.sigma[wi] = 1;
                 }
 
                 if (computeCentralities)
                 {
 
-                    graph.ssspNthOrderIncrement(dist_w);
+                    pss.nthOrderIncrement(dist_w);
 
                     qDebug() << "    --- dijkstra: Compute Centralities: "
-                                "For PC: sizeOfNthOrderNeighborhood: number of nodes at distance "
+                                "For PC: nthOrder: number of nodes at distance "
                              << dist_w << "from s is "
-                             << graph.ssspNthOrderValue(dist_w);
+                             << pss.nthOrder.value(dist_w, 0);
 
                     if (graph.vertexAtIndex(si)->eccentricity() < dist_w)
                     {
@@ -1407,7 +1426,7 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                                 "Appending u="
                              << u << " to list Ps[w =" << w
                              << "] with the predecessors of w on all shortest paths from s ";
-                    graph.vertexAtIndex(wi)->appendToPs(u);
+                    pss.Ps[wi].append(u);
                 }
             }
             else

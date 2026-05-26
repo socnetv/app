@@ -42,6 +42,18 @@ void Graph::edgeColorInit(const QString &color)
     initEdgeColor = color;
 }
 
+// #30: stores the user-configured color for zero-weight edges
+void Graph::edgeColorZeroInit(const QString &color)
+{
+    initEdgeColorZero = color;
+}
+
+// #30: controls whether zero-weight edges are drawn at all
+void Graph::showZeroWeightEdgesSet(const bool &toggle)
+{
+    initShowZeroWeightEdges = toggle;
+}
+
 /**
  * @brief Changes the color of all enabled edges.
  * @param color

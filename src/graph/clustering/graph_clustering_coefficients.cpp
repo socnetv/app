@@ -84,7 +84,10 @@ qreal Graph::clusteringCoefficientLocal(const int &v1)
         QHash<int, qreal> reciprocal = m_graph[vpos[v1]]->reciprocalEdgesHash();
         for (auto it = reciprocal.cbegin(); it != reciprocal.cend(); ++it)
         {
-            if (it.key() != v1)
+            // Fix #30: zero-weight edges are visual-only; excluding them keeps
+            // k (neighbourhood size) correct, preventing an inflated denominator
+            // k*(k-1) that would make CC artificially too small.
+            if (it.key() != v1 && it.value() != 0)
                 neighborhood.insert(it.key());
         }
     }
@@ -94,7 +97,8 @@ qreal Graph::clusteringCoefficientLocal(const int &v1)
         QHash<int, qreal> outN = m_graph[vpos[v1]]->outEdgesEnabledHash();
         for (auto it = outN.cbegin(); it != outN.cend(); ++it)
         {
-            if (it.key() != v1)
+            // Fix #30: same zero-weight guard as the undirected case above.
+            if (it.key() != v1 && it.value() != 0)
                 neighborhood.insert(it.key());
         }
 
@@ -102,7 +106,8 @@ qreal Graph::clusteringCoefficientLocal(const int &v1)
         QHash<int, qreal> *inN = m_graph[vpos[v1]]->inEdgesEnabledHash();
         for (auto it = inN->cbegin(); it != inN->cend(); ++it)
         {
-            if (it.key() != v1)
+            // Fix #30: same zero-weight guard as the undirected case above.
+            if (it.key() != v1 && it.value() != 0)
                 neighborhood.insert(it.key());
         }
         delete inN;
@@ -229,6 +234,8 @@ qreal Graph::clusteringCoefficient(const bool updateProgress)
     varianceCLC = 0;
     maxCLC = 0;
     minCLC = 1;
+    classesCLC = 0;
+    discreteCLCs.clear();
     qreal temp = 0;
     qreal x = 0;
     qreal N = vertices();
@@ -254,6 +261,8 @@ qreal Graph::clusteringCoefficient(const bool updateProgress)
         }
 
         temp = clusteringCoefficientLocal((*vertex)->number());
+
+        resolveClasses(temp, discreteCLCs, classesCLC);
 
         if (temp > maxCLC)
         {

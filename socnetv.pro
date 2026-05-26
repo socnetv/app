@@ -12,7 +12,7 @@ TEMPLATE = app
 CONFIG  += qt thread $${ALLOW_WARNINGS} $${MY_TARGET_BUILD}
 CONFIG  += c++17
 TARGET = socnetv
-VERSION=3.5
+VERSION=3.6
 LANGUAGE = C++
 
 
@@ -27,6 +27,7 @@ QT += printsupport
 QT += charts
 QT += svg
 QT += core5compat
+QT += concurrent
 
 INCLUDEPATH  += ./src
 
@@ -51,11 +52,18 @@ FORMS += src/forms/dialogfilteredgesbyweight.ui \
     src/forms/dialogedgeedit.ui \
     src/forms/dialogfilterbyattribute.ui \
     src/forms/dialogexportpdf.ui \
-    src/forms/dialogexportimage.ui
+    src/forms/dialogexportimage.ui \
+    src/forms/dialogbulkedit.ui
 
 HEADERS += src/mainwindow.h \
     src/texteditor.h \
     src/graph.h \
+    src/engine/distance_engine.h \
+    src/engine/distance_progress_sink.h \
+    src/engine/graph_distance_progress_sink.h \
+    src/engine/null_distance_progress_sink.h \
+    src/engine/per_source_scratch.h \
+    src/engine/thread_local_state.h \
     src/graphvertex.h \
     src/matrix.h \
     src/parser.h \
@@ -75,10 +83,15 @@ HEADERS += src/mainwindow.h \
     src/widgets/edgetablemodel.h \
     src/forms/dialogedgeedit.h \
     src/forms/dialogfilterbyattribute.h \
-    src/forms/dialogimportattributes.h \
+    src/forms/dialogquerybuilder.h \
+    src/graph/filters/graph_query.h \
     src/graph/filters/filter_condition.h \
+    src/graph/filters/filter_spec.h \
+    src/graph/io/graph_parse_sink.h \
+    src/graph/io/graph_parse_sink_graph.h \
     src/graph/io/table_export.h \
     src/graph/io/table_import.h \
+    src/forms/dialogimportattributes.h \
     src/forms/dialogfilteredgesbyweight.h \
     src/forms/dialogfilternodesbycentrality.h \
     src/forms/dialogedgedichotomization.h \
@@ -100,6 +113,7 @@ HEADERS += src/mainwindow.h \
     src/forms/dialogexportpdf.h \
     src/forms/dialogexportimage.h \
     src/forms/dialogsysteminfo.h \
+    src/forms/dialogbulkedit.h \
     src/global.h
 
 SOURCES += src/main.cpp \
@@ -114,6 +128,7 @@ SOURCES += src/main.cpp \
     src/graph/core/graph_metadata.cpp \
     src/graph/storage/graph_vertices.cpp \
     src/graph/storage/graph_edges.cpp \
+    src/graph/storage/graph_subgraphs.cpp \
     src/graph/io/graph_io.cpp \
     src/graph/io/graph_parse_sink_graph.cpp \
     src/graph/io/table_export.cpp \
@@ -121,6 +136,7 @@ SOURCES += src/main.cpp \
     src/graph/relations/graph_relations.cpp \
     src/graph/filters/graph_edge_filters.cpp \
     src/graph/filters/graph_node_filters.cpp \
+    src/graph/filters/graph_query_filters.cpp \
     src/graph/ui/graph_ui_facade.cpp \
     src/graph/ui/graph_ui_prominence_distribution.cpp \
     src/graph/ui/graph_canvas.cpp \
@@ -172,6 +188,7 @@ SOURCES += src/main.cpp \
     src/widgets/edgetablemodel.cpp \
     src/forms/dialogedgeedit.cpp \
     src/forms/dialogfilterbyattribute.cpp \
+    src/forms/dialogquerybuilder.cpp \
     src/forms/dialogimportattributes.cpp \
     src/forms/dialogfilteredgesbyweight.cpp \
     src/forms/dialogfilternodesbycentrality.cpp \
@@ -193,7 +210,8 @@ SOURCES += src/main.cpp \
     src/forms/dialognodefind.cpp \
     src/forms/dialogexportpdf.cpp \
     src/forms/dialogexportimage.cpp \
-    src/forms/dialogsysteminfo.cpp
+    src/forms/dialogsysteminfo.cpp \
+    src/forms/dialogbulkedit.cpp
 
 
 RESOURCES = src/images.qrc \
@@ -202,8 +220,8 @@ RESOURCES = src/images.qrc \
 
 # This is Windows only
 win32 {
-  VERSION = 3.5.0.1           # major.minor.patch.build
-  VERSION_PE_HEADER = 3.5     # MSVC link.exe option /VERSION:x.y expects two numeric components (major.minor)
+  VERSION = 3.6.0.1           # major.minor.patch.build
+  VERSION_PE_HEADER = 3.6     # MSVC link.exe option /VERSION:x.y expects two numeric components (major.minor)
 
   #RC_FILE = src/icon.rc
   RC_ICONS = src/images/socnetv.ico

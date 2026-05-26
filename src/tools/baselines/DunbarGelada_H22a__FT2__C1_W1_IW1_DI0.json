@@ -15,7 +15,7 @@
     },
     "load_report": {
         "fileType_signal": 2,
-        "load_ms": 1,
+        "load_ms": 0,
         "load_msg": "",
         "net_name": "Dunbar&Dunbar_Gelada_baboon_colony_H22a",
         "ok": true
@@ -23,6 +23,7 @@
     "metrics": {
         "avg_distance": "0.42027859123447353",
         "connected": true,
+        "density": "0.36363636363636365",
         "diameter": 1,
         "disconnected_pairs": 0
     },
@@ -31,35 +32,35 @@
             "BC": "23",
             "CC": "0.2512380902620982",
             "EC": "0.83333333333333337",
-            "PC": "56.855755672539502",
+            "PC": "56.855755672539495",
             "SBC": "0.41818181818181815",
             "SC": "0",
             "SCC": "0.092120633096102661",
             "SEC": "0.83333333333333337",
-            "SPC": "3.3444562160317353",
+            "SPC": "3.3444562160317348",
             "SSC": "nan",
             "distance_sum": "3.980288175876411",
             "eccentricity": "1.2",
             "eccentricity_inf": false,
             "id": 1,
-            "label": "Adult"
+            "label": "Adult Female"
         },
         {
             "BC": "0",
             "CC": "0.20452494736490326",
             "EC": "0.77464788732394363",
-            "PC": "44.591943775745001",
+            "PC": "44.591943775744994",
             "SBC": "0",
             "SC": "0",
             "SCC": "0.07499248070046452",
             "SEC": "0.77464788732394363",
-            "SPC": "2.623055516220294",
+            "SPC": "2.6230555162202935",
             "SSC": "nan",
             "distance_sum": "4.8893790849673202",
             "eccentricity": "1.290909090909091",
             "eccentricity_inf": false,
             "id": 2,
-            "label": "2"
+            "label": "2 years Male"
         },
         {
             "BC": "31.5",
@@ -76,24 +77,24 @@
             "eccentricity": "1",
             "eccentricity_inf": false,
             "id": 3,
-            "label": "Adult"
+            "label": "Adult Female"
         },
         {
             "BC": "33",
             "CC": "0.33415873177954203",
             "EC": "1",
-            "PC": "88.874529827533252",
+            "PC": "88.874529827533266",
             "SBC": "0.59999999999999998",
             "SC": "0",
             "SCC": "0.1225248683191654",
             "SEC": "1",
-            "SPC": "5.2279135192666617",
+            "SPC": "5.2279135192666626",
             "SSC": "nan",
             "distance_sum": "2.9925897631779987",
             "eccentricity": "1",
             "eccentricity_inf": false,
             "id": 4,
-            "label": "Adult"
+            "label": "Adult Female"
         },
         {
             "BC": "21",
@@ -110,7 +111,7 @@
             "eccentricity": "1.25",
             "eccentricity_inf": false,
             "id": 5,
-            "label": "Adult"
+            "label": "Adult Male"
         },
         {
             "BC": "0.5",
@@ -127,7 +128,7 @@
             "eccentricity": "1.3333333333333333",
             "eccentricity_inf": false,
             "id": 6,
-            "label": "3"
+            "label": "3 years Female"
         },
         {
             "BC": "4",
@@ -144,41 +145,41 @@
             "eccentricity": "1.3333333333333333",
             "eccentricity_inf": false,
             "id": 7,
-            "label": "3"
+            "label": "3 years Male"
         },
         {
             "BC": "12.5",
             "CC": "0.22053878593220508",
             "EC": "0.69230769230769229",
-            "PC": "56.571176817359806",
+            "PC": "56.571176817359813",
             "SBC": "0.22727272727272727",
             "SC": "0",
             "SCC": "0.080864221508475193",
             "SEC": "0.69230769230769229",
-            "SPC": "3.142843156519989",
+            "SPC": "3.1428431565199895",
             "SSC": "nan",
             "distance_sum": "4.5343498005262708",
             "eccentricity": "1.4444444444444444",
             "eccentricity_inf": false,
             "id": 8,
-            "label": "Adult"
+            "label": "Adult Female"
         },
         {
             "BC": "0",
             "CC": "0.10618322848479345",
             "EC": "0.51428571428571435",
-            "PC": "19.218835564759711",
+            "PC": "19.218835564759708",
             "SBC": "0",
             "SC": "0",
             "SCC": "0.03893385044442426",
             "SEC": "0.51428571428571435",
-            "SPC": "1.1305197391035124",
+            "SPC": "1.1305197391035122",
             "SSC": "nan",
             "distance_sum": "9.4176831338596045",
             "eccentricity": "1.9444444444444444",
             "eccentricity_inf": false,
             "id": 9,
-            "label": "1"
+            "label": "1 year Male"
         },
         {
             "BC": "0",
@@ -195,7 +196,7 @@
             "eccentricity": "1.125",
             "eccentricity_inf": false,
             "id": 10,
-            "label": "3"
+            "label": "3 years Female"
         },
         {
             "BC": "0",
@@ -212,7 +213,7 @@
             "eccentricity": "1.5",
             "eccentricity_inf": false,
             "id": 11,
-            "label": "2"
+            "label": "2 years Female"
         },
         {
             "BC": "0",
@@ -229,7 +230,7 @@
             "eccentricity": "1.3333333333333333",
             "eccentricity_inf": false,
             "id": 12,
-            "label": "1"
+            "label": "1 year Male"
         }
     ],
     "run": {

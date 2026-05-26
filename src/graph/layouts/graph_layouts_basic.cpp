@@ -311,6 +311,10 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
     {
         prestigeProximity(considerWeights, inverseWeights, dropIsolates);
     }
+    else if (prominenceIndex == IndexType::CLC)
+    {
+        clusteringCoefficient();
+    }
     else
     {
         graphDistancesGeodesic(true, considerWeights,
@@ -440,6 +444,13 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
             C = (*it)->PP();
             stdC = (*it)->SPP();
             maxC = maxPP;
+            break;
+        }
+        case IndexType::CLC:
+        {
+            C = (*it)->CLC();
+            stdC = (*it)->CLC();
+            maxC = 1;
             break;
         }
         };

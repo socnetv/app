@@ -81,6 +81,12 @@ bool Graph::edgeCreate(const int &v1,
                        const bool &signalMW,
                        const QHash<QString,QString> &edgeCustomAttributes)
 {
+    // #30: zero-weight edges are visual-only. When the user has disabled
+    // "Show zero-weight edges" in Settings, skip them entirely so no ghost
+    // edges appear and the data model stays clean.
+    if (weight == 0 && !initShowZeroWeightEdges)
+        return false;
+
     //
     // GUARD: Check if v1->v2 already exists.
     //
@@ -130,12 +136,12 @@ bool Graph::edgeCreate(const int &v1,
 
             // Store the reverse arc in the data model.
             edgeAdd(v2, v1, weight, EdgeType::Directed, label,
-                    ((weight == 0) ? "blue" : color));
+                    ((weight == 0) ? initEdgeColorZero : color));
 
             // Upgrade the existing forward arc visual to bidirectional.
             // Arguments are swapped (v2,v1) intentionally — see comment above.
             emit signalDrawEdge(v2, v1, weight, label,
-                                ((weight == 0) ? "blue" : color),
+                                ((weight == 0) ? initEdgeColorZero : color),
                                 EdgeType::Reciprocated,
                                 true, // force drawArrows for reciprocated
                                 bezier, initEdgeWeightNumbers);
@@ -168,10 +174,10 @@ bool Graph::edgeCreate(const int &v1,
         //          << "label" << label;
 
         edgeAdd(v1, v2, weight, type, label,
-                ((weight == 0) ? "blue" : color));
+                ((weight == 0) ? initEdgeColorZero : color));
 
         emit signalDrawEdge(v1, v2, weight, label,
-                            ((weight == 0) ? "blue" : color),
+                            ((weight == 0) ? initEdgeColorZero : color),
                             type,
                             drawArrows, bezier, initEdgeWeightNumbers);
     }
@@ -205,10 +211,10 @@ bool Graph::edgeCreate(const int &v1,
         //          << "label" << label;
 
         edgeAdd(v1, v2, weight, EdgeType::Directed, label,
-                ((weight == 0) ? "blue" : color));
+                ((weight == 0) ? initEdgeColorZero : color));
 
         emit signalDrawEdge(v1, v2, weight, label,
-                            ((weight == 0) ? "blue" : color),
+                            ((weight == 0) ? initEdgeColorZero : color),
                             EdgeType::Directed,
                             drawArrows, bezier, initEdgeWeightNumbers);
 
@@ -273,7 +279,7 @@ void Graph::edgeCreateWebCrawler(const int &source, const int &target)
  *
  * Weight handling:
  *   If weight != 1 and weight != 0, the graph is marked as weighted.
- *   Weight == 0 is treated as a special "null" edge (drawn in blue by convention).
+ *   Weight == 0 is treated as a visual-only "null" edge drawn in initEdgeColorZero (#30).
  *
  * @param v1     Source node number (external node number, not internal index)
  * @param v2     Target node number (external node number, not internal index)

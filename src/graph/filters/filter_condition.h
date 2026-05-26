@@ -30,6 +30,37 @@ struct FilterCondition
     Op      op    = Op::Eq;
     QString value;
 
+    /** Returns true if @p attrValue satisfies this condition. */
+    bool matches(const QString &attrValue) const
+    {
+        switch (op) {
+        case Op::Eq:       return attrValue == value;
+        case Op::Neq:      return attrValue != value;
+        case Op::Contains: return attrValue.contains(value, Qt::CaseInsensitive);
+        default: break;
+        }
+        bool okA = false, okB = false;
+        const double a = attrValue.toDouble(&okA);
+        const double b = value.toDouble(&okB);
+        if (okA && okB) {
+            switch (op) {
+            case Op::Gt:  return a >  b;
+            case Op::Lt:  return a <  b;
+            case Op::Gte: return a >= b;
+            case Op::Lte: return a <= b;
+            default: break;
+            }
+        }
+        switch (op) {
+        case Op::Gt:  return attrValue >  value;
+        case Op::Lt:  return attrValue <  value;
+        case Op::Gte: return attrValue >= value;
+        case Op::Lte: return attrValue <= value;
+        default: break;
+        }
+        return false;
+    }
+
     /** Short human-readable label for a filter bar chip. */
     QString label() const
     {

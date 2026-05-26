@@ -1,333 +1,164 @@
-# ARCHITECTURAL_REFACTORING_ROADMAP
+# ARCHITECTURAL REFACTORING ROADMAP
 
-This document defines the **current architectural direction and active workstreams** of SocNetV.
+This document describes the **architectural direction of SocNetV**: where we are, where we are going, and how we get there.
 
-Detailed execution plans live in:
+Detailed workstream execution plans live in:
 
 ```
-
 docs/roadmaps/
-
 ```
 
 ---
 
-# North Star
+# Where We Are
 
-Evolve SocNetV from a Graph-centric monolith:
-
-```
-
-UI → Graph → everything
+SocNetV has a layered, modular architecture:
 
 ```
-
-to a layered and extensible architecture:
-
-```
-
-UI
+UI (MainWindow + dialogs + graphics)
 ↓
 Graph (thin façade / coordinator)
 ↓
-Domain model + services
-├── algorithms
-├── IO
-├── matrices
-└── caches
-
+Algorithm slices / engines
+├── distances / centralities
+├── clustering / cohesion
+├── reachability / connectivity
+├── filters / subgraphs
+├── layouts / generators
+├── IO (Parser → IGraphParseSink → Graph)
+└── matrices
 ```
 
----
-
-# Current Architectural State
-
-SocNetV has reached a stable baseline:
-
-- Algorithms extracted into testable components (engines)
-- Graph acts as façade and coordinator
-- IO layer uses explicit mutation pipeline (Parser → Sink → Graph)
-- Deterministic regression harness (CLI + golden baselines) is in place
-- Parser is modularized by format
-
-This allows safe, incremental evolution without breaking behavior.
+The `Graph` object is a façade and state coordinator — not a monolith. Algorithm logic lives in dedicated slices under `src/graph/`. A headless CLI regression harness (7 kernels) guards against silent regressions.
 
 ---
 
-# Guiding Principles
+# Completed Workstreams
 
-Non-negotiables:
+| WS  | Name                              | Status         |
+|-----|-----------------------------------|----------------|
+| WS1 | Algorithm extraction              | ✔ complete     |
+| WS2 | Graph façade                      | ✔ complete     |
+| WS4 | IO / Parser modernization         | ✔ complete     |
+| WS9 | Graph exploration & data workflows| ✔ shipped v3.5/v3.6 |
 
-- Preserve functionality and numeric results
-- Preserve performance (no regressions)
-- Keep changes incremental: **build → run → compare**
-- Maintain deterministic behavior (CLI regression harness)
+Details: [`docs/roadmaps/roadmap_graph_exploration.md`](roadmaps/roadmap_graph_exploration.md)
 
-Engineering approach:
+---
 
-- Prefer vertical feature slices over large rewrites
-- Reuse existing functionality where possible
-- Avoid premature abstraction
-- Let real usage drive architectural refinement
+# Current Focus
+
+**WS3 — Domain Model Split, first execution: DistanceEngine parallelisation.**
+
+The immediate goal is to extract per-source SSSP scratch state from `Graph` and `GraphVertex`
+into a self-contained `PerSourceScratch` struct, then parallelize the source loop across all
+available CPU cores using `QtConcurrent`. This delivers the first concrete domain-model
+separation and a significant performance improvement for large networks.
+
+Bug fixes and issue triage continue in parallel on the same branch; all changes go through
+the WS6 regression harness.
 
 ---
 
 # Active Workstreams
 
----
+## WS3 — Domain Model Split ← **ACTIVE**
 
-## WS9 — Graph Exploration & Data Workflows (PRIMARY)
+Roadmap: [`docs/roadmaps/roadmap_domain_model_split.md`](roadmaps/roadmap_domain_model_split.md)
 
-Defined in:
-
-```
-
-docs/roadmaps/roadmap_graph_exploration.md
+Introduce a domain model independent of the Graph façade:
 
 ```
-
-### Goal
-
-Make SocNetV usable for **real-world large networks**.
-
-### Scope
-
-WS9 consolidates the following GitHub issue tracks:
-
-- **Visualization & Decluttering** → #209  
-  (selection, ego networks, edge filtering, layouts)
-
-- **Filtering & Subgraphs** → #215  
-  (structural filters, attribute filters, subgraph workflows, queries)
-
-- **Data Workflows** → #223  
-  (attribute editing, tables, import/export, transformations)
-
-Concrete sub-features are tracked in:
-
-- #210–#214 (visualization)
-- #216–#221 (filtering & querying)
-- #224–#229 (data workflows)
-
-WS9 acts as the **umbrella workstream** coordinating these efforts.
-
-
-### Architectural Impact
-
-Introduces a new conceptual layer:
-
-```
-
-Graph → Filter / Projection Layer → UI
-
-```
-
-Key properties:
-
-- non-destructive (visibility-based)
-- stateful (not dialog-driven)
-- reusable across UI components
-
-### Strategy
-
-- Build incrementally on existing dialogs and systems
-- Unify behavior over time (not via big rewrite)
-- Respect current single-window architecture
-- Prepare for future tab-based multi-graph UI
-
----
-
-## WS6 — Testing / CI / Regression (SUPPORTING)
-
-Defined in:
-
-```
-
-docs/roadmaps/roadmap_testing_ci_regression.md
-
-```
-
-### Goal
-
-Prevent silent regressions during ongoing development.
-
-### Responsibilities
-
-- Maintain golden baselines
-- Expand dataset coverage
-- Ensure deterministic CLI behavior
-- Support benchmarking
-
-### Role
-
-WS6 supports WS9 by ensuring all changes are:
-
-- verifiable
-- reproducible
-- safe to refactor
-
----
-
-## WS3 — Domain Model Split (MID-TERM)
-
-Defined in:
-
-```
-
-docs/roadmaps/roadmap_domain_model_split.md
-
-```
-
-### Goal
-
-Introduce a domain model independent of UI and Graph façade.
-
-Target separation:
-
-```
-
 model (nodes, edges, relations)
 vs
 algorithms / services / caches
-
 ```
 
-### Strategy
+**First execution:** extract per-source SSSP scratch from `Graph`/`GraphVertex` into
+`PerSourceScratch`; parallelise `DistanceEngine` source loop. Proceed incrementally;
+every phase is validated by the WS6 regression harness before the next begins.
 
-- Proceed incrementally
-- Use WS9 requirements to guide abstraction boundaries
-- Avoid blocking feature development
+---
+
+## WS6 — Testing / CI / Regression (SUPPORTING, ongoing)
+
+Roadmap: [`docs/roadmaps/roadmap_testing_ci_regression.md`](roadmaps/roadmap_testing_ci_regression.md)
+
+Expand golden baselines, dataset coverage, and benchmarking. Supports all other workstreams.
 
 ---
 
 ## WS7 — MainWindow Decomposition (LATER)
 
-### Goal
-
-Break down the MainWindow monolith into smaller UI components.
-
-### Strategy
-
-- Follow real UI evolution from WS9
-- Avoid premature modularization
-- No UX changes
+Break `MainWindow` into smaller, focused UI components. No UX changes — pure structural cleanup. Deferred until the UI stabilizes post-WS9.
 
 ---
 
 ## WS5 — Matrices Modernization
 
-Defined in:
+Roadmap: [`docs/roadmaps/roadmap_matrices_modernization.md`](roadmaps/roadmap_matrices_modernization.md)
 
-```
-
-docs/roadmaps/roadmap_matrices_modernization.md
-
-```
-
-### Goal
-
-Isolate and modernize matrix operations.
+Isolate and modernize matrix operations as a self-contained subsystem.
 
 ---
 
 ## WS8 — IO Layer Stabilization
 
-### Goal
+Simplify the parser/IO dispatch model:
 
-Refine and simplify the parser/IO architecture.
-
-Possible direction:
-
-- FormatHandler abstraction
-- cleaner dispatch model
+- `FormatHandler` abstraction
+- cleaner format registration
 - easier extensibility
 
 ---
 
-# Workstream Priorities
+# Priorities
 
-1. **WS9 — Graph Exploration & Data Workflows**
-2. **WS6 — Testing / CI / Regression**
-3. **WS3 — Domain Model Split**
-4. **WS7 — MainWindow Decomposition**
-5. **WS5 — Matrices**
-6. **WS8 — IO**
-
----
-
-# Workstream Relationships
-
-```
-
-WS9 (product evolution)
-↓ supported by
-WS6 (regression safety)
-
-WS3 (domain model)
-follows insights from WS9
-
-WS7 (UI decomposition)
-follows UI complexity from WS9
-
-WS5 / WS8
-independent infrastructure improvements
-
-```
+1. **WS3** — domain model split / DistanceEngine parallelisation ← **current**
+2. **WS6** — regression safety (ongoing support)
+3. **WS7** — MainWindow decomposition
+4. **WS5** — matrices (receives Phase 3 APSP migration from WS3)
+5. **WS8** — IO
 
 ---
 
 # Target Architecture (Long-Term)
 
 ```
-
 domain/
-├── model/
-├── algorithms/
+├── model/        ← nodes, edges, relations
+├── algorithms/   ← engines and slices
 ├── matrices/
 ├── io/
 └── services/
-
 ```
 
-Graph remains a façade coordinating these layers during transition.
+`Graph` remains a façade coordinating these layers during transition.
+
+---
+
+# Guiding Principles
+
+- Preserve functionality and numeric results
+- Preserve performance — no regressions
+- Keep changes incremental: **build → run → compare**
+- Prefer vertical slices over large rewrites
+- Let real usage drive abstraction boundaries
+- Avoid premature modularization
 
 ---
 
 # Contribution Workflow
 
-When contributing:
-
 1. Identify the relevant workstream
 2. Follow its roadmap in `docs/roadmaps/`
-3. Keep commits small and mechanical
-4. After each change:
+3. Keep commits small and focused
+4. After each structural change:
 
 ```
-
 build
 ./scripts/run_golden_compares.sh
 ./scripts/run_benchmarks.sh
-
 ```
 
-Golden baselines and performance must remain stable.
-
----
-
-# Summary
-
-SocNetV now evolves along two axes:
-
-### Product Evolution
-
-- Graph exploration
-- Filtering and querying
-- Structured data workflows
-
-### Architectural Evolution
-
-- Regression safety
-- Domain model separation
-- UI decomposition
-
-Development should prioritize **real user value (WS9)** while maintaining architectural integrity through incremental refactoring.
+Golden baselines and benchmarks must remain stable.

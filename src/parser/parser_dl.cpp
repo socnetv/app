@@ -308,7 +308,8 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                         "AND NODE CREATION";
             continue;
         }
-        else if (str.startsWith("COLUMN LABELS", Qt::CaseInsensitive))
+        else if (str.startsWith("COLUMN LABELS", Qt::CaseInsensitive) ||
+                 str.startsWith("COL LABELS",    Qt::CaseInsensitive))
         {
             colLabels_flag = true;
             rowLabels_flag = false;
@@ -413,24 +414,43 @@ bool Parser::parseAsDL(const QByteArray &rawData)
             // check if we haven't created any nodes...
             if (!nodesCreated_flag)
             {
-                // check if there were NR and NC declared (then this is two-mode)
+                // Fix #63 — detect two-mode (NR × NC affiliation matrix).
+                // UCINET two-mode files always load as a bipartite directed
+                // graph in SocNetV: directed edges run from each mode-1 row
+                // node to each mode-2 column node it is affiliated with.
+                // Projection (person-network / event-network) is not supported
+                // for the DL format and must be done as a post-load step.
                 qDebug() << "check if NR != 0 (two mode net).";
                 if (NR != 0 && NC != 0)
                 {
                     twoMode_flag = true;
-                    qDebug() << "this is a two-mode net.";
-                    // TODO: Check two-mode networks...
+                    totalNodes   = NR + NC;  // Fix #63-1: set correct total
+                    qDebug() << "Two-mode net: NR=" << NR << "NC=" << NC
+                             << "totalNodes=" << totalNodes;
                 }
 
-                // check if we have found row labels
+                // Create row (mode-1) nodes.
                 if (rowLabels.size() == 0)
                 {
-                    // no labels found
-                    qDebug() << "Nodes have not been created yet."
-                             << "No node labels found."
-                             << "Calling createRandomNodes(N) for all";
-                    createRandomNodes(1, QString(), totalNodes);
-                    nodeSum = totalNodes;
+                    if (!twoMode_flag)
+                    {
+                        // One-mode: create N nodes with auto-numbering.
+                        qDebug() << "No row labels. Creating" << totalNodes << "nodes.";
+                        createRandomNodes(1, QString(), totalNodes);
+                        nodeSum = totalNodes;
+                    }
+                    else
+                    {
+                        // Fix #63-2: two-mode, no labels — create NR row nodes
+                        // with explicit numbers 1..NR so col nodes can follow
+                        // at NR+1..NR+NC without overlap.
+                        qDebug() << "Two-mode, no row labels. Creating" << NR << "row nodes.";
+                        for (int i = 1; i <= NR; ++i)
+                        {
+                            nodeSum++;
+                            createRandomNodes(nodeSum, QString(), 1);
+                        }
+                    }
                 }
                 else if (rowLabels.size() == 1)
                 {
@@ -464,14 +484,18 @@ bool Parser::parseAsDL(const QByteArray &rawData)
 
                 if (twoMode_flag)
                 {
-                    // check if we have found col labels
+                    // Create col (mode-2) nodes numbered NR+1..NR+NC.
                     if (colLabels.size() == 0)
                     {
-                        // no  col labels found
-                        qDebug() << "Nodes have not been created yet."
-                                 << "No node labels found."
-                                 << "Calling createRandomNodes(NC) for all columns";
-                        createRandomNodes(totalNodes, QString(), NC);
+                        // Fix #63-2: no col labels — loop with explicit numbers
+                        // so nodes land at NR+1..NR+NC (nodeSum is NR here).
+                        qDebug() << "Two-mode, no col labels. Creating" << NC
+                                 << "col nodes starting at" << (nodeSum + 1);
+                        for (int j = 0; j < NC; ++j)
+                        {
+                            nodeSum++;
+                            createRandomNodes(nodeSum, QString(), 1);
+                        }
                     }
                     else if (colLabels.size() == 1)
                     {

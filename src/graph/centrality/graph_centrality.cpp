@@ -760,6 +760,8 @@ bool Graph::isCentralityIndexComputed(const IndexType index) const
         return calculatedPRP;
     case IndexType::PP:
         return calculatedPP;
+    case IndexType::CLC:
+        return !m_graph.isEmpty() && m_graph.first()->hasCLC();
     default:
         return false;
     }

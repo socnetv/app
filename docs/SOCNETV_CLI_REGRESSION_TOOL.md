@@ -1,10 +1,10 @@
 # SocNetV CLI Regression Tool
 
-`socnetv-cli` is a headless regression tool used to verify algorithmic correctness during the ongoing architectural refactor of SocNetV.
+`socnetv-cli` is a headless regression tool for verifying algorithmic correctness during development and refactoring of SocNetV.
 
-It provides deterministic execution of compute kernels without loading any UI components.
+It provides deterministic execution of compute kernels without loading any UI components, and is the backbone of the WS6 regression harness.
 
-Originally introduced to protect the code refactor we did during WorkStreams WS1 and WS2 [WorkStreams WS1 and WS2](../../docs/ARCHITECTURAL_REFACTORING_ROADMAP.md). It has since evolved into a modular regression harness for multiple algorithm families.
+See also: [`ARCHITECTURAL_REFACTORING_ROADMAP.md`](ARCHITECTURAL_REFACTORING_ROADMAP.md)
 
 ---
 
@@ -42,7 +42,7 @@ The CLI is modular.
 * `cli/kernels/kernel_prominence_v4.cpp`
 * `cli/kernels/kernel_io_roundtrip_v5.cpp`
 * `cli/kernels/kernel_clustering_v6.cpp`
-
+* `cli/kernels/kernel_connectivity_v7.cpp`
 
 Each kernel owns:
 
@@ -77,7 +77,7 @@ The tool is built as:
 socnetv-cli
 ```
 
-It is compiled alongside the main application via CMake.
+It is compiled alongside the main application via CMake (`BUILD_CLI=ON`).
 
 ---
 
@@ -217,7 +217,7 @@ Workflow:
 
 Export support:
 * Some file formats do not export yet (e.g. GRAPHVIZ, GML, EDGELIST_*).  
-  For those formats, the kernel reports a stable “skipped export” outcome and still emits v5 JSON.
+  For those formats, the kernel reports a stable "skipped export" outcome and still emits v5 JSON.
 
 Key output fields (v5):
 * `KERNEL_DESC` — describes the kernel contract
@@ -270,6 +270,47 @@ Notes:
 
 ---
 
+## Connectivity Kernel
+
+* Kernel: `connectivity`
+* JSON schema: `schema_version = 7`
+
+Protects:
+
+* weakly connected component count
+* per-node component ID assignment
+* connected/disconnected determination
+
+Connectivity semantics:
+
+| Graph type | Method | Connected when |
+|------------|--------|----------------|
+| Undirected | standard BFS | 1 component |
+| Directed   | BFS treating all arcs as undirected (weak connectivity) | 1 weak component |
+
+Weak connectivity is the appropriate structural question for both graph types: "how many disconnected islands exist?" For directed graphs it ignores arc direction, which is intentional — strong connectivity (all-pairs directed reachability) is computed separately by the SSSP engine.
+
+Output fields:
+
+* `connectivity.component_count` — number of components
+* `connectivity.connected` — true if component_count == 1
+* `connectivity.type` — `"connected"` (undirected) or `"weak"` (directed)
+* `per_node[].component_id` — 1-based component assignment per vertex
+
+Characteristics:
+
+* deterministic vertex ordering
+* topology-only (no weights, no centralities)
+* no UI involvement
+
+Notes:
+
+* `-c`, `-w`, `-x`, `-k` are not applicable
+* `--bench` not supported
+* Component IDs are 1-based and assigned in BFS discovery order
+
+---
+
 # Basic Usage
 
 ## Available Parameters
@@ -294,9 +335,9 @@ Examples:
 
 #### `-f <id>` / `--format <id>`
 
-Input file type **ID** (must match SocNetV’s internal file-type enum).
+Input file type **ID** (must match SocNetV's internal file-type enum).
 
-Common file types (from `global.h` as referenced in this doc):
+Common file types (from `global.h`):
 
 * `1` → GRAPHML
 * `2` → PAJEK (.paj / .net)
@@ -329,6 +370,7 @@ Supported kernels:
 * `prominence` — schema v4
 * `io_roundtrip` — schema v5
 * `clustering` — schema v6
+* `connectivity` — schema v7
 
 Examples:
 
@@ -339,6 +381,7 @@ Examples:
 --kernel prominence
 --kernel io_roundtrip
 --kernel clustering
+--kernel connectivity
 ```
 
 If omitted:
@@ -386,7 +429,7 @@ Notes:
 
 Controls how weights are interpreted when `-w 1` is enabled.
 
-* `1` = treat weight as “strength” and use inverse weight as distance cost (common in SNA)
+* `1` = treat weight as "strength" and use inverse weight as distance cost (common in SNA)
 * `0` = treat weight directly as distance cost
 
 Notes:
@@ -434,7 +477,7 @@ Example:
 
 ### Output modes
 
-`socnetv-cli` runs in **one** of the following “modes”:
+`socnetv-cli` runs in **one** of the following "modes":
 
 1. normal run (prints metrics to stdout)
 2. dump deterministic JSON (`--dump-json`)
@@ -443,7 +486,7 @@ Example:
 
 #### `--dump-json <path>`
 
-Writes the kernel’s deterministic JSON output to `<path>`.
+Writes the kernel's deterministic JSON output to `<path>`.
 
 * Intended to generate new golden baselines.
 * Output is schema-versioned and stable.
@@ -569,9 +612,7 @@ Allowed:
 
 Notes:
 
-* Some formats will “skip export” deterministically; that is expected and baseline-stable.
-
----
+* Some formats will "skip export" deterministically; that is expected and baseline-stable.
 
 ### `--kernel clustering` (schema v6)
 
@@ -589,6 +630,24 @@ Notes:
 
 * v6 verifies clustering coefficient outputs, triad census, and maximal clique counts by size.
 
+### `--kernel connectivity` (schema v7)
+
+Allowed:
+
+* `--dump-json`, `--compare-json`
+
+Not applicable:
+
+* `-c`, `-w`, `-x`, `-k` — connectivity is topology-only; these flags have no effect and should be omitted
+* `--bench` not supported
+
+Notes:
+
+* v7 identifies weakly connected components via BFS.
+* For directed graphs, arcs are treated as undirected during traversal.
+* Component IDs are 1-based and assigned in BFS discovery order.
+
+---
 
 ## Baseline naming convention (recommended)
 
@@ -597,8 +656,10 @@ When you dump JSON, bake the run flags into the filename (as already used in thi
 * Distance v1: `__C{0|1}_W{0|1}_IW{0|1}_DI{0|1}`
 * Prominence v4: `__W{0|1}_IW{0|1}_DI{0|1}`
 * Reachability v2 / Walks v3 / IO v5: include kernel + schema label and any required parameters (e.g. `__WALKS_K6__V3`, `__FT2__...`, etc.)
+* Clustering v6: `__CLUST__V6__FT{n}__W{0|1}_IW{0|1}_DI{0|1}`
+* Connectivity v7: `__CONN__V7__FT{n}` (no flag suffixes — topology-only)
 
-This keeps baselines self-describing and prevents “wrong flags, right file” mistakes.
+This keeps baselines self-describing and prevents "wrong flags, right file" mistakes.
 
 ---
 
@@ -716,9 +777,37 @@ DI0 = dropIsolates=0
 
 Baseline directory:
 
+```
 src/tools/baselines/clustering/
+```
 
+---
 
+## Connectivity (schema v7)
+
+```bash
+./socnetv-cli \
+  --kernel connectivity \
+  -i src/data/TinyDisconnected_Undir_N6_E4.paj \
+  -f 2 \
+  --dump-json src/tools/baselines/connectivity/TinyDisconnected_Undir_N6_E4__CONN__V7__FT2.json
+```
+
+Flag encoding:
+
+```
+CONN = connectivity kernel
+V7   = schema version 7
+FT2  = file type = 2 (Pajek)
+```
+
+No weight or centrality flags — connectivity is topology-only.
+
+Baseline directory:
+
+```
+src/tools/baselines/connectivity/
+```
 
 ---
 
@@ -880,6 +969,25 @@ Cliques:
 * max_clique_size
 * total_cliques
 
+---
+
+## Connectivity Kernel (v7)
+
+Graph-level:
+
+* component_count — number of weakly connected components
+* connected — true if component_count == 1
+* type — `"connected"` (undirected) or `"weak"` (directed)
+
+Per-node:
+
+* component_id — 1-based integer, BFS discovery order
+
+Semantics:
+
+* For undirected graphs: standard BFS component labeling.
+* For directed graphs: BFS traverses both out-edges and in-edges simultaneously (treats arcs as undirected). This answers the structural question "how many disconnected islands exist?" independent of arc direction.
+* Strong connectivity (directed-only) is not covered here — it is computed by the SSSP engine.
 
 ---
 
@@ -927,7 +1035,9 @@ Validates:
 * Reachability (v2)
 * Walks (v3)
 * Prominence (v4)
+* IO Roundtrip (v5)
 * Clustering (v6)
+* Connectivity (v7)
 
 Fails on any mismatch.
 
@@ -983,14 +1093,13 @@ Clustering baselines:
 src/tools/baselines/clustering/
 ```
 
-
-See:
-
-[BASELINES__README.md](./baselines/BASELINES__README.md)
+Connectivity baselines:
 
 ```
-
+src/tools/baselines/connectivity/
 ```
+
+See: [`src/tools/baselines/BASELINES__README.md`](../src/tools/baselines/BASELINES__README.md)
 
 ---
 
@@ -1005,4 +1114,3 @@ Rules:
 * Baselines are updated only for deliberate semantic fixes
 
 The CLI is the architectural safety harness of SocNetV.
-

@@ -26,6 +26,7 @@
 #include <QMainWindow>
 #include <QPrinter>
 #include <QMessageBox>
+#include <QScrollArea>
 #include <QStack>
 #include <QThread>
 #include <QNetworkReply>
@@ -34,6 +35,7 @@
 #include <QtCharts/QChartGlobal>
 
 #include "global.h"
+#include "graph/filters/filter_condition.h"
 
 QT_BEGIN_NAMESPACE
 class QGraphicsScene;
@@ -83,8 +85,10 @@ class DialogExportImage;
 class DialogNodeFind;
 class DialogNodeEdit;
 class DialogEdgeEdit;
+class DialogBulkEdit;
 class DialogFilterNodesByCentrality;
 class DialogFilterEdgesByWeight;
+class DialogQueryBuilder;
 class DialogEdgeDichotomization;
 class DialogSettings;
 class DialogSystemInfo;
@@ -202,6 +206,7 @@ public slots:
                               const QPageSize &pageSize);
     void slotNetworkExportPajek();
     void slotNetworkExportSM();
+    void slotNetworkExportDot();
     bool slotNetworkExportDL();
     bool slotNetworkExportGW();
     bool slotNetworkExportList();
@@ -305,6 +310,10 @@ public slots:
     void slotEditNodeRemove();
     void slotEditNodeOpenContextMenu();
     void slotEditNodePropertiesDialog();
+    void slotCacheSelection(const QList<int> &nodes, const QList<SelectedEdge> &edges);
+    void slotEditNodeEditSelectionInTable();
+    void slotEditNodeSetPropertyForSelection();
+    void slotEditEdgeSetPropertyForSelection();
     void slotEditNodeProperties( const QString &label,
                                  const int &size,
                                  const QColor &color,
@@ -337,7 +346,9 @@ public slots:
                              const qreal &weight=1);
     void slotEditEdgeRemove();
     void slotEditEdgePropertiesDialog();
-    void slotEditEdgeProperties(const QString &label,
+    void slotEditEdgeProperties(const int &v1,
+                                const int &v2,
+                                const QString &label,
                                 const double &weight,
                                 const QColor &color,
                                 const QHash<QString,QString> &customAttributes);
@@ -347,6 +358,7 @@ public slots:
     void slotEditEdgeColorAll(QColor color=QColor(), const int threshold=RAND_MAX);
 
     void slotEditEdgeMode(const int &mode);
+    void slotEditGraphDirectedChanged(const bool &directed);
     void slotEditEdgeSymmetrizeAll();
     void slotEditEdgeSymmetrizeStrongTies();
     void slotEditEdgeSymmetrizeCocitation();
@@ -360,11 +372,15 @@ public slots:
     void slotFilterNodesByEgoNetwork();
     void slotFilterNodesBySelection();
     void slotFilterNodesByAttribute();
+    void slotFilterByQueryBuilder();
     void slotFilterNodesRestoreAll();
     void slotEditFilterEdgesByWeightDialog();
     void slotEditFilterEdgesReset();
     void slotEditFilterEdgesUnilateral(bool checked);
 
+    void slotEditSubgraphExtract();
+    void slotEditSubgraphExtractFromSelection();
+    void saveSubgraphToFile(Graph *sub, const QString &subgraphName);
 
     void slotEditTransformNodes2Edges();
 
@@ -385,6 +401,7 @@ public slots:
 
     void slotLayoutNodeColorByProminenceIndex();
     void slotLayoutNodeColorByProminenceIndex(QString prominenceIndexName);
+    void slotLayoutNodeColorByComponent();
 
     void slotLayoutSpringEmbedder();
     void slotLayoutFruchterman();
@@ -486,8 +503,10 @@ public slots:
     void slotOptionsEdgeThicknessPerWeight(bool toggle);
     void slotOptionsEdgesBezier(bool toggle);
     void slotOptionsEdgeArrowsVisibility(bool toggle);
+    void slotOptionsEdgeArrowSize(const int &size);
 
     void slotOptionsSaveZeroWeightEdges(bool toggle);
+    void slotOptionsShowZeroWeightEdges(bool toggle);  // #30
 
     void slotOptionsEmbedLogoExporting(bool toggle);
     void slotOptionsProgressDialogVisibility(bool toggle);
@@ -619,6 +638,8 @@ private:
     DialogEdgeDichotomization *m_edgeDichotomizationDialog;
     DialogFilterEdgesByWeight *m_DialogEdgeFilterByWeight;
     FilterBarWidget  *m_filterBar;
+    // All snapshot-backed filter chips in bar/stack order (barIndex == stackIndex invariant).
+    QList<QPair<QString, FilterCondition::Scope>> m_filterChips;
     QDockWidget      *m_tableDock;
     GraphTableWidget *m_tableWidget;
     DialogRandErdosRenyi *m_randErdosRenyiDialog;
@@ -637,6 +658,7 @@ private:
     QToolBar *toolBar;
 
     QGroupBox *leftPanel, *rightPanel ;
+    QScrollArea *m_leftScrollArea;
 
     QComboBox *editRelationChangeCombo;
 
@@ -645,7 +667,7 @@ private:
     QMenu *editNodeMenu, *editEdgeMenu, *centrlMenu,  *viewOptionsMenu, *layoutMenu;
     QMenu *cohesionMenu, *strEquivalenceMenu, *communitiesMenu, *connectivityMenu;
     QMenu *matrixMenu;
-    QMenu *networkMenu, *randomNetworkMenu, *filterMenu, *recentFilesSubMenu;
+    QMenu *networkMenu, *randomNetworkMenu, *filterMenu, *subgraphMenu, *recentFilesSubMenu;
     QMenu *randomLayoutMenu, *layoutRadialProminenceMenu, *layoutLevelProminenceMenu;
     QMenu *layoutForceDirectedMenu, *layoutNodeSizeProminenceMenu, *layoutNodeColorProminenceMenu;
     QMenu *colorationMenu;
@@ -659,7 +681,6 @@ private:
     QComboBox *toolBoxLayoutByIndexSelect, *toolBoxLayoutByIndexTypeSelect;
     QComboBox *toolBoxLayoutForceDirectedSelect;
 
-    QPushButton *toolBoxLayoutByIndexApplyButton, *toolBoxLayoutForceDirectedApplyButton;
 
     QAction *zoomInAct,*zoomOutAct,*editRotateRightAct,*editRotateLeftAct, *editResetSlidersAct ;
     QToolButton *zoomInBtn,*zoomOutBtn,*rotateLeftBtn,*rotateRightBtn, *resetSlidersBtn ;
@@ -670,7 +691,7 @@ private:
     *networkCloseAct, *networkPrintAct,*networkQuitAct;
     QAction *networkExportImageAct, *networkExportPajek,
     *networkExportPDFAct, *networkExportDLAct, *networkExportGWAct, *networkExportSMAct,
-    *networkExportListAct;
+    *networkExportListAct, *networkExportDotAct;
     QAction *networkExportNodesCSVAct, *networkExportEdgesCSVAct,
     *networkExportNodesJSONAct, *networkExportEdgesJSONAct;
     QAction *networkImportPajekAct, *networkImportGMLAct, *networkImportAdjAct, *networkImportListAct,
@@ -693,15 +714,20 @@ private:
     QAction *editNodeSelectedToLineAct, *editNodeSelectedToCliqueAct;
     QAction *editNodeFindAct,*editNodeAddAct, *editNodeRemoveAct;
     QAction *editNodePropertiesAct;
+    QAction *editNodeEditSelectionInTableAct;
+    QAction *editNodeSetPropertyForSelectionAct;
+    QAction *editEdgeSetPropertyForSelectionAct;
     QAction *editEdgeAddAct, *editEdgeRemoveAct, *editEdgePropertiesAct;
     QAction *editNodeNumbersSizeAct, *editNodeLabelsSizeAct;
     QAction *editNodeSizeAllAct, *editNodeShapeAll;
     QAction *editEdgeLabelAct, *editEdgeColorAct, *editEdgeWeightAct;
     QAction *filterNodesByCentralityAct,  *filterNodesByEgoNetworkAct,
         *filterNodesBySelectionAct, *filterNodesByAttributeAct,
+        *filterByQueryBuilderAct,
         *filterNodesRestoreAllAct, *editFilterNodesIsolatesAct,
         *editFilterEdgesByWeightAct, *editFilterEdgesRestoreAllAct;
     QAction *editFilterEdgesUnilateralAct;
+    QAction *editSubgraphExtractAct, *editSubgraphExtractFromSelectionAct;
     QAction *transformNodes2EdgesAct, *editEdgeSymmetrizeAllAct;
     QAction *editEdgeSymmetrizeStrongTiesAct, *editEdgeUndirectedAllAct;
     QAction *editEdgeDichotomizeAct;
@@ -757,7 +783,9 @@ private:
     *layoutNodeColorProminence_CC_Act, *layoutNodeColorProminence_SC_Act, *layoutNodeColorProminence_EC_Act,
     *layoutNodeColorProminence_PC_Act, *layoutNodeColorProminence_BC_Act, *layoutNodeColorProminence_IC_Act,
     *layoutNodeColorProminence_EVC_Act,
-    *layoutNodeColorProminence_IRCC_Act,*layoutNodeColorProminence_PRP_Act, *layoutNodeColorProminence_PP_Act;
+    *layoutNodeColorProminence_IRCC_Act,*layoutNodeColorProminence_PRP_Act, *layoutNodeColorProminence_PP_Act,
+    *layoutNodeColorProminence_CLC_Act;
+    QAction *layoutNodeColorByComponentAct;
 
     QAction *strongColorationAct, *regularColorationAct;
     QAction *layoutFDP_Eades_Act, *layoutFDP_FR_Act;
@@ -769,20 +797,19 @@ private:
 
     QLabel *rightPanelNetworkTypeLCD ;
     QLabel *rightPanelEdgesLabel;
-
-    QLabel *rightPanelClickedNodeHeaderLabel;
     QLabel *rightPanelNodesLCD;
     QLabel *rightPanelEdgesLCD;
     QLabel *rightPanelDensityLCD;
-
-    QLabel *rightPanelClickedNodeLCD;
-    QLabel *rightPanelClickedNodeInDegreeLCD;
-    QLabel *rightPanelClickedNodeOutDegreeLCD;
 
     QLabel *rightPanelSelectedNodesLCD;
     QLabel *rightPanelSelectedEdgesLCD;
     QLabel *rightPanelSelectedEdgesLabel;
 
+    QLabel *rightPanelClickedNodeLCD;
+    QLabel *rightPanelClickedNodeInDegreeLabel;
+    QLabel *rightPanelClickedNodeInDegreeLCD;
+    QLabel *rightPanelClickedNodeOutDegreeLabel;
+    QLabel *rightPanelClickedNodeOutDegreeLCD;
 
     QLabel *rightPanelClickedEdgeNameLabel;
     QLabel *rightPanelClickedEdgeNameLCD;
@@ -790,6 +817,17 @@ private:
     QLabel *rightPanelClickedEdgeWeightLCD;
     QLabel *rightPanelClickedEdgeReciprocalWeightLabel;
     QLabel *rightPanelClickedEdgeReciprocalWeightLCD;
+
+    QPushButton *m_networkToggleBtn;
+    QPushButton *m_selectionToggleBtn;
+    QPushButton *m_clickedNodeToggleBtn;
+    QPushButton *m_clickedEdgeToggleBtn;
+    QPushButton *m_chartToggleBtn;
+
+    QWidget *m_networkSection;
+    QWidget *m_selectionSection;
+    QWidget *m_clickedNodeSection;
+    QWidget *m_clickedEdgeSection;
 
 
 

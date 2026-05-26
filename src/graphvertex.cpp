@@ -785,7 +785,10 @@ int GraphVertex::outEdgesCount()
         if (relation == m_curRelation)
         {
             const bool edgeStatus = it1.value().second.second;
-            if (edgeStatus)
+            // Fix #30: zero-weight edges are stored but must not count as
+            // structural edges (density, reachability, etc. would be wrong).
+            const qreal edgeWeight = it1.value().second.first;
+            if (edgeStatus && edgeWeight != 0)
             {
                 m_outEdgesCounter++;
             }
@@ -1320,51 +1323,6 @@ qreal GraphVertex::eccentricity() {
 }
 
 /**
- * @brief Stores the pair dependency of the vertex
- * @param c
- */
-void GraphVertex::setDelta (const qreal &c){
-    m_delta=c;
-}
-
-/**
- * @brief Returns the stored pair dependency of the vertex
- * @return
- */
-qreal GraphVertex::delta() {
-    return m_delta;
-}
-
-
-
-/**
- * @brief Clears the list of predecessors of this vertex
- */
-void GraphVertex::clearPs()	{  
-	myPs.clear();
-}
-	
-/**
- * @brief Appends a vertex to the list of predecessors of this vertex
- * @param vertex
- */
-void GraphVertex::appendToPs(const int &vertex ) {
-//    qDebug()<<"vertex"<< number()<< "appending vertex" <<  vertex << "to myPs";
-	myPs.append(vertex); 
-}
-
-
-/**
- * @brief Returns the list of predecessors of this vertex
- * @return
- */
-L_int GraphVertex::Ps(void) {
-	 return myPs;
-}
-
-
-
-/**
  * @brief  Returns the number of cliques sized size this vertex belongs to
  *
  * @param size
@@ -1403,8 +1361,6 @@ GraphVertex::~GraphVertex() {
     m_outEdgeLabels.squeeze();
 
     m_outEdgeCustomAttributes.clear();
-
-    clearPs();
 
     m_shortestPaths.clear();
     m_shortestPaths.squeeze();

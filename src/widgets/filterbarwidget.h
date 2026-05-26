@@ -25,9 +25,11 @@ class QToolButton;
  * @brief Thin strip between toolbar and canvas showing one chip per active filter.
  *
  * Hidden when no filters are active. Each chip carries a label and a × button.
- * Clicking × removes the chip and emits chipCloseRequested() so MainWindow can
- * pop the corresponding snapshot. "Clear all" emits clearAllRequested() and lets
- * MainWindow drain the stack before calling clearAllChips().
+ * Clicking × emits chipCloseRequested(barIndex, scope) BEFORE any chip is removed.
+ * The receiver (MainWindow) orchestrates graph state restoration, then calls
+ * removeChipAt() or rebuilds the bar via clearAllChips() + addChip().
+ * "Clear all" emits clearAllRequested(); MainWindow drains the stack, then calls
+ * clearAllChips().
  *
  * Menu-driven restores (Restore All Nodes / Restore All Edges) must call
  * removeLatestChipForScope() / removeAllChipsForScope() so the bar stays in sync.
@@ -41,13 +43,20 @@ public:
     void addChip(const QString &label, FilterCondition::Scope scope);
     void removeLatestChipForScope(FilterCondition::Scope scope);
     void removeAllChipsForScope(FilterCondition::Scope scope);
+    void removeChipAt(int barIndex);
+    FilterCondition::Scope chipScopeAt(int barIndex) const;
 
 public slots:
     void clearAllChips();
 
 signals:
-    /** Emitted after the chip has already been removed from the bar. */
-    void chipCloseRequested(FilterCondition::Scope scope);
+    /**
+     * Emitted when the user clicks × on a chip, BEFORE the chip is removed.
+     * @p barIndex is the chip's position (0 = leftmost) at the time of the click.
+     * The bar does NOT remove the chip automatically; the receiver must call
+     * removeChipAt(), clearAllChips(), or rebuild the bar as appropriate.
+     */
+    void chipCloseRequested(int barIndex, FilterCondition::Scope scope);
     /** Emitted when the user clicks "Clear all". */
     void clearAllRequested();
 

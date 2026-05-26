@@ -1,0 +1,62 @@
+{
+    "connectivity": {
+        "component_count": 3,
+        "connected": false,
+        "type": "connected"
+    },
+    "counts": {
+        "links_sna": 6,
+        "nodes": 6,
+        "ties_graph": 3
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "TinyDisconnected_Undir_N6_E4.paj",
+        "path": "/home/dimitris/socnetv/app/src/data/TinyDisconnected_Undir_N6_E4.paj"
+    },
+    "graph": {
+        "directed": false,
+        "weighted": false
+    },
+    "kernel": "connectivity",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 0,
+        "load_msg": "",
+        "net_name": "TinyDisconnected_Undir_N6_E4.paj",
+        "ok": true
+    },
+    "per_node": [
+        {
+            "component_id": 1,
+            "id": 1,
+            "label": "A"
+        },
+        {
+            "component_id": 1,
+            "id": 2,
+            "label": "B"
+        },
+        {
+            "component_id": 1,
+            "id": 3,
+            "label": "C"
+        },
+        {
+            "component_id": 2,
+            "id": 4,
+            "label": "D"
+        },
+        {
+            "component_id": 2,
+            "id": 5,
+            "label": "E"
+        },
+        {
+            "component_id": 3,
+            "id": 6,
+            "label": "F"
+        }
+    ],
+    "schema_version": 7
+}

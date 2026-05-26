@@ -13,6 +13,7 @@
 #include "dialogfilterbyattribute.h"
 #include "ui_dialogfilterbyattribute.h"
 
+#include <QPushButton>
 #include <QSet>
 
 DialogFilterByAttribute::DialogFilterByAttribute(const QStringList &nodeKeys,
@@ -32,6 +33,11 @@ DialogFilterByAttribute::DialogFilterByAttribute(const QStringList &nodeKeys,
     connect(ui->bothRadio,  &QRadioButton::toggled, this, &DialogFilterByAttribute::onScopeChanged);
 
     connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &DialogFilterByAttribute::getUserChoices);
+
+    connect(ui->queryBuilderBtn, &QPushButton::clicked, this, [this]() {
+        m_qbRequested = true;
+        reject();
+    });
 
     ui->valueEdit->setFocus();
 }

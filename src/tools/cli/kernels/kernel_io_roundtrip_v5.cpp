@@ -359,7 +359,10 @@ namespace cli
 
             QJsonObject graph;
             graph["directed"] = g.isDirected();
-            graph["weighted"] = g.isWeighted();
+            // Use isAnyRelationWeighted() rather than isWeighted() so a multi-relation
+            // graph is reported as weighted if at least one relation has non-unit weights,
+            // regardless of which relation is currently active.
+            graph["weighted"] = g.isAnyRelationWeighted();
             graph["relations"] = g.relations();
             root["graph"] = graph;
 

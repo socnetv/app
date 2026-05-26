@@ -2,7 +2,354 @@
 
 All notable changes to this project are documented in this file. 
 
-## [3.5] – May 2026
+## [3.6] – May 26, 2026
+
+### New Features
+
+  - **UCINET DL export** (#237):
+    - New **Network → Export → DL…** action writes the current graph to a
+      UCINET DL file in `FULLMATRIX DIAGONAL PRESENT` format.
+    - Multi-relation graphs are fully supported: all relations are written as
+      consecutive matrices in the `DATA:` section under a single `NM=k`
+      header (no file-level separator needed — the parser already advances
+      its relation counter when the source row counter exceeds N).
+    - Node labels are exported in `ROW LABELS` / `COLUMN LABELS` sections,
+      enabling label-preserving roundtrip.
+    - `FileType::UCINET` added to `m_graphFileFormatExportSupported`; the
+      CLI io_roundtrip kernel now exercises the format automatically.  Two
+      existing baselines (`Bernard_Killworth_Fraternity__FT5`,
+      `StokmanZiegler_Netherlands__FT5`) updated from `performed: false` to
+      `performed: true, equivalent: true`.
+
+  - **Edge List export — weighted and simple** (#238):
+    - New **Network → Export → List…** action writes the active relation as a
+      space-separated edge list file.
+    - When the graph is weighted the user is asked whether to include weights:
+      **Yes** → `source target weight` per line (`.wlst`),
+      **No** → `source target` per line (`.lst`).
+    - Node labels are used as identifiers; spaces in labels are replaced with
+      underscores to keep the delimiter unambiguous.
+    - A warning is shown when multiple relations are present (only the active
+      relation is written).
+    - Both `FileType::EDGELIST_WEIGHTED` and `FileType::EDGELIST_SIMPLE`
+      added to the supported export list; three Tiny edge-list io_roundtrip
+      baselines show `performed: true, equivalent: true`.
+
+  - **GraphViz DOT export with full roundtrip** (#236):
+    - New **File → Export → GraphViz DOT…** action writes a `.dot` file for
+      the active relation (DOT has no native multi-relation concept; a warning
+      is shown when more than one relation is present).
+    - Export preserves: node label, color, shape, canvas coordinates
+      (`pos="x,y"` — compatible with neato/fdp), and all custom node/edge
+      attributes as DOT key=value pairs.
+    - Edge weight, label, color, and custom attributes are written per edge.
+      Undirected graphs suppress the reverse half of each symmetric pair.
+    - Parser extended to read back everything that is written:
+      `readDotProperties` now returns unknown attributes as a
+      `QHash<QString,QString>` rather than discarding them; `pos=` is
+      converted to node canvas coordinates; graph name quote-stripping fixes
+      the roundtrip for quoted identifiers (`digraph "Name" { … }`).
+    - `FileType::GRAPHVIZ` added to the supported export list so the CLI
+      io_roundtrip regression kernel exercises the format automatically.
+
+  - **Subgraph save format expansion** (#220):
+    - The **Save Subgraph As…** dialog (reached via **Edit → Subgraphs →
+      Save visible / Save selected**) now offers all seven supported export
+      formats: **GraphML**, **Pajek**, **Adjacency**, **GraphViz DOT**,
+      **UCINET DL**, **Weighted Edge List**, and **Simple Edge List**.
+    - Format-aware fidelity warnings fire automatically before writing:
+      - Custom node/edge attributes: a confirmation prompt is shown for any
+        format that cannot preserve them (all formats except GraphML and DOT).
+      - Single-relation-only formats (Adjacency, DOT, both Edge List variants)
+        show an info notice when the subgraph has more than one relation.
+    - Previously the dialog only offered GraphML, Pajek, and Adjacency.
+
+  - **Subgraph extraction** (#218):
+    - New **Edit → Subgraphs** submenu with two actions:
+      - **Save visible nodes as subgraph…** — extracts all nodes currently
+        visible on the canvas (i.e. not hidden by any filter) and the edges
+        that run between them into an independent graph file. Always enabled
+        when a network is loaded.
+      - **Save selected nodes as subgraph…** — extracts the currently selected
+        nodes and their inter-edges. Enabled when at least one node is selected.
+    - Both actions prompt for a network name, pre-fill the save dialog filename
+      from that name, and save to GraphML (which preserves all custom attributes
+      and relations).
+    - Vertices are renumbered from 1 in the extracted graph; all visual
+      properties, custom node/edge attributes, and multi-relation structure
+      are preserved.
+    - Original graph remains unchanged (non-destructive).
+
+  - **Compound AND-logic query filter** (#221):
+    - New **Filter → Filter by Query…** action (`Ctrl+X, Ctrl+B`) opens the
+      **Query Builder** dialog — a dynamic multi-condition filter composer
+      that supports both nodes and edges.
+    - The user picks a scope (Nodes or Edges), then adds one or more condition
+      rows. Each row specifies an attribute key, an operator (=, ≠, >, <, ≥,
+      ≤, contains), and a value. All rows are ANDed: only nodes/edges that
+      satisfy every condition are kept visible.
+    - Rows can be added ("+  Add condition" button) or removed (per-row "−"
+      button; the last row's remove button disables itself automatically).
+      The attribute key combo is populated from the graph's current node or
+      edge attribute keys and is also freely editable.
+    - Applies the same non-destructive snapshot/restore mechanism as all other
+      filters: the result appears as a chip in the filter bar and can be
+      individually removed or cleared with Restore All.
+    - Numeric comparisons (>, <, ≥, ≤) automatically downcast to `double`
+      when both sides are valid numbers; string comparisons fall back to
+      case-insensitive lexicographic order; "contains" is always
+      case-insensitive substring search.
+
+  - **Connected components count and color-by-component layout** (#85):
+    - **Analyze → Cohesion → Connectedness** now reports the number of weakly
+      connected components when the network is disconnected, alongside a hint
+      pointing to the new colorize action.
+    - New **Layout → Node Color by Connected Component**
+      (`Ctrl+L, Ctrl+C, Ctrl+0`) colors every node by its weakly connected
+      component: nodes in the same component share the same color, making
+      isolated sub-networks immediately visible. Up to 15 visually distinct
+      palette colors are used; the palette cycles for networks with more
+      components. If the network is already fully connected the action reports
+      "one component" and leaves colors unchanged.
+    - Both directed and undirected networks are supported. Weak connectivity is
+      used throughout: two nodes are in the same component when there is an
+      undirected path between them (edge directions are ignored). This is
+      consistent with Gephi, igraph, and NetworkX defaults and answers the
+      practical "how many disconnected islands?" question for both graph types.
+      Strong connectivity (all-pairs directed reachability) remains available
+      via the SSSP engine.
+    - `Graph::graphWeaklyConnectedComponents()` implements the BFS, caches the
+      count in `m_graphWeaklyConnectedComponents` and per-node component IDs in
+      `m_vertexComponentId`. Cache is invalidated whenever the graph is
+      structurally modified (same trigger as distances / centralities).
+    - **Connectivity semantics** — what the app computes and reports:
+
+      | Graph type | Topology | Components | Connected? | UI message |
+      |---|---|---|---|---|
+      | Undirected | All nodes reachable | 1 | yes | "connected (1 component)" |
+      | Undirected | Isolated sub-networks | >1 | no | "disconnected (N components)" |
+      | Directed | Every pair has a directed path | 1 | yes | "weakly connected (1 component)" |
+      | Directed | A→B only, not B→A | 1 | yes | "weakly connected (1 component)" — one island, not strongly connected |
+      | Directed | Two separate islands | >1 | no | "disconnected (N weakly connected components)" |
+
+      The "connected" determination uses weak connectivity (`components == 1`)
+      throughout, for both directed and undirected networks. Weak connectivity
+      ignores edge direction and answers the practical "how many disconnected
+      islands?" question consistently. Strong connectivity (all-pairs directed
+      reachability) is a separate, stricter property available via the geodesic
+      distances computation.
+
+  - **Clustering Coefficient added to node color layout** (#37):
+    - **Layout → Node Color by prominence index → Clustering Coefficient**
+      (`Ctrl+L, Ctrl+C, Ctrl+G`) colors nodes by their local Watts-Strogatz
+      clustering coefficient using the same blue→red gradient as all other
+      prominence indices: nodes with higher clustering are warmer (red), lower
+      clustering are cooler (blue).
+    - Fully integrated at the same depth as the 12 existing centrality/prestige
+      indices: appears in the Layout control panel combo, the analysis prominence
+      combo, **Filter Nodes by Centrality** (filter and find by CLC threshold),
+      and the prominence distribution chart.
+    - `IndexType::CLC = 13` added to the index enum; `clusteringCoefficient()`
+      now builds the `discreteCLCs` distribution map for charting.
+
+  - **Zero-weight edge display settings** (#30):
+    - New **Settings → Edges → Show zero-weight edges** checkbox (default: on):
+      when unchecked, zero-weight edges are silently skipped on load — no ghost
+      edges, no artifacts. The **Zero valued edge color** picker is automatically
+      disabled when the checkbox is off.
+    - Zero-weight edge color is now **user-configurable**: the hardcoded `"blue"`
+      is replaced by `initEdgeColorZero`, driven by the existing
+      **Settings → Edges → Zero valued edge color** picker which was already
+      present but disconnected from `edgeCreate()`.
+
+  - **Configurable edge arrow size** (#32):
+    - New **Settings → Edges → Arrow size** spinbox (range 2–20, default 6)
+      lets the user control the size of arrowheads on directed edges.
+    - The change applies to all edges on the canvas immediately and is
+      persisted for future sessions.
+
+### Improvements
+
+  - **SSSP parallelisation — major performance boost for large networks** (#241, #242):
+    - All shortest-path computations (distances, betweenness centrality, stress
+      centrality, closeness, eccentricity, power centrality) now run concurrently
+      across all available CPU cores via `QtConcurrent::blockingMap`.
+    - **Phase 1** (#241): per-source SSSP scratch state (BFS stack, predecessor lists,
+      dependency accumulators, distance and sigma arrays, nth-order neighbourhood map)
+      was extracted from `Graph` and `GraphVertex` into a self-contained
+      `PerSourceScratch` struct. Replacing per-edge `QHash` lookups with contiguous
+      `QVector` index reads improved cache locality and gave an immediate 14–23%
+      speedup even on a single thread.
+    - **Phase 2** (#242): the source loop in `DistanceEngine::runAllSources()` is now
+      distributed across all CPU cores. Each worker thread owns a `ThreadLocalState`
+      holding its own `PerSourceScratch`, partial BC/SC accumulator arrays, and running
+      totals for graph-wide aggregates. A single-threaded reduction step after the loop
+      merges everything into graph state with zero contention. APSP write-back is
+      race-free without any mutex because each source vertex is processed by exactly
+      one thread.
+    - **Measured speedup** (Debug build, 24-core Linux):
+
+      | Network | Centralities | Before | After | Speedup |
+      |---------|-------------|--------|-------|---------|
+      | BA directed N=500 E=1219 | ON | 679 ms | 255 ms | **2.7×** |
+      | N=1000 A=10000 | OFF | 28 423 ms | 3 431 ms | **8.3×** |
+      | N=1000 A=10000 | ON | 47 020 ms | 5 949 ms | **7.9×** |
+
+      Speedup scales near-linearly with core count because sources are fully
+      independent once per-source scratch state is thread-local.
+    - All 36 golden regression baselines pass; numeric results are bit-for-bit
+      identical to the sequential implementation.
+
+  - **Canvas rendering performance for large networks** (#180, #240):
+    - The dominant bottleneck on large networks (2000+ nodes, 40000+ edges)
+      was `QGraphicsScene::BspTreeIndex` (the previous default): every
+      `prepareGeometryChange()` call — triggered O(E) times per rubber-band
+      drag or CTRL+A — paid an O(log N) BSP tree update. Result: selection
+      and drag were nearly unresponsive on large networks.
+    - **Scene index now defaults to `NoIndex`**, eliminating BSP overhead
+      entirely. Rubber-band drag, CTRL+A, and full-network moves are now
+      fast on large networks. Memory consumption is also reduced
+       since the BSP tree structure is not built.
+    - Existing users are migrated automatically on first launch
+      (`settingsMigration = 2`); the setting remains user-controllable via
+      **Settings → Canvas → Scene index method**.
+    - `QPen` and `QBrush` objects in `GraphicsEdge` and `GraphicsNode` are
+      now cached and rebuilt only on property changes, avoiding per-`paint()`
+      heap allocations.
+    - Nine bulk visibility-toggle methods (`setNodeLabelsVisibility`,
+      `setEdgeArrowSize`, `setEdgeHighlighting`, etc.) now wrap their loops
+      with `viewport()->setUpdatesEnabled(false/true)`, coalescing per-item
+      `update()` calls into a single viewport repaint.
+    - `scene()->items()` loops replaced with direct `edgesHash`/`nodeHash`
+      iteration in `setEdgeOffsetFromNode` and `setAllItemsVisibility`.
+    - Hot-path `qDebug` calls removed from `handleSelectionChanged`,
+      `selectedNodes`, and `selectedEdges` (fired on every selection event).
+
+  - **UI declutter & UX improvements** (#234):
+    - Removed the two "Apply" buttons from the Layout section of the Control
+      Panel. All three layout comboboxes (Prominence Index, Type, Force-Directed
+      Model) now apply immediately on selection change, with no extra click
+      required.
+    - Layout Type defaults to "None" (was "Radial") so opening the panel no
+      longer implies a radial layout is pending.
+    - Mutual exclusion enforced between By-Prominence-Index (Radial/Level types)
+      and Force-Directed Model: selecting a force-directed model resets the Type
+      to None, and vice versa.
+    - Toolbar filter actions regrouped: node-filter icons sit alongside other
+      node actions; edge-filter icons sit alongside edge actions.
+    - Node Properties and Edge Properties toolbar actions are now
+      selection-aware: nothing selected → status-bar hint; exactly one
+      node/edge → single-item dialog; multiple selected → bulk-edit dialog.
+    - Statistics Panel sectioned into five collapsible groups (▾/▴ toggle):
+      NETWORK, SELECTION, CLICKED NODE, CLICKED EDGE, DISTRIBUTION. Each
+      section collapses and expands independently.
+    - In-Degree/Out-Degree rows in the Clicked Node section and
+      Weight/Reciprocal rows in the Clicked Edge section auto-hide until
+      a node or edge is clicked.
+    - Left Control Panel wrapped in a scroll area: when the Data Table dock
+      reduces available vertical space the panel scrolls rather than
+      overlapping its widgets.
+
+  - **Better feedback during long operations**: the status bar now shows a
+    "Computing … Please wait…" message for every analysis and layout operation
+    that can take noticeable time (centrality measures, prestige indices,
+    matrix computations, structural equivalence, force-directed and
+    prominence-index layouts, and more). The message is painted to the screen
+    immediately, so users always know the app is working.
+
+### Bug Fixes
+
+  - **UCINET DL two-mode networks now load correctly** (#63): three bugs in
+    `parser_dl.cpp` caused two-mode (NR × NC affiliation) files to silently
+    produce wrong node counts, wrong node numbers, and misrouted labels.
+    Fixed: (1) `totalNodes` is now set to `NR + NC` when two-mode is detected;
+    (2) row and col nodes are created with explicit sequential numbers (1..NR
+    and NR+1..NR+NC) instead of a broken auto-numbered batch; (3) `COL LABELS:`
+    is recognised as an alias for `COLUMN LABELS:`. Two golden IO-roundtrip
+    baselines added (`TinyDL_TwoMode_3x3_labeled`, `TinyDL_TwoMode_3x3_nolabels`).
+    **Note:** UCINET two-mode files always load as a bipartite directed graph
+    in SocNetV (directed edges from mode-1 row nodes to mode-2 column nodes).
+    Projection to person-network or event-network is not yet supported for the
+    DL format; it is tracked as a separate feature request.
+
+  - **Galaskiewicz famous network now loads correctly** (#15): the `.2sm`
+    data file was missing from `data.qrc`, so `writeFamousNetwork()` returned
+    early with an empty temp file — causing "no data rows found" for all three
+    import modes. Added the resource entry and removed the now-dead hardcoded
+    data rows from `graph_reports.cpp`.
+
+  - **Edge mode now follows relation switches** (#53): switching to a
+    different relation now restores that relation's directed/undirected
+    state. Each relation tracks its own flag in `m_relationsDirected`;
+    `relationSet()` saves the departing state and restores the incoming
+    one, recomputes `m_graphIsSymmetric` from actual edges, and emits
+    `signalGraphDirectedChanged` so the edge-mode combo and the arrows
+    action in the toolbar update without mutating any edges.
+
+  - **Zero-weight edges: five pre-existing computation bugs fixed** (#30):
+    - `outEdgesCount()` now skips weight-0 edges → **density** no longer
+      overcounted.
+    - `graphReciprocity()` now skips weight-0 edges, preventing a false
+      `edgeExists(v2,v1)==0` match against absent reverse edges that inflated
+      the reciprocated-ties count and could produce a 0/0 arc-reciprocity ratio.
+    - `clusteringCoefficientLocal()` now excludes weight-0 neighbours from the
+      neighbourhood *k*, keeping the k*(k−1) denominator correct.
+    - BFS (`bfsSSSP`) now skips weight-0 edges so they are not traversed as valid
+      1-hop connections (affected geodesic distances, reachability, and all
+      BFS-derived centralities).
+    - Dijkstra (`dijkstraSSSP`) now skips weight-0 edges, preventing free paths
+      (`dist_w = dist_u + 0`) and a division-by-zero crash when `inverseWeights`
+      is enabled (`1/0 = ∞`).
+
+  - **Canvas: Shift+click now adds a node to the current selection** (#235):
+    Shift+left-clicking a node toggles it into or out of the selection without
+    clearing previously selected nodes. Qt's item-level mouse handler in
+    `RubberBandDrag` mode only treats `Ctrl` as additive; the fix intercepts
+    `Shift+LeftButton` in `GraphicsWidget::mousePressEvent` and calls
+    `node->setSelected(!node->isSelected())` directly, bypassing Qt's
+    default clear-and-select path. Shift+click on empty canvas space (rubber-
+    band extension) and plain click behaviour are unchanged.
+
+  - **DOT parser: self-contained `graph [...]` block skips next node** (#236
+    follow-up): when our exporter writes `graph [label="Name"];` on a single
+    line, the parser was entering multi-line netProperties mode and then
+    treating the very next node declaration as the block terminator, silently
+    discarding it. The skipped node was re-created with its DOT identifier as
+    label ("n1" instead of "1") when the first edge statement was processed,
+    producing wrong edge endpoints in the reloaded graph. Fix: only enter
+    multi-line mode when `]` is absent from the `graph [` line. All three
+    TinyGraphviz DOT io_roundtrip tests now show `ROUNDTRIP_EQUIV=1`.
+
+  - **Multi-relation graph incorrectly reported as non-weighted** (#236
+    follow-up): `isWeighted()` correctly scans only the current relation
+    (fixed in #82). However, the io_roundtrip regression kernel queried
+    `isWeighted()` after iterating all relations and restoring to relation 0,
+    so a graph whose relation 0 is binary but relation 1 is weighted was
+    reported as `weighted: false`. Added `Graph::isAnyRelationWeighted()`,
+    which checks every relation, and updated the kernel to use it for the
+    `graph.weighted` JSON field.
+
+  - **Keyboard shortcut conflicts resolved**:
+    - `Ctrl+T` (Data Table toggle) conflicted with the `Ctrl+T, Ctrl+*` prefix
+      used by all four Structural Equivalence analysis actions — those sequences
+      were silently unreachable on every platform. Data Table is now `Ctrl+D`.
+    - `Ctrl+X, Ctrl+S` (Focus on Selection filter, WS9) duplicated the
+      pre-existing `Ctrl+X, Ctrl+S` shortcut for "Selected nodes → Star"
+      subgraph operation. Focus on Selection is now `Ctrl+X, Ctrl+O`.
+    - `Ctrl+X, Ctrl+Q` (Query Builder filter) mapped to `⌘+Q` on macOS —
+      the system-level Quit — when used as the second chord of a sequence.
+      Query Builder is now `Ctrl+X, Ctrl+B`.
+    - Duplicate `Ctrl+Shift+Left/Right` shortcuts removed from the rotate
+      toolbar buttons (the menu actions already own those sequences).
+
+  - **Bezier curve edges now work** (#149): the **Options → Edges → Bezier
+    Curves** toggle was present but non-functional. Fixed and fully implemented:
+    edges now draw as smooth quadratic arcs, arrowheads follow the curve tangent
+    at each endpoint (including on reciprocated edges), the lens-shaped fill
+    artifact is gone, new edges drawn while the toggle is on are born as curves,
+    and the setting persists across sessions.
+
+## [3.5] – May 8, 2026
 
 ### New Features
 

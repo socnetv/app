@@ -76,8 +76,14 @@ void FilterBarWidget::addChip(const QString &label, FilterCondition::Scope scope
     m_chips.append({scope, chip, closeBtn});
 
     connect(closeBtn, &QToolButton::clicked, this, [this, chip, scope]() {
-        removeChip(chip);
-        emit chipCloseRequested(scope);
+        int idx = -1;
+        for (int i = 0; i < m_chips.size(); ++i) {
+            if (m_chips[i].frame == chip) { idx = i; break; }
+        }
+        if (idx >= 0)
+            emit chipCloseRequested(idx, scope);
+        // Chip removal is handled by the receiver (MainWindow) via
+        // removeChipAt() or a full bar rebuild.
     });
 
     updateVisibility();
@@ -139,12 +145,25 @@ void FilterBarWidget::updateVisibility()
 
 void FilterBarWidget::updateCloseButtons()
 {
-    const int last = m_chips.size() - 1;
-    for (int i = 0; i <= last; ++i) {
-        const bool isLast = (i == last);
-        m_chips[i].closeBtn->setEnabled(isLast);
-        m_chips[i].closeBtn->setToolTip(
-            isLast ? tr("Remove this filter")
-                   : tr("Remove the most recently applied filter first"));
+    for (auto &cd : m_chips) {
+        cd.closeBtn->setEnabled(true);
+        cd.closeBtn->setToolTip(tr("Remove this filter"));
     }
+}
+
+void FilterBarWidget::removeChipAt(int barIndex)
+{
+    if (barIndex < 0 || barIndex >= m_chips.size())
+        return;
+    m_chipsLayout->removeWidget(m_chips[barIndex].frame);
+    m_chips[barIndex].frame->deleteLater();
+    m_chips.removeAt(barIndex);
+    updateVisibility();
+}
+
+FilterCondition::Scope FilterBarWidget::chipScopeAt(int barIndex) const
+{
+    if (barIndex < 0 || barIndex >= m_chips.size())
+        return FilterCondition::Scope::Nodes;
+    return m_chips[barIndex].scope;
 }

@@ -20,6 +20,8 @@
 
 #include <QGraphicsItem>
 #include <QObject>
+#include <QPen>
+#include <QPixmap>
 #include <QPolygon>
 
 class GraphicsWidget;
@@ -148,6 +150,9 @@ private:
     QString m_numColor;
     QColor m_col, m_col_orig;
     QColor m_col_outline;
+    QColor m_colHover;       // m_col.darker(120); rebuilt in setColor()
+    QPen   m_penOutline;     // QPen(m_col_outline, 0); built once in constructor
+    QPixmap m_pixmap;        // loaded in setShape() for icon-based shapes
     QString m_labelText, m_labelColor;
     bool m_hasNumber, m_hasLabel, m_hasNumberInside, m_edgeHighLighting;
     /**Lists of elements attached to this node */

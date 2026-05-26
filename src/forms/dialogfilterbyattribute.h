@@ -28,6 +28,8 @@ public:
                                      QWidget *parent = nullptr);
     ~DialogFilterByAttribute();
 
+    bool wasQueryBuilderRequested() const { return m_qbRequested; }
+
 private slots:
     void onScopeChanged();
     void getUserChoices();
@@ -39,6 +41,7 @@ private:
     Ui::DialogFilterByAttribute *ui;
     QStringList m_nodeKeys;
     QStringList m_edgeKeys;
+    bool m_qbRequested = false;
 
     void repopulateKeys(FilterCondition::Scope scope);
 };

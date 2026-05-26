@@ -128,6 +128,13 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
     ui->saveZeroWeightEdgesChkBox->setChecked(
         (appSettings["saveZeroWeightEdges"] == "true") ? true:false
         );
+    ui->showZeroWeightEdgesChkBox->setChecked(  // #30
+        (appSettings["showZeroWeightEdges"] == "true") ? true:false
+        );
+    // #30: keep color picker in sync with the show-toggle at open time
+    bool showZero = (appSettings["showZeroWeightEdges"] == "true");
+    ui->label_20->setEnabled(showZero);
+    ui->edgeColorZeroBtn->setEnabled(showZero);
 
 
 
@@ -312,6 +319,9 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
                 (m_appSettings["initEdgeArrows"] == "true") ? true: false
                                                                    );
 
+    ui->edgeArrowSizeSpin->setValue(
+                m_appSettings["initEdgeArrowSize"].toInt(nullptr, 10));
+
     m_edgeColor = QColor (m_appSettings["initEdgeColor"]);
     m_pixmap = QPixmap(60,20) ;
     m_pixmap.fill( m_edgeColor );
@@ -483,6 +493,8 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
                      this, &DialogSettings::getEdgesVisibility);
     connect (ui->edgeArrowsChkBox, &QCheckBox::stateChanged,
                      this, &DialogSettings::getEdgeArrowsVisibility);
+    connect (ui->edgeArrowSizeSpin, QOverload<int>::of(&QSpinBox::valueChanged),
+             this, &DialogSettings::getEdgeArrowSize);
     connect (ui->edgeColorBtn, &QToolButton::clicked,
              this, &DialogSettings::getEdgeColor);
     connect (ui->edgeColorNegativeBtn, &QToolButton::clicked,
@@ -508,6 +520,15 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
 
     connect (ui->saveZeroWeightEdgesChkBox, &QCheckBox::stateChanged,
             this, &DialogSettings::getSaveZeroWeightEdges);
+
+    connect (ui->showZeroWeightEdgesChkBox, &QCheckBox::stateChanged,  // #30
+            this, &DialogSettings::getShowZeroWeightEdges);
+
+    // #30: disable color picker when zero-weight edges are hidden
+    connect (ui->showZeroWeightEdgesChkBox, &QCheckBox::toggled,
+             ui->label_20,       &QLabel::setEnabled);
+    connect (ui->showZeroWeightEdgesChkBox, &QCheckBox::toggled,
+             ui->edgeColorZeroBtn, &QToolButton::setEnabled);
 
 
     connect ( ui->buttonBox, &QDialogButtonBox::accepted,
@@ -893,6 +914,16 @@ void DialogSettings::getEdgeArrowsVisibility(const bool &toggle){
 
 
 /**
+ * @brief Saves the new arrow size to settings and notifies the canvas.
+ * @param size  New arrow size in pixels (2–20).
+ */
+void DialogSettings::getEdgeArrowSize(const int size){
+    m_appSettings["initEdgeArrowSize"] = QString::number(size);
+    emit setEdgeArrowSize(size);
+}
+
+
+/**
  * @brief DialogSettings::getEdgeColor
  * * Opens a QColorDialog for the user to select a new edge color
  */
@@ -1010,6 +1041,15 @@ void DialogSettings::getEdgeLabelsVisibility(const bool &toggle){
 void DialogSettings::getSaveZeroWeightEdges(const bool &toggle){
     m_appSettings["saveZeroWeightEdges"]= (toggle) ? "true" : "false";
     emit setSaveZeroWeightEdges(toggle);
+}
+
+/**
+ * @brief Gets the value of showZeroWeightEdgesChkBox (#30)
+ * @param toggle
+ */
+void DialogSettings::getShowZeroWeightEdges(const bool &toggle){
+    m_appSettings["showZeroWeightEdges"]= (toggle) ? "true" : "false";
+    emit setShowZeroWeightEdges(toggle);
 }
 
 

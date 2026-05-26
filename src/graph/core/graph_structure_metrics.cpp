@@ -264,6 +264,18 @@ qreal Graph::graphReciprocity()
             v2 = hit.key();
             y = vpos[v2];
             weight = hit.value();
+
+            // Fix #30: skip zero-weight edges — they are visual-only and must
+            // not be counted as ties. Without this guard, weight==0 would also
+            // make the edgeExists(v2,v1)==weight check below match absent
+            // reverse edges (edgeExists returns 0 for missing edges), producing
+            // false reciprocations and a 0/0 arc-reciprocity ratio.
+            if (weight == 0)
+            {
+                ++hit;
+                continue;
+            }
+
             m_graphReciprocityTiesTotal += weight;
 
             // Compute "dyad" reciprocity

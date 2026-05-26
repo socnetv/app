@@ -27,12 +27,11 @@
 #include <QThread>
 #include <QStack>
 
-// stack is a wrapper around <deque> in C++
-// see: www.cplusplus.com/reference/stl/stack
-#include <stack>
 
 #include "global.h"
 #include "graph/filters/filter_condition.h"
+#include "graph/filters/filter_spec.h"
+#include "graph/filters/graph_query.h"
 #include "graphvertex.h"
 #include "matrix.h"
 #include "parser.h"
@@ -157,6 +156,7 @@ public slots:
     void relationPrev();
 
     void canvasSizeSet(const int &width, const int &height);
+    void canvasSizeSetQuiet(const qreal &width, const qreal &height);
 
     double canvasMaxRadius() const;
 
@@ -185,7 +185,12 @@ public slots:
     void vertexFilterByAttribute(const FilterCondition &cond);
     void edgeFilterByAttribute(const FilterCondition &cond);
     void vertexFilterRestoreAll();
+    void vertexFilterRemoveAt(int stackIndex);
+    QList<FilterSpec> filterSpecList() const;
     bool visibilityHistoryEmpty() const;
+
+    void vertexFilterByQuery(const GraphQuery &query);
+    void edgeFilterByQuery(const GraphQuery &query);
 
     void edgeFilterByWeight(const qreal, const bool);
     void edgeFilterReset();
@@ -193,6 +198,12 @@ public slots:
     void edgeFilterByRelation(int relation, bool status);
 
     void edgeFilterUnilateral(const bool &toggle);
+
+    Graph *subgraphExtract(const QString &name,
+                           const bool &includeCustomAttributes = true);
+
+    Graph *subgraphExtractFromSelection(const QString &name,
+                                        const bool &includeCustomAttributes = true);
 
     void startWebCrawler(
         const QUrl &startUrl,
@@ -276,6 +287,8 @@ signals:
     void signalRelationChangedToGW(int);
 
     void signalRelationChangedToMW(const int &relIndex = RAND_MAX);
+
+    void signalGraphDirectedChanged(const bool &directed);
 
     void signalSelectionChanged(const int &selectedVertices,
                                 const int &selectedEdges);
@@ -412,6 +425,7 @@ public:
         QHash<int, bool> nodeVisible;            // vertex number  → was enabled
         QHash<QPair<int, int>, bool> arcVisible; // (source,target)→ was visible
         bool active = false;                     // true when this snapshot holds real data
+        FilterSpec spec;                         // replay descriptor for arbitrary chip removal
     };
 
     /* INIT AND CLEAR*/
@@ -477,7 +491,13 @@ public:
                              QString networkName = "",
                              int maxWidth = 0, int maxHeight = 0);
 
-    bool saveToDotFormat(QString fileName);
+    bool saveToDotFormat(const QString &fileName);
+
+    bool saveToUCINETDLFormat(const QString &fileName);
+
+    bool saveToEdgeListWeightedFormat(const QString &fileName);
+
+    bool saveToEdgeListSimpleFormat(const QString &fileName);
 
     QString graphMatrixTypeToString(const int &matrixType) const;
 
@@ -703,6 +723,8 @@ public:
     void edgeLabelsVisibilitySet(const bool &toggle);
 
     void edgeColorInit(const QString &);
+    void edgeColorZeroInit(const QString &);  // #30: configurable zero-weight edge color
+    void showZeroWeightEdgesSet(const bool &toggle); // #30: show/hide zero-weight edges
 
     void edgeColorSet(const int &v1, const int &v2, const QString &color);
 
@@ -745,6 +767,7 @@ public:
     qreal graphDensity();
 
     bool isWeighted();
+    bool isAnyRelationWeighted();
 
     void setWeighted(const bool &toggle = true);
 
@@ -771,6 +794,12 @@ public:
     bool isConnected();
 
     bool isConnectedCached() const;
+
+    int graphWeaklyConnectedComponents();
+
+    int graphWeaklyConnectedComponentsCached() const;
+
+    const QHash<int,int> &vertexComponentId() const { return m_vertexComponentId; }
 
     void createMatrixAdjacency(const bool dropIsolates = false,
                                const bool considerWeights = true,
@@ -965,35 +994,6 @@ public:
                                 const bool &dropIsolates = false);
 
     // ============================================================================
-    // LEGACY/INTERNAL (ENGINE SUPPORT PRIMITIVES)
-    // ----------------------------------------------------------------------------
-    // NOTE (WS2/F0): These exist to support DistanceEngine during transition.
-    // UI code must not call these. Prefer keeping them engine-only.
-    // ============================================================================
-    // --- SSSP/Brandes stack helpers (DistanceEngine should not touch Stack directly) ---
-    void ssspStackClear();
-    bool ssspStackEmpty() const;
-    int ssspStackTop() const;
-    void ssspStackPop();
-    int ssspStackSize() const;
-    void ssspStackPush(int v);
-    // --- SSSP nth-order neighborhood (for Power Centrality) ---
-    void ssspNthOrderClear();
-    //
-    // LEGACY/INTERNAL: transitional storage.
-    // DistanceEngine may use this via the accessors below.
-    // (Later WS2/F1 may hide this field and keep only accessors.)
-    // Stores the number of vertices at distance n from a given vertex, for n=0,1,2,... during SSSP traversal.
-    H_f_i sizeOfNthOrderNeighborhood;
-    H_f_i::const_iterator ssspNthOrderBegin() const;
-    H_f_i::const_iterator ssspNthOrderEnd() const;
-    int ssspNthOrderValue(qreal dist) const;
-    void ssspNthOrderIncrement(int dist);
-    void ssspNthOrderIncrement(qreal dist);
-    // --- SSSP component size accumulator ---
-    void ssspComponentReset(int value = 1);
-    void ssspComponentAdd(int delta);
-    int ssspComponentSize() const;
     // --- Connectivity bookkeeping ---
     void notConnectedPairsClear();
     void notConnectedPairsInsert(int from, int to);
@@ -1014,6 +1014,9 @@ public:
     void resetDistanceAggregates(); // sets avg/sum/geodesics/diameter to 0
     void addToDistanceSum(qreal delta);
     void incGeodesicsCount();
+    // Bulk-add n to the geodesics count — used by the post-parallel-loop reduction
+    // so each thread contributes its total in one call instead of n individual increments.
+    void addGeodesicsCount(int n);
     void setAverageDistanceCached(qreal v);
 
     bool graphMatrixDistanceGeodesicCreate(const bool &considerWeights = false,
@@ -1263,6 +1266,13 @@ protected:
 private:
     /** private member functions */
 
+    Graph *subgraphFromVertexList(const QList<int> &vertexNums,
+                                   const QString &name,
+                                   const bool &includeCustomAttributes = true);
+
+    void applyVisibilitySnapshot(const GraphVisibilitySnapshot &snap);
+    void vertexFilterReplaySpec(const FilterSpec &spec);
+
     void edgeAdd(const int &v1,
                  const int &v2,
                  const qreal &weight,
@@ -1305,6 +1315,7 @@ private:
     int m_crawler_visited_urls; // A counter of the urls visited.
 
     QList<QString> m_relationsList;
+    QList<bool> m_relationsDirected;
 
     QList<int> m_graphFileFormatExportSupported;
 
@@ -1337,12 +1348,11 @@ private:
     Matrix SIGMA, DM, sumM, invAM, AM, invM, WM;
     Matrix XM, XSM, XRM, CLQM;
 
-    stack<int> Stack;
-
     /** used in resolveClasses and graphDistancesGeodesic() */
     H_StrToInt discreteDPs, discreteSDCs, discreteCCs, discreteBCs, discreteSCs;
     H_StrToInt discreteIRCCs, discreteECs, discreteEccentricities;
     H_StrToInt discretePCs, discreteICs, discretePRPs, discretePPs, discreteEVCs;
+    H_StrToInt discreteCLCs;
 
     QString m_reportsDataDir;
     int m_reportsRealPrecision;
@@ -1394,9 +1404,8 @@ private:
     int classesIC, maxNodeIC, minNodeIC;
     int classesPRP, maxNodePRP, minNodePRP;
     int classesPP, maxNodePP, minNodePP;
+    int classesCLC;
     int classesEVC, maxNodeEVC, minNodeEVC;
-    qreal sizeOfComponent;
-
     /** General & initialisation variables */
 
     int m_graphModStatus;
@@ -1433,11 +1442,14 @@ private:
     bool calculatedGraphDensity, calculatedGraphWeighted;
     bool m_progressCanceled;
     bool m_graphIsDirected, m_graphIsSymmetric, m_graphIsWeighted, m_graphIsConnected;
+    int m_graphWeaklyConnectedComponents;
+    QHash<int,int> m_vertexComponentId;
 
     int csRecDepth;
 
-    QString m_fileName, m_graphName, initEdgeColor, initVertexColor,
-        initVertexNumberColor, initVertexLabelColor;
+    QString m_fileName, m_graphName, initEdgeColor, initEdgeColorZero,
+        initVertexColor, initVertexNumberColor, initVertexLabelColor;
+    bool initShowZeroWeightEdges;
     QString initVertexShape, initVertexIconPath;
     QString htmlHead, htmlHeadLight, htmlEnd;
 

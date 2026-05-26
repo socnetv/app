@@ -247,87 +247,6 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
 }
 
 //
-// SSSP helpers
-//
-void Graph::ssspStackClear()
-{
-    while (!Stack.empty())
-    {
-        Stack.pop();
-    }
-}
-
-bool Graph::ssspStackEmpty() const
-{
-    return Stack.empty();
-}
-
-int Graph::ssspStackTop() const
-{
-    return Stack.top();
-}
-
-void Graph::ssspStackPop()
-{
-    Stack.pop();
-}
-
-int Graph::ssspStackSize() const
-{
-    return static_cast<int>(Stack.size());
-}
-
-void Graph::ssspStackPush(int v)
-{
-    Stack.push(v);
-}
-
-void Graph::ssspNthOrderClear()
-{
-    sizeOfNthOrderNeighborhood.clear();
-}
-
-H_f_i::const_iterator Graph::ssspNthOrderBegin() const
-{
-    return sizeOfNthOrderNeighborhood.constBegin();
-}
-
-H_f_i::const_iterator Graph::ssspNthOrderEnd() const
-{
-    return sizeOfNthOrderNeighborhood.constEnd();
-}
-int Graph::ssspNthOrderValue(qreal dist) const
-{
-    return sizeOfNthOrderNeighborhood.value(dist, 0);
-}
-void Graph::ssspNthOrderIncrement(int dist)
-{
-    sizeOfNthOrderNeighborhood.insert(
-        dist,
-        sizeOfNthOrderNeighborhood.value(dist, 0) + 1);
-}
-void Graph::ssspNthOrderIncrement(qreal dist)
-{
-    sizeOfNthOrderNeighborhood.insert(
-        dist,
-        sizeOfNthOrderNeighborhood.value(dist, 0) + 1);
-}
-void Graph::ssspComponentReset(int value)
-{
-    sizeOfComponent = value;
-}
-
-void Graph::ssspComponentAdd(int delta)
-{
-    sizeOfComponent += delta;
-}
-
-int Graph::ssspComponentSize() const
-{
-    return sizeOfComponent;
-}
-
-//
 // DISCONNECTED PAIRS CACHE
 // During SSSP, we may find pairs of vertices that are not connected.
 // We store these in a hash for quick lookup, so that if we encounter the same pair again,
@@ -355,12 +274,16 @@ void Graph::resetDistanceCentralityCacheFlags()
 {
     calculatedDistances = false;
     calculatedCentralities = false;
+    m_graphWeaklyConnectedComponents = 0;
+    m_vertexComponentId.clear();
 }
 
 void Graph::setSymmetricCached(bool v) { m_graphIsSymmetric = v; }
 bool Graph::symmetricCached() const { return m_graphIsSymmetric; }
 
 void Graph::setConnectedCached(bool v) { m_graphIsConnected = v; }
+
+int Graph::graphWeaklyConnectedComponentsCached() const { return m_graphWeaklyConnectedComponents; }
 void Graph::setDiameterCached(int v) { m_graphDiameter = v; }
 
 void Graph::resetDistanceAggregates()
@@ -373,4 +296,5 @@ void Graph::resetDistanceAggregates()
 
 void Graph::addToDistanceSum(qreal delta) { m_graphSumDistance += delta; }
 void Graph::incGeodesicsCount() { ++m_graphGeodesicsCount; }
+void Graph::addGeodesicsCount(int n) { m_graphGeodesicsCount += n; }
 void Graph::setAverageDistanceCached(qreal v) { m_graphAverageDistance = v; }

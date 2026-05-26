@@ -1,7 +1,8 @@
 # SocNetV
 
 [![version](https://img.shields.io/github/release/socnetv/app.svg?logo=c%2B%2B)](https://github.com/socnetv/app/releases)
-[![Build Status GitHub Actions](https://github.com/socnetv/app/actions/workflows/build-ci.yml/badge.svg)](https://github.com/socnetv/app/actions/workflows/build-ci.yml)
+[![Build Status GH CI](https://github.com/socnetv/app/actions/workflows/build-ci.yml/badge.svg)](https://github.com/socnetv/app/actions/workflows/build-ci.yml)
+[![Build Status GH Release](https://github.com/socnetv/app/actions/workflows/build-release.yml/badge.svg)](https://github.com/socnetv/app/actions/workflows/build-release.yml)
 [![langs](https://img.shields.io/github/languages/top/socnetv/app.svg)](https://github.com/socnetv/app.git)
 [![downloads](https://img.shields.io/github/downloads/socnetv/app/total.svg?logo=github)](https://socnetv.org/downloads)
 [![license](https://img.shields.io/github/license/socnetv/app.svg)](https://github.com/socnetv/app/blob/master/COPYING)
@@ -20,21 +21,26 @@ With SocNetV you can:
 - Draw social networks with a few clicks on a virtual canvas, load your
 field data from a file in a supported format (GraphML, GraphViz, EdgeList, GML, Adjacency, Edgelist, Pajek, UCINET, etc.), automatically recreate famous data sets or crawl the internet to create a social network of connected webpages.
 
+- Export graphs to any of the supported formats: **GraphML**, **Pajek**, **Adjacency Matrix**, **GraphViz DOT**, **UCINET DL**, **Edge List (weighted or simple)**.
+
 - Edit actors and ties through point-and-click, analyse graph and social network properties, produce beautiful HTML reports and embed visualization layouts to the network.
 
-[![socnetv](https://socnetv.org/data/uploads/screenshots/25/socnetv-25-padget-power-centrality-size-distribution.png)](https://socnetv.org)
+[![socnetv](https://socnetv.org/data/uploads/screenshots/36/BreadBoardz_2Level_Managers_Dir_Bezier_FR.webp)](https://socnetv.org)
 
 ## 2. Features
 
-- Standard graph-theoretic and network cohesion metrics: density, diameter, geodesics, connectedness, eccentricity, clustering coefficient, walks, reciprocity, and more.
+- Standard graph-theoretic and network cohesion metrics: density, diameter, geodesics, connectedness (with weakly connected component count), eccentricity, clustering coefficient, walks, reciprocity, and more.
 - Matrix routines: Adjacency, Laplacian, Degree, Cocitation, and more.
 - Advanced centrality and prestige indices: eigenvector, closeness, betweenness, information, power centrality, PageRank prestige, and more.
 - Community detection algorithms: triad census, clique census, and more.
 - Structural equivalence analysis using hierarchical clustering, actor similarities, and Pearson coefficients.
-- Multiple layout algorithms: prominence-based (circular, nodal sizes by centrality), force-directed (Kamada-Kawai, Fruchterman-Reingold), and ego-centered radial layout.
+- Multiple layout algorithms: prominence-based (circular, nodal sizes by centrality), force-directed (Kamada-Kawai, Fruchterman-Reingold), and ego-centered radial layout. Node colors can also be assigned by connected component, making disconnected sub-networks immediately visible.
 - Non-destructive graph exploration filters: focus on selection, ego network, centrality threshold, attribute-based filtering (with `=`, `≠`, `>`, `<`, `≥`, `≤`, `contains` operators), and edge weight threshold. All filters are reversible and stack non-destructively. Active filters shown in a persistent filter bar.
+- Subgraph extraction: save the currently visible (filtered) nodes or the currently selected nodes — together with their inter-edges — as an independent GraphML file. All visual properties, custom attributes, and multi-relation structure are preserved.
 - Custom node and edge attributes: add, edit and remove arbitrary key/value pairs. Fully persisted in GraphML.
 - Data table dock (Ctrl+T): inspect and inline-edit all node and edge properties — including custom attributes — with live search and sortable columns.
+- Graph format export: save the current graph (or just the active relation) to **GraphML**, **Pajek**, **Adjacency Matrix**, **GraphViz DOT**, **UCINET DL**, **Weighted Edge List**, or **Simple Edge List** via the **Network → Export** menu.
+- Zero-weight edge support: edges with weight `0` are drawn (configurable color, set in Settings) but excluded from all SNA computations. Optionally saved to GraphML for full data fidelity.
 - Structured import/export: export node or edge data to CSV or JSON; re-import to update attributes in bulk (supports a full spreadsheet editing workflow). See the [manual](https://socnetv.org/manual/intro/) for details.
 - Random network generators: Erdős–Rényi, Watts–Strogatz, scale-free, regular lattice, and more.
 - One-click recreation of well-known social network datasets such as Padgett's Florentine families.
@@ -178,7 +184,7 @@ Download the archive with the source code of the latest version from
 
 #### Build with CMake (recommended)
 
-CMake is the recommended build system for SocNetV 3.3. Replace `3.X` with the version you downloaded.
+CMake is the recommended build system for SocNetV 3.6. Replace `3.X` with the version you downloaded.
 
 ```bash
 tar zxfv app-3.X.tar.gz

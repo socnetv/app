@@ -1,0 +1,118 @@
+{
+    "counts": {
+        "links_sna": 3,
+        "nodes": 3,
+        "ties_graph": 3
+    },
+    "dataset": {
+        "filetype": 7,
+        "name": "TinyEdgeList_Weighted_Dir_N3.wlst",
+        "path": "src/data/TinyEdgeList_Weighted_Dir_N3.wlst"
+    },
+    "graph": {
+        "directed": true,
+        "relations": 1,
+        "weighted": true
+    },
+    "kernel": "io_roundtrip",
+    "load_report": {
+        "fileType_signal": 7,
+        "load_ms": 2,
+        "load_msg": "",
+        "net_name": "TinyEdgeList_Weighted_Dir_N3.wlst",
+        "ok": true
+    },
+    "metrics": {
+        "density": "0.5"
+    },
+    "relations_bundle": [
+        {
+            "index": 0,
+            "name": "unnamed",
+            "signature": {
+                "edge_list": [
+                    {
+                        "u": 1,
+                        "v": 2,
+                        "w": "2.5"
+                    },
+                    {
+                        "u": 2,
+                        "v": 3,
+                        "w": "1.5"
+                    },
+                    {
+                        "u": 3,
+                        "v": 1,
+                        "w": "3"
+                    }
+                ],
+                "hash_sha256": "774e15f0235c758b1441dd2e766ee1cc9c35f768f36bd678183111126c4934bc",
+                "node_custom_attributes": [
+                    {
+                    },
+                    {
+                    },
+                    {
+                    }
+                ],
+                "node_labels": [
+                    "1",
+                    "2",
+                    "3"
+                ]
+            },
+            "ties_graph": 3
+        }
+    ],
+    "roundtrip_result": {
+        "equivalent": true,
+        "performed": false
+    },
+    "run": {
+        "considerWeights": false,
+        "dropIsolates": false,
+        "inverseWeights": true,
+        "operation": "io_roundtrip_same_format"
+    },
+    "schema_version": 5,
+    "signature": {
+        "edge_list": [
+            {
+                "u": 1,
+                "v": 2,
+                "w": "2.5"
+            },
+            {
+                "u": 2,
+                "v": 3,
+                "w": "1.5"
+            },
+            {
+                "u": 3,
+                "v": 1,
+                "w": "3"
+            }
+        ],
+        "hash_sha256": "774e15f0235c758b1441dd2e766ee1cc9c35f768f36bd678183111126c4934bc",
+        "node_custom_attributes": [
+            {
+            },
+            {
+            },
+            {
+            }
+        ],
+        "node_labels": [
+            "1",
+            "2",
+            "3"
+        ]
+    },
+    "timings": {
+        "load_ms": 2,
+        "reload_ms": 0,
+        "save_ms": 0,
+        "total_ms": 0
+    }
+}

@@ -72,7 +72,7 @@
     ],
     "roundtrip_result": {
         "equivalent": true,
-        "performed": false
+        "performed": true
     },
     "run": {
         "considerWeights": false,

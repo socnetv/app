@@ -55,7 +55,7 @@ set(APP_NAME SocNetV)
 set(APP_NAME_LOWER socnetv)
 
 project(SocNetV 
-    VERSION 3.5
+    VERSION 3.6
     DESCRIPTION "SocNetV: Open-source social network analysis application based on Qt."
     HOMEPAGE_URL "https://socnetv.org"
     LANGUAGES CXX
@@ -110,6 +110,7 @@ set(GRAPH_SOURCES
     src/graph/core/graph_metadata.cpp
     src/graph/storage/graph_vertices.cpp
     src/graph/storage/graph_edges.cpp
+    src/graph/storage/graph_subgraphs.cpp
     src/graph/io/graph_io.cpp
     src/graph/io/graph_parse_sink_graph.cpp
     src/graph/io/table_export.cpp
@@ -117,6 +118,7 @@ set(GRAPH_SOURCES
     src/graph/relations/graph_relations.cpp
     src/graph/filters/graph_edge_filters.cpp
     src/graph/filters/graph_node_filters.cpp
+    src/graph/filters/graph_query_filters.cpp
     src/graph/ui/graph_ui_facade.cpp
     src/graph/ui/graph_ui_prominence_distribution.cpp
     src/graph/ui/graph_canvas.cpp
@@ -166,6 +168,7 @@ set(CLI_SOURCES
     src/tools/cli/kernels/kernel_prominence_v4.cpp
     src/tools/cli/kernels/kernel_io_roundtrip_v5.cpp
     src/tools/cli/kernels/kernel_clustering_v6.cpp
+    src/tools/cli/kernels/kernel_connectivity_v7.cpp
 )
 
 
@@ -190,6 +193,7 @@ set (FORMS
     src/forms/dialogedgeedit.ui
     src/forms/dialognodefind.ui
     src/forms/dialogfilterbyattribute.ui
+    src/forms/dialogbulkedit.ui
     src/forms/dialogedgedichotomization.ui
     src/forms/dialogexportpdf.ui 
     src/forms/dialogexportimage.ui
@@ -218,6 +222,7 @@ set(SOURCES
     src/forms/dialogfilternodesbycentrality.cpp
     src/forms/dialogfilteredgesbyweight.cpp
     src/forms/dialogfilterbyattribute.cpp
+    src/forms/dialogquerybuilder.cpp
     src/forms/dialogimportattributes.cpp
     src/widgets/filterbarwidget.cpp
     src/widgets/nodetablemodel.cpp
@@ -229,6 +234,7 @@ set(SOURCES
     src/forms/dialogpreviewfile.cpp 
     src/forms/dialognodeedit.cpp
     src/forms/dialogedgeedit.cpp
+    src/forms/dialogbulkedit.cpp
     src/forms/dialogranderdosrenyi.cpp 
     src/forms/dialograndsmallworld.cpp 
     src/forms/dialograndregular.cpp 
@@ -275,7 +281,7 @@ endif()
 # 4. Qt Integration
 # ==============================================================================
 # Find Qt6 packages
-find_package(Qt6 REQUIRED COMPONENTS Core OpenGLWidgets Gui Core5Compat Widgets PrintSupport Network Charts Svg Xml LinguistTools)
+find_package(Qt6 REQUIRED COMPONENTS Core OpenGLWidgets Gui Core5Compat Widgets PrintSupport Network Charts Svg Xml LinguistTools Concurrent)
 # find_package_handle_standard_args(Qt6 DEFAULT_MSG Qt6_FOUND)
 
 # Check if Qt6 was found
@@ -339,13 +345,14 @@ target_link_libraries(${TARGET_NAME} PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets
-    Qt6::OpenGLWidgets  
-    Qt6::Core5Compat 
-    Qt6::PrintSupport 
-    Qt6::Network 
-    Qt6::Charts 
-    Qt6::Svg 
+    Qt6::OpenGLWidgets
+    Qt6::Core5Compat
+    Qt6::PrintSupport
+    Qt6::Network
+    Qt6::Charts
+    Qt6::Svg
     Qt6::Xml
+    Qt6::Concurrent
 )
 
 
@@ -512,6 +519,7 @@ if(BUILD_CLI)
         Qt6::Widgets
         Qt6::Gui
         Qt6::Charts
+        Qt6::Concurrent
     )
 
     set_target_properties(${CLI_TARGET} PROPERTIES

@@ -64,6 +64,7 @@ public slots:
     void getNodeLabelDistance(const int);
     void getEdgesVisibility (const bool &toggle);
     void getEdgeArrowsVisibility (const bool &toggle);
+    void getEdgeArrowSize(const int size);
     void getEdgeColor();
     void getEdgeColorNegative();
     void getEdgeColorZero();
@@ -73,6 +74,7 @@ public slots:
     void getEdgeLabelsVisibility(const bool &toggle);
 
     void getSaveZeroWeightEdges(const bool &toggle);
+    void getShowZeroWeightEdges(const bool &toggle);  // #30
 
 signals:
     void setReportsDataDir (const QString &dir);
@@ -118,12 +120,14 @@ signals:
 
     void setEdgesVisibility (const bool &toggle);
     void setEdgeArrowsVisibility (const bool &toggle);
+    void setEdgeArrowSize(const int &size);
     void setEdgeColor(const QColor, const int &);
     void setEdgeShape(const QString, const long int);
     void setEdgeOffsetFromNode(const int&offset, const int &v1=0, const int &v2=0);
     void setEdgeWeightNumbersVisibility(const bool &toggle);
     void setEdgeLabelsVisibility(const bool &toggle);
     void setSaveZeroWeightEdges(const bool &toggle);
+    void setShowZeroWeightEdges(const bool &toggle);  // #30
     void saveSettings();
 private:
      QMap<QString, QString> &m_appSettings ;

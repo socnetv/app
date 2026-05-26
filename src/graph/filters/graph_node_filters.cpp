@@ -12,6 +12,8 @@
 
 #include "graph.h"
 #include "filter_condition.h"
+#include "filter_spec.h"
+#include "graph_query.h"
 #include <QDebug>
 
 /**
@@ -94,6 +96,10 @@ void Graph::vertexFilterByCentrality(const float threshold,
         }
     }
 
+    snapshot.spec.type                      = FilterSpec::Type::Centrality;
+    snapshot.spec.centralityThreshold      = threshold;
+    snapshot.spec.centralityOverThreshold  = overThreshold;
+    snapshot.spec.centralityIndex          = centralityIndex;
     m_visibilityHistory.push(snapshot);
 
     const QString condition = overThreshold ? QStringLiteral(">=") : QStringLiteral("<=");
@@ -145,6 +151,9 @@ void Graph::vertexFilterByCentrality(const float threshold,
             break;
         case IndexType::PP:
             score = (*it)->PP();
+            break;
+        case IndexType::CLC:
+            score = (*it)->CLC();
             break;
         default:
             score = (*it)->DC();
@@ -291,6 +300,9 @@ void Graph::vertexFilterByEgoNetwork(const int v1, const int depth)
         }
     }
 
+    snapshot.spec.type      = FilterSpec::Type::Ego;
+    snapshot.spec.egoVertex = v1;
+    snapshot.spec.egoDepth  = depth;
     m_visibilityHistory.push(snapshot);
 
     // ------------------------------------------------------------------
@@ -384,6 +396,8 @@ void Graph::vertexFilterBySelection(const QList<int> &selectedVertices)
     // Snapshot current visibility state BEFORE making any changes.
     // ------------------------------------------------------------------
     GraphVisibilitySnapshot snapshot;
+    snapshot.spec.type      = FilterSpec::Type::Selection;
+    snapshot.spec.selection = selectedVertices;
     snapshot.active = true;
 
     VList::const_iterator vi;
@@ -468,58 +482,6 @@ void Graph::vertexFilterBySelection(const QList<int> &selectedVertices)
 }
 
 // ---------------------------------------------------------------------------
-// Internal helper
-// ---------------------------------------------------------------------------
-
-/**
- * @brief Returns true if @p attrValue satisfies the condition described by
- *        @p cond.
- *
- * Numeric operators (>, <, ≥, ≤) attempt a double conversion of both sides
- * and fall back to lexicographic comparison when either side is not numeric.
- * Eq / Neq always use exact string comparison.
- * Contains uses case-insensitive substring search.
- */
-static bool matchesCondition(const QString &attrValue, const FilterCondition &cond)
-{
-    switch (cond.op) {
-    case FilterCondition::Op::Eq:
-        return attrValue == cond.value;
-    case FilterCondition::Op::Neq:
-        return attrValue != cond.value;
-    case FilterCondition::Op::Contains:
-        return attrValue.contains(cond.value, Qt::CaseInsensitive);
-    default:
-        break;
-    }
-
-    // Numeric branch
-    bool okA = false, okB = false;
-    const double a = attrValue.toDouble(&okA);
-    const double b = cond.value.toDouble(&okB);
-
-    if (okA && okB) {
-        switch (cond.op) {
-        case FilterCondition::Op::Gt:  return a >  b;
-        case FilterCondition::Op::Lt:  return a <  b;
-        case FilterCondition::Op::Gte: return a >= b;
-        case FilterCondition::Op::Lte: return a <= b;
-        default: break;
-        }
-    }
-
-    // Lexicographic fallback
-    switch (cond.op) {
-    case FilterCondition::Op::Gt:  return attrValue >  cond.value;
-    case FilterCondition::Op::Lt:  return attrValue <  cond.value;
-    case FilterCondition::Op::Gte: return attrValue >= cond.value;
-    case FilterCondition::Op::Lte: return attrValue <= cond.value;
-    default: break;
-    }
-    return false;
-}
-
-// ---------------------------------------------------------------------------
 // Node attribute filter
 // ---------------------------------------------------------------------------
 
@@ -545,7 +507,7 @@ void Graph::vertexFilterByAttribute(const FilterCondition &cond)
     for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
     {
         const QHash<QString,QString> attrs = (*vi)->customAttributes();
-        if (attrs.contains(cond.key) && matchesCondition(attrs.value(cond.key), cond))
+        if (attrs.contains(cond.key) && cond.matches(attrs.value(cond.key)))
             visibleSet.insert((*vi)->number());
     }
 
@@ -557,7 +519,9 @@ void Graph::vertexFilterByAttribute(const FilterCondition &cond)
 
     // Snapshot current visibility state BEFORE making any changes.
     GraphVisibilitySnapshot snapshot;
-    snapshot.active = true;
+    snapshot.active          = true;
+    snapshot.spec.type       = FilterSpec::Type::Attribute;
+    snapshot.spec.condition  = cond;
 
     for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
     {
@@ -647,16 +611,24 @@ void Graph::vertexFilterRestoreAll()
         return;
     }
 
-    const GraphVisibilitySnapshot snapshot = m_visibilityHistory.pop();
+    applyVisibilitySnapshot(m_visibilityHistory.pop());
+    progressStatus(tr("Graph visibility restored."));
+}
 
-    // ------------------------------------------------------------------
+/**
+ * @brief Restores vertex and edge visibility to the state recorded in @p snap.
+ *
+ * Private helper shared by vertexFilterRestoreAll() and vertexFilterRemoveAt().
+ * Does not touch m_visibilityHistory — callers manage the stack.
+ */
+void Graph::applyVisibilitySnapshot(const GraphVisibilitySnapshot &snap)
+{
     // PASS 1: Restore vertex visibility.
-    // ------------------------------------------------------------------
     VList::const_iterator vi;
     for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
     {
         const int vnum = (*vi)->number();
-        const bool wasVisible = snapshot.nodeVisible.value(vnum, true);
+        const bool wasVisible = snap.nodeVisible.value(vnum, true);
         if ((*vi)->isEnabled() != wasVisible)
         {
             (*vi)->setEnabled(wasVisible);
@@ -665,9 +637,7 @@ void Graph::vertexFilterRestoreAll()
         }
     }
 
-    // ------------------------------------------------------------------
     // PASS 2: Restore edge visibility.
-    // ------------------------------------------------------------------
     for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
     {
         const int source = (*vi)->number();
@@ -685,27 +655,121 @@ void Graph::vertexFilterRestoreAll()
             const qreal reverseWeight = (*vi)->hasEdgeFrom(target);
             const bool preserveReverse = (reverseWeight != 0);
             const bool wasVisible =
-                snapshot.arcVisible.value(QPair<int, int>(source, target), true);
+                snap.arcVisible.value(QPair<int, int>(source, target), true);
 
             ei.value() = pair_i_fb(m_curRelation, pair_f_b(weight, wasVisible));
             edgeInboundStatusSet(target, source, wasVisible);
 
             if (wasVisible)
-            {
                 emit signalSetEdgeVisibility(m_curRelation, source, target,
                                              true, preserveReverse);
-            }
             else
-            {
                 emit signalSetEdgeVisibility(m_curRelation, source, target,
                                              false, preserveReverse,
                                              weight, reverseWeight);
-            }
             ++ei;
         }
     }
+}
 
-    progressStatus(tr("Graph visibility restored."));
+/**
+ * @brief Removes the filter at @p stackIndex (0 = oldest) and replays the rest.
+ *
+ * Drains m_visibilityHistory to a list, restores to the pre-first-filter base
+ * state (the oldest snapshot), then re-applies every spec except the one at
+ * @p stackIndex.  Each replay call pushes a fresh snapshot, leaving the stack
+ * correct for subsequent single-step restores.
+ *
+ * Centrality replay requires the relevant index to still be computed; if it is
+ * not, vertexFilterByCentrality() returns early and that step is skipped.
+ */
+void Graph::vertexFilterRemoveAt(int stackIndex)
+{
+    const int histSize = m_visibilityHistory.size();
+    if (stackIndex < 0 || stackIndex >= histSize)
+        return;
+
+    // Transfer stack to list in application order (index 0 = oldest).
+    QList<GraphVisibilitySnapshot> history;
+    history.reserve(histSize);
+    while (!m_visibilityHistory.isEmpty())
+        history.prepend(m_visibilityHistory.pop());
+
+    // Restore to the pre-first-filter state (history[0] was captured before
+    // any filter was applied, so applying it shows all nodes again).
+    applyVisibilitySnapshot(history[0]);
+
+    // Replay every spec except the removed one.
+    for (int i = 0; i < histSize; ++i)
+    {
+        if (i == stackIndex)
+            continue;
+        vertexFilterReplaySpec(history[i].spec);
+    }
+
+    progressStatus(tr("Filter removed; %1 filter(s) still active.")
+                       .arg(histSize - 1));
+}
+
+/**
+ * @brief Re-applies one filter from its stored replay parameters.
+ *
+ * Used by vertexFilterRemoveAt() during stack reconstruction.
+ */
+void Graph::vertexFilterReplaySpec(const FilterSpec &spec)
+{
+    switch (spec.type)
+    {
+    case FilterSpec::Type::Attribute:
+        vertexFilterByAttribute(spec.condition);
+        break;
+    case FilterSpec::Type::Ego:
+        vertexFilterByEgoNetwork(spec.egoVertex, spec.egoDepth);
+        break;
+    case FilterSpec::Type::Selection:
+        if (!spec.selection.isEmpty())
+            vertexFilterBySelection(spec.selection);
+        break;
+    case FilterSpec::Type::Centrality:
+        vertexFilterByCentrality(spec.centralityThreshold,
+                                 spec.centralityOverThreshold,
+                                 spec.centralityIndex);
+        break;
+    case FilterSpec::Type::EdgeAttribute:
+        edgeFilterByAttribute(spec.condition);
+        break;
+    case FilterSpec::Type::EdgeWeight:
+        edgeFilterByWeight(static_cast<qreal>(spec.edgeWeightThreshold),
+                           spec.edgeWeightOverThreshold);
+        break;
+    case FilterSpec::Type::Query:
+        if (!spec.queryConditions.isEmpty())
+            vertexFilterByQuery(GraphQuery{spec.queryConditions});
+        break;
+    case FilterSpec::Type::EdgeQuery:
+        if (!spec.queryConditions.isEmpty())
+            edgeFilterByQuery(GraphQuery{spec.queryConditions});
+        break;
+    default:
+        break;
+    }
+}
+
+/**
+ * @brief Returns the FilterSpec list in application order (oldest first).
+ *
+ * Available for consumers that need to inspect the active filter sequence
+ * (e.g. Phase 1 DialogQueryBuilder prefill). MainWindow currently tracks
+ * chip labels separately via m_nodeFilterChips.
+ * QStack<T> inherits QVector<T>, so at(0) is the bottom (oldest) entry.
+ */
+QList<FilterSpec> Graph::filterSpecList() const
+{
+    QList<FilterSpec> result;
+    result.reserve(m_visibilityHistory.size());
+    for (int i = 0; i < m_visibilityHistory.size(); ++i)
+        result.append(m_visibilityHistory.at(i).spec);
+    return result;
 }
 
 

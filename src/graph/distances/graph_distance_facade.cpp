@@ -15,6 +15,7 @@
 
 #include "graph.h"
 #include <QDebug>
+#include <QQueue>
 
 // PUBLIC DISTANCE API FACADE
 
@@ -138,6 +139,83 @@ int Graph::graphDiameterCached() const
 bool Graph::isConnectedCached() const
 {
     return m_graphIsConnected;
+}
+
+/**
+ * @brief Counts weakly connected components using BFS.
+ *
+ * Weak connectivity treats every edge as undirected regardless of graph type:
+ *   - Undirected: equivalent to ordinary connected components.
+ *   - Directed: two nodes are in the same component when there is an undirected
+ *     path between them (ignoring arrow direction). Answers the practical
+ *     "how many disconnected islands?" question consistently for both types.
+ *     Does NOT imply strong connectivity (all-pairs directed reachability);
+ *     use isConnected() / graphDistancesGeodesic() for that.
+ *
+ * m_graphIsConnected is NOT touched here; that flag belongs to the SSSP engine.
+ * Component IDs (1-based) are cached in m_vertexComponentId keyed by vertex
+ * number, ready for the colorize-by-component layout action.
+ *
+ * @return Number of weakly connected components.
+ */
+int Graph::graphWeaklyConnectedComponents()
+{
+    if (m_graphWeaklyConnectedComponents > 0) {
+        qDebug() << "Graph::graphWeaklyConnectedComponents() - cached:" << m_graphWeaklyConnectedComponents;
+        return m_graphWeaklyConnectedComponents;
+    }
+
+    qDebug() << "Graph::graphWeaklyConnectedComponents() - computing";
+
+    const int currentRelation = relationCurrent();
+    QHash<int, bool> visited;
+    int componentId = 0;
+
+    for (auto it = verticesBegin(); it != verticesEnd(); ++it) {
+        const int v = (*it)->number();
+        if (!(*it)->isEnabled() || visited.contains(v))
+            continue;
+
+        ++componentId;
+        QQueue<int> queue;
+        queue.enqueue(v);
+        visited[v] = true;
+
+        while (!queue.isEmpty()) {
+            const int u = queue.dequeue();
+            const int ui = vertexIndexByNumber(u);
+            if (ui < 0) continue;
+            const GraphVertex *uv = vertexAtIndex(ui);
+
+            // Follow out-edges
+            for (auto eit = uv->outEdges().cbegin(); eit != uv->outEdges().cend(); ++eit) {
+                if (eit.value().first != currentRelation) continue;
+                if (!eit.value().second.second) continue;
+                const int w = eit.key();
+                if (!visited.contains(w)) {
+                    visited[w] = true;
+                    queue.enqueue(w);
+                }
+            }
+
+            // Follow in-edges (makes traversal undirected → weak connectivity)
+            for (auto eit = uv->inEdges().cbegin(); eit != uv->inEdges().cend(); ++eit) {
+                if (eit.value().first != currentRelation) continue;
+                if (!eit.value().second.second) continue;
+                const int w = eit.key();
+                if (!visited.contains(w)) {
+                    visited[w] = true;
+                    queue.enqueue(w);
+                }
+            }
+
+            m_vertexComponentId[u] = componentId;
+        }
+    }
+
+    m_graphWeaklyConnectedComponents = componentId;
+    qDebug() << "Graph::graphWeaklyConnectedComponents() -" << componentId << "component(s)";
+    return m_graphWeaklyConnectedComponents;
 }
 
 /**
