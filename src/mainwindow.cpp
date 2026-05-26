@@ -6083,6 +6083,7 @@ void MainWindow::slotNetworkFileRecentUpdateActions() {
  */
 void MainWindow::statusMessage(const QString message){
     statusBar()->showMessage( message, appSettings["initStatusBarDuration"].toInt(0));
+    statusBar()->repaint();
 }
 
 

@@ -220,6 +220,13 @@ All notable changes to this project are documented in this file.
       reduces available vertical space the panel scrolls rather than
       overlapping its widgets.
 
+  - **Better feedback during long operations**: the status bar now shows a
+    "Computing … Please wait…" message for every analysis and layout operation
+    that can take noticeable time (centrality measures, prestige indices,
+    matrix computations, structural equivalence, force-directed and
+    prominence-index layouts, and more). The message is painted to the screen
+    immediately, so users always know the app is working.
+
 ### Bug Fixes
 
   - **UCINET DL two-mode networks now load correctly** (#63): three bugs in
