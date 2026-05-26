@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file. 
 
-## [3.6] – Jun 2026
+## [3.6] – May 26, 2026
 
 ### New Features
 
@@ -349,7 +349,7 @@ All notable changes to this project are documented in this file.
     artifact is gone, new edges drawn while the toggle is on are born as curves,
     and the setting persists across sessions.
 
-## [3.5] – May 2026
+## [3.5] – May 8, 2026
 
 ### New Features
 
