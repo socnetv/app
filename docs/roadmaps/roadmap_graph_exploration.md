@@ -405,23 +405,3 @@ Items explicitly deferred out of WS9 scope. Each has a home in the roadmap phase
 * **Attribute inspector panel** and **persistent filter panel** as docked widgets — currently dialog-driven; full panel approach deferred until the UI decomposition (WS7) is underway.
 
 ---
-
-## Documentation Debt — Screenshots Needed
-
-All v3.6 manual text has been written (`~/socnetv/website/src/content/docs/`).
-The following screenshots still need to be taken and inserted at the locations below.
-
-| # | Manual file | Section anchor | What to capture |
-|---|---|---|---|
-| 1 | `gui.mdx` | `#query-builder` | Query Builder dialog — Nodes scope, 2 rows filled (e.g. `type = investor`, `score > 0.5`), before clicking Apply |
-| 2 | `gui.mdx` | `#query-builder` | Canvas after Query Builder filter — filter bar showing chip `Nodes: query (2 condition(s)) ×`, some nodes hidden |
-| 3 | `gui.mdx` | `#statistics-panel` | Statistics Panel — all 5 collapsible sections (NETWORK, SELECTION, CLICKED NODE, CLICKED EDGE, DISTRIBUTION) with ▾/▴ toggles visible; replaces `socnetv-25-65-actors-KW-BC-levels.png` |
-| 4 | `gui.mdx` | overview / `#the-menu` | Main Window — updated toolbar with filter icons in their new positions (next to node/edge actions), filter bar visible; replaces `socnetv-25-131-actors-...png` |
-| 5 | `gui.mdx` | `#control-panel` | Control Panel → Layout section — prominence combo, type combo (set to "None"), force-directed combo; no Apply button |
-| 6 | `visualization.mdx` | `#node-color-by-clustering-coefficient` | Network with CLC color gradient — nodes blue→red by Clustering Coefficient score (Padgett or Karate Club recommended) |
-| 7 | `data.mdx` | `#in-app-bulk-editing` | Data Table Nodes tab — Set Property / Add Attribute / Remove Attribute toolbar buttons visible; replaces `socnetv-35-F7__Data_Table_Dock_(Nodes_tab).webp` |
-| 8 | `data.mdx` | `#set-property` | Bulk Edit dialog (nodes) — property combo open showing Label / Size / Color / Shape + custom keys |
-| 9 | `formats.mdx` | `#exporting-to-graphviz-dot` | Network → Export submenu — all export options visible (GraphViz DOT, UCINET DL, Weighted Edge List, Simple Edge List, …) |
-| 10 | `formats.mdx` | `#saving-subgraphs` | Save Subgraph As… dialog — format dropdown open showing all 7 format choices |
-| 11 | `gui.mdx` | `#edge-settings` | Settings dialog → Edge settings section — Arrow size spinbox visible alongside the Display edge arrows checkbox; show a value other than the default (e.g. 12) with arrows visibly enlarged on the canvas behind the dialog |
-
