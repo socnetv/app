@@ -17,6 +17,7 @@
 #define SOCNETV_DISTANCE_ENGINE_H
 
 #include "engine/graph_distance_progress_sink.h"
+#include "engine/per_source_scratch.h"
 
 class Graph;
 
@@ -55,13 +56,16 @@ private:
                   struct CentralityScratchFinalize &csfin,
                   IDistanceProgressSink &sink);
 
-    void bfsSSSP(const int &s, const int &si, const bool &computeCentralities,
-                 const bool &dropIsolates);
+    void bfsSSSP(const int &s, const int &si,
+                 const bool &computeCentralities,
+                 const bool &dropIsolates,
+                 PerSourceScratch &pss);
 
     void dijkstraSSSP(const int &s, const int &si,
                       const bool &computeCentralities,
                       const bool &inverseWeights,
-                      const bool &dropIsolates);
+                      const bool &dropIsolates,
+                      PerSourceScratch &pss);
 };
 
 #endif // SOCNETV_DISTANCE_ENGINE_H
