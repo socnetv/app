@@ -27,6 +27,7 @@ QT += printsupport
 QT += charts
 QT += svg
 QT += core5compat
+QT += concurrent
 
 INCLUDEPATH  += ./src
 
@@ -61,6 +62,8 @@ HEADERS += src/mainwindow.h \
     src/engine/distance_progress_sink.h \
     src/engine/graph_distance_progress_sink.h \
     src/engine/null_distance_progress_sink.h \
+    src/engine/per_source_scratch.h \
+    src/engine/thread_local_state.h \
     src/graphvertex.h \
     src/matrix.h \
     src/parser.h \
