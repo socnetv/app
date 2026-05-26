@@ -106,8 +106,14 @@ Each slice:
 
 * `DistanceEngine` extracted.
 * No direct access to `Graph` internals.
-* Narrow helper surface for SSSP context.
+* Narrow helper surface for SSSP context introduced (`ssspStack*`, `ssspNthOrder*`,
+  `ssspComponent*` accessors on `Graph`; `myPs` / `m_delta` on `GraphVertex`).
 * Golden parity verified.
+
+> **Superseded by WS3:** The transitional SSSP helper surface introduced in F1 was a
+> stepping stone, not a permanent API. WS3 Phase 1 extracted all per-source scratch state
+> into `PerSourceScratch`; WS3 Phase 2 parallelised the source loop and removed the
+> transitional accessors and their underlying data members entirely.
 
 ---
 
@@ -226,25 +232,14 @@ Add this at the end:
 
 ## Optional Future Step (Not Part of WS2)
 
-If/when we want to reduce the “helper surface” between `Graph` and engines:
+~~If/when we want to reduce the “helper surface” between `Graph` and engines, introduce a
+small `GraphAccess` / `GraphSSSPContext` struct passed into the engine as a dependency.~~
 
-### Style B — Engine-Facing Context Object
-
-Idea:
-
-* Introduce a small `GraphAccess` / `GraphSSSPContext` struct that:
-
-  * exposes only what a specific engine needs
-  * is constructed by `Graph`
-  * is passed into the engine as a dependency
-
-Benefits:
-
-* fewer tiny forwarding methods on `Graph`
-* reduces the need for `friend`
-* clearer engine API boundary
-* simplifies unit testing of engines
-
-This is intentionally deferred until after WS2 stabilization and should be considered only when it produces clear maintenance wins without behavior/performance risk.
+**Delivered by WS3:** The concept above was realised differently. Rather than a
+`GraphAccess` context object passed from `Graph`, WS3 Phase 1 introduced `PerSourceScratch`
+— a self-contained per-source struct owned by `DistanceEngine` itself. WS3 Phase 2
+extended this with `ThreadLocalState` for parallel execution. The `friend` relationship
+between `DistanceEngine` and `Graph` remains for now; narrowing it further is deferred
+to WS3 M2+.
 
 ---
