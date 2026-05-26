@@ -130,15 +130,16 @@ src/engine/
   distance_engine.cpp
   distance_progress_sink.h
   graph_distance_progress_sink.cpp
-  per_source_scratch.h        ← being introduced in WS3 Phase 1
+  per_source_scratch.h        ← introduced in WS3 Phase 1
 ```
 
 The engine runs from both the GUI and the CLI regression harness.
 
-**WS3 parallelisation work is active here.** The source loop in `DistanceEngine::runAllSources()`
-currently runs sequentially on `graphThread`. WS3 is extracting per-source scratch state
-(BFS stack, predecessor lists, delta accumulators, nth-order map) into a `PerSourceScratch`
-struct, then parallelising the loop with `QtConcurrent::blockingMap`.
+**WS3 parallelisation work is active here.** Phase 1 (complete): per-source scratch state
+(BFS stack, predecessor lists, delta accumulators, nth-order map) was extracted from
+`Graph`/`GraphVertex` into `PerSourceScratch` — see commit `7900809`.
+Phase 2 (active): parallelise the source loop with `QtConcurrent::blockingMap`; the source
+loop in `DistanceEngine::runAllSources()` currently still runs sequentially on `graphThread`.
 
 Do not add new per-source mutable state to `Graph` or `GraphVertex` — put it in `PerSourceScratch`.
 
