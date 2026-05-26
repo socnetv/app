@@ -1,12 +1,30 @@
 socnetv (3.6-1) unstable; urgency=medium
 
-  * New upstream release. 
+  * New upstream release.
+  * Major performance improvement: SSSP source loop now runs in parallel
+    across all CPU cores via QtConcurrent (WS3), delivering 2.7×–8.3×
+    speedup on medium-to-large networks.
+  * New export formats: UCINET DL, GraphViz DOT, Weighted Edge List,
+    Simple Edge List; subgraph save dialog supports all seven formats.
+  * New subgraph extraction actions (save visible / save selected nodes).
+  * New compound AND-logic query filter (Query Builder dialog).
+  * Connected components count and color-by-component layout.
+  * Bezier curve edges for improved graph readability.
+  * Configurable edge arrow size.
+  * Canvas scene index defaults to NoIndex for fast rendering on large networks.
+  * Various bug fixes (UCINET DL two-mode networks, edge endpoint offset, etc.).
 
  -- Dimitris Kalamaras <dimitris.kalamaras@gmail.com>  Mon, 15 Jun 2026 09:56:10 +0300
 
 socnetv (3.5-1) unstable; urgency=medium
 
   * New upstream release.
+  * Graph exploration and data workflows: advanced filtering, subgraph
+    extraction, structured data editing, bulk-edit via data table dock,
+    CSV/JSON attribute import/export.
+  * Custom node/edge attributes fully persisted in GraphML.
+  * Non-destructive filter stack with persistent filter bar.
+  * Various bug fixes and UI improvements.
 
  -- Dimitris Kalamaras <dimitris.kalamaras@gmail.com>  Fri, 08 May 2026 00:38:55 +0300
 
