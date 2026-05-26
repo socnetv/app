@@ -6,9 +6,9 @@
  * DistanceEngine source loop lives here.  Moving it out of Graph and GraphVertex
  * is WS3 Phase 1; making it thread-local enables Phase 2 parallelism.
  *
- * Dead Graph/GraphVertex members (Stack, sizeOfNthOrderNeighborhood,
- * sizeOfComponent, myPs, m_delta) are kept intact until Phase 2 passes the
- * regression harness, then removed.
+ * The corresponding transitional Graph/GraphVertex members (Stack,
+ * sizeOfNthOrderNeighborhood, sizeOfComponent, myPs, m_delta) were removed
+ * in the WS3 Phase 2 dead-code cleanup after the regression harness passed.
  */
 
 #ifndef SOCNETV_PER_SOURCE_SCRATCH_H
