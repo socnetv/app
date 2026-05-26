@@ -1,7 +1,8 @@
 # SocNetV
 
 [![version](https://img.shields.io/github/release/socnetv/app.svg?logo=c%2B%2B)](https://github.com/socnetv/app/releases)
-[![Build Status GitHub Actions](https://github.com/socnetv/app/actions/workflows/build-ci.yml/badge.svg)](https://github.com/socnetv/app/actions/workflows/build-ci.yml)
+[![Build Status GH CI](https://github.com/socnetv/app/actions/workflows/build-ci.yml/badge.svg)](https://github.com/socnetv/app/actions/workflows/build-ci.yml)
+[![Build Status GH Release](https://github.com/socnetv/app/actions/workflows/build-release.yml/badge.svg)](https://github.com/socnetv/app/actions/workflows/build-release.yml)
 [![langs](https://img.shields.io/github/languages/top/socnetv/app.svg)](https://github.com/socnetv/app.git)
 [![downloads](https://img.shields.io/github/downloads/socnetv/app/total.svg?logo=github)](https://socnetv.org/downloads)
 [![license](https://img.shields.io/github/license/socnetv/app.svg)](https://github.com/socnetv/app/blob/master/COPYING)
@@ -24,7 +25,7 @@ field data from a file in a supported format (GraphML, GraphViz, EdgeList, GML, 
 
 - Edit actors and ties through point-and-click, analyse graph and social network properties, produce beautiful HTML reports and embed visualization layouts to the network.
 
-[![socnetv](https://socnetv.org/data/uploads/screenshots/25/socnetv-25-padget-power-centrality-size-distribution.png)](https://socnetv.org)
+[![socnetv](https://socnetv.org/data/uploads/screenshots/36/BreadBoardz_2Level_Managers_Dir_Bezier_FR.webp)](https://socnetv.org)
 
 ## 2. Features
 
@@ -183,7 +184,7 @@ Download the archive with the source code of the latest version from
 
 #### Build with CMake (recommended)
 
-CMake is the recommended build system for SocNetV 3.3. Replace `3.X` with the version you downloaded.
+CMake is the recommended build system for SocNetV 3.6. Replace `3.X` with the version you downloaded.
 
 ```bash
 tar zxfv app-3.X.tar.gz
