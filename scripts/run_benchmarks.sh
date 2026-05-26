@@ -230,14 +230,28 @@ run_case_io_bench() {
     return 0
   fi
 
-  local allowed
+  local allowed pct_delta pct_str
   allowed=$(( expected + (expected / 10) ))
 
+  # Percent delta vs baseline: negative = faster, positive = slower
+  if (( expected > 0 )); then
+    pct_delta=$(( (load_ms - expected) * 100 / expected ))
+  else
+    pct_delta=0
+  fi
+  if (( pct_delta < 0 )); then
+    pct_str="${pct_delta#-}% faster than"
+  elif (( pct_delta > 0 )); then
+    pct_str="+${pct_delta}% slower than"
+  else
+    pct_str="at"
+  fi
+
   if within_threshold "$load_ms" "$expected"; then
-    echo "OK: ${load_ms}ms <= ${allowed}ms (baseline ${expected}ms, +10%)"
+    echo "OK: ${load_ms}ms <= ${allowed}ms, ${pct_str} baseline ${expected}ms (+10% threshold)"
     return 0
   else
-    echo "FAIL: ${load_ms}ms > ${allowed}ms (baseline ${expected}ms, +10%)"
+    echo "FAIL: ${load_ms}ms > ${allowed}ms, ${pct_str} baseline ${expected}ms (+10% threshold)"
     [[ "$STRICT" == "1" ]] && return 1
     return 0
   fi
@@ -282,15 +296,29 @@ run_case() {
     return 0
   fi
 
-  local allowed
+  local allowed pct_delta pct_str
   # allowed threshold = expected + 10%
   allowed=$(( expected + (expected / 10) ))
 
+  # Percent delta vs baseline: negative = faster, positive = slower
+  if (( expected > 0 )); then
+    pct_delta=$(( (median - expected) * 100 / expected ))
+  else
+    pct_delta=0
+  fi
+  if (( pct_delta < 0 )); then
+    pct_str="${pct_delta#-}% faster than"
+  elif (( pct_delta > 0 )); then
+    pct_str="+${pct_delta}% slower than"
+  else
+    pct_str="at"
+  fi
+
   if within_threshold "$median" "$expected"; then
-    echo "OK: ${median}ms <= ${allowed}ms (baseline ${expected}ms, +10%)"
+    echo "OK: ${median}ms <= ${allowed}ms, ${pct_str} baseline ${expected}ms (+10% threshold)"
     return 0
   else
-    echo "FAIL: ${median}ms > ${allowed}ms (baseline ${expected}ms, +10%)"
+    echo "FAIL: ${median}ms > ${allowed}ms, ${pct_str} baseline ${expected}ms (+10% threshold)"
     [[ "$STRICT" == "1" ]] && return 1
     return 0
   fi
