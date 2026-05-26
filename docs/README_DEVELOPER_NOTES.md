@@ -135,11 +135,15 @@ src/engine/
 
 The engine runs from both the GUI and the CLI regression harness.
 
-**WS3 parallelisation work is active here.** Phase 1 (complete): per-source scratch state
-(BFS stack, predecessor lists, delta accumulators, nth-order map) was extracted from
-`Graph`/`GraphVertex` into `PerSourceScratch` — see commit `7900809`.
-Phase 2 (active): parallelise the source loop with `QtConcurrent::blockingMap`; the source
-loop in `DistanceEngine::runAllSources()` currently still runs sequentially on `graphThread`.
+**WS3 parallelisation is complete (Phases 1 and 2 shipped).** The source loop in
+`DistanceEngine::runAllSources()` now runs concurrently across all CPU cores via
+`QtConcurrent::blockingMap`. Each worker thread owns a `ThreadLocalState` (see
+`thread_local_state.h`) holding a reused `PerSourceScratch`, partial BC/SC accumulators,
+and running totals for graph-wide aggregates. A single-threaded reduction step after
+the loop merges everything into graph state.
+
+Benchmark results (Debug build, 24-core Linux): 2.7×–8.3× speedup depending on network
+size and whether centralities are computed. All 36 golden regression baselines pass.
 
 Do not add new per-source mutable state to `Graph` or `GraphVertex` — put it in `PerSourceScratch`.
 
@@ -325,9 +329,9 @@ Golden outputs and performance must remain stable.
 
 ## Current focus
 
-**WS3 — DistanceEngine parallelisation** (active). See
+**WS3 — DistanceEngine parallelisation** (Phases 1 and 2 complete). See
 [`docs/roadmaps/roadmap_domain_model_split.md`](../roadmaps/roadmap_domain_model_split.md)
-for the phased plan.
+for the phased plan. Phase 3 (flat relation-keyed matrices) is delegated to WS5.
 
 Bug fixes and issue triage continue alongside WS3. All changes are validated through
 the WS6 regression harness.
