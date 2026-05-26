@@ -31,6 +31,7 @@ BuildRequires:  cmake
 %if 0%{?suse_version}
 BuildRequires:  qt6-linguist-devel
 BuildRequires:  qt6-qt5compat-devel
+BuildRequires:  qt6-concurrent-devel
 %endif
 
 %if 0%{?fedora} || 0%{?rhel_version} || 0%{?centos_version}
