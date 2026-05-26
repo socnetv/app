@@ -27,9 +27,6 @@
 #include <QThread>
 #include <QStack>
 
-// stack is a wrapper around <deque> in C++
-// see: www.cplusplus.com/reference/stl/stack
-#include <stack>
 
 #include "global.h"
 #include "graph/filters/filter_condition.h"
@@ -997,35 +994,6 @@ public:
                                 const bool &dropIsolates = false);
 
     // ============================================================================
-    // LEGACY/INTERNAL (ENGINE SUPPORT PRIMITIVES)
-    // ----------------------------------------------------------------------------
-    // NOTE (WS2/F0): These exist to support DistanceEngine during transition.
-    // UI code must not call these. Prefer keeping them engine-only.
-    // ============================================================================
-    // --- SSSP/Brandes stack helpers (DistanceEngine should not touch Stack directly) ---
-    void ssspStackClear();
-    bool ssspStackEmpty() const;
-    int ssspStackTop() const;
-    void ssspStackPop();
-    int ssspStackSize() const;
-    void ssspStackPush(int v);
-    // --- SSSP nth-order neighborhood (for Power Centrality) ---
-    void ssspNthOrderClear();
-    //
-    // LEGACY/INTERNAL: transitional storage.
-    // DistanceEngine may use this via the accessors below.
-    // (Later WS2/F1 may hide this field and keep only accessors.)
-    // Stores the number of vertices at distance n from a given vertex, for n=0,1,2,... during SSSP traversal.
-    H_f_i sizeOfNthOrderNeighborhood;
-    H_f_i::const_iterator ssspNthOrderBegin() const;
-    H_f_i::const_iterator ssspNthOrderEnd() const;
-    int ssspNthOrderValue(qreal dist) const;
-    void ssspNthOrderIncrement(int dist);
-    void ssspNthOrderIncrement(qreal dist);
-    // --- SSSP component size accumulator ---
-    void ssspComponentReset(int value = 1);
-    void ssspComponentAdd(int delta);
-    int ssspComponentSize() const;
     // --- Connectivity bookkeeping ---
     void notConnectedPairsClear();
     void notConnectedPairsInsert(int from, int to);
@@ -1380,8 +1348,6 @@ private:
     Matrix SIGMA, DM, sumM, invAM, AM, invM, WM;
     Matrix XM, XSM, XRM, CLQM;
 
-    stack<int> Stack;
-
     /** used in resolveClasses and graphDistancesGeodesic() */
     H_StrToInt discreteDPs, discreteSDCs, discreteCCs, discreteBCs, discreteSCs;
     H_StrToInt discreteIRCCs, discreteECs, discreteEccentricities;
@@ -1440,8 +1406,6 @@ private:
     int classesPP, maxNodePP, minNodePP;
     int classesCLC;
     int classesEVC, maxNodeEVC, minNodeEVC;
-    qreal sizeOfComponent;
-
     /** General & initialisation variables */
 
     int m_graphModStatus;

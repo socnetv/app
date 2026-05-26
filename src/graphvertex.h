@@ -191,14 +191,6 @@ public:
     void setEccentricity(const qreal &c);
     qreal eccentricity();
 
-    void setDelta(const qreal &c);
-    qreal delta();
-
-    void clearPs()	;
-
-    void appendToPs(const int &vertex ) ;
-    L_int Ps(void);
-
     //used in reciprocity report
     void setOutEdgesReciprocated(int outEdgesSym=-1) { m_outEdgesSym = (outEdgesSym!=-1) ?  outEdgesSym :  m_outEdgesSym+1;  }
     int outEdgesReciprocated() { return m_outEdgesSym; }
@@ -313,7 +305,7 @@ private:
     bool m_reciprocalLinked, m_enabled, m_hasCLC, m_isolated;
     double m_x, m_y;
     qreal m_Eccentricity, m_CLC;
-    qreal m_delta, m_EC, m_SEC;
+    qreal m_EC, m_SEC;
     qreal m_DC, m_SDC, m_DP, m_SDP, m_CC, m_SCC, m_BC, m_SBC, m_IRCC, m_SIRCC, m_SC, m_SSC;
     qreal m_PC, m_SPC, m_SIC, m_IC, m_SPRC, m_PRC;
     qreal m_PP, m_SPP, m_EVC, m_SEVC;
@@ -324,7 +316,6 @@ private:
 
     QHash<QString,QString> m_customAttributes;
     QHash<int,qreal> m_reciprocalEdges;
-    L_int myPs;
     QMultiHash <int, L_int> m_cliques;
     H_IntToStr m_outLinkColors, m_outEdgeLabels;
     QHash<int, QHash<QString,QString>> m_outEdgeCustomAttributes;
