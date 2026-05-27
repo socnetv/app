@@ -183,7 +183,7 @@ The underlying graph remains unchanged; filtering operates on visibility state.
 * Maintain multiple named subgraph views derived from the same base graph
 * Switch between subgraphs without reloading
 * Save and reload named subgraphs (persisted alongside or inside the graph file)
-* **Blocked on**: tab-based multi-graph UI (Feature 1 Phase 3, no issue yet) — a significant infrastructure investment. Deferred until the tab UI is designed and implemented.
+* **Blocked on**: tab-based multi-graph UI (#245) — a significant infrastructure investment. Deferred until the tab UI is designed and implemented.
 
 ### Phase 7 — Query System (#221) ✔
 
@@ -363,7 +363,7 @@ Deferred post-3.6 (see WS9 Debt). The `Lte`/`Gte` operators in `FilterCondition`
 
 * Persistent filter panel dock
 * Attribute inspector panel
-* Tab-based multi-graph UI
+* Tab-based multi-graph UI (#245)
 
 ---
 
@@ -389,8 +389,8 @@ Items explicitly deferred out of WS9 scope. Each has a home in the roadmap phase
 * **Arbitrary removal for selection / ego / centrality chips** — these filter types do not store enough parameters in `FilterSpec` to replay after removal; requires either `#31` structural undo or explicit parameter storage per type.
 
 ### Subgraphs & Multi-graph UI (#215 Phase 6)
-* **Persistent named subgraphs** — maintain multiple named derived views from the same base graph; switch without reloading; persist alongside or inside the graph file. **Blocked on tab-based multi-graph UI** (no issue yet — open one when scoping begins).
-* **Tab-based multi-graph UI** — preferred long-term direction over multiple windows; significant infrastructure investment.
+* **Persistent named subgraphs** — maintain multiple named derived views from the same base graph; switch without reloading; persist alongside or inside the graph file. **Blocked on tab-based multi-graph UI** (#245).
+* **Tab-based multi-graph UI** (#245) — preferred long-term direction over multiple windows; significant infrastructure investment.
 
 ### Layouts (Feature 1 Phase 3)
 * **Community-based node coloring** — color by community membership (Louvain / modularity); requires a community-detection algorithm wired to the layout engine. No dedicated issue yet.
