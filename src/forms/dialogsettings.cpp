@@ -995,7 +995,7 @@ void DialogSettings::getEdgeShape(){
     }
     qDebug()<< "DialogSettings::getEdgeShape() - new default shape " <<
                m_appSettings["initEdgeShape"];
-    emit setEdgeShape(m_appSettings["initEdgeShape"], 0);
+    emit setEdgesBezier(m_appSettings["initEdgeShape"] == "bezier");
 }
 
 

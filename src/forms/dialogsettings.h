@@ -122,7 +122,7 @@ signals:
     void setEdgeArrowsVisibility (const bool &toggle);
     void setEdgeArrowSize(const int &size);
     void setEdgeColor(const QColor, const int &);
-    void setEdgeShape(const QString, const long int);
+    void setEdgesBezier(const bool);
     void setEdgeOffsetFromNode(const int&offset, const int &v1=0, const int &v2=0);
     void setEdgeWeightNumbersVisibility(const bool &toggle);
     void setEdgeLabelsVisibility(const bool &toggle);

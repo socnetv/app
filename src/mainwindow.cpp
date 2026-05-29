@@ -829,6 +829,9 @@ void MainWindow::slotOpenSettingsDialog() {
     connect( m_settingsDialog, &DialogSettings::setEdgesVisibility,
              this, &MainWindow::slotOptionsEdgesVisibility);
 
+    connect( m_settingsDialog, &DialogSettings::setEdgesBezier,
+             this, &MainWindow::slotOptionsEdgesBezier);
+
     connect( m_settingsDialog, &DialogSettings::setEdgeArrowsVisibility,
              this, &MainWindow::slotOptionsEdgeArrowsVisibility);
     connect( m_settingsDialog, &DialogSettings::setEdgeArrowSize,
