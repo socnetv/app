@@ -8,6 +8,7 @@ MacPorts packager:
   - Szabolcs Horvát
 
 Debian packagers:
+  - Andreas Tille
   - Adrià García-Alzórriz
   - Caitlin Matos
   - Serafeim Zanikolas (>0.43)
