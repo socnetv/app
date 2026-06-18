@@ -329,12 +329,8 @@ Golden outputs and performance must remain stable.
 
 ## Current focus
 
-**WS3 — DistanceEngine parallelisation** (Phases 1 and 2 complete). See
-[`docs/roadmaps/roadmap_architecture_performance.md`](../roadmaps/roadmap_architecture_performance.md)
-for the phased plan. Phase 3 (flat relation-keyed matrices) is delegated to WS5.
-
-Bug fixes and issue triage continue alongside WS3. All changes are validated through
-the WS6 regression harness.
+See [`docs/ARCHITECTURAL_REFACTORING_ROADMAP.md`](../ARCHITECTURAL_REFACTORING_ROADMAP.md)
+for active workstreams, priorities, and the long-term architecture direction.
 
 ---
 
