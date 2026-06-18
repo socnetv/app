@@ -329,7 +329,13 @@ void GraphicsNode::setShape(const QString shape, const QString &iconPath) {
     // Cache the pixmap for icon-based shapes so paint() does no file I/O.
     if (m_shape == "custom"    || m_shape == "person" || m_shape == "person-b" ||
         m_shape == "bugs"      || m_shape == "heart"  || m_shape == "dice") {
-        m_pixmap = QPixmap(m_iconPath);
+        QPixmap raw(m_iconPath);
+        // For user-supplied custom images, scale to fit the bounding box while preserving
+        // aspect ratio so non-square images are not distorted. Built-in icons are already
+        // square, so this is a no-op for them in practice.
+        m_pixmap = raw.scaled(2*m_size, 2*m_size,
+                              Qt::KeepAspectRatio,
+                              Qt::SmoothTransformation);
     } else {
         m_pixmap = QPixmap();
     }
@@ -395,7 +401,9 @@ void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
     }
 
     if (m_shape == "custom") {
-        painter->drawPixmap(-m_size, -m_size, 2*m_size, 2*m_size, m_pixmap);
+        // Draw centered within the bounding box; m_pixmap was pre-scaled with KeepAspectRatio
+        // so its dimensions may be smaller than 2*m_size on one axis.
+        painter->drawPixmap(-m_pixmap.width()/2, -m_pixmap.height()/2, m_pixmap);
     }
     else if ( m_shape == "person"  ||
               m_shape == "person-b"  ||
