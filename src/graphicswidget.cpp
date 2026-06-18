@@ -1752,9 +1752,24 @@ void GraphicsWidget::changeMatrixScale(int value) {
     qDebug() << "Scaling view transformation by new scale factor:" << m_currentScaleFactor
               << "rotation unchanged:" << m_currentRotationAngle;
 
+    // Anchor every zoom step to the content centre — never to mapToScene(viewport centre).
+    // mapToScene accumulates integer scroll-bar rounding errors over many rapid slider steps,
+    // and also returns wrong values when Qt's AlignCenter mode is active (scene < viewport).
+    // The content centre is stable and correct regardless of current transform or scroll state.
+    // TODO(#248): This anchors zoom to the content centre unconditionally, which means
+    // zooming after a manual pan re-centres on content instead of staying on the panned
+    // position. A proper fix needs a stable m_viewCenter updated only on user pan
+    // (scrollContentsBy with a pan-vs-zoom flag), so zoom-from-pan works correctly.
+    // See also: remaining edge cases with the zoom slider documented in issue #248.
+    const QRectF contentBounds = scene()->itemsBoundingRect();
+    const QPointF anchor = contentBounds.isEmpty()
+        ? scene()->sceneRect().center()
+        : contentBounds.center();
+
     resetTransform();
     scale(m_currentScaleFactor, m_currentScaleFactor);
     rotate(m_currentRotationAngle);
+    centerOn(anchor);
 
     qDebug () << "Finished scaling the view."
                << " - GW dimensions: " << width() << "x" << height()
@@ -1808,7 +1823,9 @@ void GraphicsWidget::reset() {
     m_currentRotationAngle=0;
     m_currentScaleFactor = 1;
     m_zoomIndex=m_zoomIndexInit;
-    this->ensureVisible(QRectF(0, 0, 0, 0));
+    // Apply the identity transform now so that changeMatrixScale (triggered via
+    // zoomChanged below) reads a clean state — not the stale pre-reset transform.
+    resetTransform();
     emit zoomChanged(m_zoomIndex);
     emit rotationChanged(m_currentRotationAngle);
 }
