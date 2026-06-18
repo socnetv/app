@@ -1,4 +1,4 @@
-# Domain Model Split Roadmap (WS3)
+# Architecture & Performance Roadmap (WS3)
 
 ## Goal
 
@@ -158,6 +158,33 @@ Benefits:
 - Removes the per-vertex mutex array introduced in Phase 2 (each source owns its own row —
   no contention at all)
 - Aligns with WS5 goals (cancellable, testable matrix subsystem)
+
+---
+
+## Near-term DistanceEngine Deliverables (3.7)
+
+These features surface capabilities directly enabled by Phase 2 parallelisation, or improve
+performance in related algorithm slices. They do not require domain model changes — they land
+as self-contained additions validated by the WS6 harness.
+
+### #89 — Distribution of geodesics by path length
+
+Expose the path-length histogram that is implicit in the APSP result already produced by
+`runAllSources()`. After the parallel run completes, grouping geodesic counts by integer
+distance is O(V²). Add a histogram table and chart to the Distance & Geodesics report dialog.
+
+### #139 — Geodesic distance for specific node pairs
+
+Allow the user to pick a source and target vertex and read their precomputed geodesic distance
+from the APSP result, without re-running a full analysis. Lightweight addition to the existing
+Distances menu and report.
+
+### #64 — Clique Census performance
+
+The current Bron–Kerbosch implementation runs single-threaded with no pivot heuristics.
+Profile, then either parallelise independent sub-problems or apply Tomita-style pivot selection.
+Same pattern as the DistanceEngine source-loop parallelisation; validated by the existing
+clustering kernel in the WS6 harness.
 
 ---
 

@@ -1,7 +1,7 @@
 # Distance & Geodesic Engine Refactor Roadmap (WS1)
 
 **Status: Complete.** This document is an architectural history and reference record.
-Active DistanceEngine work is tracked in [`roadmap_domain_model_split.md`](roadmap_domain_model_split.md) (WS3).
+Active DistanceEngine work is tracked in [`roadmap_architecture_performance.md`](roadmap_architecture_performance.md) (WS3).
 
 ---
 

@@ -57,7 +57,7 @@ CHEBYSHEV cases. These cases do not yet have cancel guards in `writeMatrix()`.
 
 ## Incoming from WS3 — APSP Storage Migration (Phase 3)
 
-*Handed off from [`roadmap_domain_model_split.md`](roadmap_domain_model_split.md) Phase 3.*
+*Handed off from [`roadmap_architecture_performance.md`](roadmap_architecture_performance.md) Phase 3.*
 
 ### Current state (post WS3 Phase 2)
 

@@ -48,7 +48,7 @@ Details: [`docs/roadmaps/roadmap_graph_exploration.md`](roadmaps/roadmap_graph_e
 
 # Current Focus
 
-**WS3 — Domain Model Split, first execution: DistanceEngine parallelisation.**
+**WS3 — Architecture & Performance, first execution: DistanceEngine parallelisation.**
 
 The immediate goal is to extract per-source SSSP scratch state from `Graph` and `GraphVertex`
 into a self-contained `PerSourceScratch` struct, then parallelize the source loop across all
@@ -62,9 +62,9 @@ the WS6 regression harness.
 
 # Active Workstreams
 
-## WS3 — Domain Model Split ← **ACTIVE**
+## WS3 — Architecture & Performance ← **ACTIVE**
 
-Roadmap: [`docs/roadmaps/roadmap_domain_model_split.md`](roadmaps/roadmap_domain_model_split.md)
+Roadmap: [`docs/roadmaps/roadmap_architecture_performance.md`](roadmaps/roadmap_architecture_performance.md)
 
 Introduce a domain model independent of the Graph façade:
 
@@ -114,7 +114,7 @@ Simplify the parser/IO dispatch model:
 
 # Priorities
 
-1. **WS3** — domain model split / DistanceEngine parallelisation ← **current**
+1. **WS3** — architecture & performance / DistanceEngine parallelisation ← **current**
 2. **WS6** — regression safety (ongoing support)
 3. **WS7** — MainWindow decomposition
 4. **WS5** — matrices (receives Phase 3 APSP migration from WS3)

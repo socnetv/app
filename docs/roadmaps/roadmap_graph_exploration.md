@@ -400,7 +400,7 @@ Items explicitly deferred out of WS9 scope. Each has a home in the roadmap phase
 * **In-app derived fields** — compute a new attribute from existing ones (e.g. `full_name = first + " " + last`); value normalization (min-max, z-score); type coercion. Deferred: the CSV/JSON roundtrip workflow already covers the practical need via external spreadsheet tools.
 
 ### Infrastructure
-* **Structural undo / redo (#31)** — general `QUndoStack` across the full Graph mutation API; WS3-level concern (domain model split), explicitly deferred post-3.6. Filter-level undo is already covered by the `m_visibilityHistory` snapshot stack.
+* **Structural undo / redo (#31)** — general `QUndoStack` across the full Graph mutation API; WS3-level concern (architecture & performance), explicitly deferred post-3.6. Filter-level undo is already covered by the `m_visibilityHistory` snapshot stack.
 * **Temporal data (#222)** — date/datetime attributes, interval filtering, timeline slider, network-over-time animation. The `Lte`/`Gte` operators in `FilterCondition` already support date-range queries once attributes are typed; the animation layer is the deferred part.
 * **Attribute inspector panel** and **persistent filter panel** as docked widgets — currently dialog-driven; full panel approach deferred until the UI decomposition (WS7) is underway.
 
