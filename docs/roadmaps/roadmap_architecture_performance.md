@@ -3,16 +3,18 @@
 ## Goal
 
 Introduce a domain model that is independent from UI concerns and can be tested headlessly.
-As a first concrete step, extract per-source algorithm scratch state from `Graph` and `GraphVertex`
-into self-contained structures — enabling multi-core parallelism inside `DistanceEngine`.
+The first concrete step — extracting per-source algorithm scratch state from `Graph` and
+`GraphVertex` into `PerSourceScratch` and parallelising the `DistanceEngine` source loop —
+is complete (shipped in v3.6, 2.7×–8.3× speedup). The roadmap continues with near-term
+DistanceEngine feature deliverables and then the longer-arc domain model milestones M2–M4.
 
 ## Current Reality
 
 - `Graph` mixes storage, algorithm state, caches, and UI signaling.
 - `GraphVertex` acts as both node storage and analysis result cache.
-- Per-source SSSP scratch (BFS stack, predecessor lists, dependency accumulators, nth-order
-  neighbourhood map) lives as single-instance members on `Graph` and `GraphVertex`, forcing
-  the entire SSSP source loop to run sequentially on one thread.
+- Per-source SSSP scratch has been extracted into `PerSourceScratch` (Phase 1) and the
+  source loop now runs in parallel via `QtConcurrent` (Phase 2). The remaining mixed
+  concerns in `Graph`/`GraphVertex` are targeted by M2–M4 and WS5.
 
 ## Target Direction
 
@@ -31,7 +33,7 @@ into self-contained structures — enabling multi-core parallelism inside `Dista
 Total sequential cost: **O(V × (V + E))**.
 
 For a network with V vertices and E edges, the dominant cost is V × E edge traversals.
-Example: V=5 000, E=50 000 → 250 million edge traversals, all on a single thread today.
+Example: V=5 000, E=50 000 → 250 million edge traversals, all sequential before Phase 2.
 
 Expected parallel speedup (P cores, edge-dominated workloads):
 
@@ -64,7 +66,8 @@ struct PerSourceScratch {
     QHash<qreal, int>   nthOrder;      // nth-order neighbourhood sizes
     int                 componentSize; // reachable component size
 
-    void init(int N);  // resize all containers to N, clear/zero contents
+    void allocate(int totalVertices);        // resize all containers once before the source loop
+    void resetPerSource(bool computeCentralities); // reset per-source state before each source
 };
 ```
 
@@ -89,7 +92,7 @@ as today, just made explicit). The public vertex API is unchanged.
 - `run_golden_compares.sh` passes
 - `run_benchmarks.sh` shows no regression
 - Dead members (`Graph::Stack`, `Graph::sizeOfNthOrderNeighborhood`, `Graph::sizeOfComponent`,
-  `GraphVertex::myPs`, `GraphVertex::m_delta`) identified and marked for removal
+  `GraphVertex::myPs`, `GraphVertex::m_delta`) removed in Phase 2 dead-code cleanup ✅
 
 ---
 
@@ -190,7 +193,7 @@ clustering kernel in the WS6 harness.
 
 ## General Milestones (long-term WS3 arc)
 
-- M1: Identify minimal model surface required by algorithms *(PerSourceScratch is the first concrete instance)*
+- M1: Identify minimal model surface required by algorithms ✅ *(PerSourceScratch introduced, dead code removed, parallel loop shipped in v3.6)*
 - M2: Introduce `GraphModel` (adapter over existing Graph internals initially)
 - M3: Move pure data containers out of UI/Qt dependencies where possible
 - M4: Gradually relocate caches into explicit cache objects
