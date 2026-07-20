@@ -48,15 +48,11 @@ Details: [`docs/roadmaps/roadmap_graph_exploration.md`](roadmaps/roadmap_graph_e
 
 # Current Focus
 
-**WS3 — Architecture & Performance, first execution: DistanceEngine parallelisation.**
+**WS3 — Architecture & Performance.**
 
-The immediate goal is to extract per-source SSSP scratch state from `Graph` and `GraphVertex`
-into a self-contained `PerSourceScratch` struct, then parallelize the source loop across all
-available CPU cores using `QtConcurrent`. This delivers the first concrete domain-model
-separation and a significant performance improvement for large networks.
-
-Bug fixes and issue triage continue in parallel on the same branch; all changes go through
-the WS6 regression harness.
+Phases 1 and 2 (DistanceEngine parallelisation) shipped in v3.6 (2.7×–8.3× speedup).
+Next: dead code cleanup, near-term DistanceEngine feature deliverables, and bug fixes.
+See [`docs/roadmaps/roadmap_architecture_performance.md`](roadmaps/roadmap_architecture_performance.md).
 
 ---
 

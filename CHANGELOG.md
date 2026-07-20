@@ -2,11 +2,38 @@
 
 All notable changes to this project are documented in this file. 
 
-## [3.7] – Jun 2026
+## [3.7] – Aug 2026
 
-### New Features
+### Bug Fixes
 
-  - _TODO: add release notes_
+  - **Bezier curves toggle now applied at startup** (#246): edges always
+    rendered as straight lines regardless of the saved setting in
+    **Settings → Edge**. The toggle is now correctly applied on first load.
+
+  - **Remove misleading "session only" labels** (#247): several preferences
+    in the Edit and Options menus were annotated "session only" despite being
+    persisted between sessions. Labels removed.
+
+  - **Preserve aspect ratio for custom node images** (#122): non-square
+    images set as node icons via **Edit → Node → Change shape → Custom**
+    were stretched to fill the node bounding box. They are now scaled with
+    `Qt::KeepAspectRatio` and centred within the node.
+
+  - **Canvas zoom anchor stabilisation** (partial, #248): zoom in/out via
+    slider or keyboard no longer causes the network to drift or vanish — the
+    view re-centres on the content bounding box after each zoom step. The
+    **Reset** button now works in a single click. Pan-position preservation
+    across zoom steps is deferred to #248.
+
+### Maintenance
+
+  - WS3 roadmap renamed from "Domain Model Split" to **"Architecture &
+    Performance"** (`docs/roadmaps/roadmap_architecture_performance.md`);
+    title now reflects both the structural refactoring and the 2.7×–8.3×
+    parallelisation speedup shipped in v3.6.
+  - `docs/README_DEVELOPER_NOTES.md` "Current focus" section replaced with a
+    single pointer to the architectural roadmap.
+  - `AUTHORS`: added Andreas as Debian package maintainer.
 
 ## [3.6] – May 26, 2026
 
