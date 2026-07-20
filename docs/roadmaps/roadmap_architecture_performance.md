@@ -170,24 +170,32 @@ These features surface capabilities directly enabled by Phase 2 parallelisation,
 performance in related algorithm slices. They do not require domain model changes — they land
 as self-contained additions validated by the WS6 harness.
 
-### #89 — Distribution of geodesics by path length
+### #89 — Distribution of geodesics by path length ✅ Done
 
-Expose the path-length histogram that is implicit in the APSP result already produced by
-`runAllSources()`. After the parallel run completes, grouping geodesic counts by integer
-distance is O(V²). Add a histogram table and chart to the Distance & Geodesics report dialog.
+`Graph::writeGeodesicDistribution()` + `Graph::graphGeodesicDistanceDistribution()` added in
+`src/graph/distances/graph_distance_facade.cpp`. New **Analyze → Cohesion → Geodesic
+Distribution** action (Ctrl+G,I) and matching Control Panel combo entry. Computation is
+cache-aware: reuses `calculatedDistances` result when available.
 
-### #139 — Geodesic distance for specific node pairs
+### #139 — Geodesic distance for specific node pairs ✅ Done
 
-Allow the user to pick a source and target vertex and read their precomputed geodesic distance
-from the APSP result, without re-running a full analysis. Lightweight addition to the existing
-Distances menu and report.
+`Graph::graphGeodesicShortestPath()` added. The Distance dialog now shows the full node
+sequence of the shortest path (BFS for unweighted, Dijkstra for weighted) in addition to the
+distance value.
 
-### #64 — Clique Census performance
+### #64 — Clique Census performance ✅ Done
 
-The current Bron–Kerbosch implementation runs single-threaded with no pivot heuristics.
-Profile, then either parallelise independent sub-problems or apply Tomita-style pivot selection.
-Same pattern as the DistanceEngine source-loop parallelisation; validated by the existing
-clustering kernel in the WS6 harness.
+Tomita et al. (2006) pivot selection applied to `Graph::graphCliques()`. Pivot $ u \in P \cup X $
+chosen to maximise $ |N(u) \cap P| $; main loop iterates only $ P \setminus N(u) $. Correctness
+argument and paper references in the method docstring.
+
+### — Geodesic path canvas highlighting (new, to be filed)
+
+When the user computes the distance between two specific nodes, highlight the edges (and
+optionally nodes) that form the geodesic on the canvas — giving immediate visual feedback
+about which path was taken. Requires the path vertex list from `graphGeodesicShortestPath()`
+(already available after #139) and a temporary visual state on `GraphicsEdge` /
+`GraphicsNode` items that is cleared when the next analysis or network change occurs.
 
 ---
 

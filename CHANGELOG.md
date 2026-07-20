@@ -4,7 +4,34 @@ All notable changes to this project are documented in this file.
 
 ## [3.7] – Aug 2026
 
+### New Features
+
+  - **Geodesic distance distribution report** (#89): new **Analyze → Cohesion →
+    Geodesic Distribution** action (also in the Control Panel combo) writes an
+    HTML table of pair-count vs. integer distance bucket across all node pairs.
+    Computation is cache-aware: reuses the APSP result when distances have
+    already been calculated in the same session.
+
+  - **Shortest path reconstruction in Distance dialog** (#139): when computing
+    the geodesic distance between two specific nodes (**Analyze → Cohesion →
+    Distance**), the dialog now shows the full sequence of intermediate nodes
+    (e.g. *A → C → D → B*) in addition to the distance value. BFS is used for
+    unweighted graphs, Dijkstra for weighted ones.
+
+  - **Tomita pivot selection in clique census** (#64): the Bron–Kerbosch
+    algorithm now selects a pivot vertex $ u \in P \cup X $ that maximises
+    $ |N(u) \cap P| $ before each recursive level, and iterates only over
+    $ P \setminus N(u) $. This can reduce branch count to a single candidate
+    per level on dense graphs, giving dramatic speedups on real-world networks
+    without changing the set of maximal cliques reported.
+
 ### Bug Fixes
+
+  - **HCA uses BFS on unweighted networks** (#193): the Hierarchical Clustering
+    Analysis dialog always ran Dijkstra (weighted distances), even on unweighted
+    graphs. `considerWeights` is now derived from `activeGraph->isWeighted()`,
+    so BFS is used on unweighted networks, matching the behaviour of all other
+    distance-based analyses.
 
   - **Bezier curves toggle now applied at startup** (#246): edges always
     rendered as straight lines regardless of the saved setting in
