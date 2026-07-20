@@ -428,6 +428,7 @@ public slots:
     void slotAnalyzeMatrixGeodesics();
     void slotAnalyzeDistance();
     void slotAnalyzeDistanceAverage();
+    void slotAnalyzeGeodesicDistribution();
     void slotAnalyzeDiameter();
     void slotAnalyzeEccentricity();
 
@@ -749,7 +750,7 @@ private:
     QAction *helpSystemInfoAct, *helpCheckUpdatesApp;
 
     QAction *netDensity, *analyzeGraphReciprocityAct, *analyzeGraphSymmetryAct;
-    QAction *analyzeGraphDistanceAct, *averGraphDistanceAct;
+    QAction *analyzeGraphDistanceAct, *averGraphDistanceAct, *analyzeGeodesicDistributionAct;
     QAction *analyzeMatrixDistancesGeodesicAct, *analyzeMatrixGeodesicsAct;
     QAction *analyzeGraphDiameterAct, *analyzeGraphEccentricityAct;
     QAction *analyzeStrEquivalenceTieProfileDissimilaritiesAct;

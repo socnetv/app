@@ -2854,6 +2854,21 @@ void MainWindow::initActions()
     connect(averGraphDistanceAct, SIGNAL(triggered()),
             this, SLOT(slotAnalyzeDistanceAverage()));
 
+    analyzeGeodesicDistributionAct = new QAction(tr("Geodesic Distance Distribution"), this);
+    analyzeGeodesicDistributionAct->setShortcut(
+        QKeySequence(Qt::CTRL | Qt::Key_G, Qt::CTRL | Qt::Key_I));
+    analyzeGeodesicDistributionAct->setStatusTip(
+        tr("Show the distribution of geodesic distances across all pairs of nodes."));
+    analyzeGeodesicDistributionAct->setWhatsThis(
+        tr("Geodesic Distance Distribution\n\n"
+           "Counts how many ordered pairs of nodes are separated by each "
+           "geodesic distance d (d = 1, 2, …, diameter).  "
+           "Useful for understanding the shape of the network's distance structure — "
+           "e.g. whether most pairs are at distance 2 (\"small world\") "
+           "or spread across many distances."));
+    connect(analyzeGeodesicDistributionAct, &QAction::triggered,
+            this, &MainWindow::slotAnalyzeGeodesicDistribution);
+
     analyzeGraphEccentricityAct = new QAction(QIcon(":/images/eccentricity.png"), tr("Eccentricity"), this);
     analyzeGraphEccentricityAct->setShortcut(
         QKeySequence(Qt::CTRL | Qt::Key_G, Qt::CTRL | Qt::Key_E));
@@ -3728,6 +3743,7 @@ void MainWindow::initMenuBar()
     cohesionMenu->addSection("Graph distances");
     cohesionMenu->addAction(analyzeGraphDistanceAct);
     cohesionMenu->addAction(averGraphDistanceAct);
+    cohesionMenu->addAction(analyzeGeodesicDistributionAct);
     cohesionMenu->addSeparator();
     cohesionMenu->addAction(analyzeMatrixDistancesGeodesicAct);
     cohesionMenu->addAction(analyzeMatrixGeodesicsAct);
@@ -4305,6 +4321,7 @@ void MainWindow::initPanels()
                         << "Symmetry"
                         << "Distance"
                         << "Average Distance"
+                        << "Geodesic Distribution"
                         << "Distances Matrix"
                         << "Geodesics Matrix"
                         << "Eccentricity"
@@ -6043,30 +6060,33 @@ void MainWindow::toolBoxAnalysisCohesionSelectChanged(const int &selectedIndex)
         slotAnalyzeDistanceAverage();
         break;
     case 5:
-        slotAnalyzeMatrixDistances();
+        slotAnalyzeGeodesicDistribution();
         break;
     case 6:
-        slotAnalyzeMatrixGeodesics();
+        slotAnalyzeMatrixDistances();
         break;
     case 7:
-        slotAnalyzeEccentricity();
+        slotAnalyzeMatrixGeodesics();
         break;
     case 8:
-        slotAnalyzeDiameter();
+        slotAnalyzeEccentricity();
         break;
     case 9:
-        slotAnalyzeConnectedness();
+        slotAnalyzeDiameter();
         break;
     case 10:
-        slotAnalyzeWalksLength();
+        slotAnalyzeConnectedness();
         break;
     case 11:
-        slotAnalyzeWalksTotal();
+        slotAnalyzeWalksLength();
         break;
     case 12:
-        slotAnalyzeReachabilityMatrix();
+        slotAnalyzeWalksTotal();
         break;
     case 13:
+        slotAnalyzeReachabilityMatrix();
+        break;
+    case 14:
         slotAnalyzeClusteringCoefficient();
         break;
     };
@@ -13231,17 +13251,34 @@ void MainWindow::slotAnalyzeDistance()
 
     if (distanceGeodesic > 0 && distanceGeodesic < RAND_MAX)
     {
-
         qDebug() << "geodesic distance" << sourceNum << "->" << targetNum << "=" << distanceGeodesic;
+
+        // Reconstruct the actual shortest path so the user sees the intermediate nodes.
+        const QList<int> path = activeGraph->graphGeodesicShortestPath(
+            sourceNum, targetNum,
+            optionsEdgeWeightConsiderAct->isChecked(),
+            inverseWeights);
+
+        // Format the path as "v1 → v2 → … → vN" using node labels where available.
+        QString pathStr;
+        if (path.size() >= 2) {
+            for (int i = 0; i < path.size(); ++i) {
+                if (i > 0) pathStr += " \xE2\x86\x92 ";   // → (UTF-8 right arrow)
+                const QString lbl = activeGraph->vertexLabel(path[i]).trimmed();
+                pathStr += lbl.isEmpty() ? QString::number(path[i]) : lbl;
+            }
+        }
 
         slotHelpMessageToUser(
             USER_MSG_INFO,
             tr("Geodesic Distance: %1").arg(distanceGeodesic),
             tr("Geodesic Distance: %1").arg(distanceGeodesic),
-            tr("Nodes %1 and %2 are connected through at least one path. The length of the shortest path is %3.")
+            tr("Nodes %1 and %2 are connected. The shortest path has length %3.\n\n"
+               "Shortest path:\n%4")
                 .arg(sourceNum)
                 .arg(targetNum)
-                .arg(distanceGeodesic));
+                .arg(distanceGeodesic)
+                .arg(pathStr.isEmpty() ? tr("(path unavailable)") : pathStr));
     }
     else
     {
@@ -13451,6 +13488,55 @@ void MainWindow::slotAnalyzeDistanceAverage()
                "The average distance in this disconnected network "
                "is the sum of pair-wise distances divided by the number of existing geodesics."));
     }
+}
+
+/**
+ * @brief Computes and displays the distribution of geodesic distances across
+ * all ordered pairs of connected nodes as an HTML report.
+ *
+ * Triggered only by explicit user action (Analyze → Cohesion → Geodesic Distance
+ * Distribution).  Uses the APSP cache when available; otherwise runs the full
+ * APSP computation first.  Writes the result to an HTML file and opens it in the
+ * system browser or the built-in TextEditor according to app settings.
+ */
+void MainWindow::slotAnalyzeGeodesicDistribution()
+{
+    qDebug() << "MW::slotAnalyzeGeodesicDistribution()";
+
+    if (!activeNodes())
+    {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    askAboutEdgeWeights();
+
+    statusMessage(tr("Computing geodesic distance distribution. Please wait..."));
+
+    QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"]
+                 + "socnetv-report-geodesic-distribution-" + dateTime + ".html";
+
+    if (!activeGraph->writeGeodesicDistribution(fn,
+                                                optionsEdgeWeightConsiderAct->isChecked(),
+                                                inverseWeights))
+    {
+        statusMessage(tr("Error: could not write geodesic distribution report."));
+        return;
+    }
+
+    if (appSettings["viewReportsInSystemBrowser"] == "true")
+    {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+    }
+    else
+    {
+        TextEditor *ed = new TextEditor(fn, this, true);
+        ed->show();
+        m_textEditors << ed;
+    }
+
+    statusMessage(tr("Geodesic distance distribution saved as: ") + QDir::toNativeSeparators(fn));
 }
 
 /**

@@ -982,6 +982,18 @@ public:
                               const bool &considerWeights = false,
                               const bool &inverseWeights = true);
 
+    QMap<int, int> graphGeodesicDistanceDistribution(const bool &considerWeights = false,
+                                                     const bool &inverseWeights = false);
+
+    bool writeGeodesicDistribution(const QString &fileName,
+                                   const bool &considerWeights = false,
+                                   const bool &inverseWeights = false);
+
+    QList<int> graphGeodesicShortestPath(const int &v1,
+                                         const int &v2,
+                                         const bool &considerWeights = false,
+                                         const bool &inverseWeights = false);
+
     qreal graphDistanceGeodesicAverage(const bool considerWeights,
                                        const bool inverseWeights,
                                        const bool dropIsolates);

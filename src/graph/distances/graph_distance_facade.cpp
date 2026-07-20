@@ -15,7 +15,11 @@
 
 #include "graph.h"
 #include <QDebug>
+#include <QFile>
+#include <QMap>
 #include <QQueue>
+#include <QTextStream>
+#include <cstdlib>  // RAND_MAX
 
 // PUBLIC DISTANCE API FACADE
 
@@ -35,6 +39,278 @@ int Graph::graphDistanceGeodesic(const int &v1, const int &v2,
     qDebug() << "Graph::graphDistanceGeodesic()";
     graphDistancesGeodesic(false, considerWeights, inverseWeights, false);
     return m_graph[vpos[v1]]->distance(v2);
+}
+
+/**
+ * @brief Returns a histogram of geodesic distances across all ordered vertex pairs.
+ *
+ * Ensures the full APSP result is available (uses cache if graph is unchanged),
+ * then iterates all enabled vertex pairs and groups them by their geodesic distance
+ * into a QMap<int, int> where key = distance and value = number of ordered pairs
+ * at that distance.  Unreachable pairs (distance == RAND_MAX) are excluded.
+ *
+ * This method is called ONLY on explicit user request — it is never triggered as a
+ * side-effect of centrality computation or other internal analysis paths.
+ *
+ * @param considerWeights  Pass through to graphDistancesGeodesic; selects BFS vs Dijkstra.
+ * @param inverseWeights   Pass through to graphDistancesGeodesic; inverts edge weights.
+ * @return QMap<int, int>  Sorted map: distance bucket → count of ordered pairs.
+ */
+QMap<int, int> Graph::graphGeodesicDistanceDistribution(const bool &considerWeights,
+                                                        const bool &inverseWeights)
+{
+    qDebug() << "Graph::graphGeodesicDistanceDistribution()";
+
+    // Ensure the APSP result is available.  graphDistancesGeodesic() is a no-op
+    // when calculatedDistances is true (i.e. graph structure is unchanged).
+    graphDistancesGeodesic(false, considerWeights, inverseWeights, false);
+
+    QMap<int, int> distribution;
+
+    VList::const_iterator it1, it2;
+    for (it1 = m_graph.cbegin(); it1 != m_graph.cend(); ++it1) {
+        if (!(*it1)->isEnabled()) continue;
+        const int src = (*it1)->number();
+        for (it2 = m_graph.cbegin(); it2 != m_graph.cend(); ++it2) {
+            if (!(*it2)->isEnabled()) continue;
+            const int tgt = (*it2)->number();
+            if (src == tgt) continue;  // skip self-pairs
+
+            const qreal d = (*it1)->distance(tgt);
+
+            // Exclude unreachable pairs (RAND_MAX is the sentinel used by DistanceEngine).
+            if (d <= 0 || d >= static_cast<qreal>(RAND_MAX)) continue;
+
+            // Round to nearest integer: distances from BFS are exact integers stored
+            // as qreal; Dijkstra distances are real-valued but are still grouped by
+            // integer bucket for the histogram.
+            distribution[qRound(d)]++;
+        }
+    }
+
+    qDebug() << "Graph::graphGeodesicDistanceDistribution() - distribution:" << distribution;
+    return distribution;
+}
+
+/**
+ * @brief Writes a geodesic distance distribution report to an HTML file.
+ *
+ * Computes the distribution via graphGeodesicDistanceDistribution() (cache-aware),
+ * then writes a sortable HTML table (distance | pair count | % | cumulative %)
+ * to @p fileName.
+ *
+ * @param fileName        Full path of the output HTML file.
+ * @param considerWeights Passed through to graphGeodesicDistanceDistribution().
+ * @param inverseWeights  Passed through to graphGeodesicDistanceDistribution().
+ * @return true on success; false if the file could not be opened.
+ */
+bool Graph::writeGeodesicDistribution(const QString &fileName,
+                                      const bool &considerWeights,
+                                      const bool &inverseWeights)
+{
+    qDebug() << "Graph::writeGeodesicDistribution() ->" << fileName;
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qDebug() << "Graph::writeGeodesicDistribution() - cannot open file";
+        return false;
+    }
+    QTextStream out(&file);
+
+    const QMap<int, int> dist = graphGeodesicDistanceDistribution(considerWeights, inverseWeights);
+
+    // Compute the total number of connected ordered pairs for percentage columns.
+    int totalPairs = 0;
+    for (int cnt : dist) totalPairs += cnt;
+
+    out << htmlHead;
+    out << "<h1>" << tr("GEODESIC DISTANCE DISTRIBUTION") << "</h1>";
+
+    out << "<p>"
+        << "<span class=\"info\">" << tr("Network name: ") << "</span>"
+        << getName()
+        << "<br />"
+        << "<span class=\"info\">" << tr("Actors: ") << "</span>"
+        << vertices()
+        << "</p>";
+
+    if (dist.isEmpty()) {
+        out << "<p>" << tr("No connected pairs found.") << "</p>";
+        out << htmlEnd;
+        file.close();
+        return true;
+    }
+
+    out << "<p class=\"description\">"
+        << tr("Number of ordered pairs of connected nodes separated by each "
+              "geodesic distance <em>d</em>.  "
+              "Unreachable pairs are excluded.  "
+              "Diameter of this network: <strong>%1</strong>.")
+               .arg(graphDiameterCached())
+        << "</p>";
+
+    out << "<table class=\"stripes sortable\">"
+        << "<thead><tr>"
+        << "<th>" << tr("Distance (d)") << "</th>"
+        << "<th>" << tr("Pairs") << "</th>"
+        << "<th>" << tr("% of connected pairs") << "</th>"
+        << "<th>" << tr("Cumulative %") << "</th>"
+        << "</tr></thead><tbody>";
+
+    int cumulative = 0;
+    for (auto it = dist.cbegin(); it != dist.cend(); ++it) {
+        const int d     = it.key();
+        const int count = it.value();
+        cumulative += count;
+        const double pct  = 100.0 * count      / totalPairs;
+        const double cpct = 100.0 * cumulative / totalPairs;
+        out << "<tr>"
+            << "<td>" << d << "</td>"
+            << "<td>" << count << "</td>"
+            << QString("<td>%1%</td>").arg(pct,  0, 'f', 2)
+            << QString("<td>%1%</td>").arg(cpct, 0, 'f', 2)
+            << "</tr>";
+    }
+
+    out << "</tbody></table>";
+    out << htmlEnd;
+    file.close();
+    return true;
+}
+
+/**
+ * @brief Reconstructs one shortest path from vertex v1 to vertex v2.
+ *
+ * Runs a single-source BFS (unweighted) or Dijkstra (weighted) from v1,
+ * keeping a predecessor array, then traces the path back from v2.
+ * This is an on-demand, interactive call — it does NOT touch the APSP cache
+ * and is safe to call at any time regardless of calculatedDistances.
+ *
+ * @param v1               Source vertex number.
+ * @param v2               Target vertex number.
+ * @param considerWeights  If true, uses Dijkstra with edge weights; otherwise BFS.
+ * @param inverseWeights   If true, uses 1/weight as the edge cost (for closeness-style paths).
+ * @return QList<int>      Ordered list of vertex numbers on the path, inclusive of v1 and v2.
+ *                         Returns an empty list when v1 == v2 or no path exists.
+ */
+QList<int> Graph::graphGeodesicShortestPath(const int &v1, const int &v2,
+                                             const bool &considerWeights,
+                                             const bool &inverseWeights)
+{
+    qDebug() << "Graph::graphGeodesicShortestPath()" << v1 << "->" << v2;
+
+    if (v1 == v2 || !vpos.contains(v1) || !vpos.contains(v2))
+        return QList<int>();
+
+    const int N = m_graph.size();
+    const int currentRelation = relationCurrent();
+
+    // pred[i] = vertex NUMBER of the predecessor of m_graph[i] on the shortest
+    // path from v1.  Initialised to -1 (no predecessor known yet).
+    QVector<int> pred(N, -1);
+
+    // dist[i] = best distance from v1 to m_graph[i] found so far.
+    // RAND_MAX is the sentinel meaning "not yet reached".
+    QVector<qreal> dist(N, static_cast<qreal>(RAND_MAX));
+
+    const int srcIdx = vpos[v1];
+    dist[srcIdx] = 0;
+
+    if (!considerWeights) {
+        // -----------------------------------------------------------------------
+        // Unweighted BFS.  Each edge has cost 1, so the first time a vertex is
+        // reached it is via the shortest path — no relaxation needed.
+        // Time: O(V + E).
+        // -----------------------------------------------------------------------
+        QQueue<int> queue;     // stores vertex positions (indices into m_graph)
+        queue.enqueue(srcIdx);
+
+        while (!queue.isEmpty()) {
+            const int u = queue.dequeue();
+
+            // Iterate over all out-edges of vertex u in the current relation.
+            for (auto eit = m_graph[u]->outEdges().cbegin();
+                 eit != m_graph[u]->outEdges().cend(); ++eit) {
+
+                if (eit.value().first != currentRelation) continue;  // wrong relation
+                if (!eit.value().second.second) continue;            // edge disabled
+
+                const int wNum = eit.key();                          // target vertex number
+                if (!vpos.contains(wNum)) continue;
+                const int w = vpos[wNum];
+
+                // In BFS, the first visit is always via the shortest path.
+                if (dist[w] == static_cast<qreal>(RAND_MAX)) {
+                    dist[w] = dist[u] + 1;
+                    pred[w] = m_graph[u]->number();                  // record predecessor
+                    queue.enqueue(w);
+                }
+            }
+        }
+    } else {
+        // -----------------------------------------------------------------------
+        // Weighted Dijkstra.  Edge weights are used as costs (or their inverses
+        // when inverseWeights is true).  Uses a QMap<qreal, QList<int>> as a
+        // simple priority queue ordered by distance.
+        // Time: O((V + E) log V) due to QMap insertion/lookup.
+        // -----------------------------------------------------------------------
+        QMap<qreal, QList<int>> pq;  // distance → list of vertex positions at that distance
+        pq[0.0].append(srcIdx);
+
+        while (!pq.isEmpty()) {
+            // Extract the entry with the smallest distance.
+            auto it = pq.begin();
+            const qreal d = it.key();
+            const int u = it.value().takeFirst();
+            if (it.value().isEmpty()) pq.erase(it);
+
+            // Skip stale entries (a shorter path to u was already settled).
+            if (d > dist[u]) continue;
+
+            // Relax all out-edges of u.
+            for (auto eit = m_graph[u]->outEdges().cbegin();
+                 eit != m_graph[u]->outEdges().cend(); ++eit) {
+
+                if (eit.value().first != currentRelation) continue;
+                if (!eit.value().second.second) continue;
+
+                const int wNum = eit.key();
+                if (!vpos.contains(wNum)) continue;
+                const int w = vpos[wNum];
+
+                qreal edgeCost = eit.value().second.first;      // raw edge weight
+                if (inverseWeights && edgeCost != 0.0)
+                    edgeCost = 1.0 / edgeCost;                  // invert for closeness-style cost
+
+                const qreal newDist = dist[u] + edgeCost;
+                if (newDist < dist[w]) {
+                    dist[w] = newDist;
+                    pred[w] = m_graph[u]->number();              // record predecessor
+                    pq[newDist].append(w);                       // enqueue with new distance
+                }
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Path reconstruction: walk the predecessor chain from v2 back to v1.
+    // -----------------------------------------------------------------------
+    const int tgtIdx = vpos[v2];
+    if (dist[tgtIdx] == static_cast<qreal>(RAND_MAX))
+        return QList<int>();   // v2 is unreachable from v1
+
+    QList<int> path;
+    int cur = v2;
+    while (cur != v1) {
+        path.prepend(cur);
+        const int curPred = pred[vpos[cur]];
+        if (curPred == -1) return QList<int>();  // corrupted predecessor — should not happen
+        cur = curPred;
+    }
+    path.prepend(v1);  // prepend source last so path reads v1 → … → v2
+
+    qDebug() << "Graph::graphGeodesicShortestPath() - path:" << path;
+    return path;
 }
 
 /**
