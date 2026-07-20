@@ -177,6 +177,8 @@ public slots:
 
     void setEdgeHighlighting(const bool &toggle);
 
+    void selectPath(const QList<int> &path);
+
     void handleDoubleClickOnNode(GraphicsNode *node);
 
     void clearGuides();

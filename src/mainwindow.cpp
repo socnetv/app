@@ -13279,6 +13279,9 @@ void MainWindow::slotAnalyzeDistance()
                 .arg(targetNum)
                 .arg(distanceGeodesic)
                 .arg(pathStr.isEmpty() ? tr("(path unavailable)") : pathStr));
+
+        if (path.size() >= 2)
+            graphicsWidget->selectPath(path);
     }
     else
     {

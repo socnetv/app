@@ -1222,6 +1222,42 @@ void GraphicsWidget::setEdgeHighlighting(const bool &toggle){
 }
 
 
+/**
+ * @brief Selects the edges that form a shortest path, exactly as if the user
+ *        had Shift-clicked each edge in turn.
+ *
+ * Uses QSignalBlocker so that scene()->selectionChanged fires only once
+ * (via the explicit handleSelectionChanged() call at the end), not once per
+ * edge.  MainWindow then receives a single userSelectedItems() emission with
+ * the complete path edge set — same as any other multi-selection.
+ *
+ * For each hop (path[i] → path[i+1]) the forward key is tried first; if the
+ * edge is not found (directed graph, path goes the "other way") the reverse
+ * key is tried.
+ *
+ * @param path  Ordered list of vertex numbers returned by
+ *              Graph::graphGeodesicShortestPath().
+ */
+void GraphicsWidget::selectPath(const QList<int> &path)
+{
+    if (path.size() < 2) return;
+
+    {
+        QSignalBlocker blocker(scene());
+        scene()->clearSelection();
+        for (int i = 0; i < path.size() - 1; ++i) {
+            GraphicsEdge *e = edgesHash.value(createEdgeName(path[i], path[i+1]), nullptr);
+            if (!e)
+                e = edgesHash.value(createEdgeName(path[i+1], path[i]), nullptr);
+            if (e)
+                e->setSelected(true);
+        }
+    } // blocker destructor re-enables scene signals
+
+    handleSelectionChanged(); // one emission to MainWindow with the full path set
+}
+
+
 void GraphicsWidget::setEdgesBezier(const bool &toggle) {
     m_edgesBezier = toggle;
     viewport()->setUpdatesEnabled(false);
