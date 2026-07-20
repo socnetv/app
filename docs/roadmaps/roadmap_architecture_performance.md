@@ -48,7 +48,7 @@ against O(V × E) edge traversals.
 
 ---
 
-### Phase 1 — Introduce `PerSourceScratch` (zero behaviour change)
+### Phase 1 — Introduce `PerSourceScratch` ✅ Complete
 
 **Goal:** Make the per-source scratch state moveable without changing any algorithm logic.
 
@@ -125,7 +125,7 @@ signal emission inside the parallel loop.
 **Thread count:** `QThread::idealThreadCount()` at call time. Settings-dialog exposure
 deferred to a later phase.
 
-**Dead code removal** (deferred to a follow-up cleanup commit after Phase 2 harness sign-off):
+**Dead code removal** ✅ Done — removed in the Phase 2 dead-code cleanup:
 - `Graph::Stack`, `Graph::sizeOfNthOrderNeighborhood`, `Graph::sizeOfComponent`
   (and all `ssspStack*`, `ssspNthOrder*`, `ssspComponent*` accessors on `Graph`)
 - `GraphVertex::myPs` + `clearPs()` + `appendToPs()`
