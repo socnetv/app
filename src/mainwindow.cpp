@@ -14130,7 +14130,7 @@ void MainWindow::slotAnalyzeStrEquivalenceClusteringHierarchical(const QString &
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-equivalence-hierarchical-clustering-" + dateTime + ".html";
 
-    bool considerWeights = true;
+    bool considerWeights = activeGraph->isWeighted();
     bool inverseWeights = false;
     bool dropIsolates = true;
 
