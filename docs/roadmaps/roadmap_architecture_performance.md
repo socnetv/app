@@ -181,7 +181,10 @@ cache-aware: reuses `calculatedDistances` result when available.
 
 `Graph::graphGeodesicShortestPath()` added. The Distance dialog now shows the full node
 sequence of the shortest path (BFS for unweighted, Dijkstra for weighted) in addition to the
-distance value.
+distance value. The path edges are simultaneously **selected on the canvas** via
+`GraphicsWidget::selectPath()` — using the normal Qt selection mechanism so move, inspect,
+and context-menu operations work on the whole path out of the box. Only edges are selected
+(not nodes) to avoid highlighting unrelated connected edges.
 
 ### #64 — Clique Census performance ✅ Done
 
@@ -189,13 +192,6 @@ Tomita et al. (2006) pivot selection applied to `Graph::graphCliques()`. Pivot $
 chosen to maximise $ |N(u) \cap P| $; main loop iterates only $ P \setminus N(u) $. Correctness
 argument and paper references in the method docstring.
 
-### — Geodesic path canvas highlighting (new, to be filed)
-
-When the user computes the distance between two specific nodes, highlight the edges (and
-optionally nodes) that form the geodesic on the canvas — giving immediate visual feedback
-about which path was taken. Requires the path vertex list from `graphGeodesicShortestPath()`
-(already available after #139) and a temporary visual state on `GraphicsEdge` /
-`GraphicsNode` items that is cleared when the next analysis or network change occurs.
 
 ---
 
