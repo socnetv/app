@@ -12,11 +12,15 @@ All notable changes to this project are documented in this file.
     Computation is cache-aware: reuses the APSP result when distances have
     already been calculated in the same session.
 
-  - **Shortest path reconstruction in Distance dialog** (#139): when computing
-    the geodesic distance between two specific nodes (**Analyze → Cohesion →
-    Distance**), the dialog now shows the full sequence of intermediate nodes
-    (e.g. *A → C → D → B*) in addition to the distance value. BFS is used for
-    unweighted graphs, Dijkstra for weighted ones.
+  - **Shortest path reconstruction and canvas highlighting** (#139): when
+    computing the geodesic distance between two specific nodes (**Analyze →
+    Cohesion → Distance**), the dialog now shows the full sequence of
+    intermediate nodes (e.g. *A → C → D → B*) in addition to the distance
+    value. BFS is used for unweighted graphs, Dijkstra for weighted ones.
+    The path edges are simultaneously **selected on the canvas** — exactly as
+    if the user had Shift-clicked each one — unlocking move, inspect, and
+    context-menu operations on the whole path. Only edges are selected (not
+    nodes) to avoid highlighting unrelated connected edges.
 
   - **Tomita pivot selection in clique census** (#64): the Bron–Kerbosch
     algorithm now selects a pivot vertex $ u \in P \cup X $ that maximises
