@@ -5271,7 +5271,7 @@ void MainWindow::initSignalSlots()
             graphicsWidget, &GraphicsWidget::moveNode);
 
     connect(activeGraph, &Graph::signalLayoutFinished,
-            graphicsWidget, &GraphicsWidget::reset);
+            graphicsWidget, &GraphicsWidget::zoomToFit);
 
     connect(activeGraph, &Graph::signalNodesFound,
             graphicsWidget, &GraphicsWidget::setSelectedNodes);

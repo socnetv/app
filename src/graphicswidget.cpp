@@ -1873,6 +1873,49 @@ void GraphicsWidget::changeMatrixRotation(int angle){
 /**
  * @brief Resets to default rotation, zoom and scale
  */
+/**
+ * @brief Scales and centres the view so that the full network is visible.
+ *
+ * Computes the scale factor needed to fit the scene's bounding rect inside the
+ * viewport (with a 20 px margin on each side), maps it to the nearest discrete
+ * zoom index, updates @c m_viewCenter to the content centre, and emits
+ * @c zoomChanged() so that @c changeMatrixScale() applies the transform and the
+ * zoom slider in MainWindow updates accordingly.
+ *
+ * Called automatically via a QueuedConnection on @c Graph::signalLayoutFinished,
+ * which is emitted after every layout algorithm completes. The queued delivery
+ * guarantees that all @c setNodePos signals (which move scene items to their
+ * new positions) have been processed before this slot runs — so
+ * @c itemsBoundingRect() reflects the finished layout.
+ *
+ * After this call, subsequent zoom or pan operations anchor normally to the
+ * new view centre (the #248 behaviour is preserved).
+ */
+void GraphicsWidget::zoomToFit()
+{
+    const QRectF bounds = scene()->itemsBoundingRect();
+    if (bounds.isEmpty())
+        return;
+
+    const QRectF vp = viewport()->rect();
+    const qreal margin = 20.0;
+    const qreal sx = (vp.width()  - margin * 2.0) / bounds.width();
+    const qreal sy = (vp.height() - margin * 2.0) / bounds.height();
+    const qreal fitScale = qMin(sx, sy);
+    if (fitScale <= 0.0)
+        return;
+
+    // Map the desired fit scale to our discrete zoom index
+    m_zoomIndex = qRound(m_zoomIndexInit + qLn(fitScale) / qLn(2.0) * (m_zoomIndexMax / 10.0));
+    m_zoomIndex = qBound(0, m_zoomIndex, m_zoomIndexMax);
+
+    m_viewCenter    = bounds.center();
+    m_viewCenterValid = true;
+
+    emit zoomChanged(m_zoomIndex);
+}
+
+
 void GraphicsWidget::reset() {
     m_currentRotationAngle=0;
     m_currentScaleFactor = 1;

@@ -187,6 +187,7 @@ public slots:
 
     void zoomIn(const int step = 1);
     void zoomOut(const int step = 1);
+    void zoomToFit();
     void rotateLeft();
     void rotateRight();
     void changeMatrixScale(const int value);
