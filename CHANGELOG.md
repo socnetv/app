@@ -50,11 +50,13 @@ All notable changes to this project are documented in this file.
     were stretched to fill the node bounding box. They are now scaled with
     `Qt::KeepAspectRatio` and centred within the node.
 
-  - **Canvas zoom anchor stabilisation** (partial, #248): zoom in/out via
-    slider or keyboard no longer causes the network to drift or vanish — the
-    view re-centres on the content bounding box after each zoom step. The
-    **Reset** button now works in a single click. Pan-position preservation
-    across zoom steps is deferred to #248.
+  - **Canvas zoom anchor follows pan position** (#248): zoom in/out now
+    anchors to wherever you last scrolled or panned — pan to a corner, then
+    zoom, and the view stays there instead of snapping back to the centre of
+    the whole network. Implemented via `scrollContentsBy()` tracking
+    `m_viewCenter`, guarded by `m_isZooming` so the anchor is never corrupted
+    by the zoom-triggered scroll itself. Reset and new network loads still
+    centre on the full content bounding box.
 
 ### Maintenance
 
