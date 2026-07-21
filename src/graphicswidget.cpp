@@ -57,6 +57,8 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         // Set defaults
         hasDoubleClickedNode=false;
         m_isTransformationActive = false;
+        m_isZooming = false;
+        m_viewCenterValid = false;
         m_nodeLabel="";
 
         // Note: Should be changed by a call to setMaxZoomIndex()
@@ -191,6 +193,7 @@ void GraphicsWidget::clear() {
     firstDoubleClickedNode=0;
     secondDoubleClickedNode=0;
     hasDoubleClickedNode=false;
+    m_viewCenterValid = false;  // next zoom re-centres on content after new network loads
     qDebug() << "Finished clearing graphics widget";
 }
 
@@ -1788,30 +1791,45 @@ void GraphicsWidget::changeMatrixScale(int value) {
     qDebug() << "Scaling view transformation by new scale factor:" << m_currentScaleFactor
               << "rotation unchanged:" << m_currentRotationAngle;
 
-    // Anchor every zoom step to the content centre — never to mapToScene(viewport centre).
-    // mapToScene accumulates integer scroll-bar rounding errors over many rapid slider steps,
-    // and also returns wrong values when Qt's AlignCenter mode is active (scene < viewport).
-    // The content centre is stable and correct regardless of current transform or scroll state.
-    // TODO(#248): This anchors zoom to the content centre unconditionally, which means
-    // zooming after a manual pan re-centres on content instead of staying on the panned
-    // position. A proper fix needs a stable m_viewCenter updated only on user pan
-    // (scrollContentsBy with a pan-vs-zoom flag), so zoom-from-pan works correctly.
-    // See also: remaining edge cases with the zoom slider documented in issue #248.
+    // Anchor zoom to wherever the user last panned to (m_viewCenter), falling back to
+    // content centre on first zoom after load or after reset().  m_isZooming blocks
+    // scrollContentsBy() from updating m_viewCenter during the centerOn() call below.
     const QRectF contentBounds = scene()->itemsBoundingRect();
-    const QPointF anchor = contentBounds.isEmpty()
-        ? scene()->sceneRect().center()
-        : contentBounds.center();
+    if (!m_viewCenterValid) {
+        m_viewCenter = contentBounds.isEmpty()
+            ? scene()->sceneRect().center()
+            : contentBounds.center();
+        m_viewCenterValid = true;
+    }
 
+    m_isZooming = true;
     resetTransform();
     scale(m_currentScaleFactor, m_currentScaleFactor);
     rotate(m_currentRotationAngle);
-    centerOn(anchor);
+    centerOn(m_viewCenter);
+    m_isZooming = false;
 
     qDebug () << "Finished scaling the view."
                << " - GW dimensions: " << width() << "x" << height()
               << "  Scene dimensions:" << scene()->width() << "x" << scene()->height();
 
 
+}
+
+
+/**
+ * @brief Tracks the user's pan position so zoom can anchor to it.
+ *
+ * Called by Qt whenever the scroll position changes — user scroll bars, mouse
+ * wheel scroll, or programmatic centerOn().  The m_isZooming flag blocks
+ * updates during our own centerOn() call in changeMatrixScale(), so only
+ * genuine user pans update m_viewCenter.
+ */
+void GraphicsWidget::scrollContentsBy(int dx, int dy)
+{
+    QGraphicsView::scrollContentsBy(dx, dy);
+    if (!m_isZooming)
+        m_viewCenter = mapToScene(viewport()->rect().center());
 }
 
 
@@ -1859,6 +1877,7 @@ void GraphicsWidget::reset() {
     m_currentRotationAngle=0;
     m_currentScaleFactor = 1;
     m_zoomIndex=m_zoomIndexInit;
+    m_viewCenterValid = false;  // next zoom re-centres on content
     // Apply the identity transform now so that changeMatrixScale (triggered via
     // zoomChanged below) reads a clean state — not the stale pre-reset transform.
     resetTransform();

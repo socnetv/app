@@ -197,6 +197,9 @@ public slots:
     void setOptionsAntialiasing(const bool &toggle);
     void setOptionsNoAntialiasingAutoAdjust(const bool &toggle);
 
+protected:
+    void scrollContentsBy(int dx, int dy) override;
+
 signals:
     void userDoubleClickNewNode(const QPointF &);
     void userMiddleClicked(const int &sourceNum, const int &targetNum, const qreal &weight=1);
@@ -231,6 +234,9 @@ private:
     qreal fX,fY, factor;
     QString m_nodeLabel, m_numberColor, m_labelColor;
     QString edgeName;
+    QPointF m_viewCenter;
+    bool m_viewCenterValid;
+    bool m_isZooming;
     bool m_isTransformationActive;
     bool hasDoubleClickedNode, clickedEdgeExists;
     bool m_nodeNumbersInside, m_nodeNumberVisibility, m_nodeLabelVisibility;
