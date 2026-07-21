@@ -5189,6 +5189,9 @@ void MainWindow::initSignalSlots()
     connect(activeGraph, &Graph::signalGraphLoaded,
             this, &MainWindow::slotNetworkFileLoaded);
 
+    connect(activeGraph, &Graph::signalGraphLoaded,
+            graphicsWidget, &GraphicsWidget::zoomToFit);
+
     connect(m_tableWidget, &GraphTableWidget::nodeSelected,
             this, [this](int number)
             { statusMessage(tr("Node %1 selected from data table").arg(number)); });

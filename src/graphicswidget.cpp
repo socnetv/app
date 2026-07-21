@@ -1905,9 +1905,11 @@ void GraphicsWidget::zoomToFit()
     if (fitScale <= 0.0)
         return;
 
-    // Map the desired fit scale to our discrete zoom index
+    // Map the desired fit scale to our discrete zoom index.
+    // Never zoom IN beyond the initial 100 % level — only scale down to show
+    // large or dispersed layouts.  Zooming in is reserved for explicit user action.
     m_zoomIndex = qRound(m_zoomIndexInit + qLn(fitScale) / qLn(2.0) * (m_zoomIndexMax / 10.0));
-    m_zoomIndex = qBound(0, m_zoomIndex, m_zoomIndexMax);
+    m_zoomIndex = qBound(0, m_zoomIndex, m_zoomIndexInit);
 
     m_viewCenter    = bounds.center();
     m_viewCenterValid = true;

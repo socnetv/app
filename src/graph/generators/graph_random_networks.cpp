@@ -176,6 +176,7 @@ bool Graph::randomNetErdosCreate(const int &N,
     progressFinish();
 
     setModStatus(ModStatus::VertexEdgeCount);
+    emit signalLayoutFinished();
 
     return true;
 }
@@ -361,6 +362,7 @@ bool Graph::randomNetScaleFreeCreate(const int &N,
     setModStatus(ModStatus::VertexEdgeCount);
 
     progressFinish();
+    emit signalLayoutFinished();
 
     return true;
 }
@@ -453,6 +455,7 @@ bool Graph::randomNetSmallWorldCreate(const int &N, const int &degree,
     progressFinish();
 
     setModStatus(ModStatus::VertexEdgeCount);
+    emit signalLayoutFinished();
 
     return true;
 }
@@ -610,6 +613,7 @@ bool Graph::randomNetRegularCreate(const int &N,
     progressFinish();
 
     setModStatus(ModStatus::VertexEdgeCount);
+    emit signalLayoutFinished();
 
     return true;
 }
@@ -689,6 +693,9 @@ bool Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
         progressFinish();
 
     setModStatus(ModStatus::VertexEdgeCount, updateProgress);
+
+    if (updateProgress)
+        emit signalLayoutFinished();
 
     return true;
 }
@@ -874,6 +881,7 @@ bool Graph::randomNetLatticeCreate(const int &N,
     progressFinish();
 
     setModStatus(ModStatus::VertexEdgeCount);
+    emit signalLayoutFinished();
 
     return true;
 }
