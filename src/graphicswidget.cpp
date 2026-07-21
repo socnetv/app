@@ -1878,9 +1878,11 @@ void GraphicsWidget::changeMatrixRotation(int angle){
  *
  * Computes the scale factor needed to fit the scene's bounding rect inside the
  * viewport (with a 20 px margin on each side), maps it to the nearest discrete
- * zoom index, updates @c m_viewCenter to the content centre, and emits
- * @c zoomChanged() so that @c changeMatrixScale() applies the transform and the
- * zoom slider in MainWindow updates accordingly.
+ * zoom index, updates @c m_viewCenter to the content centre, and applies the
+ * transform via @c changeMatrixScale().  @c zoomChanged() is also emitted to
+ * keep the zoom slider in sync, but the transform is applied unconditionally —
+ * not via the slider chain — so the view is always re-centred even when the
+ * computed zoom index equals the slider's current value.
  *
  * Called automatically via a QueuedConnection on @c Graph::signalLayoutFinished,
  * which is emitted after every layout algorithm completes. The queued delivery
@@ -1914,6 +1916,11 @@ void GraphicsWidget::zoomToFit()
     m_viewCenter    = bounds.center();
     m_viewCenterValid = true;
 
+    // Apply the transform directly — don't rely on the zoomChanged→slider→
+    // changeMatrixScale chain, which is a no-op when the index hasn't changed.
+    changeMatrixScale(m_zoomIndex);
+    // Update the slider separately; if valueChanged fires it re-calls
+    // changeMatrixScale with the same values, which is idempotent.
     emit zoomChanged(m_zoomIndex);
 }
 
