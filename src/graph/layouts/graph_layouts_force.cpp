@@ -238,6 +238,7 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations)
 
     progressFinish();
     setModStatus(ModStatus::VertexPositions);
+    emit signalLayoutFinished();
 }
 
 /**
@@ -398,6 +399,7 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations)
     progressFinish();
 
     setModStatus(ModStatus::VertexPositions); // was missing on normal exit path
+    emit signalLayoutFinished();
 }
 
 /**
@@ -830,6 +832,7 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
     progressFinish();
 
     setModStatus(ModStatus::VertexPositions);
+    emit signalLayoutFinished();
 }
 
 /**

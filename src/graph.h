@@ -343,6 +343,8 @@ signals:
 
     void setNodePos(const int &, const qreal &, const qreal &);
 
+    void signalLayoutFinished();
+
     void signalNodesFound(const QList<int> foundList);
 
     void setNodeSize(const int &v, const int &size);

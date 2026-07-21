@@ -56,6 +56,7 @@ void Graph::layoutRandom()
     progressFinish();
 
     setModStatus(ModStatus::VertexPositions);
+    emit signalLayoutFinished();
 }
 
 /**
@@ -119,6 +120,7 @@ void Graph::layoutRadialRandom(const bool &guides)
 
     progressFinish();
     setModStatus(ModStatus::VertexPositions);
+    emit signalLayoutFinished();
 }
 
 
@@ -638,6 +640,7 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
     setModStatus(ModStatus::VertexPositions);
 
     prominenceDistribution(prominenceIndex, m_reportsChartType);
+    emit signalLayoutFinished();
 }
 
 
@@ -740,4 +743,5 @@ void Graph::layoutEgoRadial(const int egoVertex)
 
     progressFinish();
     setModStatus(ModStatus::VertexPositions);
+    emit signalLayoutFinished();
 }

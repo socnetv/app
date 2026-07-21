@@ -5270,6 +5270,9 @@ void MainWindow::initSignalSlots()
     connect(activeGraph, &Graph::setNodePos,
             graphicsWidget, &GraphicsWidget::moveNode);
 
+    connect(activeGraph, &Graph::signalLayoutFinished,
+            graphicsWidget, &GraphicsWidget::reset);
+
     connect(activeGraph, &Graph::signalNodesFound,
             graphicsWidget, &GraphicsWidget::setSelectedNodes);
 
