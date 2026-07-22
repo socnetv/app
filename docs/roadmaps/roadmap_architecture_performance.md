@@ -211,6 +211,166 @@ often vanished from view because `canvasSizeSet` never triggered a viewport re-f
 - `zoomToFit()` caps the computed zoom index at `m_zoomIndexInit` (100 %) — small networks are
   never over-zoomed; only layouts larger than the viewport scale down.
 
+---
+
+### GraphicsWidget — Performance and Code Quality Overhaul
+
+> **Before touching any item below:** read the full method, its callers, and every signal/slot
+> connection it participates in. Several items look mechanical but carry non-obvious consequences:
+> Qt object-ownership rules, cross-thread signal ordering, virtual dispatch, and implicit sharing
+> semantics can all turn a "simple rename" into a subtle bug. For each item: (1) map the full call
+> graph, (2) check for override/virtual implications, (3) implement and document, (4) run
+> `./scripts/run_golden_compares.sh` before moving to the next group.
+>
+> **Rules that apply to every item:**
+> - Every change must be reflected in the method's Doxygen `/** @brief … */` block — update or
+>   write one as part of the same commit.
+> - Obsolete methods confirmed to have no callers (verified with `grep -rn` across all of `src/`)
+>   may be deleted outright; document the removal in the commit message.
+> - All 36 golden JSON baselines must still pass after each group.
+>
+> **Final gate for the whole section:** every `GraphicsWidget` method — constructor, destructor,
+> all public/protected/private methods, all slots, all signals — carries an accurate Doxygen block.
+
+#### Group A — Correctness fixes and mechanical wins
+
+- [ ] **#A1 — Double-free / UB in `removeAllItems`** (`graphicswidget.cpp` lines 1423–1427)
+  `guide->deleteLater()` posts a deferred delete, then `delete *item` immediately destroys the
+  same pointer — undefined behaviour, crash under sanitizers. Pick one strategy: either
+  `scene()->removeItem(guide); guide->deleteLater();` or `delete guide;`.
+  Also add a null-check on the `qgraphicsitem_cast` result.
+  _Before fixing:_ confirm whether `GraphicsGuide::die()` calls `deleteLater()` internally —
+  that would make either choice safe on its own.
+
+- [ ] **#A2 — `contains()` + `value()` double hash lookup at 15+ sites**
+  Pattern `if (nodeHash.contains(k)) nodeHash.value(k)->...` probes the bucket twice.
+  Replace with `if (auto *n = nodeHash.value(k, nullptr)) n->...` everywhere.
+  Affected methods: `setNodeVisibility`, `setNodeSize`, `setNodeNumberColor/Size/Distance`,
+  `setNodeLabelColor/Size/Distance`, `setEdgeLabel`, `setEdgeColor`, `setEdgeDirectionType`,
+  `setEdgeWeight`, `removeEdge`, `setEdgeVisibility`.
+  _Before fixing:_ confirm `QHash::value(key, defaultValue)` behaviour is identical to the
+  contains+value pair for all edge cases (missing key, null stored value).
+
+- [ ] **#A3 — By-value argument copies** (`graphicswidget.cpp` line 980 and line 958)
+  `setSelectedNodes(QList<int> list)` → `setSelectedNodes(const QList<int> &list)`.
+  `hasNode(QString text)` → `hasNode(const QString &text)`.
+  _Before fixing:_ update the declarations in `graphicswidget.h` to match; check if any
+  Qt signal connection passes a temporary that would be invalidated by a const-ref parameter
+  (it would not — Qt copies arguments at the signal boundary for queued connections).
+
+- [ ] **#A4 — `setEdgeOffsetFromNode` rebuilds edge name manually** (`graphicswidget.cpp` lines 1161–1162)
+  Duplicates the 7-allocation string chain and reads `m_curRelation` instead of the `relation`
+  parameter — latent lookup failure when the active relation differs from the edge's registered one.
+  Replace with a call to `createEdgeName(source, target)`.
+  _Before fixing:_ verify that `createEdgeName` falls back to `m_curRelation` when `relation == -1`,
+  and that the callers of `setEdgeOffsetFromNode` always pass `relation == -1`.
+
+#### Group B — Hot-path allocation and scene-scan reductions
+
+- [ ] **#B1 — `handleSelectionChanged` calls `scene()->selectedItems()` twice** (lines 1474–1521)
+  `selectedNodes()` and `selectedEdges()` each call `scene()->selectedItems()`, allocating a
+  separate `QList` and traversing the scene index. During a rubber-band drag over N nodes this
+  fires N times, two allocations each.
+  Call `scene()->selectedItems()` once, store in `const QList<QGraphicsItem*> items`, iterate
+  once to populate both `m_selectedNodes` and `m_selectedEdges`, then emit `userSelectedItems`.
+  _Before fixing:_ audit all callers of the public `selectedNodes()` and `selectedEdges()` methods;
+  if they are called externally they must still return accurate data (either from the cached
+  members or by performing their own lookup).
+
+- [ ] **#B2 — `qDebug` in hot paths not guarded for release builds** (multiple locations)
+  `wheelEvent` (line 1727), `mousePressEvent` (lines 1587–1654), `mouseReleaseEvent`
+  (lines 1687–1707), `zoomIn`/`zoomOut` (lines 1747, 1767), `changeMatrixScale` (lines 1790, 1820).
+  Qt does not strip `qDebug` in release builds unless `QT_NO_DEBUG_OUTPUT` is defined.
+  Introduce a named logging category (`Q_LOGGING_CATEGORY(lcGW, "socnetv.graphicswidget")`)
+  and replace all calls with `qCDebug(lcGW)`. The category is disabled at runtime by default
+  with no recompile needed.
+  _Before fixing:_ check whether `QT_NO_DEBUG_OUTPUT` is already set in the release CMake
+  profile; if it is, wrapping is still preferable because the category approach gives per-module
+  control without a recompile.
+
+- [ ] **#B3 — `scene()->items()` full-scene scan in `setAllItemsVisibility` / `removeAllItems`**
+  (lines 1377–1430; `clearGuides` → `removeAllItems(TypeGuide)`)
+  `scene()->items()` is O(N log N) over all scene items — nodes, edges, weight labels, numbers,
+  labels, and guides — just to find the few guide objects. `clearGuides()` is called on every
+  debounced resize.
+  Maintain a `QList<GraphicsGuide*> m_guides` member in `graphicswidget.h`. Append in
+  `addGuideCircle()` and `addGuideHLine()`; iterate and delete from `m_guides` directly inside
+  `clearGuides()` without touching `scene()->items()`.
+  _Before fixing:_ confirm that guide items are owned by the scene (added via `scene()->addItem()`);
+  removing them from `m_guides` without also removing them from the scene would leak. The list
+  management must mirror the scene management exactly.
+
+- [ ] **#B4 — `selectAll` uses viewport pixels as scene coordinates** (`graphicswidget.cpp` lines 1449–1452)
+  `path.addRect(0, 0, width(), height())` passes device-pixel dimensions to
+  `scene()->setSelectionArea()`, which expects scene coordinates. After any pan, zoom, or
+  rotation this selects the wrong region.
+  Replace with `scene()->setSelectionArea(QRectF(scene()->sceneRect()))`.
+  Also remove (or wrap in `qCDebug`) the `scene()->selectedItems().size()` call used only
+  for a log line — it allocates a full item list just to count elements.
+  _Before fixing:_ verify rubber-band selection (which goes through a separate `QGraphicsView`
+  code path) is unaffected, then test `selectAll` after a zoom-in and after a pan.
+
+- [ ] **#B5 — `mouseReleaseEvent` allocates `selectedItems()` on every node mouse-up** (lines 1690–1696)
+  On every node mouse release, `scene()->selectedItems()` is called and iterated to emit one
+  `userNodeMoved` signal per selected node. For a 500-node drag: 500 sequential cross-thread
+  signal emissions inside the event handler.
+  Option A (preferred): introduce a batch signal
+  `userNodesMoved(const QList<QPair<int,QPointF>> &)` and update the `Graph` slot to match.
+  Option B (minimal): use the `m_selectedNodes` member populated by `handleSelectionChanged`
+  instead of re-querying the scene.
+  _Before fixing:_ if changing the signal signature, update the connection in `mainwindow.cpp`
+  and the receiving slot in `Graph`; run the full regression harness.
+
+#### Group C — Structural changes (plan each individually before starting)
+
+- [ ] **#C1 — `createEdgeName` QString allocations → integer edge key** (`graphicswidget.cpp` line 178)
+  `createEdgeName` builds `"relation:v1>v2"` with 8+ heap allocations per call. It is called in
+  every edge operation, up to 4 times per slot. `edgesHash` is a `QHash<QString, GraphicsEdge*>`.
+  Replace the key with `quint64` packed as
+  `(quint64(relation) << 40) | (quint64(v1) << 20) | quint64(v2)` (node numbers < 2²⁰ ≈ 1M;
+  adjust shifts if wider ranges are needed). Change the `H_StrToEdge` typedef in
+  `graphicswidget.h` to `QHash<quint64, GraphicsEdge*>`. Rename `createEdgeName` → `edgeKey`
+  (returns `quint64`); rename the member `edgeName` → `m_edgeKey`.
+  _Before fixing:_ audit every use of `edgeName` / `edgesHash` across the full file and any
+  external callers; confirm actual node-number and relation-index ranges used in the codebase;
+  check whether any code serialises or logs the edge key as a string (would need updating).
+
+- [ ] **#C2 — `hasNode` O(N) loop with repeated `toInt()`** (`graphicswidget.cpp` lines 958–970)
+  `text.toInt(&ok, 10)` is called once per node in the hash on every invocation.
+  Refactor: convert once before any loop; for numeric input do a direct O(1) `nodeHash.find()`;
+  fall back to O(N) label scan only when the input is non-numeric or the number is not found.
+  _Before fixing:_ confirm all callers pass either a node-number string or a label; if labels can
+  be purely numeric, the O(N) label fallback is mandatory even after a hash hit fails.
+
+- [ ] **#C3 — `zoomToFit` / `reset` may double-apply transform via slider signal chain** (lines 1929–1946)
+  Both call `changeMatrixScale()` directly, then `emit zoomChanged()`. If anything connects
+  `valueChanged → changeMatrixScale` the transform is applied twice (two repaints).
+  Currently mitigated by the `sliderMoved` change in #249, but the coupling is fragile.
+  Fix: when updating the slider for display purposes, use `QSignalBlocker` to prevent re-entry.
+  _Before fixing:_ `GraphicsWidget` holds no direct pointer to `zoomSlider` (it lives in
+  `MainWindow`). Decide between: (a) emitting a separate display-only signal that MW connects
+  to `slider->setValue` via a blocked connection, or (b) passing the slider pointer at
+  construction time. Choose and document the pattern before writing any code.
+
+- [ ] **#C4 — `edgesHash.reserve(500000)` pre-allocated at startup regardless of graph size**
+  (`graphicswidget.cpp` line 70)
+  Pre-allocates megabytes of hash bucket memory unconditionally. Remove the fixed reserve.
+  Call `edgesHash.reserve(edgeCount)` and `nodeHash.reserve(nodeCount)` after the file header
+  is parsed and actual counts are known — before `drawNode`/`drawEdge` calls begin.
+  _Before fixing:_ identify where `Graph` signals vertex/edge counts (e.g. via
+  `signalNodesFound` or a dedicated pre-draw signal) and wire a slot or direct call on
+  `GraphicsWidget` to trigger the reserve at the right moment.
+
+#### Final gate — documentation and dead-code removal
+
+- [ ] **Documentation pass:** every `GraphicsWidget` method — constructor, destructor, all public,
+  protected, and private methods, all slots, and all signals — must carry an accurate Doxygen
+  `/** @brief … */` block. Methods that already have one must be reviewed against current behaviour
+  and updated where stale.
+
+- [ ] **Dead-code removal:** identify any methods with no external callers using
+  `grep -rn "methodName" src/` across the full source tree and Qt Creator's "Find Usages".
+  Confirm a method is unreachable before deleting it. Document each removal in the commit message.
 
 ---
 
