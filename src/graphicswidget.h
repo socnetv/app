@@ -20,6 +20,7 @@
 
 #include <QGraphicsView>
 #include <QHash>
+#include <QTimer>
 #include "global.h"
 
 SOCNETV_USE_NAMESPACE 
@@ -243,6 +244,7 @@ private:
     bool m_nodeNumbersInside, m_nodeNumberVisibility, m_nodeLabelVisibility;
     bool m_edgeHighlighting;
     bool m_edgesBezier;
+    QTimer m_resizeTimer;
     GraphicsNode *firstDoubleClickedNode, *secondDoubleClickedNode;
     GraphicsNode *markedEdgeSource;
     GraphicsNode *markedEdgeTarget;

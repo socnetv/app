@@ -87,6 +87,12 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         // Scene index method is set at startup via slotOptionsCanvasIndexMethod(appSettings["canvasIndexMethod"]).
         // Default appSetting is NoIndex; user can override via Settings > Canvas.
 
+        // Debounce resize events: fire canvasSizeSet once, 150 ms after the last
+        // resize event, instead of on every pixel of a window-drag resize.
+        m_resizeTimer.setSingleShot(true);
+        connect(&m_resizeTimer, &QTimer::timeout,
+                this, [this]() { emit resized(width(), height()); });
+
         // Connect scene change signal to the slot that handles selected items
         connect ( scene() , &QGraphicsScene::selectionChanged,
                      this, &GraphicsWidget::handleSelectionChanged);
@@ -1743,6 +1749,7 @@ void GraphicsWidget::zoomOut (const int step){
     if (m_zoomIndex <= 0) {
         m_zoomIndex = 0;
     }
+    changeMatrixScale(m_zoomIndex);
     emit zoomChanged(m_zoomIndex);
 
 }
@@ -1765,6 +1772,7 @@ void GraphicsWidget::zoomIn(const int step){
     if (m_zoomIndex < 0) {
         m_zoomIndex = 0;
     }
+    changeMatrixScale(m_zoomIndex);
     emit zoomChanged(m_zoomIndex);
 }
 
@@ -1930,9 +1938,11 @@ void GraphicsWidget::reset() {
     m_currentScaleFactor = 1;
     m_zoomIndex=m_zoomIndexInit;
     m_viewCenterValid = false;  // next zoom re-centres on content
-    // Apply the identity transform now so that changeMatrixScale (triggered via
-    // zoomChanged below) reads a clean state — not the stale pre-reset transform.
-    resetTransform();
+    // Apply the identity transform directly — don't rely on the
+    // zoomChanged→slider→changeMatrixScale chain, which is a no-op when the
+    // slider is already at m_zoomIndexInit.  changeMatrixScale calls
+    // resetTransform()+scale()+rotate() using the zeroed rotation above.
+    changeMatrixScale(m_zoomIndexInit);
     emit zoomChanged(m_zoomIndex);
     emit rotationChanged(m_currentRotationAngle);
 }
@@ -1952,46 +1962,31 @@ void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
             << "-->" << e->size().width() << "x" << e->size().height()
              << "widget dimensions:" << width() << "x"<<height();
 
+    // Always update the scroll-area bookkeeping first so that viewport()->rect()
+    // is current when zoomToFit() reads it later (via the timer).
+    QGraphicsView::resizeEvent(e);
+
+    // Suppress the spurious resize event that Qt fires when our own scale/rotate
+    // calls cause scrollbars to appear or disappear (changing the viewport rect).
     if (m_isTransformationActive)  {
         m_isTransformationActive = false;
         return;
     }
 
-    // Compute resize factors
-    fX = (double)(e->size().width())/(double)(e->oldSize().width());
-    fY = (double)(e->size().height())/(double)(e->oldSize().height());
+    // Guard against 0-size events (window minimise on Windows).
+    if (e->size().isEmpty())
+        return;
 
-    // Reposition  guides
-    foreach (QGraphicsItem *item, scene()->items()) {
-        if ( (item)->type() == TypeGuide ){
-            if (GraphicsGuide *guide = qgraphicsitem_cast<GraphicsGuide *>  (item) ) {
-                if (guide->isCircle()) {
-                    guide->die();
-                    guide->deleteLater ();
-                    delete item;
-                }
-                else {
-                    qDebug()<< "Horizontal GraphicsGuide "
-                            << " original position ("
-                            <<  guide->x() << "," << guide->y()
-                             << ") - width " << guide->width()
-                             << ") - will move to ("
-                             << guide->x()*fX << ", " << guide->y()*fY << ")"
-                                << " new width " << (int) ceil( (guide->width() *fX ));
-                    guide->setHorizontalLine(
-                                mapToScene(guide->pos().x()*fX,
-                                           guide->pos().y()*fY),
-                                (int) ceil( (guide->width() *fX )));
-                }
-            }
-        }
-    }
+    // Guides are positioned relative to the old canvas size; discard them now.
+    // They will be recreated automatically when the next layout runs.
+    clearGuides();
+
+    // Debounce: emit resized() once, 150 ms after the last resize event fires.
+    // The signal triggers canvasSizeSet() (proportional node rescaling) on the
+    // graph thread, which then emits signalLayoutFinished → zoomToFit().
+    m_resizeTimer.start(150);
 
     qDebug () << "Scene dimensions now:" << scene()->width() << "x" << scene()->height();
-
-    emit resized(e->size().width(), e->size().height());
-
-    QGraphicsView::resizeEvent(e);
 }
 
 

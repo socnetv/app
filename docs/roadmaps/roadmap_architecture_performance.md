@@ -192,6 +192,25 @@ Tomita et al. (2006) pivot selection applied to `Graph::graphCliques()`. Pivot $
 chosen to maximise $ |N(u) \cap P| $; main loop iterates only $ P \setminus N(u) $. Correctness
 argument and paper references in the method docstring.
 
+### #249 — Viewport auto-fit and resize debouncing ✅ Done
+
+**Problem:** `resizeEvent` fired O(N × fps) cross-thread rescaling signals during a window-drag
+resize. Zoom buttons, mouse wheel, and `reset()` relied on the `zoomSlider::valueChanged →
+changeMatrixScale` chain — a no-op when the slider value was unchanged. After resize, the network
+often vanished from view because `canvasSizeSet` never triggered a viewport re-fit.
+
+**Changes:**
+- `resizeEvent` now debounces via a 150 ms single-shot `QTimer`; one `canvasSizeSet` fires per
+  stable stop instead of once per pixel of window drag. Old guide-repositioning loop (O(items))
+  replaced by `clearGuides()` — guides are recreated by the next layout run anyway.
+- `canvasSizeSet` emits `signalLayoutFinished` after all `setNodePos` signals, so the viewport
+  auto-fits as soon as the main thread finishes moving nodes.
+- Zoom slider wired to `sliderMoved` (genuine user drag only). `zoomIn()`, `zoomOut()`, and
+  `reset()` now call `changeMatrixScale()` directly, decoupling view updates from the slider chain
+  and making Ctrl+wheel, button auto-repeat, and keyboard shortcuts reliable at any slider position.
+- `zoomToFit()` caps the computed zoom index at `m_zoomIndexInit` (100 %) — small networks are
+  never over-zoomed; only layouts larger than the viewport scale down.
+
 
 ---
 

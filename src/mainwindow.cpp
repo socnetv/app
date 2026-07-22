@@ -5154,7 +5154,7 @@ void MainWindow::initSignalSlots()
     connect(graphicsWidget, SIGNAL(zoomChanged(const int &)),
             zoomSlider, SLOT(setValue(const int &)));
 
-    connect(zoomSlider, SIGNAL(valueChanged(const int &)),
+    connect(zoomSlider, SIGNAL(sliderMoved(const int &)),
             graphicsWidget, SLOT(changeMatrixScale(const int &)));
 
     connect(zoomInBtn, SIGNAL(clicked()), graphicsWidget, SLOT(zoomIn()));

@@ -50,6 +50,10 @@ void Graph::canvasSizeSet(const int &width, const int &height)
     //                       );
 
     setModStatus(ModStatus::VertexPositions, false);
+    // Signal the view to auto-fit after node rescaling completes.
+    // QueuedConnection ordering guarantees all setNodePos() calls are processed
+    // on the main thread before zoomToFit() runs.
+    emit signalLayoutFinished();
     qDebug() << "Finished resizing.";
 }
 
