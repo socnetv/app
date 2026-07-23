@@ -265,6 +265,19 @@ Do not hard-code scene rendering flags in `GraphicsWidget`'s constructor.
 Apply them via the corresponding `slotOptionsCanvas*` methods, which read
 from `appSettings` at startup.
 
+## `edgesHash` keying
+
+`GraphicsWidget::edgesHash` (mapping a graph edge to its `GraphicsEdge` scene item — UI-layer
+only, unrelated to `Graph`'s own data model) is keyed by `GraphicsWidget::edgeKey()`, a `quint64`
+packed as `relation * 10^16 + v1 * 10^8 + v2`: a 3-digit relation field and two 8-digit node-number
+fields, read left-to-right like the old `"relation:v1>v2"` string it replaced. This is positional
+encoding, not a mixing hash — collisions are structurally impossible as long as each field stays
+under its digit budget (relation < 1000, node numbers < 100,000,000 each), enforced by
+`Q_ASSERT_X` in `edgeKey()`. Practical consequence: a single loaded network is capped at
+99,999,999 nodes — not a real-world limit (parsers always assign sequential `1..N` node numbers
+regardless of a source file's own IDs, and a `QGraphicsView` canvas with anywhere near that many
+interactive items is unusable long before the cap matters).
+
 ---
 
 # Regression Safety Harness

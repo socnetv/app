@@ -118,6 +118,12 @@ All notable changes to this project are documented in this file.
     double-applying the transform on every click of the rotate left/right
     buttons (harmless but wasteful — now applied once). All golden
     regression baselines pass unchanged.
+  - **Canvas rendering internals: correctness and performance pass**
+    (#250, part 6): replaced the canvas's edge lookup key — previously a
+    freshly-allocated string built on every edge operation — with a packed
+    integer that carries the same information without any heap allocation
+    or character-by-character hashing. No behaviour change. All golden
+    regression baselines pass unchanged.
 
 ## [3.6] – May 26, 2026
 

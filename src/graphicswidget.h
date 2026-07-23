@@ -34,7 +34,7 @@ class GraphicsGuide;
 class GraphicsEdgeWeight;
 class GraphicsEdgeLabel;
 
-typedef QHash<QString, GraphicsEdge*> H_StrToEdge;
+typedef QHash<quint64, GraphicsEdge*> H_KeyToEdge;
 typedef QHash <int, GraphicsNode*> H_NumToNode;
 
 
@@ -49,9 +49,9 @@ public:
 
     void clear();
 
-    QString createEdgeName(const int &v1,
-                           const int &v2,
-                           const int &relation=-1);
+    quint64 edgeKey(const int &v1,
+                     const int &v2,
+                     const int &relation=-1);
 
     void setInitNodeSize(int);
 
@@ -220,7 +220,7 @@ signals:
 private:
 
     H_NumToNode nodeHash;	//Our basic hash table for node items
-    H_StrToEdge edgesHash; // Our basic hash table for edge items
+    H_KeyToEdge edgesHash; // Our basic hash table for edge items
     QList<int> m_selectedNodes;
     QList<SelectedEdge> m_selectedEdges;
     int m_curRelation, m_nodeSize;
@@ -232,7 +232,7 @@ private:
     double m_currentScaleFactor;
     qreal fX,fY, factor;
     QString m_nodeLabel, m_numberColor, m_labelColor;
-    QString edgeName;
+    quint64 m_edgeKey;
     QPointF m_viewCenter;
     bool m_viewCenterValid;
     bool m_isZooming;

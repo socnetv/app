@@ -48,9 +48,9 @@
  *     The forward arc (from *Arcs) is left untouched to preserve its original data.
  *   - We emit signalDrawEdge(v2, v1, ..., Reciprocated) — note the swapped arguments.
  *     GraphicsWidget::drawEdge() with Reciprocated looks up the existing arc via
- *     createEdgeName(targetNum, sourceNum). Since createEdgeName() is order-sensitive
- *     ("rel:v1>v2"), passing (v2,v1) makes targetNum=v1, sourceNum=v2, so the lookup
- *     resolves to createEdgeName(v1,v2) which matches the key stored during *Arcs
+ *     edgeKey(targetNum, sourceNum). Since edgeKey() is order-sensitive
+ *     (packs relation/v1/v2 in that order), passing (v2,v1) makes targetNum=v1, sourceNum=v2,
+ *     so the lookup resolves to edgeKey(v1,v2) which matches the key stored during *Arcs
  *     processing. No new GraphicsEdge is created; setDirectionType() is called instead.
  *   - drawArrows is forced true: a reciprocated edge always shows arrows on both ends
  *     regardless of what the undirected request's drawArrows value was.
@@ -116,8 +116,8 @@ bool Graph::edgeCreate(const int &v1,
             //
             // Visual update:
             //   We emit Reciprocated with swapped arguments (v2,v1) so that
-            //   drawEdge()'s internal lookup createEdgeName(targetNum,sourceNum)
-            //   resolves to createEdgeName(v1,v2), matching the key under which
+            //   drawEdge()'s internal lookup edgeKey(targetNum,sourceNum)
+            //   resolves to edgeKey(v1,v2), matching the key under which
             //   the original forward arc was stored during *Arcs processing.
             //   This upgrades the existing GraphicsEdge to bidirectional without
             //   creating any duplicate visual object.

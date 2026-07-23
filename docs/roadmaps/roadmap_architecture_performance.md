@@ -371,17 +371,20 @@ See #254 for the full write-up and hints.
 
 #### Group C — Structural changes (plan each individually before starting)
 
-- [ ] **#C1 — `createEdgeName` QString allocations → integer edge key** (`graphicswidget.cpp` line 178)
-  `createEdgeName` builds `"relation:v1>v2"` with 8+ heap allocations per call. It is called in
-  every edge operation, up to 4 times per slot. `edgesHash` is a `QHash<QString, GraphicsEdge*>`.
-  Replace the key with `quint64` packed as
-  `(quint64(relation) << 40) | (quint64(v1) << 20) | quint64(v2)` (node numbers < 2²⁰ ≈ 1M;
-  adjust shifts if wider ranges are needed). Change the `H_StrToEdge` typedef in
-  `graphicswidget.h` to `QHash<quint64, GraphicsEdge*>`. Rename `createEdgeName` → `edgeKey`
-  (returns `quint64`); rename the member `edgeName` → `m_edgeKey`.
-  _Before fixing:_ audit every use of `edgeName` / `edgesHash` across the full file and any
-  external callers; confirm actual node-number and relation-index ranges used in the codebase;
-  check whether any code serialises or logs the edge key as a string (would need updating).
+- [x] **#C1 — `createEdgeName` QString allocations → integer edge key** (`graphicswidget.cpp` line 178) ✅ Done
+  `createEdgeName` built `"relation:v1>v2"` with several heap allocations per call, hit on every
+  edge operation. Replaced with `GraphicsWidget::edgeKey()`, returning a decimal-digit-packed
+  `quint64` instead of a bit-packed one (chosen for debuggability — the digits read left to right
+  as relation/v1/v2, same order as the old string):
+  `key = quint64(relation) * 10^16 + quint64(v1) * 10^8 + quint64(v2)`
+  — a 3-digit relation field (0-999) and two 8-digit node-number fields (0-99,999,999 each).
+  This is positional encoding, not a mixing hash: collisions between distinct (relation, v1, v2)
+  triples are structurally impossible as long as each field stays under its digit budget, backed
+  by three `Q_ASSERT_X` checks in `edgeKey()`. `H_StrToEdge` renamed to
+  `H_KeyToEdge` (`QHash<quint64, GraphicsEdge*>`); member `edgeName` renamed to `m_edgeKey`; the
+  local `reverseEdgeName` (`QString`) renamed to `reverseEdgeKey` (`quint64`). Explanatory
+  comments in `graph_edges.cpp` referencing the old function name updated to match.
+  All golden regression baselines pass unchanged.
 
 - [x] **#C2 — `hasNode` O(N) loop with repeated `toInt()`** (`graphicswidget.cpp` lines 958–970) ✅ Done
   Turned out to be moot: `grep -rn "hasNode(" src/` found zero callers anywhere in the tree,

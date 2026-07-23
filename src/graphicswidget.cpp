@@ -171,19 +171,52 @@ void GraphicsWidget::setOptionsNoAntialiasingAutoAdjust(const bool &toggle)
 
 
 /**
- * @brief Creates a QString with the edge name.
+ * @brief Packs (relation, v1, v2) into a single quint64 key for edgesHash.
  *
- * Edge names are used in edgesHash
+ * Used to be a QString built as "relation:v1>v2" (e.g. "0:3>7"), which cost several heap
+ * allocations per call (QString::number() x3 plus concatenation) and character-wise hashing
+ * on every lookup. This is purely a UI-layer lookup key for GraphicsWidget's own edgesHash
+ * (mapping a graph edge to its GraphicsEdge item) — it has nothing to do with Graph's own
+ * data model or any algorithm kernel.
  *
- * @param v1
- * @param v2
- * @param relation
- * @return
+ * The key is decimal-digit-packed, not bit-packed, so it stays readable in a debugger the
+ * same way the old string was: reading left to right you get relation, then v1, then v2 -
+ * e.g. relation=0, v1=3, v2=7 packs to 300000007. (Leading zeros aren't preserved by a plain
+ * integer print, so a value like relation=0 won't visually show its 3-digit field width
+ * unless printed zero-padded to 19 digits — this key is only ever used as an opaque hash
+ * bucket key, never parsed back into fields, so that's not a correctness concern.)
+ *
+ * This is a positional encoding, not a mixing hash: as long as every field's value stays
+ * within its allocated width (relation < 1000, v1 < 100'000'000, v2 < 100'000'000), the
+ * mapping from (relation, v1, v2) to key is a true bijection - collisions between distinct
+ * triples are structurally impossible, not just statistically unlikely. The three asserts
+ * below exist because that guarantee only holds while every field stays under its digit
+ * budget; an overflow would silently bleed into the next field and could produce a genuine
+ * collision with a different triple.
+ *
+ * @param v1 Source node number (must be < 100,000,000)
+ * @param v2 Target node number (must be < 100,000,000)
+ * @param relation Relation index, or -1 to use the current relation (must be < 1000)
+ * @return Packed key, unique per (relation, v1, v2) triple within the bounds above
  */
-QString GraphicsWidget::createEdgeName(const int &v1, const int &v2, const int &relation) {
-    edgeName = QString::number((relation != -1) ? relation : m_curRelation) + QString(":")
-            + QString::number(v1) + QString(">")+ QString::number(v2);
-    return edgeName;
+quint64 GraphicsWidget::edgeKey(const int &v1, const int &v2, const int &relation) {
+    constexpr quint64 kRelationMult = 10'000'000'000'000'000ULL; // relation: 3-digit field
+    constexpr quint64 kV1Mult       = 100'000'000ULL;            // v1: 8-digit field
+    constexpr quint64 kFieldWidth   = 100'000'000ULL;            // v1 and v2 field width
+
+    const int effectiveRelation = (relation != -1) ? relation : m_curRelation;
+
+    Q_ASSERT_X(effectiveRelation >= 0 && quint64(effectiveRelation) < 1000,
+               "GraphicsWidget::edgeKey", "relation exceeds the 3-digit field width");
+    Q_ASSERT_X(v1 >= 0 && quint64(v1) < kFieldWidth,
+               "GraphicsWidget::edgeKey", "v1 exceeds the 8-digit field width");
+    Q_ASSERT_X(v2 >= 0 && quint64(v2) < kFieldWidth,
+               "GraphicsWidget::edgeKey", "v2 exceeds the 8-digit field width");
+
+    m_edgeKey = quint64(effectiveRelation) * kRelationMult
+              + quint64(v1) * kV1Mult
+              + quint64(v2);
+    return m_edgeKey;
 }
 
 
@@ -315,7 +348,7 @@ void GraphicsWidget::drawEdge(const int &sourceNum, const int &targetNum,
                               const bool &bezier,
                               const bool &weightNumbers)
 {
-    edgeName = createEdgeName(sourceNum, targetNum);
+    m_edgeKey = edgeKey(sourceNum, targetNum);
 
     if (type != EdgeType::Reciprocated)
     {
@@ -330,25 +363,25 @@ void GraphicsWidget::drawEdge(const int &sourceNum, const int &targetNum,
             weightNumbers,
             m_edgeHighlighting,
             m_arrowSize);
-        edgesHash.insert(edgeName, edge);
+        edgesHash.insert(m_edgeKey, edge);
     }
     else
     {
         // Reciprocated: do not create a new GraphicsEdge.
         // Find the existing opposite arc and upgrade its direction type.
         // The caller passes (newSource=v2, newTarget=v1) so that this lookup
-        // createEdgeName(targetNum, sourceNum) resolves to createEdgeName(v1,v2),
+        // edgeKey(targetNum, sourceNum) resolves to edgeKey(v1,v2),
         // matching the key under which the original forward arc was stored.
-        edgeName = createEdgeName(targetNum, sourceNum);
+        m_edgeKey = edgeKey(targetNum, sourceNum);
 
         // Guard against a missing key. In normal flow this should not happen,
         // but defensive check prevents a null dereference if there is any
         // inconsistency between the data model and the visual state.
-        GraphicsEdge *e = edgesHash.value(edgeName, nullptr);
+        GraphicsEdge *e = edgesHash.value(m_edgeKey, nullptr);
         if (!e)
         {
             // qDebug() << "drawEdge(): WARNING - Reciprocated edge visual not found"
-            //          << "for key" << edgeName
+            //          << "for key" << m_edgeKey
             //          << "- skipping visual upgrade.";
             return;
         }
@@ -497,9 +530,9 @@ void GraphicsWidget::removeEdge(const int &sourceNum,
                                 const int &targetNum,
                                 const bool &removeReverse){
 
-    edgeName = createEdgeName(sourceNum, targetNum);
+    m_edgeKey = edgeKey(sourceNum, targetNum);
 
-    if (GraphicsEdge *edge = edgesHash.value(edgeName, nullptr)) {
+    if (GraphicsEdge *edge = edgesHash.value(m_edgeKey, nullptr)) {
         int directionType = edge->directionType();
         delete edge;
         // Check if it was reciprocated
@@ -512,8 +545,8 @@ void GraphicsWidget::removeEdge(const int &sourceNum,
     }
     else {
         // Check opposite edge. If it exists, then transform it to directed
-        edgeName = createEdgeName(targetNum, sourceNum);
-        if (GraphicsEdge *reverseEdge = edgesHash.value(edgeName, nullptr)) {
+        m_edgeKey = edgeKey(targetNum, sourceNum);
+        if (GraphicsEdge *reverseEdge = edgesHash.value(m_edgeKey, nullptr)) {
             if (reverseEdge->directionType() == EdgeType::Reciprocated) {
                 reverseEdge->setDirectionType(EdgeType::Directed);
                 return;
@@ -563,11 +596,11 @@ void GraphicsWidget::removeItem( GraphicsNode *node){
  *
  */
 void GraphicsWidget::removeItem( GraphicsEdge * edge){
-    edgeName = createEdgeName(edge->sourceNodeNumber(), edge->targetNodeNumber() ) ;
-//    qDebug() << "Removing edge"<< edgeName << "Calling edgeClicked(0)" ;
+    m_edgeKey = edgeKey(edge->sourceNodeNumber(), edge->targetNodeNumber() ) ;
+//    qDebug() << "Removing edge"<< m_edgeKey << "Calling edgeClicked(0)" ;
     setEdgeClicked(0);
 //    qDebug() << "removing edge from edges hash" ;
-    edgesHash.remove(edgeName);
+    edgesHash.remove(m_edgeKey);
 //    qDebug() << "removing edge from scene" ;
     scene()->removeItem(edge);
 //    qDebug() << "Calling edge->deleteLater()" ;
@@ -951,9 +984,9 @@ void GraphicsWidget::setEdgeLabel(const int &source,
                                   const int &target,
                                   const QString &label){
 
-    edgeName = createEdgeName( source, target );
+    m_edgeKey = edgeKey( source, target );
 
-    if (GraphicsEdge *edge = edgesHash.value(edgeName, nullptr))
+    if (GraphicsEdge *edge = edgesHash.value(m_edgeKey, nullptr))
         edge->setLabel(label);
 }
 
@@ -971,9 +1004,9 @@ void GraphicsWidget::setEdgeColor(const int &source,
                                   const int &target,
                                   const QString &color){
 
-    edgeName =  createEdgeName( source, target );
+    m_edgeKey =  edgeKey( source, target );
 
-    if (GraphicsEdge *edge = edgesHash.value(edgeName, nullptr))
+    if (GraphicsEdge *edge = edgesHash.value(m_edgeKey, nullptr))
         edge->setColor(color);
 }
 
@@ -996,9 +1029,9 @@ bool GraphicsWidget::setEdgeDirectionType(const int &source,
 //             << "->" << target
 //             << "to type:" << dirType;
 
-    edgeName = createEdgeName( source, target );
+    m_edgeKey = edgeKey( source, target );
 
-    if (GraphicsEdge *edge = edgesHash.value(edgeName, nullptr)) {
+    if (GraphicsEdge *edge = edgesHash.value(m_edgeKey, nullptr)) {
         edge->setDirectionType(dirType);
         return true;
     }
@@ -1022,16 +1055,16 @@ bool GraphicsWidget::setEdgeWeight(const int &source,
                                    const int &target,
                                    const qreal &weight){
 
-    edgeName = createEdgeName( source, target );
+    m_edgeKey = edgeKey( source, target );
 
-    if (GraphicsEdge *edge = edgesHash.value(edgeName, nullptr)) {
+    if (GraphicsEdge *edge = edgesHash.value(m_edgeKey, nullptr)) {
         edge->setWeight(weight);
         return true;
     }
     else {
         //check opposite edge. If it exists, then transform it to directed
-        edgeName = createEdgeName(target, source);
-        if (GraphicsEdge *edge = edgesHash.value(edgeName, nullptr)) {
+        m_edgeKey = edgeKey(target, source);
+        if (GraphicsEdge *edge = edgesHash.value(m_edgeKey, nullptr)) {
             edge->setWeight(weight);
             return true;
         }
@@ -1091,9 +1124,9 @@ void GraphicsWidget::setEdgeOffsetFromNode(const int &source,
 
     if (source && target) {
 
-        edgeName = createEdgeName(source, target);
+        m_edgeKey = edgeKey(source, target);
 
-        if (GraphicsEdge *edge = edgesHash.value(edgeName, nullptr)) {
+        if (GraphicsEdge *edge = edgesHash.value(m_edgeKey, nullptr)) {
             edge->setMinimumOffsetFromNode(offset);
             return;
         }
@@ -1187,9 +1220,9 @@ void GraphicsWidget::selectPath(const QList<int> &path)
         QSignalBlocker blocker(scene());
         scene()->clearSelection();
         for (int i = 0; i < path.size() - 1; ++i) {
-            GraphicsEdge *e = edgesHash.value(createEdgeName(path[i], path[i+1]), nullptr);
+            GraphicsEdge *e = edgesHash.value(edgeKey(path[i], path[i+1]), nullptr);
             if (!e)
-                e = edgesHash.value(createEdgeName(path[i+1], path[i]), nullptr);
+                e = edgesHash.value(edgeKey(path[i+1], path[i]), nullptr);
             if (e)
                 e->setSelected(true);
         }
@@ -1226,8 +1259,8 @@ void GraphicsWidget::setEdgeVisibility(const int &relation,
                                        const int &edgeWeight,
                                        const int &reverseEdgeWeight)
 {
-    QString reverseEdgeName;
-    edgeName = createEdgeName(sourceNum, targetNum, relation);
+    quint64 reverseEdgeKey;
+    m_edgeKey = edgeKey(sourceNum, targetNum, relation);
 
     // During network teardown/reset, Graph may still emit edge-visibility updates
     // after the corresponding GraphicsNodes have already been removed from nodeHash.
@@ -1235,7 +1268,7 @@ void GraphicsWidget::setEdgeVisibility(const int &relation,
     const bool haveSourceNode = nodeHash.contains(sourceNum);
     const bool haveTargetNode = nodeHash.contains(targetNum);
 
-    if (GraphicsEdge *edge = edgesHash.value(edgeName, nullptr)) {
+    if (GraphicsEdge *edge = edgesHash.value(m_edgeKey, nullptr)) {
         // Edge does exist
         if (!visible && preserveReverseEdge) {
             // This edge must be disabled and the reverse must be preserved/created
@@ -1250,8 +1283,8 @@ void GraphicsWidget::setEdgeVisibility(const int &relation,
         // Edge does not exist yet
         if (visible) {
             // The reverse may exist. Check
-            reverseEdgeName = createEdgeName(targetNum, sourceNum, relation);
-            if (GraphicsEdge *reverseEdge = edgesHash.value(reverseEdgeName, nullptr)) {
+            reverseEdgeKey = edgeKey(targetNum, sourceNum, relation);
+            if (GraphicsEdge *reverseEdge = edgesHash.value(reverseEdgeKey, nullptr)) {
                 reverseEdge->setVisible(true);
                 reverseEdge->setEnabled(true);
                 reverseEdge->setDirectionType(EdgeType::Reciprocated);
@@ -1270,8 +1303,8 @@ void GraphicsWidget::setEdgeVisibility(const int &relation,
     if (preserveReverseEdge) {
         // Reverse edge must be preserved (see #140)
         // Check if the reverse exists and if not create it
-        reverseEdgeName = createEdgeName(targetNum, sourceNum, relation);
-        if (GraphicsEdge *reverseEdge = edgesHash.value(reverseEdgeName, nullptr)) {
+        reverseEdgeKey = edgeKey(targetNum, sourceNum, relation);
+        if (GraphicsEdge *reverseEdge = edgesHash.value(reverseEdgeKey, nullptr)) {
             reverseEdge->setVisible(true);
             reverseEdge->setEnabled(true);
             reverseEdge->setDirectionType(EdgeType::Directed);
