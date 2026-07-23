@@ -58,8 +58,8 @@ public:
     void setInitZoomIndex (const int &);
     void setMaxZoomIndex (const int &);
 
-    GraphicsNode* hasNode(QString text);
-    void setSelectedNodes(QList<int> list);
+    GraphicsNode* hasNode(const QString &text);
+    void setSelectedNodes(const QList<int> &list);
 
     QList<QGraphicsItem *> selectedItems();
     QList<int> selectedNodes();

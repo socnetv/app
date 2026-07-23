@@ -491,33 +491,26 @@ void GraphicsWidget::removeEdge(const int &sourceNum,
 
     edgeName = createEdgeName(sourceNum, targetNum);
 
-    if ( edgesHash.contains(edgeName) ) {
-        int directionType = edgesHash.value(edgeName)->directionType();
-        delete edgesHash.value(edgeName);
-//        qDebug() << "Removed edge" << edgeName;
+    if (GraphicsEdge *edge = edgesHash.value(edgeName, nullptr)) {
+        int directionType = edge->directionType();
+        delete edge;
         // Check if it was reciprocated
         if (directionType == EdgeType::Reciprocated) {
             // The deleted edge was reciprocated, draw the reverse edge.
             if (!removeReverse) {
-                qDebug() << "Drawing the reverse edge.";
                 drawEdge(targetNum, sourceNum, 1,"");
-
             }
         }
     }
     else {
         // Check opposite edge. If it exists, then transform it to directed
         edgeName = createEdgeName(targetNum, sourceNum);
-        qDebug() << "Edge did not exist, checking for opposite:"
-                 << edgeName;
-        if ( edgesHash.contains(edgeName) ) {
-            qDebug() << "Opposite edge exists. Check if it is reciprocated";
-            if ( edgesHash.value(edgeName)->directionType() == EdgeType::Reciprocated ) {
-                edgesHash.value(edgeName)->setDirectionType(EdgeType::Directed);
+        if (GraphicsEdge *reverseEdge = edgesHash.value(edgeName, nullptr)) {
+            if (reverseEdge->directionType() == EdgeType::Reciprocated) {
+                reverseEdge->setDirectionType(EdgeType::Directed);
                 return;
             }
         }
-        qDebug() << "No such edge to remove";
     }
 
 
@@ -760,11 +753,9 @@ void GraphicsWidget::setMaxZoomIndex(const int &maxZoomIndex) {
  * @param toggle
  */
 void GraphicsWidget::setNodeVisibility(const int &nodeNum, const bool &toggle){
-    if  ( nodeHash.contains (nodeNum) ) {
-//        qDebug() << "Setting visibility of node"
-//                 << nodeNum << "to" << toggle;
-        nodeHash.value(nodeNum)->setVisible(toggle);
-        nodeHash.value(nodeNum)->setEnabled(toggle);
+    if (GraphicsNode *node = nodeHash.value(nodeNum, nullptr)) {
+        node->setVisible(toggle);
+        node->setEnabled(toggle);
     }
 }
 
@@ -777,21 +768,9 @@ void GraphicsWidget::setNodeVisibility(const int &nodeNum, const bool &toggle){
  * @return bool
  */
 bool GraphicsWidget::setNodeSize(const int &nodeNum, const int &size ){
-//    qDebug() << "Setting size of node"
-//             << nodeNum << "to" << size;
-    if  ( nodeHash.contains (nodeNum) ) {
-        if (size>0){
-            nodeHash.value(nodeNum)->setSize(size);
-            return true;
-
-        }
-        else {
-//            qDebug() << "Setting size of node"
-//                     << nodeNum << "to default" << m_nodeSize;
-            nodeHash.value(nodeNum)->setSize(m_nodeSize);
-            return true;
-
-        }
+    if (GraphicsNode *node = nodeHash.value(nodeNum, nullptr)) {
+        node->setSize(size > 0 ? size : m_nodeSize);
+        return true;
     }
     return false;
 }
@@ -839,12 +818,9 @@ void GraphicsWidget::setNodeNumberVisibility(const bool &toggle){
  * @param color
  */
 void GraphicsWidget::setNodeNumberColor(const int &nodeNum, const QString &color) {
-//    qDebug() << "Setting color of node"
-//             << nodeNum << "to" << color;
-    if  ( nodeHash.contains (nodeNum) ) {
-        if (!color.isNull()){
-            nodeHash.value(nodeNum)->setNumberColor(color) ;
-        }
+    if (!color.isNull()) {
+        if (GraphicsNode *node = nodeHash.value(nodeNum, nullptr))
+            node->setNumberColor(color);
     }
 }
 
@@ -856,11 +832,9 @@ void GraphicsWidget::setNodeNumberColor(const int &nodeNum, const QString &color
  * @param size
  */
 bool GraphicsWidget::setNodeNumberSize(const int &nodeNum, const int &size){
-//    qDebug() << "Setting number size of node"
-//             << nodeNum << "to" << size;
-    if  ( nodeHash.contains (nodeNum) ) {
-        if (size>0){
-            nodeHash.value(nodeNum)->setNumberSize(size) ;
+    if (size > 0) {
+        if (GraphicsNode *node = nodeHash.value(nodeNum, nullptr)) {
+            node->setNumberSize(size);
             return true;
         }
     }
@@ -875,11 +849,9 @@ bool GraphicsWidget::setNodeNumberSize(const int &nodeNum, const int &size){
  * @param distance
  */
 bool GraphicsWidget::setNodeNumberDistance(const int &nodeNum, const int &distance ){
-//    qDebug() << "Setting number distance of node"
-//             << nodeNum << "to" << distance;
-    if  ( nodeHash.contains (nodeNum) ) {
-        if (distance>=0){
-            nodeHash.value(nodeNum)->setNumberDistance(distance) ;
+    if (distance >= 0) {
+        if (GraphicsNode *node = nodeHash.value(nodeNum, nullptr)) {
+            node->setNumberDistance(distance);
             return true;
         }
     }
@@ -895,11 +867,9 @@ bool GraphicsWidget::setNodeNumberDistance(const int &nodeNum, const int &distan
  * @param color
  */
 bool GraphicsWidget::setNodeLabelColor(const int &nodeNum, const QString &color){
-//    qDebug() << "Setting label color of node"
-//             << nodeNum << "to" << color;
-    if  ( nodeHash.contains (nodeNum) ) {
-            nodeHash.value(nodeNum)->setLabelColor(color);
-            return true;
+    if (GraphicsNode *node = nodeHash.value(nodeNum, nullptr)) {
+        node->setLabelColor(color);
+        return true;
     }
     return false;
 }
@@ -913,11 +883,9 @@ bool GraphicsWidget::setNodeLabelColor(const int &nodeNum, const QString &color)
  * @param size
  */
 bool GraphicsWidget::setNodeLabelSize(const int &nodeNum, const int &size){
-//    qDebug() << "Setting label size of node"
-//             << nodeNum << "to" << size;
-    if  ( nodeHash.contains (nodeNum) ) {
-        if (size>0){
-            nodeHash.value(nodeNum)->setLabelSize(size);
+    if (size > 0) {
+        if (GraphicsNode *node = nodeHash.value(nodeNum, nullptr)) {
+            node->setLabelSize(size);
             return true;
         }
     }
@@ -935,11 +903,9 @@ bool GraphicsWidget::setNodeLabelSize(const int &nodeNum, const int &size){
  * @param distance
  */
 bool GraphicsWidget::setNodeLabelDistance( const int &nodeNum, const int &distance ){
-//    qDebug() << "Setting label distance of node"
-//             << nodeNum << "to" << distance;
-    if  ( nodeHash.contains (nodeNum) ) {
-        if (distance>=0){
-            nodeHash.value(nodeNum)->setLabelDistance(distance) ;
+    if (distance >= 0) {
+        if (GraphicsNode *node = nodeHash.value(nodeNum, nullptr)) {
+            node->setLabelDistance(distance);
             return true;
         }
     }
@@ -955,15 +921,13 @@ bool GraphicsWidget::setNodeLabelDistance( const int &nodeNum, const int &distan
  * @param text
  * @return
  */
-GraphicsNode* GraphicsWidget::hasNode( QString text ){
+GraphicsNode* GraphicsWidget::hasNode( const QString &text ){
     bool ok = false;
     foreach ( GraphicsNode *candidate, nodeHash) {
         if ( 	candidate->nodeNumber()==text.toInt(&ok, 10)  ||
                 ( candidate->labelText() == text)
                 ) {
-//            qDebug() << "Node" << text << " found!";
             return candidate;
-            break;
         }
 
     }
@@ -977,13 +941,10 @@ GraphicsNode* GraphicsWidget::hasNode( QString text ){
  *
  * @param list
  */
-void GraphicsWidget::setSelectedNodes(QList<int> list){
-//    qDebug() << "Setting nodes:" << list.size() << "as selected";
+void GraphicsWidget::setSelectedNodes(const QList<int> &list){
     foreach ( int nodeNum, list) {
-        if  ( nodeHash.contains (nodeNum) ) {
-//            qDebug() << "Selecting node"<< nodeNum;
-            nodeHash.value(nodeNum)->setSelected(true) ;
-        }
+        if (GraphicsNode *node = nodeHash.value(nodeNum, nullptr))
+            node->setSelected(true);
     }
 }
 
@@ -1004,13 +965,8 @@ void GraphicsWidget::setEdgeLabel(const int &source,
 
     edgeName = createEdgeName( source, target );
 
-//    qDebug()<<"Setting label for edge" << edgeName <<  "new label"  << label;
-
-    if  ( edgesHash.contains (edgeName) ) {
-        edgesHash.value(edgeName)->setLabel(label);
-    }
-
-
+    if (GraphicsEdge *edge = edgesHash.value(edgeName, nullptr))
+        edge->setLabel(label);
 }
 
 /**
@@ -1029,12 +985,8 @@ void GraphicsWidget::setEdgeColor(const int &source,
 
     edgeName =  createEdgeName( source, target );
 
-//    qDebug()<<"Setting color of edge" << edgeName <<  "new color:"  << color;
-
-    if  ( edgesHash.contains (edgeName) ) {
-        edgesHash.value(edgeName)->setColor(color);
-    }
-
+    if (GraphicsEdge *edge = edgesHash.value(edgeName, nullptr))
+        edge->setColor(color);
 }
 
 
@@ -1058,9 +1010,8 @@ bool GraphicsWidget::setEdgeDirectionType(const int &source,
 
     edgeName = createEdgeName( source, target );
 
-    if  ( edgesHash.contains (edgeName) ) {
-//        qDebug()<<" Found edge in edgesHash. ";
-        edgesHash.value(edgeName)->setDirectionType(dirType);
+    if (GraphicsEdge *edge = edgesHash.value(edgeName, nullptr)) {
+        edge->setDirectionType(dirType);
         return true;
     }
     return false;
@@ -1085,23 +1036,17 @@ bool GraphicsWidget::setEdgeWeight(const int &source,
 
     edgeName = createEdgeName( source, target );
 
-//    qDebug()<<"Setting weight of edge:" << edgeName <<  " new weight "  << weight;
-
-    if  ( edgesHash.contains (edgeName) ) {
-        edgesHash.value(edgeName)->setWeight(weight);
+    if (GraphicsEdge *edge = edgesHash.value(edgeName, nullptr)) {
+        edge->setWeight(weight);
         return true;
     }
-
     else {
         //check opposite edge. If it exists, then transform it to directed
         edgeName = createEdgeName(target, source);
-//        qDebug() << "Edge did not exist, checking for opposite:" << edgeName;
-        if ( edgesHash.contains(edgeName) ) {
-//            qDebug() << "Opposite edge exists. Check if it is reciprocated";
-            edgesHash.value(edgeName)->setWeight(weight);
+        if (GraphicsEdge *edge = edgesHash.value(edgeName, nullptr)) {
+            edge->setWeight(weight);
             return true;
         }
-
     }
 
     return false;
@@ -1158,11 +1103,10 @@ void GraphicsWidget::setEdgeOffsetFromNode(const int &source,
 
     if (source && target) {
 
-        QString edgeName =  QString::number(m_curRelation) + QString(":") +
-                QString::number( source ) + QString(">")+ QString::number( target );
+        edgeName = createEdgeName(source, target);
 
-        if  ( edgesHash.contains (edgeName) ) {
-            edgesHash.value(edgeName)->setMinimumOffsetFromNode(offset);
+        if (GraphicsEdge *edge = edgesHash.value(edgeName, nullptr)) {
+            edge->setMinimumOffsetFromNode(offset);
             return;
         }
 
@@ -1303,15 +1247,15 @@ void GraphicsWidget::setEdgeVisibility(const int &relation,
     const bool haveSourceNode = nodeHash.contains(sourceNum);
     const bool haveTargetNode = nodeHash.contains(targetNum);
 
-    if (edgesHash.contains(edgeName)) {
+    if (GraphicsEdge *edge = edgesHash.value(edgeName, nullptr)) {
         // Edge does exist
         if (!visible && preserveReverseEdge) {
             // This edge must be disabled and the reverse must be preserved/created
-            delete edgesHash.value(edgeName);
+            delete edge;
         }
         else {
-            edgesHash.value(edgeName)->setVisible(visible);
-            edgesHash.value(edgeName)->setEnabled(visible);
+            edge->setVisible(visible);
+            edge->setEnabled(visible);
         }
     }
     else {
@@ -1319,10 +1263,10 @@ void GraphicsWidget::setEdgeVisibility(const int &relation,
         if (visible) {
             // The reverse may exist. Check
             reverseEdgeName = createEdgeName(targetNum, sourceNum, relation);
-            if (edgesHash.contains(reverseEdgeName)) {
-                edgesHash.value(reverseEdgeName)->setVisible(true);
-                edgesHash.value(reverseEdgeName)->setEnabled(true);
-                edgesHash.value(reverseEdgeName)->setDirectionType(EdgeType::Reciprocated);
+            if (GraphicsEdge *reverseEdge = edgesHash.value(reverseEdgeName, nullptr)) {
+                reverseEdge->setVisible(true);
+                reverseEdge->setEnabled(true);
+                reverseEdge->setDirectionType(EdgeType::Reciprocated);
                 return;
             }
             else {
@@ -1339,10 +1283,10 @@ void GraphicsWidget::setEdgeVisibility(const int &relation,
         // Reverse edge must be preserved (see #140)
         // Check if the reverse exists and if not create it
         reverseEdgeName = createEdgeName(targetNum, sourceNum, relation);
-        if (edgesHash.contains(reverseEdgeName)) {
-            edgesHash.value(reverseEdgeName)->setVisible(true);
-            edgesHash.value(reverseEdgeName)->setEnabled(true);
-            edgesHash.value(reverseEdgeName)->setDirectionType(EdgeType::Directed);
+        if (GraphicsEdge *reverseEdge = edgesHash.value(reverseEdgeName, nullptr)) {
+            reverseEdge->setVisible(true);
+            reverseEdge->setEnabled(true);
+            reverseEdge->setDirectionType(EdgeType::Directed);
             return;
         }
         else {
@@ -1412,19 +1356,23 @@ void GraphicsWidget::addGuideHLine(const double &y0){
 
 
 /**
- * @brief Removes all items of the given type
+ * @brief Removes all scene items of the given type.
+ *
+ * Currently only called with TypeGuide (via clearGuides()). GraphicsGuide::die()
+ * only clears geometry/visibility bookkeeping — it does not delete or schedule
+ * deletion — so a direct synchronous delete() here is safe and avoids the
+ * double-free that resulted from combining deleteLater() with an immediate delete.
+ *
  * @param type
  */
 void GraphicsWidget::removeAllItems(int type){
-    qDebug()<< "Removing all GW items...";
-    QList<QGraphicsItem *> list = scene()->items();
-    for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
-        if ( (*item)->type() == type){
-            GraphicsGuide *guide = qgraphicsitem_cast<GraphicsGuide *>  (*item);
-            qDebug()<< "located element";
-            guide->die();
-            guide->deleteLater ();
-            delete *item;
+    const QList<QGraphicsItem *> list = scene()->items();
+    for (QGraphicsItem *item : list) {
+        if (item->type() == type) {
+            if (GraphicsGuide *guide = qgraphicsitem_cast<GraphicsGuide *>(item)) {
+                guide->die();
+                delete guide;
+            }
         }
     }
 }
