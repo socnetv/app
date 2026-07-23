@@ -73,6 +73,15 @@ All notable changes to this project are documented in this file.
   - `docs/README_DEVELOPER_NOTES.md` "Current focus" section replaced with a
     single pointer to the architectural roadmap.
   - `AUTHORS`: added Andreas as Debian package maintainer.
+  - **GraphicsWidget Group A cleanup** (#250): fixed a double-free /
+    undefined behaviour in `removeAllItems()` (a deferred delete followed by
+    an immediate delete of the same guide object), replaced `contains()` +
+    `value()` double hash lookups with single-probe lookups across a dozen
+    node and edge property setters, and switched two hot methods to take
+    their arguments by const reference instead of by value.
+    Behaviour-preserving — all golden regression baselines pass unchanged.
+    First installment of the wider GraphicsWidget performance and
+    documentation overhaul tracked in #250.
 
 ## [3.6] – May 26, 2026
 
