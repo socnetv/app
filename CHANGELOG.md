@@ -64,6 +64,16 @@ All notable changes to this project are documented in this file.
     large network and zoom in — the view stays there instead of jumping back
     to the network centre.
 
+  - **Auto-fit undersized networks that are close to viewport size** (#253):
+    after the #249 viewport auto-fit landed, networks whose content was only
+    marginally larger than the canvas — a few percent, common on large/dense
+    networks from node marker and label overhang — were shrunk noticeably
+    below 100%, leaving visible empty margins on the right and bottom.
+    Manually pressing Reset (Ctrl+0) always showed the network at the correct
+    size. Auto-fit now only zooms out for content that's genuinely,
+    substantially larger than the viewport; content close to viewport size
+    uses the same tight, margin-free 100% fit as Reset.
+
 ### Maintenance
 
   - WS3 roadmap renamed from "Domain Model Split" to **"Architecture &
@@ -82,6 +92,17 @@ All notable changes to this project are documented in this file.
     Behaviour-preserving — all golden regression baselines pass unchanged.
     First installment of the wider GraphicsWidget performance and
     documentation overhaul tracked in #250.
+  - **GraphicsWidget Group B cleanup** (#250): merged redundant
+    scene-selection queries in `handleSelectionChanged` into a single pass;
+    replaced a per-resize full-scene guide scan with a maintained guide list
+    (fixing a resulting dangling-pointer double-free in `GraphicsWidget::
+    clear()` along the way); fixed a coordinate-space bug in Select All that
+    used viewport pixels instead of scene coordinates; reused cached
+    selection state instead of re-querying the scene on every node-drag
+    release; and converted GraphicsWidget's hot-path debug logging (mouse,
+    wheel, and zoom event handlers) to a properly gated logging category so
+    the existing Debug Messages toggle actually silences it. All golden
+    regression baselines pass unchanged.
 
 ## [3.6] – May 26, 2026
 
