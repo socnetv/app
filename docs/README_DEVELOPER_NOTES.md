@@ -332,6 +332,27 @@ Golden outputs and performance must remain stable.
 See [`docs/ARCHITECTURAL_REFACTORING_ROADMAP.md`](../ARCHITECTURAL_REFACTORING_ROADMAP.md)
 for active workstreams, priorities, and the long-term architecture direction.
 
+## Continuous Integration (GitHub Actions)
+
+`.github/workflows/build-ci.yml` (triggered by `[ci]`/`[gha]` in a commit message on `develop`)
+and `build-release.yml` (triggered by pushing a tag) both drive Qt via
+[`jurplel/install-qt-action`](https://github.com/jurplel/install-qt-action) (aqtinstall), which is
+**independent of the target distro's own Qt6** — Launchpad PPA builds (see below) and the OBS RPM
+build (`socnetv.spec`, unversioned `pkgconfig(Qt6*)` requirements) both build against whatever
+Qt6 the distro's own package repos provide, not anything from these workflows. Changing the
+`qt-version` matrix here only affects: the CI compile-compatibility smoke test, and the actual
+macOS DMG / Windows installer / Linux AppImage artifacts that `build-release.yml` publishes for
+tagged releases.
+
+`build-ci.yml` tests both **qmake** and **cmake** per OS (two separate steps, each gated only on
+`matrix.os`) — this used to be piggybacked on having two `qt-version` matrix entries (older
+version → qmake, newer → cmake), which is why the `if:` conditions on those steps look qt-version
+gated in git history; they no longer are, since the matrix currently carries a single version.
+
+If bumping the pinned Qt version: check `https://download.qt.io/official_releases/qt/<minor>/`
+for open-source availability first — Qt's newest LTS patch releases are sometimes commercial-only
+for a window before reaching the open-source channel that `aqtinstall` draws from.
+
 ---
 
 # Launchpad PPA builds

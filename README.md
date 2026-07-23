@@ -89,6 +89,11 @@ project's Downloads page: <https://socnetv.org/downloads>
 
 Follow the instructions below to install it in your system.
 
+> The macOS disk image, Windows installer, and Linux AppImage are built automatically via
+> GitHub Actions against a single pinned Qt6 version (see `.github/workflows/build-release.yml`
+> for the exact version currently in use). The Debian/Ubuntu PPA and the openSUSE/Fedora
+> repositories below are built separately, against each distribution's own Qt6 packages.
+
 #### Install in Windows
 
 To install SocNetV in Windows, download the latest SocNetV Windows installer from
@@ -163,7 +168,7 @@ sudo zypper in socnetv
 
 ### b. Compile from Source Code
 
-To compile and install SocNetV from source you need the Qt toolkit development libraries, version 6.2 or later (tested with Qt 6.8).
+To compile and install SocNetV from source you need the Qt toolkit development libraries, version 6.2 or later (tested with Qt 6.9).
 
 Qt is an open source C++ toolkit, for Windows, Linux and macOS.
 

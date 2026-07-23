@@ -126,7 +126,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-22.04, macos-latest, windows-2022]
-        qt-version: ['6.8.0']
+        qt-version: ['6.9.3']
 
     runs-on: ${{ matrix.os }}
 

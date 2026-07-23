@@ -55,7 +55,12 @@ jobs:
         # NOTE:
         # - We will CI build only for Qt6 LTS releases, see: https://doc.qt.io/qt-6/qt-releases.html
         # - For the Qt Versions supported by aqtinstall, see: https://ddalcino.github.io/aqt-list-server/
-        qt-version: ['6.5.3', '6.8.0']
+        # - Single version tested here (was ['6.5.3', '6.8.0']): macOS builds against both broke in
+        #   Jul 2026 when the macos-latest runner image moved to an Xcode/SDK that no longer ships
+        #   AGL.framework, which Qt's macOS OpenGL module links against unconditionally before the
+        #   open-source fix in 6.9.2. 6.8.4 also has the fix but is commercial-only right now.
+        #   See docs/README_DEVELOPER_NOTES.md for the full writeup.
+        qt-version: ['6.9.3']
         # exclude:
         #   - os: ubuntu-latest
         #     qt-version: '6.6.3'
@@ -213,8 +218,8 @@ jobs:
       #
       # BUILD FOR LINUX
       #
-      # Test building with qmake and Qt 6.5
-      - if: matrix.os == 'ubuntu-22.04' && matrix.qt-version == '6.5.3'
+      # Test building with qmake
+      - if: matrix.os == 'ubuntu-22.04'
         name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt${{matrix.qt-version}} using qmake
         run: |
           echo "🔎 Check openssl version:"
@@ -229,8 +234,8 @@ jobs:
           make -j${{env.CORES}}
           echo "👉 Building finished. Listing current directory with find for verification:"
           find .
-      # Test building with cmake and newer versions of Qt
-      - if: matrix.os == 'ubuntu-22.04' && matrix.qt-version != '6.5.3'
+      # Test building with cmake
+      - if: matrix.os == 'ubuntu-22.04'
         name: Build ${{ env.VERSION }} for ${{matrix.os}} with Qt${{matrix.qt-version}} using cmake
         run: |
           echo "🔎 Check openssl version:"
@@ -267,9 +272,9 @@ jobs:
               echo "❌ Error! Executable was not created!"
               exit 1
           fi
-      # Build AppImage on ubuntu-22.04 with Qt 6.8 (latest LTS)
+      # Build AppImage on ubuntu-22.04
       # Uses linuxdeploy + linuxdeploy-plugin-qt (supports Ubuntu 22.04+)
-      - if: matrix.os == 'ubuntu-22.04' && matrix.qt-version == '6.8.0'
+      - if: matrix.os == 'ubuntu-22.04' && matrix.qt-version == '6.9.3'
         name: Create AppImage ${{ env.VERSION }} for ${{matrix.os}} with Qt${{matrix.qt-version}}
         run: |
           echo "💡 Checking current directory..."
@@ -307,7 +312,7 @@ jobs:
           ls -lh ./*.AppImage
           echo "LINUX_ARTIFACT=${ARTIFACT_FN}" >> $GITHUB_ENV
       # Upload the AppImage artifact for Linux if it was created successfully
-      - if: matrix.os == 'ubuntu-22.04' && matrix.qt-version == '6.8.0' && env.LINUX_ARTIFACT != ''
+      - if: matrix.os == 'ubuntu-22.04' && matrix.qt-version == '6.9.3' && env.LINUX_ARTIFACT != ''
         name: 📤 Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
         run: |
           echo "🔍 Verifying artifact: ${{ env.LINUX_ARTIFACT }}"
@@ -361,9 +366,9 @@ jobs:
       # BUILD FOR MACOS
       # 
       # We test both qmake and cmake builds:
-      # In older Qt, we use qmake but we do not upload the artifact.
-      # We only upload the artifact for Qt 6.8.0, which is the latest LTS and the one we will use for the next release.
-      - if: contains( matrix.os, 'macos') && matrix.qt-version == '6.5.3'
+      # The qmake build below is a compile smoke test only — its DMG is not uploaded.
+      # We only upload the artifact from the cmake build further down.
+      - if: contains( matrix.os, 'macos')
         name: Build ${{env.APP_NAME}} ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}} using qmake
         run: |
           echo "🍎 Preparing macOS build..."
@@ -422,8 +427,8 @@ jobs:
             echo "❌ Error: DMG creation failed. No DMG file found."
             exit 1
           fi
-      # For the latest Qt 6.8.0, we build with cmake and upload the DMG artifact if it was created successfully.
-      - if: contains( matrix.os, 'macos') && matrix.qt-version != '6.5.3'
+      # We build with cmake and upload the DMG artifact if it was created successfully.
+      - if: contains( matrix.os, 'macos')
         name: Build ${{env.APP_NAME}} ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}} using cmake
         timeout-minutes: 360  # 6 hours maximum
         run: |
@@ -584,7 +589,7 @@ jobs:
             sleep 60  # Check every minute
           done
       # Upload artifact for macOS if it was created
-      - if: contains( matrix.os, 'macos') && matrix.qt-version == '6.8.0' && env.MAC_ARTIFACT != ''
+      - if: contains( matrix.os, 'macos') && matrix.qt-version == '6.9.3' && env.MAC_ARTIFACT != ''
         name: 📤 Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
         run: |
           echo "🔍 Verifying artifact: ${{ env.MAC_ARTIFACT }}"
@@ -604,8 +609,8 @@ jobs:
       #
       # Again we test build for both cmake and qmake.
       # 
-      # Test build with qmake for Qt 6.5.3
-      - if: contains( matrix.os, 'windows') && matrix.qt-version == '6.5.3'
+      # Test build with qmake
+      - if: contains( matrix.os, 'windows')
         name: Build ${{env.APP_NAME}} ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}} using qmake.
         run: |
           echo "🔎 Listing some directories"
@@ -617,10 +622,9 @@ jobs:
           echo "👉 Building finished. Listing  directory ${{env.QMAKE_CONFIG}} for verification:"
           dir ${{env.QMAKE_CONFIG}}
       #
-      # Build with cmake and newer LTS version of Qt (currently 6.8.0)
-      # Then, create installer with Inno Setup.
+      # Build with cmake, then create installer with Inno Setup.
       #
-      - if: contains( matrix.os, 'windows') && matrix.qt-version != '6.5.3'
+      - if: contains( matrix.os, 'windows')
         name: Build ${{env.APP_NAME}} ${{ env.VERSION }} for ${{matrix.os}} with Qt ${{matrix.qt-version}} using cmake.
         run: |
           echo "🔎 Listing some directories"
@@ -694,10 +698,11 @@ jobs:
           echo "🎉 Windows build complete. Artifacts are ready!"
       #
       # Upload artifacts from Windows build to 'continuous' pre-release tag.
-      # NOTE: We only upload from Windows when building with Qt 6.8,
-      # to avoid uploading too many artifacts for every commit.
+      # NOTE: this qt-version check is a no-op with a single matrix entry, kept so
+      # it fails loudly (no upload) instead of silently double-uploading if a
+      # second qt-version is ever added back to the matrix.
       #
-      - if: contains( matrix.os, 'windows') && matrix.qt-version == '6.8.0' && env.WINDOWS_ARTIFACT != ''
+      - if: contains( matrix.os, 'windows') && matrix.qt-version == '6.9.3' && env.WINDOWS_ARTIFACT != ''
         name: 📤 Upload ${{matrix.os}} build artifacts of ${{env.APP_NAME}} ${{ env.VERSION }} to GitHub ${{ env.UPLOAD_URL }}
         run: |
           echo "🔍 Verifying artifact: ${{ env.WINDOWS_ARTIFACT }}"
@@ -719,7 +724,7 @@ jobs:
       #
       # Update the continuous release description (only once, from ubuntu)
       #
-      - if: matrix.os == 'ubuntu-latest' && matrix.qt-version == '6.8.0'
+      - if: matrix.os == 'ubuntu-latest' && matrix.qt-version == '6.9.3'
         name: 🔄 Update continuous release description
         uses: actions/github-script@v7
         with:
