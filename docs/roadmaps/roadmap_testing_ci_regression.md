@@ -318,3 +318,20 @@ to the existing `continuous` tag independently and in parallel, so the recreate 
 to run once, before any of the parallel upload steps, to avoid a race. Separately, the same
 script computes `commitMessage` (the commit's subject line) but never uses it in the description
 text — worth including once this is revisited.
+
+### Shipped-dataset roundtrip script fails on a custom-delimiter fixture (#256)
+
+`run_io_roundtrip_shipped_datasets.sh` globs every file under `src/data` and loads each one via
+the CLI using its default delimiter (`" "`, set in `socnetv_cli.cpp`'s `delimOpt`), with no
+per-file override table. `src/data/TinyAdj_Dir_N3_E4_clucof.adj` uses `|` as its column delimiter
+— likely added alongside the directed clustering-coefficient fix (#58, `81e82a46`) to exercise the
+GUI's Import-dialog custom-delimiter option — so it fails under the script's blanket space-delimiter
+assumption. This went unnoticed because the script isn't part of the required regression gate (see
+the three scripts listed under "Regression discipline" in `README_DEVELOPER_NOTES.md`) or CI.
+
+Two independent fixes, either is enough on its own:
+
+- Give the script a small per-file delimiter override table (or a `.delimiter` sidecar convention)
+  so intentionally-nonstandard fixtures don't read as failures.
+- Promote the script into the required gate / CI now that it demonstrably catches real issues,
+  once the delimiter mismatch above is resolved one way or another.
