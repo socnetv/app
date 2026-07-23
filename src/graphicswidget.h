@@ -79,8 +79,6 @@ public:
 
     void setAllItemsVisibility(int, bool);
 
-    void removeAllItems(int);
-
 protected:
 
     void wheelEvent(QWheelEvent *event);
@@ -245,6 +243,7 @@ private:
     bool m_edgeHighlighting;
     bool m_edgesBezier;
     QTimer m_resizeTimer;
+    QList<GraphicsGuide *> m_guides;
     GraphicsNode *firstDoubleClickedNode, *secondDoubleClickedNode;
     GraphicsNode *markedEdgeSource;
     GraphicsNode *markedEdgeTarget;

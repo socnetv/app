@@ -198,6 +198,9 @@ void GraphicsWidget::clear() {
     m_selectedEdges.clear();
     qDebug() << "Clearing GW scene...";
     scene()->clear();
+    // scene()->clear() already deleted any guide items; just drop the now-dangling
+    // pointers rather than calling clearGuides(), which would delete them again.
+    m_guides.clear();
     m_curRelation=0;
     clickedEdge=0;
     firstDoubleClickedNode=0;
@@ -1344,7 +1347,7 @@ void GraphicsWidget::addGuideCircle( const double&x0,
                                      const double&radius){
     GraphicsGuide *circ=new GraphicsGuide (this, x0, y0, radius);
     circ->show();
-
+    m_guides.append(circ);
 }
 
 
@@ -1355,37 +1358,24 @@ void GraphicsWidget::addGuideCircle( const double&x0,
 void GraphicsWidget::addGuideHLine(const double &y0){
     GraphicsGuide *line=new GraphicsGuide (this, y0, width());
     line->show();
+    m_guides.append(line);
 }
 
 
 
 /**
- * @brief Removes all scene items of the given type.
+ * @brief Removes and deletes all guide items previously added via
+ * addGuideCircle()/addGuideHLine(), without scanning the scene.
  *
- * Currently only called with TypeGuide (via clearGuides()). GraphicsGuide::die()
- * only clears geometry/visibility bookkeeping — it does not delete or schedule
- * deletion — so a direct synchronous delete() here is safe and avoids the
- * double-free that resulted from combining deleteLater() with an immediate delete.
- *
- * @param type
+ * GraphicsGuide::die() only clears geometry/visibility bookkeeping — it does
+ * not delete or schedule deletion — so a direct synchronous delete is safe.
  */
-void GraphicsWidget::removeAllItems(int type){
-    const QList<QGraphicsItem *> list = scene()->items();
-    for (QGraphicsItem *item : list) {
-        if (item->type() == type) {
-            if (GraphicsGuide *guide = qgraphicsitem_cast<GraphicsGuide *>(item)) {
-                guide->die();
-                delete guide;
-            }
-        }
-    }
-}
-
-
-
 void GraphicsWidget::clearGuides(){
-    qDebug()<< "Clearing/Removing guides...";
-    this->removeAllItems(TypeGuide);
+    for (GraphicsGuide *guide : m_guides) {
+        guide->die();
+        delete guide;
+    }
+    m_guides.clear();
 }
 
 
@@ -1394,14 +1384,13 @@ void GraphicsWidget::clearGuides(){
  * @brief Forces the scene to select all items. Also signals that no node is clicked.
  */
 void GraphicsWidget::selectAll(){
+    qCDebug(lcGW) << "Selecting all scene items... Scene dimensions: "
+                  << scene()->width() << "x" << scene()->height();
     QPainterPath path;
-    qDebug() << "Selecting all scene items... "
-             << "Widget dimensions: " << width()<<"x"<<height()
-             << "Scene dimensions: " << scene()->width()<<"x"<<scene()->height();
-    path.addRect(0, 0, width(),height());
+    path.addRect(scene()->sceneRect());
     scene()->setSelectionArea(path);
     emit userClickedNode(0, QPointF(0,0));
-    qDebug() << "Selected scene items now: " << selectedItems().size();
+    qCDebug(lcGW) << "Selected scene items now: " << selectedItems().size();
 }
 
 
@@ -1420,11 +1409,20 @@ void GraphicsWidget::selectNone(){
 /**
  * @brief Handles the event of selection change in the scene.
  *
- * Emits selected nodes and edges to Graph
- *
+ * Queries scene()->selectedItems() once, populates m_selectedNodes and
+ * m_selectedEdges from a single pass, then emits both lists to Graph.
  */
 void GraphicsWidget::handleSelectionChanged() {
-    emit userSelectedItems(selectedNodes(), selectedEdges());
+    m_selectedNodes.clear();
+    m_selectedEdges.clear();
+    const QList<QGraphicsItem *> items = scene()->selectedItems();
+    for (QGraphicsItem *item : items) {
+        if (GraphicsNode *node = qgraphicsitem_cast<GraphicsNode *>(item))
+            m_selectedNodes.append(node->nodeNumber());
+        else if (GraphicsEdge *edge = qgraphicsitem_cast<GraphicsEdge *>(item))
+            m_selectedEdges << qMakePair(edge->sourceNodeNumber(), edge->targetNodeNumber());
+    }
+    emit userSelectedItems(m_selectedNodes, m_selectedEdges);
 }
 
 
@@ -1536,18 +1534,18 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
                 // User clicked on a node
                 //
 
-                qDebug() << "Clicked on a node at:"  << e->pos() << "~"<< p << "Setting it as clicked node...";
+                qCDebug(lcGW) << "Clicked on a node at:"  << e->pos() << "~"<< p << "Setting it as clicked node...";
 
                 setNodeClicked(node);
 
                 if ( e->button()==Qt::RightButton ) {
-                    qDebug() << "This was a right-click on node. Signaling to open node menu";
+                    qCDebug(lcGW) << "This was a right-click on node. Signaling to open node menu";
                     if ( !node->isSelected() )
                         node->setSelected(true);
                     emit openNodeMenu();
                 }
                 else if ( e->button()==Qt::MiddleButton) {
-                    qDebug() << "This was a middle-click on node. Calling to start or conclude a new edge...";
+                    qCDebug(lcGW) << "This was a middle-click on node. Calling to start or conclude a new edge...";
                     handleDoubleClickOnNode(node);
                 }
                 else if ( e->button()==Qt::LeftButton
@@ -1556,7 +1554,7 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
                     // selection without clearing other selected nodes.
                     // Qt's default item handler only treats Ctrl as additive;
                     // we intercept Shift here and return early to skip that path.
-                    qDebug() << "Shift+left-click on node. Toggling selection.";
+                    qCDebug(lcGW) << "Shift+left-click on node. Toggling selection.";
                     node->setSelected(!node->isSelected());
                     return;
                 }
@@ -1568,14 +1566,14 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
                 //
                 // User clicked on an edge
                 //
-                qDebug() << "Clicked on an edge at:" << e->pos() << "~"<< p;
+                qCDebug(lcGW) << "Clicked on an edge at:" << e->pos() << "~"<< p;
 
                 if ( e->button()==Qt::LeftButton ) {
-                    qDebug() << "This was a left click on the edge. Setting clicked edge...";
+                    qCDebug(lcGW) << "This was a left click on the edge. Setting clicked edge...";
                     setEdgeClicked(edge);
                 }
                 else if ( e->button()==Qt::RightButton ) {
-                    qDebug() << "This was a right click on the edge. Signaling to open context menu...";
+                    qCDebug(lcGW) << "This was a right click on the edge. Signaling to open context menu...";
                     setEdgeClicked(edge, true);
                 }
                 else {
@@ -1596,14 +1594,14 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
                 // User clicked on empty space, with right button
                 // so we must open the context menu
                 //
-                qDebug() << "Right click on empty space at:" << e->pos() << "~"<< p << "Signalling to open context menu";
+                qCDebug(lcGW) << "Right click on empty space at:" << e->pos() << "~"<< p << "Signalling to open context menu";
                 emit openContextMenu(p);
             }
             else {
                 //
                 //  user clicked on empty space, with left button.
                 //
-                qDebug() << "Left click on empty space at:"
+                qCDebug(lcGW) << "Left click on empty space at:"
                      << e->pos() << "~"<< p << "Setting clickedEdge=0 and emitting signal...";
                 clickedEdge=0;
                 emit userClickOnEmptySpace(p);
@@ -1636,11 +1634,13 @@ void GraphicsWidget::mouseReleaseEvent( QMouseEvent * e ) {
 
         if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
             if (GraphicsNode *node = qgraphicsitem_cast<GraphicsNode *>(item)) {
-                qDebug() << "Mouse released at:" << e->pos() << "~"<< p
+                qCDebug(lcGW) << "Mouse released at:" << e->pos() << "~"<< p
                      << "on a node. Signalling to move all selected nodes";
                 Q_UNUSED(node);
-                foreach (QGraphicsItem *item, scene()->selectedItems()) {
-                    if (GraphicsNode *nodeSelected = qgraphicsitem_cast<GraphicsNode *>(item) ) {
+                // m_selectedNodes is kept in sync by handleSelectionChanged() and does
+                // not change mid-drag, so reuse it instead of re-querying the scene.
+                for (int nodeNum : std::as_const(m_selectedNodes)) {
+                    if (GraphicsNode *nodeSelected = nodeHash.value(nodeNum, nullptr)) {
                         emit userNodeMoved(nodeSelected->nodeNumber(),
                                            nodeSelected->x(),
                                            nodeSelected->y());
@@ -1650,13 +1650,13 @@ void GraphicsWidget::mouseReleaseEvent( QMouseEvent * e ) {
             }
             if (GraphicsEdge *edge= qgraphicsitem_cast<GraphicsEdge *>(item)) {
                 Q_UNUSED(edge);
-                qDebug() << "Mouse released at:" << e->pos() << "~"<< p << "on an edge.";
+                qCDebug(lcGW) << "Mouse released at:" << e->pos() << "~"<< p << "on an edge.";
                 QGraphicsView::mouseReleaseEvent(e);
                 return;
             }
         }
         else{
-            qDebug() << "Mouse released at:" << e->pos() << "~"<< p << "on empty space.";
+            qCDebug(lcGW) << "Mouse released at:" << e->pos() << "~"<< p << "on empty space.";
         }
 
     }
@@ -1676,7 +1676,7 @@ void GraphicsWidget::mouseReleaseEvent( QMouseEvent * e ) {
 void GraphicsWidget::wheelEvent(QWheelEvent *e) {
     bool ctrlKey = (e->modifiers() == Qt::ControlModifier);
     QPoint numDegrees =  e->angleDelta() / 8;
-    qDebug() << "Mouse wheel changeded by numDegrees = " << numDegrees;
+    qCDebug(lcGW) << "Mouse wheel changeded by numDegrees = " << numDegrees;
     if (ctrlKey) {
         if ( numDegrees.x() > 0 || numDegrees.y() > 0)
             zoomIn(1);
@@ -1696,7 +1696,7 @@ void GraphicsWidget::wheelEvent(QWheelEvent *e) {
  */
 void GraphicsWidget::zoomOut (const int step){
 
-    qDebug() << "Zooming out from "<< m_zoomIndex << "-" << step ;
+    qCDebug(lcGW) << "Zooming out from "<< m_zoomIndex << "-" << step ;
     m_zoomIndex-=step;
     if (m_zoomIndex <= 0) {
         m_zoomIndex = 0;
@@ -1716,7 +1716,7 @@ void GraphicsWidget::zoomOut (const int step){
  * @param level
  */
 void GraphicsWidget::zoomIn(const int step){
-    qDebug() << "Zooming in from "<< m_zoomIndex << "+" << step ;
+    qCDebug(lcGW) << "Zooming in from "<< m_zoomIndex << "+" << step ;
     m_zoomIndex+=step;
     if (m_zoomIndex > m_zoomIndexMax) {
         m_zoomIndex=m_zoomIndexMax;
@@ -1739,7 +1739,7 @@ void GraphicsWidget::zoomIn(const int step){
  */
 void GraphicsWidget::changeMatrixScale(int value) {
 
-    qDebug () << "Scaling the view transformation matrix by value" << value
+    qCDebug(lcGW) << "Scaling the view transformation matrix by value" << value
                << " - GW dimensions: " << width() << "x" << height();
 
     // Raise a flag that a non-trivial transformation is applied on the view
@@ -1748,7 +1748,7 @@ void GraphicsWidget::changeMatrixScale(int value) {
     // For any m_zoomIndexMax value, the max scaleFactor will always be: 2 ^ 5 = 32
     m_currentScaleFactor = pow(qreal(2), (value - (m_zoomIndexInit )) / qreal(m_zoomIndexMax/10.0) );
 
-    qDebug() << "Scaling view transformation by new scale factor:" << m_currentScaleFactor
+    qCDebug(lcGW) << "Scaling view transformation by new scale factor:" << m_currentScaleFactor
               << "rotation unchanged:" << m_currentRotationAngle;
 
     // Anchor zoom to wherever the user last panned to (m_viewCenter), falling back to
@@ -1769,7 +1769,7 @@ void GraphicsWidget::changeMatrixScale(int value) {
     centerOn(m_viewCenter);
     m_isZooming = false;
 
-    qDebug () << "Finished scaling the view."
+    qCDebug(lcGW) << "Finished scaling the view."
                << " - GW dimensions: " << width() << "x" << height()
               << "  Scene dimensions:" << scene()->width() << "x" << scene()->height();
 
@@ -1819,7 +1819,7 @@ void GraphicsWidget::rotateRight() {
 void GraphicsWidget::changeMatrixRotation(int angle){
     m_isTransformationActive = true;
     m_currentRotationAngle = angle;
-    qDebug() << "Rotating clockwise by angle" <<  angle
+    qCDebug(lcGW) << "Rotating clockwise by angle" <<  angle
               << " m_currentRotationAngle " << m_currentRotationAngle
               << " m_currentScaleFactor " << m_currentScaleFactor;
     resetTransform();

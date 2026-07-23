@@ -109,7 +109,7 @@ MainWindow::MainWindow(const QString &m_fileName, const bool &forceProgress, con
         qSetMessagePattern("");
         // Disable debugging messages with filter rule
         QLoggingCategory::setFilterRules("default.debug=false\n"
-                                         "socnetv.debug=false");
+                                         "socnetv.*.debug=false");
         break;
     case 1:
         // Debugging set to minimum by command line parameter
@@ -15685,14 +15685,14 @@ void MainWindow::slotOptionsDebugMessages(bool toggle)
         qDebug() << "Disabling debugging messages";
         appSettings["printDebug"] = "false";
         QLoggingCategory::setFilterRules("default.debug=false\n"
-                                         "socnetv.debug=false");
+                                         "socnetv.*.debug=false");
         statusMessage(tr("Debug messages off."));
     }
     else
     {
         appSettings["printDebug"] = "true";
         QLoggingCategory::setFilterRules("default.debug=true\n"
-                                         "socnetv.debug=true");
+                                         "socnetv.*.debug=true");
         qDebug() << "Enabled debugging messages";
         statusMessage(tr("Debug messages on."));
     }
