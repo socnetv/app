@@ -1779,6 +1779,10 @@ void GraphicsWidget::scrollContentsBy(int dx, int dy)
  */
 void GraphicsWidget::rotateLeft(){
     m_currentRotationAngle-=5;
+    // Apply the transform directly rather than relying on the rotationChanged->slider->
+    // changeMatrixRotation chain: that chain is now display-only (QSignalBlocker'd in
+    // MainWindow), so nothing else would ever apply the rotation.
+    changeMatrixRotation(m_currentRotationAngle);
     emit rotationChanged(m_currentRotationAngle);
 }
 
@@ -1788,6 +1792,7 @@ void GraphicsWidget::rotateLeft(){
  */
 void GraphicsWidget::rotateRight() {
     m_currentRotationAngle+=5;
+    changeMatrixRotation(m_currentRotationAngle);
     emit rotationChanged(m_currentRotationAngle);
 }
 

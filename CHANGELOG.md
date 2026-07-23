@@ -113,6 +113,11 @@ All notable changes to this project are documented in this file.
     grows amortized O(1) without pre-reservation, so this only removes
     wasted memory on the common small/medium-network case. All golden
     regression baselines pass unchanged.
+  - **Canvas rendering internals: correctness and performance pass**
+    (#250, part 5): stopped the rotation slider and canvas rotation from
+    double-applying the transform on every click of the rotate left/right
+    buttons (harmless but wasteful — now applied once). All golden
+    regression baselines pass unchanged.
 
 ## [3.6] – May 26, 2026
 

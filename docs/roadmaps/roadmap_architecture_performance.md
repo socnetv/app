@@ -389,15 +389,20 @@ See #254 for the full write-up and hints.
   deleted outright (declaration + definition) per the final-gate dead-code rule instead of
   refactoring dead code.
 
-- [ ] **#C3 — `zoomToFit` / `reset` may double-apply transform via slider signal chain** (lines 1929–1946)
-  Both call `changeMatrixScale()` directly, then `emit zoomChanged()`. If anything connects
-  `valueChanged → changeMatrixScale` the transform is applied twice (two repaints).
-  Currently mitigated by the `sliderMoved` change in #249, but the coupling is fragile.
-  Fix: when updating the slider for display purposes, use `QSignalBlocker` to prevent re-entry.
-  _Before fixing:_ `GraphicsWidget` holds no direct pointer to `zoomSlider` (it lives in
-  `MainWindow`). Decide between: (a) emitting a separate display-only signal that MW connects
-  to `slider->setValue` via a blocked connection, or (b) passing the slider pointer at
-  construction time. Choose and document the pattern before writing any code.
+- [x] **#C3 — `zoomToFit` / `reset` may double-apply transform via slider signal chain** (lines 1929–1946) ✅ Done
+  Audited both chains: `zoomSlider::sliderMoved` (the #249 fix) only fires on user drag, not on
+  programmatic `setValue()`, so the zoom chain was already safe — no change needed there.
+  `rotateSlider::valueChanged`, unlike `sliderMoved`, **does** fire on programmatic `setValue()`,
+  so `rotateLeft()`/`rotateRight()` bounced every click through `changeMatrixRotation()` twice
+  (harmless — idempotent — but wasteful). Fixed by converting the
+  `rotationChanged -> rotateSlider::setValue` connection in `mainwindow.cpp` to a lambda wrapped
+  in `QSignalBlocker`, matching option (a) from the original plan.
+  **Follow-up correction:** the first version of this fix broke the rotate buttons — unlike
+  `zoomIn`/`zoomOut`, `rotateLeft`/`rotateRight` never called `changeMatrixRotation()` directly;
+  the transform was only ever applied as a side effect of the (now-blocked) slider's
+  `valueChanged`. Fixed by making `rotateLeft`/`rotateRight` call `changeMatrixRotation()`
+  directly, same pattern as the zoom methods, so the button path no longer depends on the
+  slider's signal chain at all.
 
 - [x] **#C4 — `edgesHash.reserve(500000)` pre-allocated at startup regardless of graph size**
   (`graphicswidget.cpp` line 70) ✅ Done

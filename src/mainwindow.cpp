@@ -26,6 +26,7 @@
 #include <QProgressDialog>
 #include <QKeySequence>
 #include <QDateTime>
+#include <QSignalBlocker>
 
 #include <QtSvg> // for SVG icons
 #include <QLoggingCategory>
@@ -5160,8 +5161,15 @@ void MainWindow::initSignalSlots()
     connect(zoomInBtn, SIGNAL(clicked()), graphicsWidget, SLOT(zoomIn()));
     connect(zoomOutBtn, SIGNAL(clicked()), graphicsWidget, SLOT(zoomOut()));
 
-    connect(graphicsWidget, SIGNAL(rotationChanged(const int &)),
-            rotateSlider, SLOT(setValue(const int &)));
+    // rotateSlider::valueChanged (unlike zoomSlider::sliderMoved above) fires on
+    // programmatic setValue() too, so updating it here would otherwise bounce straight
+    // back into changeMatrixRotation() with the same angle. QSignalBlocker keeps this a
+    // display-only update.
+    connect(graphicsWidget, &GraphicsWidget::rotationChanged,
+            this, [this](const int angle) {
+                const QSignalBlocker blocker(rotateSlider);
+                rotateSlider->setValue(angle);
+            });
 
     connect(rotateSlider, SIGNAL(valueChanged(const int &)),
             graphicsWidget, SLOT(changeMatrixRotation(const int &)));
