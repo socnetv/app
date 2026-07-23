@@ -83,25 +83,24 @@ All notable changes to this project are documented in this file.
   - `docs/README_DEVELOPER_NOTES.md` "Current focus" section replaced with a
     single pointer to the architectural roadmap.
   - `AUTHORS`: added Andreas as Debian package maintainer.
-  - **GraphicsWidget Group A cleanup** (#250): fixed a double-free /
-    undefined behaviour in `removeAllItems()` (a deferred delete followed by
-    an immediate delete of the same guide object), replaced `contains()` +
-    `value()` double hash lookups with single-probe lookups across a dozen
-    node and edge property setters, and switched two hot methods to take
-    their arguments by const reference instead of by value.
+  - **Canvas rendering internals: correctness and performance pass**
+    (#250, part 1): fixed a double-free / undefined behaviour in guide-item
+    cleanup (a deferred delete followed by an immediate delete of the same
+    object), replaced double hash lookups with single-probe lookups across a
+    dozen node and edge property setters, and switched two hot methods to
+    take their arguments by const reference instead of by value.
     Behaviour-preserving — all golden regression baselines pass unchanged.
-    First installment of the wider GraphicsWidget performance and
+    First installment of a wider canvas-rendering performance and
     documentation overhaul tracked in #250.
-  - **GraphicsWidget Group B cleanup** (#250): merged redundant
-    scene-selection queries in `handleSelectionChanged` into a single pass;
-    replaced a per-resize full-scene guide scan with a maintained guide list
-    (fixing a resulting dangling-pointer double-free in `GraphicsWidget::
-    clear()` along the way); fixed a coordinate-space bug in Select All that
-    used viewport pixels instead of scene coordinates; reused cached
-    selection state instead of re-querying the scene on every node-drag
-    release; and converted GraphicsWidget's hot-path debug logging (mouse,
-    wheel, and zoom event handlers) to a properly gated logging category so
-    the existing Debug Messages toggle actually silences it. All golden
+  - **Canvas rendering internals: correctness and performance pass**
+    (#250, part 2): merged redundant scene-selection queries into a single
+    pass; replaced a per-resize full-scene scan for layout guides with a
+    maintained list (fixing a resulting dangling-pointer double-free along
+    the way); fixed a coordinate-space bug in Select All that used viewport
+    pixels instead of scene coordinates; reused cached selection state
+    instead of re-querying the scene on every node-drag release; and moved
+    the canvas's hot-path debug logging behind the existing Debug Messages
+    toggle, which previously didn't actually silence it. All golden
     regression baselines pass unchanged.
 
 ## [3.6] – May 26, 2026
