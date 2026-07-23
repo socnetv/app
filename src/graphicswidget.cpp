@@ -71,8 +71,9 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         m_currentRotationAngle = 0;
 
         clickedEdge=0;
-        edgesHash.reserve(500000);
-        nodeHash.reserve(10000);
+        // No upfront reserve() - QHash grows amortized O(1) regardless, and a fixed
+        // reserve here pre-allocates the same bucket capacity for every widget instance,
+        // whether it ends up holding 5 nodes or 500,000.
 
         m_edgeHighlighting = true;
         m_edgesBezier = false;

@@ -399,14 +399,15 @@ See #254 for the full write-up and hints.
   to `slider->setValue` via a blocked connection, or (b) passing the slider pointer at
   construction time. Choose and document the pattern before writing any code.
 
-- [ ] **#C4 — `edgesHash.reserve(500000)` pre-allocated at startup regardless of graph size**
-  (`graphicswidget.cpp` line 70)
-  Pre-allocates megabytes of hash bucket memory unconditionally. Remove the fixed reserve.
-  Call `edgesHash.reserve(edgeCount)` and `nodeHash.reserve(nodeCount)` after the file header
-  is parsed and actual counts are known — before `drawNode`/`drawEdge` calls begin.
-  _Before fixing:_ identify where `Graph` signals vertex/edge counts (e.g. via
-  `signalNodesFound` or a dedicated pre-draw signal) and wire a slot or direct call on
-  `GraphicsWidget` to trigger the reserve at the right moment.
+- [x] **#C4 — `edgesHash.reserve(500000)` pre-allocated at startup regardless of graph size**
+  (`graphicswidget.cpp` line 70) ✅ Done
+  A "reserve based on real counts once known" fix was considered but dropped: `Graph::signalGraphLoaded`
+  only fires *after* all `createNode`/`createEdge` calls have already populated the hashes, so it
+  can't help size the load that's already happening — only some hypothetical next one. Given
+  `QHash`'s amortized-O(1) growth means a fixed reserve saves only a handful of cheap rehashes on
+  very large loads, while costing every small/medium network (the overwhelming common case) a
+  bucket array sized for 500,000 entries at construction, the two `reserve()` calls were removed
+  outright rather than replaced with load-time sizing.
 
 #### Final gate — documentation and dead-code removal
 

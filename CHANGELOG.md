@@ -106,6 +106,13 @@ All notable changes to this project are documented in this file.
     (#250, part 3): removed `GraphicsWidget::hasNode()`, a dead method with
     no callers anywhere in the codebase. No behaviour change — nothing
     invoked it. All golden regression baselines pass unchanged.
+  - **Canvas rendering internals: correctness and performance pass**
+    (#250, part 4): removed two hardcoded `reserve()` calls that
+    pre-allocated hash bucket capacity for 500,000 edges and 10,000 nodes
+    on every canvas widget, regardless of actual network size. `QHash`
+    grows amortized O(1) without pre-reservation, so this only removes
+    wasted memory on the common small/medium-network case. All golden
+    regression baselines pass unchanged.
 
 ## [3.6] – May 26, 2026
 
