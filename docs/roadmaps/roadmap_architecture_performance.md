@@ -211,6 +211,54 @@ often vanished from view because `canvasSizeSet` never triggered a viewport re-f
 - `zoomToFit()` caps the computed zoom index at `m_zoomIndexInit` (100 %) — small networks are
   never over-zoomed; only layouts larger than the viewport scale down.
 
+**Follow-up fix (#253):** the exact-fit-with-margin calculation shrank content that was only
+marginally larger than the viewport (a few percent, from node marker/label overhang beyond the
+raw coordinate range) — e.g. a 1000-node Erdős–Rényi network or `geom.net` on load ended up
+visibly smaller than the viewport, needing a manual Ctrl+0 to fill the canvas correctly.
+`zoomToFit()` now snaps to the initial 100 % level whenever the computed fit scale is within 75 %
+of it, matching `reset()`'s tight, margin-free look; only content that would need at least a
+quarter of its size cut still triggers a real zoom-out.
+
+### #254 — Improve UI responsiveness during long weighted-centrality computations (pending)
+
+**Problem:** computing a weighted, inverted-weight centrality index (e.g. Betweenness Centrality)
+on a large network makes the whole application completely unresponsive — not just slow, but
+unable to repaint, receive input, or even respond to window-manager focus/switch requests — for
+the entire duration of the computation. Confirmed identically present in v3.6 (not a regression):
+for `geom.net` (7343 nodes, weighted, inverted, BC), the release build showed 795–900 % CPU across
+~8 cores (`ps` state `R`, genuinely computing, not deadlocked) and eventually completed the
+layout, but only after several minutes with the window completely frozen throughout.
+
+**Root cause:** `MainWindow::slotLayoutXByProminenceIndex()` calls `activeGraph-
+>layoutByProminenceIndex(...)` as a direct, synchronous C++ call from the GUI thread. A direct
+method call always executes on the caller's thread regardless of the callee `QObject`'s thread
+affinity — `Graph` being `moveToThread(&graphThread)`'d doesn't help here. For indices without a
+dedicated branch (including BC), this falls through to `DistanceEngine::compute()`
+(`src/engine/distance_engine.cpp`), which uses `QtConcurrent::blockingMap(sources, ...)` to
+parallelize per-source Dijkstra/BFS runs across the global thread pool — but `blockingMap` blocks
+the *calling* thread (here, the GUI thread) until every worker finishes. The computation is
+genuinely parallelized, but the GUI thread never returns to its event loop for the whole duration.
+
+**Secondary finding:** `distance_engine.cpp` has ~75 unconditional `qDebug()` calls, several
+inside the per-edge-relaxation inner loop (fires on the order of the total edge-relaxation count
+— potentially billions for a graph this size). Unlike `qCDebug(category)`, plain `qDebug()` isn't
+cheaply short-circuited by a disabled logging-category filter rule — the stream
+construction/formatting cost is paid on every call regardless of whether output is enabled. Worth
+converting to a dedicated category (same pattern as `lcGW` in `GraphicsWidget`), independent of
+the main-thread-blocking fix.
+
+**UX note (from live testing):** the app's existing progress-dialog mechanism
+(`progressCreate`/`progressUpdate`/`progressFinish`) is disabled by default because it makes
+large computations *slower* — each `progressUpdate()` call crosses a signal/slot boundary and
+triggers a repaint, which adds real overhead when called millions/billions of times. A fix here
+should **not** naively wire that granular mechanism into this hot path. Consider a separate,
+coarse-grained "computation in progress" indicator (shown once, updated rarely if at all,
+dismissed on completion) instead — decoupled from the actual fix, which is moving the blocking
+wait off the GUI thread (e.g. `QFutureWatcher` + signal-based completion instead of
+`blockingMap`).
+
+See #254 for the full write-up and hints.
+
 ---
 
 ### GraphicsWidget — Performance and Code Quality Overhaul
