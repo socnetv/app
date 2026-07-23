@@ -305,3 +305,16 @@ Rules:
 Your benchmark script output still shows `BUILD_TYPE=Debug` even when you run the Release binary. That’s a script-reporting detail (not a functional bug), but it can confuse future contributors. It’s a good tiny WS6 task.
 
 If you paste me your current `docs/roadmaps/roadmap_testing_ci_regression.md` file path/contents (if it differs from the skeleton you showed), I can also produce a `diff`-style patch, but you don’t need to — the above is ready to drop in.
+
+### Continuous release page shows a stale "published" date (#255 follow-up)
+
+`build-ci.yml`'s "Update continuous release description" step (`ubuntu-latest` job) `PATCH`es
+the existing `continuous` release's body on every `[ci]` run, but never touches its
+`published_at` timestamp — GitHub's releases page prominently displays that timestamp, so the
+page can look outdated (currently stuck at 2025-02-25) even though the body text and uploaded
+artifacts are fresh from the latest run. Proper fix is to delete and recreate the release each
+run instead of updating in place, which needs care: the four OS jobs currently upload artifacts
+to the existing `continuous` tag independently and in parallel, so the recreate step would need
+to run once, before any of the parallel upload steps, to avoid a race. Separately, the same
+script computes `commitMessage` (the commit's subject line) but never uses it in the description
+text — worth including once this is revisited.
