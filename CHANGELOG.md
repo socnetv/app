@@ -22,6 +22,15 @@ All notable changes to this project are documented in this file.
     context-menu operations on the whole path. Only edges are selected (not
     nodes) to avoid highlighting unrelated connected edges.
 
+  - **Viewport auto-fit after layouts, loads, and window resize** (#249):
+    the canvas now automatically scales and centres to show the full network
+    after every layout algorithm completes, after opening a file, and after
+    generating a random network. When the application window is resized, node
+    positions rescale proportionally and the view re-fits once the window
+    settles — eliminating the "network disappeared" problem during window drag.
+    Zoom buttons, Ctrl+scroll, and Reset (Ctrl+0) are now reliable at any zoom
+    level. Small networks are never scaled beyond 100%.
+
   - **Tomita pivot selection in clique census** (#64): the Bron–Kerbosch
     algorithm now selects a pivot vertex $ u \in P \cup X $ that maximises
     $ |N(u) \cap P| $ before each recursive level, and iterates only over
@@ -50,13 +59,10 @@ All notable changes to this project are documented in this file.
     were stretched to fill the node bounding box. They are now scaled with
     `Qt::KeepAspectRatio` and centred within the node.
 
-  - **Canvas zoom anchor follows pan position** (#248): zoom in/out now
-    anchors to wherever you last scrolled or panned — pan to a corner, then
-    zoom, and the view stays there instead of snapping back to the centre of
-    the whole network. Implemented via `scrollContentsBy()` tracking
-    `m_viewCenter`, guarded by `m_isZooming` so the anchor is never corrupted
-    by the zoom-triggered scroll itself. Reset and new network loads still
-    centre on the full content bounding box.
+  - **Canvas zoom anchors to your current view** (#248): zooming in or out
+    now stays anchored to wherever you last panned. Navigate to a corner of a
+    large network and zoom in — the view stays there instead of jumping back
+    to the network centre.
 
 ### Maintenance
 
