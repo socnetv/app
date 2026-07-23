@@ -21,6 +21,7 @@
 #include <QMouseEvent>
 #include <QtMath>
 #include <QDebug>
+#include <QLoggingCategory>
 #include <QWheelEvent>
 
 #ifndef QT_NO_OPENGL
@@ -39,6 +40,9 @@
 #include "graphicsedgeweight.h"
 #include "graphicsedgelabel.h"
 
+// Disabled at runtime by default (no recompile needed to re-enable); used for
+// the mouse/wheel/zoom event handlers, which fire on every pixel of drag/scroll.
+Q_LOGGING_CATEGORY(lcGW, "socnetv.graphicswidget")
 
 /**
  * @brief Constructs a GraphicsWidget object
@@ -1856,18 +1860,36 @@ void GraphicsWidget::zoomToFit()
         return;
 
     const QRectF vp = viewport()->rect();
-    const qreal margin = 20.0;
+    // Small margin so content doesn't touch the viewport edge on tiny networks.
+    const qreal margin = 5.0;
     const qreal sx = (vp.width()  - margin * 2.0) / bounds.width();
     const qreal sy = (vp.height() - margin * 2.0) / bounds.height();
     const qreal fitScale = qMin(sx, sy);
+    qCDebug(lcGW) << "zoomToFit() bounds:" << bounds
+                  << "viewport rect:" << vp
+                  << "sceneRect:" << scene()->sceneRect()
+                  << "sx:" << sx << "sy:" << sy << "fitScale:" << fitScale;
     if (fitScale <= 0.0)
         return;
 
-    // Map the desired fit scale to our discrete zoom index.
-    // Never zoom IN beyond the initial 100 % level — only scale down to show
-    // large or dispersed layouts.  Zooming in is reserved for explicit user action.
-    m_zoomIndex = qRound(m_zoomIndexInit + qLn(fitScale) / qLn(2.0) * (m_zoomIndexMax / 10.0));
-    m_zoomIndex = qBound(0, m_zoomIndex, m_zoomIndexInit);
+    // Content that's only somewhat larger than the viewport is left at the initial
+    // 100% level rather than computing the "exact" fit-with-margin scale — matching
+    // reset()'s tight, margin-free look instead of visibly shrinking for an overflow
+    // that reset() tolerates just fine. Real-world networks routinely land in the
+    // 0.85-0.95 range here (node/label overhang beyond the raw coordinate range);
+    // only content that would need at least a quarter of its size cut actually
+    // triggers a real zoom-out.
+    int computedZoomIndex;
+    if (fitScale >= 0.75) {
+        computedZoomIndex = m_zoomIndexInit;
+    } else {
+        computedZoomIndex = qRound(m_zoomIndexInit + qLn(fitScale) / qLn(2.0) * (m_zoomIndexMax / 10.0));
+    }
+    m_zoomIndex = qBound(0, computedZoomIndex, m_zoomIndexInit);
+    qCDebug(lcGW) << "zoomToFit() computedZoomIndex (pre-clamp):" << computedZoomIndex
+                  << "m_zoomIndexInit:" << m_zoomIndexInit
+                  << "m_zoomIndexMax:" << m_zoomIndexMax
+                  << "final m_zoomIndex:" << m_zoomIndex;
 
     m_viewCenter    = bounds.center();
     m_viewCenterValid = true;
