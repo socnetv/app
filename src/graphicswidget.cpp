@@ -922,26 +922,6 @@ bool GraphicsWidget::setNodeLabelDistance( const int &nodeNum, const int &distan
 
 
 
-/**
- * @brief Checks if a node with label or nodeNum 'text' exists and returns it
- *
- * @param text
- * @return
- */
-GraphicsNode* GraphicsWidget::hasNode( const QString &text ){
-    bool ok = false;
-    foreach ( GraphicsNode *candidate, nodeHash) {
-        if ( 	candidate->nodeNumber()==text.toInt(&ok, 10)  ||
-                ( candidate->labelText() == text)
-                ) {
-            return candidate;
-        }
-
-    }
-    return 0;	//dummy return.
-}
-
-
 
 /**
  * @brief Selects all nodes in the given list

@@ -383,12 +383,11 @@ See #254 for the full write-up and hints.
   external callers; confirm actual node-number and relation-index ranges used in the codebase;
   check whether any code serialises or logs the edge key as a string (would need updating).
 
-- [ ] **#C2 — `hasNode` O(N) loop with repeated `toInt()`** (`graphicswidget.cpp` lines 958–970)
-  `text.toInt(&ok, 10)` is called once per node in the hash on every invocation.
-  Refactor: convert once before any loop; for numeric input do a direct O(1) `nodeHash.find()`;
-  fall back to O(N) label scan only when the input is non-numeric or the number is not found.
-  _Before fixing:_ confirm all callers pass either a node-number string or a label; if labels can
-  be purely numeric, the O(N) label fallback is mandatory even after a hash hit fails.
+- [x] **#C2 — `hasNode` O(N) loop with repeated `toInt()`** (`graphicswidget.cpp` lines 958–970) ✅ Done
+  Turned out to be moot: `grep -rn "hasNode(" src/` found zero callers anywhere in the tree,
+  including `mainwindow.cpp`. There was no O(N) cost to fix because the method was never invoked —
+  deleted outright (declaration + definition) per the final-gate dead-code rule instead of
+  refactoring dead code.
 
 - [ ] **#C3 — `zoomToFit` / `reset` may double-apply transform via slider signal chain** (lines 1929–1946)
   Both call `changeMatrixScale()` directly, then `emit zoomChanged()`. If anything connects

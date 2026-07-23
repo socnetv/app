@@ -102,6 +102,10 @@ All notable changes to this project are documented in this file.
     the canvas's hot-path debug logging behind the existing Debug Messages
     toggle, which previously didn't actually silence it. All golden
     regression baselines pass unchanged.
+  - **Canvas rendering internals: correctness and performance pass**
+    (#250, part 3): removed `GraphicsWidget::hasNode()`, a dead method with
+    no callers anywhere in the codebase. No behaviour change — nothing
+    invoked it. All golden regression baselines pass unchanged.
 
 ## [3.6] – May 26, 2026
 
