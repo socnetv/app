@@ -46,17 +46,9 @@ Details: [`docs/roadmaps/roadmap_graph_exploration.md`](roadmaps/roadmap_graph_e
 
 ---
 
-# Current Focus
-
-**WS3 — Architecture & Performance.**
-
-Phases 1 and 2 (DistanceEngine parallelisation) shipped in v3.6 (2.7×–8.3× speedup).
-Next: dead code cleanup, near-term DistanceEngine feature deliverables, and bug fixes.
-See [`docs/roadmaps/roadmap_architecture_performance.md`](roadmaps/roadmap_architecture_performance.md).
-
----
-
 # Active Workstreams
+
+Current focus is marked `← ACTIVE` below; see "Priorities" further down for the full ranking.
 
 ## WS3 — Architecture & Performance ← **ACTIVE**
 
@@ -70,9 +62,10 @@ vs
 algorithms / services / caches
 ```
 
-**First execution:** extract per-source SSSP scratch from `Graph`/`GraphVertex` into
-`PerSourceScratch`; parallelise `DistanceEngine` source loop. Proceed incrementally;
-every phase is validated by the WS6 regression harness before the next begins.
+**M1 shipped** (v3.6): per-source SSSP scratch extracted into `PerSourceScratch`;
+`DistanceEngine` source loop parallelised (2.7×–8.3× speedup). **Next: M2** — introduce
+`GraphModel`, currently in design. Proceed incrementally; every milestone is validated by the
+WS6 regression harness before the next begins.
 
 ---
 
