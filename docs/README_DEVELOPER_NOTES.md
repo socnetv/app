@@ -10,6 +10,10 @@ Detailed workstream plans:
 docs/roadmaps/
 ```
 
+> **Before committing any structural change:** run `./scripts/run_golden_compares.sh` (see
+> "Regression discipline" under Development Workflow, below, for the full script list). All golden
+> JSON baselines must still pass.
+
 ---
 
 # Architecture Overview

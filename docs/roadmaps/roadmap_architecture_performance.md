@@ -1,5 +1,9 @@
 # Architecture & Performance Roadmap (WS3)
 
+> **Before committing any change described in this roadmap:** run
+> `./scripts/run_golden_compares.sh`. All golden JSON baselines must still pass — this applies to
+> every phase, group, and item below, not just the ones that call it out explicitly.
+
 ## Goal
 
 Introduce a domain model that is independent from UI concerns and can be tested headlessly.
