@@ -7,10 +7,20 @@
 ## Goal
 
 Introduce a domain model that is independent from UI concerns and can be tested headlessly.
-The first concrete step — extracting per-source algorithm scratch state from `Graph` and
-`GraphVertex` into `PerSourceScratch` and parallelising the `DistanceEngine` source loop —
-is complete (shipped in v3.6, 2.7×–8.3× speedup). The roadmap continues with near-term
-DistanceEngine feature deliverables and then the longer-arc domain model milestones M2–M4.
+`Graph` currently mixes storage, algorithm state, caches, and UI signaling in one façade class;
+the goal is to separate those concerns without a disruptive rewrite — see "Target Direction" below.
+
+## Status at a Glance
+
+| Milestone | Status | Detail |
+|---|---|---|
+| M1 — DistanceEngine parallelization (`PerSourceScratch` + parallel source loop) | ✅ Done (v3.6), 2.7×–8.3× speedup | [Archive](#m1--distanceengine-parallelization--complete) |
+| M1 continuation — flat relation-keyed matrices | 🔵 Delegated to WS5 | [Active / Next Up](#m1-continuation--replace-distributed-vertex-qhash-storage-with-flat-relation-keyed-matrices) |
+| #254 — GUI freeze during long weighted-centrality computation | 🔵 Scoped, not started | [Active / Next Up](#254--improve-ui-responsiveness-during-long-weighted-centrality-computations) |
+| M2 — Introduce `GraphModel` | 🟡 In design | [M2](#m2--introduce-graphmodel) |
+| M3 — Move pure data containers out of UI/Qt dependencies | ⚪ Not scoped (blocked on M2) | [M3](#m3--move-pure-data-containers-out-of-uiqt-dependencies) |
+| M4 — Relocate caches into explicit cache objects | ⚪ Not scoped (blocked on M2) | [M4](#m4--gradually-relocate-caches-into-explicit-cache-objects) |
+| GraphicsWidget canvas rendering performance | ✅ Phase 1 done, more scoped | Elevated to its own workstream — see [WS10](roadmap_graphicswidget_overhaul.md) |
 
 ## Current Reality
 
@@ -28,9 +38,91 @@ DistanceEngine feature deliverables and then the longer-arc domain model milesto
 
 ---
 
-## First Execution — DistanceEngine Parallelization
+## Active / Next Up
 
-### Why the SSSP loop is the bottleneck
+### M1 continuation — Replace distributed vertex QHash storage with flat relation-keyed matrices
+
+**Delegated to WS5.** See [`roadmap_matrices_modernization.md`](roadmap_matrices_modernization.md).
+
+Summary: replace `GraphVertex::m_distance` and `GraphVertex::m_shortestPaths` (per-vertex
+QHash stores, keyed by target vertex and relation) with a centralised `QHash<int, Matrix>`
+on the `Graph` object (keyed by relation), where `Matrix` is the existing SocNetV matrix class.
+
+Benefits:
+- Eliminates per-vertex QHash lookup overhead inside the back-propagation inner loop
+  (`shortestPaths(v1)` called per predecessor per vertex per source)
+- Makes APSP write-back in Phase 2 a flat array write: `distMatrix[rel][si * N + ti] = d`
+- Removes the per-vertex mutex array introduced in Phase 2 (each source owns its own row —
+  no contention at all)
+- Aligns with WS5 goals (cancellable, testable matrix subsystem)
+
+Genuinely delegated (both roadmaps cross-reference each other, with a concrete target state and
+milestone `A6` on the WS5 side) but not yet started — WS5's roadmap file is explicitly a "Skeleton."
+
+### #254 — Improve UI responsiveness during long weighted-centrality computations
+
+**Problem:** computing a weighted, inverted-weight centrality index (e.g. Betweenness Centrality)
+on a large network makes the whole application completely unresponsive — not just slow, but
+unable to repaint, receive input, or even respond to window-manager focus/switch requests — for
+the entire duration of the computation. Confirmed identically present in v3.6 (not a regression):
+for `geom.net` (7343 nodes, weighted, inverted, BC), the release build showed 795–900 % CPU across
+~8 cores (`ps` state `R`, genuinely computing, not deadlocked) and eventually completed the
+layout, but only after several minutes with the window completely frozen throughout.
+
+**Root cause:** `MainWindow::slotLayoutXByProminenceIndex()` calls `activeGraph-
+>layoutByProminenceIndex(...)` as a direct, synchronous C++ call from the GUI thread. A direct
+method call always executes on the caller's thread regardless of the callee `QObject`'s thread
+affinity — `Graph` being `moveToThread(&graphThread)`'d doesn't help here. For indices without a
+dedicated branch (including BC), this falls through to `DistanceEngine::compute()`
+(`src/engine/distance_engine.cpp`), which uses `QtConcurrent::blockingMap(sources, ...)` to
+parallelize per-source Dijkstra/BFS runs across the global thread pool — but `blockingMap` blocks
+the *calling* thread (here, the GUI thread) until every worker finishes. The computation is
+genuinely parallelized, but the GUI thread never returns to its event loop for the whole duration.
+
+**Secondary finding:** `distance_engine.cpp` has ~75 unconditional `qDebug()` calls, several
+inside the per-edge-relaxation inner loop (fires on the order of the total edge-relaxation count
+— potentially billions for a graph this size). Unlike `qCDebug(category)`, plain `qDebug()` isn't
+cheaply short-circuited by a disabled logging-category filter rule — the stream
+construction/formatting cost is paid on every call regardless of whether output is enabled. Worth
+converting to a dedicated category (same pattern as `lcGW` in `GraphicsWidget`), independent of
+the main-thread-blocking fix.
+
+**UX note (from live testing):** the app's existing progress-dialog mechanism
+(`progressCreate`/`progressUpdate`/`progressFinish`) is disabled by default because it makes
+large computations *slower* — each `progressUpdate()` call crosses a signal/slot boundary and
+triggers a repaint, which adds real overhead when called millions/billions of times. A fix here
+should **not** naively wire that granular mechanism into this hot path. Consider a separate,
+coarse-grained "computation in progress" indicator (shown once, updated rarely if at all,
+dismissed on completion) instead — decoupled from the actual fix, which is moving the blocking
+wait off the GUI thread (e.g. `QFutureWatcher` + signal-based completion instead of
+`blockingMap`).
+
+See #254 for the full write-up and hints.
+
+---
+
+## M2 — Introduce `GraphModel`
+
+**Status: in design.** Placeholder pending the research/design pass — see the note in Status at a
+Glance. Will be expanded to the same depth as Phase 1/2 above (goal, current-reality specifics
+with file/line references, concrete approach, completion criteria) before any code is touched.
+
+## M3 — Move pure data containers out of UI/Qt dependencies
+
+**Status: not yet scoped.** Depends on M2's shape — `GraphModel`'s adapter boundary determines
+which containers can move and where they'd move to. Will be scoped once M2 is designed.
+
+## M4 — Gradually relocate caches into explicit cache objects
+
+**Status: not yet scoped.** Same dependency as M3 — needs M2's shape decided first.
+
+---
+
+## Shipped Work (Archive)
+
+### M1 — DistanceEngine Parallelization ✅ Complete
+
+#### Why the SSSP loop is the bottleneck
 
 `DistanceEngine::runAllSources()` calls `bfsSSSP` or `dijkstraSSSP` once per source vertex
 (V calls total). Each call traverses all edges reachable from that source — O(V + E) work.
@@ -52,9 +144,7 @@ Speedup is near-linear with core count because sources are fully independent onc
 scratch state is local. Synchronisation cost (BC accumulation) is O(V × threads), negligible
 against O(V × E) edge traversals.
 
----
-
-### Phase 1 — Introduce `PerSourceScratch` ✅ Complete
+#### Phase 1 — Introduce `PerSourceScratch` ✅ Complete
 
 **Goal:** Make the per-source scratch state moveable without changing any algorithm logic.
 
@@ -98,9 +188,7 @@ as today, just made explicit). The public vertex API is unchanged.
 - Dead members (`Graph::Stack`, `Graph::sizeOfNthOrderNeighborhood`, `Graph::sizeOfComponent`,
   `GraphVertex::myPs`, `GraphVertex::m_delta`) removed in Phase 2 dead-code cleanup ✅
 
----
-
-### Phase 2 — Parallel source loop ✅ Complete (`11da8ef`)
+#### Phase 2 — Parallel source loop ✅ Complete (`11da8ef`)
 
 **Goal:** Run bfsSSSP / dijkstraSSSP concurrently across sources using `QtConcurrent::blockingMap`.
 
@@ -148,40 +236,20 @@ deferred to a later phase.
 
 All 36 golden JSON baselines pass.
 
----
-
-### Phase 3 — Replace distributed vertex QHash storage with flat relation-keyed matrices
-
-**Delegated to WS5.** See [`roadmap_matrices_modernization.md`](roadmap_matrices_modernization.md).
-
-Summary: replace `GraphVertex::m_distance` and `GraphVertex::m_shortestPaths` (per-vertex
-QHash stores, keyed by target vertex and relation) with a centralised `QHash<int, Matrix>`
-on the `Graph` object (keyed by relation), where `Matrix` is the existing SocNetV matrix class.
-
-Benefits:
-- Eliminates per-vertex QHash lookup overhead inside the back-propagation inner loop
-  (`shortestPaths(v1)` called per predecessor per vertex per source)
-- Makes APSP write-back in Phase 2 a flat array write: `distMatrix[rel][si * N + ti] = d`
-- Removes the per-vertex mutex array introduced in Phase 2 (each source owns its own row —
-  no contention at all)
-- Aligns with WS5 goals (cancellable, testable matrix subsystem)
-
----
-
-## Near-term DistanceEngine Deliverables (3.7)
+### Near-term DistanceEngine Deliverables (3.7) — Shipped
 
 These features surface capabilities directly enabled by Phase 2 parallelisation, or improve
-performance in related algorithm slices. They do not require domain model changes — they land
+performance in related algorithm slices. They did not require domain model changes — they landed
 as self-contained additions validated by the WS6 harness.
 
-### #89 — Distribution of geodesics by path length ✅ Done
+#### #89 — Distribution of geodesics by path length ✅ Done
 
 `Graph::writeGeodesicDistribution()` + `Graph::graphGeodesicDistanceDistribution()` added in
 `src/graph/distances/graph_distance_facade.cpp`. New **Analyze → Cohesion → Geodesic
 Distribution** action (Ctrl+G,I) and matching Control Panel combo entry. Computation is
 cache-aware: reuses `calculatedDistances` result when available.
 
-### #139 — Geodesic distance for specific node pairs ✅ Done
+#### #139 — Geodesic distance for specific node pairs ✅ Done
 
 `Graph::graphGeodesicShortestPath()` added. The Distance dialog now shows the full node
 sequence of the shortest path (BFS for unweighted, Dijkstra for weighted) in addition to the
@@ -190,13 +258,13 @@ distance value. The path edges are simultaneously **selected on the canvas** via
 and context-menu operations work on the whole path out of the box. Only edges are selected
 (not nodes) to avoid highlighting unrelated connected edges.
 
-### #64 — Clique Census performance ✅ Done
+#### #64 — Clique Census performance ✅ Done
 
 Tomita et al. (2006) pivot selection applied to `Graph::graphCliques()`. Pivot $ u \in P \cup X $
 chosen to maximise $ |N(u) \cap P| $; main loop iterates only $ P \setminus N(u) $. Correctness
 argument and paper references in the method docstring.
 
-### #249 — Viewport auto-fit and resize debouncing ✅ Done
+#### #249 — Viewport auto-fit and resize debouncing ✅ Done
 
 **Problem:** `resizeEvent` fired O(N × fps) cross-thread rescaling signals during a window-drag
 resize. Zoom buttons, mouse wheel, and `reset()` relied on the `zoomSlider::valueChanged →
@@ -223,205 +291,12 @@ visibly smaller than the viewport, needing a manual Ctrl+0 to fill the canvas co
 of it, matching `reset()`'s tight, margin-free look; only content that would need at least a
 quarter of its size cut still triggers a real zoom-out.
 
-### #254 — Improve UI responsiveness during long weighted-centrality computations (pending)
+### GraphicsWidget — Performance and Code Quality Overhaul (#250) ✅ Complete
 
-**Problem:** computing a weighted, inverted-weight centrality index (e.g. Betweenness Centrality)
-on a large network makes the whole application completely unresponsive — not just slow, but
-unable to repaint, receive input, or even respond to window-manager focus/switch requests — for
-the entire duration of the computation. Confirmed identically present in v3.6 (not a regression):
-for `geom.net` (7343 nodes, weighted, inverted, BC), the release build showed 795–900 % CPU across
-~8 cores (`ps` state `R`, genuinely computing, not deadlocked) and eventually completed the
-layout, but only after several minutes with the window completely frozen throughout.
-
-**Root cause:** `MainWindow::slotLayoutXByProminenceIndex()` calls `activeGraph-
->layoutByProminenceIndex(...)` as a direct, synchronous C++ call from the GUI thread. A direct
-method call always executes on the caller's thread regardless of the callee `QObject`'s thread
-affinity — `Graph` being `moveToThread(&graphThread)`'d doesn't help here. For indices without a
-dedicated branch (including BC), this falls through to `DistanceEngine::compute()`
-(`src/engine/distance_engine.cpp`), which uses `QtConcurrent::blockingMap(sources, ...)` to
-parallelize per-source Dijkstra/BFS runs across the global thread pool — but `blockingMap` blocks
-the *calling* thread (here, the GUI thread) until every worker finishes. The computation is
-genuinely parallelized, but the GUI thread never returns to its event loop for the whole duration.
-
-**Secondary finding:** `distance_engine.cpp` has ~75 unconditional `qDebug()` calls, several
-inside the per-edge-relaxation inner loop (fires on the order of the total edge-relaxation count
-— potentially billions for a graph this size). Unlike `qCDebug(category)`, plain `qDebug()` isn't
-cheaply short-circuited by a disabled logging-category filter rule — the stream
-construction/formatting cost is paid on every call regardless of whether output is enabled. Worth
-converting to a dedicated category (same pattern as `lcGW` in `GraphicsWidget`), independent of
-the main-thread-blocking fix.
-
-**UX note (from live testing):** the app's existing progress-dialog mechanism
-(`progressCreate`/`progressUpdate`/`progressFinish`) is disabled by default because it makes
-large computations *slower* — each `progressUpdate()` call crosses a signal/slot boundary and
-triggers a repaint, which adds real overhead when called millions/billions of times. A fix here
-should **not** naively wire that granular mechanism into this hot path. Consider a separate,
-coarse-grained "computation in progress" indicator (shown once, updated rarely if at all,
-dismissed on completion) instead — decoupled from the actual fix, which is moving the blocking
-wait off the GUI thread (e.g. `QFutureWatcher` + signal-based completion instead of
-`blockingMap`).
-
-See #254 for the full write-up and hints.
-
----
-
-### GraphicsWidget — Performance and Code Quality Overhaul ✅ Complete
-
-> **Process that was followed for every item below** (kept here as a record, not an instruction —
-> all groups and the final gate are done): read the full method, its callers, and every signal/slot
-> connection it participated in before touching it. Several items looked mechanical but carried
-> non-obvious consequences — Qt object-ownership rules, cross-thread signal ordering, virtual
-> dispatch, and implicit sharing semantics all turned at least one "simple rename" into a subtle
-> bug along the way (see #C3's rotate-button regression). For each item: (1) map the full call
-> graph, (2) check for override/virtual implications, (3) implement and document, (4) run
-> `./scripts/run_golden_compares.sh` before moving to the next group.
->
-> **Rules that were applied to every item:**
-> - Every change is reflected in the method's Doxygen `/** @brief … */` block.
-> - Obsolete methods confirmed to have no callers (verified with `grep -rn` across all of `src/`)
->   were deleted outright, with the removal documented in the commit message.
-> - All golden JSON baselines passed after each group.
->
-> **Final gate for the whole section:** every `GraphicsWidget` method — constructor, destructor,
-> all public/protected/private methods, all slots, all signals — carries an accurate Doxygen block.
-> ✅ Verified — see the Final Gate entry below.
-
-#### Group A — Correctness fixes and mechanical wins
-
-- [x] **#A1 — Double-free / UB in `removeAllItems`** (`graphicswidget.cpp` lines 1423–1427) ✅ Done
-  Superseded rather than patched: `removeAllItems()` was deleted entirely in Group B (#B3), replaced
-  by the maintained `m_guides` list. The double-free can no longer occur because the method it was
-  in no longer exists.
-
-- [x] **#A2 — `contains()` + `value()` double hash lookup at 15+ sites** ✅ Done
-  All originally-listed methods converted to single-probe `value(key, nullptr)` lookups in the
-  first Group A pass. A final-gate audit (2026-07-24) found one instance that slipped through
-  because it wasn't on the original site list: `removeNode()` (`graphicswidget.cpp` line 505) had
-  the same `contains()`+`value()` pattern, plus three ungated `qDebug()` calls (a #B2-shaped issue
-  in the same method). Fixed: single `value(nodeNum, nullptr)` lookup, `qDebug()` → `qCDebug(lcGW)`,
-  and the post-delete self-check removed (guaranteed by construction, not a real branch).
-
-- [x] **#A3 — By-value argument copies** (`graphicswidget.cpp` line 980 and line 958) ✅ Done
-  `setSelectedNodes` takes `const QList<int> &`. `hasNode` is moot — deleted outright in #C2
-  (zero callers anywhere in the tree).
-
-- [x] **#A4 — `setEdgeOffsetFromNode` rebuilds edge name manually** (`graphicswidget.cpp` lines 1161–1162) ✅ Done
-  Now calls the shared `edgeKey(source, target)` (renamed from `createEdgeName` in #C1) instead of
-  duplicating the key construction inline.
-
-#### Group B — Hot-path allocation and scene-scan reductions
-
-- [x] **#B1 — `handleSelectionChanged` calls `scene()->selectedItems()` twice** (lines 1474–1521) ✅ Done
-  Calls `scene()->selectedItems()` once, iterates the result once to populate both
-  `m_selectedNodes` and `m_selectedEdges`, then emits `userSelectedItems`.
-
-- [x] **#B2 — `qDebug` in hot paths not guarded for release builds** (multiple locations) ✅ Done
-  `Q_LOGGING_CATEGORY(lcGW, "socnetv.graphicswidget")` introduced; all originally-listed hot-path
-  call sites (`wheelEvent`, `mousePressEvent`, `mouseReleaseEvent`, `zoomIn`/`zoomOut`,
-  `changeMatrixScale`) converted to `qCDebug(lcGW)`. Remaining plain `qDebug()` calls are all in
-  one-shot / low-frequency contexts (constructor, `clear()`, `setRelation`, double-click, one-time
-  teardown) and were left as-is — except `removeNode()`, fixed alongside #A2 above (see note there).
-
-- [x] **#B3 — `scene()->items()` full-scene scan in `setAllItemsVisibility` / `removeAllItems`**
-  (lines 1377–1430; `clearGuides` → `removeAllItems(TypeGuide)`) ✅ Done
-  `QList<GraphicsGuide*> m_guides` added; `addGuideCircle()`/`addGuideHLine()` append to it,
-  `clearGuides()` iterates and deletes from it directly with no `scene()->items()` scan.
-  `removeAllItems()` itself was deleted as dead code once nothing else called it.
-
-- [x] **#B4 — `selectAll` uses viewport pixels as scene coordinates** (`graphicswidget.cpp` lines 1449–1452) ✅ Done
-  Now uses `QPainterPath` + `scene()->sceneRect()` instead of viewport pixel dimensions. The
-  `selectedItems().size()` log line was wrapped in `qCDebug(lcGW)` rather than removed.
-
-- [x] **#B5 — `mouseReleaseEvent` allocates `selectedItems()` on every node mouse-up** (lines 1690–1696) ✅ Done
-  Took Option B (minimal): reuses the `m_selectedNodes` member kept in sync by
-  `handleSelectionChanged()` instead of re-querying the scene.
-
-#### Group C — Structural changes (plan each individually before starting)
-
-- [x] **#C1 — `createEdgeName` QString allocations → integer edge key** (`graphicswidget.cpp` line 178) ✅ Done
-  `createEdgeName` built `"relation:v1>v2"` with several heap allocations per call, hit on every
-  edge operation. Replaced with `GraphicsWidget::edgeKey()`, returning a decimal-digit-packed
-  `quint64` instead of a bit-packed one (chosen for debuggability — the digits read left to right
-  as relation/v1/v2, same order as the old string):
-  `key = quint64(relation) * 10^16 + quint64(v1) * 10^8 + quint64(v2)`
-  — a 3-digit relation field (0-999) and two 8-digit node-number fields (0-99,999,999 each).
-  This is positional encoding, not a mixing hash: collisions between distinct (relation, v1, v2)
-  triples are structurally impossible as long as each field stays under its digit budget, backed
-  by three `Q_ASSERT_X` checks in `edgeKey()`. `H_StrToEdge` renamed to
-  `H_KeyToEdge` (`QHash<quint64, GraphicsEdge*>`); member `edgeName` renamed to `m_edgeKey`; the
-  local `reverseEdgeName` (`QString`) renamed to `reverseEdgeKey` (`quint64`). Explanatory
-  comments in `graph_edges.cpp` referencing the old function name updated to match.
-  All golden regression baselines pass unchanged.
-
-- [x] **#C2 — `hasNode` O(N) loop with repeated `toInt()`** (`graphicswidget.cpp` lines 958–970) ✅ Done
-  Turned out to be moot: `grep -rn "hasNode(" src/` found zero callers anywhere in the tree,
-  including `mainwindow.cpp`. There was no O(N) cost to fix because the method was never invoked —
-  deleted outright (declaration + definition) per the final-gate dead-code rule instead of
-  refactoring dead code.
-
-- [x] **#C3 — `zoomToFit` / `reset` may double-apply transform via slider signal chain** (lines 1929–1946) ✅ Done
-  Audited both chains: `zoomSlider::sliderMoved` (the #249 fix) only fires on user drag, not on
-  programmatic `setValue()`, so the zoom chain was already safe — no change needed there.
-  `rotateSlider::valueChanged`, unlike `sliderMoved`, **does** fire on programmatic `setValue()`,
-  so `rotateLeft()`/`rotateRight()` bounced every click through `changeMatrixRotation()` twice
-  (harmless — idempotent — but wasteful). Fixed by converting the
-  `rotationChanged -> rotateSlider::setValue` connection in `mainwindow.cpp` to a lambda wrapped
-  in `QSignalBlocker`, matching option (a) from the original plan.
-  **Follow-up correction:** the first version of this fix broke the rotate buttons — unlike
-  `zoomIn`/`zoomOut`, `rotateLeft`/`rotateRight` never called `changeMatrixRotation()` directly;
-  the transform was only ever applied as a side effect of the (now-blocked) slider's
-  `valueChanged`. Fixed by making `rotateLeft`/`rotateRight` call `changeMatrixRotation()`
-  directly, same pattern as the zoom methods, so the button path no longer depends on the
-  slider's signal chain at all.
-
-- [x] **#C4 — `edgesHash.reserve(500000)` pre-allocated at startup regardless of graph size**
-  (`graphicswidget.cpp` line 70) ✅ Done
-  A "reserve based on real counts once known" fix was considered but dropped: `Graph::signalGraphLoaded`
-  only fires *after* all `createNode`/`createEdge` calls have already populated the hashes, so it
-  can't help size the load that's already happening — only some hypothetical next one. Given
-  `QHash`'s amortized-O(1) growth means a fixed reserve saves only a handful of cheap rehashes on
-  very large loads, while costing every small/medium network (the overwhelming common case) a
-  bucket array sized for 500,000 entries at construction, the two `reserve()` calls were removed
-  outright rather than replaced with load-time sizing.
-
-#### Final gate — documentation and dead-code removal ✅ Done
-
-- [x] **Documentation pass:** audited all 78 methods in `graphicswidget.cpp` (constructor,
-  destructor, 76 others). 76 already had accurate `@brief` blocks from the Group A/B/C work.
-  Two real gaps found and fixed:
-  - `setEdgesBezier()` had no doc block at all — added one.
-  - `reset()`'s doc block (`"Resets to default rotation, zoom and scale"`) was orphaned two
-    comment-blocks above `zoomToFit()` instead of sitting above `reset()` itself — likely
-    stranded there when `zoomToFit()`'s own large doc block was added during the #253 fix.
-    Moved to the correct location.
-  Separately, all 13 signals in `graphicswidget.h` had zero documentation anywhere (no `.cpp`
-  body exists for signals, so the file's usual "doc lives above the definition" convention
-  doesn't apply) — added inline `@brief` blocks directly above each signal declaration.
-
-- [x] **Dead-code removal:** ran a systematic zero-caller sweep (`grep -rn` per method name across
-  all of `src/`) across all 78 methods, beyond the specific items already caught by #C2 (`hasNode`)
-  earlier. Found one more: `setNodeSizeAll()` had no callers anywhere — only a mention by name in
-  the WS6 roadmap (`roadmap_testing_ci_regression.md`, #240 section) as an example of an unbatched
-  bulk operation. Deleted the method (declaration + definition) and removed it from that roadmap
-  example list, since `setEdgeArrowSize` (confirmed alive, called from `mainwindow.cpp`) already
-  covers the point being made there.
-  Also removed one line of dead code spotted along the way: a commented-out obsolete
-  `userSelectedItems` signal signature in `graphicswidget.h`, superseded by the real declaration
-  immediately below it.
-  All golden regression baselines pass unchanged.
-
----
-
-## General Milestones (long-term WS3 arc)
-
-- M1: Identify minimal model surface required by algorithms ✅ *(PerSourceScratch introduced, dead code removed, parallel loop shipped in v3.6)*
-- M2: Introduce `GraphModel` (adapter over existing Graph internals initially)
-- M3: Move pure data containers out of UI/Qt dependencies where possible
-- M4: Gradually relocate caches into explicit cache objects
-- GraphicsWidget — Performance and Code Quality Overhaul (#250, separate track from M1–M4 above —
-  canvas rendering, not the domain model): ✅ Complete — Groups A, B, C, and the Final Gate
-  (full Doxygen pass + dead-code sweep) all shipped (see the dedicated section earlier in this
-  document for what shipped in each).
+Split into its own file: [`roadmap_graphicswidget_overhaul.md`](roadmap_graphicswidget_overhaul.md).
+Separate track from the domain-model work above — canvas rendering, not `Graph`/`GraphVertex`.
+Groups A, B, C, and the Final Gate (full Doxygen pass + dead-code sweep) all shipped; issue #250
+is closed.
 
 ---
 

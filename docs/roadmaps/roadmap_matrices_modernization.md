@@ -55,14 +55,15 @@ CHEBYSHEV cases. These cases do not yet have cancel guards in `writeMatrix()`.
 
 ---
 
-## Incoming from WS3 — APSP Storage Migration (Phase 3)
+## Incoming from WS3 — APSP Storage Migration (M1 continuation)
 
-*Handed off from [`roadmap_architecture_performance.md`](roadmap_architecture_performance.md) Phase 3.*
+*Handed off from [`roadmap_architecture_performance.md`](roadmap_architecture_performance.md), the
+"M1 continuation" section.*
 
-### Current state (post WS3 Phase 2)
+### Current state (post WS3 M1)
 
-After WS3 Phase 2, `m_distance` and `m_shortestPaths` on `GraphVertex` are still
-per-vertex QHash stores:
+After WS3 M1 (DistanceEngine parallelization), `m_distance` and `m_shortestPaths` on `GraphVertex`
+are still per-vertex QHash stores:
 
 ```
 m_distance:       QHash< target_vertex_num, pair(relation_id, geodesic_distance) >
@@ -74,8 +75,8 @@ to find the one matching `m_curRelation` — a hash lookup per predecessor per v
 per source. For V=5 000 sources with average degree k=10, that is O(V²k) = 250M hash
 lookups just for sigma reads.
 
-Phase 2 also introduced a per-vertex `std::mutex` array for write-back safety.
-Phase 3 eliminates both the lookup overhead and the mutex array.
+M1 also introduced a per-vertex `std::mutex` array for write-back safety. This migration
+eliminates both the lookup overhead and the mutex array.
 
 ### Target state
 

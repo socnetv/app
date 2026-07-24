@@ -108,13 +108,26 @@ Simplify the parser/IO dispatch model:
 
 ---
 
+## WS10 — Canvas Rendering Performance
+
+Roadmap: [`docs/roadmaps/roadmap_graphicswidget_overhaul.md`](roadmaps/roadmap_graphicswidget_overhaul.md)
+
+Ongoing GraphicsWidget/canvas rendering performance work, separate from WS3's domain-model focus.
+Phase 1 (GraphicsWidget Performance and Code Quality Overhaul, #250) shipped: correctness fixes,
+hot-path allocation/scan reductions, structural changes, full documentation pass. Future work
+(rendering-cost reduction, node-selection hot path, bulk-operation batching, a rendering-performance
+regression kernel) is scoped but not started.
+
+---
+
 # Priorities
 
 1. **WS3** — architecture & performance / DistanceEngine parallelisation ← **current**
 2. **WS6** — regression safety (ongoing support)
 3. **WS7** — MainWindow decomposition
-4. **WS5** — matrices (receives Phase 3 APSP migration from WS3)
+4. **WS5** — matrices (receives the M1-continuation APSP migration from WS3)
 5. **WS8** — IO
+6. **WS10** — canvas rendering performance (Phase 1 shipped; future work not yet prioritised)
 
 ---
 
