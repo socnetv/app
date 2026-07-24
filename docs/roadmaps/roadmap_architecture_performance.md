@@ -378,16 +378,31 @@ See #254 for the full write-up and hints.
   bucket array sized for 500,000 entries at construction, the two `reserve()` calls were removed
   outright rather than replaced with load-time sizing.
 
-#### Final gate — documentation and dead-code removal
+#### Final gate — documentation and dead-code removal ✅ Done
 
-- [ ] **Documentation pass:** every `GraphicsWidget` method — constructor, destructor, all public,
-  protected, and private methods, all slots, and all signals — must carry an accurate Doxygen
-  `/** @brief … */` block. Methods that already have one must be reviewed against current behaviour
-  and updated where stale.
+- [x] **Documentation pass:** audited all 78 methods in `graphicswidget.cpp` (constructor,
+  destructor, 76 others). 76 already had accurate `@brief` blocks from the Group A/B/C work.
+  Two real gaps found and fixed:
+  - `setEdgesBezier()` had no doc block at all — added one.
+  - `reset()`'s doc block (`"Resets to default rotation, zoom and scale"`) was orphaned two
+    comment-blocks above `zoomToFit()` instead of sitting above `reset()` itself — likely
+    stranded there when `zoomToFit()`'s own large doc block was added during the #253 fix.
+    Moved to the correct location.
+  Separately, all 13 signals in `graphicswidget.h` had zero documentation anywhere (no `.cpp`
+  body exists for signals, so the file's usual "doc lives above the definition" convention
+  doesn't apply) — added inline `@brief` blocks directly above each signal declaration.
 
-- [ ] **Dead-code removal:** identify any methods with no external callers using
-  `grep -rn "methodName" src/` across the full source tree and Qt Creator's "Find Usages".
-  Confirm a method is unreachable before deleting it. Document each removal in the commit message.
+- [x] **Dead-code removal:** ran a systematic zero-caller sweep (`grep -rn` per method name across
+  all of `src/`) across all 78 methods, beyond the specific items already caught by #C2 (`hasNode`)
+  earlier. Found one more: `setNodeSizeAll()` had no callers anywhere — only a mention by name in
+  the WS6 roadmap (`roadmap_testing_ci_regression.md`, #240 section) as an example of an unbatched
+  bulk operation. Deleted the method (declaration + definition) and removed it from that roadmap
+  example list, since `setEdgeArrowSize` (confirmed alive, called from `mainwindow.cpp`) already
+  covers the point being made there.
+  Also removed one line of dead code spotted along the way: a commented-out obsolete
+  `userSelectedItems` signal signature in `graphicswidget.h`, superseded by the real declaration
+  immediately below it.
+  All golden regression baselines pass unchanged.
 
 ---
 
@@ -398,9 +413,9 @@ See #254 for the full write-up and hints.
 - M3: Move pure data containers out of UI/Qt dependencies where possible
 - M4: Gradually relocate caches into explicit cache objects
 - GraphicsWidget — Performance and Code Quality Overhaul (#250, separate track from M1–M4 above —
-  canvas rendering, not the domain model): Groups A, B, and C ✅ complete (see the dedicated
-  section earlier in this document for what shipped in each); Final Gate (full Doxygen pass +
-  dead-code sweep over the whole file) in progress.
+  canvas rendering, not the domain model): ✅ Complete — Groups A, B, C, and the Final Gate
+  (full Doxygen pass + dead-code sweep) all shipped (see the dedicated section earlier in this
+  document for what shipped in each).
 
 ---
 

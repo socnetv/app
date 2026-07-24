@@ -130,6 +130,13 @@ All notable changes to this project are documented in this file.
     it still probed its lookup table twice and logged unconditionally.
     Fixed to match the rest of the file. All golden regression baselines
     pass unchanged.
+  - **Canvas rendering internals: correctness and performance pass**
+    (#250, part 8 — final): closed out the canvas cleanup with a full
+    documentation pass (every method and signal now carries an accurate
+    description, including a misplaced doc comment fixed along the way)
+    and a last dead-code sweep, which found and removed one more unused
+    method. This closes out the #250 GraphicsWidget overhaul. All golden
+    regression baselines pass unchanged.
 
 ## [3.6] – May 26, 2026
 

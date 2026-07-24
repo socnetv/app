@@ -815,20 +815,6 @@ bool GraphicsWidget::setNodeSize(const int &nodeNum, const int &size ){
 }
 
 
-/**
- * @brief Changes the size of all nodes.
- *
- * @param size
- */
-void GraphicsWidget::setNodeSizeAll(const int &size ){
-//    qDebug() << "Changing all nodes size... ";
-    viewport()->setUpdatesEnabled(false);
-    foreach ( GraphicsNode *m_node, nodeHash ) {
-            m_node->setSize(size);
-    }
-    viewport()->setUpdatesEnabled(true);
-}
-
 
 
 
@@ -1230,6 +1216,14 @@ void GraphicsWidget::selectPath(const QList<int> &path)
 }
 
 
+/**
+ * @brief Toggles bezier-curve rendering for all edges currently in the scene
+ *
+ * Also stores the toggle in m_edgesBezier so it applies to edges drawn afterwards.
+ * Viewport updates are disabled for the duration of the loop to avoid a repaint per edge.
+ *
+ * @param toggle
+ */
 void GraphicsWidget::setEdgesBezier(const bool &toggle) {
     m_edgesBezier = toggle;
     viewport()->setUpdatesEnabled(false);
@@ -1848,9 +1842,6 @@ void GraphicsWidget::changeMatrixRotation(int angle){
 
 
 /**
- * @brief Resets to default rotation, zoom and scale
- */
-/**
  * @brief Scales and centres the view so that the full network is visible.
  *
  * Computes the scale factor needed to fit the scene's bounding rect inside the
@@ -1920,6 +1911,9 @@ void GraphicsWidget::zoomToFit()
 }
 
 
+/**
+ * @brief Resets to default rotation, zoom and scale
+ */
 void GraphicsWidget::reset() {
     m_currentRotationAngle=0;
     m_currentScaleFactor = 1;

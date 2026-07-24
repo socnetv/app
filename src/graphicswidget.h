@@ -111,7 +111,6 @@ public slots:
     void moveNode(const int &num, const qreal &x, const qreal &y);
 
     bool setNodeSize(const int &nodeNumber, const int &size=0);
-    void setNodeSizeAll(const int &size=0);
 
     bool setNodeShape(const int &nodeNum,
                       const QString &shape,
@@ -200,20 +199,48 @@ protected:
     void scrollContentsBy(int dx, int dy) override;
 
 signals:
+    /** @brief Double-click on empty canvas space; MW creates a new node at this scene position. */
     void userDoubleClickNewNode(const QPointF &);
+
+    /** @brief Two consecutive middle-clicks (or double-clicks) on two different nodes;
+     *  MW/Graph creates a new edge from the first node to the second. */
     void userMiddleClicked(const int &sourceNum, const int &targetNum, const qreal &weight=1);
+
+    /** @brief Left-click on empty canvas space, at scene position p. */
     void userClickOnEmptySpace(const QPointF &p);
+
+    /** @brief Right-click on a node; MW opens the node context menu for the currently clicked node. */
     void openNodeMenu();
+
+    /** @brief Right-click on empty canvas space, at scene position p; MW opens the general context menu. */
     void openContextMenu(const QPointF p);
+
+    /** @brief One node from the current selection finished being dragged to a new position
+     *  (nodeNumber, x, y); emitted once per selected node on mouse release. */
     void userNodeMoved(const int &, const int &, const int &);
-    //void userSelectedItems(const int nodes, const int edges);
+
+    /** @brief The full current node/edge selection, emitted whenever it changes
+     *  (single emission per change, not per item). */
     void userSelectedItems(const QList<int> selectedNodes,
                            const QList<SelectedEdge> selectedEdges);
+
+    /** @brief A node was clicked (nodeNumber, scene position); also used with nodeNumber=0
+     *  as a generic "selection changed" notification from selectAll()/selectNone(). */
     void userClickedNode(const int &nodeNumber, const QPointF &p);
+
+    /** @brief An edge was clicked (source, target); openMenu requests MW open its context menu. */
     void userClickedEdge(const int &source, const int &target, const bool &openMenu=false);
+
+    /** @brief Current zoom index changed; keeps the MW zoom slider in sync. */
     void zoomChanged(const int);
+
+    /** @brief Current rotation angle changed; keeps the MW rotation slider in sync. */
     void rotationChanged(const int);
+
+    /** @brief Canvas viewport was resized (debounced to fire once, 150ms after the last resize event). */
     void resized(const int, const int);
+
+    /** @brief Requests MW change the application cursor shape (e.g. while creating an edge). */
     void setCursor(Qt::CursorShape);
 
 
