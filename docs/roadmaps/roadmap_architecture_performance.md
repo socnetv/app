@@ -397,6 +397,10 @@ See #254 for the full write-up and hints.
 - M2: Introduce `GraphModel` (adapter over existing Graph internals initially)
 - M3: Move pure data containers out of UI/Qt dependencies where possible
 - M4: Gradually relocate caches into explicit cache objects
+- GraphicsWidget — Performance and Code Quality Overhaul (#250, separate track from M1–M4 above —
+  canvas rendering, not the domain model): Groups A, B, and C ✅ complete (see the dedicated
+  section earlier in this document for what shipped in each); Final Gate (full Doxygen pass +
+  dead-code sweep over the whole file) in progress.
 
 ---
 
