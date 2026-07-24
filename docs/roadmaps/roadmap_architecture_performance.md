@@ -261,24 +261,26 @@ See #254 for the full write-up and hints.
 
 ---
 
-### GraphicsWidget — Performance and Code Quality Overhaul
+### GraphicsWidget — Performance and Code Quality Overhaul ✅ Complete
 
-> **Before touching any item below:** read the full method, its callers, and every signal/slot
-> connection it participates in. Several items look mechanical but carry non-obvious consequences:
-> Qt object-ownership rules, cross-thread signal ordering, virtual dispatch, and implicit sharing
-> semantics can all turn a "simple rename" into a subtle bug. For each item: (1) map the full call
+> **Process that was followed for every item below** (kept here as a record, not an instruction —
+> all groups and the final gate are done): read the full method, its callers, and every signal/slot
+> connection it participated in before touching it. Several items looked mechanical but carried
+> non-obvious consequences — Qt object-ownership rules, cross-thread signal ordering, virtual
+> dispatch, and implicit sharing semantics all turned at least one "simple rename" into a subtle
+> bug along the way (see #C3's rotate-button regression). For each item: (1) map the full call
 > graph, (2) check for override/virtual implications, (3) implement and document, (4) run
 > `./scripts/run_golden_compares.sh` before moving to the next group.
 >
-> **Rules that apply to every item:**
-> - Every change must be reflected in the method's Doxygen `/** @brief … */` block — update or
->   write one as part of the same commit.
+> **Rules that were applied to every item:**
+> - Every change is reflected in the method's Doxygen `/** @brief … */` block.
 > - Obsolete methods confirmed to have no callers (verified with `grep -rn` across all of `src/`)
->   may be deleted outright; document the removal in the commit message.
-> - All 36 golden JSON baselines must still pass after each group.
+>   were deleted outright, with the removal documented in the commit message.
+> - All golden JSON baselines passed after each group.
 >
 > **Final gate for the whole section:** every `GraphicsWidget` method — constructor, destructor,
 > all public/protected/private methods, all slots, all signals — carries an accurate Doxygen block.
+> ✅ Verified — see the Final Gate entry below.
 
 #### Group A — Correctness fixes and mechanical wins
 
