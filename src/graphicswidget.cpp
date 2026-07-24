@@ -503,13 +503,11 @@ void GraphicsWidget::moveNode(const int &nodeNum, const qreal &x, const qreal &y
  * @param nodeNum
  */
 void GraphicsWidget::removeNode(const int &nodeNum){
-    if ( nodeHash.contains(nodeNum) ) {
-        qDebug() << "nodeHash size:" << nodeHash.size();
-        delete nodeHash.value(nodeNum);
-        qDebug() << "Removed node with number:" << nodeNum;
+    if (GraphicsNode *node = nodeHash.value(nodeNum, nullptr)) {
+        qCDebug(lcGW) << "Removing node with number:" << nodeNum
+                      << "- nodeHash size before:" << nodeHash.size();
+        delete node;
     }
-    qDebug() << "nodeHash size now:" << nodeHash.size()
-             << "nodeHash contains node?" << nodeHash.contains(nodeNum);
 
 }
 

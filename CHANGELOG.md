@@ -124,6 +124,12 @@ All notable changes to this project are documented in this file.
     integer that carries the same information without any heap allocation
     or character-by-character hashing. No behaviour change. All golden
     regression baselines pass unchanged.
+  - **Canvas rendering internals: correctness and performance pass**
+    (#250, part 7): a final audit of the whole canvas cleanup found one
+    method, `removeNode()`, that had slipped through the earlier passes —
+    it still probed its lookup table twice and logged unconditionally.
+    Fixed to match the rest of the file. All golden regression baselines
+    pass unchanged.
 
 ## [3.6] – May 26, 2026
 

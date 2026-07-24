@@ -282,92 +282,53 @@ See #254 for the full write-up and hints.
 
 #### Group A — Correctness fixes and mechanical wins
 
-- [ ] **#A1 — Double-free / UB in `removeAllItems`** (`graphicswidget.cpp` lines 1423–1427)
-  `guide->deleteLater()` posts a deferred delete, then `delete *item` immediately destroys the
-  same pointer — undefined behaviour, crash under sanitizers. Pick one strategy: either
-  `scene()->removeItem(guide); guide->deleteLater();` or `delete guide;`.
-  Also add a null-check on the `qgraphicsitem_cast` result.
-  _Before fixing:_ confirm whether `GraphicsGuide::die()` calls `deleteLater()` internally —
-  that would make either choice safe on its own.
+- [x] **#A1 — Double-free / UB in `removeAllItems`** (`graphicswidget.cpp` lines 1423–1427) ✅ Done
+  Superseded rather than patched: `removeAllItems()` was deleted entirely in Group B (#B3), replaced
+  by the maintained `m_guides` list. The double-free can no longer occur because the method it was
+  in no longer exists.
 
-- [ ] **#A2 — `contains()` + `value()` double hash lookup at 15+ sites**
-  Pattern `if (nodeHash.contains(k)) nodeHash.value(k)->...` probes the bucket twice.
-  Replace with `if (auto *n = nodeHash.value(k, nullptr)) n->...` everywhere.
-  Affected methods: `setNodeVisibility`, `setNodeSize`, `setNodeNumberColor/Size/Distance`,
-  `setNodeLabelColor/Size/Distance`, `setEdgeLabel`, `setEdgeColor`, `setEdgeDirectionType`,
-  `setEdgeWeight`, `removeEdge`, `setEdgeVisibility`.
-  _Before fixing:_ confirm `QHash::value(key, defaultValue)` behaviour is identical to the
-  contains+value pair for all edge cases (missing key, null stored value).
+- [x] **#A2 — `contains()` + `value()` double hash lookup at 15+ sites** ✅ Done
+  All originally-listed methods converted to single-probe `value(key, nullptr)` lookups in the
+  first Group A pass. A final-gate audit (2026-07-24) found one instance that slipped through
+  because it wasn't on the original site list: `removeNode()` (`graphicswidget.cpp` line 505) had
+  the same `contains()`+`value()` pattern, plus three ungated `qDebug()` calls (a #B2-shaped issue
+  in the same method). Fixed: single `value(nodeNum, nullptr)` lookup, `qDebug()` → `qCDebug(lcGW)`,
+  and the post-delete self-check removed (guaranteed by construction, not a real branch).
 
-- [ ] **#A3 — By-value argument copies** (`graphicswidget.cpp` line 980 and line 958)
-  `setSelectedNodes(QList<int> list)` → `setSelectedNodes(const QList<int> &list)`.
-  `hasNode(QString text)` → `hasNode(const QString &text)`.
-  _Before fixing:_ update the declarations in `graphicswidget.h` to match; check if any
-  Qt signal connection passes a temporary that would be invalidated by a const-ref parameter
-  (it would not — Qt copies arguments at the signal boundary for queued connections).
+- [x] **#A3 — By-value argument copies** (`graphicswidget.cpp` line 980 and line 958) ✅ Done
+  `setSelectedNodes` takes `const QList<int> &`. `hasNode` is moot — deleted outright in #C2
+  (zero callers anywhere in the tree).
 
-- [ ] **#A4 — `setEdgeOffsetFromNode` rebuilds edge name manually** (`graphicswidget.cpp` lines 1161–1162)
-  Duplicates the 7-allocation string chain and reads `m_curRelation` instead of the `relation`
-  parameter — latent lookup failure when the active relation differs from the edge's registered one.
-  Replace with a call to `createEdgeName(source, target)`.
-  _Before fixing:_ verify that `createEdgeName` falls back to `m_curRelation` when `relation == -1`,
-  and that the callers of `setEdgeOffsetFromNode` always pass `relation == -1`.
+- [x] **#A4 — `setEdgeOffsetFromNode` rebuilds edge name manually** (`graphicswidget.cpp` lines 1161–1162) ✅ Done
+  Now calls the shared `edgeKey(source, target)` (renamed from `createEdgeName` in #C1) instead of
+  duplicating the key construction inline.
 
 #### Group B — Hot-path allocation and scene-scan reductions
 
-- [ ] **#B1 — `handleSelectionChanged` calls `scene()->selectedItems()` twice** (lines 1474–1521)
-  `selectedNodes()` and `selectedEdges()` each call `scene()->selectedItems()`, allocating a
-  separate `QList` and traversing the scene index. During a rubber-band drag over N nodes this
-  fires N times, two allocations each.
-  Call `scene()->selectedItems()` once, store in `const QList<QGraphicsItem*> items`, iterate
-  once to populate both `m_selectedNodes` and `m_selectedEdges`, then emit `userSelectedItems`.
-  _Before fixing:_ audit all callers of the public `selectedNodes()` and `selectedEdges()` methods;
-  if they are called externally they must still return accurate data (either from the cached
-  members or by performing their own lookup).
+- [x] **#B1 — `handleSelectionChanged` calls `scene()->selectedItems()` twice** (lines 1474–1521) ✅ Done
+  Calls `scene()->selectedItems()` once, iterates the result once to populate both
+  `m_selectedNodes` and `m_selectedEdges`, then emits `userSelectedItems`.
 
-- [ ] **#B2 — `qDebug` in hot paths not guarded for release builds** (multiple locations)
-  `wheelEvent` (line 1727), `mousePressEvent` (lines 1587–1654), `mouseReleaseEvent`
-  (lines 1687–1707), `zoomIn`/`zoomOut` (lines 1747, 1767), `changeMatrixScale` (lines 1790, 1820).
-  Qt does not strip `qDebug` in release builds unless `QT_NO_DEBUG_OUTPUT` is defined.
-  Introduce a named logging category (`Q_LOGGING_CATEGORY(lcGW, "socnetv.graphicswidget")`)
-  and replace all calls with `qCDebug(lcGW)`. The category is disabled at runtime by default
-  with no recompile needed.
-  _Before fixing:_ check whether `QT_NO_DEBUG_OUTPUT` is already set in the release CMake
-  profile; if it is, wrapping is still preferable because the category approach gives per-module
-  control without a recompile.
+- [x] **#B2 — `qDebug` in hot paths not guarded for release builds** (multiple locations) ✅ Done
+  `Q_LOGGING_CATEGORY(lcGW, "socnetv.graphicswidget")` introduced; all originally-listed hot-path
+  call sites (`wheelEvent`, `mousePressEvent`, `mouseReleaseEvent`, `zoomIn`/`zoomOut`,
+  `changeMatrixScale`) converted to `qCDebug(lcGW)`. Remaining plain `qDebug()` calls are all in
+  one-shot / low-frequency contexts (constructor, `clear()`, `setRelation`, double-click, one-time
+  teardown) and were left as-is — except `removeNode()`, fixed alongside #A2 above (see note there).
 
-- [ ] **#B3 — `scene()->items()` full-scene scan in `setAllItemsVisibility` / `removeAllItems`**
-  (lines 1377–1430; `clearGuides` → `removeAllItems(TypeGuide)`)
-  `scene()->items()` is O(N log N) over all scene items — nodes, edges, weight labels, numbers,
-  labels, and guides — just to find the few guide objects. `clearGuides()` is called on every
-  debounced resize.
-  Maintain a `QList<GraphicsGuide*> m_guides` member in `graphicswidget.h`. Append in
-  `addGuideCircle()` and `addGuideHLine()`; iterate and delete from `m_guides` directly inside
-  `clearGuides()` without touching `scene()->items()`.
-  _Before fixing:_ confirm that guide items are owned by the scene (added via `scene()->addItem()`);
-  removing them from `m_guides` without also removing them from the scene would leak. The list
-  management must mirror the scene management exactly.
+- [x] **#B3 — `scene()->items()` full-scene scan in `setAllItemsVisibility` / `removeAllItems`**
+  (lines 1377–1430; `clearGuides` → `removeAllItems(TypeGuide)`) ✅ Done
+  `QList<GraphicsGuide*> m_guides` added; `addGuideCircle()`/`addGuideHLine()` append to it,
+  `clearGuides()` iterates and deletes from it directly with no `scene()->items()` scan.
+  `removeAllItems()` itself was deleted as dead code once nothing else called it.
 
-- [ ] **#B4 — `selectAll` uses viewport pixels as scene coordinates** (`graphicswidget.cpp` lines 1449–1452)
-  `path.addRect(0, 0, width(), height())` passes device-pixel dimensions to
-  `scene()->setSelectionArea()`, which expects scene coordinates. After any pan, zoom, or
-  rotation this selects the wrong region.
-  Replace with `scene()->setSelectionArea(QRectF(scene()->sceneRect()))`.
-  Also remove (or wrap in `qCDebug`) the `scene()->selectedItems().size()` call used only
-  for a log line — it allocates a full item list just to count elements.
-  _Before fixing:_ verify rubber-band selection (which goes through a separate `QGraphicsView`
-  code path) is unaffected, then test `selectAll` after a zoom-in and after a pan.
+- [x] **#B4 — `selectAll` uses viewport pixels as scene coordinates** (`graphicswidget.cpp` lines 1449–1452) ✅ Done
+  Now uses `QPainterPath` + `scene()->sceneRect()` instead of viewport pixel dimensions. The
+  `selectedItems().size()` log line was wrapped in `qCDebug(lcGW)` rather than removed.
 
-- [ ] **#B5 — `mouseReleaseEvent` allocates `selectedItems()` on every node mouse-up** (lines 1690–1696)
-  On every node mouse release, `scene()->selectedItems()` is called and iterated to emit one
-  `userNodeMoved` signal per selected node. For a 500-node drag: 500 sequential cross-thread
-  signal emissions inside the event handler.
-  Option A (preferred): introduce a batch signal
-  `userNodesMoved(const QList<QPair<int,QPointF>> &)` and update the `Graph` slot to match.
-  Option B (minimal): use the `m_selectedNodes` member populated by `handleSelectionChanged`
-  instead of re-querying the scene.
-  _Before fixing:_ if changing the signal signature, update the connection in `mainwindow.cpp`
-  and the receiving slot in `Graph`; run the full regression harness.
+- [x] **#B5 — `mouseReleaseEvent` allocates `selectedItems()` on every node mouse-up** (lines 1690–1696) ✅ Done
+  Took Option B (minimal): reuses the `m_selectedNodes` member kept in sync by
+  `handleSelectionChanged()` instead of re-querying the scene.
 
 #### Group C — Structural changes (plan each individually before starting)
 
