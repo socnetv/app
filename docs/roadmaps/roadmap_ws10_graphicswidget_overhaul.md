@@ -10,7 +10,7 @@ sweep). Issue [#250](https://github.com/socnetv/app/issues/250) is closed.
 **Phase 2 onward:** see "Future Work" below — not yet started.
 
 This was originally tracked as a subsection of the [Architecture & Performance Roadmap
-(WS3)](roadmap_architecture_performance.md); split out into its own workstream (WS10) once #250
+(WS3)](roadmap_ws3_architecture_performance.md); split out into its own workstream (WS10) once #250
 completed, since canvas rendering performance is a structurally separate, ongoing concern from
 WS3's domain-model work (`Graph`/`GraphVertex`) — not a one-off cleanup with a defined end.
 
@@ -39,7 +39,7 @@ Phase-1-style depth (concrete approach + completion criteria) yet.
 - **No automated rendering-performance regression coverage.** The golden harness covers
   computation kernels (distance, prominence, clustering) but has zero coverage of the graphics
   layer — a regression in paint/geometry cost would currently go undetected. Already identified as
-  WS6.6 in the testing roadmap (`roadmap_testing_ci_regression.md`, "Canvas rendering performance
+  WS6.6 in the testing roadmap (`roadmap_ws6_testing_ci_regression.md`, "Canvas rendering performance
   kernel (#240)"): a headless `kernel_render_perf_v8`-style CLI kernel driving a fixed
   render/bulk-update/drag sequence against a reference network, with timing-upper-bound baselines.
   This should probably come *before* further optimization work below, so improvements (and
@@ -209,7 +209,7 @@ rather than guessing.
 - [x] **Dead-code removal:** ran a systematic zero-caller sweep (`grep -rn` per method name across
   all of `src/`) across all 78 methods, beyond the specific items already caught by #C2 (`hasNode`)
   earlier. Found one more: `setNodeSizeAll()` had no callers anywhere — only a mention by name in
-  the WS6 roadmap (`roadmap_testing_ci_regression.md`, #240 section) as an example of an unbatched
+  the WS6 roadmap (`roadmap_ws6_testing_ci_regression.md`, #240 section) as an example of an unbatched
   bulk operation. Deleted the method (declaration + definition) and removed it from that roadmap
   example list, since `setEdgeArrowSize` (confirmed alive, called from `mainwindow.cpp`) already
   covers the point being made there.

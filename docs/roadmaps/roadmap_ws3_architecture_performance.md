@@ -20,7 +20,7 @@ the goal is to separate those concerns without a disruptive rewrite — see "Tar
 | M2 — Introduce `GraphModel` | 🟡 Design drafted, not started | [M2](#m2--introduce-graphmodel) |
 | M3 — Move pure data containers out of UI/Qt dependencies | ⚪ Not scoped (blocked on M2) | [M3](#m3--move-pure-data-containers-out-of-uiqt-dependencies) |
 | M4 — Relocate caches into explicit cache objects | ⚪ Not scoped (blocked on M2) | [M4](#m4--gradually-relocate-caches-into-explicit-cache-objects) |
-| GraphicsWidget canvas rendering performance | ✅ Phase 1 done, more scoped | Elevated to its own workstream — see [WS10](roadmap_graphicswidget_overhaul.md) |
+| GraphicsWidget canvas rendering performance | ✅ Phase 1 done, more scoped | Elevated to its own workstream — see [WS10](roadmap_ws10_graphicswidget_overhaul.md) |
 
 ## Current Reality
 
@@ -42,7 +42,7 @@ the goal is to separate those concerns without a disruptive rewrite — see "Tar
 
 ### M1 continuation — Replace distributed vertex QHash storage with flat relation-keyed matrices
 
-**Delegated to WS5.** See [`roadmap_matrices_modernization.md`](roadmap_matrices_modernization.md).
+**Delegated to WS5.** See [`roadmap_ws5_matrices_modernization.md`](roadmap_ws5_matrices_modernization.md).
 
 Summary: replace `GraphVertex::m_distance` and `GraphVertex::m_shortestPaths` (per-vertex
 QHash stores, keyed by target vertex and relation) with a centralised `QHash<int, Matrix>`
@@ -168,8 +168,8 @@ a UI orchestration mechanism. Engines/services must not emit/call UI-facing beha
    sub-task: check whether that one signal can be re-routed through `Graph`'s existing signal
    surface, then drop `GraphVertex` to a plain value class. Measure actual per-node memory
    difference on a large network before/after as the performance evidence for this specific change.
-4. **Pre-existing commitment carried into M2:** both `roadmap_distances_geodesic_engine.md` (WS1,
-   "What Remains Open") and `roadmap_ui_graph_facade.md` (WS2, "Optional Future Step") already
+4. **Pre-existing commitment carried into M2:** both `roadmap_ws1_distances_geodesic_engine.md` (WS1,
+   "What Remains Open") and `roadmap_ws2_ui_graph_facade.md` (WS2, "Optional Future Step") already
    named narrowing/removing the `friend class DistanceEngine;` access to `Graph` internals as
    explicitly deferred to "WS3 M2+" — found while auditing older roadmaps for stale/unfinished
    items (2026-07-25), and folded in here since `GraphModel`'s adapter boundary is exactly what
@@ -377,7 +377,7 @@ quarter of its size cut still triggers a real zoom-out.
 
 ### GraphicsWidget — Performance and Code Quality Overhaul (#250) ✅ Complete
 
-Split into its own file: [`roadmap_graphicswidget_overhaul.md`](roadmap_graphicswidget_overhaul.md).
+Split into its own file: [`roadmap_ws10_graphicswidget_overhaul.md`](roadmap_ws10_graphicswidget_overhaul.md).
 Separate track from the domain-model work above — canvas rendering, not `Graph`/`GraphVertex`.
 Groups A, B, C, and the Final Gate (full Doxygen pass + dead-code sweep) all shipped; issue #250
 is closed.

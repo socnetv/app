@@ -1,4 +1,4 @@
-# Testing / CI / Regression Roadmap
+# Testing / CI / Regression Roadmap (WS6)
 
 ## Goal
 Prevent silent regressions during modernization.
@@ -304,7 +304,7 @@ Rules:
 
 Your benchmark script output still shows `BUILD_TYPE=Debug` even when you run the Release binary. That’s a script-reporting detail (not a functional bug), but it can confuse future contributors. It’s a good tiny WS6 task.
 
-If you paste me your current `docs/roadmaps/roadmap_testing_ci_regression.md` file path/contents (if it differs from the skeleton you showed), I can also produce a `diff`-style patch, but you don’t need to — the above is ready to drop in.
+If you paste me your current `docs/roadmaps/roadmap_ws6_testing_ci_regression.md` file path/contents (if it differs from the skeleton you showed), I can also produce a `diff`-style patch, but you don’t need to — the above is ready to drop in.
 
 ### Continuous release page shows a stale "published" date (#255 follow-up)
 

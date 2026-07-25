@@ -1,4 +1,4 @@
-# Matrices Modernization Roadmap (Skeleton)
+# Matrices Modernization Roadmap (WS5)
 
 ## Goal
 Isolate matrix creation and computations into coherent types and services.
@@ -57,7 +57,7 @@ CHEBYSHEV cases. These cases do not yet have cancel guards in `writeMatrix()`.
 
 ## Incoming from WS3 — APSP Storage Migration (M1 continuation)
 
-*Handed off from [`roadmap_architecture_performance.md`](roadmap_architecture_performance.md), the
+*Handed off from [`roadmap_ws3_architecture_performance.md`](roadmap_ws3_architecture_performance.md), the
 "M1 continuation" section.*
 
 ### Current state (post WS3 M1)

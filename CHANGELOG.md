@@ -77,7 +77,7 @@ All notable changes to this project are documented in this file.
 ### Maintenance
 
   - WS3 roadmap renamed from "Domain Model Split" to **"Architecture &
-    Performance"** (`docs/roadmaps/roadmap_architecture_performance.md`);
+    Performance"** (`docs/roadmaps/roadmap_ws3_architecture_performance.md`);
     title now reflects both the structural refactoring and the 2.7×–8.3×
     parallelisation speedup shipped in v3.6.
   - `docs/README_DEVELOPER_NOTES.md` "Current focus" section replaced with a
