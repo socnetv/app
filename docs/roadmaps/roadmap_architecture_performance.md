@@ -168,7 +168,13 @@ a UI orchestration mechanism. Engines/services must not emit/call UI-facing beha
    sub-task: check whether that one signal can be re-routed through `Graph`'s existing signal
    surface, then drop `GraphVertex` to a plain value class. Measure actual per-node memory
    difference on a large network before/after as the performance evidence for this specific change.
-4. **Completion criteria:**
+4. **Pre-existing commitment carried into M2:** both `roadmap_distances_geodesic_engine.md` (WS1,
+   "What Remains Open") and `roadmap_ui_graph_facade.md` (WS2, "Optional Future Step") already
+   named narrowing/removing the `friend class DistanceEngine;` access to `Graph` internals as
+   explicitly deferred to "WS3 M2+" — found while auditing older roadmaps for stale/unfinished
+   items (2026-07-25), and folded in here since `GraphModel`'s adapter boundary is exactly what
+   would let `DistanceEngine` depend on a narrow interface instead of full `Graph` friendship.
+5. **Completion criteria:**
    - `run_golden_compares.sh` and `run_benchmarks.sh` pass unchanged.
    - `GraphModel` is constructible and queryable with zero Qt widget/thread machinery — genuine
      headless testability, not just "compiles without QtWidgets".

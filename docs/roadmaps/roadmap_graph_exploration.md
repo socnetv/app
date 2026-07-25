@@ -103,8 +103,8 @@ Make large graphs readable and explorable.
 
 **Deferred post-3.6:**
 
-* Community-based layouts — requires a community detection algorithm (Louvain / modularity) wired to the layout engine; significant algorithmic work independent of WS9. No dedicated issue exists yet; open one when scoping begins.
-* Edge bundling — complex QPainter/GPU rendering concern. No dedicated issue yet.
+* Community-based layouts — requires a community detection algorithm (Louvain / modularity) wired to the layout engine; significant algorithmic work independent of WS9. Tracked as #258.
+* Edge bundling — complex QPainter/GPU rendering concern. Tracked as #259.
 
 ---
 
@@ -393,8 +393,8 @@ Items explicitly deferred out of WS9 scope. Each has a home in the roadmap phase
 * **Tab-based multi-graph UI** (#245) — preferred long-term direction over multiple windows; significant infrastructure investment.
 
 ### Layouts (Feature 1 Phase 3)
-* **Community-based node coloring** — color by community membership (Louvain / modularity); requires a community-detection algorithm wired to the layout engine. No dedicated issue yet.
-* **Edge bundling** — complex QPainter/GPU rendering concern. No dedicated issue yet.
+* **Community-based node coloring** — color by community membership (Louvain / modularity); requires a community-detection algorithm wired to the layout engine. Tracked as #258.
+* **Edge bundling** — complex QPainter/GPU rendering concern. Tracked as #259.
 
 ### Data Workflows (Feature 3 Phase 6)
 * **In-app derived fields** — compute a new attribute from existing ones (e.g. `full_name = first + " " + last`); value normalization (min-max, z-score); type coercion. Deferred: the CSV/JSON roundtrip workflow already covers the practical need via external spreadsheet tools.

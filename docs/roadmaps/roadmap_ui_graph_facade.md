@@ -224,12 +224,6 @@ Future work should build on this boundary rather than weaken it.
 
 ---
 
-You’re right — it should stay (clearly labeled as **optional / later**, not WS2 work).
-
-Add this at the end:
-
----
-
 ## Optional Future Step (Not Part of WS2)
 
 ~~If/when we want to reduce the “helper surface” between `Graph` and engines, introduce a

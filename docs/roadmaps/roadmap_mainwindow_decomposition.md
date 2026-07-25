@@ -1,5 +1,7 @@
 # MainWindow Decomposition Roadmap (WS7)
 
+**Tracked as:** [#257](https://github.com/socnetv/app/issues/257)
+
 ## Goal
 
 Reduce `MainWindow` from a 15,000-line monolith into a thin coordinator that
