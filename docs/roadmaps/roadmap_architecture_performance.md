@@ -17,7 +17,7 @@ the goal is to separate those concerns without a disruptive rewrite — see "Tar
 | M1 — DistanceEngine parallelization (`PerSourceScratch` + parallel source loop) | ✅ Done (v3.6), 2.7×–8.3× speedup | [Archive](#m1--distanceengine-parallelization--complete) |
 | M1 continuation — flat relation-keyed matrices | 🔵 Delegated to WS5 | [Active / Next Up](#m1-continuation--replace-distributed-vertex-qhash-storage-with-flat-relation-keyed-matrices) |
 | #254 — GUI freeze during long weighted-centrality computation | 🔵 Scoped, not started | [Active / Next Up](#254--improve-ui-responsiveness-during-long-weighted-centrality-computations) |
-| M2 — Introduce `GraphModel` | 🟡 In design | [M2](#m2--introduce-graphmodel) |
+| M2 — Introduce `GraphModel` | 🟡 Design drafted, not started | [M2](#m2--introduce-graphmodel) |
 | M3 — Move pure data containers out of UI/Qt dependencies | ⚪ Not scoped (blocked on M2) | [M3](#m3--move-pure-data-containers-out-of-uiqt-dependencies) |
 | M4 — Relocate caches into explicit cache objects | ⚪ Not scoped (blocked on M2) | [M4](#m4--gradually-relocate-caches-into-explicit-cache-objects) |
 | GraphicsWidget canvas rendering performance | ✅ Phase 1 done, more scoped | Elevated to its own workstream — see [WS10](roadmap_graphicswidget_overhaul.md) |
@@ -103,18 +103,96 @@ See #254 for the full write-up and hints.
 
 ## M2 — Introduce `GraphModel`
 
-**Status: in design.** Placeholder pending the research/design pass — see the note in Status at a
-Glance. Will be expanded to the same depth as Phase 1/2 above (goal, current-reality specifics
-with file/line references, concrete approach, completion criteria) before any code is touched.
+**Status: design drafted (2026-07-25), not yet started.**
+
+**Every item below is filtered through WS3's actual purpose — performance and UX, not tidiness for
+its own sake.** M2 is worth doing only insofar as it makes the app faster or more correct-feeling
+to use; where a sub-item is architecture hygiene with no near-term perf/UX payoff, it's flagged as
+such and deprioritised rather than done "because it's cleaner."
+
+### Current reality (from reading `graphvertex.h` and `graph.h`'s private section in full)
+
+`GraphVertex` (329 lines) mixes four unrelated concerns in one class:
+- Real model data: `m_outEdges`/`m_inEdges` (adjacency), `m_number`.
+- Visual presentation: size/color/shape/label styling, `m_x`/`m_y` position, `m_disp` (layout
+  displacement).
+- A flat result-cache: ~40 scalar fields, one raw+standardized pair per centrality/prestige index
+  (`m_DC`/`m_SDC`, `m_BC`/`m_SBC`, `m_PRC`/`m_SPRC`, …), plus `m_distance`/`m_shortestPaths`
+  (already targeted by the M1-continuation matrix migration).
+- It inherits `QObject` — full vtable + signal/slot metadata overhead **per node** — to support
+  exactly one signal, `signalSetEdgeVisibility`.
+
+`Graph`'s private section (~190 lines) is the same pattern at graph scope: the actual vertex list
+(`VList m_graph`) sits alongside IO/crawler infrastructure, 11 named `Matrix` objects (`SIGMA, DM,
+sumM, invAM, AM, invM, WM, XM, XSM, XRM, CLQM` — WS5's territory), ~150 lines of
+`mean*/variance*/min*/max*/group*` scalars mirroring `GraphVertex`'s per-index pattern, ~20 ad-hoc
+`calculated*` boolean cache-validity flags with no shared invalidation mechanism, and
+UI-interaction state with no business on a domain façade (`m_clickedEdge`, `m_vertexClicked`, even
+`canvasWidth`/`canvasHeight`).
+
+One good sign: `Graph`'s signal block already carries an explicit WS2-era comment — *"Signals are
+a UI orchestration mechanism. Engines/services must not emit/call UI-facing behavior directly."*
+— so the façade's signal-emitting role is intentional and doesn't need to move. M2 is about the
+**data**, not the signals.
+
+### Why each part earns its place (perf/UX lens)
+
+- **`GraphVertex` dropping `QObject`** — direct, measurable performance win, not hygiene. Every
+  node in every loaded network currently pays full `QObject` construction/memory overhead (vtable,
+  signal/slot metadata, parent/child tracking) to support one narrow signal. For large networks —
+  precisely the case WS3/WS10 care about — this is real, per-node cost paid on every load.
+  Promoted from "worth a look" to a concrete M2 deliverable.
+- **Explicit cache objects (feeds M4)** — the ~20 hand-managed `calculated*` flags are a *correctness/UX*
+  risk as much as a performance one: a flag that isn't reset on the right mutation shows a **stale,
+  wrong** centrality value to the user with no indication anything's off. A real cache abstraction
+  with correct, dependency-aware invalidation fixes both the silent-staleness UX bug and avoids
+  over-conservative invalidation that forces needless recomputation.
+- **Matrix consolidation (feeds WS5 / M1-continuation)** — already directly performance-motivated:
+  eliminating per-vertex QHash lookups in the back-propagation hot path in favour of flat array
+  access.
+- **`GraphModel` structural adapter itself** — the one item here that's primarily architectural, not
+  a direct perf/UX win on its own. Justified as a prerequisite: it's what makes the two items above
+  safe to do incrementally (regression-testable in isolation) instead of as one large, risky
+  entangled change. Kept deliberately narrow for exactly this reason — see Approach below.
+
+### Approach (adapter-first, per Work Rules)
+
+1. Define `GraphModel` as a thin, QtCore-only class (no `QObject` inheritance) wrapping just the
+   structural subset: vertex list, adjacency, relations. Starts as a **read-view adapter** over
+   `Graph`'s existing `VList m_graph` — not a data migration yet, matching the "adapters first, not
+   data migrations" Work Rule.
+2. Explicitly **out of scope for M2**: centrality caches (→ M4), the 11 `Matrix` objects (→ WS5),
+   the `calculated*` flags (→ M4 explicit cache objects). Keeping M2 to identity/structure only is
+   what makes it a small, low-risk first cut instead of a rewrite.
+3. Investigate `GraphVertex`'s `QObject`/`signalSetEdgeVisibility` removal as a concrete M2
+   sub-task: check whether that one signal can be re-routed through `Graph`'s existing signal
+   surface, then drop `GraphVertex` to a plain value class. Measure actual per-node memory
+   difference on a large network before/after as the performance evidence for this specific change.
+4. **Completion criteria:**
+   - `run_golden_compares.sh` and `run_benchmarks.sh` pass unchanged.
+   - `GraphModel` is constructible and queryable with zero Qt widget/thread machinery — genuine
+     headless testability, not just "compiles without QtWidgets".
+   - At least one algorithm slice reads through `GraphModel` instead of `Graph` directly, as proof
+     the adapter boundary actually holds before migrating anything else.
+   - If the `QObject` removal lands: a measured per-node memory reduction on a large reference
+     network (e.g. `geom.net`, 7343 nodes), not just "should be smaller" — matching this roadmap's
+     own performance-evidence standard set by M1's benchmark tables.
 
 ## M3 — Move pure data containers out of UI/Qt dependencies
 
 **Status: not yet scoped.** Depends on M2's shape — `GraphModel`'s adapter boundary determines
-which containers can move and where they'd move to. Will be scoped once M2 is designed.
+which containers can move and where they'd move to. Will be scoped once M2 lands, using the same
+perf/UX lens as M2: each container move should be justified by a concrete win (memory, testability
+that enables faster iteration on a real bug, etc.), not moved just to be "out of Graph."
 
 ## M4 — Gradually relocate caches into explicit cache objects
 
-**Status: not yet scoped.** Same dependency as M3 — needs M2's shape decided first.
+**Status: not yet scoped**, but its motivating evidence already exists from the M2 research pass:
+`Graph`'s ~20 hand-managed `calculated*` boolean flags (no shared invalidation mechanism) are both
+a performance risk (over-conservative invalidation forces needless recompute) and a UX/correctness
+risk (a flag missed on the wrong mutation path shows a stale, wrong analysis result to the user
+with no indication anything's off). Full scoping — which caches, what invalidation model — waits
+for M2's `GraphModel` boundary to land first, but this is the concrete problem M4 exists to solve.
 
 ---
 
