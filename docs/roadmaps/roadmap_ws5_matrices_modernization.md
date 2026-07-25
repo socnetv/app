@@ -1,115 +1,181 @@
 # Matrices Modernization Roadmap (WS5)
 
 ## Goal
-Isolate matrix creation and computations into coherent types and services.
+
+- Make the matrix subsystem genuinely faster — contiguous storage, flat-array APSP results.
+- Isolate matrix creation and computation into coherent, testable types.
+- Cancellation-aware algebra kernels.
 
 ## Current Reality
-- Matrix-related logic is scattered and sometimes intertwined with Graph/UI.
-- Matrix algebra methods (inverse, power iteration, etc.) run synchronously
-  on the main thread with no cancellation support and no progress reporting.
-- Callers cannot interrupt mid-computation; cancellation only works at the
-  boundary between Graph-level methods, not inside linear algebra kernels.
 
-## Known Issues (found during #52 Cancel-button fix)
+- Matrix-related logic is scattered: code that constructs/populates `Graph`'s 11 named `Matrix`
+  fields (`SIGMA, DM, sumM, invAM, AM, invM, WM, XM, XSM, XRM, CLQM`) lives across six different
+  `src/graph/` slice directories, not one (`centrality/`, `distances/`, `cohesion/`, `matrices/`,
+  `reachability/`, `reporting/`). Only one of the six is the `matrices/` directory that nominally
+  owns this concern.
+- **`Matrix`'s own internal storage does N+1 separate heap allocations per matrix, not one.**
+  Confirmed by reading the constructor directly (`src/matrix.cpp:33-39`):
+  ```cpp
+  Matrix::Matrix (int rowDim, int colDim) : m_rows(rowDim), m_cols(colDim) {
+      row = new MatrixRow[m_rows];              // allocation #1: the row objects
+      for (int i=0; i<m_rows; i++)
+          row[i].resize(m_cols);                // allocation #2..N+1: one per row
+  }
+  ```
+  Each `MatrixRow` (`src/matrix.h:51-110`) owns its own separately-`new`'d `qreal[]` buffer. For a
+  7343-node network (`geom.net`), constructing a single N×N matrix means **7344 separate heap
+  allocations** instead of 1. Rows aren't guaranteed contiguous in memory, so row-to-row traversal
+  (the common `for(i) for(j) M[i][j]` access pattern used throughout the centrality/distance code)
+  doesn't benefit from cache prefetching the way a single flat buffer would.
+- Matrix algebra methods (inverse, power iteration, etc.) run synchronously on the main thread with
+  no cancellation support (see Known Issues below).
 
-### I1 — Matrix algebra methods are not cancellation-aware
-`Matrix::inverse()`, `Matrix::inverseByGaussJordanElimination()`, and
-`Matrix::powerIteration()` run to completion regardless of user cancel.
-Once `createMatrixAdjacency()` completes and hands off to these methods,
-there is no way to interrupt them.
-Affected callers:
-- `createMatrixAdjacencyInverse()` → `invAM.inverse(AM)` or
-  `invAM.inverseByGaussJordanElimination(AM)`
-- `centralityEigenvector()` → `AM.powerIteration(...)`
-- `centralityInformation()` → `invM.inverse(WM)`
-Fix direction: pass a cancellation-check callable into these methods,
-or split them into iterative steps that check a flag between iterations.
+## Known Issues
 
-### I2 — `createMatrixAdjacencyInverse()` does not check cancel flag
-after `createMatrixAdjacency()` returns. Added a guard before the inversion
-call as a partial fix (cancels before algebra starts), but cannot cancel
-mid-inversion. See I1.
+### Performance
 
-### I3 — `writeMatrix()` had missing `file.close()` on cancel paths
-Fixed during #52: all early-return cancel paths now close the file and
-return `false`. Callers in MainWindow now check the return value.
+**P1 — `Matrix` storage is N+1 heap allocations instead of 1 contiguous buffer.** See Current
+Reality above.
 
-### I4 — No cancellation support in similarity/dissimilarity distance
-matrix computations (`Matrix::distancesMatrix()`). Called from
-`writeMatrix()` for MATRIX_DISTANCES_EUCLIDEAN/HAMMING/JACCARD/MANHATTAN/
-CHEBYSHEV cases. These cases do not yet have cancel guards in `writeMatrix()`.
+**P2 — APSP per-vertex QHash storage** (`GraphVertex::m_distance` / `m_shortestPaths`) — the
+incoming migration from WS3 M1, detailed as A2 below.
 
-## Target Direction
-- Clear matrix types (adjacency, laplacian, distance, similarity, etc.)
-- Deterministic constructors
-- Cancellation-aware algebra kernels (at minimum: inverse, power iteration)
-- Progress reporting from inside long algebra operations
-- Headless tests
+### Cancellation (found during #52 Cancel-button fix)
+
+**I1 — Matrix algebra methods are not cancellation-aware.** `Matrix::inverse()`
+(`src/matrix.cpp:1256`), `Matrix::inverseByGaussJordanElimination()` (`src/matrix.cpp:1003`), and
+`Matrix::powerIteration()` (`src/matrix.cpp:808`) run to completion regardless of user cancel.
+Affected callers: `createMatrixAdjacencyInverse()` → `invAM.inverse(AM)` /
+`invAM.inverseByGaussJordanElimination(AM)`; `centralityEigenvector()` → `AM.powerIteration(...)`;
+`centralityInformation()` → `invM.inverse(WM)`.
+
+**I2 — `createMatrixAdjacencyInverse()` doesn't check the cancel flag mid-computation**, only
+before `inverse()`/`inverseByGaussJordanElimination()` starts (`graph/matrices/graph_matrix_adjacency.cpp:156`,
+the existing partial fix). See I1.
+
+**I3 — `writeMatrix()` had missing `file.close()` on cancel paths.** Fixed during #52.
+
+**I4 — No cancellation support in `Matrix::distancesMatrix()`**, called from `writeMatrix()`
+(`graph/reporting/graph_reports.cpp:5698`) for the `MATRIX_DISTANCES_EUCLIDEAN`/`HAMMING`/`JACCARD`/
+`MANHATTAN`/`CHEBYSHEV` cases — no cancel guards yet.
 
 ## Milestones
-- A1: Inventory matrix-related classes and their current callers
-- A2: Extract construction code paths
-- A3: Add golden outputs for small graphs
-- A4: Add cancellation support to Matrix algebra methods (see I1)
-- A5: Add cancel guards to remaining writeMatrix() cases (see I4)
 
----
+### A1 — Inventory (done as part of this design pass)
 
-## Incoming from WS3 — APSP Storage Migration (M1 continuation)
+The six-directory scatter and the 11-field catalog in Current Reality above is A1's output.
+Prerequisite for A4 (isolating construction into `matrices/`).
 
-*Handed off from [`roadmap_ws3_architecture_performance.md`](roadmap_ws3_architecture_performance.md), the
-"M1 continuation" section.*
+### A2 — APSP Storage Migration (incoming from WS3 M1)
 
-### Current state (post WS3 M1)
+*Handed off from [`roadmap_ws3_architecture_performance.md`](roadmap_ws3_architecture_performance.md),
+the "M1 continuation" section.*
 
-After WS3 M1 (DistanceEngine parallelization), `m_distance` and `m_shortestPaths` on `GraphVertex`
-are still per-vertex QHash stores:
+**Current state (post WS3 M1):** `m_distance` and `m_shortestPaths` on `GraphVertex` are
+per-vertex `QHash<target_vertex_num, QPair<relation_id, value>>`. Access during back-propagation:
+`shortestPaths(v1)` iterates all entries for key `v1` to find the one matching `m_curRelation` — a
+hash lookup per predecessor per vertex per source. For V=5,000 sources with average degree k=10,
+that's O(V²k) = 250M hash lookups just for sigma reads. WS3 M1 also introduced a per-vertex
+`std::mutex` array purely to make this QHash storage thread-safe under Phase 2's parallel loop.
 
-```
-m_distance:       QHash< target_vertex_num, pair(relation_id, geodesic_distance) >
-m_shortestPaths:  QHash< target_vertex_num, pair(relation_id, sigma_count) >
-```
-
-Access during back-propagation: `shortestPaths(v1)` iterates all entries for key `v1`
-to find the one matching `m_curRelation` — a hash lookup per predecessor per vertex
-per source. For V=5 000 sources with average degree k=10, that is O(V²k) = 250M hash
-lookups just for sigma reads.
-
-M1 also introduced a per-vertex `std::mutex` array for write-back safety. This migration
-eliminates both the lookup overhead and the mutex array.
-
-### Target state
-
-Replace the distributed per-vertex storage with a centralised relation-keyed matrix pair
-on the `Graph` object:
-
+**Target state:** a centralised relation-keyed matrix pair on `Graph`:
 ```
 Graph::m_apspDist:   QHash< relation_id, Matrix >   — geodesic distances
 Graph::m_apspSigma:  QHash< relation_id, Matrix >   — sigma counts
 ```
+Row = source vertex position, column = target vertex position. APSP reads become flat array
+lookups (`sigma[si][wi]`, O(1)); write-back becomes a single flat write with no mutex needed (each
+parallel source owns its own row — WS3 M1's mutex array is removed entirely).
 
-Where `Matrix` is the existing SocNetV `Matrix` class (or a thin flat-array wrapper
-for cache efficiency). Layout: row = source vertex position, column = target vertex position.
+**Memory — worked through, not assumed:** `m_distance` stores roughly N−1 entries per vertex for a
+connected graph (APSP reaches every other vertex), so ~N² QHash entries total — same order as a
+dense matrix, not smaller. Each entry carries a `QPair<int,qreal>` payload (~16 bytes) plus Qt's
+hash-table bucket/chain overhead, which is real but not precisely quantified here — that requires
+checking Qt 6.10's actual internal `QHash` layout, not assuming a number. A flat `Matrix` cell is
+exactly 8 bytes, no per-entry overhead, so the matrix should win on memory too for **connected**
+graphs. It should **lose** on memory for graphs with many isolates/disconnected components — the
+matrix allocates all N² cells regardless, while the QHash simply never stores an entry for
+unreachable pairs. Whether that crossover point matters for realistic SocNetV networks is an open
+question, not a settled one — see A2.0.
 
-Benefits:
-- APSP reads during back-propagation become flat array lookups: `sigma[si][wi]` — O(1),
-  cache-friendly, no hash collision handling
-- APSP write-back in Phase 2 becomes a single flat write per (source, target) pair —
-  no mutex needed (each parallel source owns its own row)
-- The per-vertex mutex array introduced in Phase 2 is removed
-- `m_distance` and `m_shortestPaths` are removed from `GraphVertex`, reducing per-node
-  memory footprint
-- The `Matrix` class gains a well-defined role as the APSP result store, consistent
-  with WS5 goals (cancellable, testable matrix subsystem)
+**A2.0 — Empirical validation (prerequisite, before committing to the rest of A2):** build a small
+standalone measurement comparing actual memory (process RSS, not theoretical byte-counting) and
+lookup speed for `QHash<int, QPair<int,qreal>>` vs. a flat `Matrix`, at:
+- N=100, N=1,000, N=7343 (matching `geom.net`)
+- Both a fully-connected topology and a topology with several disconnected components/isolates
+  (the case flagged above as a possible matrix loss)
 
-### Public API preservation
+Report actual numbers — memory delta and lookup-time delta per configuration — before deciding
+whether to proceed with the full migration, adjust the design (e.g. only switch to `Matrix` when a
+component is large/dense enough to be worth it), or drop this milestone. This replaces "the matrix
+approach is obviously better" with an actual answer.
 
-The accessors `graph.distance(u, v)` and `graph.shortestPaths(u, v)` keep their
-signatures — only their backing storage changes. All callers outside `DistanceEngine`
-are unaffected.
+**Extension:** `reachability/graph_reachability_walks.cpp` (the walks/A^k matrix code, one of A1's
+six scatter locations) already uses `Matrix::pow()` directly with no `QHash`/`QMap` involved, so it
+doesn't need this migration.
 
-### Milestone
+**Completion criteria:** A2.0 run and reported first. If it confirms a net win for realistic
+network sizes/topologies: `run_golden_compares.sh` and `run_benchmarks.sh` pass with no regression;
+benchmark the back-propagation-heavy cases specifically (e.g. `DIST_GRAPHML_1000N_10000A_C1_W0`)
+for a measured speedup, matching the evidence standard WS3 M1 set with its 2.7×–8.3× benchmark
+table.
 
-- A6: Migrate `m_distance` / `m_shortestPaths` to centralised `Matrix` per relation;
-  remove per-vertex QHash storage and Phase 2 mutex array; verify with
-  `run_golden_compares.sh` and `run_benchmarks.sh`
+### A3 — `Matrix` contiguous storage (P1)
+
+Replace `MatrixRow*` (N separately-allocated row objects) with one contiguous `qreal*` buffer of
+size `rows*cols`, row-major, inside `Matrix` itself. `MatrixRow`'s public interface (`column()`,
+`operator[]`, `setColumn()`) can likely be preserved as a thin non-owning view into a slice of the
+shared buffer, keeping every existing call site source-compatible — verify this as the actual
+implementation approach before starting.
+
+**Completion criteria:** `run_golden_compares.sh` and `run_benchmarks.sh` pass with no numeric
+change; measure allocation count and construction time for a large reference matrix (e.g. building
+`AM` for `geom.net`, N=7343) before and after — one allocation instead of 7344, with the actual
+measured construction-time delta reported, same evidence standard as A2.0.
+
+### A4 — Isolate construction into `matrices/`
+
+Migrate the five misplaced construction sites (everything outside
+`matrices/graph_matrix_adjacency.cpp` from A1's inventory) into the `matrices/` slice directory,
+one call site at a time, golden-regression-verified after each move.
+
+### A5 — Cancellation-aware algebra kernels (I1, I2)
+
+Insertion points, found by reading each method directly:
+- **`Matrix::inverse()`** (`src/matrix.cpp:1256`) — after the one-time `ludcmp()` decomposition,
+  the actual cost is a `for (j=0; j<n; j++)` loop calling `lubksb()` once per column (line 1279).
+  A cancellation check at the top of this loop interrupts between columns.
+- **`Matrix::inverseByGaussJordanElimination()`** (`src/matrix.cpp:1003`) — same treatment, its own
+  outer loop.
+- **`Matrix::powerIteration()`** (`src/matrix.cpp:808`) — already a bounded
+  `do { ... } while (iter < maxIter && ...)` loop; check goes at the top of the existing loop body.
+
+**Approach:** add an optional `std::function<bool()> cancelCheck` parameter to each method
+(defaults to `nullptr` — a no-op for every existing call site), matching the existing
+`Graph::progressCanceled()` convention already checked at ~30 call sites across `centrality/`,
+`clustering/`, `distances/`, `generators/`, `cohesion/`. `createMatrixAdjacencyInverse()`
+(`graph/matrices/graph_matrix_adjacency.cpp:143`) would pass `[this]{ return progressCanceled(); }`
+instead of only checking before the call (I2's current partial fix).
+
+**Completion criteria:** golden/benchmark scripts pass unchanged; manual test — cancel a slow
+inversion/power-iteration mid-computation on a large network, confirm the app returns to
+responsive state within roughly one loop iteration instead of running to completion.
+
+### A6 — Cancel guards in `writeMatrix()` (I4)
+
+Add `progressCanceled()` checks to the `MATRIX_DISTANCES_EUCLIDEAN`/`HAMMING`/`JACCARD`/`MANHATTAN`/
+`CHEBYSHEV` cases in `writeMatrix()` (`graph/reporting/graph_reports.cpp:5698`), matching the
+pattern I3 already established for the file-handle-cleanup paths in the same function.
+
+### A7 — Golden coverage for matrix operations
+
+Extend the CLI kernel harness (WS6) with small golden-output baselines for at least one operation
+per matrix category (adjacency, inverse, distance, similarity), ahead of A3/A5.
+
+## Work Rules
+
+- Performance claims must be measured (allocation counts, RSS, benchmark deltas), not asserted —
+  A2.0 exists specifically to enforce this for the APSP migration.
+- `run_golden_compares.sh` and `run_benchmarks.sh` must pass after every milestone.
+- A3 (storage) and A5 (cancellation) are independent and can proceed in either order; A4
+  (isolation) should wait until both have landed so it moves settled code.

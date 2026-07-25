@@ -56,8 +56,12 @@ Benefits:
   no contention at all)
 - Aligns with WS5 goals (cancellable, testable matrix subsystem)
 
-Genuinely delegated (both roadmaps cross-reference each other, with a concrete target state and
-milestone `A6` on the WS5 side) but not yet started — WS5's roadmap file is explicitly a "Skeleton."
+Genuinely delegated (both roadmaps cross-reference each other) — WS5's roadmap is now fully
+scoped (milestone A2), but the migration itself is gated on an empirical validation step (A2.0):
+a dense matrix should win on both speed and memory for connected graphs, but could lose on memory
+for graphs with many disconnected components/isolates, where the QHash simply never stores an
+entry for unreachable pairs. A2.0 measures this on real data before the migration proceeds, rather
+than assuming the win.
 
 ### #254 — Improve UI responsiveness during long weighted-centrality computations
 
