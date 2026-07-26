@@ -4,25 +4,37 @@
 
 ## Goal
 
-Reduce `MainWindow` from a 15,000-line monolith into a thin coordinator that
-delegates UI concerns to focused sub-controllers and panel widgets,
-while preserving all existing behavior and user-visible functionality.
+Reduce `MainWindow` from a 16,289-line `.cpp` (plus 838-line `.h`) into a thin coordinator that
+delegates UI concerns to focused sub-controllers and panel widgets, while preserving all existing
+behavior and user-visible functionality.
+
+**This is a maintainability/testability workstream, not a performance one** — stated explicitly
+rather than left implicit. Checked directly: none of the ~304 `appSettings[...]` lookups scattered
+through `mainwindow.cpp` occur inside a per-node/per-edge loop or a repaint path (grepped for loop
+context around every occurrence); the scatter is a real maintenance cost, not a measured
+performance one. If a genuine performance finding turns up during MW1-MW7 execution, it gets its
+own evidence and completion criteria the same way WS3/WS5 findings did — none is assumed here.
 
 ---
 
 ## Motivation
 
-After WS2, `Graph` is a clean façade. The UI side has not yet received the same
-treatment. `MainWindow` currently:
+After WS2, `Graph` is a clean façade. The UI side has not yet received the same treatment.
+Confirmed by direct reading:
 
-* owns all menus, toolbars, dock widgets, status bar, and dialogs
-* handles all user action slots (~200+ slots)
-* wires signals from `Graph` directly into UI updates
-* performs layout and panel management directly
-* contains display logic, chart config, and settings persistence
+* `MainWindow` owns all menus, toolbars, dock widgets, status bar, and dialogs.
+* ~235 slots follow the `slotXxx` naming convention in `mainwindow.h` (one `public slots:` block,
+  lines 151-586).
+* `statusBar()->showMessage(...)` / `statusMessage(...)` is called **359 times** directly.
+* `appSettings[...]` is accessed **304 times** directly, across ~37 different settings-related
+  methods — no single owner.
+* 20 distinct `Dialog*` classes are instantiated directly with `new` (21 call sites) — no shared
+  lifecycle management.
+* `initMenuBar()` is 448 lines; `initToolBar()` is 84 lines — both inline in `MainWindow`.
+* 14 direct `connect(graphicsWidget, ...)` call sites wire canvas interactions into `MainWindow`.
 
-This makes it hard to test UI behavior, hard to reason about responsibilities,
-and expensive to change any single feature.
+This makes it hard to test UI behavior, hard to reason about responsibilities, and expensive to
+change any single feature.
 
 ---
 
@@ -32,7 +44,7 @@ and expensive to change any single feature.
 * No visual/UX changes.
 * No Qt version changes.
 * No new features.
-* No dependency on WS3 or WS4 completion (WS7 is structurally independent).
+* No dependency on WS3, WS4, or WS5 completion (WS7 is structurally independent).
 
 ---
 
@@ -40,6 +52,9 @@ and expensive to change any single feature.
 
 * WS2 complete (Graph façade stable). ✅
 * CLI headless baseline exists (WS4/P2), to anchor regression during UI changes.
+* WS9 complete (UI stabilized) ✅ — this was the stated gate for starting WS7; it's now satisfied,
+  so WS7 is unblocked in principle. Priority ranking (see `ARCHITECTURAL_REFACTORING_ROADMAP.md`)
+  is a separate question from whether it's blocked.
 
 ---
 
@@ -78,119 +93,118 @@ MainWindow wires these together but does not own their internal logic.
 
 ---
 
-### MW1 — Audit and Categorize MainWindow Slots
+### MW1 — Audit and Categorize MainWindow Slots (done as part of this design pass)
 
-**Objective:** understand what lives in MainWindow before touching anything.
-
-Deliverables:
-
-* Categorize all public/private slots by responsibility bucket:
-  * Graph state reactions (graph loaded, vertex added, etc.)
-  * UI state reactions (toolbar toggle, panel visibility, etc.)
-  * Dialog launchers
-  * Settings apply
-  * Canvas interactions
-  * Analysis result display
-* Identify which slots are purely UI (no Graph call) vs. coordinator (calls Graph façade).
-* Note any slots that do too much (mixed UI + Graph + display).
+The counts in Motivation above (~235 slots, 359 status-bar calls, 304 settings accesses, 20 dialog
+classes, 14 canvas connects, menu/toolbar line counts) are MW1's inventory output. Full
+per-slot responsibility-bucket categorization (Graph-state reaction / UI-state reaction / dialog
+launcher / settings apply / canvas interaction / analysis display) is the remaining work before
+MW2 starts — the counts above scope *how much* of each category exists; assigning every individual
+slot to its bucket is the actual MW1 deliverable, not yet done.
 
 Definition of Done:
 
-* A documented slot inventory exists (can be a comment block in `mainwindow.h` or a separate doc).
-* No code changes.
-* Build passes.
+* A documented slot inventory exists (comment block in `mainwindow.h` or a separate doc), covering
+  every one of the ~235 `slotXxx` methods.
+* No code changes. Build passes.
 
 ---
 
 ### MW2 — Extract StatusBarController
 
-**Objective:** first small extraction — low risk, high signal.
+**Objective:** first small extraction — low risk, high signal. 359 confirmed call sites
+(`statusBar()->showMessage(...)` / `statusMessage(...)`) is the concrete scope.
 
 Deliverables:
 
 * `StatusBarController` class owns all status bar update logic.
 * MainWindow constructs it and passes it relevant signals.
-* All `statusBar()->showMessage(...)` and related calls routed through it.
+* All 359 call sites routed through it.
 
 Definition of Done:
 
 * MainWindow no longer calls `statusBar()` directly except in initialization.
-* Golden + benchmarks pass.
-* No behavior change.
+* Golden + benchmarks pass. No behavior change.
 
 ---
 
 ### MW3 — Extract AppMenuController
 
-**Objective:** separate menu construction from business logic.
+**Objective:** separate menu construction from business logic. Concrete scope: `initMenuBar()`
+(448 lines, `mainwindow.cpp`) and `initToolBar()` (84 lines).
 
 Deliverables:
 
 * `AppMenuController` owns menu bar construction and action object creation.
 * Actions are still connected to MainWindow slots (no slot moves yet).
-* Menu structure is driven by controller, not inline MainWindow code.
+* Menu structure is driven by controller, not inline `MainWindow::initMenuBar()`.
 
 Definition of Done:
 
-* Menu construction code no longer lives in `MainWindow::setupMenuBar()` or equivalent.
-* Actions remain triggerable; no UX change.
-* Golden + benchmarks pass.
+* Menu construction code no longer lives in `MainWindow::initMenuBar()`/`initToolBar()`.
+* Actions remain triggerable; no UX change. Golden + benchmarks pass.
 
 ---
 
 ### MW4 — Extract DialogManager
 
-**Objective:** centralize dialog lifecycle management.
+**Objective:** centralize dialog lifecycle management. Concrete scope: 20 distinct classes, 21
+`new Dialog*` call sites (`DialogClusteringHierarchical`, `DialogDataSetSelect`,
+`DialogDissimilarities`, `DialogEdgeDichotomization`, `DialogEdgeEdit`, `DialogExportImage`,
+`DialogExportPDF`, `DialogFilterEdgesByWeight`, `DialogNodeFind`, `DialogPreviewFile`,
+`DialogQueryBuilder`, `DialogRandErdosRenyi`, `DialogRandLattice`, `DialogRandRegular`,
+`DialogRandScaleFree`, `DialogRandSmallWorld`, `DialogSettings`, `DialogSimilarityMatches`,
+`DialogSimilarityPearson`, `DialogSystemInfo`, `DialogWebCrawler`).
 
 Deliverables:
 
-* `DialogManager` owns instantiation, `exec()`/`show()`, and cleanup of all dialog classes.
-* MainWindow calls `m_dialogManager->openNodeEditDialog(...)` instead of `new DialogNodeEdit(...)` inline.
+* `DialogManager` owns instantiation, `exec()`/`show()`, and cleanup of all 20 dialog classes.
+* MainWindow calls `m_dialogManager->openNodeEditDialog(...)` instead of `new DialogEdgeEdit(...)`
+  inline, etc.
 * DialogManager receives the minimum context it needs (Graph façade reference, parent widget).
 
 Definition of Done:
 
 * No `new Dialog*` calls remain directly in MainWindow slot bodies.
-* All existing dialogs still open and function correctly.
-* Golden + benchmarks pass.
+* All 20 dialogs still open and function correctly. Golden + benchmarks pass.
 
 ---
 
 ### MW5 — Extract AppSettingsController
 
-**Objective:** isolate settings persistence and apply logic.
+**Objective:** isolate settings persistence and apply logic. Concrete scope: `appSettings =
+initSettings(...)` (`mainwindow.cpp:137`), `saveSettings()` (`mainwindow.cpp:667`), and ~37
+other settings-related methods, 304 direct `appSettings[...]` accesses total.
 
 Deliverables:
 
-* `AppSettingsController` owns read/write of `QSettings`.
-* Owns the "apply settings to Graph + UI" logic currently scattered in MainWindow.
+* `AppSettingsController` owns read/write of `QSettings` (via `initSettings()`/`saveSettings()`).
+* Owns the "apply settings to Graph + UI" logic currently scattered across the ~37 settings
+  methods.
 * MainWindow calls `m_settingsController->apply(...)` on startup and settings dialog close.
 
 Definition of Done:
 
-* No direct `QSettings` calls remain in MainWindow outside of initialization.
-* Settings dialog still functions correctly.
-* Golden + benchmarks pass.
+* No direct `appSettings[...]` accesses remain in MainWindow outside the controller.
+* Settings dialog still functions correctly. Golden + benchmarks pass.
 
 ---
 
 ### MW6 — Extract CanvasPanel
 
-**Objective:** encapsulate canvas interactions.
+**Objective:** encapsulate canvas interactions. Concrete scope: 14 `connect(graphicsWidget, ...)`
+call sites in `mainwindow.cpp`.
 
 Deliverables:
 
-* `CanvasPanel` wraps `GraphicsWidget` and owns canvas-level slot handling:
-  * zoom, fit, pan signals/slots
-  * node/edge click/hover reactions
-  * canvas resize handling
+* `CanvasPanel` wraps `GraphicsWidget` and owns canvas-level slot handling: zoom, fit, pan
+  signals/slots; node/edge click/hover reactions; canvas resize handling.
 * MainWindow holds a `CanvasPanel*` and forwards Graph signals to it.
 
 Definition of Done:
 
-* GraphicsWidget-related slots no longer live in MainWindow directly.
-* Canvas interactions unchanged.
-* Golden + benchmarks pass.
+* None of the 14 `connect(graphicsWidget, ...)` sites remain directly in MainWindow.
+* Canvas interactions unchanged. Golden + benchmarks pass.
 
 ---
 
@@ -203,7 +217,7 @@ Deliverables:
 * MainWindow connects sub-controllers to Graph signals and to each other.
 * No display logic, no dialog construction, no settings reads remain inline.
 * Slot count in MainWindow reduced to coordinator-level wiring only.
-* `mainwindow.cpp` target: under 3,000 lines.
+* `mainwindow.cpp` target: under 3,000 lines (down from 16,289).
 
 Definition of Done:
 
@@ -235,5 +249,7 @@ For every milestone:
 
 ## Sequencing Note
 
-WS7 is independent of WS3, WS4, and WS5. It can proceed in parallel after WS4/P2.
-MW1 (audit) can begin immediately.
+WS7 is independent of WS3, WS4, and WS5. Its stated prerequisite (UI stabilized post-WS9) is now
+satisfied — WS9 shipped. It remains unstarted only because of relative priority, not a blocker;
+see `ARCHITECTURAL_REFACTORING_ROADMAP.md`'s Priorities list. MW1's remaining per-slot
+categorization can begin any time.

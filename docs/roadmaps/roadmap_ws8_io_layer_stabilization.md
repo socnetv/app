@@ -2,7 +2,7 @@
 
 ## Status
 
-**Design drafted (2026-07-25), not yet started.** Previously three aspirational bullet points in
+**Design drafted, not yet started.** Previously three aspirational bullet points in
 `ARCHITECTURAL_REFACTORING_ROADMAP.md` with no dedicated file — fleshed out here after confirming
 via direct code reading that the scope is real and distinct from WS4 (not a duplicate/leftover).
 
@@ -18,7 +18,7 @@ where each format's metadata (display name, file extensions, capabilities) lives
 
 ## Current Reality — four places hand-maintain the same per-format knowledge
 
-Confirmed by direct reading (2026-07-25), not assumption:
+Confirmed by direct reading, not assumption:
 
 1. **`Parser::load()`** (`src/parser.cpp:207`) — a 10-case `switch(fileFormat)` calling
    `parseAsGraphML(rawData)`, `parseAsPajek(rawData)`, `parseAsAdjacency(rawData, cfg, delimiter)`,
