@@ -12325,8 +12325,10 @@ void MainWindow::slotLayoutSpringEmbedder()
                "which handle larger graphs better.")
                 .arg(activeNodes()));
     }
-    activeGraph->layoutForceDirectedSpringEmbedder(300);
-    statusMessage(tr("Spring-Gravitational (Eades) model embedded."));
+    runGraphOperationAsync(
+        [this]() { activeGraph->layoutForceDirectedSpringEmbedder(300); },
+        tr("Computing Spring-Gravitational (Eades) layout. Please wait..."),
+        tr("Spring-Gravitational (Eades) model embedded."));
 }
 
 /**
@@ -12343,9 +12345,10 @@ void MainWindow::slotLayoutFruchterman()
         return;
     }
 
-    activeGraph->layoutForceDirectedFruchtermanReingold(100);
-
-    statusMessage(tr("Fruchterman & Reingold model embedded."));
+    runGraphOperationAsync(
+        [this]() { activeGraph->layoutForceDirectedFruchtermanReingold(100); },
+        tr("Computing Fruchterman & Reingold layout. Please wait..."),
+        tr("Fruchterman & Reingold model embedded."));
 }
 
 /**
@@ -12360,9 +12363,10 @@ void MainWindow::slotLayoutKamadaKawai()
         return;
     }
 
-    activeGraph->layoutForceDirectedKamadaKawai(400);
-
-    statusMessage(tr("Kamada & Kawai model embedded."));
+    runGraphOperationAsync(
+        [this]() { activeGraph->layoutForceDirectedKamadaKawai(400); },
+        tr("Computing Kamada & Kawai layout. Please wait..."),
+        tr("Kamada & Kawai model embedded."));
 }
 
 /**
@@ -12427,7 +12431,7 @@ void MainWindow::slotLayoutRadialByProminenceIndex(QString prominenceIndexName =
         switch (
             QMessageBox::critical(
                 this, "Slow function warning",
-                tr("Please note that this function is <b>SLOW</b> on large "
+                tr("Please note that this function is <b>CPU-intensive</b> on large "
                    "networks (n>200), since it will calculate  a (n x n) matrix A with: <br>"
                    "Aii=1+weighted_degree_ni <br>"
                    "Aij=1 if (i,j)=0 <br>"
@@ -12435,8 +12439,8 @@ void MainWindow::slotLayoutRadialByProminenceIndex(QString prominenceIndexName =
                    "Next, it will compute the inverse matrix C of A. "
                    "The computation of the inverse matrix is a CPU intensive function "
                    "although it uses LU decomposition. <br>"
-                   "How slow is this? For instance, to compute IC scores of 600 nodes "
-                   "on a modern i7 4790K CPU you will need to wait for 2 minutes at least. <br>"
+                   "This can take a while on large networks, but the app stays responsive "
+                   "while it works in the background. <br>"
                    "Are you sure you want to continue?"),
                 QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Cancel))
         {
@@ -12457,15 +12461,22 @@ void MainWindow::slotLayoutRadialByProminenceIndex(QString prominenceIndexName =
 
     graphicsWidget->clearGuides();
 
-    statusMessage(tr("Computing %1 radial layout. Please wait...").arg(prominenceIndexName));
+    // Read UI/member state on the GUI thread now - the lambda below runs on graphThread
+    // (see runGraphOperationAsync), where reading QAction/MainWindow state would be unsafe.
+    const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    const bool dropIsolatesFinal = editFilterNodesIsolatesAct->isChecked() || dropIsolates;
+    const bool inverseWeightsFinal = inverseWeights;
 
-    activeGraph->layoutByProminenceIndex(
-        indexType, 0,
-        optionsEdgeWeightConsiderAct->isChecked(),
-        inverseWeights,
-        editFilterNodesIsolatesAct->isChecked() || dropIsolates);
-
-    statusMessage(tr("Nodes in inner circles have higher %1 score. ").arg(prominenceIndexName));
+    runGraphOperationAsync(
+        [this, indexType, considerWeights, inverseWeightsFinal, dropIsolatesFinal]() {
+            activeGraph->layoutByProminenceIndex(
+                indexType, 0,
+                considerWeights,
+                inverseWeightsFinal,
+                dropIsolatesFinal);
+        },
+        tr("Computing %1 radial layout. Please wait...").arg(prominenceIndexName),
+        tr("Nodes in inner circles have higher %1 score. ").arg(prominenceIndexName));
 }
 
 /**
@@ -12529,7 +12540,7 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString prominenceIndexName = 
         switch (
             QMessageBox::critical(
                 this, "Slow function warning",
-                tr("Please note that this function is <b>SLOW</b> on large "
+                tr("Please note that this function is <b>CPU-intensive</b> on large "
                    "networks (n>200), since it will calculate  a (n x n) matrix A with: <br>"
                    "Aii=1+weighted_degree_ni <br>"
                    "Aij=1 if (i,j)=0 <br>"
@@ -12537,8 +12548,8 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString prominenceIndexName = 
                    "Next, it will compute the inverse matrix C of A. "
                    "The computation of the inverse matrix is a CPU intensive function "
                    "although it uses LU decomposition. <br>"
-                   "How slow is this? For instance, to compute IC scores of 600 nodes "
-                   "on a modern i7 4790K CPU you will need to wait for 2 minutes at least. <br>"
+                   "This can take a while on large networks, but the app stays responsive "
+                   "while it works in the background. <br>"
                    "Are you sure you want to continue?"),
                 QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Cancel))
         {
@@ -12559,15 +12570,22 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString prominenceIndexName = 
 
     graphicsWidget->clearGuides();
 
-    statusMessage(tr("Computing %1 level layout. Please wait...").arg(prominenceIndexName));
+    // Read UI/member state on the GUI thread now - the lambda below runs on graphThread
+    // (see runGraphOperationAsync), where reading QAction/MainWindow state would be unsafe.
+    const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    const bool dropIsolatesFinal = editFilterNodesIsolatesAct->isChecked() || dropIsolates;
+    const bool inverseWeightsFinal = inverseWeights;
 
-    activeGraph->layoutByProminenceIndex(
-        indexType, 1,
-        optionsEdgeWeightConsiderAct->isChecked(),
-        inverseWeights,
-        editFilterNodesIsolatesAct->isChecked() || dropIsolates);
-
-    statusMessage(tr("Nodes in upper levels have higher %1 score. ").arg(prominenceIndexName));
+    runGraphOperationAsync(
+        [this, indexType, considerWeights, inverseWeightsFinal, dropIsolatesFinal]() {
+            activeGraph->layoutByProminenceIndex(
+                indexType, 1,
+                considerWeights,
+                inverseWeightsFinal,
+                dropIsolatesFinal);
+        },
+        tr("Computing %1 level layout. Please wait...").arg(prominenceIndexName),
+        tr("Nodes in upper levels have higher %1 score. ").arg(prominenceIndexName));
 }
 
 /**
@@ -12629,7 +12647,7 @@ void MainWindow::slotLayoutNodeSizeByProminenceIndex(QString prominenceIndexName
         switch (
             QMessageBox::critical(
                 this, "Slow function warning",
-                tr("Please note that this function is <b>SLOW</b> on large "
+                tr("Please note that this function is <b>CPU-intensive</b> on large "
                    "networks (n>200), since it will calculate  a (n x n) matrix A with: <br>"
                    "Aii=1+weighted_degree_ni <br>"
                    "Aij=1 if (i,j)=0 <br>"
@@ -12637,8 +12655,8 @@ void MainWindow::slotLayoutNodeSizeByProminenceIndex(QString prominenceIndexName
                    "Next, it will compute the inverse matrix C of A. "
                    "The computation of the inverse matrix is a CPU intensive function "
                    "although it uses LU decomposition. <br>"
-                   "How slow is this? For instance, to compute IC scores of 600 nodes "
-                   "on a modern i7 4790K CPU you will need to wait for 2 minutes at least. <br>"
+                   "This can take a while on large networks, but the app stays responsive "
+                   "while it works in the background. <br>"
                    "Are you sure you want to continue?"),
                 QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Cancel))
         {
@@ -12659,15 +12677,22 @@ void MainWindow::slotLayoutNodeSizeByProminenceIndex(QString prominenceIndexName
 
     graphicsWidget->clearGuides();
 
-    statusMessage(tr("Computing %1 node size layout. Please wait...").arg(prominenceIndexName));
+    // Read UI/member state on the GUI thread now - the lambda below runs on graphThread
+    // (see runGraphOperationAsync), where reading QAction/MainWindow state would be unsafe.
+    const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    const bool dropIsolatesFinal = editFilterNodesIsolatesAct->isChecked() || dropIsolates;
+    const bool inverseWeightsFinal = inverseWeights;
 
-    activeGraph->layoutByProminenceIndex(
-        indexType, 2,
-        optionsEdgeWeightConsiderAct->isChecked(),
-        inverseWeights,
-        editFilterNodesIsolatesAct->isChecked() || dropIsolates);
-
-    statusMessage(tr("Bigger nodes have greater %1 score.").arg(prominenceIndexName));
+    runGraphOperationAsync(
+        [this, indexType, considerWeights, inverseWeightsFinal, dropIsolatesFinal]() {
+            activeGraph->layoutByProminenceIndex(
+                indexType, 2,
+                considerWeights,
+                inverseWeightsFinal,
+                dropIsolatesFinal);
+        },
+        tr("Computing %1 node size layout. Please wait...").arg(prominenceIndexName),
+        tr("Bigger nodes have greater %1 score.").arg(prominenceIndexName));
 }
 
 /**
@@ -12729,7 +12754,7 @@ void MainWindow::slotLayoutNodeColorByProminenceIndex(QString prominenceIndexNam
         switch (
             QMessageBox::critical(
                 this, "Slow function warning",
-                tr("Please note that this function is <b>SLOW</b> on large "
+                tr("Please note that this function is <b>CPU-intensive</b> on large "
                    "networks (n>200), since it will calculate  a (n x n) matrix A with: <br>"
                    "Aii=1+weighted_degree_ni <br>"
                    "Aij=1 if (i,j)=0 <br>"
@@ -12737,8 +12762,8 @@ void MainWindow::slotLayoutNodeColorByProminenceIndex(QString prominenceIndexNam
                    "Next, it will compute the inverse matrix C of A. "
                    "The computation of the inverse matrix is a CPU intensive function "
                    "although it uses LU decomposition. <br>"
-                   "How slow is this? For instance, to compute IC scores of 600 nodes "
-                   "on a modern i7 4790K CPU you will need to wait for 2 minutes at least. <br>"
+                   "This can take a while on large networks, but the app stays responsive "
+                   "while it works in the background. <br>"
                    "Are you sure you want to continue?"),
                 QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Cancel))
         {
@@ -12759,15 +12784,22 @@ void MainWindow::slotLayoutNodeColorByProminenceIndex(QString prominenceIndexNam
 
     graphicsWidget->clearGuides();
 
-    statusMessage(tr("Computing %1 node color layout. Please wait...").arg(prominenceIndexName));
+    // Read UI/member state on the GUI thread now - the lambda below runs on graphThread
+    // (see runGraphOperationAsync), where reading QAction/MainWindow state would be unsafe.
+    const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    const bool dropIsolatesFinal = editFilterNodesIsolatesAct->isChecked() || dropIsolates;
+    const bool inverseWeightsFinal = inverseWeights;
 
-    activeGraph->layoutByProminenceIndex(
-        indexType, 3,
-        optionsEdgeWeightConsiderAct->isChecked(),
-        inverseWeights,
-        editFilterNodesIsolatesAct->isChecked() || dropIsolates);
-
-    statusMessage(tr("Nodes with warmer color have greater %1 score.").arg(prominenceIndexName));
+    runGraphOperationAsync(
+        [this, indexType, considerWeights, inverseWeightsFinal, dropIsolatesFinal]() {
+            activeGraph->layoutByProminenceIndex(
+                indexType, 3,
+                considerWeights,
+                inverseWeightsFinal,
+                dropIsolatesFinal);
+        },
+        tr("Computing %1 node color layout. Please wait...").arg(prominenceIndexName),
+        tr("Nodes with warmer color have greater %1 score.").arg(prominenceIndexName));
 }
 
 /**
@@ -15009,6 +15041,72 @@ void MainWindow::polishProgressDialog(QProgressDialog *dialog)
 #else
     Q_UNUSED(dialog);
 #endif
+}
+
+/**
+ * @brief Runs a slow Graph operation on graphThread without blocking the GUI thread (fix #254).
+ *
+ * `activeGraph` already lives on graphThread (see MainWindow::initGraph()) - this dispatches
+ * `operation` there via a queued invocation instead of introducing any new thread or using
+ * QtConcurrent::run(). That matters: DistanceEngine::compute() already parallelises internally
+ * via QtConcurrent::blockingMap over the *global* thread pool, so wrapping the outer call in
+ * QtConcurrent::run() as well would submit a second task to that same pool and risk contending
+ * with blockingMap's own worker tasks. Routing through graphThread sidesteps that entirely -
+ * blockingMap's behaviour is completely unaffected; only the identity of the thread that calls
+ * and blocks on it changes (graphThread instead of the GUI thread).
+ *
+ * Shows an indeterminate progress dialog (no setValue() calls - cheap regardless of network
+ * size, unlike the granular showProgressBar mechanism) for the duration. Because it's
+ * ApplicationModal, it also prevents the user from mutating the graph from the GUI thread while
+ * `operation` runs on graphThread - required, since DistanceEngine and friends mutate Graph's
+ * member state directly and are not internally synchronized against concurrent access.
+ *
+ * The dialog's Cancel button is wired to the same Graph::slotCancelComputation() the existing
+ * granular progress dialog uses. Note this carries over an existing limitation, not a new one:
+ * cancellation can't interrupt mid-blockingMap (see the comment in
+ * DistanceEngine::runAllSources()) - it can only take effect at the checkpoints initRun()/
+ * finalize() already have.
+ *
+ * @param operation   The Graph call to run, e.g. [this, args...](){ activeGraph->foo(args...); }
+ *                    — capture only plain values read from UI widgets *before* calling this
+ *                    method, never QAction/QWidget pointers to be dereferenced inside the
+ *                    lambda body, since that body executes on graphThread, not the GUI thread.
+ * @param waitMessage Status bar message and progress dialog text shown immediately.
+ * @param doneMessage Status bar message shown on completion (optional).
+ */
+void MainWindow::runGraphOperationAsync(std::function<void()> operation,
+                                        const QString &waitMessage,
+                                        const QString &doneMessage)
+{
+    statusMessage(waitMessage);
+
+    QProgressDialog *busyDialog = new QProgressDialog(waitMessage, tr("Cancel"), 0, 0, this);
+    busyDialog->setWindowModality(Qt::ApplicationModal);
+    busyDialog->setMinimumDuration(0);
+    busyDialog->setAutoClose(false);
+    busyDialog->setAutoReset(false);
+    polishProgressDialog(busyDialog);
+    connect(busyDialog, &QProgressDialog::canceled,
+            activeGraph, &Graph::slotCancelComputation);
+    busyDialog->show();
+
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+
+    QMetaObject::invokeMethod(activeGraph, [this, operation, doneMessage, busyDialog]() {
+        operation();
+        QMetaObject::invokeMethod(this, [this, doneMessage, busyDialog]() {
+            QApplication::restoreOverrideCursor();
+            // reset(), not close(): QProgressDialog::close() triggers its internal cancel()
+            // path and emits canceled() -> Graph::slotCancelComputation() -> m_progressCanceled
+            // stays true until the next progressCreate() call, silently no-op'ing every
+            // operation after the first. Matches the teardown pattern already used by
+            // slotProgressBoxDestroy() for exactly this reason.
+            busyDialog->reset();
+            busyDialog->deleteLater();
+            if (!doneMessage.isEmpty())
+                statusMessage(doneMessage);
+        }, Qt::QueuedConnection);
+    }, Qt::QueuedConnection);
 }
 
 /**

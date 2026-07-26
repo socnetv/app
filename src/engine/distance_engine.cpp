@@ -26,6 +26,14 @@
 #include <cstdlib>
 #include <queue>
 
+/**
+ * @brief Per-run scratch state for DistanceEngine::compute(), scoped to one compute() call.
+ *
+ * Not per-source (see PerSourceScratch/ThreadLocalState in per_source_scratch.h /
+ * thread_local_state.h for that) — this is the state threaded through compute()'s three
+ * phases (initRun / runAllSources / finalize) that used to be a long list of local variables
+ * before WS1's Phase C extraction. One instance lives on compute()'s stack for the whole call.
+ */
 struct DistanceScratch
 {
     // Iterators (kept exactly as locals were)
@@ -53,6 +61,15 @@ struct DistanceScratch
     qreal pairDistance = 0;
 };
 
+/**
+ * @brief Per-run scratch for centrality values computed once per SSSP source, before the
+ * parallel per-source loop existed to own its own copy (see ThreadLocalState::pss for the
+ * per-thread equivalent used inside runAllSources()'s blockingMap lambda).
+ *
+ * Retained as a distinct type from CentralityScratchFinalize because these fields are
+ * meaningful only during the single-source SSSP pass itself, not the finalize/aggregation
+ * phase that runs once after all sources are done.
+ */
 struct CentralityScratchSSSP
 {
     // Per-source values computed inside the SSSP loop
@@ -72,6 +89,13 @@ struct CentralityScratchSSSP
     H_f_i::const_iterator hfi;
 };
 
+/**
+ * @brief Scratch for the finalize() phase — the single-threaded pass that runs once after
+ * runAllSources() completes, scanning every vertex to compute connectivity, group-level
+ * aggregates, and normalised (standardised) centrality scores from the raw per-vertex values
+ * runAllSources() already wrote. Distinct from CentralityScratchSSSP because these values are
+ * only meaningful for this one post-loop scan, not during the per-source SSSP pass itself.
+ */
 struct CentralityScratchFinalize
 {
     // Values used while scanning vertices and aggregating
@@ -136,6 +160,9 @@ void DistanceEngine::compute(const bool computeCentralities,
     CentralityScratchSSSP csssp;
     CentralityScratchFinalize csfin;
 
+    // Routes progress/status/cancel notifications back to graph's Qt signals (see
+    // graph_distance_progress_sink.h) - keeps this file free of any direct Qt-signal
+    // dependency of its own.
     GraphDistanceProgressSink sink(graph);
 
     // ---- Phase 0/Init (includes E==0 handling) ----

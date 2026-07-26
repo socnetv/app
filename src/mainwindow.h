@@ -30,6 +30,7 @@
 #include <QStack>
 #include <QThread>
 #include <QNetworkReply>
+#include <functional>
 
 // Allows to use QT_CHARTS namespace directives (see below)
 #include <QtCharts/QChartGlobal>
@@ -123,6 +124,10 @@ public:
     void slotStyleSheetByName(const QString &sheetFileName);
 
     void polishProgressDialog(QProgressDialog* dialog);
+
+    void runGraphOperationAsync(std::function<void()> operation,
+                                const QString &waitMessage,
+                                const QString &doneMessage = QString());
 
     void initGraph();
     void terminateThreads(const QString &reason);
