@@ -26,6 +26,7 @@
 #include <QTextStream>
 #include <QThread>
 #include <QStack>
+#include <functional>
 
 
 #include "global.h"
@@ -1255,6 +1256,8 @@ protected:
     void progressCreate(int max, const QString &msg);
     void progressUpdate(int value);
     void progressFinish();
+
+    void runOnGuiThread(std::function<void()> fn);
 
     void uiProminenceDistributionSpline(const QVector<QPair<qreal, qreal>> &points,
                                         qreal min, qreal max,

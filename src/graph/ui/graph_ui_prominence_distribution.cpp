@@ -37,6 +37,10 @@ void Graph::uiProminenceDistributionSpline(const QVector<QPair<qreal, qreal>> &p
                                            const QString &seriesName,
                                            const QString &distImageFileName)
 {
+    // Guarantees GUI-thread execution regardless of the calling thread - this function
+    // constructs real QtCharts objects and (for PNG export) grabs a QChartView, both of which
+    // are only safe on the main/GUI thread. See Graph::runOnGuiThread() for why this is needed.
+    runOnGuiThread([this, points, min, max, minF, maxF, seriesName, distImageFileName]() {
     qDebug() << "Computing prominence distribution as spline chart...";
 
     auto *series = new QLineSeries();
@@ -106,6 +110,7 @@ void Graph::uiProminenceDistributionSpline(const QVector<QPair<qreal, qreal>> &p
 
     qDebug() << "emitting signal to MW update the prominence distribution spline chart";
     emit signalPromininenceDistributionChartUpdate(series, axisX, min, max, axisY, minF, maxF);
+    });
 }
 
 void Graph::uiProminenceDistributionArea(const QVector<QPair<qreal, qreal>> &points,
@@ -116,6 +121,9 @@ void Graph::uiProminenceDistributionArea(const QVector<QPair<qreal, qreal>> &poi
                                          const QString &name,
                                          const QString &distImageFileName)
 {
+    // Guarantees GUI-thread execution regardless of the calling thread - see
+    // Graph::runOnGuiThread() and the same note in uiProminenceDistributionSpline() above.
+    runOnGuiThread([this, points, min, max, minF, maxF, name, distImageFileName]() {
     QAreaSeries *series = new QAreaSeries();
     series->setName(name);
 
@@ -196,6 +204,7 @@ void Graph::uiProminenceDistributionArea(const QVector<QPair<qreal, qreal>> &poi
 
     qDebug() << "emitting signal to MW update the prominence distribution area chart";
     emit signalPromininenceDistributionChartUpdate(series, axisX, min, max, axisY, minF, maxF);
+    });
 }
 
 void Graph::uiProminenceDistributionBars(const QStringList &categories,
@@ -207,6 +216,9 @@ void Graph::uiProminenceDistributionBars(const QStringList &categories,
                                          const QString &name,
                                          const QString &distImageFileName)
 {
+    // Guarantees GUI-thread execution regardless of the calling thread - see
+    // Graph::runOnGuiThread() and the same note in uiProminenceDistributionSpline() above.
+    runOnGuiThread([this, categories, frequencies, min, max, minF, maxF, name, distImageFileName]() {
     qDebug() << "Computing prominence distribution as bar chart (UI layer)...";
 
     auto *series = new QBarSeries();
@@ -295,4 +307,5 @@ void Graph::uiProminenceDistributionBars(const QStringList &categories,
     emit signalPromininenceDistributionChartUpdate(series,
                                                    axisX, min, max,
                                                    axisY, minF, maxF);
+    });
 }

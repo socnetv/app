@@ -177,6 +177,21 @@ All QtCharts construction removed from algorithm slice.
 
 Golden and benchmark parity confirmed.
 
+> **Gap found and closed during WS3 (#254, 2026-07):** F4 separated *who* constructs QtCharts
+> objects (only `src/graph/ui/` — verified true, confirmed by a full `src/graph/` sweep during
+> the #254 fix) but not *which thread* that code runs on. Since `graph_ui_prominence_distribution.cpp`'s
+> functions are plain `Graph::` methods (same QObject, same thread affinity as `Graph` itself),
+> they ran on whichever thread called them — which was always the GUI thread, because every
+> `MainWindow` → `Graph` call was (incorrectly) a direct synchronous call, not a real cross-thread
+> dispatch. F4 was safe by accident, not by design. Once #254 made `Graph`'s slow methods actually
+> execute on `graphThread` (its real, intended thread affinity), this UI façade code started
+> constructing QtCharts objects off the GUI thread — undefined behaviour, causing a real crash.
+> Fixed with `Graph::runOnGuiThread(std::function<void()>)` (`graph_ui_facade.cpp`): the three
+> `uiProminenceDistribution{Spline,Area,Bars}()` functions now wrap their entire body in it,
+> guaranteeing GUI-thread execution regardless of the calling thread. This is now the standard
+> pattern for any future UI façade code that constructs real Qt GUI objects — see
+> `roadmap_ws3_architecture_performance.md`'s #254 section for the full writeup.
+
 ---
 
 ## Architectural State After WS2
