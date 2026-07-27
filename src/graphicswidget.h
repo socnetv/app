@@ -49,6 +49,17 @@ public:
 
     void clear();
 
+    /**
+     * @brief True while a bulk clear() is in progress; false otherwise.
+     *
+     * GraphicsNode/GraphicsEdge destructors check this to skip per-item unlinking work
+     * (edge-list removal from neighbours, individual scene/hash removal) that's pointless
+     * during a bulk teardown - scene()->clear() destroys every item anyway, so proactively
+     * unlinking each one from its neighbours' edge lists is pure wasted O(degree) work per
+     * edge, repeated across the whole network. See #260.
+     */
+    bool isClearing() const { return m_isClearing; }
+
     quint64 edgeKey(const int &v1,
                      const int &v2,
                      const int &relation=-1);
@@ -264,6 +275,7 @@ private:
     bool m_viewCenterValid;
     bool m_isZooming;
     bool m_isTransformationActive;
+    bool m_isClearing;
     bool hasDoubleClickedNode, clickedEdgeExists;
     bool m_nodeNumbersInside, m_nodeNumberVisibility, m_nodeLabelVisibility;
     bool m_edgeHighlighting;

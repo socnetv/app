@@ -187,9 +187,15 @@ int GraphicsEdge::arrowSize() const {
 
 /**
  * @brief Removes any references to this edge in source and target nodes.
+ *
+ * Skipped during a bulk GraphicsWidget::clear(): source and target nodes are being
+ * destroyed too, so unlinking this edge from their (std::list-backed, O(n) to erase from)
+ * edge lists is wasted work. See #260.
  */
 void GraphicsEdge::removeRefs(){
 //    qDebug() << "Removing edge refs...";
+    if (graphicsWidget->isClearing())
+        return;
     source->removeOutEdge(this);
     target->removeInEdge(this);
 }

@@ -68,6 +68,25 @@ Phase-1-style depth (concrete approach + completion criteria) yet.
   of the fixes above — worth revisiting once the render-perf kernel exists to measure it properly
   instead of guessing.
 
+- **`scene()->clear()` destructor cascade — fixed.** `GraphicsNode::~GraphicsNode()` used to
+  manually `delete` every one of its edges before self-removing, and each
+  `GraphicsEdge::~GraphicsEdge()` then did its own individual `removeRefs()` (O(n) `std::list`
+  scan to unlink from the *other* endpoint's edge list) plus `graphicsWidget->removeItem(this)`
+  bookkeeping — k cascading individual calls per node instead of one bulk pass. Fixed by adding
+  `GraphicsWidget::isClearing()` (set for the duration of `GraphicsWidget::clear()`); when set,
+  both the node destructor's manual edge-deletion loop and `GraphicsEdge::removeRefs()` are
+  skipped entirely, since `QGraphicsScene::clear()` already tears down every remaining item itself
+  (`while (!topLevelItems.isEmpty()) delete topLevelItems.first()`, re-querying the live list each
+  iteration) — each item still gets destroyed exactly once, just directly by that loop instead of
+  being pre-empted by a neighbour.
+  **Important scoping note:** this was investigated under #260 ("clearing a large network is
+  slow"), but turned out not to be the dominant cost — live profiling (`sample` against the actual
+  process) showed the real driver was a MainWindow signal-wiring bug unrelated to GraphicsWidget/
+  canvas architecture (a `QComboBox::setCurrentIndex()` call in `slotNetworkChanged()` missing a
+  `blockSignals()` guard, re-entering `slotEditEdgeMode()` and forcing a synchronous full-canvas
+  repaint while the old network was still fully rendered). That fix lives outside WS10's scope —
+  see #260 directly, not this roadmap, for its status.
+
 **Before picking any of these up:** if the canvas still feels slow, the most useful next step is
 probably naming *which* interaction feels slow (initial load/paint of a large network? panning?
 dragging a selection? zooming?) — that determines which item above is actually worth doing first,

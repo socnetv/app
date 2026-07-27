@@ -62,6 +62,7 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         hasDoubleClickedNode=false;
         m_isTransformationActive = false;
         m_isZooming = false;
+        m_isClearing = false;
         m_viewCenterValid = false;
         m_nodeLabel="";
 
@@ -231,7 +232,13 @@ void GraphicsWidget::clear() {
     m_selectedNodes.clear();
     m_selectedEdges.clear();
     qDebug() << "Clearing GW scene...";
+    // scene()->clear() destroys every item unconditionally, so while it runs there is
+    // no point in GraphicsNode/GraphicsEdge destructors also unlinking themselves from
+    // their neighbours' edge lists - that's O(degree) wasted work per edge, repeated
+    // across the whole network. See #260.
+    m_isClearing = true;
     scene()->clear();
+    m_isClearing = false;
     // scene()->clear() already deleted any guide items; just drop the now-dangling
     // pointers rather than calling clearGuides(), which would delete them again.
     m_guides.clear();

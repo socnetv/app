@@ -893,18 +893,26 @@ GraphicsNode::~GraphicsNode(){
 //                << "- inEdgeList:" << inEdgeList.size()
 //                << "- outEdgeList: " << outEdgeList.size();
 
-    // Temp copy in edges
-    list<GraphicsEdge*> temp_inEdgeList = inEdgeList;
-    // Loop over the temp list and call delete for each edge
-    // that will call the edge destructor
-    for (GraphicsEdge *edge: temp_inEdgeList) {
-        delete edge;
-    }
+    // Skipped during a bulk GraphicsWidget::clear(): every edge is itself a top-level
+    // scene item, so scene()->clear() destroys it directly regardless of what happens
+    // here. Manually deleting it early would leave a dangling pointer in the *other*
+    // endpoint's edge list (GraphicsEdge::removeRefs() is a no-op while isClearing(),
+    // for the same reason), causing that node's destructor to double-delete it later.
+    // See #260.
+    if (!graphicsWidget->isClearing()) {
+        // Temp copy in edges
+        list<GraphicsEdge*> temp_inEdgeList = inEdgeList;
+        // Loop over the temp list and call delete for each edge
+        // that will call the edge destructor
+        for (GraphicsEdge *edge: temp_inEdgeList) {
+            delete edge;
+        }
 
-    // Temp copy out edges
-    list<GraphicsEdge*> temp_outEdgeList = outEdgeList;
-    for (GraphicsEdge *edge: temp_outEdgeList) {
-        delete edge;
+        // Temp copy out edges
+        list<GraphicsEdge*> temp_outEdgeList = outEdgeList;
+        for (GraphicsEdge *edge: temp_outEdgeList) {
+            delete edge;
+        }
     }
 
     if ( m_hasNumber )
@@ -914,10 +922,7 @@ GraphicsNode::~GraphicsNode(){
         deleteLabel();
 
     inEdgeList.clear();
-    temp_inEdgeList.clear();
-
     outEdgeList.clear();
-    temp_outEdgeList.clear();
 //    qDebug() << "node" << nodeNumber() << "hiding node...";
     this->hide();
 //    qDebug() << "node" << nodeNumber() << "calling GW removeItem...";

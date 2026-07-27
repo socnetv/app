@@ -90,6 +90,16 @@ All notable changes to this project are documented in this file.
     plus a progress dialog with a Cancel button) instead of appearing to
     hang.
 
+  - **Reduced canvas-clear overhead on large networks** (#260, partial):
+    clearing a large network (loading a new file over one already displayed,
+    or File → New) triggered a cascade of individual per-edge unlinking
+    calls during node/edge destruction instead of one bulk teardown.
+    `GraphicsWidget::clear()` now signals that a bulk clear is in progress
+    so node/edge destructors can skip that redundant work. This measurably
+    reduces destructor cost but was not the dominant cause of the slowdown
+    on very large networks (2000+ nodes) — #260 stays open for the
+    remaining cause.
+
 ### Maintenance
 
   - WS3 roadmap renamed from "Domain Model Split" to **"Architecture &
