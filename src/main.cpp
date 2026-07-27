@@ -108,6 +108,19 @@ int main(int argc, char *argv[])
                                        QCoreApplication::translate("main", "level"));
     parser.addOption(showDebugOption);
 
+    // An option to load the startup file with a specific text codec, bypassing the
+    // "Preview file & Choose Encoding" dialog. See #261.
+    QCommandLineOption encodingOption(QStringList() << "encoding",
+                                      QCoreApplication::translate("main", "Load the startup <file> with this text encoding (e.g. 'UTF-8'), bypassing the encoding preview dialog."),
+                                      QCoreApplication::translate("main", "encoding"));
+    parser.addOption(encodingOption);
+
+    // An option to run a plain-text interactive script after startup. See #261.
+    QCommandLineOption interactiveScriptOption(QStringList() << "interactive-script",
+                                               QCoreApplication::translate("main", "Run the interactive script at <path> after startup. One command per line: 'delay X' (wait X seconds) or 'new' (File > New)."),
+                                               QCoreApplication::translate("main", "path"));
+    parser.addOption(interactiveScriptOption);
+
     // Process the actual command line arguments given by the user
     parser.process(app);
 
@@ -136,10 +149,14 @@ int main(int argc, char *argv[])
         }
     }
 
+    QString encodingOverride = parser.value(encodingOption);
+    QString interactiveScriptPath = parser.value(interactiveScriptOption);
+
     //
     // Create our MainWindow and exec the app to enter the main event loop.
     //
-    MainWindow *socnetv = new MainWindow(fileName, showProgress, showMaximized, showFullScreen, debugLevel);
+    MainWindow *socnetv = new MainWindow(fileName, showProgress, showMaximized, showFullScreen, debugLevel,
+                                         encodingOverride, interactiveScriptPath);
 
     // Show the application
     socnetv->show();

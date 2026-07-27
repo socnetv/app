@@ -117,7 +117,8 @@ class MainWindow : public QMainWindow
 
 public:
 
-    MainWindow(const QString &m_fileName=QString(), const bool &forceProgress=false, const bool &maximized=false, const bool &fullscreen=false, const int &debugLevel=0);
+    MainWindow(const QString &m_fileName=QString(), const bool &forceProgress=false, const bool &maximized=false, const bool &fullscreen=false, const int &debugLevel=0,
+              const QString &encodingOverride=QString(), const QString &interactiveScriptPath=QString());
     ~MainWindow();
 
     void slotOptionsCustomStylesheet(const bool checked);
@@ -147,6 +148,9 @@ public:
     void saveSettings();
 
     void initApp();
+
+    void runInteractiveScript(const QString &scriptPath);
+    void processNextInteractiveCommand();
 
     void initComboBoxes();
 
@@ -615,6 +619,9 @@ private:
 
     QString fileName, previous_fileName, fileNameNoPath, progressMsg;
     QString initTextCodecName, userSelectedCodecName;
+    QString m_encodingOverride;
+    QStringList m_interactiveScriptLines;
+    int m_interactiveScriptIndex;
     QString settingsFilePath, settingsDir ;
     QStringList fortuneCookie;
     QStringList tempFileNameNoPath, tips;

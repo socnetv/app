@@ -95,8 +95,10 @@
  * @param fullscreen
  * @param debugLevel
  */
-MainWindow::MainWindow(const QString &m_fileName, const bool &forceProgress, const bool &maximized, const bool &fullscreen, const int &debugLevel)
+MainWindow::MainWindow(const QString &m_fileName, const bool &forceProgress, const bool &maximized, const bool &fullscreen, const int &debugLevel,
+                       const QString &encodingOverride, const QString &interactiveScriptPath)
 {
+    m_encodingOverride = encodingOverride;
 
     qDebug() << "=========== MainWindow (MW) constructor starting on thread:" << thread();
 
@@ -239,6 +241,11 @@ MainWindow::MainWindow(const QString &m_fileName, const bool &forceProgress, con
     QString welcomeMsg = tr("Welcome to %1, version %2").arg(qApp->applicationName(), VERSION);
 
     statusMessage(welcomeMsg);
+
+    if (!interactiveScriptPath.isEmpty())
+    {
+        runInteractiveScript(interactiveScriptPath);
+    }
 
     qDebug() << "@@@@ MW Constructor finished, on thread:" << thread();
 }
@@ -5646,6 +5653,76 @@ void MainWindow::initApp()
 }
 
 /**
+ * @brief Loads a plain-text interactive script and starts executing it. See #261.
+ *
+ * One command per line: 'delay X' (wait X seconds) or 'new' (File > New). Commands run one at a
+ * time via processNextInteractiveCommand(), each dispatched through the real Qt event loop so the
+ * script behaves like an actual sequence of user actions rather than a tight synchronous loop.
+ *
+ * @param scriptPath
+ */
+void MainWindow::runInteractiveScript(const QString &scriptPath)
+{
+    QFile file(scriptPath);
+    if (!file.open(QFile::ReadOnly | QFile::Text))
+    {
+        qWarning() << "Cannot read interactive script:" << scriptPath << file.errorString();
+        return;
+    }
+    QTextStream in(&file);
+    m_interactiveScriptLines = in.readAll().split('\n');
+    m_interactiveScriptIndex = 0;
+    qDebug() << "Loaded interactive script:" << scriptPath
+             << "-" << m_interactiveScriptLines.size() << "line(s)";
+    QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+}
+
+/**
+ * @brief Executes one line of the interactive script, then schedules the next. See #261.
+ */
+void MainWindow::processNextInteractiveCommand()
+{
+    if (m_interactiveScriptIndex >= m_interactiveScriptLines.size())
+    {
+        qDebug() << "Interactive script finished.";
+        return;
+    }
+    const QString line = m_interactiveScriptLines.at(m_interactiveScriptIndex).trimmed();
+    ++m_interactiveScriptIndex;
+
+    if (line.isEmpty() || line.startsWith('#'))
+    {
+        processNextInteractiveCommand();
+        return;
+    }
+
+    qDebug() << "Interactive script command:" << line;
+
+    if (line == "new")
+    {
+        slotNetworkNew();
+        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+    }
+    else if (line.startsWith("delay "))
+    {
+        bool ok = false;
+        const double seconds = line.mid(6).trimmed().toDouble(&ok);
+        if (!ok || seconds < 0)
+        {
+            qWarning() << "Malformed 'delay' command, skipping:" << line;
+            processNextInteractiveCommand();
+            return;
+        }
+        QTimer::singleShot(qRound(seconds * 1000), this, &MainWindow::processNextInteractiveCommand);
+    }
+    else
+    {
+        qWarning() << "Unknown interactive script command, skipping:" << line;
+        processNextInteractiveCommand();
+    }
+}
+
+/**
  * @brief Initializes combo boxes in the MW
  */
 void MainWindow::initComboBoxes()
@@ -6913,7 +6990,13 @@ bool MainWindow::slotNetworkClose()
 
     statusMessage(tr("Closing network file..."));
 
-    if (!activeGraph->isSaved())
+    // An interactive script has no one to click the save-confirmation dialog below - treat
+    // unsaved changes as discarded so the script can run unattended. See #261.
+    if (!activeGraph->isSaved() && !m_interactiveScriptLines.isEmpty())
+    {
+        qDebug() << "Interactive script active - discarding unsaved changes without prompting.";
+    }
+    else if (!activeGraph->isSaved())
     {
         switch (
             slotHelpMessageToUser(
@@ -7133,6 +7216,12 @@ bool MainWindow::slotNetworkFilePreview(const QString &m_fileName,
     {
         statusMessage(tr("No file selected."));
         return false;
+    }
+    if (!m_encodingOverride.isEmpty())
+    {
+        qDebug() << "Encoding override set via --encoding, skipping preview dialog:" << m_encodingOverride;
+        slotNetworkFileLoad(m_fileName, m_encodingOverride, fileFormat);
+        return true;
     }
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     QFile file(m_fileName);
