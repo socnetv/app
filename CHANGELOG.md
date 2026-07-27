@@ -90,15 +90,18 @@ All notable changes to this project are documented in this file.
     plus a progress dialog with a Cancel button) instead of appearing to
     hang.
 
-  - **Reduced canvas-clear overhead on large networks** (#260, partial):
-    clearing a large network (loading a new file over one already displayed,
-    or File → New) triggered a cascade of individual per-edge unlinking
-    calls during node/edge destruction instead of one bulk teardown.
-    `GraphicsWidget::clear()` now signals that a bulk clear is in progress
-    so node/edge destructors can skip that redundant work. This measurably
-    reduces destructor cost but was not the dominant cause of the slowdown
-    on very large networks (2000+ nodes) — #260 stays open for the
-    remaining cause.
+  - **Canvas no longer takes 30+ seconds to clear on large networks**
+    (#260): clearing a large network (loading a new file over one already
+    displayed, or File → New) was slow — confirmed 30s to over a minute on
+    a 2000-node/40,000-edge network. Two causes, both fixed: (1)
+    `GraphicsNode`/`GraphicsEdge` destructors did a cascade of individual
+    per-edge unlinking calls during node/edge destruction instead of one
+    bulk teardown — `GraphicsWidget::clear()` now signals that a bulk clear
+    is in progress so those destructors can skip the redundant work; (2)
+    the dominant cost — a `QComboBox` state-sync call re-entering an
+    edge-mode change handler and forcing a synchronous full-canvas repaint
+    of the still-fully-rendered old network — is now correctly guarded
+    against re-entry.
 
 ### Maintenance
 

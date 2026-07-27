@@ -9352,7 +9352,13 @@ void MainWindow::slotNetworkChanged(const bool &directed,
 
         if (toolBoxEditEdgeModeSelect->currentIndex() == 0)
         {
+            // Block signals: this is a UI-state sync, not a user edit-mode change. Without this,
+            // setCurrentIndex() re-enters slotEditEdgeMode(), which calls setDirected/setUndirected
+            // (mutating the graph) and triggers optionsEdgeArrowsAct->trigger(), which forces a
+            // synchronous full-canvas repaint via statusMessage(). See #260.
+            toolBoxEditEdgeModeSelect->blockSignals(true);
             toolBoxEditEdgeModeSelect->setCurrentIndex(1);
+            toolBoxEditEdgeModeSelect->blockSignals(false);
         }
         rightPanelNetworkTypeLCD->setText("Undirected");
 
@@ -9380,7 +9386,10 @@ void MainWindow::slotNetworkChanged(const bool &directed,
         rightPanelNetworkTypeLCD->setText("Directed");
         if (toolBoxEditEdgeModeSelect->currentIndex() == 1)
         {
+            // See the matching comment in the "undirected" branch above.
+            toolBoxEditEdgeModeSelect->blockSignals(true);
             toolBoxEditEdgeModeSelect->setCurrentIndex(0);
+            toolBoxEditEdgeModeSelect->blockSignals(false);
         }
         rightPanelEdgesLabel->setText(tr("Arcs:"));
 
