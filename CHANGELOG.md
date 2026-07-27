@@ -74,19 +74,21 @@ All notable changes to this project are documented in this file.
     substantially larger than the viewport; content close to viewport size
     uses the same tight, margin-free 100% fit as Reset.
 
-  - **Layouts no longer freeze the app on large networks** (#254, stage 1 of 2):
-    running a layout by centrality/prestige index (Radial, On Levels, Node
-    Size, or Node Color by prominence index) or a force-directed layout
-    (Eades, Fruchterman-Reingold, Kamada-Kawai) made the whole application
+  - **Layouts and analysis reports no longer freeze the app on large
+    networks** (#254): running a layout by centrality/prestige index
+    (Radial, On Levels, Node Size, or Node Color by prominence index), a
+    force-directed layout (Eades, Fruchterman-Reingold, Kamada-Kawai), or
+    any weighted-centrality/distance report or matrix under the **Analyze**
+    menu (Closeness, Betweenness, Stress, Power, Eccentricity, the distance
+    and geodesics matrices, similarity/Pearson reports, diameter, average
+    distance, geodesic distribution, and more) made the whole application
     completely unresponsive for the entire computation — unable to repaint,
     receive input, or even respond to window-manager requests — on large
     networks or slow indices (e.g. Betweenness Centrality, Information
-    Centrality). The app now stays fully responsive during these layouts,
+    Centrality). The app now stays fully responsive during all of these,
     showing a "please wait" indicator (status bar message and busy cursor,
     plus a progress dialog with a Cancel button) instead of appearing to
-    hang. Remaining report/analysis actions under the **Analyze** menu are
-    not yet covered by this fix (tracked as stage 2 of #254) and will still
-    block the app until that lands.
+    hang.
 
 ### Maintenance
 

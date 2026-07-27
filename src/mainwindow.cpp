@@ -27,6 +27,7 @@
 #include <QKeySequence>
 #include <QDateTime>
 #include <QSignalBlocker>
+#include <memory>
 
 #include <QtSvg> // for SVG icons
 #include <QLoggingCategory>
@@ -9503,11 +9504,19 @@ void MainWindow::slotEditNodeFind(const QStringList &nodeList,
 
         indexType = activeGraph->getProminenceIndexByName(indexStr);
 
-        activeGraph->vertexFindByIndexScore(indexType,
-                                            nodeList,
-                                            optionsEdgeWeightConsiderAct->isChecked(),
-                                            inverseWeights,
-                                            editFilterNodesIsolatesAct->isChecked());
+        const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+        const bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
+        const bool inverseWeightsFinal = inverseWeights;
+
+        runGraphOperationAsync(
+            [this, indexType, nodeList, considerWeights, inverseWeightsFinal, dropIsolates]() {
+                activeGraph->vertexFindByIndexScore(indexType,
+                                                    nodeList,
+                                                    considerWeights,
+                                                    inverseWeightsFinal,
+                                                    dropIsolates);
+            },
+            tr("Finding nodes by index score. Please wait..."));
     }
 
     return;
@@ -12971,26 +12980,31 @@ void MainWindow::slotAnalyzeMatrixAdjacencyInverse()
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-inverse-" + dateTime + ".html";
 
-    statusMessage(tr("Inverting adjacency matrix. Please wait..."));
+    auto success = std::make_shared<bool>(false);
 
-    if (!activeGraph->writeMatrix(fn, MATRIX_ADJACENCY_INVERSE))
-    {
-        statusMessage(tr("Computation canceled."));
-        return;
-    }
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Inverse matrix saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, success]() {
+            *success = activeGraph->writeMatrix(fn, MATRIX_ADJACENCY_INVERSE);
+        },
+        tr("Inverting adjacency matrix. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+            {
+                statusMessage(tr("Computation canceled."));
+                return;
+            }
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Inverse matrix saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -13007,26 +13021,31 @@ void MainWindow::slotAnalyzeMatrixAdjacencyTranspose()
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-transpose-" + dateTime + ".html";
 
-    statusMessage(tr("Transposing adjacency matrix. Please wait..."));
+    auto success = std::make_shared<bool>(false);
 
-    if (!activeGraph->writeMatrix(fn, MATRIX_ADJACENCY_TRANSPOSE))
-    {
-        statusMessage(tr("Computation canceled."));
-        return;
-    }
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Transpose adjacency matrix saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, success]() {
+            *success = activeGraph->writeMatrix(fn, MATRIX_ADJACENCY_TRANSPOSE);
+        },
+        tr("Transposing adjacency matrix. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+            {
+                statusMessage(tr("Computation canceled."));
+                return;
+            }
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Transpose adjacency matrix saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -13043,26 +13062,31 @@ void MainWindow::slotAnalyzeMatrixAdjacencyCocitation()
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-cocitation-" + dateTime + ".html";
 
-    statusMessage(tr("Computing Cocitation matrix. Please wait..."));
+    auto success = std::make_shared<bool>(false);
 
-    if (!activeGraph->writeMatrix(fn, MATRIX_COCITATION))
-    {
-        statusMessage(tr("Computation canceled."));
-        return;
-    }
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Cocitation matrix saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, success]() {
+            *success = activeGraph->writeMatrix(fn, MATRIX_COCITATION);
+        },
+        tr("Computing Cocitation matrix. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+            {
+                statusMessage(tr("Computation canceled."));
+                return;
+            }
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Cocitation matrix saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -13079,26 +13103,31 @@ void MainWindow::slotAnalyzeMatrixDegree()
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-degree-" + dateTime + ".html";
 
-    statusMessage(tr("Computing Degree matrix. Please wait..."));
+    auto success = std::make_shared<bool>(false);
 
-    if (!activeGraph->writeMatrix(fn, MATRIX_DEGREE))
-    {
-        statusMessage(tr("Computation canceled."));
-        return;
-    }
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Degree matrix saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, success]() {
+            *success = activeGraph->writeMatrix(fn, MATRIX_DEGREE);
+        },
+        tr("Computing Degree matrix. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+            {
+                statusMessage(tr("Computation canceled."));
+                return;
+            }
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Degree matrix saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -13117,26 +13146,31 @@ void MainWindow::slotAnalyzeMatrixLaplacian()
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-laplacian-" + dateTime + ".html";
 
-    statusMessage(tr("Computing Laplacian matrix. Please wait..."));
+    auto success = std::make_shared<bool>(false);
 
-    if (!activeGraph->writeMatrix(fn, MATRIX_LAPLACIAN))
-    {
-        statusMessage(tr("Computation canceled."));
-        return;
-    }
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Laplacian matrix saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, success]() {
+            *success = activeGraph->writeMatrix(fn, MATRIX_LAPLACIAN);
+        },
+        tr("Computing Laplacian matrix. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+            {
+                statusMessage(tr("Computation canceled."));
+                return;
+            }
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Laplacian matrix saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -13290,57 +13324,64 @@ void MainWindow::slotAnalyzeDistance()
 
     askAboutEdgeWeights();
 
-    int distanceGeodesic = activeGraph->graphDistanceGeodesic(
-        sourceNum, targetNum,
-        optionsEdgeWeightConsiderAct->isChecked(),
-        inverseWeights);
+    const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    const bool inverseWeightsFinal = inverseWeights;
+    auto distanceGeodesic = std::make_shared<int>(0);
 
-    if (distanceGeodesic > 0 && distanceGeodesic < RAND_MAX)
-    {
-        qDebug() << "geodesic distance" << sourceNum << "->" << targetNum << "=" << distanceGeodesic;
+    runGraphOperationAsync(
+        [this, sourceNum, targetNum, considerWeights, inverseWeightsFinal, distanceGeodesic]() {
+            *distanceGeodesic = activeGraph->graphDistanceGeodesic(
+                sourceNum, targetNum, considerWeights, inverseWeightsFinal);
+        },
+        tr("Computing geodesic distance. Please wait..."),
+        [this, sourceNum, targetNum, considerWeights, inverseWeightsFinal, distanceGeodesic]() {
+            if (*distanceGeodesic > 0 && *distanceGeodesic < RAND_MAX)
+            {
+                qDebug() << "geodesic distance" << sourceNum << "->" << targetNum << "=" << *distanceGeodesic;
 
-        // Reconstruct the actual shortest path so the user sees the intermediate nodes.
-        const QList<int> path = activeGraph->graphGeodesicShortestPath(
-            sourceNum, targetNum,
-            optionsEdgeWeightConsiderAct->isChecked(),
-            inverseWeights);
+                // Reconstruct the actual shortest path so the user sees the intermediate nodes.
+                // Cheap regardless of network size (single-source BFS/Dijkstra, not the full
+                // APSP the call above just triggered) - safe to run synchronously here.
+                const QList<int> path = activeGraph->graphGeodesicShortestPath(
+                    sourceNum, targetNum, considerWeights, inverseWeightsFinal);
 
-        // Format the path as "v1 → v2 → … → vN" using node labels where available.
-        QString pathStr;
-        if (path.size() >= 2) {
-            for (int i = 0; i < path.size(); ++i) {
-                if (i > 0) pathStr += " \xE2\x86\x92 ";   // → (UTF-8 right arrow)
-                const QString lbl = activeGraph->vertexLabel(path[i]).trimmed();
-                pathStr += lbl.isEmpty() ? QString::number(path[i]) : lbl;
+                // Format the path as "v1 → v2 → … → vN" using node labels where available.
+                QString pathStr;
+                if (path.size() >= 2) {
+                    for (int i = 0; i < path.size(); ++i) {
+                        if (i > 0) pathStr += " \xE2\x86\x92 ";   // → (UTF-8 right arrow)
+                        const QString lbl = activeGraph->vertexLabel(path[i]).trimmed();
+                        pathStr += lbl.isEmpty() ? QString::number(path[i]) : lbl;
+                    }
+                }
+
+                slotHelpMessageToUser(
+                    USER_MSG_INFO,
+                    tr("Geodesic Distance: %1").arg(*distanceGeodesic),
+                    tr("Geodesic Distance: %1").arg(*distanceGeodesic),
+                    tr("Nodes %1 and %2 are connected. The shortest path has length %3.\n\n"
+                       "Shortest path:\n%4")
+                        .arg(sourceNum)
+                        .arg(targetNum)
+                        .arg(*distanceGeodesic)
+                        .arg(pathStr.isEmpty() ? tr("(path unavailable)") : pathStr));
+
+                if (path.size() >= 2)
+                    graphicsWidget->selectPath(path);
             }
-        }
-
-        slotHelpMessageToUser(
-            USER_MSG_INFO,
-            tr("Geodesic Distance: %1").arg(distanceGeodesic),
-            tr("Geodesic Distance: %1").arg(distanceGeodesic),
-            tr("Nodes %1 and %2 are connected. The shortest path has length %3.\n\n"
-               "Shortest path:\n%4")
-                .arg(sourceNum)
-                .arg(targetNum)
-                .arg(distanceGeodesic)
-                .arg(pathStr.isEmpty() ? tr("(path unavailable)") : pathStr));
-
-        if (path.size() >= 2)
-            graphicsWidget->selectPath(path);
-    }
-    else
-    {
-        qDebug() << "geodesic distance" << sourceNum << "->" << targetNum << "is infinite.";
-        slotHelpMessageToUser(
-            USER_MSG_INFO,
-            tr("Geodesic Distance: %1").arg(QString("\xE2\x88\x9E")),
-            tr("Geodesic Distance: %1").arg(QString("\xE2\x88\x9E")),
-            tr("Nodes %1 and %2 are not connected. "
-               "In this case, their geodesic distance is considered to be infinite.")
-                .arg(sourceNum)
-                .arg(targetNum));
-    }
+            else
+            {
+                qDebug() << "geodesic distance" << sourceNum << "->" << targetNum << "is infinite.";
+                slotHelpMessageToUser(
+                    USER_MSG_INFO,
+                    tr("Geodesic Distance: %1").arg(QString("\xE2\x88\x9E")),
+                    tr("Geodesic Distance: %1").arg(QString("\xE2\x88\x9E")),
+                    tr("Nodes %1 and %2 are not connected. "
+                       "In this case, their geodesic distance is considered to be infinite.")
+                        .arg(sourceNum)
+                        .arg(targetNum));
+            }
+        });
 }
 
 /**
@@ -13360,29 +13401,35 @@ void MainWindow::slotAnalyzeMatrixDistances()
 
     askAboutEdgeWeights();
 
-    statusMessage(tr("Computing geodesic distances. Please wait..."));
+    const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    const bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
+    const bool inverseWeightsFinal = inverseWeights;
+    auto success = std::make_shared<bool>(false);
 
-    if (!activeGraph->writeMatrix(fn, MATRIX_DISTANCES,
-                                  optionsEdgeWeightConsiderAct->isChecked(),
-                                  inverseWeights,
-                                  editFilterNodesIsolatesAct->isChecked()))
-    {
-        statusMessage(tr("Computation canceled."));
-        return;
-    }
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Geodesic Distances matrix saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, success]() {
+            *success = activeGraph->writeMatrix(fn, MATRIX_DISTANCES,
+                                                considerWeights, inverseWeightsFinal, dropIsolates);
+        },
+        tr("Computing geodesic distances. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+            {
+                statusMessage(tr("Computation canceled."));
+                return;
+            }
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Geodesic Distances matrix saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -13404,29 +13451,35 @@ void MainWindow::slotAnalyzeMatrixGeodesics()
 
     askAboutEdgeWeights();
 
-    statusMessage(tr("Computing geodesics (number of shortest paths) for each pair. Please wait..."));
+    const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    const bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
+    const bool inverseWeightsFinal = inverseWeights;
+    auto success = std::make_shared<bool>(false);
 
-    if (!activeGraph->writeMatrix(fn, MATRIX_GEODESICS,
-                                  optionsEdgeWeightConsiderAct->isChecked(),
-                                  inverseWeights,
-                                  editFilterNodesIsolatesAct->isChecked()))
-    {
-        statusMessage(tr("Computation canceled."));
-        return;
-    }
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Geodesics Matrix saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, success]() {
+            *success = activeGraph->writeMatrix(fn, MATRIX_GEODESICS,
+                                                considerWeights, inverseWeightsFinal, dropIsolates);
+        },
+        tr("Computing geodesics (number of shortest paths) for each pair. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+            {
+                statusMessage(tr("Computation canceled."));
+                return;
+            }
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Geodesics Matrix saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -13442,51 +13495,58 @@ void MainWindow::slotAnalyzeDiameter()
 
     askAboutEdgeWeights();
 
-    statusMessage(tr("Computing graph diameter. Please wait..."));
+    const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    const bool inverseWeightsFinal = inverseWeights;
+    auto netDiameter = std::make_shared<int>(0);
+    auto isWeighted = std::make_shared<bool>(false);
 
-    int netDiameter = activeGraph->graphDiameter(
-        optionsEdgeWeightConsiderAct->isChecked(),
-        inverseWeights);
-
-    if (activeGraph->isWeighted())
-    {
-        if (optionsEdgeWeightConsiderAct->isChecked())
-        {
-            slotHelpMessageToUser(
-                USER_MSG_INFO,
-                tr("Network diameter computed."),
-                tr("Network diameter computed. \n\n"
-                   "D = %1")
-                    .arg(netDiameter),
-                tr("The diameter of a network is the maximum geodesic distance "
-                   "(maximum shortest path length) between any two nodes.\n\n"
-                   "Note, since this is a weighted network, "
-                   "the diameter can be greater than N."));
-        }
-        else
-        {
-            slotHelpMessageToUser(
-                USER_MSG_INFO,
-                tr("Network diameter computed."),
-                tr("Network diameter computed. \n\n"
-                   "D = %1")
-                    .arg(netDiameter),
-                tr("The diameter of a network is the maximum geodesic distance "
-                   "(maximum shortest path length) between any two nodes.\n\n"
-                   "Note, edge weights were disregarded during the computation. "
-                   "This is the diameter of the corresponding network without weights."));
-        }
-    }
-    else
-        slotHelpMessageToUser(
-            USER_MSG_INFO,
-            tr("Network diameter computed."),
-            tr("Network diameter computed. \n\n"
-               "D = %1")
-                .arg(netDiameter),
-            tr("The diameter of a network is the maximum geodesic distance "
-               "(maximum shortest path length) between any two nodes.\n\n"
-               "Note, since this is a non-weighted network, the diameter is always smaller than N-1."));
+    runGraphOperationAsync(
+        [this, considerWeights, inverseWeightsFinal, netDiameter, isWeighted]() {
+            *netDiameter = activeGraph->graphDiameter(considerWeights, inverseWeightsFinal);
+            *isWeighted = activeGraph->isWeighted();
+        },
+        tr("Computing graph diameter. Please wait..."),
+        [this, considerWeights, netDiameter, isWeighted]() {
+            if (*isWeighted)
+            {
+                if (considerWeights)
+                {
+                    slotHelpMessageToUser(
+                        USER_MSG_INFO,
+                        tr("Network diameter computed."),
+                        tr("Network diameter computed. \n\n"
+                           "D = %1")
+                            .arg(*netDiameter),
+                        tr("The diameter of a network is the maximum geodesic distance "
+                           "(maximum shortest path length) between any two nodes.\n\n"
+                           "Note, since this is a weighted network, "
+                           "the diameter can be greater than N."));
+                }
+                else
+                {
+                    slotHelpMessageToUser(
+                        USER_MSG_INFO,
+                        tr("Network diameter computed."),
+                        tr("Network diameter computed. \n\n"
+                           "D = %1")
+                            .arg(*netDiameter),
+                        tr("The diameter of a network is the maximum geodesic distance "
+                           "(maximum shortest path length) between any two nodes.\n\n"
+                           "Note, edge weights were disregarded during the computation. "
+                           "This is the diameter of the corresponding network without weights."));
+                }
+            }
+            else
+                slotHelpMessageToUser(
+                    USER_MSG_INFO,
+                    tr("Network diameter computed."),
+                    tr("Network diameter computed. \n\n"
+                       "D = %1")
+                        .arg(*netDiameter),
+                    tr("The diameter of a network is the maximum geodesic distance "
+                       "(maximum shortest path length) between any two nodes.\n\n"
+                       "Note, since this is a non-weighted network, the diameter is always smaller than N-1."));
+        });
 }
 
 /**
@@ -13502,41 +13562,50 @@ void MainWindow::slotAnalyzeDistanceAverage()
 
     askAboutEdgeWeights();
 
-    statusMessage(tr("Computing Average Graph Distance. Please wait..."));
+    const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    const bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
+    const bool inverseWeightsFinal = inverseWeights;
+    auto averGraphDistance = std::make_shared<qreal>(0);
+    auto isConnected = std::make_shared<bool>(false);
 
-    qreal averGraphDistance = activeGraph->graphDistanceGeodesicAverage(
-        optionsEdgeWeightConsiderAct->isChecked(),
-        inverseWeights,
-        editFilterNodesIsolatesAct->isChecked());
-
-    bool isConnected = activeGraph->isConnected();
-
-    if (isConnected)
-    {
-        slotHelpMessageToUser(
-            USER_MSG_INFO,
-            tr("Average graph distance computed."),
-            tr("Average graph distance computed. \n\n"
-               "d = %1")
-                .arg(averGraphDistance),
-            tr("The average graph distance is the average length of shortest paths (geodesics) "
-               "for all possible pairs of nodes.\n\n"
-               "The average distance in this connected network "
-               "is the sum of pair-wise distances divided by N * (N - 1)."));
-    }
-    else
-    {
-        slotHelpMessageToUser(
-            USER_MSG_INFO,
-            tr("Average distance computed."),
-            tr("Average distance computed. \n\n"
-               "d = %1")
-                .arg(averGraphDistance),
-            tr("The average graph distance is the average length of shortest paths (geodesics) "
-               "for all possible pairs of nodes.\n\n"
-               "The average distance in this disconnected network "
-               "is the sum of pair-wise distances divided by the number of existing geodesics."));
-    }
+    runGraphOperationAsync(
+        [this, considerWeights, inverseWeightsFinal, dropIsolates, averGraphDistance, isConnected]() {
+            *averGraphDistance = activeGraph->graphDistanceGeodesicAverage(
+                considerWeights, inverseWeightsFinal, dropIsolates);
+            // Cheap here: graphDistanceGeodesicAverage() just triggered the full APSP with
+            // these exact params, so isConnected()'s cache hit is immediate - not a second
+            // expensive computation.
+            *isConnected = activeGraph->isConnected();
+        },
+        tr("Computing Average Graph Distance. Please wait..."),
+        [this, averGraphDistance, isConnected]() {
+            if (*isConnected)
+            {
+                slotHelpMessageToUser(
+                    USER_MSG_INFO,
+                    tr("Average graph distance computed."),
+                    tr("Average graph distance computed. \n\n"
+                       "d = %1")
+                        .arg(*averGraphDistance),
+                    tr("The average graph distance is the average length of shortest paths (geodesics) "
+                       "for all possible pairs of nodes.\n\n"
+                       "The average distance in this connected network "
+                       "is the sum of pair-wise distances divided by N * (N - 1)."));
+            }
+            else
+            {
+                slotHelpMessageToUser(
+                    USER_MSG_INFO,
+                    tr("Average distance computed."),
+                    tr("Average distance computed. \n\n"
+                       "d = %1")
+                        .arg(*averGraphDistance),
+                    tr("The average graph distance is the average length of shortest paths (geodesics) "
+                       "for all possible pairs of nodes.\n\n"
+                       "The average distance in this disconnected network "
+                       "is the sum of pair-wise distances divided by the number of existing geodesics."));
+            }
+        });
 }
 
 /**
@@ -13560,32 +13629,37 @@ void MainWindow::slotAnalyzeGeodesicDistribution()
 
     askAboutEdgeWeights();
 
-    statusMessage(tr("Computing geodesic distance distribution. Please wait..."));
-
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"]
                  + "socnetv-report-geodesic-distribution-" + dateTime + ".html";
 
-    if (!activeGraph->writeGeodesicDistribution(fn,
-                                                optionsEdgeWeightConsiderAct->isChecked(),
-                                                inverseWeights))
-    {
-        statusMessage(tr("Error: could not write geodesic distribution report."));
-        return;
-    }
+    const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    const bool inverseWeightsFinal = inverseWeights;
+    auto success = std::make_shared<bool>(false);
 
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Geodesic distance distribution saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, considerWeights, inverseWeightsFinal, success]() {
+            *success = activeGraph->writeGeodesicDistribution(fn, considerWeights, inverseWeightsFinal);
+        },
+        tr("Computing geodesic distance distribution. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+            {
+                statusMessage(tr("Error: could not write geodesic distribution report."));
+                return;
+            }
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Geodesic distance distribution saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -13603,29 +13677,32 @@ void MainWindow::slotAnalyzeEccentricity()
 
     askAboutEdgeWeights();
 
-    statusMessage(tr("Computing Eccentricity. Please wait..."));
+    const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    const bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
+    const bool inverseWeightsFinal = inverseWeights;
+    auto success = std::make_shared<bool>(false);
 
-    if (!activeGraph->writeEccentricity(
-            fn,
-            optionsEdgeWeightConsiderAct->isChecked(),
-            inverseWeights,
-            editFilterNodesIsolatesAct->isChecked()))
-    {
-        return;
-    }
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Eccentricities saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, success]() {
+            *success = activeGraph->writeEccentricity(
+                fn, considerWeights, inverseWeightsFinal, dropIsolates);
+        },
+        tr("Computing Eccentricity. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+                return;
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Eccentricities saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -13847,26 +13924,31 @@ void MainWindow::slotAnalyzeReachabilityMatrix()
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-reachability-" + dateTime + ".html";
 
-    statusMessage(tr("Computing reachability matrix. Please wait..."));
+    auto success = std::make_shared<bool>(false);
 
-    if (!activeGraph->writeMatrix(fn, MATRIX_REACHABILITY))
-    {
-        statusMessage(tr("Computation canceled."));
-        return;
-    }
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Reachability matrix saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, success]() {
+            *success = activeGraph->writeMatrix(fn, MATRIX_REACHABILITY);
+        },
+        tr("Computing reachability matrix. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+            {
+                statusMessage(tr("Computation canceled."));
+                return;
+            }
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Reachability matrix saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -14050,31 +14132,29 @@ void MainWindow::slotAnalyzeStrEquivalenceSimilarityByMeasure(const QString &mat
     QString fn = appSettings["dataDir"] + "socnetv-report-equivalence-similarity-" + metric + "-" + dateTime + ".html";
 
     bool considerWeights = true;
+    auto success = std::make_shared<bool>(false);
 
-    statusMessage(tr("Computing Similarity Matrix. Please wait..."));
-
-    if (!activeGraph->writeMatrixSimilarityMatching(fn,
-                                                    measure,
-                                                    matrix,
-                                                    varLocation,
-                                                    diagonal,
-                                                    considerWeights))
-    {
-        return;
-    }
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Similarity matrix saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, measure, matrix, varLocation, diagonal, considerWeights, success]() {
+            *success = activeGraph->writeMatrixSimilarityMatching(
+                fn, measure, matrix, varLocation, diagonal, considerWeights);
+        },
+        tr("Computing Similarity Matrix. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+                return;
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Similarity matrix saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -14195,26 +14275,29 @@ void MainWindow::slotAnalyzeStrEquivalencePearson(const QString &matrix,
     QString fn = appSettings["dataDir"] + "socnetv-report-equivalence-pearson-coefficients-" + dateTime + ".html";
 
     bool considerWeights = true;
+    auto success = std::make_shared<bool>(false);
 
-    statusMessage(tr("Computing Pearson Correlation Coefficients. Please wait..."));
-
-    if (!activeGraph->writeMatrixSimilarityPearson(fn, considerWeights, matrix, varLocation, diagonal))
-    {
-        return;
-    }
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Pearson correlation coefficients matrix saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, considerWeights, matrix, varLocation, diagonal, success]() {
+            *success = activeGraph->writeMatrixSimilarityPearson(
+                fn, considerWeights, matrix, varLocation, diagonal);
+        },
+        tr("Computing Pearson Correlation Coefficients. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+                return;
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Pearson correlation coefficients matrix saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -14353,37 +14436,38 @@ void MainWindow::slotAnalyzeCentralityCloseness()
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    bool dropIsolates = false;
     askAboutEdgeWeights();
-
-    statusMessage(tr("Computing Closeness Centralities. Please wait..."));
 
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-closeness-" + dateTime + ".html";
 
-    if (!activeGraph->writeCentralityCloseness(
-            fn,
-            optionsEdgeWeightConsiderAct->isChecked(),
-            inverseWeights,
-            editFilterNodesIsolatesAct->isChecked() || dropIsolates))
-    {
-        return;
-    }
+    const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    const bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
+    const bool inverseWeightsFinal = inverseWeights;
+    auto success = std::make_shared<bool>(false);
 
-    statusMessage(tr("Opening Closeness Centralities report..."));
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Closeness Centralities report saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, success]() {
+            *success = activeGraph->writeCentralityCloseness(
+                fn, considerWeights, inverseWeightsFinal, dropIsolates);
+        },
+        tr("Computing Closeness Centralities. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+                return;
+            statusMessage(tr("Opening Closeness Centralities report..."));
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Closeness Centralities report saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -14447,30 +14531,33 @@ void MainWindow::slotAnalyzeCentralityBetweenness()
 
     askAboutEdgeWeights();
 
-    statusMessage(tr("Computing Betweenness Centralities. Please wait..."));
+    const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    const bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
+    const bool inverseWeightsFinal = inverseWeights;
+    auto success = std::make_shared<bool>(false);
 
-    if (!activeGraph->writeCentralityBetweenness(
-            fn, optionsEdgeWeightConsiderAct->isChecked(),
-            inverseWeights,
-            editFilterNodesIsolatesAct->isChecked()))
-    {
-        return;
-    }
-
-    statusMessage(tr("Opening Betweenness Centralities report..."));
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Betweenness Centralities report saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, success]() {
+            *success = activeGraph->writeCentralityBetweenness(
+                fn, considerWeights, inverseWeightsFinal, dropIsolates);
+        },
+        tr("Computing Betweenness Centralities. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+                return;
+            statusMessage(tr("Opening Betweenness Centralities report..."));
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Betweenness Centralities report saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -14742,31 +14829,33 @@ void MainWindow::slotAnalyzeCentralityStress()
 
     askAboutEdgeWeights();
 
-    statusMessage(tr("Computing Stress Centralities. Please wait..."));
+    const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    const bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
+    const bool inverseWeightsFinal = inverseWeights;
+    auto success = std::make_shared<bool>(false);
 
-    if (!activeGraph->writeCentralityStress(
-            fn,
-            optionsEdgeWeightConsiderAct->isChecked(),
-            inverseWeights,
-            editFilterNodesIsolatesAct->isChecked()))
-    {
-        return;
-    }
-
-    statusMessage(tr("Opening Stress Centralities report..."));
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Stress Centralities report saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, success]() {
+            *success = activeGraph->writeCentralityStress(
+                fn, considerWeights, inverseWeightsFinal, dropIsolates);
+        },
+        tr("Computing Stress Centralities. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+                return;
+            statusMessage(tr("Opening Stress Centralities report..."));
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Stress Centralities report saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -14786,30 +14875,33 @@ void MainWindow::slotAnalyzeCentralityPower()
 
     askAboutEdgeWeights();
 
-    statusMessage(tr("Computing Power Centralities. Please wait..."));
+    const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    const bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
+    const bool inverseWeightsFinal = inverseWeights;
+    auto success = std::make_shared<bool>(false);
 
-    if (!activeGraph->writeCentralityPower(
-            fn,
-            optionsEdgeWeightConsiderAct->isChecked(),
-            inverseWeights,
-            editFilterNodesIsolatesAct->isChecked()))
-    {
-        return;
-    }
-
-    statusMessage(tr("Opening Gil-Schmidt Power Centralities report..."));
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Gil-Schmidt Power Centralities report saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, success]() {
+            *success = activeGraph->writeCentralityPower(
+                fn, considerWeights, inverseWeightsFinal, dropIsolates);
+        },
+        tr("Computing Power Centralities. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+                return;
+            statusMessage(tr("Opening Gil-Schmidt Power Centralities report..."));
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Gil-Schmidt Power Centralities report saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -14829,31 +14921,33 @@ void MainWindow::slotAnalyzeCentralityEccentricity()
 
     askAboutEdgeWeights();
 
-    statusMessage(tr("Computing Eccentricity Centralities. Please wait..."));
+    const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    const bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
+    const bool inverseWeightsFinal = inverseWeights;
+    auto success = std::make_shared<bool>(false);
 
-    if (!activeGraph->writeCentralityEccentricity(
-            fn,
-            optionsEdgeWeightConsiderAct->isChecked(),
-            inverseWeights,
-            editFilterNodesIsolatesAct->isChecked()))
-    {
-        return;
-    }
-
-    statusMessage(tr("Opening Closeness Centralities report..."));
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Eccentricity Centralities report saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, success]() {
+            *success = activeGraph->writeCentralityEccentricity(
+                fn, considerWeights, inverseWeightsFinal, dropIsolates);
+        },
+        tr("Computing Eccentricity Centralities. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+                return;
+            statusMessage(tr("Opening Closeness Centralities report..."));
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Eccentricity Centralities report saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -15072,11 +15166,38 @@ void MainWindow::polishProgressDialog(QProgressDialog *dialog)
  *                    method, never QAction/QWidget pointers to be dereferenced inside the
  *                    lambda body, since that body executes on graphThread, not the GUI thread.
  * @param waitMessage Status bar message and progress dialog text shown immediately.
- * @param doneMessage Status bar message shown on completion (optional).
+ * @param doneMessage Status bar message shown on completion (optional). For anything beyond a
+ *                    plain status message on completion (e.g. opening a generated report file,
+ *                    which must wait for `operation` to actually finish and only happen if it
+ *                    succeeded), use the std::function<void()> overload below instead.
  */
 void MainWindow::runGraphOperationAsync(std::function<void()> operation,
                                         const QString &waitMessage,
                                         const QString &doneMessage)
+{
+    runGraphOperationAsync(operation, waitMessage, [this, doneMessage]() {
+        if (!doneMessage.isEmpty())
+            statusMessage(doneMessage);
+    });
+}
+
+/**
+ * @brief Overload of runGraphOperationAsync() for completions that need more than a status
+ * message - e.g. opening a report file that `operation` just wrote, which must only happen
+ * after `operation` actually finishes (and, if `operation` reports success/failure via a
+ * captured flag, only on success). See the primary overload above for the full explanation of
+ * why this dispatches via graphThread rather than QtConcurrent::run().
+ *
+ * @param operation   Same contract as the primary overload - GUI state must be captured as
+ *                    plain values *before* the call, not read from inside the lambda.
+ * @param waitMessage Status bar message and progress dialog text shown immediately.
+ * @param onComplete  Runs on the GUI thread after `operation` finishes. If `operation` needs to
+ *                    report success/failure, capture a shared flag (e.g. `std::shared_ptr<bool>`)
+ *                    in both lambdas - see the writeCentralityX() call sites for the pattern.
+ */
+void MainWindow::runGraphOperationAsync(std::function<void()> operation,
+                                        const QString &waitMessage,
+                                        std::function<void()> onComplete)
 {
     statusMessage(waitMessage);
 
@@ -15092,9 +15213,9 @@ void MainWindow::runGraphOperationAsync(std::function<void()> operation,
 
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
-    QMetaObject::invokeMethod(activeGraph, [this, operation, doneMessage, busyDialog]() {
+    QMetaObject::invokeMethod(activeGraph, [this, operation, onComplete, busyDialog]() {
         operation();
-        QMetaObject::invokeMethod(this, [this, doneMessage, busyDialog]() {
+        QMetaObject::invokeMethod(this, [this, onComplete, busyDialog]() {
             QApplication::restoreOverrideCursor();
             // reset(), not close(): QProgressDialog::close() triggers its internal cancel()
             // path and emits canceled() -> Graph::slotCancelComputation() -> m_progressCanceled
@@ -15103,8 +15224,8 @@ void MainWindow::runGraphOperationAsync(std::function<void()> operation,
             // slotProgressBoxDestroy() for exactly this reason.
             busyDialog->reset();
             busyDialog->deleteLater();
-            if (!doneMessage.isEmpty())
-                statusMessage(doneMessage);
+            if (onComplete)
+                onComplete();
         }, Qt::QueuedConnection);
     }, Qt::QueuedConnection);
 }

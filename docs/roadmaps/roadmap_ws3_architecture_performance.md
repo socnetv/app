@@ -16,7 +16,7 @@ the goal is to separate those concerns without a disruptive rewrite — see "Tar
 |---|---|---|
 | M1 — DistanceEngine parallelization (`PerSourceScratch` + parallel source loop) | ✅ Done (v3.6), 2.7×–8.3× speedup | [Archive](#m1--distanceengine-parallelization--complete) |
 | M1 continuation — flat relation-keyed matrices | 🔵 Delegated to WS5 | [Active / Next Up](#m1-continuation--replace-distributed-vertex-qhash-storage-with-flat-relation-keyed-matrices) |
-| #254 — GUI freeze during long weighted-centrality computation | 🟡 Stage 1 done (7/27 slots), Stage 2 pending | [Active / Next Up](#254--improve-ui-responsiveness-during-long-weighted-centrality-computations) |
+| #254 — GUI freeze during long weighted-centrality computation | ✅ Done (28/28 entry points) | [Archive](#254--ui-responsiveness-during-long-weighted-centrality-computations--complete) |
 | M2 — Introduce `GraphModel` | 🟡 Design drafted, not started | [M2](#m2--introduce-graphmodel) |
 | M3 — Move pure data containers out of UI/Qt dependencies | ⚪ Not scoped (blocked on M2) | [M3](#m3--move-pure-data-containers-out-of-uiqt-dependencies) |
 | M4 — Relocate caches into explicit cache objects | ⚪ Not scoped (blocked on M2) | [M4](#m4--gradually-relocate-caches-into-explicit-cache-objects) |
@@ -62,97 +62,6 @@ a dense matrix should win on both speed and memory for connected graphs, but cou
 for graphs with many disconnected components/isolates, where the QHash simply never stores an
 entry for unreachable pairs. A2.0 measures this on real data before the migration proceeds, rather
 than assuming the win.
-
-### #254 — Improve UI responsiveness during long weighted-centrality computations
-
-**Status: Stage 1 ✅ shipped. Stage 2 pending.**
-
-**Problem:** computing a weighted, inverted-weight centrality index (e.g. Betweenness Centrality)
-on a large network makes the whole application completely unresponsive — not just slow, but
-unable to repaint, receive input, or even respond to window-manager focus/switch requests — for
-the entire duration of the computation. Confirmed identically present in v3.6 (not a regression):
-for `geom.net` (7343 nodes, weighted, inverted, BC), the release build showed 795–900 % CPU across
-~8 cores (`ps` state `R`, genuinely computing, not deadlocked) and eventually completed the
-layout, but only after several minutes with the window completely frozen throughout. Also
-confirmed present for FDP layouts (Eades/Fruchterman-Reingold/Kamada-Kawai) and every report/
-analysis menu action that reaches `Graph::graphDistancesGeodesic()` — not just BC.
-
-**Root cause:** `MainWindow` slots call `Graph` methods as direct, synchronous C++ calls from the
-GUI thread. A direct method call always executes on the caller's thread regardless of the callee
-`QObject`'s thread affinity — `Graph` being `moveToThread(&graphThread)`'d doesn't help unless the
-call actually goes through a queued signal/slot connection, which none of these did. For indices
-without a dedicated branch (including BC), this falls through to `DistanceEngine::compute()`
-(`src/engine/distance_engine.cpp`), which uses `QtConcurrent::blockingMap(sources, ...)` to
-parallelize per-source Dijkstra/BFS runs across the global thread pool — but `blockingMap` blocks
-the *calling* thread until every worker finishes. The computation is genuinely parallelized, but
-the calling thread never returns to its event loop for the whole duration.
-
-**Full entry-point inventory** (traced by grepping every caller of `graphDistancesGeodesic()` back
-to its enclosing public `Graph` method, then to whichever `MainWindow` slot calls that method
-directly): 27 `MainWindow` entry points total — 4 prominence-index layout slots, 3 FDP layout
-slots, 11 report/analysis methods with exactly one call site each (`writeEccentricity`,
-`writeCentralityCloseness`, `writeCentralityBetweenness`, `writeCentralityStress`,
-`writeCentralityEccentricity`, `writeCentralityPower`, `writeMatrixSimilarityMatching`,
-`writeMatrixSimilarityPearson`, `vertexFindByIndexScore`, `graphDistanceGeodesic`,
-`graphDiameter`), and 9 call sites into `writeMatrix()` (the report dispatcher covering walks,
-similarity, and other matrix report types).
-
-#### Stage 1 — the 7 layout slots ✅ Done
-
-**Fix:** `MainWindow::runGraphOperationAsync(operation, waitMessage, doneMessage)`
-(`mainwindow.cpp`) dispatches `operation` onto `graphThread` via
-`QMetaObject::invokeMethod(activeGraph, ..., Qt::QueuedConnection)` — not `QtConcurrent::run()`,
-which was considered and rejected: `DistanceEngine::compute()` already parallelizes internally via
-`blockingMap` over the *global* thread pool, so a second `QtConcurrent::run()` task would contend
-with `blockingMap`'s own worker tasks for the same pool. Routing through `graphThread` (which
-already exists — `Graph` lives there since `MainWindow::initGraph()`) sidesteps that entirely:
-`blockingMap`'s behaviour is completely unaffected, only the identity of the thread that calls and
-blocks on it changes. Shows an indeterminate `QProgressDialog` (no `setValue()` calls needed — cheap
-regardless of network size, unlike the granular `showProgressBar` mechanism) which, being
-`ApplicationModal`, also prevents the user mutating the graph from the GUI thread while `operation`
-runs — required, since `DistanceEngine` and friends mutate `Graph`'s member state directly with no
-internal synchronization. Applied to the 4 prominence-index layout slots and the 3 FDP layout slots.
-
-**Two real bugs found and fixed during implementation, not just the happy path:**
-- `busyDialog->close()` in the completion callback triggered `QProgressDialog`'s internal
-  `cancel()` path, silently marking every *successful* completion as cancelled
-  (`m_progressCanceled = true`), which made the next operation bail out immediately before doing
-  any work. Fixed by using `reset()` instead — matching the pattern the existing granular progress
-  dialog (`slotProgressBoxDestroy()`) already used, for exactly this reason.
-- `graph_ui_prominence_distribution.cpp`'s three chart-building functions are plain `Graph::`
-  methods that construct real QtCharts objects — safe only because every call used to run on the
-  GUI thread by accident (see the addendum in `roadmap_ws2_ui_graph_facade.md`'s F4 section for the
-  full story). Once layouts genuinely ran on `graphThread`, this became a live crash
-  (`EXC_BAD_ACCESS` inside QtCharts). Fixed with `Graph::runOnGuiThread(std::function<void()>)`
-  (`graph_ui_facade.cpp`) wrapping each function's entire body — fixed at the façade boundary, so
-  it's safe for any future caller (including Stage 2 below), not just layouts. Swept all of
-  `src/graph/` for the same pattern; confirmed this was the only instance.
-
-Trailing "done" status messages (e.g. `"Nodes in inner circles have higher %1 score."`) moved from
-running immediately after the (now non-blocking) call into the `doneMessage` parameter, fired from
-`runGraphOperationAsync`'s completion callback — otherwise they'd display immediately, overwriting
-the "please wait" message before the computation had actually finished.
-
-The IC "SLOW... 2 minutes on an i7 4790K" warning (shown for large networks before starting) was
-updated in the 4 fixed layout slots to reflect that the app stays responsive during the wait — left
-as-is at its other call sites (`slotAnalyzeCentralityInformation`, `slotAnalyzeWalksTotal`), which
-are still genuinely blocking until Stage 2.
-
-#### Stage 2 — the remaining 20 report/analysis slots (pending)
-
-Same `runGraphOperationAsync()` mechanism, same façade-boundary thread-safety (now proven, not
-theoretical) — mechanical rollout, one slot at a time, golden-regression-verified after each,
-matching Stage 1's own discipline. Not yet started.
-
-**Secondary finding, still open:** `distance_engine.cpp` has ~75 unconditional `qDebug()` calls,
-several inside the per-edge-relaxation inner loop (fires on the order of the total edge-relaxation
-count — potentially billions for a graph this size). Unlike `qCDebug(category)`, plain `qDebug()`
-isn't cheaply short-circuited by a disabled logging-category filter rule. Worth converting to a
-dedicated category (same pattern as `lcGW` in `GraphicsWidget`), independent of Stage 2.
-
-See #254 for the original write-up.
-
----
 
 ## M2 — Introduce `GraphModel`
 
@@ -427,6 +336,80 @@ visibly smaller than the viewport, needing a manual Ctrl+0 to fill the canvas co
 `zoomToFit()` now snaps to the initial 100 % level whenever the computed fit scale is within 75 %
 of it, matching `reset()`'s tight, margin-free look; only content that would need at least a
 quarter of its size cut still triggers a real zoom-out.
+
+### #254 — UI responsiveness during long weighted-centrality computations ✅ Complete
+
+**Problem:** computing a weighted, inverted-weight centrality index (e.g. Betweenness Centrality)
+on a large network made the whole application completely unresponsive — not just slow, but unable
+to repaint, receive input, or even respond to window-manager focus/switch requests — for the
+entire duration of the computation. Confirmed identically present in v3.6 (not a regression):
+for `geom.net` (7343 nodes, weighted, inverted, BC), the release build showed 795–900 % CPU across
+~8 cores (`ps` state `R`, genuinely computing, not deadlocked) and eventually completed the
+layout, but only after several minutes with the window completely frozen throughout. Also
+confirmed present for FDP layouts (Eades/Fruchterman-Reingold/Kamada-Kawai) and every report/
+analysis menu action that reaches `Graph::graphDistancesGeodesic()` — not just BC.
+
+**Root cause:** `MainWindow` slots called `Graph` methods as direct, synchronous C++ calls from the
+GUI thread. A direct method call always executes on the caller's thread regardless of the callee
+`QObject`'s thread affinity — `Graph` being `moveToThread(&graphThread)`'d doesn't help unless the
+call actually goes through a queued signal/slot connection, which none of these did. For indices
+without a dedicated branch (including BC), this falls through to `DistanceEngine::compute()`
+(`src/engine/distance_engine.cpp`), which uses `QtConcurrent::blockingMap(sources, ...)` to
+parallelize per-source Dijkstra/BFS runs across the global thread pool — but `blockingMap` blocks
+the *calling* thread until every worker finishes. The computation is genuinely parallelized, but
+the calling thread never returns to its event loop for the whole duration.
+
+**Fix:** `MainWindow::runGraphOperationAsync(operation, waitMessage, doneMessage)`
+(`mainwindow.cpp`) dispatches `operation` onto `graphThread` via
+`QMetaObject::invokeMethod(activeGraph, ..., Qt::QueuedConnection)` — not `QtConcurrent::run()`,
+which was considered and rejected: `DistanceEngine::compute()` already parallelizes internally via
+`blockingMap` over the *global* thread pool, so a second `QtConcurrent::run()` task would contend
+with `blockingMap`'s own worker tasks for the same pool. Routing through `graphThread` (which
+already exists — `Graph` lives there since `MainWindow::initGraph()`) sidesteps that entirely:
+`blockingMap`'s behaviour is completely unaffected, only the identity of the thread that calls and
+blocks on it changes. Shows an indeterminate `QProgressDialog` (no `setValue()` calls needed — cheap
+regardless of network size, unlike the granular `showProgressBar` mechanism) which, being
+`ApplicationModal`, also prevents the user mutating the graph from the GUI thread while `operation`
+runs — required, since `DistanceEngine` and friends mutate `Graph`'s member state directly with no
+internal synchronization.
+
+Rolled out across all 28 entry points that reach `graphDistancesGeodesic()` (traced by grepping
+every caller back to its enclosing public `Graph` method, then to whichever `MainWindow` slot calls
+it directly): the 4 prominence-index layout slots, the 3 FDP layout slots, 11 report/analysis
+methods with exactly one call site each (`writeEccentricity`, `writeCentralityCloseness`,
+`writeCentralityBetweenness`, `writeCentralityStress`, `writeCentralityEccentricity`,
+`writeCentralityPower`, `writeMatrixSimilarityMatching`, `writeMatrixSimilarityPearson`,
+`vertexFindByIndexScore`, `graphDistanceGeodesic`, `graphDiameter`), 9 call sites into
+`writeMatrix()` (the report dispatcher covering walks, similarity, and other matrix report types),
+and 1 further entry point (`graphDistanceGeodesicAverage`/`isConnected`) found via a later re-audit
+that the initial grep-based inventory missed.
+
+**Two real bugs found and fixed during implementation, not just the happy path:**
+- `busyDialog->close()` in the completion callback triggered `QProgressDialog`'s internal
+  `cancel()` path, silently marking every *successful* completion as cancelled
+  (`m_progressCanceled = true`), which made the next operation bail out immediately before doing
+  any work. Fixed by using `reset()` instead — matching the pattern the existing granular progress
+  dialog (`slotProgressBoxDestroy()`) already used, for exactly this reason.
+- `graph_ui_prominence_distribution.cpp`'s three chart-building functions are plain `Graph::`
+  methods that construct real QtCharts objects — safe only because every call used to run on the
+  GUI thread by accident (see the addendum in `roadmap_ws2_ui_graph_facade.md`'s F4 section for the
+  full story). Once these genuinely ran on `graphThread`, this became a live crash
+  (`EXC_BAD_ACCESS` inside QtCharts). Fixed with `Graph::runOnGuiThread(std::function<void()>)`
+  (`graph_ui_facade.cpp`) wrapping each function's entire body — fixed at the façade boundary, so
+  it's safe for any caller, not just layouts. Swept all of `src/graph/` for the same pattern;
+  confirmed this was the only instance.
+
+Trailing "done" status messages (e.g. `"Nodes in inner circles have higher %1 score."`) moved from
+running immediately after the (now non-blocking) call into the `doneMessage` parameter, fired from
+`runGraphOperationAsync`'s completion callback — otherwise they'd display immediately, overwriting
+the "please wait" message before the computation had actually finished.
+
+**Secondary finding, still open:** `distance_engine.cpp` has ~75 unconditional `qDebug()` calls,
+several inside the per-edge-relaxation inner loop (fires on the order of the total edge-relaxation
+count — potentially billions for a graph this size). Unlike `qCDebug(category)`, plain `qDebug()`
+isn't cheaply short-circuited by a disabled logging-category filter rule. Worth converting to a
+dedicated category (same pattern as `lcGW` in `GraphicsWidget`) — not part of #254, filed separately
+if it turns out to matter.
 
 ### GraphicsWidget — Performance and Code Quality Overhaul (#250) ✅ Complete
 

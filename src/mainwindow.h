@@ -129,6 +129,10 @@ public:
                                 const QString &waitMessage,
                                 const QString &doneMessage = QString());
 
+    void runGraphOperationAsync(std::function<void()> operation,
+                                const QString &waitMessage,
+                                std::function<void()> onComplete);
+
     void initGraph();
     void terminateThreads(const QString &reason);
     void initView();
