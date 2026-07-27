@@ -38,6 +38,13 @@ All notable changes to this project are documented in this file.
     per level on dense graphs, giving dramatic speedups on real-world networks
     without changing the set of maximal cliques reported.
 
+  - **CLI: `--encoding` and `--interactive-script`** (#261): `--encoding
+    <name>` loads the startup file with a given text codec (e.g. `UTF-8`),
+    bypassing the "Preview file & Choose Encoding" dialog. `--interactive-script
+    <path>` runs a plain-text script after startup, one command per line —
+    `delay X` (wait X seconds) or `new` (File → New) — letting SocNetV be
+    driven and profiled from the command line without manual clicking.
+
 ### Bug Fixes
 
   - **HCA uses BFS on unweighted networks** (#193): the Hierarchical Clustering
