@@ -124,6 +124,15 @@ All notable changes to this project are documented in this file.
     direction-choice dialog with both options showing "0 --> 0" instead of
     the real node numbers. Found while testing #251.
 
+  - **Edge Properties dialog didn't ask which direction for a reciprocated
+    edge** (#265): a reciprocated edge (both A→B and B→A drawn between two
+    nodes) is one canvas item but two independently-stored directed arcs —
+    each can have its own weight/label/color. **Edge Properties** silently
+    always edited whichever direction was created first, with no way to
+    reach the other direction's properties. Now asks which direction to
+    edit, matching the existing behaviour of **Edit → Remove Edge**. Found
+    while testing #251/#264.
+
 ### Maintenance
 
   - WS3 roadmap renamed from "Domain Model Split" to **"Architecture &
