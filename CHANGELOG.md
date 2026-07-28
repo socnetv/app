@@ -110,6 +110,20 @@ All notable changes to this project are documented in this file.
     of the still-fully-rendered old network — is now correctly guarded
     against re-entry.
 
+  - **Removing one direction of a reciprocated edge no longer deletes
+    both** (#251): via **Edit → Remove Edge**, choosing which direction of
+    a bidirectional edge to remove used to depend on *which* direction you
+    picked — one choice correctly downgraded the edge to a single directed
+    arc, the other deleted it entirely. Removing either direction now
+    always downgrades to a single directed arc in the other direction, as
+    expected.
+
+  - **Remove Edge dialog showed "0 --> 0" for a rubber-band-selected
+    edge** (#264): selecting a reciprocated edge by rubber-band (rather
+    than clicking it directly) and then pressing Remove Edge opened the
+    direction-choice dialog with both options showing "0 --> 0" instead of
+    the real node numbers. Found while testing #251.
+
 ### Maintenance
 
   - WS3 roadmap renamed from "Domain Model Split" to **"Architecture &
@@ -119,6 +133,11 @@ All notable changes to this project are documented in this file.
   - `docs/README_DEVELOPER_NOTES.md` "Current focus" section replaced with a
     single pointer to the architectural roadmap.
   - `AUTHORS`: added Andreas as Debian package maintainer.
+  - **Shipped Adjacency test dataset failed to load** (#256): one file in
+    the regression suite's shipped-dataset roundtrip check
+    (`TinyAdj_Dir_N3_E4_clucof.adj`) used a delimiter inconsistent with
+    every other Adjacency test file, causing a parse error. Reformatted to
+    match convention. Test data only, not user-facing.
   - **Canvas rendering internals: correctness and performance pass**
     (#250, part 1): fixed a double-free / undefined behaviour in guide-item
     cleanup (a deferred delete followed by an immediate delete of the same
