@@ -14026,27 +14026,29 @@ void MainWindow::slotAnalyzeWalksTotal()
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-walks-total-" + dateTime + ".html";
 
-    statusMessage(tr("Computing total walks matrix. Please wait..."));
-
-    activeGraph->writeMatrixWalks(fn);
-    if (activeGraph->progressCanceled())
-    {
-        statusMessage(tr("Computation canceled."));
-        return;
-    }
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage("Total walks matrix saved as: " + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn]() {
+            activeGraph->writeMatrixWalks(fn);
+        },
+        tr("Computing total walks matrix. Please wait..."),
+        [this, fn]() {
+            if (activeGraph->progressCanceled())
+            {
+                statusMessage(tr("Computation canceled."));
+                return;
+            }
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage("Total walks matrix saved as: " + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -14881,30 +14883,32 @@ void MainWindow::slotAnalyzeCentralityInformation()
 
     askAboutEdgeWeights();
 
-    statusMessage(tr("Computing Information Centralities. Please wait..."));
+    const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    const bool inverseWeightsFinal = inverseWeights;
+    auto success = std::make_shared<bool>(false);
 
-    if (!activeGraph->writeCentralityInformation(
-            fn,
-            optionsEdgeWeightConsiderAct->isChecked(),
-            inverseWeights))
-    {
-        return;
-    }
-
-    statusMessage(tr("Opening Information Centralities report..."));
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Information Centralities report saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, considerWeights, inverseWeightsFinal, success]() {
+            *success = activeGraph->writeCentralityInformation(
+                fn, considerWeights, inverseWeightsFinal);
+        },
+        tr("Computing Information Centralities. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+                return;
+            statusMessage(tr("Opening Information Centralities report..."));
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Information Centralities report saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -14923,33 +14927,33 @@ void MainWindow::slotAnalyzeCentralityEigenvector()
 
     askAboutEdgeWeights();
 
-    statusMessage(tr("Computing Eigenvector Centralities. Please wait..."));
+    const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    const bool inverseWeightsFinal = inverseWeights;
+    const bool dropIsolates = false;
+    auto success = std::make_shared<bool>(false);
 
-    bool dropIsolates = false;
-
-    if (!activeGraph->writeCentralityEigenvector(
-            fn,
-            optionsEdgeWeightConsiderAct->isChecked(),
-            inverseWeights,
-            dropIsolates))
-    {
-        return;
-    }
-
-    statusMessage(tr("Opening Eigenvector Centralities report..."));
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Eigenvector Centralities report saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, success]() {
+            *success = activeGraph->writeCentralityEigenvector(
+                fn, considerWeights, inverseWeightsFinal, dropIsolates);
+        },
+        tr("Computing Eigenvector Centralities. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+                return;
+            statusMessage(tr("Opening Eigenvector Centralities report..."));
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Eigenvector Centralities report saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
