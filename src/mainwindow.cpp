@@ -11065,6 +11065,16 @@ void MainWindow::slotEditEdgeRemove()
             return;
         }
 
+        // Exactly one edge is selected, but it may have been selected via rubber-band rather
+        // than an individual click - in that case edgeClicked() below still holds stale (or
+        // default 0,0) state from whatever was last individually clicked, not the actual
+        // selected edge. Sync it explicitly so the reciprocated-edge dialog below shows the
+        // right node numbers regardless of how the edge was selected.
+        {
+            const SelectedEdge selected = activeGraph->getSelectedEdges().first();
+            activeGraph->edgeClickedSet(selected.first, selected.second);
+        }
+
         qDebug() << "MW::slotEditEdgeRemove() - One edge selected: "
                  << activeGraph->edgeClicked().source
                  << "->"
