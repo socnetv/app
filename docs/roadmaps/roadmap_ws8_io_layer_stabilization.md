@@ -99,6 +99,16 @@ internally. Golden regression parity required throughout, same as every other wo
   import-only, rather than leaving it as an undocumented gap only discoverable by reading two
   switches side by side.
 
+## Related, but distinct — #8 Enhance GML format support
+
+Not a dispatch-consolidation item like W8.1–W8.6 above — this is parsing-*depth* work on the GML
+format specifically. The current GML parser supports a minimal command set (`graph`, `comment`,
+`directed`, `node`/`id`/`label`, `edge`/`source`/`target`/`label`); the
+[GML technical report](http://www.fim.uni-passau.de/fileadmin/files/lehrstuhl/brandenburg/projekte/gml/gml-technical-report.pdf)
+defines a substantially larger command set. Grouped here because it's the same file-format-support
+territory as WS8, not because it's part of the registry-consolidation work — worth picking up
+alongside or after the `FormatHandler` migration, not blocked on it.
+
 ## Work Rules
 
 - No parsing/export behavior changes — this is dispatch consolidation only, matching WS4's own

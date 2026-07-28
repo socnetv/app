@@ -349,6 +349,11 @@ Defines:
 
 Deferred post-3.6 (see WS9 Debt). The `Lte`/`Gte` operators in `FilterCondition` (shipped in #221) already support date-range queries once attributes carry typed date values — the query infrastructure is ready; the timeline animation layer is what remains.
 
+**Related:** #25 ("dynamic networks") is the general/original version of this same ask — genuinely
+dynamic/temporal network support (time-varying edges, timeline view), not a new static-analysis
+algorithm, so it belongs here rather than in WS11 (Algorithm Additions) despite superficially
+sounding like a "new feature" request in the same vein as WS11's items.
+
 ---
 
 ## UI Evolution

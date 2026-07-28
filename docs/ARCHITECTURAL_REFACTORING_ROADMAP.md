@@ -102,30 +102,59 @@ metadata in sync, with no enforcement — a `FormatHandler` registry replaces al
 
 ---
 
-## WS10 — Canvas Rendering Performance
+## WS10 — GraphicsWidget: Canvas Rendering & Features
 
 Roadmap: [`docs/roadmaps/roadmap_ws10_graphicswidget_overhaul.md`](roadmaps/roadmap_ws10_graphicswidget_overhaul.md)
 
-Ongoing GraphicsWidget/canvas rendering performance work, separate from WS3's domain-model focus.
-Phase 1 (GraphicsWidget Performance and Code Quality Overhaul, #250) shipped: correctness fixes,
-hot-path allocation/scan reductions, structural changes, full documentation pass. Future work
-(rendering-cost reduction, node-selection hot path, bulk-operation batching, a rendering-performance
-regression kernel) is scoped but not started.
+Ongoing GraphicsWidget work, separate from WS3's domain-model focus. Phase 1 (GraphicsWidget
+Performance and Code Quality Overhaul, #250) shipped: correctness fixes, hot-path allocation/scan
+reductions, structural changes, full documentation pass. The canvas-clear performance issue (#260)
+is also shipped. Future work covers both a Performance Checklist (rendering-cost reduction,
+node-selection hot path, bulk-operation batching, a rendering-performance regression kernel) and a
+Feature Checklist (new canvas-drawing capabilities, e.g. #22) — scope widened beyond pure
+performance since both live in the same class and the same `QGraphicsScene`/`QGraphicsView`
+machinery.
+
+---
+
+## WS11 — Algorithm Additions
+
+Roadmap: [`docs/roadmaps/roadmap_ws11_algorithm_additions.md`](roadmaps/roadmap_ws11_algorithm_additions.md)
+
+New analysis algorithms requested against the existing, stable `src/graph/` algorithm-slice
+architecture — centrality (Katz, Bonacich Power), cohesion (cohesive subgroups, connectivity),
+clustering (community detection beyond HCA), structural equivalence (MDS, blockmodelling, CONCOR).
+Pure numerical/graph-theory implementation, not architecture — distinct from WS5 (matrix
+storage/performance) and from the completed WS9. Just created, not started.
+
+---
+
+## WS12 — CLI Interactive/Scripting Mode
+
+Roadmap: [`docs/roadmaps/roadmap_ws12_cli_scripting_mode.md`](roadmaps/roadmap_ws12_cli_scripting_mode.md)
+
+Drive SocNetV from the command line without manual clicking, for reproducible profiling and testing
+of GUI-triggered flows the headless `socnetv-cli` tool can't reach. First step shipped (#261:
+`--encoding`, `--interactive-script` with `delay`/`new` commands) — was the tool that made it
+possible to root-cause #260. Further commands (#262) are backlog, not yet scoped.
 
 ---
 
 # Priorities
 
 1. **WS3** — architecture & performance ← **current**. M1 shipped (v3.6); M2 (`GraphModel`) design
-   drafted, not yet started.
-2. **WS10** — canvas rendering performance. Phase 1 (#250) fully shipped; future rendering-cost
-   work scoped but not prioritised yet.
+   drafted, not yet started. #263 (three remaining GUI-freeze cases) is a small mechanical
+   follow-up, next up before M2.
+2. **WS10** — GraphicsWidget canvas rendering & features. Phase 1 (#250) and #260 fully shipped;
+   future rendering-cost and feature work scoped but not prioritised yet.
 3. **WS6** — regression safety (ongoing support — continuously active underneath every other
    workstream, not "next in queue").
 4. **WS5** — matrices. Receives the M1-continuation APSP migration from WS3.
 5. **WS7** — MainWindow decomposition. Solid milestone roadmap (MW1–MW7) exists; zero code written
    yet.
 6. **WS8** — IO layer stabilization. Roadmap scoped; zero code written yet.
+7. **WS11** — algorithm additions. Just created; not prioritised yet, no code written.
+8. **WS12** — CLI scripting mode. First step shipped (#261); further commands not prioritised yet.
 
 ---
 

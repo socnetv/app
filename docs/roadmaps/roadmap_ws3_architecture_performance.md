@@ -17,6 +17,7 @@ the goal is to separate those concerns without a disruptive rewrite — see "Tar
 | M1 — DistanceEngine parallelization (`PerSourceScratch` + parallel source loop) | ✅ Done (v3.6), 2.7×–8.3× speedup | [Archive](#m1--distanceengine-parallelization--complete) |
 | M1 continuation — flat relation-keyed matrices | 🔵 Delegated to WS5 | [Active / Next Up](#m1-continuation--replace-distributed-vertex-qhash-storage-with-flat-relation-keyed-matrices) |
 | #254 — GUI freeze during long weighted-centrality computation | ✅ Done (28/28 entry points) | [Archive](#254--ui-responsiveness-during-long-weighted-centrality-computations--complete) |
+| #263 — IC/EVC/Walks Total still block the GUI (out of #254's original scope) | ⚪ Not started | [Active / Next Up](#263--information-eigenvector-centrality-and-walks-total-still-block-the-gui) |
 | M2 — Introduce `GraphModel` | 🟡 Design drafted, not started | [M2](#m2--introduce-graphmodel) |
 | M3 — Move pure data containers out of UI/Qt dependencies | ⚪ Not scoped (blocked on M2) | [M3](#m3--move-pure-data-containers-out-of-uiqt-dependencies) |
 | M4 — Relocate caches into explicit cache objects | ⚪ Not scoped (blocked on M2) | [M4](#m4--gradually-relocate-caches-into-explicit-cache-objects) |
@@ -62,6 +63,26 @@ a dense matrix should win on both speed and memory for connected graphs, but cou
 for graphs with many disconnected components/isolates, where the QHash simply never stores an
 entry for unreachable pairs. A2.0 measures this on real data before the migration proceeds, rather
 than assuming the win.
+
+### #263 — Information/Eigenvector Centrality and Walks Total still block the GUI
+
+**Not started.** Direct continuation of #254, same fix pattern: `MainWindow::runGraphOperationAsync()`
+dispatches an operation onto `graphThread` via `QMetaObject::invokeMethod(..., Qt::QueuedConnection)`,
+already proven safe and mechanical across 28 entry points.
+
+These three were correctly out of #254's original scope — confirmed via grep that none of them
+call `Graph::graphDistancesGeodesic()`, so they never went through the code path #254 fixed:
+
+- **Information Centrality** (`slotAnalyzeCentralityInformation` → `Graph::writeCentralityInformation`)
+  — matrix inversion via LU decomposition.
+- **Eigenvector Centrality** (`slotAnalyzeCentralityEigenvector` → `Graph::writeCentralityEigenvector`)
+  — power iteration on the adjacency matrix.
+- **Walks Total** (`slotAnalyzeWalksTotal` → `Graph::writeMatrixWalks`) — sociomatrix powers up to N-1.
+
+All three already show their own "SLOW"/"VERY SLOW" warning dialogs before running, since they were
+known-blocking before #254 even existed. Wrapping them in `runGraphOperationAsync()` is expected to
+be a small, mechanical change — no new thread-safety concerns, since the façade-boundary GUI-thread
+guarantee (`Graph::runOnGuiThread()`) already covers any UI-touching side effects.
 
 ## M2 — Introduce `GraphModel`
 

@@ -1,4 +1,4 @@
-# Canvas Rendering Performance (WS10)
+# GraphicsWidget — Canvas Rendering & Features (WS10)
 
 ## Status
 
@@ -9,8 +9,12 @@ see the Archive below. Everything else is open.
 
 This was originally tracked as a subsection of the [Architecture & Performance Roadmap
 (WS3)](roadmap_ws3_architecture_performance.md); split out into its own workstream (WS10) once #250
-completed, since canvas rendering performance is a structurally separate, ongoing concern from
+completed, since canvas/`GraphicsWidget` work is a structurally separate, ongoing concern from
 WS3's domain-model work (`Graph`/`GraphVertex`) — not a one-off cleanup with a defined end.
+
+**Scope widened beyond pure performance** to cover `GraphicsWidget` generally — new canvas-drawing
+features (e.g. #22) belong here too, not just rendering-cost reduction, since they touch the same
+class and the same `QGraphicsScene`/`QGraphicsView` machinery.
 
 > **Before committing any change described in this file:** run
 > `./scripts/run_golden_compares.sh`. All golden JSON baselines must still pass.
@@ -21,10 +25,11 @@ Correctness bugs, hot-path allocation/scan reductions, and structural changes to
 are Phase 1's territory (done). **What Phase 1 did not do:** none of it changed the actual
 paint/geometry cost of rendering a large network — it removed waste (redundant allocations, scans,
 transform applications) without touching the underlying per-item rendering model. If the canvas
-still feels slow on large networks, that's expected — the real rendering-cost work is the checklist
-below.
+still feels slow on large networks, that's expected — the real rendering-cost work is the
+Performance Checklist below. New canvas-drawing capabilities (not performance-motivated) are tracked
+separately in the Feature Checklist.
 
-## Checklist — Not Yet Started
+## Performance Checklist — Not Yet Started
 
 These are known, evidence-based gaps — not speculative wishlist items. Each is grounded in either
 existing documentation or code already read; none has been scoped to Phase-1-style depth (concrete
@@ -65,6 +70,17 @@ approach + completion criteria) yet.
 probably naming *which* interaction feels slow (initial load/paint of a large network? panning?
 dragging a selection? zooming?) — that determines which item above is actually worth doing first,
 rather than guessing.
+
+## Feature Checklist — Not Yet Started
+
+New `GraphicsWidget` capabilities, not performance-motivated. Not yet scoped to implementation-ready
+depth.
+
+- **#22 — Add text anywhere on the canvas.** A free-floating text annotation feature, independent
+  of node/edge labels — e.g. for titling a network view or annotating a region. Needs a new
+  `QGraphicsItem` type (or reuse of `GraphicsNodeLabel`'s text-rendering machinery without the
+  node attachment), placement/editing UX, and a decision on whether it's persisted in saved network
+  files (and if so, in which formats) or session-only, like guides.
 
 ## Archive — Completed Work
 
