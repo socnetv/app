@@ -133,6 +133,13 @@ All notable changes to this project are documented in this file.
     edit, matching the existing behaviour of **Edit → Remove Edge**. Found
     while testing #251/#264.
 
+  - **Information Centrality, Eigenvector Centrality, and Walks Total no
+    longer freeze the app** (#263): these three computations never went
+    through the distance engine, so they were correctly out of #254's
+    original scope — but still fully blocked the GUI for their own
+    (different-algorithm) computation. Now non-blocking, same as every
+    other long-running analysis.
+
 ### Maintenance
 
   - WS3 roadmap renamed from "Domain Model Split" to **"Architecture &
