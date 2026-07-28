@@ -10944,8 +10944,40 @@ void MainWindow::slotEditEdgePropertiesDialog()
     }
 
     // Exactly one edge selected — open the full properties dialog
-    const int v1 = selectedEdges.constFirst().first;
-    const int v2 = selectedEdges.constFirst().second;
+    int v1 = selectedEdges.constFirst().first;
+    int v2 = selectedEdges.constFirst().second;
+
+    // A reciprocated edge is one GraphicsEdge item, but two independent directed arcs in the
+    // model (each with its own weight/label/color) - ask which direction to edit rather than
+    // silently always editing whichever direction was created first. Same pattern as the
+    // direction-choice dialog in slotEditEdgeRemove(). See #251, #264.
+    activeGraph->edgeClickedSet(v1, v2);
+    if (activeGraph->edgeClicked().type == EdgeType::Reciprocated)
+    {
+        QStringList items;
+        QString arcA = QString::number(v1) + " -->" + QString::number(v2);
+        QString arcB = QString::number(v2) + " -->" + QString::number(v1);
+        items << arcA << arcB;
+
+        bool ok = false;
+        QString selectedArc = QInputDialog::getItem(
+            this, tr("Select edge"),
+            tr("This is a reciprocated edge. "
+               "Select direction to edit properties for:"),
+            items, 0, false, &ok);
+
+        if (!ok)
+        {
+            statusMessage(tr("Edge properties operation cancelled."));
+            return;
+        }
+        if (selectedArc == arcB)
+        {
+            const int tmp = v1;
+            v1 = v2;
+            v2 = tmp;
+        }
+    }
 
     const QString label = activeGraph->edgeLabel(v1, v2);
     const double weight = static_cast<double>(activeGraph->edgeWeight(v1, v2));
