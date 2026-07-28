@@ -549,11 +549,17 @@ void GraphicsWidget::removeEdge(const int &sourceNum,
         }
     }
     else {
-        // Check opposite edge. If it exists, then transform it to directed
+        // Check opposite edge. If it exists and is reciprocated, either downgrade it to a single
+        // directed arc or delete it entirely, matching the removeReverse-found branch above. See #251.
         m_edgeKey = edgeKey(targetNum, sourceNum);
         if (GraphicsEdge *reverseEdge = edgesHash.value(m_edgeKey, nullptr)) {
             if (reverseEdge->directionType() == EdgeType::Reciprocated) {
-                reverseEdge->setDirectionType(EdgeType::Directed);
+                if (removeReverse) {
+                    delete reverseEdge;
+                }
+                else {
+                    reverseEdge->setDirectionType(EdgeType::Directed);
+                }
                 return;
             }
         }

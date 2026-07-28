@@ -399,7 +399,11 @@ void Graph::edgeRemove(const int &v1,
         }
     }
 
-    emit signalRemoveEdge(v1, v2, (isDirected() || removeReverse));
+    // Undirected graphs always remove both directions (handled above); for directed graphs,
+    // only remove the reverse arc when the caller explicitly asked for it. Using isDirected()
+    // here always evaluated true for the (much more common) directed case, forcing the GW to
+    // always delete the whole reciprocated edge instead of respecting removeReverse. See #251.
+    emit signalRemoveEdge(v1, v2, (isUndirected() || removeReverse));
 
     setModStatus(ModStatus::EdgeCount);
 }
