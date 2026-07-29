@@ -226,7 +226,7 @@ All notable changes to this project are documented in this file.
     method. This closes out the #250 GraphicsWidget overhaul. All golden
     regression baselines pass unchanged.
   - **`GraphVertex` is no longer a `QObject`, edge-visibility updates now
-    batched** (WS3 M2): every node in a loaded network was a `QObject`
+    batched** (WS3): every node in a loaded network was a `QObject`
     solely to relay one internal signal — dropped in favour of a plain
     method call on its owning `Graph`, saving 16 bytes per vertex plus a
     per-vertex heap allocation (`QObjectPrivate`) entirely. Separately,
