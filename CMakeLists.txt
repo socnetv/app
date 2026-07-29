@@ -105,7 +105,6 @@ set(ENGINE_SOURCES
 set(GRAPH_SOURCES
     src/graph.cpp
     src/graph/util/graph_type_strings.cpp
-    src/graph/core/graph_model.cpp
     src/graph/core/graph_structure_metrics.cpp
     src/graph/core/graph_state_flags.cpp
     src/graph/core/graph_metadata.cpp
