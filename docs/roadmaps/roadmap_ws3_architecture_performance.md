@@ -19,8 +19,8 @@ the goal is to separate those concerns without a disruptive rewrite — see "Tar
 | #254 — GUI freeze during long weighted-centrality computation | ✅ Done (28/28 entry points) | [Archive](#254--ui-responsiveness-during-long-weighted-centrality-computations--complete) |
 | #263 — IC/EVC/Walks Total still block the GUI (out of #254's original scope) | ✅ Done | [Archive](#263--informationeigenvector-centrality-and-walks-total-still-block-the-gui--complete) |
 | M2 — Introduce `GraphModel` | ✅ Done (2026-07-29) — adapter + one migrated caller, `GraphVertex` `QObject` removal, edge-visibility signal batching | [M2](#m2--introduce-graphmodel) |
-| M3 — Move pure data containers out of UI/Qt dependencies | ⚪ Not scoped (M2 landed — ready to scope) | [M3](#m3--move-pure-data-containers-out-of-uiqt-dependencies) |
-| M4 — Relocate caches into explicit cache objects | ⚪ Not scoped (blocked on M2) | [M4](#m4--gradually-relocate-caches-into-explicit-cache-objects) |
+| M3 — Move pure data containers out of UI/Qt dependencies | 🔴 Investigated, deferred (2026-07-29) — no candidate clears the perf/UX bar | [M3](#m3--move-pure-data-containers-out-of-uiqt-dependencies) |
+| M4 — Relocate caches into explicit cache objects | ⚪ Not scoped — M2 landed, unblocked, ready to scope (not blocked on M3's deferral) | [M4](#m4--gradually-relocate-caches-into-explicit-cache-objects) |
 | GraphicsWidget canvas rendering performance | ✅ Phase 1 done, more scoped | Elevated to its own workstream — see [WS10](roadmap_ws10_graphicswidget_overhaul.md) |
 
 ## Current Reality
@@ -97,6 +97,25 @@ sumM, invAM, AM, invM, WM, XM, XSM, XRM, CLQM` — WS5's territory), ~150 lines 
 `calculated*` boolean cache-validity flags with no shared invalidation mechanism, and
 UI-interaction state with no business on a domain façade (`m_clickedEdge`, `m_vertexClicked`, even
 `canvasWidth`/`canvasHeight`).
+
+**Correction (2026-07-29), found while scoping M3:** the last claim above doesn't hold up under a
+direct code check, on both counts:
+- `canvasWidth`/`canvasHeight` are read by algorithm slices (`graph_random_networks.cpp`,
+  `graph_layouts_basic.cpp`, `graph_layouts_force.cpp` — layout generators need a bounding box to
+  place nodes) and by the headless CLI path (`parser.cpp`, `tools/headless_graph_loader.cpp`).
+  They're legitimate layout parameters, not UI leftovers — moving them out would break headless
+  generation/parsing.
+- `m_clickedEdge`/`m_vertexClicked` (`graph_selection.cpp`) back a real computation — resolving a
+  click into a fully-typed edge/vertex description via `m_graph`/`vpos` lookups, `edgeExists()`,
+  `isDirected()` — not passive click bookkeeping. It's already correctly placed: `graph_selection.cpp`
+  lives in `src/graph/ui/`, this codebase's own UI-façade layer, whose documented job is exactly
+  "constructs widgets, renders charts, emits UI update signals; corresponding compute lives in the
+  sibling algorithm slice." Moving these fields to `MainWindow` would force `MainWindow` to reach
+  past `Graph` into `m_graph`/`vpos` directly — a layered-call-flow bypass this codebase's
+  architecture explicitly forbids. Usage is confined to `graph.cpp` (reset) and `graph_selection.cpp`
+  only — an earlier pass over this also mis-flagged `mainwindow.h`'s `m_clickedEdgeToggleBtn`/
+  `m_clickedEdgeSection` as hits; those are unrelated `QPushButton`/`QWidget` members that merely
+  share a name prefix, not the same fields.
 
 One good sign: `Graph`'s signal block already carries an explicit WS2-era comment — *"Signals are
 a UI orchestration mechanism. Engines/services must not emit/call UI-facing behavior directly."*
@@ -236,10 +255,53 @@ individually-regression-tested step from here.
 
 ## M3 — Move pure data containers out of UI/Qt dependencies
 
-**Status: not yet scoped.** Depends on M2's shape — `GraphModel`'s adapter boundary determines
-which containers can move and where they'd move to. Will be scoped once M2 lands, using the same
-perf/UX lens as M2: each container move should be justified by a concrete win (memory, testability
-that enables faster iteration on a real bug, etc.), not moved just to be "out of Graph."
+**Status: investigated (2026-07-29), deferred — no candidate clears the perf/UX bar without
+disproportionate risk.** Both leads from the M2 audit turned out to be wrong (see the correction in
+M2's "Current reality" above): `canvasWidth`/`canvasHeight` are genuine headless layout parameters,
+and `m_clickedEdge`/`m_vertexClicked` are already correctly placed in the UI-façade layer. That left
+one real candidate — the vertex list itself (`VList m_graph` + `vpos`) — investigated in detail
+below.
+
+### Investigated candidate: give `GraphModel` real ownership of `VList`/`vpos`
+
+Today `GraphModel` is a read-view over `Graph`'s private `m_graph`/`vpos`. The natural continuation
+of M2 is making `GraphModel` the actual owner, so it's constructible/testable without a full
+`Graph`/`QObject`/thread-affinity setup — direct WS6 payoff (headless structural tests that don't
+need to spin up a whole `Graph`).
+
+**Blast radius, from a direct grep of every `vpos` touch site:** ~140 call sites across 18 files
+(`graph_vertices.cpp` 33, `graph_edges.cpp` 21, `graph_vertex_style.cpp` 27, `graph_edge_style.cpp`
+10, `graph_distance_facade.cpp` 9, `graph_clustering_coefficients.cpp` 8, plus ten more files with
+1–6 sites each). `DistanceEngine` was checked specifically, since it's the one class with friend
+access to `Graph` internals — it does **not** touch `vpos`/`m_graph` directly; its 5 apparent hits
+are all `qDebug()` log text or a local variable also named `vpos`, not the member. So the friend
+grant isn't a blocker here, consistent with M2's earlier friend-access audit.
+
+**The real dragon: `Graph::vertexRemove()`'s reindexing (`graph_vertices.cpp:200–262`).** Deleting a
+vertex does a full `O(N)` rewrite of `vpos` — iterating a `const_iterator` over the entire hash while
+calling `vpos.insert()` on entries as it goes, decrementing every subsequent vertex's index in place
+— immediately followed by `m_graph.removeAt(doomedPos)`, with a third counter (`m_totalVertices`)
+kept in sync alongside both. This is genuinely fragile: it already carries a defensive
+`qCritical() << "Error in vpos for vertex number v:"` consistency check elsewhere in the same file
+(line ~727), suggesting `vpos` going stale has been a real historical concern, not a hypothetical
+one. Vertex creation also branches on an `order` flag between two different indexing modes
+(`vpos[number] = m_totalVertices` vs. `= m_graph.size()`). Any ownership move has to carry this
+exact logic across intact — it's not just relocating two containers, it's relocating a hand-rolled,
+already-delicate index-maintenance algorithm and every one of its ~140 call sites.
+
+**No performance payoff from ownership transfer alone.** `GraphModel::degreeOut()`/`degreeIn()`
+already call the same `vpos.value(v, -1)` lookup at the same complexity whether `Graph` or
+`GraphModel` holds the hash — moving *which object* owns the container doesn't change any algorithm.
+The only real benefit is WS6 testability, and no WS6 test is currently blocked waiting on it.
+
+**Conclusion:** the cost (mechanical but real multi-file refactor around fragile, safety-net-carrying
+reindex logic) doesn't clear the roadmap's own bar ("justified by a concrete win... not moved just to
+be 'out of Graph'") against a speculative future testability benefit. **Recommend deferring M3
+indefinitely** until a concrete, currently-blocked need shows up (e.g. a specific WS6 structural test
+that genuinely can't be written without a headless-constructible `GraphModel`) — at which point this
+section has the blast-radius and risk data ready. Recorded here so this isn't re-attempted later
+without this context. M4 was only ever blocked on M2 (already shipped), not on M3, so it's unaffected
+by this deferral — see below.
 
 ## M4 — Gradually relocate caches into explicit cache objects
 
