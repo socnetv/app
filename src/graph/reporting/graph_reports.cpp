@@ -6187,8 +6187,6 @@ void Graph::writeMatrixHTMLTable(QTextStream &outText,
             {
                 continue;
             }
-            outText << Qt::fixed << Qt::right;
-
             outText << "<td" << ((markDiag && (*it)->number() == (*jt)->number()) ? " class=\"diag\">" : ">");
 
             element = M.item(i, j);
@@ -6200,9 +6198,18 @@ void Graph::writeMatrixHTMLTable(QTextStream &outText,
                 // print inf symbol instead of RAND_MAX (distances matrix).
                 outText << infinity;
             }
+            else if (qAbs(element) > 1000.0)
+            {
+                // Beyond this magnitude, fixed notation prints a wall of digits with no real
+                // meaning past qreal's ~15-17 significant digits of actual precision (e.g. the
+                // Walks Total matrix, which sums the adjacency matrix's powers up to N-1 and
+                // grows combinatorially). Scientific notation is honest about the precision
+                // that's actually there instead of implying false exactness. See #266.
+                outText << Qt::scientific << qSetRealNumberPrecision(3) << Qt::right << element;
+            }
             else
             {
-                outText << element;
+                outText << Qt::fixed << qSetRealNumberPrecision(hasRealNumbers ? 3 : 0) << Qt::right << element;
             }
 
             outText << "</td>";
