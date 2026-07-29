@@ -374,7 +374,7 @@ Verified against current `develop`: every benchmark on both sets now lands withi
 baseline (not 30–70% "faster"), confirming no regression from the WS3/WS10 work landed since v3.6,
 and that future comparisons on this machine are meaningful again.
 
-**`linux-x86_64` fixed (2026-07-29)**, from a 24-core Ryzen Linux x86_64 box: same method — a
+**`linux-x86_64` fixed (2026-07-29)**, from a 12-core Ryzen Linux x86_64 box: same method — a
 temporary `git worktree` checked out at the `v3.6` tag (kept `develop` untouched), built with
 `-DBUILD_CLI=ON` against Qt 6.8.3 (`/home/dimitris/Qt/6.8.3/gcc_64`), then
 `run_benchmarks.sh --record` there. `auto_baseline_set` resolved to `linux-x86_64` on its own
