@@ -349,7 +349,7 @@ script into CI), since the nonstandard delimiter wasn't actually load-bearing fo
 tests (directed clustering coefficient). Promoting this script into the required gate / CI is still
 open, now unblocked.
 
-### Perf benchmark baselines predated the M1 DistanceEngine speedup — macos-arm64/macos-m5 ✅ Fixed, linux-x86_64 still open
+### Perf benchmark baselines predated the M1 DistanceEngine speedup — ✅ Fixed on all three sets
 
 All three committed baselines predated M1's DistanceEngine parallelization
 (`7900809e`/`11da8ef4`, 2026-05-26, the same day v3.6 shipped) by months:
@@ -374,5 +374,15 @@ Verified against current `develop`: every benchmark on both sets now lands withi
 baseline (not 30–70% "faster"), confirming no regression from the WS3/WS10 work landed since v3.6,
 and that future comparisons on this machine are meaningful again.
 
-**`linux-x86_64` still open** — needs the same treatment but requires access to a Linux x86_64
-machine, not available from here.
+**`linux-x86_64` fixed (2026-07-29)**, from a 24-core Ryzen Linux x86_64 box: same method — a
+temporary `git worktree` checked out at the `v3.6` tag (kept `develop` untouched), built with
+`-DBUILD_CLI=ON` against Qt 6.8.3 (`/home/dimitris/Qt/6.8.3/gcc_64`), then
+`run_benchmarks.sh --record` there. `auto_baseline_set` resolved to `linux-x86_64` on its own
+(`uname` → `Linux`/`x86_64`), matching the existing baseline dir, so no `BENCH_BASELINE_SET`
+override was needed this time. Recorded numbers dropped far more than the 2.7×–8.3× seen on
+macOS (e.g. `DIST_GRAPHML` ~10×) — on top of the M1 speedup, the stale baseline was almost
+certainly recorded on a slower/different Linux box than this one, so part of the delta is just
+"first recording on this machine," not solely M1's contribution. Verified against current
+`develop`: every benchmark lands within 0–9% of the new baseline (not 30–70% "faster"),
+confirming no regression from the WS3/WS10 work landed since v3.6, and that future comparisons on
+this machine are meaningful again.
