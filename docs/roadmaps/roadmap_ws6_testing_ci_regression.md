@@ -291,6 +291,18 @@ Rules:
 - timing thresholds set conservatively (2× measured baseline on reference hardware) to tolerate CI noise
 - add new threshold fields to the existing benchmark JSON schema
 
+**Gap found 2026-07-29, while shipping WS3 M2's batched-signal work:** the golden harness has no
+*correctness* coverage of the canvas either, not just no performance coverage. Verifying that
+`GraphicsWidget::setEdgesVisibilityBatch()` actually left the right set of edges visible/hidden
+after a relation switch or a unilateral-edge toggle had no automated check available — the only
+verification was live manual testing (`docs/roadmaps/roadmap_ws12_cli_scripting_mode.md`'s
+`--interactive-script` mechanism, built partly for this reason). A future canvas kernel should
+assert on actual `GraphicsWidget` *state* after a fixed operation sequence (which edges/nodes end
+up visible, positioned where expected, etc.), not just timing — same offscreen-rendering
+constraint as the performance kernel above, but a state-comparison kernel rather than a
+timing-threshold one. Could plausibly share the same kernel/harness scaffolding as WS6.6, or be a
+sibling kernel (`kernel_render_state_v9`-shaped) — not scoped in detail yet.
+
 ---
 
 ## Notes
