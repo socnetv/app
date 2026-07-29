@@ -39,8 +39,13 @@ The `Graph` object is a façade and state coordinator — not a monolith. Algori
 |-----|-----------------------------------|----------------|
 | WS1 | Algorithm extraction              | ✔ complete     |
 | WS2 | Graph façade                      | ✔ complete     |
+| WS3 | Architecture & Performance        | ✔ complete (v3.6 + 2026-07) |
 | WS4 | IO / Parser modernization         | ✔ complete     |
 | WS9 | Graph exploration & data workflows| ✔ shipped v3.5/v3.6 |
+
+WS3 shipped `PerSourceScratch` extraction + parallel `DistanceEngine` source loop (v3.6), and
+`GraphVertex`'s `QObject` removal + edge-visibility signal batching. Its original "separate domain
+model" goal turned out unnecessary — see `roadmap_ws3_architecture_performance.md` for why.
 
 Details: [`docs/roadmaps/roadmap_ws9_graph_exploration.md`](roadmaps/roadmap_ws9_graph_exploration.md)
 
@@ -48,26 +53,8 @@ Details: [`docs/roadmaps/roadmap_ws9_graph_exploration.md`](roadmaps/roadmap_ws9
 
 # Active Workstreams
 
-Current focus is marked `← ACTIVE` below; see "Priorities" further down for the full ranking.
-
-## WS3 — Architecture & Performance ← **ACTIVE**
-
-Roadmap: [`docs/roadmaps/roadmap_ws3_architecture_performance.md`](roadmaps/roadmap_ws3_architecture_performance.md)
-
-Introduce a domain model independent of the Graph façade:
-
-```
-model (nodes, edges, relations)
-vs
-algorithms / services / caches
-```
-
-**M1 shipped** (v3.6): per-source SSSP scratch extracted into `PerSourceScratch`;
-`DistanceEngine` source loop parallelised (2.7×–8.3× speedup). **Next: M2** — introduce
-`GraphModel`, currently in design. Proceed incrementally; every milestone is validated by the
-WS6 regression harness before the next begins.
-
----
+See "Priorities" further down for the current ranking — no single workstream is pinned as "the"
+active focus right now.
 
 ## WS6 — Testing / CI / Regression (SUPPORTING, ongoing)
 
@@ -106,7 +93,7 @@ metadata in sync, with no enforcement — a `FormatHandler` registry replaces al
 
 Roadmap: [`docs/roadmaps/roadmap_ws10_graphicswidget_overhaul.md`](roadmaps/roadmap_ws10_graphicswidget_overhaul.md)
 
-Ongoing GraphicsWidget work, separate from WS3's domain-model focus. Phase 1 (GraphicsWidget
+Ongoing GraphicsWidget work, separate from WS3. Phase 1 (GraphicsWidget
 Performance and Code Quality Overhaul, #250) shipped: correctness fixes, hot-path allocation/scan
 reductions, structural changes, full documentation pass. The canvas-clear performance issue (#260)
 is also shipped. Future work covers both a Performance Checklist (rendering-cost reduction,
@@ -136,40 +123,47 @@ Roadmap: [`docs/roadmaps/roadmap_ws12_cli_scripting_mode.md`](roadmaps/roadmap_w
 Drive SocNetV from the command line without manual clicking, for reproducible profiling and testing
 of GUI-triggered flows the headless `socnetv-cli` tool can't reach. First step shipped (#261:
 `--encoding`, `--interactive-script` with `delay`/`new` commands) — was the tool that made it
-possible to root-cause #260. Further commands (#262) are backlog, not yet scoped.
+possible to root-cause #260. Seven more commands shipped (#262: `relation`, `unilateral`, `erdos`,
+`save`, `add-node`, `add-edge`, `add-relation`), built specifically to stress-test WS3's
+edge-visibility batching change end-to-end.
+
+---
+
+## WS13 — Undo/Redo
+
+Roadmap: [`docs/roadmaps/roadmap_ws13_undo_redo.md`](roadmaps/roadmap_ws13_undo_redo.md)
+
+General undo/redo for graph-mutating operations (#31), extending the `GraphVisibilitySnapshot`
+pattern already shipped for filter/visibility undo (WS9) to structural mutations and attribute
+edits. Previously mis-tracked as a WS3 dependency ("needs a stable domain model first") — that
+dependency was checked and found fictional. Just created, not started; open design questions listed
+in the roadmap.
 
 ---
 
 # Priorities
 
-1. **WS3** — architecture & performance ← **current**. M1 shipped (v3.6); M2 (`GraphModel`) design
-   drafted, not yet started. #263 (three remaining GUI-freeze cases) is a small mechanical
-   follow-up, next up before M2.
-2. **WS10** — GraphicsWidget canvas rendering & features. Phase 1 (#250) and #260 fully shipped;
+1. **WS10** — GraphicsWidget canvas rendering & features. Phase 1 (#250) and #260 fully shipped;
    future rendering-cost and feature work scoped but not prioritised yet.
-3. **WS6** — regression safety (ongoing support — continuously active underneath every other
+2. **WS6** — regression safety (ongoing support — continuously active underneath every other
    workstream, not "next in queue").
-4. **WS5** — matrices. Receives the M1-continuation APSP migration from WS3.
-5. **WS7** — MainWindow decomposition. Solid milestone roadmap (MW1–MW7) exists; zero code written
+3. **WS5** — matrices. Receives the M1-continuation APSP migration from WS3.
+4. **WS7** — MainWindow decomposition. Solid milestone roadmap (MW1–MW7) exists; zero code written
    yet.
-6. **WS8** — IO layer stabilization. Roadmap scoped; zero code written yet.
-7. **WS11** — algorithm additions. Just created; not prioritised yet, no code written.
-8. **WS12** — CLI scripting mode. First step shipped (#261); further commands not prioritised yet.
+5. **WS8** — IO layer stabilization. Roadmap scoped; zero code written yet.
+6. **WS11** — algorithm additions. Just created; not prioritised yet, no code written.
+7. **WS12** — CLI scripting mode. Two steps shipped (#261, #262); further commands backlog, not
+   prioritised.
+8. **WS13** — undo/redo. Just created; not prioritised yet, no code written.
 
 ---
 
-# Target Architecture (Long-Term)
+# Target Architecture
 
-```
-domain/
-├── model/        ← nodes, edges, relations
-├── algorithms/   ← engines and slices
-├── matrices/
-├── io/
-└── services/
-```
-
-`Graph` remains a façade coordinating these layers during transition.
+No standing plan to split `Graph` into a separate domain-model layer — see
+`roadmap_ws3_architecture_performance.md` for why that turned out unnecessary. `Graph` stays the
+façade indefinitely. Future structural change should follow WS3 M1's pattern: a specific, measured
+problem found first, architecture second.
 
 ---
 
