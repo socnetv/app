@@ -45,6 +45,14 @@ All notable changes to this project are documented in this file.
     `delay X` (wait X seconds) or `new` (File → New) — letting SocNetV be
     driven and profiled from the command line without manual clicking.
 
+  - **Seven more interactive-script commands** (#262): `relation N`
+    (switch relation), `unilateral` (toggle unilateral edges), `erdos N p
+    directed|undirected` (generate an Erdős–Rényi network), `save path`
+    (save as GraphML), and `add-node` / `add-edge source target [weight]`
+    / `add-relation name` for building a network incrementally from a
+    script. All dispatched through the same real event-loop/`graphThread`
+    path a user action would take, not called directly.
+
 ### Bug Fixes
 
   - **HCA uses BFS on unweighted networks** (#193): the Hierarchical Clustering
@@ -217,6 +225,27 @@ All notable changes to this project are documented in this file.
     and a last dead-code sweep, which found and removed one more unused
     method. This closes out the #250 GraphicsWidget overhaul. All golden
     regression baselines pass unchanged.
+  - **`GraphVertex` is no longer a `QObject`, edge-visibility updates now
+    batched** (WS3 M2): every node in a loaded network was a `QObject`
+    solely to relay one internal signal — dropped in favour of a plain
+    method call on its owning `Graph`, saving 16 bytes per vertex plus a
+    per-vertex heap allocation (`QObjectPrivate`) entirely. Separately,
+    relation switches and unilateral-edge toggles used to notify the
+    canvas once per edge, each crossing to the GUI thread as its own
+    queued dispatch — a large network's relation switch could mean
+    thousands of individually-queued updates. Both operations now collect
+    their changes and notify the canvas once, in a single batch, with the
+    same per-edge canvas logic applied in a plain loop instead of via
+    thousands of separate signal dispatches. All golden regression
+    baselines pass unchanged; live-tested with a scripted 2000-node/
+    40,000-edge network (see `roadmap_ws12_cli_scripting_mode.md`).
+  - Perf benchmark baselines (`macos-arm64`, `macos-m5`) re-recorded
+    against the `v3.6` tag — the committed baselines predated the WS3 M1
+    DistanceEngine speedup by months, so every benchmark run was
+    (correctly, but confusingly) reporting 30-70% "faster than baseline"
+    on unrelated work, not evidence about whatever change was actually
+    being tested. `linux-x86_64`'s baseline needs the same treatment but
+    isn't reachable from this machine.
 
 ## [3.6] – May 26, 2026
 
