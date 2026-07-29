@@ -15,27 +15,35 @@
  */
 
 #include "graph.h"
+#include "graph_model.h"
 
 /**
  * @brief Returns the outDegree (sum of outbound edge weights) of vertex v1
+ *
+ * Routed through GraphModel (WS3 M2) rather than touching m_graph/vpos directly - first
+ * proof that the read-view adapter boundary holds for a real, already-shipped query.
+ *
  * @param v1
  * @return
  */
 int Graph::vertexDegreeOut(int v1)
 {
     qDebug() << "Returning outDegree of " << v1;
-    return m_graph[vpos[v1]]->degreeOut();
+    return GraphModel(*this).degreeOut(v1);
 }
 
 /**
  * @brief Returns the inDegree (sum of inbound edge weights) of vertex v1
+ *
+ * Routed through GraphModel (WS3 M2) - see vertexDegreeOut().
+ *
  * @param v1
  * @return
  */
 int Graph::vertexDegreeIn(int v1)
 {
     qDebug() << "Returning inDegree of " << v1;
-    return m_graph[vpos[v1]]->degreeIn();
+    return GraphModel(*this).degreeIn(v1);
 }
 
 /**

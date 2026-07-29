@@ -66,7 +66,10 @@ than assuming the win.
 
 ## M2 — Introduce `GraphModel`
 
-**Status: design drafted (2026-07-25), not yet started.**
+**Status: first cut shipped (2026-07-29).** `GraphModel` exists (`src/graph/core/graph_model.h`/`.cpp`)
+and one real caller (`Graph::vertexDegreeOut()`/`vertexDegreeIn()`) reads through it instead of
+touching `m_graph`/`vpos` directly — see "First cut shipped" below for what landed and what's still
+open (`QObject` removal, more callers, M3/M4).
 
 **Every item below is filtered through WS3's actual purpose — performance and UX, not tidiness for
 its own sake.** M2 is worth doing only insofar as it makes the app faster or more correct-feeling
@@ -131,12 +134,19 @@ a UI orchestration mechanism. Engines/services must not emit/call UI-facing beha
    sub-task: check whether that one signal can be re-routed through `Graph`'s existing signal
    surface, then drop `GraphVertex` to a plain value class. Measure actual per-node memory
    difference on a large network before/after as the performance evidence for this specific change.
-4. **Pre-existing commitment carried into M2:** both `roadmap_ws1_distances_geodesic_engine.md` (WS1,
-   "What Remains Open") and `roadmap_ws2_ui_graph_facade.md` (WS2, "Optional Future Step") already
-   named narrowing/removing the `friend class DistanceEngine;` access to `Graph` internals as
-   explicitly deferred to "WS3 M2+" — found while auditing older roadmaps for stale/unfinished
-   items (2026-07-25), and folded in here since `GraphModel`'s adapter boundary is exactly what
-   would let `DistanceEngine` depend on a narrow interface instead of full `Graph` friendship.
+4. **Correction (2026-07-29) to a claim carried in from WS1/WS2:** both
+   `roadmap_ws1_distances_geodesic_engine.md` (WS1, "What Remains Open") and
+   `roadmap_ws2_ui_graph_facade.md` (WS2, "Optional Future Step") named narrowing/removing the
+   `friend class DistanceEngine;` grant as deferred to "WS3 M2+," on the assumption that
+   `GraphModel`'s structural adapter boundary is what `DistanceEngine` needs it for. **Checked
+   directly against the code before implementing M2** (grepped every one of the ~85 distinct
+   `graph.X` members `DistanceEngine` actually touches via the friend grant): every single one is
+   either an already-public accessor (`verticesBegin()`, `vertices()`, `vertexAtIndex()`, …) or a
+   private *cache/aggregate* member (`maxSCC`, `discreteCCs`, `calculatedCentralities`, the
+   `minmax()`/`resolveClasses()` helpers) — squarely **M4 territory** (explicit cache objects), not
+   the structural vertex-list/adjacency data M2 covers. A structural-only `GraphModel` does not, by
+   itself, let `DistanceEngine` drop the friend declaration — that depends on M4 landing instead.
+   Recorded here so this doesn't get assumed again.
 5. **Completion criteria:**
    - `run_golden_compares.sh` and `run_benchmarks.sh` pass unchanged.
    - `GraphModel` is constructible and queryable with zero Qt widget/thread machinery — genuine
@@ -146,6 +156,35 @@ a UI orchestration mechanism. Engines/services must not emit/call UI-facing beha
    - If the `QObject` removal lands: a measured per-node memory reduction on a large reference
      network (e.g. `geom.net`, 7343 nodes), not just "should be smaller" — matching this roadmap's
      own performance-evidence standard set by M1's benchmark tables.
+
+### First cut shipped (2026-07-29)
+
+`GraphModel` (`src/graph/core/graph_model.h`/`.cpp`) is a plain, non-`QObject` class holding a
+`Graph&` and exposing `vertexCount()`, `degreeOut(int)`, `degreeIn(int)` — built entirely on
+`Graph`'s existing public accessors (`vertexIndexByNumber()`, `vertexAtIndex()`, `vertices()`), so
+it required **no new friend access**. `vertexAtIndex(vertexIndexByNumber(v))` is exactly equivalent
+to the `m_graph[vpos[v]]` pattern used internally throughout `Graph` — same O(1)/O(logN) lookup
+cost, confirmed by reading both implementations, plus one small correctness improvement: it returns
+a safe fallback for an unknown vertex number instead of `vpos`'s silent phantom-entry behavior on a
+missing key.
+
+First real caller migrated as proof the adapter boundary holds: `Graph::vertexDegreeOut()` and
+`Graph::vertexDegreeIn()` (`graph_structure_metrics.cpp`) now call `GraphModel(*this).degreeOut()`/
+`degreeIn()` instead of touching `m_graph`/`vpos` directly. `run_golden_compares.sh` and
+`run_golden_io_roundtrip.sh` pass unchanged (correctness, not timing-sensitive — meaningful
+evidence). `run_benchmarks.sh` also passed, but **that result isn't meaningful evidence of no
+regression for this specific change** — the committed baseline (`scripts/perf_baselines/macos-arm64/
+perf_expected.env`) is from 2026-03-03, five months and 226 `src/`-touching commits stale, so
+"beats baseline by 30–70%" reflects that much unrelated drift, not anything about this migration.
+The actual evidence for no performance regression here is architectural: `vertexAtIndex(vertexIndexByNumber(v))`
+is exactly equivalent in complexity to the `m_graph[vpos[v]]` pattern it replaces (confirmed by
+reading both implementations), so there's no reason to expect a difference. Re-recording the perf
+baseline is tracked separately — not blocking this change, but worth doing so future timing
+comparisons here are actually trustworthy.
+
+**Deliberately not done in this first cut** (kept narrow, per the Work Rules): the `QObject`
+removal investigation (Approach step 3), migrating any further callers, and M3/M4. Each is a
+separate, individually-regression-tested step from here.
 
 ## M3 — Move pure data containers out of UI/Qt dependencies
 

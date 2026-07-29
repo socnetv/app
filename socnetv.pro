@@ -58,6 +58,7 @@ FORMS += src/forms/dialogfilteredgesbyweight.ui \
 HEADERS += src/mainwindow.h \
     src/texteditor.h \
     src/graph.h \
+    src/graph/core/graph_model.h \
     src/engine/distance_engine.h \
     src/engine/distance_progress_sink.h \
     src/engine/graph_distance_progress_sink.h \
@@ -123,6 +124,7 @@ SOURCES += src/main.cpp \
     src/engine/distance_engine.cpp \
     src/graph.cpp \
     src/graph/util/graph_type_strings.cpp \
+    src/graph/core/graph_model.cpp \
     src/graph/core/graph_structure_metrics.cpp \
     src/graph/core/graph_state_flags.cpp \
     src/graph/core/graph_metadata.cpp \
