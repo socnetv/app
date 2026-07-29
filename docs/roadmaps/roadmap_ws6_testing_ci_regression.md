@@ -319,19 +319,48 @@ to run once, before any of the parallel upload steps, to avoid a race. Separatel
 script computes `commitMessage` (the commit's subject line) but never uses it in the description
 text — worth including once this is revisited.
 
-### Shipped-dataset roundtrip script fails on a custom-delimiter fixture (#256)
+### Shipped-dataset roundtrip script fails on a custom-delimiter fixture (#256) ✅ Fixed
 
 `run_io_roundtrip_shipped_datasets.sh` globs every file under `src/data` and loads each one via
 the CLI using its default delimiter (`" "`, set in `socnetv_cli.cpp`'s `delimOpt`), with no
-per-file override table. `src/data/TinyAdj_Dir_N3_E4_clucof.adj` uses `|` as its column delimiter
+per-file override table. `src/data/TinyAdj_Dir_N3_E4_clucof.adj` used `|` as its column delimiter
 — likely added alongside the directed clustering-coefficient fix (#58, `81e82a46`) to exercise the
-GUI's Import-dialog custom-delimiter option — so it fails under the script's blanket space-delimiter
-assumption. This went unnoticed because the script isn't part of the required regression gate (see
-the three scripts listed under "Regression discipline" in `README_DEVELOPER_NOTES.md`) or CI.
+GUI's Import-dialog custom-delimiter option — so it failed under the script's blanket
+space-delimiter assumption. This went unnoticed because the script isn't part of the required
+regression gate (see the three scripts listed under "Regression discipline" in
+`README_DEVELOPER_NOTES.md`) or CI.
 
-Two independent fixes, either is enough on its own:
+**Fixed (2026-07-29, `802b0097`)** by reformatting the fixture file itself to plain space
+delimiters, matching every other `.adj` file in `src/data/` — simpler than either of the two
+alternatives originally considered here (a per-file delimiter override table, or promoting the
+script into CI), since the nonstandard delimiter wasn't actually load-bearing for what the fixture
+tests (directed clustering coefficient). Promoting this script into the required gate / CI is still
+open, now unblocked.
 
-- Give the script a small per-file delimiter override table (or a `.delimiter` sidecar convention)
-  so intentionally-nonstandard fixtures don't read as failures.
-- Promote the script into the required gate / CI now that it demonstrably catches real issues,
-  once the delimiter mismatch above is resolved one way or another.
+### Perf benchmark baselines predated the M1 DistanceEngine speedup — macos-arm64/macos-m5 ✅ Fixed, linux-x86_64 still open
+
+All three committed baselines predated M1's DistanceEngine parallelization
+(`7900809e`/`11da8ef4`, 2026-05-26, the same day v3.6 shipped) by months:
+`scripts/perf_baselines/macos-arm64/perf_expected.env` (2026-03-03, `ada8e613`),
+`scripts/perf_baselines/macos-m5/perf_expected.env` (2026-02-17, `5661b7eb`), and
+`scripts/perf_baselines/linux-x86_64/perf_expected.env` (2026-03-03, `013c05ce`). `run_benchmarks.sh`
+still ran and reported "OK" against these stale baselines, but the "beats baseline by 30–70%"
+results on the DistanceEngine-heavy benchmarks (EIES48, BA500, DIST_GRAPHML) weren't drift or
+noise — they were exactly M1's real 2.7×–8.3× speedup being measured against a pre-M1 floor. A
+regression eating into half of M1's gain would still have silently passed as "faster than
+baseline." Found when a benchmark run was (wrongly) cited as regression evidence for a small WS3
+M2 change; the actual evidence for that change was architectural (equivalent lookup complexity),
+not the benchmark comparison, which prompted checking why the margins looked so large.
+
+**`macos-arm64` and `macos-m5` fixed (2026-07-29)**, both from this machine: checked out the `v3.6`
+tag directly (a clean release point, not just "whatever HEAD happens to be today"), built, and ran
+`run_benchmarks.sh --record` there — `macos-arm64` via the script's own `uname`-based
+auto-detection (which can only ever resolve to `macos-arm64` on any Apple Silicon Mac, M1 through
+M5 — `uname -m` doesn't report chip generation), `macos-m5` via an explicit
+`BENCH_BASELINE_SET=macos-m5 BENCH_RECORD_ALLOW_OVERRIDE=1` override for this specific chip.
+Verified against current `develop`: every benchmark on both sets now lands within 1–5% of its
+baseline (not 30–70% "faster"), confirming no regression from the WS3/WS10 work landed since v3.6,
+and that future comparisons on this machine are meaningful again.
+
+**`linux-x86_64` still open** — needs the same treatment but requires access to a Linux x86_64
+machine, not available from here.
