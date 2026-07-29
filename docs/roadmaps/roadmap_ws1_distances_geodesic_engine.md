@@ -137,6 +137,11 @@ DistanceEngine::compute(computeCentralities, considerWeights, inverseWeights, dr
 
 ## What Remains Open
 
-- Narrowing / removing the `friend` access between `DistanceEngine` and `Graph` —
-  deferred to WS3 M2+ (requires a stable domain model).
+- Narrowing / removing the `friend` access between `DistanceEngine` and `Graph` — this was the
+  original reason WS3 assumed it needed a "stable domain model" (see
+  `roadmap_ws3_architecture_performance.md`'s "History" section for the full trace, added
+  2026-07-30). Checked directly: `DistanceEngine` touches ~85 `graph.X` members via the friend
+  grant, all either public accessors or cache/aggregate fields — squarely M4 (explicit cache
+  objects) territory, not a domain-model boundary. Deferred to WS3 M4, if/when that's ever picked
+  back up; currently parked, not scheduled.
 - Type tightening (`int` → `qsizetype`) — low priority, deferred.

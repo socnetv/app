@@ -6,36 +6,36 @@
 
 ## Goal
 
-Introduce a domain model that is independent from UI concerns and can be tested headlessly.
-`Graph` currently mixes storage, algorithm state, caches, and UI signaling in one façade class;
-the goal is to separate those concerns without a disruptive rewrite — see "Target Direction" below.
+Fix specific, measured performance and correctness problems in `Graph`/`GraphVertex` — not build a
+separate domain-model layer for its own sake.
+
+**Note:** this roadmap originally aimed to introduce a separate domain model. That turned out
+unnecessary — every real win here (M1's `PerSourceScratch` extraction, `GraphVertex`'s `QObject`
+removal + signal batching) came from fixing a specific, measured problem directly, not from
+restructuring on the assumption that separating concerns is inherently worth it. `GraphModel`, the
+class built toward the original goal, was removed (`b9508c17`) after never finding a real use — see
+the M2 section below for what happened and its commit messages for the detail. WS3 is now closed;
+see [`ARCHITECTURAL_REFACTORING_ROADMAP.md`](../ARCHITECTURAL_REFACTORING_ROADMAP.md).
 
 ## Status at a Glance
 
-| Milestone | Status | Detail |
-|---|---|---|
-| M1 — DistanceEngine parallelization (`PerSourceScratch` + parallel source loop) | ✅ Done (v3.6), 2.7×–8.3× speedup | [Archive](#m1--distanceengine-parallelization--complete) |
-| M1 continuation — flat relation-keyed matrices | 🔵 Delegated to WS5 | [Active / Next Up](#m1-continuation--replace-distributed-vertex-qhash-storage-with-flat-relation-keyed-matrices) |
-| #254 — GUI freeze during long weighted-centrality computation | ✅ Done (28/28 entry points) | [Archive](#254--ui-responsiveness-during-long-weighted-centrality-computations--complete) |
-| #263 — IC/EVC/Walks Total still block the GUI (out of #254's original scope) | ✅ Done | [Archive](#263--informationeigenvector-centrality-and-walks-total-still-block-the-gui--complete) |
-| M2 — Introduce `GraphModel` | ✅ Done (2026-07-29) — adapter + one migrated caller, `GraphVertex` `QObject` removal, edge-visibility signal batching | [M2](#m2--introduce-graphmodel) |
-| M3 — Move pure data containers out of UI/Qt dependencies | 🔴 Investigated, deferred (2026-07-29) — no candidate clears the perf/UX bar | [M3](#m3--move-pure-data-containers-out-of-uiqt-dependencies) |
-| M4 — Relocate caches into explicit cache objects | ⚪ Not scoped — M2 landed, unblocked, ready to scope (not blocked on M3's deferral) | [M4](#m4--gradually-relocate-caches-into-explicit-cache-objects) |
-| GraphicsWidget canvas rendering performance | ✅ Phase 1 done, more scoped | Elevated to its own workstream — see [WS10](roadmap_ws10_graphicswidget_overhaul.md) |
-
-## Current Reality
-
-- `Graph` mixes storage, algorithm state, caches, and UI signaling.
-- `GraphVertex` acts as both node storage and analysis result cache.
-- Per-source SSSP scratch has been extracted into `PerSourceScratch` (Phase 1) and the
-  source loop now runs in parallel via `QtConcurrent` (Phase 2). The remaining mixed
-  concerns in `Graph`/`GraphVertex` are targeted by M2–M4 and WS5.
+| Milestone | Status |
+|---|---|
+| M1 — DistanceEngine parallelization | ✅ Done (v3.6), 2.7×–8.3× speedup |
+| M1 continuation — flat relation-keyed matrices | 🔵 Delegated to WS5 |
+| #254 / #263 — GUI freeze during long computations | ✅ Done |
+| M2 — `GraphVertex` `QObject` removal + edge-visibility signal batching | ✅ Done |
+| M3 — Move pure data containers out of UI/Qt dependencies | 🔴 Investigated, deferred — no justified candidate |
+| M4 — Relocate caches into explicit cache objects | 🔴 Investigated, deferred — no justified candidate |
+| GraphicsWidget canvas rendering | ✅ Phase 1 done, elevated to [WS10](roadmap_ws10_graphicswidget_overhaul.md) |
 
 ## Target Direction
 
-- Separate "model" (nodes/edges/relations) from "services/algorithms".
-- Keep `Graph` as façade during transition.
-- Algorithm scratch state belongs in the algorithm, not in the domain objects.
+- Fix a specific, measured problem in `Graph`/`GraphVertex` when one is found — don't restructure on
+  the assumption that separating concerns is inherently worth it.
+- Algorithm scratch state belongs in the algorithm, not in the domain objects — proven by M1, keep
+  applying it when a similar concrete case (usually parallelization) appears.
+- `Graph` stays the façade. There is no plan to introduce a separate domain-model layer.
 
 ---
 
@@ -64,14 +64,15 @@ for graphs with many disconnected components/isolates, where the QHash simply ne
 entry for unreachable pairs. A2.0 measures this on real data before the migration proceeds, rather
 than assuming the win.
 
-## M2 — Introduce `GraphModel`
+## M2 — `GraphVertex` `QObject` removal + edge-visibility signal batching
 
-**Status: ✅ Done (2026-07-29).** `GraphModel` exists (`src/graph/core/graph_model.h`/`.cpp`) and one
-real caller (`Graph::vertexDegreeOut()`/`vertexDegreeIn()`) reads through it instead of touching
-`m_graph`/`vpos` directly (`9c2461a0`). `GraphVertex`'s `QObject` inheritance was then dropped and
-the edge-visibility signal path batched (`4e07ec3f`) — see "Shipped" below for both commits and the
-checked-off completion criteria. Still open, deliberately deferred beyond M2's scope: migrating
-further `Graph` callers onto `GraphModel`, and M3/M4.
+**Status: ✅ Done (2026-07-29).** Originally scoped as "introduce `GraphModel`" — a read-view adapter
+built first (`9c2461a0`) as a supposed prerequisite for the two real deliverables below. It wasn't
+one (neither shipped commit depends on it — see "Removed" at the end of this section) and was deleted
+2026-07-30 (`b9508c17`). What actually shipped and still stands: `GraphVertex`'s `QObject`
+inheritance dropped, and the edge-visibility signal path batched (`4e07ec3f`). The rest of this
+section is left as-written for the record — every reference to `GraphModel` below describes
+something that existed for one day and no longer does.
 
 **Every item below is filtered through WS3's actual purpose — performance and UX, not tidiness for
 its own sake.** M2 is worth doing only insofar as it makes the app faster or more correct-feeling
@@ -137,10 +138,11 @@ a UI orchestration mechanism. Engines/services must not emit/call UI-facing beha
 - **Matrix consolidation (feeds WS5 / M1-continuation)** — already directly performance-motivated:
   eliminating per-vertex QHash lookups in the back-propagation hot path in favour of flat array
   access.
-- **`GraphModel` structural adapter itself** — the one item here that's primarily architectural, not
-  a direct perf/UX win on its own. Justified as a prerequisite: it's what makes the two items above
-  safe to do incrementally (regression-testable in isolation) instead of as one large, risky
-  entangled change. Kept deliberately narrow for exactly this reason — see Approach below.
+- **`GraphModel` structural adapter itself** — the one item here that was primarily architectural, not
+  a direct perf/UX win on its own. Justified at the time as a prerequisite: supposedly what makes the
+  two items above safe to do incrementally. **This did not hold up** — the commit that actually shipped
+  the `QObject` removal and batching (`4e07ec3f`) never touches `GraphModel`, so the "prerequisite"
+  claim was never exercised. `GraphModel` was removed 2026-07-30 (see the Goal section's note).
 
 ### Approach (adapter-first, per Work Rules)
 
@@ -249,68 +251,38 @@ not, for the same stale-baseline reason noted above (baselines have since been r
 - ✅ `QObject` removal shipped, with a measured (if extrapolated, see above) per-node memory
   reduction on the `geom.net`-scale reference network.
 
-**Deliberately still out of scope for M2** (per the Work Rules — narrow first cut, not a rewrite):
-migrating any further `Graph` callers onto `GraphModel`, and M3/M4. Each is a separate,
-individually-regression-tested step from here.
+### Removed (2026-07-30)
+
+`GraphModel` was deleted (`b9508c17`): its stated prerequisite role was never exercised (the commit
+above shipped without it), its headless-testability rationale was already satisfied by `Graph` itself
+via `socnetv-cli`, and it had one trivial caller and zero references from any other workstream. Both
+callers reverted to the pre-`GraphModel` `m_graph[vpos[v1]]->...()` form. What remains permanently
+shipped from M2 is only the `QObject` removal and signal batching described above.
 
 ## M3 — Move pure data containers out of UI/Qt dependencies
 
-**Status: investigated (2026-07-29), deferred — no candidate clears the perf/UX bar without
-disproportionate risk.** Both leads from the M2 audit turned out to be wrong (see the correction in
-M2's "Current reality" above): `canvasWidth`/`canvasHeight` are genuine headless layout parameters,
-and `m_clickedEdge`/`m_vertexClicked` are already correctly placed in the UI-façade layer. That left
-one real candidate — the vertex list itself (`VList m_graph` + `vpos`) — investigated in detail
-below.
-
-### Investigated candidate: give `GraphModel` real ownership of `VList`/`vpos`
-
-Today `GraphModel` is a read-view over `Graph`'s private `m_graph`/`vpos`. The natural continuation
-of M2 is making `GraphModel` the actual owner, so it's constructible/testable without a full
-`Graph`/`QObject`/thread-affinity setup — direct WS6 payoff (headless structural tests that don't
-need to spin up a whole `Graph`).
-
-**Blast radius, from a direct grep of every `vpos` touch site:** ~140 call sites across 18 files
-(`graph_vertices.cpp` 33, `graph_edges.cpp` 21, `graph_vertex_style.cpp` 27, `graph_edge_style.cpp`
-10, `graph_distance_facade.cpp` 9, `graph_clustering_coefficients.cpp` 8, plus ten more files with
-1–6 sites each). `DistanceEngine` was checked specifically, since it's the one class with friend
-access to `Graph` internals — it does **not** touch `vpos`/`m_graph` directly; its 5 apparent hits
-are all `qDebug()` log text or a local variable also named `vpos`, not the member. So the friend
-grant isn't a blocker here, consistent with M2's earlier friend-access audit.
-
-**The real dragon: `Graph::vertexRemove()`'s reindexing (`graph_vertices.cpp:200–262`).** Deleting a
-vertex does a full `O(N)` rewrite of `vpos` — iterating a `const_iterator` over the entire hash while
-calling `vpos.insert()` on entries as it goes, decrementing every subsequent vertex's index in place
-— immediately followed by `m_graph.removeAt(doomedPos)`, with a third counter (`m_totalVertices`)
-kept in sync alongside both. This is genuinely fragile: it already carries a defensive
-`qCritical() << "Error in vpos for vertex number v:"` consistency check elsewhere in the same file
-(line ~727), suggesting `vpos` going stale has been a real historical concern, not a hypothetical
-one. Vertex creation also branches on an `order` flag between two different indexing modes
-(`vpos[number] = m_totalVertices` vs. `= m_graph.size()`). Any ownership move has to carry this
-exact logic across intact — it's not just relocating two containers, it's relocating a hand-rolled,
-already-delicate index-maintenance algorithm and every one of its ~140 call sites.
-
-**No performance payoff from ownership transfer alone.** `GraphModel::degreeOut()`/`degreeIn()`
-already call the same `vpos.value(v, -1)` lookup at the same complexity whether `Graph` or
-`GraphModel` holds the hash — moving *which object* owns the container doesn't change any algorithm.
-The only real benefit is WS6 testability, and no WS6 test is currently blocked waiting on it.
-
-**Conclusion:** the cost (mechanical but real multi-file refactor around fragile, safety-net-carrying
-reindex logic) doesn't clear the roadmap's own bar ("justified by a concrete win... not moved just to
-be 'out of Graph'") against a speculative future testability benefit. **Recommend deferring M3
-indefinitely** until a concrete, currently-blocked need shows up (e.g. a specific WS6 structural test
-that genuinely can't be written without a headless-constructible `GraphModel`) — at which point this
-section has the blast-radius and risk data ready. Recorded here so this isn't re-attempted later
-without this context. M4 was only ever blocked on M2 (already shipped), not on M3, so it's unaffected
-by this deferral — see below.
+**Status: investigated, deferred — no candidate clears the perf/UX bar.** The two leads from the M2
+audit were both wrong (`canvasWidth`/`canvasHeight` are genuine headless layout parameters;
+`m_clickedEdge`/`m_vertexClicked` are already correctly placed in the UI-façade layer). The one real
+candidate — giving a structural adapter real ownership of `VList m_graph`/`vpos` instead of just
+reading through `Graph` — was checked and rejected: `vpos` is touched at ~140 call sites across 18
+files, and `Graph::vertexRemove()` does a fragile hand-rolled `O(N)` reindex of it on every deletion
+(already carrying its own defensive consistency check, a sign this has broken before). Ownership
+transfer buys zero performance — same lookup, same complexity, wherever the hash lives — only a
+speculative future testability benefit with no currently-blocked test behind it. **Deferred
+indefinitely**; pick back up only if a concrete need appears.
 
 ## M4 — Gradually relocate caches into explicit cache objects
 
-**Status: not yet scoped**, but its motivating evidence already exists from the M2 research pass:
-`Graph`'s ~20 hand-managed `calculated*` boolean flags (no shared invalidation mechanism) are both
-a performance risk (over-conservative invalidation forces needless recompute) and a UX/correctness
-risk (a flag missed on the wrong mutation path shows a stale, wrong analysis result to the user
-with no indication anything's off). Full scoping — which caches, what invalidation model — waits
-for M2's `GraphModel` boundary to land first, but this is the concrete problem M4 exists to solve.
+**Status: investigated, deferred — stated motivation checked and found false.** M2's audit claimed
+`Graph`'s ~20 `calculated*` cache flags had "no shared invalidation mechanism." Checked directly
+against `Graph::setModStatus()` (`graph_metadata.cpp:159-193`): a shared mechanism already exists,
+called from 66 sites, and correctly invalidates at every real structural mutator checked
+(`vertexCreate`/`Remove`, `edgeCreate`/`Remove`, `relationSet`, `edgeFilterUnilateral`). No live
+staleness bug found. What's left is coarse-grained invalidation (safe, but wipes all caches on any
+structural change) with no measured recompute cost, and a real but not-currently-felt maintenance tax
+(new analyses require hand-editing the same shared reset block). **Deferred** alongside M3, for the
+same reason: no concrete, currently-felt problem to fix.
 
 ---
 
@@ -609,15 +581,3 @@ is closed.
 - Prefer adapters/wrappers first, not data migrations.
 - Every phase must be regression-clean before the next begins.
 - Dead members are removed after the phase that makes them dead is validated — not before.
-
----
-
-## Cross-cutting dependency — Undo/Redo (#31)
-
-Structural undo (add/delete nodes, weight changes, attribute mutations on the canvas) requires
-a `QUndoStack` integrated across the full Graph mutation API. This is a WS3 concern: a proper
-command pattern can only be introduced cleanly once the domain model and mutation API are
-stable. #31 is explicitly deferred until at least M2 of this roadmap.
-
-Note: filter-level undo (non-destructive visibility operations) is already handled by the
-`m_visibilityHistory` snapshot stack in `Graph` and is not blocked on WS3.
