@@ -215,7 +215,7 @@ Both phases shipped for v3.6.
 * OR logic between conditions.
 * Text-based DSL for scripting / CLI tool.
 * Clicking a query chip label to reopen the dialog with current conditions prefilled.
-* Arbitrary removal for selection / ego / centrality chips (depends on #31 structural undo or explicit parameter storage for those filter types).
+* Arbitrary removal for selection / ego / centrality chips (depends on #31 structural undo — see [WS13](roadmap_ws13_undo_redo.md) — or explicit parameter storage for those filter types).
 
 ---
 
@@ -309,7 +309,7 @@ Treat graphs as structured datasets.
 * Context menu: "Edit Selection in Data Table" (≥ 1 selected item) and "Set property for selection…" wired for both node and edge selections.
 * Data Table emptied on `initApp()` (new network or close) regardless of dock visibility.
 
-**Known gap — undo:** bulk operations bypass the undo stack. Undo support for attribute mutations is a broader infrastructure gap tracked under #224 (attribute system) and is deferred until a general undo/redo architecture is introduced.
+**Known gap — undo:** bulk operations bypass the undo stack. Undo support for attribute mutations is tracked in [WS13](roadmap_ws13_undo_redo.md) (#31).
 
 ### Phase 6 — Transformations (#229) *(deferred post-3.6)*
 
@@ -343,7 +343,7 @@ Defines:
 #31 is a long-standing user request for general undo on canvas operations.
 
 * **Filter-level undo** ✔ — implemented via the `m_visibilityHistory` snapshot stack; every non-destructive filter can be undone via "Restore All" or arbitrary chip removal (×).
-* **Structural edit undo** (add/delete nodes, attribute mutations, weight changes) — requires a proper `QUndoStack` across the full Graph mutation API; WS3-level concern, deferred post-3.6 (see WS9 Debt).
+* **Structural edit undo** (add/delete nodes, attribute mutations, weight changes) — not yet built. Previously described here as a "WS3-level concern" gated on WS3's domain model; that dependency was investigated (2026-07-30) and found false — see `roadmap_ws3_architecture_performance.md`'s "History" section. Tracked as its own workstream: [WS13](roadmap_ws13_undo_redo.md), which starts from the `m_visibilityHistory` pattern above as precedent.
 
 ### Temporal Data (#222)
 
@@ -405,7 +405,7 @@ Items explicitly deferred out of WS9 scope. Each has a home in the roadmap phase
 * **In-app derived fields** — compute a new attribute from existing ones (e.g. `full_name = first + " " + last`); value normalization (min-max, z-score); type coercion. Deferred: the CSV/JSON roundtrip workflow already covers the practical need via external spreadsheet tools.
 
 ### Infrastructure
-* **Structural undo / redo (#31)** — general `QUndoStack` across the full Graph mutation API; WS3-level concern (architecture & performance), explicitly deferred post-3.6. Filter-level undo is already covered by the `m_visibilityHistory` snapshot stack.
+* **Structural undo / redo (#31)** — tracked as its own workstream, [WS13](roadmap_ws13_undo_redo.md). Filter-level undo is already covered by the `m_visibilityHistory` snapshot stack, which WS13 uses as its starting precedent.
 * **Temporal data (#222)** — date/datetime attributes, interval filtering, timeline slider, network-over-time animation. The `Lte`/`Gte` operators in `FilterCondition` already support date-range queries once attributes are typed; the animation layer is the deferred part.
 * **Attribute inspector panel** and **persistent filter panel** as docked widgets — currently dialog-driven; full panel approach deferred until the UI decomposition (WS7) is underway.
 
