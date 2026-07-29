@@ -5718,6 +5718,111 @@ void MainWindow::processNextInteractiveCommand()
         }
         QTimer::singleShot(qRound(seconds * 1000), this, &MainWindow::processNextInteractiveCommand);
     }
+    else if (line.startsWith("relation "))
+    {
+        // Dispatched the same way editRelationChangeCombo's activated(int) does - a queued
+        // cross-thread call to Graph::relationSet(int), not a direct synchronous call.
+        bool ok = false;
+        const int relNum = line.mid(9).trimmed().toInt(&ok);
+        if (!ok || relNum < 0)
+        {
+            qWarning() << "Malformed 'relation' command, skipping:" << line;
+            processNextInteractiveCommand();
+            return;
+        }
+        QMetaObject::invokeMethod(activeGraph, "relationSet", Qt::QueuedConnection,
+                                  Q_ARG(int, relNum));
+        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+    }
+    else if (line.startsWith("erdos "))
+    {
+        // erdos <N> <p> <directed|undirected> - creates a deterministic-shape (though not
+        // deterministic-content, since it's still randomized) large Erdos-Renyi G(n,p) network
+        // for reliable stress-testing, without depending on an external large dataset file
+        // being present. Bypasses slotNetworkRandomErdosRenyi()'s modal "network created" info
+        // dialog, which would otherwise block a scripted run with no one to click it.
+        const QStringList parts = line.mid(6).trimmed().split(' ', Qt::SkipEmptyParts);
+        bool nOk = false, pOk = false;
+        const int n = parts.value(0).toInt(&nOk);
+        const qreal p = parts.value(1).toDouble(&pOk);
+        const QString directedness = parts.value(2, "directed");
+        if (!nOk || !pOk || n <= 0 || p < 0.0 || p > 1.0
+            || (directedness != "directed" && directedness != "undirected"))
+        {
+            qWarning() << "Malformed 'erdos' command, skipping:" << line;
+            processNextInteractiveCommand();
+            return;
+        }
+        const QString mode = (directedness == "undirected") ? "graph" : "digraph";
+        QMetaObject::invokeMethod(activeGraph, [this, n, p, mode]() {
+            activeGraph->randomNetErdosCreate(n, "G(n,p)", 0, p, mode, false);
+        }, Qt::QueuedConnection);
+        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+    }
+    else if (line == "unilateral")
+    {
+        // Same QAction the toolbar/menu item triggers, so this exercises the exact same
+        // code path (including its own pre-existing direct-call blocking behavior) as a
+        // real user click, not a shortcut around it.
+        editFilterEdgesUnilateralAct->trigger();
+        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+    }
+    else if (line.startsWith("save "))
+    {
+        // save <path> - always saves as GraphML, bypassing slotNetworkSave()'s fileName-based
+        // format detection and "Save As" dialog fallback (which would block a scripted run).
+        const QString path = line.mid(5).trimmed();
+        if (path.isEmpty())
+        {
+            qWarning() << "Malformed 'save' command, skipping:" << line;
+            processNextInteractiveCommand();
+            return;
+        }
+        QMetaObject::invokeMethod(activeGraph, [this, path]() {
+            activeGraph->saveToFile(path, FileType::GRAPHML, true, true);
+        }, Qt::QueuedConnection);
+        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+    }
+    else if (line == "add-node")
+    {
+        QMetaObject::invokeMethod(activeGraph, [this]() {
+            activeGraph->vertexCreateAtPosRandom(false);
+        }, Qt::QueuedConnection);
+        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+    }
+    else if (line.startsWith("add-edge "))
+    {
+        const QStringList parts = line.mid(9).trimmed().split(' ', Qt::SkipEmptyParts);
+        bool sOk = false, tOk = false;
+        const int source = parts.value(0).toInt(&sOk);
+        const int target = parts.value(1).toInt(&tOk);
+        const qreal weight = parts.value(2, "1").toDouble();
+        if (!sOk || !tOk)
+        {
+            qWarning() << "Malformed 'add-edge' command, skipping:" << line;
+            processNextInteractiveCommand();
+            return;
+        }
+        QMetaObject::invokeMethod(activeGraph, [this, source, target, weight]() {
+            activeGraph->edgeCreate(source, target, weight, "black", EdgeType::Directed,
+                                    true, false, QString(), true);
+        }, Qt::QueuedConnection);
+        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+    }
+    else if (line.startsWith("add-relation "))
+    {
+        const QString name = line.mid(13).trimmed();
+        if (name.isEmpty())
+        {
+            qWarning() << "Malformed 'add-relation' command, skipping:" << line;
+            processNextInteractiveCommand();
+            return;
+        }
+        QMetaObject::invokeMethod(activeGraph, [this, name]() {
+            activeGraph->relationAdd(name, true);
+        }, Qt::QueuedConnection);
+        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+    }
     else
     {
         qWarning() << "Unknown interactive script command, skipping:" << line;
