@@ -368,6 +368,29 @@ void Graph::edgeInboundStatusSet(const int &target, const int &source, const boo
 }
 
 /**
+ * @brief Plain relay to signalSetEdgeVisibility, for GraphVertex (a QtCore-only value class,
+ * not a QObject) to notify the UI layer of a single edge's visibility change. See #WS3 M2.
+ */
+void Graph::notifyEdgeVisibilityChanged(const int &relation, const int &source, const int &target,
+                                        const bool &toggle, const bool &preserveReverseEdge,
+                                        const int &edgeWeight, const int &reverseEdgeWeight)
+{
+    emit signalSetEdgeVisibility(relation, source, target, toggle, preserveReverseEdge,
+                                 edgeWeight, reverseEdgeWeight);
+}
+
+/**
+ * @brief Plain relay to signalSetEdgesVisibilityBatch, for GraphVertex to notify the UI layer
+ * of many edges' visibility changes as a single queued dispatch. See #WS3 M2.
+ */
+void Graph::notifyEdgesVisibilityBatch(const QList<EdgeVisibilityChange> &changes)
+{
+    if (changes.isEmpty())
+        return;
+    emit signalSetEdgesVisibilityBatch(changes);
+}
+
+/**
  * @brief Removes the directed arc v1->v2 or, if the graph is undirected, the edge v1 <->v2
  *
  * Emits signal to GW to delete the graphics item.

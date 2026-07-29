@@ -200,29 +200,6 @@ void Graph::edgeFilterReset()
 }
 
 /**
- * @brief Toggles (enables or disables) all edges of the given relation
- *
- * Calls the homonymous method of GraphVertex class.
- *
- * @param relation
- * @param status
- */
-void Graph::edgeFilterByRelation(int relation, bool status)
-{
-    qDebug() << "toggling all edges in relation" << relation << "to status" << status;
-    VList::const_iterator it;
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-        if (!(*it)->isEnabled())
-        {
-            // Skip if the node is disabled.
-            continue;
-        }
-        (*it)->setEnabledEdgesByRelation(relation, status);
-    }
-}
-
-/**
  * @brief Enables or disables unilateral edges in current relationship.
  *
  * If toggle=true, all non-reciprocal edges are disabled, effectively making
@@ -233,11 +210,15 @@ void Graph::edgeFilterByRelation(int relation, bool status)
 void Graph::edgeFilterUnilateral(const bool &toggle)
 {
     qDebug() << "Toggling unilateral edges:" << toggle;
+    // Collected into one batch and dispatched once (WS3 M2) - see the matching comment in
+    // relationSet().
+    QList<EdgeVisibilityChange> visibilityChanges;
     VList::const_iterator it;
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-        (*it)->setEnabledUnilateralEdges(toggle);
+        visibilityChanges.append((*it)->setEnabledUnilateralEdges(toggle));
     }
+    notifyEdgesVisibilityBatch(visibilityChanges);
     setModStatus(ModStatus::EdgeCount);
     progressStatus(tr("Unilateral edges have been temporarily disabled."));
 }

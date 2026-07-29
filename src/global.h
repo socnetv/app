@@ -240,6 +240,34 @@ public:
 };
 
 /**
+ * @class EdgeVisibilityChange
+ * @brief One edge's visibility change, batched with others in signalSetEdgesVisibilityBatch
+ * (WS3 M2) so a bulk operation (e.g. a relation switch touching every edge) crosses from
+ * graphThread to the GUI thread as a single queued dispatch instead of one per edge.
+ *
+ * Mirrors the parameters of Graph::signalSetEdgeVisibility / GraphicsWidget::setEdgeVisibility.
+ */
+class EdgeVisibilityChange
+{
+public:
+    int relation = 0;
+    int source = 0;
+    int target = 0;
+    bool visible = false;
+    bool preserveReverseEdge = false;
+    int edgeWeight = 1;
+    int reverseEdgeWeight = 1;
+
+    EdgeVisibilityChange() = default;
+
+    EdgeVisibilityChange(const int &rel, const int &src, const int &tgt, const bool &vis,
+                         const bool &preserveReverse = false,
+                         const int &weight = 1, const int &reverseWeight = 1)
+        : relation(rel), source(src), target(tgt), visible(vis),
+          preserveReverseEdge(preserveReverse), edgeWeight(weight), reverseEdgeWeight(reverseWeight) {}
+};
+
+/**
  * @class GraphDistance
  * @brief Holds a (target, distance) pair for use in Dijkstra's priority queue.
  */

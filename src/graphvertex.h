@@ -16,7 +16,6 @@
 #ifndef GRAPHVERTEX_H
 #define GRAPHVERTEX_H
 
-#include <QObject>
 #include <QString>
 #include <QStringList>
 #include <QHash>
@@ -26,6 +25,10 @@
 #include <QPair>
 
 #include <map>
+
+#include "global.h"
+
+SOCNETV_USE_NAMESPACE
 
 using namespace std;
 
@@ -48,8 +51,14 @@ typedef QPair <int, int> pair_i_i;
 typedef QHash < int, pair_i_i > H_shortestPaths;
 
 
-class GraphVertex : public QObject{
-    Q_OBJECT
+/**
+ * @class GraphVertex
+ * @brief Plain QtCore value class (not a QObject, WS3 M2) representing a vertex and its
+ * adjacency. Notifies the UI layer of edge-visibility changes via a plain call to its
+ * owning Graph (Graph::notifyEdgeVisibilityChanged / notifyEdgesVisibilityBatch) rather
+ * than emitting its own signal.
+ */
+class GraphVertex {
 
 public:
 
@@ -69,8 +78,6 @@ public:
                 const int &edgesEstimate = 2000,
                 const QHash<QString,QString> &nodeAttr = QHash<QString,QString>()
     );
-
-    GraphVertex(const int &name);
 
     ~GraphVertex();
 
@@ -128,7 +135,7 @@ public:
     void set_dispY (qreal y);
     QPointF & disp();
 
-    void setRelation(int newRel) ;
+    QList<EdgeVisibilityChange> setRelation(int newRel);
 
     void addOutEdge (const int &v2, const qreal &weight, const QString &color=QString(), const QString &label=QString());
     qreal hasEdgeTo(const int &v, const bool &allRelations=false);
@@ -175,8 +182,8 @@ public:
     int inDegreeConst();
     int localDegree();
 
-    void setEnabledEdgesByRelation(const int relation, const bool status);
-    void setEnabledUnilateralEdges(const bool &status=false);
+    QList<EdgeVisibilityChange> setEnabledEdgesByRelation(const int relation, const bool status);
+    QList<EdgeVisibilityChange> setEnabledUnilateralEdges(const bool &status=false);
 
     qreal distance(const int &v1) ;
     void setDistance (const int &v1, const qreal &d) ;
@@ -283,16 +290,6 @@ public:
     H_distance m_distance;
 
     H_shortestPaths m_shortestPaths;
-
-signals:
-    void signalSetEdgeVisibility (const int &relation,
-                                  const int &name,
-                                  const int &target,
-                                  const bool &visible,
-                                  const bool &preserveReverseEdge=false,
-                                  const int &edgeWeight=1,
-                                  const int &reverseEdgeWeight=1
-                                  );
 
 protected:
 

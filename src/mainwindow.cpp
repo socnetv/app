@@ -5355,6 +5355,9 @@ void MainWindow::initSignalSlots()
     connect(activeGraph, &Graph::signalSetEdgeVisibility,
             graphicsWidget, &GraphicsWidget::setEdgeVisibility);
 
+    connect(activeGraph, &Graph::signalSetEdgesVisibilityBatch,
+            graphicsWidget, &GraphicsWidget::setEdgesVisibilityBatch);
+
     connect(activeGraph, &Graph::signalRelationChangedToGW,
             graphicsWidget, &GraphicsWidget::relationSet);
 

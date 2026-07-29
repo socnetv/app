@@ -161,6 +161,10 @@ public slots:
                             const int &edgeWeight=1,
                             const int &reverseEdgeWeight=1);
 
+    // Bulk counterpart of setEdgeVisibility (WS3 M2): applies a whole batch in one queued
+    // dispatch instead of one per edge - see Graph::signalSetEdgesVisibilityBatch.
+    void setEdgesVisibilityBatch(const QList<EdgeVisibilityChange> &changes);
+
     bool setEdgeDirectionType(const int &source,
                               const int &target,
                               const int &dirType=false);

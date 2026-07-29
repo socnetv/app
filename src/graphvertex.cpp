@@ -75,33 +75,6 @@ GraphVertex::GraphVertex(Graph* parentGraph,
     m_CLC=0; m_hasCLC=false;
     m_curRelation=relation;
     m_enabled = true;
-
-    // Connect signal for edge visibility directly to the parent signal!
-    connect( this, &GraphVertex::signalSetEdgeVisibility,
-             m_graph, &Graph::signalSetEdgeVisibility);
-
-}
-
-
-/**
- * @brief constructor with default values
- * @param name
- */
-GraphVertex::GraphVertex(const int &name) {
-    qDebug() << "name"<<  name << "initializing with default values";
-    m_number=name;
-	m_size=9;
-	m_color="black";
-	m_label="";
-	m_labelColor="black";
-	m_shape="circle";
-    m_outEdgesCounter=0;
-    m_inEdgesCounter=0;
-    m_Eccentricity=0;
-    m_DC=0; m_SDC=0; m_DP=0; m_SDP=0; m_CC=0; m_SCC=0; m_BC=0; m_SBC=0;
-    m_IRCC=0; m_SIRCC=0; m_SC=0; m_SSC=0;
-    m_curRelation=0;
-    m_customAttributes = QHash<QString,QString>();
 }
 
 
@@ -416,14 +389,15 @@ QPointF& GraphVertex::disp() { return m_disp; }
 *
 * @param newRel
 */
-void GraphVertex::setRelation(int newRel) {
+QList<EdgeVisibilityChange> GraphVertex::setRelation(int newRel) {
 //    qDebug() << "vertex" << number() << "current rel:" << m_curRelation << "new rel:" << newRel;
     // first make false all edges of current relation
-    setEnabledEdgesByRelation(m_curRelation, false);
+    QList<EdgeVisibilityChange> changes = setEnabledEdgesByRelation(m_curRelation, false);
     // then make true all edges of new relation
-    setEnabledEdgesByRelation(newRel, true);
+    changes.append(setEnabledEdgesByRelation(newRel, true));
     // update current relation
     m_curRelation=newRel;
+    return changes;
 }
 
 
@@ -533,7 +507,7 @@ void GraphVertex::setOutEdgeEnabled (const int &target, bool status){
 //                         << " weight " << weight
 //                         << " status " << it1.value().second.second;
                 it1.value() = pair_i_fb(m_curRelation, pair_f_b(weight, status) );
-                emit signalSetEdgeVisibility (m_curRelation, m_number, target, status );
+                m_graph->notifyEdgeVisibilityChanged(m_curRelation, m_number, target, status);
                 break;
             }
         }
@@ -725,7 +699,7 @@ void GraphVertex::setInEdgeEnabled (const int &source, bool status){
 //                         << " weight " << weight
 //                         << " status " << it1.value().second.second;
                 it1.value() = pair_i_fb(m_curRelation, pair_f_b(weight, status) );
-                emit signalSetEdgeVisibility (m_curRelation, source, m_number, status );
+                m_graph->notifyEdgeVisibilityChanged(m_curRelation, source, m_number, status);
                 break;
             }
         }
@@ -1152,8 +1126,9 @@ int GraphVertex::localDegree(){  int v2=0;
  *
  * @param status
  */
-void GraphVertex::setEnabledUnilateralEdges(const bool &status){
+QList<EdgeVisibilityChange> GraphVertex::setEnabledUnilateralEdges(const bool &status){
 //    qDebug() << "vertex:" << number() << "setting unilateral edges of relation" << relation << "to" << status;
+    QList<EdgeVisibilityChange> changes;
     int target=0;
     qreal weight=0;
     H_edges::iterator it;
@@ -1164,10 +1139,11 @@ void GraphVertex::setEnabledUnilateralEdges(const bool &status){
             if (hasEdgeFrom(target)==0) {
 //                qDebug() << "vertex:" << number() << "Changing the status of unilateral outbound edge to" << target << "new status" << status << "and emitting signal to Graph....";
                 it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, status) );
-                emit signalSetEdgeVisibility (m_curRelation, m_number, target, status );
+                changes.append(EdgeVisibilityChange(m_curRelation, m_number, target, status));
             }
         }
     }
+    return changes;
 }
 
 
@@ -1178,8 +1154,9 @@ void GraphVertex::setEnabledUnilateralEdges(const bool &status){
  * @param relation
  * @param status
  */
-void GraphVertex::setEnabledEdgesByRelation(const int relation, const bool status ){
+QList<EdgeVisibilityChange> GraphVertex::setEnabledEdgesByRelation(const int relation, const bool status ){
 //    qDebug() << "vertex:" << number() << "setting edges of relation" << relation << "to" << status;
+    QList<EdgeVisibilityChange> changes;
     int target=0;
     qreal weight =0;
     int edgeRelation=0;
@@ -1190,9 +1167,10 @@ void GraphVertex::setEnabledEdgesByRelation(const int relation, const bool statu
             target=it1.key();
             weight = it1.value().second.first;
             it1.value() = pair_i_fb(relation, pair_f_b(weight, status) );
-            emit signalSetEdgeVisibility ( relation, m_number, target, status );
+            changes.append(EdgeVisibilityChange(relation, m_number, target, status));
         }
     }
+    return changes;
 }
 
 

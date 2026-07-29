@@ -196,8 +196,6 @@ public slots:
     void edgeFilterByWeight(const qreal, const bool);
     void edgeFilterReset();
 
-    void edgeFilterByRelation(int relation, bool status);
-
     void edgeFilterUnilateral(const bool &toggle);
 
     Graph *subgraphExtract(const QString &name,
@@ -339,6 +337,10 @@ signals:
                                  const bool &preserveReverseEdge = false,
                                  const int &edgeWeight = 1,
                                  const int &reverseEdgeWeight = 1); // The last two are used only if we need to draw the edge
+
+    // Bulk counterpart of signalSetEdgeVisibility (WS3 M2): a whole-graph operation like a
+    // relation switch crosses to the GUI thread as one queued dispatch instead of one per edge.
+    void signalSetEdgesVisibilityBatch(const QList<EdgeVisibilityChange> &changes);
 
     void setVertexVisibility(const int &number, const bool &toggle);
 
@@ -693,6 +695,15 @@ public:
     void edgeInboundStatusSet(const int &target,
                               const int &source,
                               const bool &toggle = false);
+
+    // Plain (non-signal) relay points for GraphVertex, a QtCore-only value class holding a
+    // Graph* rather than a QObject connection (WS3 M2). Each just emits the corresponding
+    // signal below - this is what lets GraphVertex notify the UI layer without being a
+    // QObject itself.
+    void notifyEdgeVisibilityChanged(const int &relation, const int &source, const int &target,
+                                     const bool &toggle, const bool &preserveReverseEdge = false,
+                                     const int &edgeWeight = 1, const int &reverseEdgeWeight = 1);
+    void notifyEdgesVisibilityBatch(const QList<EdgeVisibilityChange> &changes);
 
     void edgeRemove(const int &v1,
                     const int &v2,

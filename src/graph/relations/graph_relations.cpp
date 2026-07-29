@@ -68,6 +68,11 @@ void Graph::relationSet(int relNum, const bool &updateUI)
     // Force enabled vertices to disable all edges
     // in the old relation and enable edges in the new relation
     //
+    // Collected into one batch and dispatched once at the end (WS3 M2) rather than emitting
+    // per-edge - a relation switch on a large network can touch thousands of edges, and each
+    // GraphicsWidget-bound signal crosses from graphThread to the GUI thread as a queued call.
+    //
+    QList<EdgeVisibilityChange> visibilityChanges;
     VList::const_iterator it;
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
@@ -76,8 +81,9 @@ void Graph::relationSet(int relNum, const bool &updateUI)
                  << "to" << relNum;
         if (!(*it)->isEnabled())
             continue;
-        (*it)->setRelation(relNum);
+        visibilityChanges.append((*it)->setRelation(relNum));
     }
+    notifyEdgesVisibilityBatch(visibilityChanges);
 
     //
     // Save the current relation's directed state before switching.

@@ -1325,6 +1325,23 @@ void GraphicsWidget::setEdgeVisibility(const int &relation,
     }
 }
 
+/**
+ * @brief Applies a batch of edge visibility changes in one call (WS3 M2).
+ *
+ * Reuses setEdgeVisibility() per entry unchanged - the only difference from N separate
+ * signal/slot dispatches is that this whole batch crosses from graphThread to the GUI
+ * thread as a single queued call, not one per edge. See Graph::signalSetEdgesVisibilityBatch.
+ *
+ * @param changes
+ */
+void GraphicsWidget::setEdgesVisibilityBatch(const QList<EdgeVisibilityChange> &changes)
+{
+    for (const EdgeVisibilityChange &c : changes) {
+        setEdgeVisibility(c.relation, c.source, c.target, c.visible,
+                          c.preserveReverseEdge, c.edgeWeight, c.reverseEdgeWeight);
+    }
+}
+
 
 /**
  * @brief Toggles the visibility of all items of the given type
