@@ -18,8 +18,8 @@ the goal is to separate those concerns without a disruptive rewrite — see "Tar
 | M1 continuation — flat relation-keyed matrices | 🔵 Delegated to WS5 | [Active / Next Up](#m1-continuation--replace-distributed-vertex-qhash-storage-with-flat-relation-keyed-matrices) |
 | #254 — GUI freeze during long weighted-centrality computation | ✅ Done (28/28 entry points) | [Archive](#254--ui-responsiveness-during-long-weighted-centrality-computations--complete) |
 | #263 — IC/EVC/Walks Total still block the GUI (out of #254's original scope) | ✅ Done | [Archive](#263--informationeigenvector-centrality-and-walks-total-still-block-the-gui--complete) |
-| M2 — Introduce `GraphModel` | 🟡 Design drafted, not started | [M2](#m2--introduce-graphmodel) |
-| M3 — Move pure data containers out of UI/Qt dependencies | ⚪ Not scoped (blocked on M2) | [M3](#m3--move-pure-data-containers-out-of-uiqt-dependencies) |
+| M2 — Introduce `GraphModel` | ✅ Done (2026-07-29) — adapter + one migrated caller, `GraphVertex` `QObject` removal, edge-visibility signal batching | [M2](#m2--introduce-graphmodel) |
+| M3 — Move pure data containers out of UI/Qt dependencies | ⚪ Not scoped (M2 landed — ready to scope) | [M3](#m3--move-pure-data-containers-out-of-uiqt-dependencies) |
 | M4 — Relocate caches into explicit cache objects | ⚪ Not scoped (blocked on M2) | [M4](#m4--gradually-relocate-caches-into-explicit-cache-objects) |
 | GraphicsWidget canvas rendering performance | ✅ Phase 1 done, more scoped | Elevated to its own workstream — see [WS10](roadmap_ws10_graphicswidget_overhaul.md) |
 
@@ -66,10 +66,12 @@ than assuming the win.
 
 ## M2 — Introduce `GraphModel`
 
-**Status: first cut shipped (2026-07-29).** `GraphModel` exists (`src/graph/core/graph_model.h`/`.cpp`)
-and one real caller (`Graph::vertexDegreeOut()`/`vertexDegreeIn()`) reads through it instead of
-touching `m_graph`/`vpos` directly — see "First cut shipped" below for what landed and what's still
-open (`QObject` removal, more callers, M3/M4).
+**Status: ✅ Done (2026-07-29).** `GraphModel` exists (`src/graph/core/graph_model.h`/`.cpp`) and one
+real caller (`Graph::vertexDegreeOut()`/`vertexDegreeIn()`) reads through it instead of touching
+`m_graph`/`vpos` directly (`9c2461a0`). `GraphVertex`'s `QObject` inheritance was then dropped and
+the edge-visibility signal path batched (`4e07ec3f`) — see "Shipped" below for both commits and the
+checked-off completion criteria. Still open, deliberately deferred beyond M2's scope: migrating
+further `Graph` callers onto `GraphModel`, and M3/M4.
 
 **Every item below is filtered through WS3's actual purpose — performance and UX, not tidiness for
 its own sake.** M2 is worth doing only insofar as it makes the app faster or more correct-feeling
@@ -157,7 +159,7 @@ a UI orchestration mechanism. Engines/services must not emit/call UI-facing beha
      network (e.g. `geom.net`, 7343 nodes), not just "should be smaller" — matching this roadmap's
      own performance-evidence standard set by M1's benchmark tables.
 
-### First cut shipped (2026-07-29)
+### Shipped (2026-07-29)
 
 `GraphModel` (`src/graph/core/graph_model.h`/`.cpp`) is a plain, non-`QObject` class holding a
 `Graph&` and exposing `vertexCount()`, `degreeOut(int)`, `degreeIn(int)` — built entirely on
@@ -182,9 +184,55 @@ reading both implementations), so there's no reason to expect a difference. Re-r
 baseline is tracked separately — not blocking this change, but worth doing so future timing
 comparisons here are actually trustworthy.
 
-**Deliberately not done in this first cut** (kept narrow, per the Work Rules): the `QObject`
-removal investigation (Approach step 3), migrating any further callers, and M3/M4. Each is a
-separate, individually-regression-tested step from here.
+**Second commit (`4e07ec3f`), same day:** `GraphVertex` dropped `QObject`/`Q_OBJECT`/its
+`signals:` block. Its one signal (`signalSetEdgeVisibility`, relayed 1:1 into `Graph`'s
+identically-shaped signal via a same-thread `Direct` connection) was its only `QObject`-dependent
+behaviour — confirmed by a full-codebase grep for `deleteLater`, `qobject_cast`, `QPointer`,
+`moveToThread`, `tr()`, or any other `connect()` involving `GraphVertex`; none exist. It now calls
+plain methods on its owning `Graph` (`notifyEdgeVisibilityChanged()` /
+`notifyEdgesVisibilityBatch()`) instead of emitting its own signal.
+
+Measured `sizeof(GraphVertex)`: 584 → 568 bytes (16 bytes/vertex from the removed vtable pointer +
+inline `QObject` state), ×7343 nodes on the `geom.net` reference network ≈ 117 KB — plus eliminating
+`QObjectPrivate`'s separate heap allocation entirely, per vertex, which the `sizeof()` diff alone
+doesn't capture. This is a struct-layout measurement extrapolated across node count, not a live
+RSS/heap-profiler reading on a loaded process — real evidence, but worth being explicit that it's
+extrapolated, not measured live.
+
+Same commit also batched the two bulk edge-visibility call sites: `Graph::relationSet()` and
+`Graph::edgeFilterUnilateral()` previously emitted `signalSetEdgeVisibility` once per edge — each a
+separate queued cross-thread `QMetaCallEvent` (`graphThread` → GUI thread) — potentially thousands
+of individual dispatches for one relation switch or unilateral-edge toggle on a large network. Both
+now collect a `QList<EdgeVisibilityChange>` and fire one `signalSetEdgesVisibilityBatch` at the end;
+`GraphicsWidget::setEdgesVisibilityBatch()` applies the whole batch through the existing, unchanged
+`setEdgeVisibility()` in a plain loop — per-edge canvas behaviour (hash lookups, reverse-edge
+handling, possible edge creation/deletion) is byte-for-byte identical to before; only the dispatch
+count changed.
+
+**Correctness evidence for the batching change specifically:** seven new `--interactive-script`
+commands (`relation`, `unilateral`, `erdos`, `save`, `add-node`, `add-edge`, `add-relation` — #262,
+`3e9d0245`, see [`roadmap_ws12_cli_scripting_mode.md`](roadmap_ws12_cli_scripting_mode.md)) were
+built specifically to drive both batched call sites end-to-end through the real Qt event loop on
+real networks (a small deterministic ER graph, then Krackhardt), covering relation switches,
+unilateral toggles, and multi-relation graphs with newly-added nodes/edges. No bugs found. Combined
+with a direct parameter-order audit against the original per-edge emit calls and a log-grep
+confirming no "cannot queue arguments" metatype warnings for `EdgeVisibilityChange` crossing
+threads, this is the actual evidence base for "no regression" here — `run_benchmarks.sh` passing is
+not, for the same stale-baseline reason noted above (baselines have since been re-recorded against
+`v3.6`, see `docs/roadmaps/roadmap_ws6_testing_ci_regression.md` and the perf-baseline commits).
+
+**Completion criteria — checked off:**
+- ✅ `run_golden_compares.sh` / `run_golden_io_roundtrip.sh` pass unchanged (re-verified against
+  current `develop` HEAD, both commits included).
+- ✅ `GraphModel` is constructible and queryable with zero Qt widget/thread machinery.
+- ✅ `Graph::vertexDegreeOut()`/`vertexDegreeIn()` read through `GraphModel` instead of `Graph`
+  directly.
+- ✅ `QObject` removal shipped, with a measured (if extrapolated, see above) per-node memory
+  reduction on the `geom.net`-scale reference network.
+
+**Deliberately still out of scope for M2** (per the Work Rules — narrow first cut, not a rewrite):
+migrating any further `Graph` callers onto `GraphModel`, and M3/M4. Each is a separate,
+individually-regression-tested step from here.
 
 ## M3 — Move pure data containers out of UI/Qt dependencies
 
