@@ -140,6 +140,15 @@ All notable changes to this project are documented in this file.
     (different-algorithm) computation. Now non-blocking, same as every
     other long-running analysis.
 
+  - **Walks Total matrix no longer shows misleadingly precise huge numbers**
+    (#266): on networks past roughly a few dozen nodes, cell values in the
+    **Walks Total** report could reach hundreds of digits, printed in full
+    as if exact — walk counts genuinely grow that large (the underlying
+    formula is correct), but `double` only carries ~15-17 significant
+    digits of real precision, so most of those digits were meaningless.
+    Cell values beyond 1000 now render in scientific notation instead,
+    which is honest about the precision actually available.
+
 ### Maintenance
 
   - WS3 roadmap renamed from "Domain Model Split" to **"Architecture &

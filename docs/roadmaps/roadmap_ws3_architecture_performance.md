@@ -432,14 +432,19 @@ stay synchronous on the GUI thread; only the computation + file write moved onto
 `writeMatrixWalks()` returns `void`, so its completion is checked via `activeGraph->progressCanceled()`
 in the completion callback instead of the `shared_ptr<bool> success` pattern the other two use.
 
-**Separate finding, not part of this fix:** Walks Total's underlying computation
+**Separate finding, fixed separately as #266:** Walks Total's underlying computation
 (`Graph::graphWalksMatrixCreate()`, `graph_reachability_walks.cpp`) sums the adjacency matrix raised
 to *every* power from 1 to N-1, stored as `qreal`/`double`. For networks past roughly a few dozen
-nodes, walk counts at high powers exceed `double`'s ~15-17 significant digits and can overflow to
-`inf` — the existing warning dialog only warns about *speed*, not numerical validity, so the feature
-can silently produce meaningless numbers well before it becomes impractically slow to wait for.
-Reported live on a 250-node Erdős–Rényi network. Filed separately (#266) — a numerical-correctness/
-UX issue, not a threading one, out of scope for this async-dispatch fix.
+nodes, walk counts at high powers vastly exceed `double`'s ~15-17 significant digits — the existing
+warning dialog only warns about *speed*, not numerical validity, so the feature could silently
+produce hundred-plus-digit cell values in the HTML report, printed in full via `Qt::fixed`, looking
+exact when almost none of those digits were meaningful. Reported live on a 250-node Erdős–Rényi
+network. **The summation formula itself is correct** — total walks of any length ≤ N-1 is the
+standard SNA definition — this was a display-honesty issue, not a computation bug. Fixed by
+switching `writeMatrixHTMLTable()` (`graph_reports.cpp`, shared by every matrix report) to
+scientific notation for any cell magnitude beyond 1000, rather than attempting arbitrary-precision
+arithmetic — a 300-digit "exact" walk count wouldn't be a more useful statistic than an honestly
+imprecise one.
 
 ### GraphicsWidget — Performance and Code Quality Overhaul (#250) ✅ Complete
 
