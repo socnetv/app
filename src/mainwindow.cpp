@@ -14982,21 +14982,31 @@ void MainWindow::slotAnalyzeCentralityInformation()
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    if (activeNodes() > 200)
+    // WS14: recalibrated 2026-07-31 after L4 removed matrix.cpp's qDebug() formatting tax, which
+    // (per real measurement) had been the dominant cost at the old n>200 threshold -- the previous
+    // "2 minutes for 600 nodes on an i7 4790K" claim is now off by roughly two orders of magnitude
+    // (600 nodes measures ~1.2s post-fix). The genuine O(n^3) matrix-inversion cost this warns
+    // about is real and unaffected by that fix, though, and does become slow again at large n --
+    // measured (MacBook Pro M5, 24GB RAM): 1000 nodes ~3.1s, 2000 nodes ~15.8s, growing faster than
+    // linearly beyond that. Threshold raised accordingly; wording updated to current numbers, to lead
+    // with the more important caveat now that speed alone rarely justifies interrupting the user:
+    // this computation is not yet cancellable once started (WS5 roadmap, issue I1).
+    if (activeNodes() > 2000)
     {
         switch (
             QMessageBox::critical(
                 this, "Slow function warning",
-                tr("Please note that this function is <b>SLOW</b> on large "
-                   "networks (n>200), since it will calculate  a (n x n) matrix A with: <br>"
+                tr("Please note that this function can be <b>SLOW</b> on very large "
+                   "networks (n>2000), and cannot currently be canceled once started. <br><br>"
+                   "It computes the (n x n) matrix A with: <br>"
                    "Aii=1+weighted_degree_ni <br>"
                    "Aij=1 if (i,j)=0 <br>"
                    "Aij=1-wij if (i,j)=wij <br>"
-                   "Next, it will compute the inverse matrix C of A. "
-                   "The computation of the inverse matrix is a CPU intensive function "
-                   "although it uses LU decomposition. <br>"
-                   "How slow is this? For instance, to compute IC scores of 600 nodes "
-                   "on a modern i7 4790K CPU you will need to wait for 2 minutes at least. <br>"
+                   "then computes the inverse matrix C of A via LU decomposition -- an O(n&sup3;) "
+                   "operation. <br><br>"
+                   "How slow is this? On a modern machine, a 2,000-node network takes about 15 "
+                   "seconds; since the cost grows roughly cubically with network size, much larger "
+                   "networks (tens of thousands of nodes) can take several minutes or more. <br>"
                    "Are you sure you want to continue?"),
                 QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Cancel))
         {
