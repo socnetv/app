@@ -244,6 +244,90 @@ Possible improvements:
 - separate IO load-time thresholds from compute-time thresholds where needed
 - document baseline update rules (rare; only for real semantic fixes)
 
+#### Known: parallel reduction is FP non-deterministic, with ~2.9× tolerance headroom
+
+Found 2026-07-30 while measuring something else. **Not a live failure — a thin margin worth knowing
+before baselines grow.**
+
+The same binary produces a *different* result on every run. Measured: 40 consecutive runs of the
+`StokmanZiegler_Netherlands` weighted case (`-c 1 -w 1 -x 1`) produced **40 distinct outputs**.
+Cause is floating-point summation order in WS3 M1's parallel BC/SC reduction — thread scheduling
+decides the accumulation order, and FP addition isn't associative. Affects `BC`, `SBC`, `PC`, `SPC`
+and `metrics.avg_distance`.
+
+This is currently absorbed by the harness: per-node fields compare with a **relative** tolerance of
+`1e-15` (`kernel_distance_v1.cpp:186` → `almostEqual()`, `cli_common.cpp:129`), and graph-level
+`avg_distance` via `cmpNumStrTol(..., 1e-15)`. All 40 golden compares passed.
+
+The concern is the margin. Worst observed relative spread across 25 runs: **3.4e-16** against a
+`1e-15` tolerance — **2.9× headroom**, no more. That margin shrinks as thread count and accumulation
+chain length grow, and WS6.2 explicitly plans to add *larger* datasets. A `geom.net`-scale baseline
+(7343 nodes) could plausibly exceed `1e-15` and turn the suite intermittently red, which is the
+worst possible failure mode for a regression harness — flaky, unreproducible, and easy to
+misattribute to whatever change happened to be in flight.
+
+Also worth correcting: `cli_common.cpp:46` documents `d2s()` as *"Deterministic string for golden
+compare (avoid float parse/format differences)"* — the formatting is deterministic, but the value
+being formatted is not. The comment currently implies a guarantee the engine stopped providing when
+the source loop was parallelised.
+
+#### This is a harness-precision question, not a results-precision one
+
+Worth stating plainly, because it decides the fix: **no user ever sees the digits that vary.**
+SocNetV's reports already render real numbers at **6 significant digits** — `m_reportsRealPrecision`
+defaults to 6 (`graph.cpp:112`, mirrored by `appSettings["initReportsRealNumberPrecision"]`,
+`mainwindow.cpp:514`) and is user-configurable via Settings; every report writer applies it through
+`outText.setRealNumberPrecision(m_reportsRealPrecision)`. A drift at the 16th significant digit is
+invisible in every report SocNetV produces, and no researcher is interpreting a centrality score
+past 2–3 digits anyway.
+
+So the 17-digit `d2s()` serialization and the `1e-15` compare tolerance exist **only inside the
+golden harness**. They are a regression detector, not a result. The harness is currently about
+**eleven orders of magnitude stricter than the product's own output resolution** — which is why it
+is the harness, not the engine, that should give.
+
+**Choosing a tolerance.** Two bounds, and a lot of room between them:
+
+- *Floor* — must sit above FP noise: `3.4e-16` today, and rising with thread count and network size.
+- *Ceiling* — must sit below the smallest difference that indicates a real defect. A genuine
+  semantic regression (wrong formula, wrong normalisation, wrong traversal, off-by-one in a path
+  count) moves the leading significant digits — relative differences of `1e-3` and up, not `1e-15`.
+  A useful anchor: a difference invisible at the product's own 6-digit display is arguably not an
+  observable regression at all.
+
+Something around `1e-9` sits ~7 orders above the noise floor and ~3 below display resolution, and
+would catch every class of real regression the harness is actually there to catch. The exact figure
+should be argued and recorded in the code, not just bumped until the suite goes quiet.
+
+**Two things not to change while doing this:**
+
+- **Keep `d2s()` at 17 digits.** The baseline file should losslessly record what actually happened;
+  rounding at serialization creates boundary artifacts (`0.4999995` and `0.5000005` round apart
+  while being equal to within any sane tolerance). Compare-time tolerance is strictly more robust
+  than round-then-compare.
+- **Keep integer-valued results on exact comparison.** `diameter`, `disconnected_pairs`, component
+  IDs, triad/clique census counts and similar go through `cmpInt`, not `almostEqual`. Those are
+  counts, they are exact, and an off-by-one there is a real bug — no tolerance should ever be
+  applied to them. The split already exists; preserve it.
+
+**The alternative — determinism by construction — is not free.** Slots are assigned by *thread
+identity* (`distance_engine.cpp:487-499`): a `QHash<Qt::HANDLE,int>` hands each OS thread a slot on
+first entry, and `QtConcurrent::blockingMap` distributes sources across threads however the
+scheduler happens to. The final reduction over `allStates` *is* already fixed-order — the drift
+comes from the *partitioning*, i.e. which sources' BC/SC contributions get grouped into which
+partial accumulator, not from the merge. Making that deterministic means statically partitioning
+`sources` into P fixed chunks and mapping over chunk descriptors instead of over individual sources,
+which trades away `blockingMap`'s dynamic load balancing — and sources differ substantially in cost,
+so that could eat into M1's measured 2.7×–8.3×. **Unmeasured; do not assume either way.** Given that
+the tolerance argument above resolves the problem without touching the engine at all, this is the
+fallback, not the first move.
+
+**Suggested order:** widen the tolerance with the reasoning recorded → then measure the actual
+spread at `geom.net` scale (7343 nodes) to confirm the new margin holds where WS6.2 is heading.
+
+Reproduce: run the same `--dump-json` invocation N times and hash the output with `_ms` fields
+stripped.
+
 ---
 
 ### WS6.5 — CI integration (LAST)
