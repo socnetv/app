@@ -180,6 +180,13 @@ Insertion points, found by reading each method directly:
   which compute arithmetic purely in order to print it), which is why
   [WS14](roadmap_ws14_logging_cost.md)'s L4 needs the same decision. Make it once, in whichever
   workstream gets there first, and record it in both.
+
+  **Decision made (2026-07-31, in WS14's L4): keep it, don't delete.** Its logging was converted to
+  `qCDebug(lcMatrix)` like the rest of `matrix.cpp` — the O(N³) landmine above is defused (near-free
+  when the category is disabled) but the method itself still has no reachable caller. A5's
+  cancellation-support work on this method is therefore still adding a feature to dead code — that
+  part of the original concern stands regardless of the logging decision, and is A5's call to make,
+  not WS14's.
 - **`Matrix::powerIteration()`** (`src/matrix.cpp:808`) — already a bounded
   `do { ... } while (iter < maxIter && ...)` loop; check goes at the top of the existing loop body.
 
