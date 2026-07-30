@@ -141,20 +141,36 @@ in the roadmap.
 
 ---
 
+## WS14 — Logging Cost & Release-Build Hygiene
+
+Roadmap: [`docs/roadmaps/roadmap_ws14_logging_cost.md`](roadmaps/roadmap_ws14_logging_cost.md)
+
+Convert hot-path `qDebug()` calls to runtime-disablable `qCDebug()` logging categories, and make
+shipped builds quiet by default. Spun out of WS3's #254 "secondary finding, still open" once it was
+measured: removing the formatting cost makes `DistanceEngine` **43×–72× faster** on real networks,
+golden baselines unchanged — an order of magnitude more than WS3 M1's parallelisation win, and the
+largest single measured performance problem currently known in the codebase. Covers
+`DistanceEngine`, the parsers, `matrix.cpp`, and the shipped GUI default. Tracked as #268. Just
+created, not started.
+
+---
+
 # Priorities
 
-1. **WS10** — GraphicsWidget canvas rendering & features. Phase 1 (#250) and #260 fully shipped;
+1. **WS14** — logging cost. Largest measured win available (43×–72× on `DistanceEngine`), mechanical
+   and golden-covered. Just created, not started.
+2. **WS10** — GraphicsWidget canvas rendering & features. Phase 1 (#250) and #260 fully shipped;
    future rendering-cost and feature work scoped but not prioritised yet.
-2. **WS6** — regression safety (ongoing support — continuously active underneath every other
+3. **WS6** — regression safety (ongoing support — continuously active underneath every other
    workstream, not "next in queue").
-3. **WS5** — matrices. Receives the M1-continuation APSP migration from WS3.
-4. **WS7** — MainWindow decomposition. Solid milestone roadmap (MW1–MW7) exists; zero code written
+4. **WS5** — matrices. Receives the M1-continuation APSP migration from WS3.
+5. **WS7** — MainWindow decomposition. Solid milestone roadmap (MW1–MW7) exists; zero code written
    yet.
-5. **WS8** — IO layer stabilization. Roadmap scoped; zero code written yet.
-6. **WS11** — algorithm additions. Just created; not prioritised yet, no code written.
-7. **WS12** — CLI scripting mode. Two steps shipped (#261, #262); further commands backlog, not
+6. **WS8** — IO layer stabilization. Roadmap scoped; zero code written yet.
+7. **WS11** — algorithm additions. Just created; not prioritised yet, no code written.
+8. **WS12** — CLI scripting mode. Two steps shipped (#261, #262); further commands backlog, not
    prioritised.
-8. **WS13** — undo/redo. Just created; not prioritised yet, no code written.
+9. **WS13** — undo/redo. Just created; not prioritised yet, no code written.
 
 ---
 
