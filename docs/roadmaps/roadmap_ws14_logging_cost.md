@@ -24,8 +24,13 @@ separately if it turns out to matter." It turned out to matter, by a lot.
 |---|---|
 | L1 — Release builds quiet by default | 🟢 Done (2026-07-31) |
 | L2 — `DistanceEngine` → logging category | 🟢 Done (2026-07-31) |
-| L3 — Parsers → logging category | 🔴 Not started |
-| L4 — `matrix.cpp` → logging category (+ decide fate of the unreachable Gauss-Jordan inverse) | 🔴 Not started |
+| L3 — Parsers → logging category | 🟢 Done (2026-07-31) |
+| L4 — `matrix.cpp` → logging category (+ decide fate of the unreachable Gauss-Jordan inverse) | 🟢 Done (2026-07-31) |
+
+L1-L4 (the roadmap's originally-scoped hot paths) are now all done. A further, broader sweep of
+every remaining live `qDebug()` call in the tree — including non-hot-path files the roadmap
+deliberately didn't scope in — is in progress beyond L1-L4; see the note near the end of this doc
+once that's complete.
 
 See "L1/L2 real-world evidence" below for measured before/after numbers (CLI and GUI) and two real
 bugs found while wiring up the GUI-side measurement — both are why the numbers below ended up
@@ -92,25 +97,39 @@ cmake -S . -B build-nodbg -DCMAKE_PREFIX_PATH=... -DBUILD_CLI=ON -DCMAKE_BUILD_T
 Counted excluding commented-out lines (a naive `grep qDebug` over-counts badly — most of the canvas
 hits are already commented out). **1645 live calls** across `src/`, of 1838 textual matches.
 
-| File | live | note |
-|---|---|---|
-| `mainwindow.cpp` | 301 | mostly not hot paths |
-| `parser/parser_graphml.cpp` | 99 | L3 |
-| `matrix.cpp` | 96 | L4 |
-| `parser/parser_dl.cpp` | 88 | L3 |
-| `graph/reporting/graph_reports.cpp` | 85 | |
-| `engine/distance_engine.cpp` | 75 → **78** | **L2 — the measured 43×–72×, done.** Original count was
-  a `grep "qDebug()"` literal match, which undercounts: 3 calls inside the BFS loop
-  (`distance_engine.cpp:1080-1088`) use the printf-style `qDebug("...", args)` overload with no
-  literal `()`. Same hot path as the already-covered Dijkstra loop; converted along with the rest. |
-| `graph/storage/graph_vertices.cpp` | 56 | 2 inside `vertices()`'s O(N) loop |
-| `graphicswidget.cpp` | 12 | already `qCDebug(lcGW)` |
-| `graphicsnode.cpp` | 1 | already clean |
-| `graphicsedge.cpp` | 0 | already clean |
+**Corrected 2026-07-31** (a fresh full-tree research pass, done while scoping the post-L4 sweep,
+found the table below was stale in several places — not the printf-style-undercounting mechanism
+found in `distance_engine.cpp`, which turned out isolated to that file plus `parser_pajek.cpp`, just
+plain drift since this table was first written). True tree-wide live total: **~1638 calls**
+(excluding `distance_engine.cpp`, now 0 live / 78 `qCDebug`).
 
-`lcGW` in `graphicswidget.cpp:45` is currently the **only other** `Q_LOGGING_CATEGORY` in the tree
-besides `lcEngine` (added by L2), and the canvas classes were the only ones already cleaned up
-(WS10 Phase 1) before this pass. It is the pattern L2 followed.
+| File | Roadmap's original count | Actual live count | Status |
+|---|---|---|---|
+| `mainwindow.cpp` | 301 | **313** | Not yet converted (post-L4 sweep) |
+| `matrix.cpp` | 96 | **118 → 0 live / 139 `qCDebug`** | **L4 — done** |
+| `parser/parser_graphml.cpp` | 99 | 99 (matches) | **L3 — done** |
+| `parser/parser_dl.cpp` | 88 | 88 (matches) | **L3 — done** |
+| `graph/reporting/graph_reports.cpp` | 85 | **92** | Not yet converted (post-L4 sweep) |
+| `engine/distance_engine.cpp` | 75 | **78** (3 printf-style calls undercounted, see below) | **L2 — done** |
+| `graph/storage/graph_vertices.cpp` | 56 | 56 (matches) | Not yet converted (post-L4 sweep) |
+| `graphicswidget.cpp` | "12 already `qCDebug`" | **15 live remain**, 24 already `qCDebug` | **Not actually fully converted** despite this table previously implying it was — mixed-state file, next up in the cleanup pass |
+| `graphicsnode.cpp` | "1 already clean" | 1 live, 0 `qCDebug` | Never actually touched by the conversion; "clean" meant "low count", not "done" |
+| `graphicsedge.cpp` | 0 | 0 (confirmed — all matches are commented-out) | Genuinely clean |
+
+The `distance_engine.cpp` undercount: the original count was a `grep "qDebug()"` literal match,
+which misses the printf-style `qDebug("...", args)` overload with no literal `()`. 3 calls inside
+the BFS loop (`distance_engine.cpp:1080-1088`) used that form — same hot path as the already-covered
+Dijkstra loop, converted along with the rest. The same undercount mechanism was checked for and found
+in exactly one other place: `parser_pajek.cpp` (10 printf-style calls, converted as part of L3).
+Neither `matrix.cpp` nor any other parser file has any printf-style calls — L4's own gap (118 vs. 96)
+was plain staleness, not this mechanism; L4 additionally had to handle a *different* undercount
+variant, `qDebug ()` with a space before the parens (~24 sites), which a literal `qDebug()` grep also
+misses.
+
+`lcGW` in `graphicswidget.cpp:45` is currently the **only other** file-local `Q_LOGGING_CATEGORY` in
+the tree besides `lcEngine` and `lcMatrix`, plus the new shared `lcParser` (`parser.h`). The canvas
+classes were the only ones already partially cleaned up (WS10 Phase 1) before this pass — see above,
+`graphicswidget.cpp` itself was never fully finished.
 
 ---
 
@@ -259,6 +278,16 @@ CLI numbers land within ~4% of this doc's original `QT_NO_DEBUG_OUTPUT`-instrume
 **Completion criteria:** golden + io_roundtrip pass; report measured `LOAD_MS` before/after on a
 large GraphML and a large Pajek file.
 
+**Done (2026-07-31).** One shared category (`Q_LOGGING_CATEGORY(lcParser, "socnetv.parser")`,
+`Q_DECLARE_LOGGING_CATEGORY` in `parser.h`) across all 9 files (~409 sites), not one per file — new
+pattern vs. `lcGW`/`lcEngine`'s file-local precedent, deliberate. `parser_pajek.cpp`'s 10 printf-style
+calls handled individually by line to avoid touching its 12 (since deleted — no `qDebug()` text
+allowed anywhere, not even in comments) commented-out instances of the same pattern. Measured
+(`socnetv-cli --kernel distance`, `LOAD_MS`, 2000-node files): GraphML ~323ms → ~109ms (**~3.0×**,
+matching this section's original prediction almost exactly), Pajek ~186ms → ~130ms (**~1.4×**, more
+modest — Pajek's parser has proportionally fewer `qDebug()` calls relative to per-line work). See
+"L3/L4 real-world evidence" below for the full writeup.
+
 ### L4 — `matrix.cpp` → logging category, and decide the fate of the Gauss-Jordan inverse
 
 96 live calls. Two distinct sub-problems:
@@ -279,8 +308,61 @@ large GraphML and a large Pajek file.
 everything else. Do not leave it as-is. WS5's A5 currently plans to add cancellation support to this
 method — that plan should be revisited in light of it having no reachable caller.
 
+**Decision made (2026-07-31): keep it, convert its logging.** All 118 (not 96, see corrected
+inventory below) live `qDebug()` sites in `matrix.cpp`, including the 15 inside
+`inverseByGaussJordanElimination()`, converted to `qCDebug(lcMatrix)` — no deletion. WS5's A5
+cancellation-support plan for this method is unaffected by this decision either way (still worth
+revisiting separately in light of it having no reachable caller, per WS5's own doc).
+
 **Completion criteria:** golden + io_roundtrip pass; a decision recorded here on the Gauss-Jordan
 method; measured before/after on an Information Centrality run over a large network.
+
+**Done (2026-07-31).** `Q_LOGGING_CATEGORY(lcMatrix, "socnetv.matrix")`, file-local (same pattern as
+`lcGW`/`lcEngine`). Two whitespace variants required care: `qDebug ()` (space before parens, ~24
+sites) alongside plain `qDebug()` — a literal-text grep undercounts these the same way the L2
+printf-style calls were undercounted; handled with one whitespace-tolerant sed pass. Measured
+(`socnetv-cli --kernel prominence`, N=300 ER network — chosen over the roadmap's 1000N cases because
+Information Centrality's O(N³) matrix inversion made the pre-conversion 1000N run impractically slow
+to benchmark; the `qDebug()` formatting cost inside `lubksb()` itself scales O(N²), so the win is
+already clearly visible at N=300): **~4.27s → ~0.30s, ~14.2×**.
+
+---
+
+## L3/L4 real-world evidence (2026-07-31)
+
+Same discipline as L1/L2: measured on this machine, same build directory rebuilt incrementally
+(each "before" number from `git stash`-ing the milestone's still-uncommitted change and rebuilding,
+not extrapolated), `run_golden_compares.sh` + `run_golden_io_roundtrip.sh` clean after every commit.
+
+| Milestone | Case | Before | After | Speedup |
+|---|---|---|---|---|
+| L3 | GraphML load, 2000N/40000E | ~323 ms avg | ~109 ms avg | **~3.0×** |
+| L3 | Pajek load, 2000N/40000E | ~186 ms avg | ~130 ms avg | **~1.4×** |
+| L4 | Information Centrality, N=300 | ~4.27 s avg | ~0.30 s avg | **~14.2×** |
+
+Two more undercounting variants found and fixed while doing this (on top of L2's printf-style-call
+discovery), both from the same root cause — a literal-text `qDebug()` grep only catches one exact
+spelling:
+
+- **`parser_pajek.cpp`** has 10 live printf-style `qDebug("...", args)` calls (same overload
+  `distance_engine.cpp`'s BFS loop needed) — checked for and confirmed *not* present in any other
+  parser file or in `matrix.cpp`.
+- **`matrix.cpp`** has ~24 calls written as `qDebug ()` (space before the parens) alongside the
+  more common `qDebug()` — a different textual variant than the printf-style one, same underlying
+  lesson: a mechanical conversion pass needs whitespace-tolerant matching, not a single literal
+  string search, or it silently leaves live call sites unconverted.
+
+Also found and fixed: `graphicswidget.cpp`'s clean rebuild (done after L3, to size up its warning
+impact before the rest of the sweep) surfaced **438 instances of `-Wvariadic-macro-arguments-omitted`**
+— every `qCDebug(category) << "message"` call site (the standard streaming idiom, used by every
+conversion so far) passes zero arguments to `qCDebug`'s variadic macro parameter, legal in C++20 but
+relying on a GNU/Clang extension on this project's C++17 standard, which `-Wpedantic`
+(`CMakeLists.txt:337`) flags. Harmless — this is how the pre-existing `lcGW` category already
+worked, nobody had checked for it — but would have become 1000+ warnings by the time the rest of the
+sweep is done. Fixed with a targeted `-Wno-variadic-macro-arguments-omitted` alongside the existing
+`-Wall -Wextra -Wpedantic`, landed as part of the L3 commit. Confirmed via clean rebuild: 505 → 67
+total warnings, all 438 variadic-macro instances gone, remaining 67 pre-existing and unrelated
+(`-Winconsistent-missing-override`/`-Wdeprecated-declarations` in untouched files).
 
 ---
 
