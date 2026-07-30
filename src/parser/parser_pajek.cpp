@@ -120,7 +120,6 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
 
         if (!edges_flag && !arcs_flag && !nodes_flag && !arcslist_flag && !matrix_flag)
         {
-            // qDebug("reading headlines");
             if ((actualLineNumber == 1) &&
                 (!str.contains("network", Qt::CaseInsensitive) && !str.contains("vertices", Qt::CaseInsensitive)))
             {
@@ -334,7 +333,6 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
         /** READING NODES, THEN EDGES/ARCS */
         if (!edges_flag && !arcs_flag && !arcslist_flag && !matrix_flag)
         {
-            // qDebug("=== Reading nodes ===");
             nodes_flag = true;
             nodeNum = lineElement[0].toInt(&intOk, 10);
             // qCDebug(lcParser)<<"node number: "<<nodeNum;
@@ -418,7 +416,6 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                 }
                 else
                 { // there is no nodeColor. Use the default
-                    // qDebug("No nodeColor");
                     fileContainsNodeColors = false;
                     nodeColor = initNodeColor;
                 }
@@ -437,13 +434,11 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                                 continue; // needs 0.XX
                             if (c + 1 == lineElement.size())
                             { // first coord zero, i.e: 0  0.455
-                                // qDebug ()<<"coords: " <<lineElement.at(c-1).toLatin1() << " " <<temp.toLatin1() ;
                                 randX = lineElement.at(c - 1).toDouble(&check1);
                                 randY = temp.toDouble(&check2);
                             }
                             else
                             {
-                                // qDebug ()<<"coords: " << temp.toLatin1() << " " <<lineElement[c+1].toLatin1();
                                 randX = temp.toDouble(&check1);
                                 randY = lineElement[c + 1].toDouble(&check2);
                             }
@@ -605,7 +600,6 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
 
                 if (lineElement.contains("c", Qt::CaseSensitive))
                 {
-                    // qDebug("file with link colours");
                     fileContainsLinkColors = true;
                     myRegExp.setPattern("[c]");
                     colorIndex = lineElement.indexOf(myRegExp, 0) + 1;
@@ -619,7 +613,6 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                 }
                 else
                 {
-                    // qDebug("file with no link colours");
                     edgeColor = initEdgeColor;
                 }
 
@@ -639,7 +632,6 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                 }
                 else
                 {
-                    // qDebug("file with no link labels");
                     edgeLabel = initEdgeLabel;
                 }
 
@@ -658,7 +650,6 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
             else if (!edges_flag && arcs_flag)
             { /** ARCS */
 
-                // qDebug("=== Reading arcs ===");
                 source = lineElement[0].toInt(&ok, 10);
                 target = lineElement[1].toInt(&ok, 10);
 
@@ -695,14 +686,12 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
 
                 if (lineElement.contains("c", Qt::CaseSensitive))
                 {
-                    // qDebug("file with link colours");
                     myRegExp.setPattern("[c]");
                     edgeColor = lineElement.at(lineElement.indexOf(myRegExp, 0) + 1);
                     fileContainsLinkColors = true;
                 }
                 else
                 {
-                    // qDebug("file with no link colours");
                     edgeColor = initEdgeColor;
                 }
 
@@ -721,7 +710,6 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                 }
                 else
                 {
-                    // qDebug("file with no link labels");
                     edgeLabel = initEdgeLabel;
                 }
                 arrows = true;
@@ -737,7 +725,6 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
             } // else if ARCS
             else if (arcslist_flag)
             { /** ARCSlist */
-                // qDebug("=== Reading arcs list===");
                 if (lineElement[0].startsWith("-"))
                     lineElement[0].remove(0, 1);
                 source = lineElement[0].toInt(&ok, 10);
@@ -761,7 +748,6 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
             } // else if ARCSLIST
             else if (matrix_flag)
             { /** matrix */
-                // qDebug("=== Reading matrix of edges===");
                 i++;
                 source = i;
                 fileContainsLinkColors = false;
