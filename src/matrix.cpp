@@ -20,8 +20,11 @@
 
 #include <cstdlib>		//allows the use of RAND_MAX macro
 #include <QDebug>
+#include <QLoggingCategory>
 #include <QtMath>		//needed for fabs, qFloor etc
 #include <QTextStream>
+
+Q_LOGGING_CATEGORY(lcMatrix, "socnetv.matrix")
 
 
 /**
@@ -48,7 +51,7 @@ Matrix::Matrix (int rowDim, int colDim)  : m_rows (rowDim), m_cols(colDim) {
 * @param b
 */
 Matrix::Matrix(const Matrix &b) {
-    qDebug()<< "Matrix:: constructor";
+    qCDebug(lcMatrix)<< "Matrix:: constructor";
     m_rows=b.m_rows;
     m_cols=b.m_cols ;
     row = new MatrixRow[m_rows];
@@ -77,7 +80,7 @@ Matrix::~Matrix() {
  */
 void Matrix::clear() {
     if (m_rows > 0){
-        qDebug() << "Matrix::clear() deleting old rows";
+        qCDebug(lcMatrix) << "Matrix::clear() deleting old rows";
         m_rows=0;
         m_cols=0;
         delete [] row;
@@ -92,13 +95,13 @@ void Matrix::clear() {
  * @param Actors
  */
 void Matrix::resize (const int m, const int n) {
-    qDebug() << "Matrix: resize() ";
+    qCDebug(lcMatrix) << "Matrix: resize() ";
     clear();
     m_rows = m;
     m_cols = n;
     row = new (nothrow) MatrixRow [ m_rows  ];
     Q_CHECK_PTR( row );
-    qDebug() << "Matrix: resize() -- resizing each row";
+    qCDebug(lcMatrix) << "Matrix: resize() -- resizing each row";
     for (int i=0;i<m_rows; i++) {
         row[i].resize( m_cols );  // CHECK ME
     }
@@ -168,13 +171,13 @@ void Matrix::NeighboursNearestFarthest (qreal &min, qreal & max,
  * @param dim
  */
 void Matrix::identityMatrix(int dim) {
-    qDebug() << "Matrix::identityMatrix() -- deleting old rows";
+    qCDebug(lcMatrix) << "Matrix::identityMatrix() -- deleting old rows";
     clear();
     m_rows=dim;
     m_cols=dim;
     row = new (nothrow) MatrixRow [m_rows];
     Q_CHECK_PTR( row );
-    //qDebug() << "Matrix: resize() -- resizing each row";
+    //qCDebug(lcMatrix) << "Matrix: resize() -- resizing each row";
     for (int i=0;i<m_rows; i++) {
         row[i].resize(m_rows);
         setItem(i,i, 1);
@@ -189,13 +192,13 @@ void Matrix::identityMatrix(int dim) {
  * @param n
  */
 void Matrix::zeroMatrix(const int m, const int n) {
-    qDebug() << "Matrix::zeroMatrix() m " << m << " n " << n;
+    qCDebug(lcMatrix) << "Matrix::zeroMatrix() m " << m << " n " << n;
     clear();
     m_rows=m;
     m_cols=n;
     row = new (nothrow) MatrixRow [m_rows];
     Q_CHECK_PTR( row );
-    //qDebug() << "Matrix::zeroMatrix - resizing each row";
+    //qCDebug(lcMatrix) << "Matrix::zeroMatrix - resizing each row";
     for (int i=0;i<m_rows; i++) {
         row[i].resize(m_cols);
         for (int j=0;j<m_cols; j++) {
@@ -251,43 +254,43 @@ void Matrix::clearItem( int r, int c ) 	{
  * @param erased row/col to delete
  */
 void Matrix::deleteRowColumn(int erased){
-    qDebug() << "Matrix:deleteRowColumn() - will delete row and column"
+    qCDebug(lcMatrix) << "Matrix:deleteRowColumn() - will delete row and column"
              << erased
              << "m_rows before" <<  m_rows;
 
     --m_rows;
     m_cols = m_rows;
-    qDebug() << "Matrix:deleteRowColumn() - m_rows now " << m_rows << ". Resizing...";
+    qCDebug(lcMatrix) << "Matrix:deleteRowColumn() - m_rows now " << m_rows << ". Resizing...";
     for (int i=0;i<m_rows+1; i++) {
         for (int j=0;j<m_rows+1; j++) {
-//            qDebug() << "Matrix:deleteRowColumn() -"
+//            qCDebug(lcMatrix) << "Matrix:deleteRowColumn() -"
 //                        <<"item ("<< i+1 << "," << j+1 << ") ="<< item(i, j) ;
             if (i>=m_rows || j>=m_rows) {
                 setItem( i, j, RAND_MAX) ;
-//                qDebug() << "Matrix:deleteRowColumn() -"
+//                qCDebug(lcMatrix) << "Matrix:deleteRowColumn() -"
 //                         <<"both i,j>=m_rows, corner case (will be deleted). Setting to RAND_MAX."
 //                        << "New item value (" <<  i+1 << ", " << j+1 << ") ="<< item(i, j) ;
             }
             else if (i<erased && j< erased) {
-//                qDebug() << "Matrix:deleteRowColumn() -"
+//                qCDebug(lcMatrix) << "Matrix:deleteRowColumn() -"
 //                         << "i, j < erased. Skipping. Item unchanged.";
                 continue;
             }
             else if (i<erased && j>=erased) {
                 setItem( i, j, item(i,j+1) ) ;
-//                qDebug() << "Matrix:deleteRowColumn() -"
+//                qCDebug(lcMatrix) << "Matrix:deleteRowColumn() -"
 //                            <<"j>=erased, shifting column left"
 //                           << "New item value (" <<  i+1 << ", " << j+1 << ") ="<< item(i, j) ;
             }
             else if (i>=erased && j<erased) {
                 setItem( i, j, item(i+1,j) ) ;
-//                qDebug() << "Matrix:deleteRowColumn() -"
+//                qCDebug(lcMatrix) << "Matrix:deleteRowColumn() -"
 //                         <<"i>=erased, shifting rows up."
 //                        << "New item value (" <<  i+1 << ", " << j+1 << ") ="<< item(i, j) ;
             }
             else if (i>=erased && j>=erased) {
                 setItem( i, j, item(i+1,j+1) ) ;
-//                qDebug() << "Matrix:deleteRowColumn() -"
+//                qCDebug(lcMatrix) << "Matrix:deleteRowColumn() -"
 //                         <<"both i,j>=erased, shifting row up and column left."
 //                        << "New item value (" <<  i+1 << ", " << j+1 << ") ="<< item(i, j) ;
             }
@@ -295,7 +298,7 @@ void Matrix::deleteRowColumn(int erased){
         }
         row[i].setSize(m_cols);
     }
-    qDebug() << "Matrix:deleteRowColumn() - finished, new matrix:";
+    qCDebug(lcMatrix) << "Matrix:deleteRowColumn() - finished, new matrix:";
 
 }
 
@@ -337,7 +340,7 @@ Matrix& Matrix::subtractFromI ()  {
  * @param rowB
  */
 void Matrix::swapRows(int rowA,int rowB){
-    qDebug()<<"   swapRow() "<< rowA+1 << " with " << rowB+1;
+    qCDebug(lcMatrix)<<"   swapRow() "<< rowA+1 << " with " << rowB+1;
     qreal *tempRow = new  (nothrow) qreal [ rows() ];
     Q_CHECK_PTR(tempRow);
     for ( int j=0; j<  rows(); j++) {
@@ -359,7 +362,7 @@ void Matrix::swapRows(int rowA,int rowB){
   * @param f
 */
 void Matrix::multiplyScalar (const qreal  & f) {
-        qDebug()<< "Matrix::multiplyScalar() with f " << f;
+        qCDebug(lcMatrix)<< "Matrix::multiplyScalar() with f " << f;
         for (int i=0;i< rows();i++) {
             for (int j=0;j<cols();j++) {
                 setItem(i,j, item(i,j) * f );
@@ -374,10 +377,10 @@ void Matrix::multiplyScalar (const qreal  & f) {
  * @param value
  */
 void Matrix::multiplyRow(int row, qreal value) {
-    qDebug()<<"   multiplyRow() "<< row+1 << " by value " << value;
+    qCDebug(lcMatrix)<<"   multiplyRow() "<< row+1 << " by value " << value;
     for ( int j=0; j<  rows(); j++) {
         setItem ( row, j,  value * item (row, j) );
-        qDebug()<<"   item("<< row+1 << ","<< j+1 << ") = " <<  item(row,j);
+        qCDebug(lcMatrix)<<"   item("<< row+1 << ","<< j+1 << ") = " <<  item(row,j);
     }
 }
 
@@ -396,7 +399,7 @@ void Matrix::multiplyRow(int row, qreal value) {
 * @return
 */
 Matrix& Matrix::operator = (Matrix & a) {
-    qDebug()<< "Matrix::operator asignment =";
+    qCDebug(lcMatrix)<< "Matrix::operator asignment =";
     if (this != &a){
         if (a.m_rows!=m_rows) {
             clear();
@@ -444,7 +447,7 @@ void Matrix::sum( Matrix &a, Matrix & b)  {
 * @return this
 */
 void Matrix::operator +=(Matrix & b) {
-    qDebug()<< "Matrix::operator +=";
+    qCDebug(lcMatrix)<< "Matrix::operator +=";
     for (int i=0;i< rows();i++)
         for (int j=0;j<cols();j++)
             setItem(i,j, item(i,j)+b.item(i,j));
@@ -460,7 +463,7 @@ void Matrix::operator +=(Matrix & b) {
 */
 Matrix& Matrix::operator +(Matrix & b) {
     Matrix *S = new Matrix(rows(), cols());
-    qDebug()<< "Matrix::operator +";
+    qCDebug(lcMatrix)<< "Matrix::operator +";
     for (int i=0;i< rows();i++)
         for (int j=0;j<cols();j++)
             S->setItem(i,j, item(i,j)+b.item(i,j));
@@ -477,7 +480,7 @@ Matrix& Matrix::operator +(Matrix & b) {
 */
 Matrix& Matrix::operator -(Matrix & b) {
     Matrix *S = new Matrix(rows(), cols() );
-    qDebug()<< "Matrix::operator -";
+    qCDebug(lcMatrix)<< "Matrix::operator -";
     for (int i=0;i< rows();i++)
         for (int j=0;j<cols();j++)
             S->setItem(i,j, item(i,j)-b.item(i,j));
@@ -497,12 +500,12 @@ Matrix& Matrix::operator -(Matrix & b) {
 */
 Matrix& Matrix::operator *(Matrix & b) {
 
-    qDebug()<< "Matrix::operator *";
+    qCDebug(lcMatrix)<< "Matrix::operator *";
 
     Matrix *P = new Matrix(rows(), cols());
 
     if ( cols() != b.rows() ) {
-        qDebug()<< "Matrix::product() - ERROR! Non compatible input matrices:"
+        qCDebug(lcMatrix)<< "Matrix::product() - ERROR! Non compatible input matrices:"
                    " this("
                 << rows() << "," << cols()
                 << ") and b(" << b.rows() << ","<< b.cols();
@@ -532,10 +535,10 @@ Matrix& Matrix::operator *(Matrix & b) {
 */
 void Matrix::operator *=(Matrix & b) {
 
-    qDebug()<< "Matrix::operator *";
+    qCDebug(lcMatrix)<< "Matrix::operator *";
 
     if ( cols() != b.rows() ) {
-        qDebug()<< "Matrix::product() - ERROR! Non compatible input matrices:"
+        qCDebug(lcMatrix)<< "Matrix::product() - ERROR! Non compatible input matrices:"
                    " this("
                 << rows() << "," << cols()
                 << ") and b(" << b.rows() << ","<< b.cols();
@@ -569,10 +572,10 @@ void Matrix::operator *=(Matrix & b) {
  * @return i x k matrix
  */
 void Matrix::product(Matrix &A, Matrix & B, bool symmetry)  {
-    qDebug()<< "Matrix::product() - symmetry" << symmetry;
+    qCDebug(lcMatrix)<< "Matrix::product() - symmetry" << symmetry;
 
     if (A.cols() != B.rows() ) {
-        qDebug()<< "Matrix::product() - ERROR! Non compatible input matrices:"
+        qCDebug(lcMatrix)<< "Matrix::product() - ERROR! Non compatible input matrices:"
                    " a("
                 << A.rows() << "," << A.cols()
                 << ") and b(" << B.rows() << ","<< B.cols();
@@ -596,7 +599,7 @@ void Matrix::product(Matrix &A, Matrix & B, bool symmetry)  {
             }
         }
     }
-//    qDebug() << "Matrix::product() - this";
+//    qCDebug(lcMatrix) << "Matrix::product() - this";
     *this = *P;
 
     //this->printMatrixConsole();
@@ -641,15 +644,15 @@ Matrix& Matrix::productSym( Matrix &a, Matrix & b)  {
  */
 Matrix& Matrix::pow (int n, bool symmetry)  {
     if (rows()!= cols()) {
-        qDebug()<< "Matrix::pow() - Error. This works only for square matrix";
+        qCDebug(lcMatrix)<< "Matrix::pow() - Error. This works only for square matrix";
         return *this;
     }
-    qDebug()<< "Matrix::pow() ";
+    qCDebug(lcMatrix)<< "Matrix::pow() ";
     Matrix X, Y; //auxilliary matrices
-    qDebug()<< "Matrix::pow() - creating X = this";
+    qCDebug(lcMatrix)<< "Matrix::pow() - creating X = this";
     X=*this; //X = this
     //X.printMatrixConsole(true);
-    qDebug()<< "Matrix::pow() - creating Y = I";
+    qCDebug(lcMatrix)<< "Matrix::pow() - creating Y = I";
     Y.identityMatrix( rows() ); // y=I
     //Y.printMatrixConsole(true);
     return expBySquaring2 (Y, X, n, symmetry);
@@ -674,38 +677,38 @@ Matrix& Matrix::pow (int n, bool symmetry)  {
  */
 Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
     if (n==1) {
-        qDebug() <<"Matrix::expBySquaring2() - n = 1. Computing PM = X*Y where "
+        qCDebug(lcMatrix) <<"Matrix::expBySquaring2() - n = 1. Computing PM = X*Y where "
                    "X = " ;
         //X.printMatrixConsole();
-        //qDebug() <<"Matrix::expBySquaring2() - n = 1. And Y = ";
+        //qCDebug(lcMatrix) <<"Matrix::expBySquaring2() - n = 1. And Y = ";
         //Y.printMatrixConsole();
         Matrix *PM = new Matrix(rows(), cols());
         PM->product(X, Y, symmetry);
-        //qDebug()<<"Matrix::expBySquaring2() - n = 1. PM = X*Y ="  ;
+        //qCDebug(lcMatrix)<<"Matrix::expBySquaring2() - n = 1. PM = X*Y ="  ;
         //PM->printMatrixConsole();
         return *PM;
     }
     else if ( n%2 == 0 ) { //even
-        qDebug()<<"Matrix::expBySquaring2() - even n =" << n
+        qCDebug(lcMatrix)<<"Matrix::expBySquaring2() - even n =" << n
                << "Computing PM = X * X";
         Matrix PM(rows(), cols());
         PM.product(X,X,symmetry);
-        //qDebug()<<"Matrix::expBySquaring2() - even n =" << n << ". PM = X * X = " ;
+        //qCDebug(lcMatrix)<<"Matrix::expBySquaring2() - even n =" << n << ". PM = X * X = " ;
         //PM.printMatrixConsole();
         return expBySquaring2 ( Y, PM, n/2 );
     }
     else  { //odd
-        qDebug()<<"Matrix::expBySquaring2() - odd n =" << n
+        qCDebug(lcMatrix)<<"Matrix::expBySquaring2() - odd n =" << n
                << "First compute PM = X * Y";
         Matrix PM(rows(), cols());
         Matrix PM2(rows(), cols());
         PM.product(X,Y,symmetry);
-        //qDebug()<<"Matrix::expBySquaring2() - odd n =" << n << ". PM = X * Y = " ;
+        //qCDebug(lcMatrix)<<"Matrix::expBySquaring2() - odd n =" << n << ". PM = X * Y = " ;
         //PM.printMatrixConsole();
-        qDebug()<<"Matrix::expBySquaring2() - odd n =" << n
+        qCDebug(lcMatrix)<<"Matrix::expBySquaring2() - odd n =" << n
                << "Now compute PM2 = X * X";
         PM2.product(X,X,symmetry);
-        //qDebug()<<"Matrix::expBySquaring2() - odd n =" << n << ". PM2 = X * X = " ;
+        //qCDebug(lcMatrix)<<"Matrix::expBySquaring2() - odd n =" << n << ". PM2 = X * X = " ;
         //PM2.printMatrixConsole();
         return expBySquaring2 ( PM, PM2, (n-1)/2 );
     }
@@ -815,7 +818,7 @@ void Matrix::powerIteration (
         const qreal eps,
         const int &maxIter) {
 
-    qDebug() << "Matrix::powerIteration() - maxIter"
+    qCDebug(lcMatrix) << "Matrix::powerIteration() - maxIter"
              << maxIter
              <<"initial x"
             << x;
@@ -831,26 +834,26 @@ void Matrix::powerIteration (
     int iter = 0;
 
     do {
-        qDebug() << "Matrix::powerIteration() - iteration"
+        qCDebug(lcMatrix) << "Matrix::powerIteration() - iteration"
                  << iter ;
 
         // calculate the matrix-by-vector product Ax and
         // store the result to vector tmp
         productByVector(x, tmp, false);
 
-        qDebug() << "Matrix::powerIteration() - tmp = Ax ="
+        qCDebug(lcMatrix) << "Matrix::powerIteration() - tmp = Ax ="
                  << tmp;
 
         // calculate the euclidean length of the resulting vector
         // which will be the denominator in the vector normalization
         norm = distanceEuclidean(tmp, n);
 
-        qDebug() << "Matrix::powerIteration() - norm" << norm;
+        qCDebug(lcMatrix) << "Matrix::powerIteration() - norm" << norm;
 
         // norm should never be zero, but in case there is
         // numerical error, we set it to 1
         if (!norm) {
-            qDebug() << "### Matrix::powerIteration() - norm = 0 !!!";
+            qCDebug(lcMatrix) << "### Matrix::powerIteration() - norm = 0 !!!";
             norm = 1;
         }
 
@@ -860,7 +863,7 @@ void Matrix::powerIteration (
         for(int i = 0; i < n; i++) {
            tmp[i] = tmp[i] / norm;
         }
-        qDebug() << "Matrix::powerIteration() - tmp / norm "
+        qCDebug(lcMatrix) << "Matrix::powerIteration() - tmp / norm "
                  << tmp;
 
         // calculate the manhattan distance between the new and prev vectors
@@ -883,7 +886,7 @@ void Matrix::powerIteration (
         }
 
 
-        qDebug() << "Matrix::powerIteration() - end of iteration"
+        qCDebug(lcMatrix) << "Matrix::powerIteration() - end of iteration"
                  << iter << "\n"
                  << "x" << x  << "\n"
                  << "distance from previous x " << distance
@@ -912,7 +915,7 @@ void Matrix::powerIteration (
 Matrix& Matrix::transpose() {
     Matrix *T = new Matrix(cols(), rows());
     //T->zeroMatrix(cols(), rows());
-    qDebug()<< "Matrix::transpose()";
+    qCDebug(lcMatrix)<< "Matrix::transpose()";
     for (int i=0;i< cols();i++) {
         for (int j=0;j<rows();j++) {
             T->setItem(i,j, item(j,i));
@@ -935,7 +938,7 @@ Matrix& Matrix::transpose() {
 
 Matrix& Matrix::cocitationMatrix() {
     Matrix *T = new Matrix(cols(), rows());
-    qDebug()<< "Matrix::cocitationMatrix() this transpose";
+    qCDebug(lcMatrix)<< "Matrix::cocitationMatrix() this transpose";
     //this->transpose().printMatrixConsole();
     T->product(this->transpose(),*this, true);
     return *T;
@@ -955,7 +958,7 @@ Matrix& Matrix::cocitationMatrix() {
 
 Matrix& Matrix::degreeMatrix() {
     Matrix *S = new Matrix(rows(), cols());
-    qDebug()<< "Matrix::degreeMatrix()";
+    qCDebug(lcMatrix)<< "Matrix::degreeMatrix()";
     qreal degree=0;
     for (int i=0;i< rows();i++) {
         degree = 0;
@@ -981,7 +984,7 @@ Matrix& Matrix::degreeMatrix() {
 Matrix& Matrix::laplacianMatrix() {
     Matrix *S = new Matrix(rows(), cols());
     //S->zeroMatrix(rows(), cols());
-    qDebug()<< "Matrix::laplacianMatrix()";
+    qCDebug(lcMatrix)<< "Matrix::laplacianMatrix()";
     *S = (this->degreeMatrix()) - *this;
     return *S;
 }
@@ -1001,9 +1004,9 @@ Matrix& Matrix::laplacianMatrix() {
  * @return inverse matrix of A
  */
 Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
-	qDebug()<< "Matrix::inverseByGaussJordanElimination()";
+	qCDebug(lcMatrix)<< "Matrix::inverseByGaussJordanElimination()";
 	int n=A.cols();
-    qDebug()<<"Matrix::inverseByGaussJordanElimination() - build I size " << n
+    qCDebug(lcMatrix)<<"Matrix::inverseByGaussJordanElimination() - build I size " << n
              << " This will become A^-1 in the end";
 
     identityMatrix( n );
@@ -1015,12 +1018,12 @@ Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
 	    l=j+1;
 	    m_pivotLine=-1;
 	    m_pivot = A.item(j,j);
-	    qDebug() << "inverseByGaussJordanElimination() at column " << j+1
+	    qCDebug(lcMatrix) << "inverseByGaussJordanElimination() at column " << j+1
 		    << " Initial pivot " << m_pivot ;
         for ( int i=l; i<n; i++) {
             temp_pivot = A.item(i,j);
             if ( qFabs( temp_pivot ) > qFabs ( m_pivot ) ) {
-                qDebug() << " A("<< i+1 << ","<< j+1  << ") = " <<  temp_pivot
+                qCDebug(lcMatrix) << " A("<< i+1 << ","<< j+1  << ") = " <<  temp_pivot
                          << " absolutely larger than current pivot "<< m_pivot
                          << ". Marking new pivot line: " << i+1;
                 m_pivotLine=i;
@@ -1033,43 +1036,43 @@ Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
         }
 
 
-	    qDebug()<<"   multiplyRow() "<< j+1 << " by value " << 1/m_pivot ;
+	    qCDebug(lcMatrix)<<"   multiplyRow() "<< j+1 << " by value " << 1/m_pivot ;
         for ( int k=0; k<  rows(); k++) {
             A.setItem ( j, k,  (1/m_pivot) * A.item (j, k) );
             setItem ( j, k,  (1/m_pivot) * item (j, k) );
-            qDebug()<<"   A.item("<< j+1 << ","<< k+1 << ") = " <<  A.item(j,k);
-            qDebug()<<"   item("<< j+1 << ","<< k+1 << ") = " <<  item(j,k);
+            qCDebug(lcMatrix)<<"   A.item("<< j+1 << ","<< k+1 << ") = " <<  A.item(j,k);
+            qCDebug(lcMatrix)<<"   item("<< j+1 << ","<< k+1 << ") = " <<  item(j,k);
         }
 
-	    qDebug() << "eliminate variables FromRowsBelow()" << j+1 ;
+	    qCDebug(lcMatrix) << "eliminate variables FromRowsBelow()" << j+1 ;
         for ( int i=0; i<  rows(); i++) {
-		 qDebug()<<"   Eliminating item("<< i+1 << ","<< j+1 << ") = "
+		 qCDebug(lcMatrix)<<"   Eliminating item("<< i+1 << ","<< j+1 << ") = "
 			 <<  A.item(i,j) << " while at column j="<<j+1;
 		 if ( A.item(i,j)==0 ){
-		    qDebug()<< " ...already eliminated - continue";
+		    qCDebug(lcMatrix)<< " ...already eliminated - continue";
 		    continue;
 		}
 		 if ( i == j){
-		     qDebug()<< " ...skip pivotline - continue";
+		     qCDebug(lcMatrix)<< " ...skip pivotline - continue";
 		    continue;
 		}
 		elim_coef=A.item (i, j);
         for ( int k=0; k<  cols(); k++) {
-		    qDebug()<<"   A.item("<< i+1 << ","<< k+1 << ") = " <<  A.item(i,k)
+		    qCDebug(lcMatrix)<<"   A.item("<< i+1 << ","<< k+1 << ") = " <<  A.item(i,k)
 			    << " will be subtracted by " << " A.item ("<< i+1
 			    << ", "<< j+1 << ") x A.item(" << j+1 << ","<<k+1
 			    <<") =" << elim_coef * A.item(j,k) ;
 		    A.setItem ( i, k,   A.item (i, k) -  elim_coef * A.item(j, k)  );
-		    qDebug()<<"   A.item("<< i+1 << ","<< k+1 << ") = " <<  A.item(i,k);
+		    qCDebug(lcMatrix)<<"   A.item("<< i+1 << ","<< k+1 << ") = " <<  A.item(i,k);
 
-		    qDebug()<<"   item("<< i+1 << ","<< k+1 << ") = " <<  item(i,k)
+		    qCDebug(lcMatrix)<<"   item("<< i+1 << ","<< k+1 << ") = " <<  item(i,k)
 			    << " will be subtracted by " << " A.item ("<< i+1
 			    << ", "<< j+1 << ") x item(" << j+1 << ","<<k+1
 			    <<") =" << elim_coef * item(j,k)  <<  " = "
 			    << elim_coef << " x " << item(j,k) ;
 
 		    setItem ( i, k,   item (i, k) -  elim_coef * item(j, k)  );
-		    qDebug()<<"   item("<< i+1 << ","<< k+1 << ") = " <<  item(i,k);
+		    qCDebug(lcMatrix)<<"   item("<< i+1 << ","<< k+1 << ") = " <<  item(i,k);
 
 		}
 	    }
@@ -1093,7 +1096,7 @@ Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
  *
  */
 bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d) {
-    qDebug () << "Matrix::ludcmp () - decomposing matrix a to L*U";
+    qCDebug(lcMatrix) << "Matrix::ludcmp () - decomposing matrix a to L*U";
     int i=0, j=0, imax=0, k;
     qreal big,temp;
     //vv=vector<qreal>(1,n);
@@ -1106,9 +1109,9 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d) {
 
     d=1.0;               // No row interchanges yet.
 
-    qDebug () << "Matrix::ludcmp() - loop over row to get scaling info" ;
+    qCDebug(lcMatrix) << "Matrix::ludcmp() - loop over row to get scaling info" ;
     for (i=0;i<n;i++) {  // Loop over rows to get the implicit scaling information.
-        qDebug () << "Matrix::ludcmp() - row i " <<  i+1;
+        qCDebug(lcMatrix) << "Matrix::ludcmp() - row i " <<  i+1;
         big=0;
         for (j=0;j<n;j++) {
             if ((temp=fabs( a[i][j] ) ) > big)
@@ -1116,18 +1119,18 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d) {
         }
         if (big == 0)  //       No nonzero largest element.
         {
-            qDebug() << "Matrix::ludcmp() - Singular matrix in routine ludcmp";
+            qCDebug(lcMatrix) << "Matrix::ludcmp() - Singular matrix in routine ludcmp";
             return false;
         }
         vv[i]=1.0/big;  //  Save the scaling.
-        qDebug () << "Matrix::ludcmp() - big element in row i " << i+1 << " is "<< big << " row scaling vv[i] " << vv[i];
+        qCDebug(lcMatrix) << "Matrix::ludcmp() - big element in row i " << i+1 << " is "<< big << " row scaling vv[i] " << vv[i];
     }
 
-    qDebug () << "Matrix::ludcmp() - Start Crout's LOOP over columns";
+    qCDebug(lcMatrix) << "Matrix::ludcmp() - Start Crout's LOOP over columns";
 
     for (j=0;j<n;j++) //     This is the loop over columns of Crout’s method.
     {
-        qDebug () << "Matrix::ludcmp() - COLUMN j " <<  j+1 << " search largest pivot";
+        qCDebug(lcMatrix) << "Matrix::ludcmp() - COLUMN j " <<  j+1 << " search largest pivot";
         big=0;  //      Initialize for the search for largest pivot element.
         imax = j;
 
@@ -1137,14 +1140,14 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d) {
             {   //  Is the figure of merit for the pivot better than the best so far?
                 big=temp;
                 imax=i;
-                qDebug () << "Matrix::ludcmp() - found new largest pivot at row " <<  imax+1 << " big " << temp;
+                qCDebug(lcMatrix) << "Matrix::ludcmp() - found new largest pivot at row " <<  imax+1 << " big " << temp;
             }
         }
 
-        qDebug () << "Matrix::ludcmp() - check for row interchange ";
+        qCDebug(lcMatrix) << "Matrix::ludcmp() - check for row interchange ";
         if (j != imax) //          Do we need to interchange rows?
         {
-            qDebug () << "Matrix::ludcmp() - interchanging rows " << imax+1 << " and " << j+1;
+            qCDebug(lcMatrix) << "Matrix::ludcmp() - interchanging rows " << imax+1 << " and " << j+1;
             for ( k=0; k<n; k++ ) { //            Yes, do so...
                 temp=a[imax][k];
                 a[imax][k] = a[j][k];
@@ -1152,22 +1155,22 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d) {
             }
             d = -(d);  //..and change the parity of d.
             vv[imax]=vv[j];  //         Also interchange the scale factor.
-            qDebug () << "Matrix::ludcmp() - imax  " << imax+1  << " vv[imax]" << vv[imax] << "new parity d " << d;
+            qCDebug(lcMatrix) << "Matrix::ludcmp() - imax  " << imax+1  << " vv[imax]" << vv[imax] << "new parity d " << d;
         }
         indx[j]=imax;
-        qDebug () << "Matrix::ludcmp() - indx[j]=imax=" <<  indx[j] +1;
+        qCDebug(lcMatrix) << "Matrix::ludcmp() - indx[j]=imax=" <<  indx[j] +1;
         if ( a[j][j] == 0 ) {
             a[j][j] = TINY; // For some apps, on singular matrices, it is desirable to substitute TINY for zero.
-            qDebug () << "Matrix::ludcmp() - WARNING singular matrix set a[j][j]=TINY ";
+            qCDebug(lcMatrix) << "Matrix::ludcmp() - WARNING singular matrix set a[j][j]=TINY ";
         }
 
         for (i=j+1;i<n;i++) {
             //     Now, divide by the pivot element.
             temp=a[i][j] /=  a[j][j] ;
-            qDebug () << "Matrix::ludcmp() - j " << j+1<< " dividing by pivot " << a.item(j,j) << " temp  = " << temp;
+            qCDebug(lcMatrix) << "Matrix::ludcmp() - j " << j+1<< " dividing by pivot " << a.item(j,j) << " temp  = " << temp;
             for (k=j+1;k<n;k++) {       //reduce remaining submatrix
                 a[i][k] -= ( temp * a[j][k] );
-                qDebug () << "Matrix::ludcmp() - lower a["<< i+1 << "][" << k+1 <<"] = " << a[i][k];
+                qCDebug(lcMatrix) << "Matrix::ludcmp() - lower a["<< i+1 << "][" << k+1 <<"] = " << a[i][k];
             }
         }
 
@@ -1177,7 +1180,7 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d) {
 
 
  //free_vector(vv,1,n);
-    qDebug () << "delete vector vv";
+    qCDebug(lcMatrix) << "delete vector vv";
     delete[] vv;
 
 
@@ -1220,7 +1223,7 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d) {
  */
 void Matrix::lubksb(Matrix &a, const int &n, int indx[], qreal b[])
 {
-    qDebug () << "Matrix::lubksb() - ";
+    qCDebug(lcMatrix) << "Matrix::lubksb() - ";
     int i, j, ii=0,ip;
     qreal sum;
     for ( i=0;i<n;i++) {  // When ii is set to a positive value, it will become the
@@ -1232,16 +1235,16 @@ void Matrix::lubksb(Matrix &a, const int &n, int indx[], qreal b[])
                 sum -= a[i][j]*b[j];
         else if (sum !=0 )     // A nonzero element was encountered, so from now on we
             ii=i+1;         //  will have to do the sums in the loop above.
-        qDebug() << "Matrix::lubksb() "<< "i " << i  << " ip=indx[i] " << ip <<  " b[ip] " << b[ip] << " b[i] " << b[i] <<  "sum " << sum ;
+        qCDebug(lcMatrix) << "Matrix::lubksb() "<< "i " << i  << " ip=indx[i] " << ip <<  " b[ip] " << b[ip] << " b[i] " << b[i] <<  "sum " << sum ;
         b[i]=sum;
     }
     for ( i=(n-1);i>=0;i--) {  // Now we do the backsubstitution, equation (2.3.7).
         sum=b[i];
-        qDebug() << "Matrix::lubksb() backsubstitution: "<< "i " << i  << " b[i] " << b[i] <<  "sum " << sum ;
+        qCDebug(lcMatrix) << "Matrix::lubksb() backsubstitution: "<< "i " << i  << " b[i] " << b[i] <<  "sum " << sum ;
         for ( j=i+1;j<n;j++)
             sum -= a[i][j]*b[j];
         b[i]=sum/a[i][i]; //  Store a component of the solution vector X. All done!
-        qDebug() << "Matrix::lubksb() backsubstitution: "<< "i " << i  <<  "sum " << sum << " a[i][i] " << a[i][i]   << " b[i] " << b[i] ;
+        qCDebug(lcMatrix) << "Matrix::lubksb() backsubstitution: "<< "i " << i  <<  "sum " << sum << " a[i][i] " << a[i][i]   << " b[i] " << b[i] ;
     }
 }
 
@@ -1265,23 +1268,23 @@ Matrix& Matrix::inverse(Matrix &a)
     int *indx = new  (nothrow) int [ n ];
     Q_CHECK_PTR(indx);
 
-    qDebug () << "Matrix::inverse() - inverting matrix a - size " << n;
+    qCDebug(lcMatrix) << "Matrix::inverse() - inverting matrix a - size " << n;
     if (n==0) {
         return (*this);
     }
     if ( ! ludcmp(a,n,indx,d) )
     { //  Decompose the matrix just once.
-        qDebug () << "Matrix::inverse() - matrix a singular - RETURN";
+        qCDebug(lcMatrix) << "Matrix::inverse() - matrix a singular - RETURN";
         return *this;
     }
 
-    qDebug () << "Matrix::inverse() - find inverse by columns";
+    qCDebug(lcMatrix) << "Matrix::inverse() - find inverse by columns";
     for ( j=0; j<n; j++) {    //    Find inverse by columns.
         for( i=0; i<n; i++)
             col[i]=0;
         col[j]=1.0;
 
-        qDebug () << "Matrix::inverse() - call lubksb";
+        qCDebug(lcMatrix) << "Matrix::inverse() - call lubksb";
         lubksb(a,n,indx,col);
 
         for( i=0; i<n; i++) {
@@ -1289,7 +1292,7 @@ Matrix& Matrix::inverse(Matrix &a)
         }
 
     }
-        qDebug () << "Matrix::inverse() - finished!";
+        qCDebug(lcMatrix) << "Matrix::inverse() - finished!";
 
     return *this;
 }
@@ -1323,7 +1326,7 @@ bool Matrix::solve(qreal b[])
     }
     Q_CHECK_PTR(indx);
 
-    qDebug () << "Matrix::solve() - solving A x  - size " << n;
+    qCDebug(lcMatrix) << "Matrix::solve() - solving A x  - size " << n;
     if (n==0) {
         return false;
     }
@@ -1331,13 +1334,13 @@ bool Matrix::solve(qreal b[])
     { //  Decompose the matrix just once.
         delete A;
         delete[] indx;
-        qDebug() << "Matrix::solve() - matrix a singular - RETURN";
+        qCDebug(lcMatrix) << "Matrix::solve() - matrix a singular - RETURN";
         return false ;
     }
 
-//    qDebug () << "Matrix::solve() - call lubksb";
+//    qCDebug(lcMatrix) << "Matrix::solve() - call lubksb";
     lubksb(*A, n, indx, b);
-//    qDebug () << "Matrix::solve() - finished!";
+//    qCDebug(lcMatrix) << "Matrix::solve() - finished!";
 
     return true;
 }
@@ -1360,7 +1363,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
     Matrix *T = new Matrix(cols(), rows());
 
-    qDebug()<< "Matrix::distancesMatrix() -"
+    qCDebug(lcMatrix)<< "Matrix::distancesMatrix() -"
             <<"metric"<< metric
             << "varLocation"<< varLocation
             << "diagonal"<<diagonal;
@@ -1377,7 +1380,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
         QList<qreal> mean (N,0); // holds mean values
 
-        qDebug()<< "Matrix::distancesMatrix() - input matrix:";
+        qCDebug(lcMatrix)<< "Matrix::distancesMatrix() - input matrix:";
         //this->printMatrixConsole();
 
         for (int i = 0 ; i < N ; i++ ) {
@@ -1388,7 +1391,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                 max = 0;
                 for (int j = 0 ; j < N ; j++ ) {
 
-//                    qDebug() <<  "(i,j)" << i<< ","<<j << "(k,j)" << k<<","<<j;
+//                    qCDebug(lcMatrix) <<  "(i,j)" << i<< ","<<j << "(k,j)" << k<<","<<j;
 
                     if (!diagonal && (i==j || k==j)) {
                         continue;
@@ -1414,7 +1417,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                             distTemp = RAND_MAX;
                         }
                         else {
-//                            qDebug() <<  item(i,j) << "-" << item(k,j) <<"^2";
+//                            qCDebug(lcMatrix) <<  item(i,j) << "-" << item(k,j) <<"^2";
                             distTemp += ( item(i,j) - item(k,j) )*( item(i,j) - item(k,j) ); //compute (x - y)^2
                         }
                         break;
@@ -1467,7 +1470,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                 }
 
 
-//                qDebug() << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
+//                qCDebug(lcMatrix) << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
 //                         << "matchRatio("<<i+1<<","<<k+1<<") =" << distance;
 
                 T->setItem(i,k, distance);
@@ -1487,7 +1490,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
         QList<qreal> mean (N,0); // holds mean values
 
-        qDebug()<< "Matrix::distancesMatrix() -"
+        qCDebug(lcMatrix)<< "Matrix::distancesMatrix() -"
                 <<"input matrix";
         //printMatrixConsole(true);
 
@@ -1574,7 +1577,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                 }
 
 
-//                qDebug() << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
+//                qCDebug(lcMatrix) << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
 
 //                         << "distance("<<i+1<<","<<k+1<<") =" << distance;
 
@@ -1606,7 +1609,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
             }
         }
 
-        qDebug()<< "Matrix::distancesMatrix() -"
+        qCDebug(lcMatrix)<< "Matrix::distancesMatrix() -"
                 <<"input matrix";
         //CM.printMatrixConsole(true);
 
@@ -1701,7 +1704,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
 
 
-//                qDebug() << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
+//                qCDebug(lcMatrix) << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
 
 //                         << "matchRatio("<<i+1<<","<<k+1<<") =" << distance;
 
@@ -1719,7 +1722,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
     else {
 
     }
-    qDebug() << "Matrix::distancesMatrix() - FINISHED - Returning matrix:";
+    qCDebug(lcMatrix) << "Matrix::distancesMatrix() - FINISHED - Returning matrix:";
     //T->printMatrixConsole();
     return *T;
 }
@@ -1743,7 +1746,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
 
     Q_UNUSED(considerWeights);
 
-    qDebug()<< "Matrix::similarityMatrix() -"
+    qCDebug(lcMatrix)<< "Matrix::similarityMatrix() -"
             <<"measure"<< measure
             << "varLocation"<< varLocation;
 
@@ -1761,7 +1764,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
 
         QList<qreal> mean (N,0); // holds mean values
 
-        qDebug()<< "Matrix::similarityMatrix() -"
+        qCDebug(lcMatrix)<< "Matrix::similarityMatrix() -"
                 <<"input matrix";
         //AM.printMatrixConsole(true);
 
@@ -1840,7 +1843,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
                 }
 
 
-                qDebug() << "matches("<<i+1<<","<<k+1<<") =" << matches
+                qCDebug(lcMatrix) << "matches("<<i+1<<","<<k+1<<") =" << matches
 
                          << "matchRatio("<<i+1<<","<<k+1<<") =" << matchRatio;
                 setItem(i,k, matchRatio);
@@ -1862,7 +1865,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
 
         QList<qreal> mean (N,0); // holds mean values
 
-        qDebug()<< "Matrix::similarityMatrix() -"
+        qCDebug(lcMatrix)<< "Matrix::similarityMatrix() -"
                 <<"input matrix";
         //AM.printMatrixConsole(true);
 
@@ -1941,7 +1944,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
                 default:
                     break;
                 }
-                qDebug() << "matches("<<i+1<<","<<k+1<<") =" << matches
+                qCDebug(lcMatrix) << "matches("<<i+1<<","<<k+1<<") =" << matches
 
                          << "matchRatio("<<i+1<<","<<k+1<<") =" << matchRatio;
                 setItem(i,k, matchRatio);
@@ -1973,7 +1976,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
                 CM.setItem(j + N,i, AM.item(j,i));
             }
         }
-        qDebug()<< "Matrix::similarityMatrix() -"
+        qCDebug(lcMatrix)<< "Matrix::similarityMatrix() -"
                 <<"input matrix";
         //CM.printMatrixConsole(true);
 
@@ -2057,7 +2060,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
                     break;
                 }
 
-                qDebug() << "matches("<<i+1<<","<<k+1<<") =" << matches
+                qCDebug(lcMatrix) << "matches("<<i+1<<","<<k+1<<") =" << matches
 
                          << "matchRatio("<<i+1<<","<<k+1<<") =" << matchRatio;
                 setItem(i,k, matchRatio);
@@ -2091,7 +2094,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
 Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                                                const QString &varLocation,
                                                const bool &diagonal){
-    qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
+    qCDebug(lcMatrix)<< "Matrix::pearsonCorrelationCoefficients() -"
             << "varLocation"<< varLocation;
 
     int N = 0;
@@ -2111,7 +2114,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
 
         QList<qreal> mean (N,0); // holds mean values
         QList<qreal> sigma(N,0);
-        qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
+        qCDebug(lcMatrix)<< "Matrix::pearsonCorrelationCoefficients() -"
                 <<"input matrix";
         //AM.printMatrixConsole(true);
 
@@ -2119,7 +2122,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
 
             for (int k = i ; k < N ; k++ ) {
 
-                qDebug() << "comparing rows i"<<i+1<<"k"<<k+1;
+                qCDebug(lcMatrix) << "comparing rows i"<<i+1<<"k"<<k+1;
 
                 // compute mean and variance  values
                 sumi = 0;
@@ -2148,17 +2151,17 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
 
                 for (int j = 0 ; j < N ; j++ ) {
 
-                    qDebug() << "AM.item(i,j)=AM.item("<<i+1<<","<<j+1<<") = "<<AM.item(i,j)
+                    qCDebug(lcMatrix) << "AM.item(i,j)=AM.item("<<i+1<<","<<j+1<<") = "<<AM.item(i,j)
                              << " mean(i)=mean("<<i+1<<") = "<<mean[i]
                                 << "AM.item(k,j)=AM.item("<<k+1<<","<<j+1<<") = "<<AM.item(k,j)
                                 << " mean(k)=mean("<<k+1<<") = "<<mean[k];
 
                     if (!diagonal && (i==j ) ) {
-                        qDebug() << "skipping because i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
+                        qCDebug(lcMatrix) << "skipping because i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
                         continue;
                     }
                     if (!diagonal && (k==j) ) {
-                        qDebug() << "skipping because i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
+                        qCDebug(lcMatrix) << "skipping because i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
                         continue;
                     }
                     else
@@ -2174,7 +2177,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                 }
 
 
-                qDebug() << "covariance("<<i+1<<","<<k+1<<") =" << covariance
+                qCDebug(lcMatrix) << "covariance("<<i+1<<","<<k+1<<") =" << covariance
                          << "sigma["<<i+1<<"]" << sigma[i]
                          << "sigma["<<k+1<<"]" << sigma[k]
                          << "pcc("<<i+1<<","<<k+1<<") =" << pcc;
@@ -2195,7 +2198,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
         QList<qreal> mean (N,0); // holds mean values
         QList<qreal> sigma(N,0);
 
-        qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
+        qCDebug(lcMatrix)<< "Matrix::pearsonCorrelationCoefficients() -"
                 <<"input matrix";
         //AM.printMatrixConsole(true);
 
@@ -2204,7 +2207,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
 
             for (int k = i ; k < N ; k++ ) {
 
-                qDebug() << "comparing columns i"<<i+1<<"k"<<k+1;
+                qCDebug(lcMatrix) << "comparing columns i"<<i+1<<"k"<<k+1;
 
                 // compute mean and variance  values
                 sumi = 0;
@@ -2231,7 +2234,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                 covariance = 0;
                 for (int j = 0 ; j < N ; j++ ) {
                     if (!diagonal && (i==j || k==j) ) {
-                        qDebug() << "skipping because i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
+                        qCDebug(lcMatrix) << "skipping because i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
                         continue;
                     }
                     covariance  +=  ( AM.item(j,i)  - mean[i] ) * ( AM.item(j,k)  - mean[k] ) ;
@@ -2246,7 +2249,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                 }
 
 
-                qDebug() << "covariance("<<i+1<<","<<k+1<<") =" << covariance
+                qCDebug(lcMatrix) << "covariance("<<i+1<<","<<k+1<<") =" << covariance
                          << "sigma["<<i+1<<"]" << sigma[i]
                          << "sigma["<<k+1<<"]" << sigma[k]
                          << "pcc("<<i+1<<","<<k+1<<") =" << pcc;
@@ -2282,7 +2285,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
             }
         }
 
-        qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
+        qCDebug(lcMatrix)<< "Matrix::pearsonCorrelationCoefficients() -"
                 <<"input matrix";
         //CM.printMatrixConsole(true);
 
@@ -2291,7 +2294,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
 
             for (int k = i ; k < N ; k++ ) {  // next column
 
-               qDebug() << "comparing augmented columns i"<<i+1<<"k"<<k+1;
+               qCDebug(lcMatrix) << "comparing augmented columns i"<<i+1<<"k"<<k+1;
 
                 // compute mean and variance  values
                 sumi = 0;
@@ -2318,7 +2321,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                 covariance = 0;
 
                 for (int j = 0 ; j < M ; j++ ) {
-                    qDebug() << "CM.item(j,i)=CM.item("<<j+1<<","<<i+1<<") = "<<CM.item(j,i)
+                    qCDebug(lcMatrix) << "CM.item(j,i)=CM.item("<<j+1<<","<<i+1<<") = "<<CM.item(j,i)
                              << " mean(i)=mean("<<i+1<<") = "<<mean[i]
                                 << "CM.item(j,k)=CM.item("<<j+1<<","<<k+1<<") = "<<CM.item(j,k)
                                 << " mean(k)=mean("<<k+1<<") = "<<mean[k];
@@ -2326,11 +2329,11 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
 
                     if (!diagonal) {
                         if ( (i==j || k==j )) {
-                            qDebug() << "skipping because i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
+                            qCDebug(lcMatrix) << "skipping because i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
                             continue;
                         }
                         if ( j>=N && ( (i+N)==j || (k+N)==j )) {
-                            qDebug() << "skipping because j>=N and i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
+                            qCDebug(lcMatrix) << "skipping because j>=N and i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
                             continue;
                         }
                     }
@@ -2345,7 +2348,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                     pcc = 0;
                 }
 
-                qDebug() << "final covariance("<<i+1<<","<<k+1<<") =" << covariance
+                qCDebug(lcMatrix) << "final covariance("<<i+1<<","<<k+1<<") =" << covariance
                          << "sigma["<<i+1<<"]" << sigma[i]
                          << "sigma["<<k+1<<"]" << sigma[k]
                          << "pcc("<<i+1<<","<<k+1<<") =" << pcc;
@@ -2374,7 +2377,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
  */
 QTextStream& operator <<  (QTextStream& os, Matrix& m){
 
-    qDebug() << "Printing matrix m to provided output stream...";
+    qCDebug(lcMatrix) << "Printing matrix m to provided output stream...";
 
     int actorNumber=1, fieldWidth = 13;
     qreal maxVal, minVal, maxAbsVal, element;
@@ -2500,7 +2503,7 @@ bool Matrix::printHTMLTable(QTextStream& os,
                             const bool markDiag,
                             const bool &plain,
                             const bool &printInfinity){
-    qDebug() << "Matrix::printHTMLTable()";
+    qCDebug(lcMatrix) << "Matrix::printHTMLTable()";
     int elementLabel=0, rowCount = 0;
     qreal maxVal, minVal, element;
     bool hasRealNumbers=false;
@@ -2635,7 +2638,7 @@ bool Matrix::printHTMLTable(QTextStream& os,
  * @return
  */
 bool Matrix::printMatrixConsole(bool debug){
-    qDebug() << "Matrix::printMatrixConsole() - debug " << debug
+    qCDebug(lcMatrix) << "Matrix::printMatrixConsole() - debug " << debug
              << "matrix rows" << rows()<< "cols"<< cols();
     QTextStream out ( (debug ? stderr : stdout) );
 
@@ -2666,14 +2669,14 @@ bool Matrix::printMatrixConsole(bool debug){
  * @return
  */
 bool Matrix::illDefined(){
-    qDebug() << "Matrix::illDefined() " ;
+    qCDebug(lcMatrix) << "Matrix::illDefined() " ;
 
     for (int r = 0; r < rows(); ++r) {
         for (int c = 0; c < cols(); ++c) {
             if ( item(r,c) < RAND_MAX  ) {
             }
             else {
-                qDebug() << "Matrix::illDefined() - matrix ill-defined: TRUE" ;
+                qCDebug(lcMatrix) << "Matrix::illDefined() - matrix ill-defined: TRUE" ;
                 return true;
 
             }
