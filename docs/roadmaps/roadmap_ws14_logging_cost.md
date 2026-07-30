@@ -47,8 +47,8 @@ so **its streaming arguments are never evaluated**
 argument is evaluated and formatted into a `QString`, and only *then* is the result dropped by the
 filter rule or message handler.
 
-Measured on this machine (macOS arm64, Qt 6.10.1, Release `-O2`), representative inner-loop payload
-(4 ints + 2 doubles + literals):
+Measured on a MacBook Pro M5, 24GB RAM (macOS arm64, AppleClang, Qt 6.10.1, Release `-O2`),
+representative inner-loop payload (4 ints + 2 doubles + literals):
 
 | Form | ns/call |
 |---|---|
@@ -110,21 +110,11 @@ plain drift since this table was first written). True tree-wide live total: **~1
 | `parser/parser_graphml.cpp` | 99 | 99 (matches) | **L3 — done** |
 | `parser/parser_dl.cpp` | 88 | 88 (matches) | **L3 — done** |
 | `graph/reporting/graph_reports.cpp` | 85 | **92** | Not yet converted (post-L4 sweep) |
-| `engine/distance_engine.cpp` | 75 | **78** (3 printf-style calls undercounted, see below) | **L2 — done** |
+| `engine/distance_engine.cpp` | 75 | **78** (3 printf-style calls undercounted) | **L2 — done** |
 | `graph/storage/graph_vertices.cpp` | 56 | 56 (matches) | Not yet converted (post-L4 sweep) |
 | `graphicswidget.cpp` | "12 already `qCDebug`" | **15 live remain**, 24 already `qCDebug` | **Not actually fully converted** despite this table previously implying it was — mixed-state file, next up in the cleanup pass |
 | `graphicsnode.cpp` | "1 already clean" | 1 live, 0 `qCDebug` | Never actually touched by the conversion; "clean" meant "low count", not "done" |
 | `graphicsedge.cpp` | 0 | 0 (confirmed — all matches are commented-out) | Genuinely clean |
-
-The `distance_engine.cpp` undercount: the original count was a `grep "qDebug()"` literal match,
-which misses the printf-style `qDebug("...", args)` overload with no literal `()`. 3 calls inside
-the BFS loop (`distance_engine.cpp:1080-1088`) used that form — same hot path as the already-covered
-Dijkstra loop, converted along with the rest. The same undercount mechanism was checked for and found
-in exactly one other place: `parser_pajek.cpp` (10 printf-style calls, converted as part of L3).
-Neither `matrix.cpp` nor any other parser file has any printf-style calls — L4's own gap (118 vs. 96)
-was plain staleness, not this mechanism; L4 additionally had to handle a *different* undercount
-variant, `qDebug ()` with a space before the parens (~24 sites), which a literal `qDebug()` grep also
-misses.
 
 `lcGW` in `graphicswidget.cpp:45` is currently the **only other** file-local `Q_LOGGING_CATEGORY` in
 the tree besides `lcEngine` and `lcMatrix`, plus the new shared `lcParser` (`parser.h`). The canvas
@@ -135,8 +125,8 @@ classes were the only ones already partially cleaned up (WS10 Phase 1) before th
 
 ## L1/L2 real-world evidence (2026-07-31)
 
-Measured on this machine (macOS arm64, Qt 6.10.1, Release `-O2`), same build directory rebuilt
-incrementally at each phase, `run_golden_compares.sh` + `run_golden_io_roundtrip.sh` clean after
+Measured on a MacBook Pro M5, 24GB RAM (macOS arm64, Qt 6.10.1, Release `-O2`), same build directory
+rebuilt incrementally at each phase, `run_golden_compares.sh` + `run_golden_io_roundtrip.sh` clean after
 every step.
 
 ### Two real bugs found while wiring up the GUI-side measurement
@@ -149,9 +139,9 @@ naive before/after numbers meaningless until fixed:
    for the no-flag case, left `appSettings["printDebug"]` untouched — so a plain launch silently
    re-applied whatever the Settings-dialog "print debug messages" checkbox last saved to
    `settings.conf`. One past toggle-on (e.g. during a debugging session) made every future no-flag
-   launch pay full cost forever — on this machine, `printDebug=true` was already persisted before
-   this session started, meaning the "before" numbers below reflect a real, currently-live bug, not
-   a contrived worst case. Fixed in `initSettings()`: a no-flag launch now forces `printDebug=false`
+   launch pay full cost forever — on the MacBook Pro M5 used for this investigation,
+   `printDebug=true` was already persisted before this session started, meaning the "before" numbers
+   below reflect a real, currently-live bug, not a contrived worst case. Fixed in `initSettings()`: a no-flag launch now forces `printDebug=false`
    the same way `-d 0` already did, regardless of persisted state. The Settings dialog checkbox
    still works fine as a live, in-session toggle.
 
@@ -330,7 +320,7 @@ already clearly visible at N=300): **~4.27s → ~0.30s, ~14.2×**.
 
 ## L3/L4 real-world evidence (2026-07-31)
 
-Same discipline as L1/L2: measured on this machine, same build directory rebuilt incrementally
+Same discipline as L1/L2: measured on the same MacBook Pro M5, 24GB RAM, same build directory rebuilt incrementally
 (each "before" number from `git stash`-ing the milestone's still-uncommitted change and rebuilding,
 not extrapolated), `run_golden_compares.sh` + `run_golden_io_roundtrip.sh` clean after every commit.
 
