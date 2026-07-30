@@ -9,6 +9,7 @@
 #include <QFileInfo>
 #include <QTextStream>
 #include <QMessageLogContext>
+#include <QLoggingCategory>
 
 #include "graph.h"
 #include "tools/headless_graph_loader.h"
@@ -91,6 +92,16 @@ int main(int argc, char *argv[])
         {
             QTextStream(stderr) << msg << "\n";
         } });
+        // WS14: the message handler above only discards output AFTER a message has already
+        // been formatted -- it does nothing for qCDebug(category)'s actual cost-saving
+        // mechanism, which is skipping argument evaluation BEFORE formatting, gated by the
+        // category's own enabled/disabled state. Without this, a converted category (e.g.
+        // socnetv.engine) defaults to enabled here and every qCDebug() call still pays full
+        // formatting cost, just to have the result thrown away by the handler above -- the
+        // exact "format-then-discard" tax WS14 exists to eliminate. Explicitly disabling the
+        // categories is what actually lets the category-gate short-circuit take effect.
+        QLoggingCategory::setFilterRules("default.debug=false\n"
+                                         "socnetv.*.debug=false");
     }
     cfg.inputPath = cli.value(fileOpt);
     cfg.fileFormat = cli.value(typeOpt).toInt();
