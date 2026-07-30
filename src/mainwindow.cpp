@@ -109,9 +109,18 @@ MainWindow::MainWindow(const QString &m_fileName, const bool &forceProgress, con
     switch (debugLevel)
     {
     case 0:
-        // Debugging disabled by command line parameter
-        // Set messages pattern to trivial
-        qSetMessagePattern("");
+    default:
+        // Debugging disabled by command line parameter (case 0), or no -d flag at all
+        // (default -- WS14 L1: a no-flag launch is release-build-quiet by design, same
+        // as an explicit -d 0, not just "whatever was last saved to settings.conf"; see
+        // the matching fix in initSettings() below for why that second part matters).
+        // Bare message, no decoration -- NOT an empty pattern. A truly empty pattern has
+        // no %{message} token, so Qt's formatter reduces every message to an empty string
+        // regardless of severity or category, silently swallowing qInfo()/qWarning()/
+        // qCritical() output too, not just the qDebug() spam this is meant to suppress
+        // (found while wiring up WS14's own qInfo()-based benchmark instrumentation,
+        // which went dark under the old "" pattern for exactly this reason).
+        qSetMessagePattern("%{message}");
         // Disable debugging messages with filter rule
         QLoggingCategory::setFilterRules("default.debug=false\n"
                                          "socnetv.*.debug=false");
@@ -123,10 +132,6 @@ MainWindow::MainWindow(const QString &m_fileName, const bool &forceProgress, con
     case 2:
         // Debugging set to maximum by command line parameter
         qSetMessagePattern("[%{type} %{category}] %{time yyyyMMdd h:mm:ss.zzz t} %{threadid} (%{file}:%{line}) %{function} - %{message}");
-        break;
-    default:
-        // No debug parameter -- set message pattern to bare minimum
-        qSetMessagePattern("%{time} t:%{threadid} (%{file}:%{line}) %{function} - %{message}");
         break;
     }
 
@@ -592,14 +597,16 @@ QMap<QString, QString> MainWindow::initSettings(const int &debugLevel, const boo
     {
         appSettings["printDebug"] = "true";
     }
-    else if (debugLevel == 0)
-    {
-        appSettings["printDebug"] = "false";
-        slotOptionsDebugMessages(false);
-    }
     else
     {
-        // do not override appSettings["printDebug"]
+        // debugLevel == 0 (-d 0) or -1 (no -d flag at all): WS14 L1 -- a no-flag launch must
+        // come up quiet regardless of whatever "print debug messages" persisted to
+        // settings.conf from a previous Settings-dialog session. Without this, a single past
+        // toggle-on silently makes every future no-flag launch pay the full qDebug() cost
+        // forever, which is exactly the release-build-hygiene bug this milestone exists to
+        // close. The Settings dialog checkbox still works fine as a live, in-session toggle.
+        appSettings["printDebug"] = "false";
+        slotOptionsDebugMessages(false);
     }
 
     if (appSettings["printDebug"] == "true")
