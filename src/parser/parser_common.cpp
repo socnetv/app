@@ -29,7 +29,7 @@ bool Parser::isComment(QString str)
 {
     if (str.startsWith("#", Qt::CaseInsensitive) || str.startsWith("/*", Qt::CaseInsensitive) || str.startsWith("%", Qt::CaseInsensitive) || str.startsWith("/*", Qt::CaseInsensitive) || str.startsWith("//", Qt::CaseInsensitive) || str.isEmpty())
     {
-        qDebug() << "Parser::isComment() - Comment or an empty line was found. "
+        qCDebug(lcParser) << "Parser::isComment() - Comment or an empty line was found. "
                     "Skipping...";
         return true;
     }

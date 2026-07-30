@@ -334,7 +334,16 @@ set_target_properties(${TARGET_NAME} PROPERTIES
 
 # Add compiler options
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
-    target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra -Wpedantic
+        # WS14: qCDebug(category) << ... (the standard Qt streaming-log idiom, used by every
+        # converted call site) passes zero arguments to qCDebug's variadic macro parameter.
+        # That's only standard-legal in C++20; on our C++17 standard it relies on the
+        # GNU/Clang comma-swallowing extension, which -Wpedantic flags. Functionally correct
+        # (this is how lcGW/lcEngine already worked before this flag was added) and would
+        # otherwise be thousands of warnings once every qDebug() call site is converted.
+        # GCC silently ignores -Wno-* flags it doesn't recognize, so this is safe to share
+        # across both compilers in this branch.
+        -Wno-variadic-macro-arguments-omitted)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_compile_options(${TARGET_NAME} PRIVATE /W4)
 endif()

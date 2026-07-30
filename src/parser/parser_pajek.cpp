@@ -50,7 +50,7 @@ using namespace std;
 bool Parser::parseAsPajek(const QByteArray &rawData)
 {
 
-    qDebug() << "Parsing data as pajek formatted...";
+    qCDebug(lcParser) << "Parsing data as pajek formatted...";
 
     QTextCodec *codec = QTextCodec::codecForName(m_textCodecName.toLatin1());
     QString decodedData = codec->toUnicode(rawData);
@@ -102,13 +102,13 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
 
         actualLineNumber++;
 
-        qDebug() << "*** str:" << str;
+        qCDebug(lcParser) << "*** str:" << str;
 
         if (actualLineNumber == 1)
         {
             if (str.startsWith("graph", Qt::CaseInsensitive) || str.startsWith("digraph", Qt::CaseInsensitive) || str.startsWith("DL", Qt::CaseInsensitive) || str.startsWith("list", Qt::CaseInsensitive) || str.startsWith("graphml", Qt::CaseInsensitive) || str.startsWith("<?xml", Qt::CaseInsensitive) || str.startsWith("LEDA.GRAPH", Qt::CaseInsensitive) || (!str.startsWith("*network", Qt::CaseInsensitive) && !str.startsWith("*vertices", Qt::CaseInsensitive)))
             {
-                qDebug() << "*** Not a Pajek-formatted file. Aborting!!";
+                qCDebug(lcParser) << "*** Not a Pajek-formatted file. Aborting!!";
                 errorMessage = tr("Not a Pajek-formatted file. "
                                   "First not-comment line %1 (at file line %2) does not start with "
                                   "Network or Vertices")
@@ -124,7 +124,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
             if ((actualLineNumber == 1) &&
                 (!str.contains("network", Qt::CaseInsensitive) && !str.contains("vertices", Qt::CaseInsensitive)))
             {
-                qDebug("*** Not a Pajek file. Aborting!");
+                qCDebug(lcParser, "*** Not a Pajek file. Aborting!");
                 errorMessage = tr("Not a Pajek-formatted file. "
                                   "First not-comment line does not start with "
                                   "Network or Vertices");
@@ -135,12 +135,12 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                 networkName = (str.right(str.size() - 8)).simplified();
                 if (!networkName.isEmpty())
                 {
-                    qDebug() << "networkName: "
+                    qCDebug(lcParser) << "networkName: "
                              << networkName;
                 }
                 else
                 {
-                    qDebug() << "set networkName to unnamed.";
+                    qCDebug(lcParser) << "set networkName to unnamed.";
                     networkName = "unnamed";
                 }
                 continue;
@@ -151,10 +151,10 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                 lineElement = str.split(myRegExp);
                 if (!lineElement[1].isEmpty())
                     totalNodes = lineElement[1].toInt(&intOk, 10);
-                qDebug("Vertices %i.", totalNodes);
+                qCDebug(lcParser, "Vertices %i.", totalNodes);
                 continue;
             }
-            qDebug("headlines end here");
+            qCDebug(lcParser, "headlines end here");
         }
         /**SPLIT EACH LINE (ON EMPTY SPACE CHARACTERS) IN SEVERAL ELEMENTS*/
         myRegExp.setPattern("\\s+");
@@ -181,7 +181,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                 relation = str.right(str.size() - pos - 1);
                 relation = normalizeQuotedIdentifier(relation);
                 relationsList << relation;
-                qDebug() << "added new relation" << relation
+                qCDebug(lcParser) << "added new relation" << relation
                          << "to relationsList - signaling to add new relation";
                 if (m_parseSink)
                 {
@@ -190,7 +190,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                 lastRelationIndex = relationsList.size() - 1;
                 if (lastRelationIndex > 0)
                 {
-                    qDebug() << "last relation index:"
+                    qCDebug(lcParser) << "last relation index:"
                              << lastRelationIndex
                              << "signaling to change to the last relation...";
                     if (m_parseSink)
@@ -293,7 +293,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                 return true;
             };
 
-            qDebug() << str;
+            qCDebug(lcParser) << str;
             arcs_flag = false;
             edges_flag = false;
             arcslist_flag = false;
@@ -308,7 +308,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                 relation = label.isEmpty() ? QString::number(k) : label;
 
                 relationsList << relation;
-                qDebug() << "added new relation" << relation
+                qCDebug(lcParser) << "added new relation" << relation
                          << "to relationsList - signaling to add new relation";
                 if (m_parseSink)
                 {
@@ -317,7 +317,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                 lastRelationIndex = relationsList.size() - 1;
                 if (lastRelationIndex > 0)
                 {
-                    qDebug() << "last relation index:"
+                    qCDebug(lcParser) << "last relation index:"
                              << lastRelationIndex
                              << "signaling to change to the last relation...";
                     if (m_parseSink)
@@ -337,10 +337,10 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
             // qDebug("=== Reading nodes ===");
             nodes_flag = true;
             nodeNum = lineElement[0].toInt(&intOk, 10);
-            // qDebug()<<"node number: "<<nodeNum;
+            // qCDebug(lcParser)<<"node number: "<<nodeNum;
             if (nodeNum == 0)
             {
-                qDebug("Node is zero numbered! Raising zero-start-flag - increasing nodenum");
+                qCDebug(lcParser, "Node is zero numbered! Raising zero-start-flag - increasing nodenum");
                 zero_flag = true;
             }
             if (zero_flag)
@@ -409,12 +409,12 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                             break;
                         }
                     }
-                    // qDebug()<<"nodeColor:" << nodeColor;
+                    // qCDebug(lcParser)<<"nodeColor:" << nodeColor;
                     if (nodeColor.contains("."))
                         nodeColor = initNodeColor;
                     if (nodeColor.startsWith("RGB"))
                         nodeColor.replace(0, 3, "#");
-                    qDebug() << " \n\n PAJEK color " << nodeColor;
+                    qCDebug(lcParser) << " \n\n PAJEK color " << nodeColor;
                 }
                 else
                 { // there is no nodeColor. Use the default
@@ -428,7 +428,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                     for (int c = 0; c < lineElement.size(); c++)
                     {
                         temp = lineElement.at(c);
-                        //		qDebug()<< temp.toLatin1();
+                        //		qCDebug(lcParser)<< temp.toLatin1();
                         if ((coordIndex = temp.indexOf(".", Qt::CaseInsensitive)) != -1)
                         {
                             if (lineElement.at(c - 1) == "ic")
@@ -462,26 +462,26 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                             break;
                         }
                     }
-                    // qDebug()<<"Coords: "<<randX << randY<< gwHeight;
+                    // qCDebug(lcParser)<<"Coords: "<<randX << randY<< gwHeight;
                 }
                 else
                 {
                     fileContainsNodeCoords = false;
                     randX = rand() % gwWidth;
                     randY = rand() % gwHeight;
-                    // qDebug()<<"No coords. Using random "<<randX << randY;
+                    // qCDebug(lcParser)<<"No coords. Using random "<<randX << randY;
                 }
             }
             // START NODE CREATION
-            qDebug() << "Creating node numbered " << nodeNum << " Real nodes count (j)= " << j + 1;
+            qCDebug(lcParser) << "Creating node numbered " << nodeNum << " Real nodes count (j)= " << j + 1;
             j++; // Controls the real number of nodes.
             // If the file misses some nodenumbers then we create dummies and delete them afterwards!
             if (j + miss < nodeNum)
             {
-                qDebug() << "There are " << j << " nodes but this node has number" << nodeNum;
+                qCDebug(lcParser) << "There are " << j << " nodes but this node has number" << nodeNum;
                 for (int num = j; num < nodeNum; num++)
                 {
-                    qDebug() << "Signaling to create new dummy node" << num
+                    qCDebug(lcParser) << "Signaling to create new dummy node" << num
                              << "at" << QPointF(randX, randY);
                     if (m_parseSink)
                     {
@@ -504,12 +504,12 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
             }
             else if (j > nodeNum)
             {
-                qDebug("Error: This Pajek net declares this node with nodeNumber smaller than previous nodes. Aborting");
+                qCDebug(lcParser, "Error: This Pajek net declares this node with nodeNumber smaller than previous nodes. Aborting");
                 errorMessage = tr("Invalid Pajek-formatted file. It declares a node with "
                                   "nodeNumber smaller than previous nodes.");
                 return false;
             }
-            qDebug() << "Signaling to create new node" << nodeNum
+            qCDebug(lcParser) << "Signaling to create new node" << nodeNum
                      << "at" << QPointF(randX, randY);
             if (m_parseSink)
             {
@@ -529,17 +529,17 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
             // first check that all nodes are already created
             if (j && j != totalNodes)
             { // if there were more or less nodes than the file declared
-                qDebug() << "*** WARNING ***: The Pajek file declares " << totalNodes << "  nodes, but I found " << j << " nodes....";
+                qCDebug(lcParser) << "*** WARNING ***: The Pajek file declares " << totalNodes << "  nodes, but I found " << j << " nodes....";
                 totalNodes = j;
             }
             else if (j == 0)
             { // if there were no nodes at all, we need to create them now.
-                qDebug() << "The Pajek file declares " << totalNodes << " but I didn't found any nodes. I will create them....";
+                qCDebug(lcParser) << "The Pajek file declares " << totalNodes << " but I didn't found any nodes. I will create them....";
                 for (int num = j + 1; num <= totalNodes; num++)
                 {
                     randX = rand() % gwWidth;
                     randY = rand() % gwHeight;
-                    qDebug() << "Signaling to create new node" << num
+                    qCDebug(lcParser) << "Signaling to create new node" << num
                              << "at random pos:" << QPointF(randX, randY);
                     if (m_parseSink)
                     {
@@ -563,8 +563,8 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
             if (edges_flag && !arcs_flag)
             { /**EDGES */
 
-                qDebug("==== Reading edges ====");
-                qDebug() << lineElement;
+                qCDebug(lcParser, "==== Reading edges ====");
+                qCDebug(lcParser) << lineElement;
 
                 source = lineElement[0].toInt(&ok, 10);
                 target = lineElement[1].toInt(&ok, 10);
@@ -601,7 +601,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                     edgeWeight = 1.0;
                 }
 
-                // qDebug()<<"weight "<< weight;
+                // qCDebug(lcParser)<<"weight "<< weight;
 
                 if (lineElement.contains("c", Qt::CaseSensitive))
                 {
@@ -615,7 +615,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                         edgeColor = lineElement[colorIndex];
                     if (edgeColor.contains("."))
                         edgeColor = initEdgeColor;
-                    // qDebug()<< " current color "<< edgeColor;
+                    // qCDebug(lcParser)<< " current color "<< edgeColor;
                 }
                 else
                 {
@@ -625,7 +625,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
 
                 if (lineElement.contains("l", Qt::CaseSensitive))
                 {
-                    qDebug("file with link labels");
+                    qCDebug(lcParser, "file with link labels");
                     fileContainsLinkLabels = true;
                     myRegExp.setPattern("[l]");
                     labelIndex = lineElement.indexOf(myRegExp, 0) + 1;
@@ -635,7 +635,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                         edgeLabel = lineElement[labelIndex];
                     if (edgeLabel.contains("."))
                         edgeLabel = initEdgeLabel;
-                    qDebug() << " edge label " << edgeLabel;
+                    qCDebug(lcParser) << " edge label " << edgeLabel;
                 }
                 else
                 {
@@ -645,7 +645,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
 
                 arrows = false;
                 bezier = false;
-                qDebug() << "EDGES: signaling to create new edge:" << source << " - " << target;
+                qCDebug(lcParser) << "EDGES: signaling to create new edge:" << source << " - " << target;
                 if (m_parseSink)
                 {
                     m_parseSink->createEdge(source, target, edgeWeight, edgeColor,
@@ -708,7 +708,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
 
                 if (lineElement.contains("l", Qt::CaseSensitive))
                 {
-                    qDebug("file with link labels");
+                    qCDebug(lcParser, "file with link labels");
                     fileContainsLinkLabels = true;
                     myRegExp.setPattern("[l]");
                     labelIndex = lineElement.indexOf(myRegExp, 0) + 1;
@@ -717,7 +717,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                     else
                         edgeLabel = lineElement.at(labelIndex);
                     // if (edgeLabel.contains (".") )  edgeLabel=initEdgeLabel;
-                    qDebug() << " edge label " << edgeLabel;
+                    qCDebug(lcParser) << " edge label " << edgeLabel;
                 }
                 else
                 {
@@ -727,7 +727,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                 arrows = true;
                 bezier = false;
                 has_arcs = true;
-                qDebug() << "ARCS: signaling to create new arc:" << source << "->" << target << "with weight " << weight;
+                qCDebug(lcParser) << "ARCS: signaling to create new arc:" << source << "->" << target << "with weight " << weight;
                 if (m_parseSink)
                 {
                     m_parseSink->createEdge(source, target, edgeWeight, edgeColor,
@@ -749,7 +749,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                 for (int index = 1; index < lineElement.size(); index++)
                 {
                     target = lineElement.at(index).toInt(&ok, 10);
-                    qDebug() << "ARCS LIST: signaling to create new arc:" << source << "->" << target << "with weight " << weight;
+                    qCDebug(lcParser) << "ARCS LIST: signaling to create new arc:" << source << "->" << target << "with weight " << weight;
                     if (m_parseSink)
                     {
                         m_parseSink->createEdge(source, target, edgeWeight, edgeColor,
@@ -774,7 +774,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                     if (lineElement.at(target) != "0")
                     {
                         edgeWeight = lineElement.at(target).toFloat(&ok);
-                        qDebug() << " MATRIX: signaling to create new arc"
+                        qCDebug(lcParser) << " MATRIX: signaling to create new arc"
                                  << source << "->" << target + 1
                                  << "with weight" << weight;
                         if (m_parseSink)
@@ -796,10 +796,10 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
         return false;
     }
 
-    qDebug("Removing all dummy nodes, if any");
+    qCDebug(lcParser, "Removing all dummy nodes, if any");
     if (listDummiesPajek.size() > 0)
     {
-        qDebug("Trying to delete the dummies now");
+        qCDebug(lcParser, "Trying to delete the dummies now");
         for (list<int>::iterator it = listDummiesPajek.begin(); it != listDummiesPajek.end(); it++)
         {
             if (m_parseSink)
@@ -817,11 +817,11 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
         }
     }
 
-    qDebug() << "Clearing temporary dummies and relations list";
+    qCDebug(lcParser) << "Clearing temporary dummies and relations list";
     listDummiesPajek.clear();
     relationsList.clear();
 
-    qDebug() << "signaling to change to the first relation...";
+    qCDebug(lcParser) << "signaling to change to the first relation...";
     if (m_parseSink)
     {
         m_parseSink->setRelation(0);
@@ -836,7 +836,7 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
         edgeDirType = EdgeType::Undirected;
     }
 
-    qDebug() << "Finished OK. Returning.";
+    qCDebug(lcParser) << "Finished OK. Returning.";
     return true;
 }
 

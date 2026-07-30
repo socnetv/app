@@ -56,7 +56,7 @@ using namespace std;
 bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &delimiter)
 {
 
-    qDebug() << "Parsing data as weighted edgelist formatted..." << "column delimiter" << delimiter;
+    qCDebug(lcParser) << "Parsing data as weighted edgelist formatted..." << "column delimiter" << delimiter;
 
     QTextCodec *codec = QTextCodec::codecForName(m_textCodecName.toLatin1());
     QString decodedData = codec->toUnicode(rawData);
@@ -84,7 +84,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
 
     relationsList.clear();
 
-    qDebug() << "***  Initial file parsing "
+    qCDebug(lcParser) << "***  Initial file parsing "
                 "to test integrity and edge naming scheme";
     while (!ts.atEnd())
     {
@@ -93,7 +93,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
 
         str = ts.readLine().simplified().trimmed();
 
-        qDebug() << " simplified str" << str;
+        qCDebug(lcParser) << " simplified str" << str;
 
         if (isComment(str))
             continue;
@@ -106,7 +106,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
             (str.contains("vertices", Qt::CaseInsensitive) || str.contains("network", Qt::CaseInsensitive) || str.contains("graph", Qt::CaseInsensitive) || str.contains("digraph", Qt::CaseInsensitive) || str.contains("DL n", Qt::CaseInsensitive) // DL format
              || str == "DL" || str == "dl" || str.contains("list", Qt::CaseInsensitive) || str.contains("graphml", Qt::CaseInsensitive) || str.contains("xml", Qt::CaseInsensitive)))
         {
-            qDebug() << "Not a Weighted list-formatted file. Aborting!!";
+            qCDebug(lcParser) << "Not a Weighted list-formatted file. Aborting!!";
 
             errorMessage = tr("Not an EdgeList-formatted file. "
                               "A non-comment line includes keywords reserved by other file formats (i.e vertices, graphml, network, graph, digraph, DL, xml)");
@@ -117,7 +117,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
 
         if (lineElement.size() != 3)
         {
-            qDebug() << "*** Not a Weighted list-formatted file. Aborting!!";
+            qCDebug(lcParser) << "*** Not a Weighted list-formatted file. Aborting!!";
 
             errorMessage = tr("Not a properly EdgeList-formatted file. "
                               "Row %1 has not 3 elements as expected (i.e. source, target, weight)")
@@ -128,7 +128,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
         edge_source = lineElement[0];
         edge_target = lineElement[1];
         edge_weight = lineElement[2];
-        qDebug() << " Dissecting line - "
+        qCDebug(lcParser) << " Dissecting line - "
                     "source:"
                  << edge_source
                  << "target:"
@@ -138,14 +138,14 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
 
         if (!edge_source.contains(onlyDigitsExp))
         {
-            qDebug() << " node named by non-digit only string. "
+            qCDebug(lcParser) << " node named by non-digit only string. "
                         "nodesWithLabels = true";
             nodesWithLabels = true;
         }
 
         if (!edge_target.contains(onlyDigitsExp))
         {
-            qDebug() << " node named by non-digit only string. "
+            qCDebug(lcParser) << " node named by non-digit only string. "
                         "nodesWithLabels = true";
             nodesWithLabels = true;
         }
@@ -154,17 +154,17 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
     ts.seek(0);
     fileLine = 0;
 
-    qDebug() << "***  Initial file parsing finished. "
+    qCDebug(lcParser) << "***  Initial file parsing finished. "
                 "This is really a weighted edge list. Proceed to main parsing";
 
     while (!ts.atEnd())
     {
         str = ts.readLine();
 
-        qDebug() << " str" << str;
+        qCDebug(lcParser) << " str" << str;
 
         str = str.simplified();
-        qDebug() << " simplified str" << str;
+        qCDebug(lcParser) << " simplified str" << str;
 
         if (isComment(str))
             continue;
@@ -174,7 +174,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
         edge_source = lineElement[0];
         edge_target = lineElement[1];
         edge_weight = lineElement[2];
-        qDebug() << " Dissecting line - "
+        qCDebug(lcParser) << " Dissecting line - "
                     "source:"
                  << edge_source
                  << "target:"
@@ -201,7 +201,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
                 nodeQ.push(sourceActor);
                 nodeMap.insert(edge_source, edge_source.toInt());
             }
-            qDebug() << " source, new node named"
+            qCDebug(lcParser) << " source, new node named"
                      << edge_source
                      << "totalNodes" << totalNodes
                      << "nodeMap.count"
@@ -209,7 +209,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
         }
         else
         {
-            qDebug() << " source already found, continue";
+            qCDebug(lcParser) << " source already found, continue";
         }
         if (!nodeMap.contains(edge_target))
         {
@@ -230,7 +230,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
                 nodeQ.push(targetActor);
                 nodeMap.insert(edge_target, edge_target.toInt());
             }
-            qDebug() << " target, new node named"
+            qCDebug(lcParser) << " target, new node named"
                      << edge_target
                      << "totalNodes" << totalNodes
                      << "nodeMap.count"
@@ -238,26 +238,26 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
         }
         else
         {
-            qDebug() << " target already found, continue";
+            qCDebug(lcParser) << " target already found, continue";
         }
 
         edgeWeight = edge_weight.toDouble(&conversionOK);
         if (conversionOK)
         {
-            qDebug() << " read edge weight"
+            qCDebug(lcParser) << " read edge weight"
                      << edgeWeight;
         }
         else
         {
             edgeWeight = 1.0;
-            qDebug() << " error reading edge weight."
+            qCDebug(lcParser) << " error reading edge weight."
                         "Using default edgeWeight"
                      << edgeWeight;
         }
         edgeKey = edge_source + edgeKeyDelimiter + edge_target;
         if (!edgeList.contains(edgeKey))
         {
-            qDebug() << " inserting edgeKey"
+            qCDebug(lcParser) << " inserting edgeKey"
                      << edgeKey
                      << "in edgeList with weight" << edgeWeight;
             edgeList.insert(edgeKey, edgeWeight);
@@ -266,7 +266,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
 
     } // end ts.stream while here
 
-    qDebug() << " finished reading file, "
+    qCDebug(lcParser) << " finished reading file, "
                 "start creating nodes and edges";
 
     // print_queue(nodeQ);
@@ -282,7 +282,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
 
         if (nodesWithLabels)
         {
-            qDebug() << "signaling to create new node" << node.value
+            qCDebug(lcParser) << "signaling to create new node" << node.value
                      << "label" << node.key
                      << "at pos" << QPointF(randX, randY);
             if (m_parseSink)
@@ -301,7 +301,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
         else
         {
 
-            qDebug() << "signaling to create new node" << node.key.toInt()
+            qCDebug(lcParser) << "signaling to create new node" << node.key.toInt()
                      << "label" << node.key
                      << "at pos" << QPointF(randX, randY);
             if (m_parseSink)
@@ -324,7 +324,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
     while (edge != edgeList.constEnd())
     {
 
-        qDebug() << " creating edge named"
+        qCDebug(lcParser) << " creating edge named"
                  << edge.key() << " weight " << edge.value();
 
         edgeElement = edge.key().split(edgeKeyDelimiter);
@@ -361,7 +361,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
         }
     }
 
-    qDebug() << " END. Returning.";
+    qCDebug(lcParser) << " END. Returning.";
     return true;
 }
 
@@ -375,7 +375,7 @@ bool Parser::parseAsEdgeListWeighted(const QByteArray &rawData, const QString &d
 bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &delimiter)
 {
 
-    qDebug() << "Parsing data as simple edgelist formatted..." << "column delimiter" << delimiter;
+    qCDebug(lcParser) << "Parsing data as simple edgelist formatted..." << "column delimiter" << delimiter;
 
     QTextCodec *codec = QTextCodec::codecForName(m_textCodecName.toLatin1());
     QString decodedData = codec->toUnicode(rawData);
@@ -406,7 +406,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
 
     relationsList.clear();
 
-    qDebug() << "***  Initial file parsing "
+    qCDebug(lcParser) << "***  Initial file parsing "
                 "to test integrity and edge naming scheme";
 
     while (!ts.atEnd())
@@ -416,7 +416,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
 
         str = ts.readLine().simplified().trimmed();
 
-        qDebug() << " line " << fileLine
+        qCDebug(lcParser) << " line " << fileLine
                  << "\n"
                  << str;
 
@@ -430,7 +430,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
         if (actualLineNumber == 1 &&
             (str.contains("vertices", Qt::CaseInsensitive) || str.contains("network", Qt::CaseInsensitive) || str.contains("graph", Qt::CaseInsensitive) || str.contains("digraph", Qt::CaseInsensitive) || str.contains("DL n", Qt::CaseInsensitive) || str == "DL" || str == "dl" || str.contains("list", Qt::CaseInsensitive) || str.contains("graphml", Qt::CaseInsensitive) || str.contains("xml", Qt::CaseInsensitive)))
         {
-            qDebug() << "*** Not an EdgeList-formatted file. Aborting!!";
+            qCDebug(lcParser) << "*** Not an EdgeList-formatted file. Aborting!!";
             errorMessage = tr("Not an EdgeList-formatted file. "
                               "Non-comment line %1 includes keywords reserved by other file formats (i.e vertices, graphml, network, graph, digraph, DL, xml)")
                                .arg(fileLine);
@@ -445,7 +445,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
             edge_source = (*it1);
             if (!edge_source.contains(onlyDigitsExp))
             {
-                qDebug() << " node named by non-digit only string. "
+                qCDebug(lcParser) << " node named by non-digit only string. "
                             "nodesWithLabels = true";
                 nodesWithLabels = true;
             }
@@ -459,7 +459,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
     ts.seek(0);
     fileLine = 0;
 
-    qDebug() << " Reset and read lines. nodesWithLabels"
+    qCDebug(lcParser) << " Reset and read lines. nodesWithLabels"
              << nodesWithLabels;
 
     while (!ts.atEnd())
@@ -469,7 +469,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
 
         str = str.simplified();
 
-        qDebug() << " line" << fileLine
+        qCDebug(lcParser) << " line" << fileLine
                  << "\n"
                  << str;
 
@@ -485,7 +485,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
             if (columnCount == 1)
             { // source node
                 edge_source = (*it1);
-                qDebug() << " Dissecting line - "
+                qCDebug(lcParser) << " Dissecting line - "
                             "source node:"
                          << edge_source;
 
@@ -509,7 +509,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
                         nodeQ.push(sourceActor);
                         nodeMap.insert(edge_source, edge_source.toInt());
                     }
-                    qDebug() << " source, new node named"
+                    qCDebug(lcParser) << " source, new node named"
                              << edge_source
                              << "totalNodes" << totalNodes
                              << "nodeMap.count"
@@ -517,13 +517,13 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
                 }
                 else
                 {
-                    qDebug() << " source already found, continue";
+                    qCDebug(lcParser) << " source already found, continue";
                 }
             }
             else
             { // target nodes
                 edge_target = (*it1);
-                qDebug() << " Dissecting line - "
+                qCDebug(lcParser) << " Dissecting line - "
                             "target node:"
                          << edge_target;
 
@@ -547,7 +547,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
                         nodeQ.push(targetActor);
                         nodeMap.insert(edge_target, edge_target.toInt());
                     }
-                    qDebug() << " target, new node named"
+                    qCDebug(lcParser) << " target, new node named"
                              << edge_target
                              << "totalNodes" << totalNodes
                              << "nodeMap.count"
@@ -555,7 +555,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
                 }
                 else
                 {
-                    qDebug() << " target already found, continue";
+                    qCDebug(lcParser) << " target already found, continue";
                 }
             }
 
@@ -564,7 +564,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
                 edgeKey = edge_source + edgeKeyDelimiter + edge_target;
                 if (!edgeList.contains(edgeKey))
                 {
-                    qDebug() << " inserting edgeKey"
+                    qCDebug(lcParser) << " inserting edgeKey"
                              << edgeKey
                              << "in edgeList with initial weight" << initEdgeWeight;
                     edgeList.insert(edgeKey, initEdgeWeight);
@@ -574,7 +574,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
                 { // if edge already discovered, then increase its weight by 1
                     edgeWeight = edgeList.value(edgeKey);
                     edgeWeight = edgeWeight + 1;
-                    qDebug() << " edgeKey"
+                    qCDebug(lcParser) << " edgeKey"
                              << edgeKey
                              << "found before, adding in edgeList with increased weight"
                              << edgeWeight;
@@ -598,7 +598,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
 
         if (nodesWithLabels)
         {
-            qDebug() << "signaling to create new node" << node.value
+            qCDebug(lcParser) << "signaling to create new node" << node.value
                      << "label" << node.key
                      << "at pos" << QPointF(randX, randY);
             if (m_parseSink)
@@ -617,7 +617,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
         else
         {
 
-            qDebug() << "signaling to create new node"
+            qCDebug(lcParser) << "signaling to create new node"
                      << node.key.toInt()
                      << "label" << node.key
                      << "at pos" << QPointF(randX, randY);
@@ -641,7 +641,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
     while (edge != edgeList.constEnd())
     {
 
-        qDebug() << " creating edge named"
+        qCDebug(lcParser) << " creating edge named"
                  << edge.key() << " weight " << edge.value();
 
         edgeElement = edge.key().split(edgeKeyDelimiter);
@@ -678,7 +678,7 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
         }
     }
 
-    qDebug() << " Finished OK. Returning.";
+    qCDebug(lcParser) << " Finished OK. Returning.";
     return true;
 }
 
@@ -689,11 +689,11 @@ bool Parser::parseAsEdgeListSimple(const QByteArray &rawData, const QString &del
 template <typename T>
 void print_queue(T &q)
 {
-    qDebug() << "print_queue() ";
+    qCDebug(lcParser) << "print_queue() ";
     while (!q.empty())
     {
-        qDebug() << q.top().key << " value: " << q.top().value << " ";
+        qCDebug(lcParser) << q.top().key << " value: " << q.top().value << " ";
         q.pop();
     }
-    qDebug() << "\n";
+    qCDebug(lcParser) << "\n";
 }

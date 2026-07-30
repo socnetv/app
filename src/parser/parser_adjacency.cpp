@@ -60,7 +60,7 @@ SOCNETV_USE_NAMESPACE
  */
 bool Parser::parseAsAdjacency(const QByteArray &rawData, const ParseConfig &cfg, const QString &delimiter)
 {
-    qDebug() << "Parsing data as adjacency formatted... delimiter: " << delimiter;
+    qCDebug(lcParser) << "Parsing data as adjacency formatted... delimiter: " << delimiter;
 
     // Decode the data and prepare a QTextStream for processing.
     QTextCodec *codec = QTextCodec::codecForName(m_textCodecName.toLatin1());
@@ -97,7 +97,7 @@ bool Parser::parseAsAdjacency(const QByteArray &rawData, const ParseConfig &cfg,
         }
     }
 
-    qDebug() << "Finished OK. Returning.";
+    qCDebug(lcParser) << "Finished OK. Returning.";
     return true;
 }
 
@@ -148,7 +148,7 @@ bool Parser::validateAndInitialize(const QByteArray &rawData, const QString &del
                                       "Node labels line is empty or improperly formatted. Parsing aborted.");
                     return false;
                 }
-                qDebug() << "Parsed node labels:" << nodeLabels;
+                qCDebug(lcParser) << "Parsed node labels:" << nodeLabels;
                 break;
             }
 
@@ -173,7 +173,7 @@ bool Parser::validateAndInitialize(const QByteArray &rawData, const QString &del
         lastCount = colCount;
     }
 
-    qDebug() << "Validation successful. Proceeding.";
+    qCDebug(lcParser) << "Validation successful. Proceeding.";
     return true;
 }
 
@@ -214,7 +214,7 @@ bool Parser::doParseAdjacency(QTextStream &ts, const QString &delimiter, const Q
         // Skip comment lines but count them for accurate line tracking.
         if (isComment(str))
         {
-            qDebug() << tr("fileLine: %1 is a comment...").arg(fileLine);
+            qCDebug(lcParser) << tr("fileLine: %1 is a comment...").arg(fileLine);
             continue;
         }
 
@@ -225,7 +225,7 @@ bool Parser::doParseAdjacency(QTextStream &ts, const QString &delimiter, const Q
         {
             // Initialize nodes based on the first row of the adjacency matrix.
             totalNodes = currentRow.size();
-            qDebug() << "Nodes to be created:" << totalNodes;
+            qCDebug(lcParser) << "Nodes to be created:" << totalNodes;
 
             // Create each node, assigning random positions and labels.
             for (int j = 1; j <= totalNodes; ++j)
@@ -234,7 +234,7 @@ bool Parser::doParseAdjacency(QTextStream &ts, const QString &delimiter, const Q
                 createNodeWithDefaults(j, label);
             }
 
-            qDebug() << "Finished creating nodes";
+            qCDebug(lcParser) << "Finished creating nodes";
         }
 
         // If more rows exist than declared nodes, create additional nodes.
@@ -318,7 +318,7 @@ bool Parser::createEdgesForRow(const QStringList &currentRow, int rowIndex)
         // If the weight is greater than 0, create a directed edge.
         if (edgeWeight > 0)
         {
-            qDebug() << "Signaling to create new edge:" << rowIndex << "->" << colIndex
+            qCDebug(lcParser) << "Signaling to create new edge:" << rowIndex << "->" << colIndex
                      << "weight:" << edgeWeight << "TotalLinks:" << totalLinks + 1;
             if (m_parseSink)
             {
@@ -384,7 +384,7 @@ bool Parser::containsReservedKeywords(const QString &str) const
  */
 bool Parser::parseAsTwoModeSociomatrix(const QByteArray &rawData)
 {
-    qDebug() << "Parsing data as two-mode sociomatrix, two_sm_mode =" << two_sm_mode;
+    qCDebug(lcParser) << "Parsing data as two-mode sociomatrix, two_sm_mode =" << two_sm_mode;
 
     QTextCodec *codec = QTextCodec::codecForName(m_textCodecName.toLatin1());
     QString decodedData = codec->toUnicode(rawData);
@@ -415,7 +415,7 @@ bool Parser::parseAsTwoModeSociomatrix(const QByteArray &rawData)
             str.contains("graphml",   Qt::CaseInsensitive) ||
             str.contains("xml",       Qt::CaseInsensitive))
         {
-            qDebug() << "*** Not a two-mode sociomatrix file. Aborting!";
+            qCDebug(lcParser) << "*** Not a two-mode sociomatrix file. Aborting!";
             errorMessage = tr("Invalid two-mode sociomatrix file. "
                               "Non-comment line %1 includes keywords reserved by "
                               "other file formats (vertices, graphml, network, "
@@ -428,7 +428,7 @@ bool Parser::parseAsTwoModeSociomatrix(const QByteArray &rawData)
         if (NC == 0) {
             NC = row.size();
         } else if (row.size() != NC) {
-            qDebug() << "*** Ragged matrix at line" << fileLine;
+            qCDebug(lcParser) << "*** Ragged matrix at line" << fileLine;
             errorMessage = tr("Invalid two-mode sociomatrix file. "
                               "Row %1 has a different number of elements than "
                               "the first data row.").arg(fileLine);
@@ -441,12 +441,12 @@ bool Parser::parseAsTwoModeSociomatrix(const QByteArray &rawData)
     const int NR = matrix.size();
 
     if (NR == 0 || NC == 0) {
-        qDebug() << "*** Empty matrix, aborting.";
+        qCDebug(lcParser) << "*** Empty matrix, aborting.";
         errorMessage = tr("Invalid two-mode sociomatrix file: no data rows found.");
         return false;
     }
 
-    qDebug() << "Matrix dimensions: NR =" << NR << "NC =" << NC
+    qCDebug(lcParser) << "Matrix dimensions: NR =" << NR << "NC =" << NC
              << "two_sm_mode =" << two_sm_mode;
 
     // ------------------------------------------------------------------ //
@@ -511,7 +511,7 @@ bool Parser::parseAsTwoModeSociomatrix(const QByteArray &rawData)
                     bool ok = false;
                     qreal w = cell.toDouble(&ok);
                     edgeWeight = ok ? w : 1.0;
-                    qDebug() << "Bipartite edge:" << (i + 1) << "->" << (NR + j + 1)
+                    qCDebug(lcParser) << "Bipartite edge:" << (i + 1) << "->" << (NR + j + 1)
                              << "weight" << edgeWeight;
                     if (m_parseSink) {
                         m_parseSink->createEdge(
@@ -566,7 +566,7 @@ bool Parser::parseAsTwoModeSociomatrix(const QByteArray &rawData)
                     }
                 }
                 if (connected) {
-                    qDebug() << "Person projection: edge" << i << "-" << k;
+                    qCDebug(lcParser) << "Person projection: edge" << i << "-" << k;
                     if (m_parseSink) {
                         m_parseSink->createEdge(
                             i, k, 1.0,
@@ -620,7 +620,7 @@ bool Parser::parseAsTwoModeSociomatrix(const QByteArray &rawData)
                     }
                 }
                 if (connected) {
-                    qDebug() << "Event projection: edge" << j << "-" << l;
+                    qCDebug(lcParser) << "Event projection: edge" << j << "-" << l;
                     if (m_parseSink) {
                         m_parseSink->createEdge(
                             j, l, 1.0,
@@ -639,7 +639,7 @@ bool Parser::parseAsTwoModeSociomatrix(const QByteArray &rawData)
         return parseAsTwoModeSociomatrix(rawData);
     }
 
-    qDebug() << "parseAsTwoModeSociomatrix done."
+    qCDebug(lcParser) << "parseAsTwoModeSociomatrix done."
              << "totalNodes" << totalNodes << "totalLinks" << totalLinks;
     return true;
 }

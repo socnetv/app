@@ -23,11 +23,17 @@
 #include <QObject>
 #include <QMultiMap>
 #include <QDebug>
+#include <QLoggingCategory>
 #include <memory>
 #include "graph/io/graph_parse_sink.h"
 
 class QXmlStreamReader;
 class QXmlStreamAttributes;
+
+// WS14 L3: shared across parser.cpp and all parser_*.cpp files (they all include this header) --
+// one category for the whole parsing subsystem rather than one per format, since a user debugging
+// a load issue wants "parser debug" on regardless of which format it turns out to be.
+Q_DECLARE_LOGGING_CATEGORY(lcParser)
 
 /**
  * @brief The Actor struct

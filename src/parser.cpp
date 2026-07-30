@@ -29,14 +29,16 @@
 
 using namespace std;
 
+Q_LOGGING_CATEGORY(lcParser, "socnetv.parser")
+
 Parser::Parser()
 {
-    qDebug() << "Parser constructor, on thread:" << this->thread();
+    qCDebug(lcParser) << "Parser constructor, on thread:" << this->thread();
 }
 
 Parser::~Parser()
 {
-    qDebug() << "**** Parser destructor on thread:" << this->thread()
+    qCDebug(lcParser) << "**** Parser destructor on thread:" << this->thread()
              << " clearing hashes... ";
     nodeHash.clear();
     keyFor.clear();
@@ -50,7 +52,7 @@ Parser::~Parser()
     secondModeMultiMap.clear();
     if (xml != 0)
     {
-        qDebug() << "**** clearing xml reader object ";
+        qCDebug(lcParser) << "**** clearing xml reader object ";
         xml->clear();
         delete xml;
         xml = 0;
@@ -121,7 +123,7 @@ void Parser::load(const QString &fileName,
         /* gwWidth */ canvasWidth,
         /* gwHeight */ canvasHeight};
 
-    qDebug() << "Parser::load() current thread:" << QThread::currentThread()
+    qCDebug(lcParser) << "Parser::load() current thread:" << QThread::currentThread()
              << " affinity thread:" << this->thread()
              << "loading file:" << cfg.fileName
              << "codecName" << cfg.codecName;
@@ -161,7 +163,7 @@ void Parser::load(const QString &fileName,
 
     xml = 0;
 
-    qDebug() << "Initial networkName:" << networkName
+    qCDebug(lcParser) << "Initial networkName:" << networkName
              << "requested fileFormat: " << fileFormat
              << "delim:" << cfg.delim << "delimiter" << delimiter;
 
@@ -172,12 +174,12 @@ void Parser::load(const QString &fileName,
     computationTimer.start();
 
     // Try to open the file
-    qDebug() << "Opening file...";
+    qCDebug(lcParser) << "Opening file...";
     QFile file(cfg.fileName);
     if (!file.open(QIODevice::ReadOnly))
     {
         qint64 elapsedTime = computationTimer.elapsed();
-        qDebug() << "Cannot open file" << cfg.fileName;
+        qCDebug(lcParser) << "Cannot open file" << cfg.fileName;
         errorMessage = tr("Cannot open file: %1").arg(cfg.fileName);
         if (m_parseSink)
         {
@@ -198,7 +200,7 @@ void Parser::load(const QString &fileName,
     fileDirPath = QFileInfo(cfg.fileName).canonicalPath();
 
     // Read the file into a byte array
-    qDebug() << "Reading the whole file into a byte array...";
+    qCDebug(lcParser) << "Reading the whole file into a byte array...";
     QByteArray rawData = file.readAll();
 
     // Close the file
@@ -273,7 +275,7 @@ void Parser::load(const QString &fileName,
 
     if (fileLoaded)
     {
-        qDebug() << "[PARSER] emit signal fileLoaded:"
+        qCDebug(lcParser) << "[PARSER] emit signal fileLoaded:"
                  << "fileFormat" << fileFormat
                  << "edgeDirType" << edgeDirType
                  << "totalLinks(parser)" << totalLinks
@@ -306,7 +308,7 @@ void Parser::load(const QString &fileName,
         return;
     }
 
-    qDebug() << "**** Parser finished. Emitting finished() signal. ";
+    qCDebug(lcParser) << "**** Parser finished. Emitting finished() signal. ";
 
     emit finished("Parser::load() - reach end");
 }

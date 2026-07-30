@@ -54,7 +54,7 @@ SOCNETV_USE_NAMESPACE
  */
 bool Parser::parseAsDot(const QByteArray &rawData)
 {
-    qDebug() << "Parsing data as dot (Graphviz) formatted...";
+    qCDebug(lcParser) << "Parsing data as dot (Graphviz) formatted...";
 
     int fileLine = 0;
     int actualLineNumber = 0;
@@ -102,7 +102,7 @@ bool Parser::parseAsDot(const QByteArray &rawData)
     if (!decodedData.contains("digraph", Qt::CaseInsensitive) &&
         !decodedData.contains("graph", Qt::CaseInsensitive))
     {
-        qDebug() << "Not a valid GraphViz (dot) file. Aborting!";
+        qCDebug(lcParser) << "Not a valid GraphViz (dot) file. Aborting!";
         errorMessage = tr("Invalid GraphViz (dot) file. The file does not contain 'digraph' or 'graph'.");
         return false;
     }
@@ -118,10 +118,10 @@ bool Parser::parseAsDot(const QByteArray &rawData)
     while (!ts.atEnd())
     {
         fileLine++;
-        qDebug() << "🔎 Reading fileLine " << fileLine;
+        qCDebug(lcParser) << "🔎 Reading fileLine " << fileLine;
 
         str = ts.readLine().simplified().trimmed();
-        qDebug() << str;
+        qCDebug(lcParser) << str;
 
         if (isComment(str))
             continue;
@@ -140,7 +140,7 @@ bool Parser::parseAsDot(const QByteArray &rawData)
                 str.startsWith("<graphml", Qt::CaseInsensitive) ||                         // GraphML
                 str.startsWith("<?xml", Qt::CaseInsensitive))
             {
-                qDebug() << "*** Not a GraphViz-formatted file. Aborting";
+                qCDebug(lcParser) << "*** Not a GraphViz-formatted file. Aborting";
                 errorMessage = tr("Not a GraphViz-formatted file. "
                                   "First non-comment line includes keywords reserved by other file formats (i.e vertices, graphml, network, DL, xml).");
                 return false;
@@ -161,7 +161,7 @@ bool Parser::parseAsDot(const QByteArray &rawData)
                 graphDirType = EdgeType::Directed;
                 if (lineElement.size() > 1 && lineElement[1] != "{")
                     networkName = stripQuotes(lineElement[1]);
-                qDebug() << "This is a DOT DIGRAPH named " << networkName;
+                qCDebug(lcParser) << "This is a DOT DIGRAPH named " << networkName;
                 continue;
             }
             else if (str.contains("graph", Qt::CaseInsensitive))
@@ -169,12 +169,12 @@ bool Parser::parseAsDot(const QByteArray &rawData)
                 graphDirType = EdgeType::Undirected;
                 if (lineElement.size() > 1 && lineElement[1] != "{")
                     networkName = stripQuotes(lineElement[1]);
-                qDebug() << "This is a DOT GRAPH named " << networkName;
+                qCDebug(lcParser) << "This is a DOT GRAPH named " << networkName;
                 continue;
             }
             else
             {
-                qDebug() << "*** Not a GraphViz file. "
+                qCDebug(lcParser) << "*** Not a GraphViz file. "
                             "Abort: dot format can only start with \"(di)graph netname {\"";
                 errorMessage = tr("Not properly GraphViz-formatted file. "
                                   "First non-comment line should start with \"(di)graph netname {\"");
@@ -186,7 +186,7 @@ bool Parser::parseAsDot(const QByteArray &rawData)
         // If the closing ']' is on the same line, skip without entering multi-line mode.
         if (str.contains("graph [", Qt::CaseInsensitive))
         {
-            qDebug() << "🔵 Detected global graph settings. Skipping...";
+            qCDebug(lcParser) << "🔵 Detected global graph settings. Skipping...";
             if (!str.contains(']'))
                 netProperties = true;
             continue;
@@ -206,7 +206,7 @@ bool Parser::parseAsDot(const QByteArray &rawData)
             str.startsWith("ranksep", Qt::CaseInsensitive) ||
             str.startsWith("size", Qt::CaseInsensitive))
         {
-            qDebug() << "🔵 Detected global graph settings. Parsing...";
+            qCDebug(lcParser) << "🔵 Detected global graph settings. Parsing...";
             next = str.indexOf('=', 1);
             prop = str.mid(0, next).simplified();
             value = str.right(str.size() - next - 1).simplified();
@@ -214,7 +214,7 @@ bool Parser::parseAsDot(const QByteArray &rawData)
             if (prop == "label" || prop == "name")
                 networkLabel = value;
             else if (prop == "size")
-                qDebug() << "⚠️ Ignoring 'size' attribute:" << value;
+                qCDebug(lcParser) << "⚠️ Ignoring 'size' attribute:" << value;
 
             continue;
         }
@@ -229,24 +229,24 @@ bool Parser::parseAsDot(const QByteArray &rawData)
         // Global node defaults
         if (str.startsWith("node [", Qt::CaseInsensitive))
         {
-            qDebug() << "🔵 Detected global node settings...";
+            qCDebug(lcParser) << "🔵 Detected global node settings...";
             QHash<QString, QString> ignored;
             readDotProperties(
                 str.mid(str.indexOf('[') + 1, str.indexOf(']') - str.indexOf('[') - 1),
                 nodeValue, nodeLabel, initNodeShape, initNodeColor, fontName, fontColor, ignored);
-            qDebug() << "✅ Default node color set to:" << initNodeColor;
+            qCDebug(lcParser) << "✅ Default node color set to:" << initNodeColor;
             continue;
         }
 
         // Global edge defaults
         if (str.startsWith("edge [", Qt::CaseInsensitive))
         {
-            qDebug() << "🔵 Detected global edge settings...";
+            qCDebug(lcParser) << "🔵 Detected global edge settings...";
             QHash<QString, QString> ignored;
             readDotProperties(
                 str.mid(str.indexOf('[') + 1, str.indexOf(']') - str.indexOf('[') - 1),
                 edgeWeight, edgeLabel, edgeShape, initEdgeColor, fontName, fontColor, ignored);
-            qDebug() << "✅ Default edge color set to:" << initEdgeColor;
+            qCDebug(lcParser) << "✅ Default edge color set to:" << initEdgeColor;
             continue;
         }
 
@@ -257,7 +257,7 @@ bool Parser::parseAsDot(const QByteArray &rawData)
             str.contains("[", Qt::CaseInsensitive) &&
             !netProperties)
         {
-            qDebug() << "🔵 A single node definition must be here:\n"
+            qCDebug(lcParser) << "🔵 A single node definition must be here:\n"
                      << str;
 
             start = str.indexOf('[');
@@ -268,7 +268,7 @@ bool Parser::parseAsDot(const QByteArray &rawData)
             }
 
             node = str.left(start).simplified().remove('\"');
-            qDebug() << "node named" << node;
+            qCDebug(lcParser) << "node named" << node;
 
             end = str.lastIndexOf(']');
             if (end == -1)
@@ -323,7 +323,7 @@ bool Parser::parseAsDot(const QByteArray &rawData)
             !str.contains("=", Qt::CaseInsensitive) &&
             !netProperties)
         {
-            qDebug() << "🔵 A node definition without properties must be here ..." << str;
+            qCDebug(lcParser) << "🔵 A node definition without properties must be here ..." << str;
 
             end = str.indexOf(';');
             if (end == -1)
@@ -355,7 +355,7 @@ bool Parser::parseAsDot(const QByteArray &rawData)
         if (str.contains("--", Qt::CaseInsensitive) || str.contains("->", Qt::CaseInsensitive))
         {
             netProperties = false;
-            qDebug() << "🔵 Edge definition found ...";
+            qCDebug(lcParser) << "🔵 Edge definition found ...";
 
             // Parse optional attribute block [...]
             end = str.indexOf('[');
@@ -498,7 +498,7 @@ bool Parser::parseAsDot(const QByteArray &rawData)
             continue;
         }
 
-        qDebug() << "  Redundant data:" << str;
+        qCDebug(lcParser) << "  Redundant data:" << str;
     }
 
     // Ensure at least one relation exists.
@@ -515,7 +515,7 @@ bool Parser::parseAsDot(const QByteArray &rawData)
     // Do NOT leak "last edge operator" into the graph kind.
     edgeDirType = graphDirType;
 
-    qDebug() << "Parser::parseAsDot() - Finished OK. Returning.";
+    qCDebug(lcParser) << "Parser::parseAsDot() - Finished OK. Returning.";
     return true;
 }
 
@@ -640,7 +640,7 @@ void Parser::readDotProperties(QString str, qreal &nValue, QString &label,
                                QString &fontColor,
                                QHash<QString, QString> &customAttrs)
 {
-    qDebug() << "Reading DOT properties from:" << str;
+    qCDebug(lcParser) << "Reading DOT properties from:" << str;
 
     str = str.simplified();
 
@@ -691,7 +691,7 @@ void Parser::readDotProperties(QString str, qreal &nValue, QString &label,
             else
             {
                 // Malformed - no closing quote
-                qDebug() << "Warning: No closing quote found in property value";
+                qCDebug(lcParser) << "Warning: No closing quote found in property value";
                 value = str.mid(1);
                 str.clear();
             }
@@ -721,66 +721,66 @@ void Parser::readDotProperties(QString str, qreal &nValue, QString &label,
             str = str.mid(1).simplified();
         }
 
-        qDebug() << "Parsed property:" << prop << "=" << value;
+        qCDebug(lcParser) << "Parsed property:" << prop << "=" << value;
 
         // Process the property
         bool ok = false;
         if (prop == "label")
         {
             label = value;
-            qDebug() << "Set label to:" << label;
+            qCDebug(lcParser) << "Set label to:" << label;
         }
         else if (prop == "fontname")
         {
             fontName = value;
-            qDebug() << "Set fontName to:" << fontName;
+            qCDebug(lcParser) << "Set fontName to:" << fontName;
         }
         else if (prop == "value")
         {
             nValue = value.toFloat(&ok);
             if (ok)
             {
-                qDebug() << "Set value to:" << nValue;
+                qCDebug(lcParser) << "Set value to:" << nValue;
             }
             else
             {
-                qDebug() << "Error converting value:" << value;
+                qCDebug(lcParser) << "Error converting value:" << value;
             }
         }
         else if (prop == "color" || prop == "fillcolor")
         {
             color = value;
-            qDebug() << "Set color to:" << color;
+            qCDebug(lcParser) << "Set color to:" << color;
         }
         else if (prop == "fontcolor")
         {
             fontColor = value;
-            qDebug() << "Set fontColor to:" << fontColor;
+            qCDebug(lcParser) << "Set fontColor to:" << fontColor;
         }
         else if (prop == "shape")
         {
             shape = value;
-            qDebug() << "Set shape to:" << shape;
+            qCDebug(lcParser) << "Set shape to:" << shape;
         }
         else if (prop == "weight")
         {
             nValue = value.toFloat(&ok);
             if (ok)
             {
-                qDebug() << "Set weight to:" << nValue;
+                qCDebug(lcParser) << "Set weight to:" << nValue;
             }
             else
             {
-                qDebug() << "Error converting weight:" << value;
+                qCDebug(lcParser) << "Error converting weight:" << value;
             }
         }
         else if (prop == "style")
         {
-            qDebug() << "Style property:" << value << "(currently not used)";
+            qCDebug(lcParser) << "Style property:" << value << "(currently not used)";
         }
         else
         {
-            qDebug() << "Storing unknown property as custom attribute:" << prop << "=" << value;
+            qCDebug(lcParser) << "Storing unknown property as custom attribute:" << prop << "=" << value;
             customAttrs[prop] = value;
         }
     }
