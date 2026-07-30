@@ -39,6 +39,27 @@
 #include "engine/distance_engine.h"
 #include "engine/graph_distance_progress_sink.h"
 
+// WS14: definitions for the categories declared in graph.h -- see that header for the rationale.
+Q_LOGGING_CATEGORY(lcGraph, "socnetv.graph")
+Q_LOGGING_CATEGORY(lcGraphCore, "socnetv.graph.core")
+Q_LOGGING_CATEGORY(lcStorage, "socnetv.graph.storage")
+Q_LOGGING_CATEGORY(lcCentrality, "socnetv.graph.centrality")
+Q_LOGGING_CATEGORY(lcClustering, "socnetv.graph.clustering")
+Q_LOGGING_CATEGORY(lcDistances, "socnetv.graph.distances")
+Q_LOGGING_CATEGORY(lcProminence, "socnetv.graph.prominence")
+Q_LOGGING_CATEGORY(lcReachability, "socnetv.graph.reachability")
+Q_LOGGING_CATEGORY(lcSimilarity, "socnetv.graph.similarity")
+Q_LOGGING_CATEGORY(lcLayouts, "socnetv.graph.layouts")
+Q_LOGGING_CATEGORY(lcGenerators, "socnetv.graph.generators")
+Q_LOGGING_CATEGORY(lcGraphMatrices, "socnetv.graph.matrices")
+Q_LOGGING_CATEGORY(lcCohesion, "socnetv.graph.cohesion")
+Q_LOGGING_CATEGORY(lcReporting, "socnetv.graph.reporting")
+Q_LOGGING_CATEGORY(lcFilters, "socnetv.graph.filters")
+Q_LOGGING_CATEGORY(lcRelations, "socnetv.graph.relations")
+Q_LOGGING_CATEGORY(lcGraphCrawler, "socnetv.graph.crawler")
+Q_LOGGING_CATEGORY(lcGraphUI, "socnetv.graph.ui")
+Q_LOGGING_CATEGORY(lcGraphIO, "socnetv.graph.io")
+
 /**
  * @brief Constructs a Graph
  */

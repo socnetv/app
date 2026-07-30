@@ -26,6 +26,7 @@
 #include <QTextStream>
 #include <QThread>
 #include <QStack>
+#include <QLoggingCategory>
 #include <functional>
 
 
@@ -37,6 +38,33 @@
 #include "matrix.h"
 #include "parser.h"
 #include "webcrawler.h"
+
+// WS14: one logging category per src/graph/<domain>/ slice directory (centrality/, clustering/,
+// distances/, layouts/, storage/, etc.), declared here since graph.h is already included by every
+// slice .cpp, defined once in graph.cpp. Coarser than one-per-file (avoids ~60 near-empty categories
+// for small files) but finer than one blanket category (keeps independent toggling per domain via
+// QLoggingCategory::setFilterRules). lcGraph covers graph.cpp itself (the facade's own small file,
+// distinct from the core/ slice). lcMatrix (src/matrix.cpp, unrelated file) is deliberately not
+// reused here to avoid confusion with lcGraphMatrices (src/graph/matrices/).
+Q_DECLARE_LOGGING_CATEGORY(lcGraph)
+Q_DECLARE_LOGGING_CATEGORY(lcGraphCore)
+Q_DECLARE_LOGGING_CATEGORY(lcStorage)
+Q_DECLARE_LOGGING_CATEGORY(lcCentrality)
+Q_DECLARE_LOGGING_CATEGORY(lcClustering)
+Q_DECLARE_LOGGING_CATEGORY(lcDistances)
+Q_DECLARE_LOGGING_CATEGORY(lcProminence)
+Q_DECLARE_LOGGING_CATEGORY(lcReachability)
+Q_DECLARE_LOGGING_CATEGORY(lcSimilarity)
+Q_DECLARE_LOGGING_CATEGORY(lcLayouts)
+Q_DECLARE_LOGGING_CATEGORY(lcGenerators)
+Q_DECLARE_LOGGING_CATEGORY(lcGraphMatrices)
+Q_DECLARE_LOGGING_CATEGORY(lcCohesion)
+Q_DECLARE_LOGGING_CATEGORY(lcReporting)
+Q_DECLARE_LOGGING_CATEGORY(lcFilters)
+Q_DECLARE_LOGGING_CATEGORY(lcRelations)
+Q_DECLARE_LOGGING_CATEGORY(lcGraphCrawler)
+Q_DECLARE_LOGGING_CATEGORY(lcGraphUI)
+Q_DECLARE_LOGGING_CATEGORY(lcGraphIO)
 
 class QDateTime;
 class QPointF;
