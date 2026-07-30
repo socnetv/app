@@ -121,7 +121,7 @@ GraphicsNode::GraphicsNode ( GraphicsWidget* gw,
 
     setPos(p);
 
-    qDebug()<< "Constructed new node" << nodeNumber() << "at pos:" << x()<<"x"<<y()
+    qCDebug(lcGW)<< "Constructed new node" << nodeNumber() << "at pos:" << x()<<"x"<<y()
             << "size:" << m_numSize;
 
 } 
@@ -145,11 +145,11 @@ GraphicsNode::GraphicsNode ( GraphicsWidget* gw,
  * @param colorStr
  */
 void GraphicsNode::setColor(const QString &colorName) {
-//    qDebug()<< "Changing the node color to named color:" << colorName << "setting mcol:" << QColor(colorName);
+//    qCDebug(lcGW)<< "Changing the node color to named color:" << colorName << "setting mcol:" << QColor(colorName);
     prepareGeometryChange();
     m_col_orig=m_col=QColor(colorName);
     m_colHover = m_col.darker(120);
-//    qDebug()<< "Calling update()";
+//    qCDebug(lcGW)<< "Calling update()";
     update();
 }
 
@@ -162,11 +162,11 @@ void GraphicsNode::setColor(const QString &colorName) {
  * @param color
  */
 void GraphicsNode::setColor(QColor color){
-//    qDebug()<< "Changing the node Qcolor to:" << color;
+//    qCDebug(lcGW)<< "Changing the node Qcolor to:" << color;
     prepareGeometryChange();
     m_col=color;
     m_colHover = m_col.darker(120);
-//    qDebug()<< "Calling update()";
+//    qCDebug(lcGW)<< "Calling update()";
     update();
 }
 
@@ -188,18 +188,18 @@ QString GraphicsNode::color() {
  * @param size
  */
 void GraphicsNode::setSize(const int &size){
-//    qDebug()<< "Changing the node size to:" << size;
+//    qCDebug(lcGW)<< "Changing the node size to:" << size;
     prepareGeometryChange();
     m_size=size;
     for (GraphicsEdge *edge: inEdgeList) {
-//        qDebug()<< "Informing inbound edges";
+//        qCDebug(lcGW)<< "Informing inbound edges";
         edge->setTargetNodeSize(size);
     }
     for (GraphicsEdge *edge: outEdgeList) {
-//        qDebug()<< "Informing oubound edges";
+//        qCDebug(lcGW)<< "Informing oubound edges";
         edge->setSourceNodeSize(size);
     }
-//    qDebug()<< "calling setShape()";
+//    qCDebug(lcGW)<< "calling setShape()";
     setShape(m_shape);
 }
 
@@ -238,7 +238,7 @@ void GraphicsNode::setShape(const QString shape, const QString &iconPath) {
 
     m_shape=shape;
 
-//    qDebug()<< "Setting shape for node:" << nodeNumber()
+//    qCDebug(lcGW)<< "Setting shape for node:" << nodeNumber()
 //            << "shape:" << m_shape
 //            << "iconPath" << iconPath
 //            << "pos:"<<  x() << "," <<  y();
@@ -369,7 +369,7 @@ QPainterPath GraphicsNode::shape() const {
  * @return
  */
 QRectF GraphicsNode::boundingRect() const {
-    //qDebug()<< "GraphicsNode::boundingRect() " << m_path.controlPointRect();
+    //qCDebug(lcGW)<< "GraphicsNode::boundingRect() " << m_path.controlPointRect();
     return m_path.controlPointRect();
     //qreal adjust = 5;
     // return QRectF(-m_size -adjust , -m_size-adjust , 2*m_size+adjust , 2*m_size +adjust);
@@ -387,15 +387,15 @@ QRectF GraphicsNode::boundingRect() const {
 void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) {
     //	painter->setClipRect( option->exposedRect );
 
-//    qDebug()<< "GraphicsNode::paint() - m_col:" << m_col << "color name:" << m_col.name();
+//    qCDebug(lcGW)<< "GraphicsNode::paint() - m_col:" << m_col << "color name:" << m_col.name();
 
     if (option->state & QStyle::State_MouseOver) {
-//        qDebug()<< "Highlighting node because of mouse hover ";
+//        qCDebug(lcGW)<< "Highlighting node because of mouse hover ";
         painter->setBrush(m_colHover);
         setZValue(ZValueNodeHighlighted);
     }
     else {
-//        qDebug()<< "GraphicsNode::paint() - no mouse over " << m_col;
+//        qCDebug(lcGW)<< "GraphicsNode::paint() - no mouse over " << m_col;
         painter->setBrush(m_col);
         setZValue(ZValueNode);
     }
@@ -459,7 +459,7 @@ void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
  */
 QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &value) {
 
-//    qDebug()<<"GraphicsNode::itemChange - change:" << change<< "value:" << value << "m_col" << m_col.name();
+//    qCDebug(lcGW)<<"GraphicsNode::itemChange - change:" << change<< "value:" << value << "m_col" << m_col.name();
 
     switch (change) {
     case ItemPositionHasChanged: {
@@ -482,11 +482,11 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
         break;
     }
     case ItemEnabledHasChanged:{
-//        qDebug() << "Node item has been enabled";
+//        qCDebug(lcGW) << "Node item has been enabled";
         break;
     }
     case ItemSelectedHasChanged:{
-//         qDebug() << "Node ItemSelectedHasChanged";
+//         qCDebug(lcGW) << "Node ItemSelectedHasChanged";
         if (value.toBool()) {
             setZValue(ZValueNodeHighlighted);
             m_size_orig = m_size;
@@ -574,7 +574,7 @@ void GraphicsNode::setEdgeHighLighting(const bool &toggle) {
  * @param edge
  */
 void GraphicsNode::addInEdge( GraphicsEdge *edge ) {
-//    qDebug() << "adding inEdge"<< nodeNumber() << "<-" << edge->sourceNodeNumber();
+//    qCDebug(lcGW) << "adding inEdge"<< nodeNumber() << "<-" << edge->sourceNodeNumber();
     inEdgeList.push_back( edge);
 }
 
@@ -584,7 +584,6 @@ void GraphicsNode::addInEdge( GraphicsEdge *edge ) {
  * @param link
  */
 void GraphicsNode::removeInEdge( GraphicsEdge *edge ){
-//    qDebug () << "node" << nodeNumber()
 //             << "Removing inEdge"<< nodeNumber() << "<-" << edge->sourceNodeNumber()
 //              << "inEdgeList size:" << inEdgeList.size();
     inEdgeList.remove( edge );
@@ -599,7 +598,7 @@ void GraphicsNode::removeInEdge( GraphicsEdge *edge ){
  * @param edge
  */
 void GraphicsNode::addOutEdge( GraphicsEdge *edge ) {
-//    qDebug() << "adding outEdge"<< nodeNumber() << "->" << edge->targetNodeNumber();
+//    qCDebug(lcGW) << "adding outEdge"<< nodeNumber() << "->" << edge->targetNodeNumber();
     outEdgeList.push_back(edge);
 }
 
@@ -610,7 +609,6 @@ void GraphicsNode::addOutEdge( GraphicsEdge *edge ) {
  * @param edge
  */
 void GraphicsNode::removeOutEdge(GraphicsEdge *edge){
-//    qDebug () << "node" << nodeNumber()
 //             << "Removing outEdge"<< nodeNumber() << "->" << edge->targetNodeNumber()
 //              << "outEdgeList size:" << outEdgeList.size();
     outEdgeList.remove(edge);
@@ -622,7 +620,7 @@ void GraphicsNode::removeOutEdge(GraphicsEdge *edge){
  * @brief Creates a graphics label to this node.
  */
 void GraphicsNode::addLabel ()  {
-//    qDebug()<< "Creating a graphics label for this node." ;
+//    qCDebug(lcGW)<< "Creating a graphics label for this node." ;
     m_label = new  GraphicsNodeLabel (this, m_labelText, m_labelSize);
     m_label->setDefaultTextColor (m_labelColor);
     m_label->setPos( m_size, m_labelDistance+m_size);
@@ -646,7 +644,7 @@ GraphicsNodeLabel* GraphicsNode::label(){
  * @brief Deletes the graphics label of this node.
  */
 void GraphicsNode::deleteLabel(){
-//    qDebug()<< "Deleting the graphics label of this node";
+//    qCDebug(lcGW)<< "Deleting the graphics label of this node";
     if (m_hasLabel) {
         m_hasLabel=false;
         m_label->hide();
@@ -662,7 +660,7 @@ void GraphicsNode::deleteLabel(){
  * @param label
  */
 void GraphicsNode::setLabelText (const QString &label) {
-//    qDebug()<< "Changing the label of this node to:" << label;
+//    qCDebug(lcGW)<< "Changing the label of this node to:" << label;
     prepareGeometryChange();
     m_labelText = label;
     if (m_hasLabel)
@@ -688,7 +686,7 @@ QString GraphicsNode::labelText ( ) {
  * @param color
  */
 void GraphicsNode::setLabelColor ( const QString &color) {
-//    qDebug()<< "Changing the color of node label to:" << color;
+//    qCDebug(lcGW)<< "Changing the color of node label to:" << color;
     prepareGeometryChange();
     m_labelColor= color;
     if (m_hasLabel)
@@ -757,7 +755,7 @@ void GraphicsNode::setLabelDistance(const int &distance) {
  * @brief Adds a graphics number to the node
  */
 void GraphicsNode::addNumber () {
-//    qDebug()<<"Adding node graphics number... " ;
+//    qCDebug(lcGW)<<"Adding node graphics number... " ;
     m_hasNumber=true;
     m_hasNumberInside = false;
     m_number= new  GraphicsNodeNumber ( this, QString::number(m_num), m_numSize);
@@ -780,7 +778,6 @@ GraphicsNodeNumber* GraphicsNode::number(){
  * @brief Deletes the graphics node number
  */
 void GraphicsNode::deleteNumber( ){
-//    qDebug () << "Deleting the graphics node number";
     if (m_hasNumber && !m_hasNumberInside) {
         m_number->hide();
         graphicsWidget->removeItem(m_number);
@@ -793,7 +790,7 @@ void GraphicsNode::deleteNumber( ){
  * @param toggle
  */
 void GraphicsNode::setNumberVisibility(const bool &toggle) {
-//    qDebug() << "Changing visibility of node number to:" << toggle;
+//    qCDebug(lcGW) << "Changing visibility of node number to:" << toggle;
     if (toggle) { //show
         if (!m_hasNumber) {
             m_hasNumber=toggle;
@@ -817,7 +814,7 @@ void GraphicsNode::setNumberVisibility(const bool &toggle) {
  * @param toggle
  */
 void GraphicsNode::setNumberInside (const bool &toggle){
-//    qDebug()<<"GraphicsNode::setNumberInside() " << toggle;
+//    qCDebug(lcGW)<<"GraphicsNode::setNumberInside() " << toggle;
     if (toggle) { // set number inside
         deleteNumber();
     }
@@ -889,7 +886,7 @@ void GraphicsNode::setNumberDistance(const int &distance) {
 
 
 GraphicsNode::~GraphicsNode(){
-//    qDebug() << "Destructing node "<< nodeNumber()
+//    qCDebug(lcGW) << "Destructing node "<< nodeNumber()
 //                << "- inEdgeList:" << inEdgeList.size()
 //                << "- outEdgeList: " << outEdgeList.size();
 
@@ -923,9 +920,9 @@ GraphicsNode::~GraphicsNode(){
 
     inEdgeList.clear();
     outEdgeList.clear();
-//    qDebug() << "node" << nodeNumber() << "hiding node...";
+//    qCDebug(lcGW) << "node" << nodeNumber() << "hiding node...";
     this->hide();
-//    qDebug() << "node" << nodeNumber() << "calling GW removeItem...";
+//    qCDebug(lcGW) << "node" << nodeNumber() << "calling GW removeItem...";
     graphicsWidget->removeItem(this);
 
 }

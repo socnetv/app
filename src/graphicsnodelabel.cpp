@@ -17,6 +17,7 @@
 #include "graphicsnodelabel.h"
 
 #include "graphicsnode.h"
+#include "graphicswidget.h"
 #include <QFont>
 #include <QDebug>
 
@@ -29,7 +30,7 @@ GraphicsNodeLabel::GraphicsNodeLabel(GraphicsNode *jim , const QString &text,  c
     setFont( QFont ("Times", size, QFont::Light, true) );
     setZValue(ZValueNodeLabel);
     setAcceptHoverEvents(false);
-    qDebug() << "GraphicsNodeLabel() - initialized";
+    qCDebug(lcGW) << "GraphicsNodeLabel() - initialized";
 }
 
 

@@ -17,6 +17,7 @@
 #include "graphicsedgeweight.h"
 
 #include "graphicsedge.h"
+#include "graphicswidget.h"
 #include <QDebug>
 #include <QFont>
 
@@ -24,7 +25,7 @@
 GraphicsEdgeWeight::GraphicsEdgeWeight( GraphicsEdge *link , int size, QString labelText)
 : QGraphicsTextItem( 0)
 {
-    qDebug()<< "GraphicsEdgeWeight:: creating new edgeweight and attaching it to link";
+    qCDebug(lcGW)<< "GraphicsEdgeWeight:: creating new edgeweight and attaching it to link";
 	setPlainText( labelText );
     setParentItem(link); //auto disables child items like this, when link is disabled.
     this->setFont( QFont ("Courier", size, QFont::Light, true) );

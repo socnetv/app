@@ -21,9 +21,16 @@
 #include <QGraphicsView>
 #include <QHash>
 #include <QTimer>
+#include <QLoggingCategory>
 #include "global.h"
 
-SOCNETV_USE_NAMESPACE 
+SOCNETV_USE_NAMESPACE
+
+// WS14: shared across graphicswidget.cpp and the small canvas item files (graphicsnode.cpp,
+// graphicsedgelabel.cpp, graphicsedgeweight.cpp, graphicsnodelabel.cpp, graphicsnodenumber.cpp) --
+// promoted from graphicswidget.cpp-local since those files are all part of the same WS10 canvas
+// subsystem and each has too few qDebug() calls to justify a category of its own.
+Q_DECLARE_LOGGING_CATEGORY(lcGW)
 
 class MainWindow;
 class GraphicsNode;

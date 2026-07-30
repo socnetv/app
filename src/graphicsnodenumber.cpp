@@ -17,6 +17,7 @@
 #include "graphicsnodenumber.h"
 
 #include "graphicsnode.h"
+#include "graphicswidget.h"
 #include <QFont>
 #include <QDebug>
 
@@ -29,7 +30,7 @@ GraphicsNodeNumber::GraphicsNodeNumber( GraphicsNode *jim , const QString &label
     setFont( QFont ("Times", size, QFont::Black, false) );
     setZValue(ZValueNodeNumber);
     setAcceptHoverEvents(false);
-    qDebug() << "GraphicsNodeNumber() - initialized";
+    qCDebug(lcGW) << "GraphicsNodeNumber() - initialized";
 }
 
 void GraphicsNodeNumber::setSize(const int size) {
