@@ -526,12 +526,22 @@ running immediately after the (now non-blocking) call into the `doneMessage` par
 `runGraphOperationAsync`'s completion callback — otherwise they'd display immediately, overwriting
 the "please wait" message before the computation had actually finished.
 
-**Secondary finding, still open:** `distance_engine.cpp` has ~75 unconditional `qDebug()` calls,
-several inside the per-edge-relaxation inner loop (fires on the order of the total edge-relaxation
-count — potentially billions for a graph this size). Unlike `qCDebug(category)`, plain `qDebug()`
-isn't cheaply short-circuited by a disabled logging-category filter rule. Worth converting to a
-dedicated category (same pattern as `lcGW` in `GraphicsWidget`) — not part of #254, filed separately
-if it turns out to matter.
+**Secondary finding — ✅ confirmed and spun out into [WS14](roadmap_ws14_logging_cost.md).**
+`distance_engine.cpp` has ~75 unconditional `qDebug()` calls, several inside the per-edge-relaxation
+inner loop (fires on the order of the total edge-relaxation count — potentially billions for a graph
+this size). Unlike `qCDebug(category)`, plain `qDebug()` isn't cheaply short-circuited by a disabled
+logging-category filter rule. Worth converting to a dedicated category (same pattern as `lcGW` in
+`GraphicsWidget`) — not part of #254, filed separately "if it turns out to matter."
+
+**It turned out to matter, by a lot.** Measured 2026-07-30 by comparing two Release builds differing
+only in `-DQT_NO_DEBUG_OUTPUT`: removing this formatting cost makes `DistanceEngine` **43×–72×
+faster** (e.g. 2000N/40000E distances 51672 ms → 943 ms; ER N1000/E19879 with centralities
+17186 ms → 237 ms), with all golden baselines passing unchanged. That is roughly an order of
+magnitude more than M1's entire parallelisation win recorded above — and the measurement is
+*conservative*, since `socnetv-cli` already discards debug output, so it reflects pure string
+formatting that is then thrown away. The mechanism recorded above was exactly right; only the
+magnitude was unknown. Full evidence, call-site inventory, and milestones:
+[`roadmap_ws14_logging_cost.md`](roadmap_ws14_logging_cost.md).
 
 ### #263 — Information/Eigenvector Centrality and Walks Total still block the GUI ✅ Complete
 
