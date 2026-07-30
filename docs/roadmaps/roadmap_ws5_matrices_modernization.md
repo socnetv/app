@@ -35,7 +35,9 @@
 ### Performance
 
 **P1 — `Matrix` storage is N+1 heap allocations instead of 1 contiguous buffer.** See Current
-Reality above.
+Reality above. Re-verified against current code 2026-07-30 — `Matrix::Matrix()` (`src/matrix.cpp:33-39`)
+and `MatrixRow`'s own `new qreal[]` (`src/matrix.h:51-60`) are both unchanged, so A3's premise still
+holds as written.
 
 **P2 — APSP per-vertex QHash storage** (`GraphVertex::m_distance` / `m_shortestPaths`) — the
 incoming migration from WS3 M1, detailed as A2 below.
@@ -110,6 +112,28 @@ whether to proceed with the full migration, adjust the design (e.g. only switch 
 component is large/dense enough to be worth it), or drop this milestone. This replaces "the matrix
 approach is obviously better" with an actual answer.
 
+**Status: A2.0 has not been run** (checked 2026-07-30 — `git log --grep=A2.0` returns only the docs
+commit that created this gate). It is still the prerequisite for everything else in A2.
+
+**New supporting evidence for running it (2026-07-30).** Profiling (`sample`, 2000N/40000E, all
+centralities) a build with the WS14 logging cost removed — i.e. with the dominant noise source gone,
+so the remaining profile is meaningful — shows the QHash lookups this milestone targets are now the
+visible cost inside `finalize()`:
+
+- 6106 / 6369 samples in `DistanceEngine::runAllSources()` — the actual parallel SSSP work.
+- Within `DistanceEngine::finalize()` (191 samples): **126 samples, 66 %, in
+  `GraphVertex::distance(int const&)`** — the per-vertex `m_distance` QHash lookup.
+
+`finalize()` is an O(N²) nested vertex-pair loop (`distance_engine.cpp:688-736`), so that is ~N²
+hash lookups where the target design gives flat row-major array reads. This does not pre-judge
+A2.0's memory question (which remains genuinely open, and is the reason the gate exists) — it only
+confirms the lookup cost A2 is meant to remove is real and measurable rather than assumed.
+
+**Sequencing note:** run A2.0 *after* WS14's L2, not before. On the current `develop` build this
+profile is unreadable — `qDebug()` formatting swamps everything at 43×–72×, and any lookup-speed
+number measured through that noise would be meaningless. See
+[`roadmap_ws14_logging_cost.md`](roadmap_ws14_logging_cost.md).
+
 **Extension:** `reachability/graph_reachability_walks.cpp` (the walks/A^k matrix code, one of A1's
 six scatter locations) already uses `Matrix::pow()` directly with no `QHash`/`QMap` involved, so it
 doesn't need this migration.
@@ -146,7 +170,16 @@ Insertion points, found by reading each method directly:
   the actual cost is a `for (j=0; j<n; j++)` loop calling `lubksb()` once per column (line 1279).
   A cancellation check at the top of this loop interrupts between columns.
 - **`Matrix::inverseByGaussJordanElimination()`** (`src/matrix.cpp:1003`) — same treatment, its own
-  outer loop.
+  outer loop. **But check reachability first (2026-07-30): this method has no reachable caller.**
+  `createMatrixAdjacencyInverse()` only calls it when `method == "gauss"`
+  (`graph/matrices/graph_matrix_adjacency.cpp:162-165`), its sole caller passes `"lu"`
+  (`graph/reporting/graph_reports.cpp:5780`), and the parameter default is also `"lu"`
+  (`graph.h:823`). Adding cancellation support to dead code is wasted work — decide whether to
+  delete the method outright before doing A5 on it. It also carries an O(N³) logging problem (4
+  unconditional `qDebug()` calls in its innermost `for k` loop, `src/matrix.cpp:1057-1074`, three of
+  which compute arithmetic purely in order to print it), which is why
+  [WS14](roadmap_ws14_logging_cost.md)'s L4 needs the same decision. Make it once, in whichever
+  workstream gets there first, and record it in both.
 - **`Matrix::powerIteration()`** (`src/matrix.cpp:808`) — already a bounded
   `do { ... } while (iter < maxIter && ...)` loop; check goes at the top of the existing loop body.
 
