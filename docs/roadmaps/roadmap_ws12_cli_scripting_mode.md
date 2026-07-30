@@ -37,6 +37,12 @@ SocNetV as a live component.
 - `add-node` — adds a node at a random position.
 - `add-edge source target [weight]` — adds a directed edge (default weight 1).
 - `add-relation name` — adds a new relation and switches to it.
+- `distances` — computes geodesic distances via `Graph::graphDistancesGeodesic(false, ...)`,
+  bypassing `slotAnalyzeMatrixDistances()`'s report-writing/HTML-viewer path. Logs one `qInfo()`
+  line (`BENCH distances ... elapsed_ms=...`) — deliberately `qInfo()`, not `qDebug()`/`qCDebug()`,
+  so it keeps printing regardless of any logging-category filter state. Added for WS14
+  logging-cost before/after measurement (see `roadmap_ws14_logging_cost.md`).
+- `distances centralities` — same, with `computeCentralities=true`.
 
 ## Backlog
 

@@ -27,6 +27,7 @@
 #include <QKeySequence>
 #include <QDateTime>
 #include <QSignalBlocker>
+#include <QElapsedTimer>
 #include <memory>
 
 #include <QtSvg> // for SVG icons
@@ -5820,6 +5821,25 @@ void MainWindow::processNextInteractiveCommand()
         }
         QMetaObject::invokeMethod(activeGraph, [this, name]() {
             activeGraph->relationAdd(name, true);
+        }, Qt::QueuedConnection);
+        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+    }
+    else if (line == "distances" || line == "distances centralities")
+    {
+        // WS14 benchmarking aid: triggers DistanceEngine work directly (bypassing
+        // slotAnalyzeMatrixDistances()'s report-writing/HTML-viewer path, which isn't
+        // needed here) so before/after logging-cost comparisons can be driven from a
+        // script instead of manual clicking. Uses qInfo(), not qDebug()/qCDebug(), since
+        // this instrumentation must keep printing even once WS14 makes debug output
+        // quiet by default - that is the entire point of measuring it.
+        const bool computeCentralities = (line == "distances centralities");
+        QMetaObject::invokeMethod(activeGraph, [this, computeCentralities]() {
+            QElapsedTimer timer;
+            timer.start();
+            activeGraph->graphDistancesGeodesic(computeCentralities, false, false, false);
+            qInfo() << "BENCH distances centralities=" << computeCentralities
+                    << "N=" << activeNodes() << "E=" << activeEdges()
+                    << "elapsed_ms=" << timer.elapsed();
         }, Qt::QueuedConnection);
         QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
     }
