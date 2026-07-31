@@ -139,8 +139,9 @@ in the roadmap.
 
 # Priorities
 
-1. **WS10** — GraphicsWidget canvas rendering & features. Phase 1 (#250) and #260 fully shipped;
-   future rendering-cost and feature work scoped but not prioritised yet.
+1. **WS10** — GraphicsWidget canvas rendering & features. Phase 1 (#250), #260, and the
+   rendering-perf regression kernel (WS6.6) all shipped; the rest of the Performance/Feature
+   checklists remain scoped but not prioritised yet.
 2. **WS6** — regression safety (ongoing support — continuously active underneath every other
    workstream, not "next in queue").
 3. **WS5** — matrices. Receives the M1-continuation APSP migration from WS3. A2.0's empirical

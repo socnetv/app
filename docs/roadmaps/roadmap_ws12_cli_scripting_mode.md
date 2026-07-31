@@ -43,11 +43,22 @@ SocNetV as a live component.
   so it keeps printing regardless of any logging-category filter state. Added for WS14
   logging-cost before/after measurement (see `roadmap_ws14_logging_cost.md`).
 - `distances centralities` — same, with `computeCentralities=true`.
+- `render` — forces a synchronous `graphicsWidget->viewport()->repaint()` (unlike `update()`,
+  which only schedules one), logging a `BENCH` line. Added for WS6.6's canvas rendering-perf
+  kernel (`roadmap_ws6_testing_ci_regression.md`).
+- `bulk-node-size <N>` — calls `slotEditNodeSizeAll(N)` directly (nonzero `N` skips its modal
+  `QInputDialog`), logging a `BENCH` line.
+- `bulk-edge-color <name>` — calls `slotEditEdgeColorAll(QColor(name))` directly (a valid color
+  skips its modal `QColorDialog`), logging a `BENCH` line.
+- `move <node> <x> <y>` — sets an absolute canvas position via `Graph::vertexPosSet()`, logging a
+  `BENCH` line. Graduated from the backlog below for WS6.6.
+- `quit` — ends the script and the app (`close()`, with the save-changes prompt bypassed since
+  no one is present to answer it). Every scripted run before this existed had to be killed
+  externally (`gtimeout`/`pkill`).
 
 ## Backlog
 
 Candidate commands, not yet scoped:
-- `move <node> <x> <y>` — move a node programmatically
 - `run <computation>` — trigger an analysis/layout by name
 - `open <file>`
 - `wait-idle` — block until the GUI event loop is idle, for more precise timing than a fixed `delay`

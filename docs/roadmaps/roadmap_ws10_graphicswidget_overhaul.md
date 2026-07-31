@@ -35,14 +35,15 @@ These are known, evidence-based gaps — not speculative wishlist items. Each is
 existing documentation or code already read; none has been scoped to Phase-1-style depth (concrete
 approach + completion criteria) yet.
 
-- **No automated rendering-performance regression coverage.** The golden harness covers
-  computation kernels (distance, prominence, clustering) but has zero coverage of the graphics
-  layer — a regression in paint/geometry cost would currently go undetected. Already identified as
-  WS6.6 in the testing roadmap (`roadmap_ws6_testing_ci_regression.md`, "Canvas rendering performance
-  kernel (#240)"): a headless `kernel_render_perf_v8`-style CLI kernel driving a fixed
-  render/bulk-update/drag sequence against a reference network, with timing-upper-bound baselines.
-  This should probably come *before* further optimization work below, so improvements (and
-  regressions) are actually measurable instead of judged by feel.
+- **No automated rendering-performance regression coverage — ✅ Done (2026-07-31), see WS6.6.**
+  The golden harness covered computation kernels (distance, prominence, clustering) but had zero
+  coverage of the graphics layer. Fixed via WS6.6 in the testing roadmap
+  (`roadmap_ws6_testing_ci_regression.md`, "Canvas rendering performance kernel (#240)"): five new
+  `--interactive-script` commands (`render`, `bulk-node-size`, `bulk-edge-color`, `move`, `quit`)
+  driving the real GUI binary under `QT_QPA_PLATFORM=offscreen`, with `scripts/run_render_perf_bench.sh`
+  comparing timing against upper-bound thresholds. This was a deliberate deviation from the
+  originally-sketched headless-CLI-kernel approach — see WS6.6 for why. This was the prerequisite
+  for the items below; they remain unstarted.
 
 - **Node-selection hot path is still synchronous and unbatched.** Documented in
   `README_DEVELOPER_NOTES.md` ("Known hot path: node selection"):

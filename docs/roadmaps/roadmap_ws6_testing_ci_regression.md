@@ -350,13 +350,85 @@ Heavier suites can run nightly or on-demand.
 
 ---
 
-### WS6.6 — Canvas rendering performance kernel (#240)
+### WS6.6 — Canvas rendering performance kernel (#240) ✅ Done (2026-07-31)
 
 Goal:
 
-The existing golden harness covers computation kernels (distance, prominence, clustering, etc.) but has no coverage of the graphics layer.  A headless rendering-performance kernel would let us catch regressions in `GraphicsWidget` / `GraphicsEdge` / `GraphicsNode` paint paths automatically.
+The existing golden harness covers computation kernels (distance, prominence, clustering, etc.) but has no coverage of the graphics layer.  A rendering-performance kernel would let us catch regressions in `GraphicsWidget` / `GraphicsEdge` / `GraphicsNode` paint paths automatically.
 
-Approach:
+**Approach taken — deviates from the original plan below, for a concrete reason.** The original
+idea (kept for context, see "Original approach" below) was a headless `socnetv-cli` kernel using
+`QOffscreenSurface`/`QImage`. That doesn't fit this codebase: `socnetv-cli`
+(`src/tools/socnetv_cli.cpp:28`) constructs a `QCoreApplication`, not a `QApplication`, and
+`GraphicsWidget`/`QGraphicsScene` are QtWidgets classes that need a real `QApplication` to behave
+correctly. Retrofitting `QApplication` into the CLI tool for one kernel is exactly the kind of
+`GraphicsWidget`/canvas change that should be verified live rather than assumed to work.
+
+Instead, this extends the already-proven WS12 `--interactive-script` mechanism
+(`roadmap_ws12_cli_scripting_mode.md`), running the real `SocNetV` GUI binary with
+`QT_QPA_PLATFORM=offscreen` (Qt's standard headless-widget-testing mechanism — no visible window,
+same paint/geometry code path as a real session):
+
+- Five new interactive-script commands (`mainwindow.cpp`): `render` (forces a synchronous
+  `viewport()->repaint()`, timed), `bulk-node-size <N>` (`slotEditNodeSizeAll()`),
+  `bulk-edge-color <name>` (`slotEditEdgeColorAll()`), `move <node> <x> <y>`
+  (`Graph::vertexPosSet()`), and `quit` (ends the script cleanly — needed because nothing
+  previously stopped a scripted GUI run; every earlier manual test had to be killed externally).
+  Each of the first four logs one `qInfo() << "BENCH ..."` line, same pattern as WS14's
+  `distances`/`distances centralities` commands.
+- Fixed reference script: `scripts/fixtures/render_perf_script.txt` — generates a reference network
+  via the existing `erdos 2000 0.02 undirected` command (matching the network size used throughout
+  WS14's own profiling) rather than depending on an external dataset file, then runs the fixed
+  sequence: render, bulk-node-size, bulk-edge-color, move, render, quit.
+- Driver: `scripts/run_render_perf_bench.sh`, structured to match `run_benchmarks.sh`'s existing
+  conventions (`scripts/lib/find_socnetv_gui.sh` mirrors `find_socnetv_cli.sh`; same
+  auto-detected/overridable baseline-set resolution; same `--record` bootstrapping flow). Runs
+  `QT_QPA_PLATFORM=offscreen <gui binary> --interactive-script <fixture>`, parses the five `BENCH`
+  lines, and compares each `elapsed_ms` against an upper-bound threshold (2× the recorded reference
+  run) — "must be faster than X ms", not exact equality.
+- Baseline: `scripts/perf_baselines/macos-m5/render_perf_expected.env`. Other platforms
+  (`macos-arm64`, `linux-x86_64`) don't have a recording yet — the script degrades gracefully
+  (prints `SKIP` per threshold) when no baseline file exists for the current machine, rather than
+  failing; someone running `--record` there once is the way to add coverage for that platform.
+  **Not yet verified on Linux** — `QT_QPA_PLATFORM=offscreen` availability/behavior there hasn't
+  been checked live.
+
+**On-screen vs. offscreen timing — measured, not assumed.** Ran the same fixture script both ways
+on the recording machine, 3 times each, to check whether `QT_QPA_PLATFORM=offscreen` changes what's
+being measured:
+
+| Command | On-screen | Offscreen |
+|---|---|---|
+| `render` (initial) | ~297-303ms | ~131-158ms |
+| `bulk-node-size` | ~44-49ms | ~46-52ms |
+| `bulk-edge-color` | ~45-78ms | ~44-45ms |
+| `render` (after mutations) | ~294-303ms | ~120-138ms |
+
+`render`'s actual paint cost is consistently ~2×-2.4× faster offscreen — no compositor/backing-store
+round trip on macOS — but the non-paint bulk operations measure the same either way. Confirmed the
+`render` command's own timing is genuinely synchronous (not partially deferred) by running two
+`render` calls back-to-back with a 2-second gap between them: both reported the identical elapsed
+time, which is what you'd expect from `QWidget::repaint()`'s documented synchronous contract (unlike
+`update()`, which only schedules a repaint) and wouldn't hold if any part of the cost were being
+silently deferred past the call returning. Conclusion: offscreen thresholds are only meaningful
+against other offscreen runs, not as a claim about real on-screen user-perceived performance — which
+is fine, since this kernel's job is regression detection, not UX measurement.
+
+**Recorded reference run (2026-07-31, MacBook Pro M5, 24GB RAM, offscreen, N=2000/~39,800E):**
+`render`=154ms, `bulk-node-size`=46ms, `bulk-edge-color`=44ms, `move`=0ms,
+`render`-after-mutations=120ms. Thresholds recorded at 2× each (with a 15ms floor for near-instant
+operations like `move`, since doubling a 0-1ms reading would produce a threshold too tight to
+survive normal jitter).
+
+Why this matters:
+
+`GraphicsWidget` bulk operations (`setEdgeArrowSize`, etc.) currently fire thousands of individual `prepareGeometryChange()` calls without batching.  Phase 1–5 of #240 fix the worst offenders, but without a regression kernel there is no automated guard to prevent the problems returning.
+
+**Not done in this pass:** the correctness/state-comparison kernel WS6.6 also floats below (asserting
+`GraphicsWidget` state after a fixed operation sequence, not just timing) — separate, larger design,
+not scoped here. CI integration also stays out per WS6.5's "CI is last" policy.
+
+#### Original approach (superseded, kept for context)
 
 - Build a new CLI kernel (`kernel_render_perf_v8` or similar) that:
   - Loads a fixed, large-ish reference network (e.g. `Bernard_Killworth_Fraternity` or a synthetic dense graph) into a `QGraphicsScene` without showing a window (`QOffscreenSurface` / `QImage` render target)
@@ -364,10 +436,6 @@ Approach:
   - Measures wall-clock time for each operation and writes a JSON result (`"render_ms"`, `"bulk_node_size_ms"`, etc.)
 - Baselines store the JSON with **timing upper bounds** (not exact values) so the comparison is a "must be faster than X ms" guard, not a brittle equality check
 - `run_benchmarks.sh` gains a `--render` flag to include this kernel; CI keeps it off by default (GPU/display availability varies)
-
-Why this matters:
-
-`GraphicsWidget` bulk operations (`setEdgeArrowSize`, etc.) currently fire thousands of individual `prepareGeometryChange()` calls without batching.  Phase 1–5 of #240 fix the worst offenders, but without a regression kernel there is no automated guard to prevent the problems returning.
 
 Rules:
 
