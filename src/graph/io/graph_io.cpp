@@ -48,20 +48,20 @@ void Graph::loadFile(const QString fileName,
                      const bool sm_has_labels)
 {
 
-    qDebug() << "Loading the file:" << fileName;
+    qCDebug(lcGraphIO) << "Loading the file:" << fileName;
 
-    qDebug() << "First, clearing current relations...";
+    qCDebug(lcGraphIO) << "First, clearing current relations...";
     relationsClear();
 
-    qDebug() << "Next, creating new file_parser -- we are on thread:" << this->thread();
+    qCDebug(lcGraphIO) << "Next, creating new file_parser -- we are on thread:" << this->thread();
     file_parser = new Parser();
 
-    qDebug() << " moving parser to her own new thread...";
+    qCDebug(lcGraphIO) << " moving parser to her own new thread...";
     file_parser->moveToThread(&file_parserThread);
 
-    qDebug() << "file_parser thread now: " << file_parser->thread();
+    qCDebug(lcGraphIO) << "file_parser thread now: " << file_parser->thread();
 
-    qDebug() << "connecting file_parser signals...";
+    qCDebug(lcGraphIO) << "connecting file_parser signals...";
 
     connect(&file_parserThread, &QThread::finished,
             file_parser, &QObject::deleteLater);
@@ -73,10 +73,10 @@ void Graph::loadFile(const QString fileName,
     connect(file_parser, &Parser::finished,
             this, &Graph::graphLoadedTerminateParserThreads);
 
-    qDebug() << "Starting parser thread...";
+    qCDebug(lcGraphIO) << "Starting parser thread...";
     file_parserThread.start();
 
-    qDebug() << "Calling the file_parser to load the file...";
+    qCDebug(lcGraphIO) << "Calling the file_parser to load the file...";
     file_parser->load(
         fileName,
         codecName,
@@ -102,15 +102,15 @@ void Graph::loadFile(const QString fileName,
  */
 void Graph::graphLoadedTerminateParserThreads(QString reason)
 {
-    qDebug() << "Terminating parser threads - reason " << reason
+    qCDebug(lcGraphIO) << "Terminating parser threads - reason " << reason
              << " Checking if file_parserThread is running...";
     if (file_parserThread.isRunning())
     {
-        qDebug() << "deleting file_parser pointer";
+        qCDebug(lcGraphIO) << "deleting file_parser pointer";
         delete file_parser;
         file_parser = 0; // see why here: https://goo.gl/tQxpGA
 
-        qDebug() << "file_parserThread running."
+        qCDebug(lcGraphIO) << "file_parserThread running."
                     "Calling file_parserThread.quit();";
         file_parserThread.quit();
     }
@@ -145,7 +145,7 @@ void Graph::graphFileLoaded(const int &fileType,
         return;
     }
 
-    qDebug() << "Loaded file OK."
+    qCDebug(lcGraphIO) << "Loaded file OK."
              << "type:" << fileType
              << "filename:" << fileName
              << "nodes:" << totalNodes
@@ -167,7 +167,7 @@ void Graph::graphFileLoaded(const int &fileType,
     setFileFormat(fileType);
     setModStatus(ModStatus::SavedUnchanged);
 
-    qDebug() << "graphFileLoaded: after setDirected/setUndirected:"
+    qCDebug(lcGraphIO) << "graphFileLoaded: after setDirected/setUndirected:"
              << "isDirected" << isDirected()
              << "isUndirected" << isUndirected()
              << "m_totalEdges" << m_totalEdges
@@ -189,7 +189,7 @@ void Graph::graphFileLoaded(const int &fileType,
 
     if (actualLinks != totalLinks)
     {
-        qDebug() << "WARNING: Parser totalLinks" << totalLinks
+        qCDebug(lcGraphIO) << "WARNING: Parser totalLinks" << totalLinks
                  << "differs from actual adjacency count" << actualLinks
                  << "- using actual count."
                  << "This typically indicates overlapping *Arcs/*Edges pairs"
@@ -220,7 +220,7 @@ void Graph::saveToFile(const QString &fileName,
                        const bool &saveEdgeWeights,
                        const bool &saveZeroWeightEdges)
 {
-    qDebug() << "Saving current graph to file named:" << fileName;
+    qCDebug(lcGraphIO) << "Saving current graph to file named:" << fileName;
     bool saved = false;
     switch (fileType)
     {
@@ -315,7 +315,7 @@ bool Graph::saveToPajekFormat(const QString &fileName,
                               int maxWidth,
                               int maxHeight)
 {
-    qDebug() << "Saving graph to Pajek-formatted file:" << fileName;
+    qCDebug(lcGraphIO) << "Saving graph to Pajek-formatted file:" << fileName;
 
     qreal weight = 0;
     QFileInfo fileInfo(fileName);
@@ -332,7 +332,7 @@ bool Graph::saveToPajekFormat(const QString &fileName,
     QFile f(fileName);
     if (!f.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open (for writing) file:" << fileName;
+        qCDebug(lcGraphIO) << "Could not open (for writing) file:" << fileName;
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
@@ -537,12 +537,12 @@ bool Graph::saveToAdjacencyFormat(const QString &fileName,
                                   const bool &saveEdgeWeights)
 {
 
-    qDebug() << "Saving graph to adjacency-formatted file:" << fileName;
+    qCDebug(lcGraphIO) << "Saving graph to adjacency-formatted file:" << fileName;
 
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open (for writing) file:" << fileName;
+        qCDebug(lcGraphIO) << "Could not open (for writing) file:" << fileName;
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
@@ -581,11 +581,11 @@ bool Graph::saveToAdjacencyFormat(const QString &fileName,
  */
 bool Graph::saveToDotFormat(const QString &fileName)
 {
-    qDebug() << "Saving graph to GraphViz DOT file:" << fileName;
+    qCDebug(lcGraphIO) << "Saving graph to GraphViz DOT file:" << fileName;
 
     QFile f(fileName);
     if (!f.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        qDebug() << "Could not open (for writing) file:" << fileName;
+        qCDebug(lcGraphIO) << "Could not open (for writing) file:" << fileName;
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
@@ -705,7 +705,7 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
                                 int maxHeight)
 {
 
-    qDebug() << "Saving graph to GraphML-formatted file:" << fileName;
+    qCDebug(lcGraphIO) << "Saving graph to GraphML-formatted file:" << fileName;
 
     qreal weight = 0;
     int source = 0, target = 0, edgeCount = 0, m_size = 1, m_labelSize;
@@ -727,7 +727,7 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
     // Check if there are nodes with custom icons in the network
     if (graphHasVertexCustomIcons())
     {
-        qDebug() << "Custom node icons exist."
+        qCDebug(lcGraphIO) << "Custom node icons exist."
                  << "Creating images subdir" << iconsDirPath;
         // There are custom node icons in this net.
         // We need to save these custom icons to a folder
@@ -735,17 +735,17 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
         // is about to be saved. All custom icons will be copied one-by-one there.
         if (saveDir.mkpath(iconsDirPath))
         {
-            qDebug() << "created icons subdir"
+            qCDebug(lcGraphIO) << "created icons subdir"
                      << iconsDirPath;
         }
         else
         {
-            qDebug() << "ERROR creating subdir!";
+            qCDebug(lcGraphIO) << "ERROR creating subdir!";
         }
     }
     else
     {
-        qDebug() << "No custom node icons. Nothing to do";
+        qCDebug(lcGraphIO) << "No custom node icons. Nothing to do";
     }
 
     QString iconPath = QString();
@@ -760,7 +760,7 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
 
     networkName = (networkName == "") ? getName().toHtmlEscaped() : networkName;
     networkName = (networkName == "unnamed") ? fileNameNoPath.toHtmlEscaped().left(fileNameNoPath.lastIndexOf('.')) : networkName;
-    qDebug() << "file:" << fileName.toUtf8() << "networkName" << networkName;
+    qCDebug(lcGraphIO) << "file:" << fileName.toUtf8() << "networkName" << networkName;
 
     maxWidth = (maxWidth == 0) ? (int)canvasWidth : maxWidth;
     maxHeight = (maxHeight == 0) ? (int)canvasHeight : maxHeight;
@@ -768,16 +768,16 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
     QFile f(fileName);
     if (!f.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open (for writing) file:" << fileName;
+        qCDebug(lcGraphIO) << "Could not open (for writing) file:" << fileName;
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
     QTextStream outText(&f);
     QString outTextEncoding = QStringEncoder(outText.encoding()).name();
 
-    qDebug() << "Using default codec for saving stream:" << outTextEncoding;
+    qCDebug(lcGraphIO) << "Using default codec for saving stream:" << outTextEncoding;
 
-    qDebug() << " writing xml version...";
+    qCDebug(lcGraphIO) << " writing xml version...";
     outText << "<?xml version=\"1.0\" encoding=\"" << outTextEncoding << "\"?> \n";
     outText << " <!-- Created by SocNetV " << VERSION << " -->\n";
     outText << "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" "
@@ -786,7 +786,7 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
                "      http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">"
                "\n";
 
-    qDebug() << "writing keys...";
+    qCDebug(lcGraphIO) << "writing keys...";
 
     outText << "  <key id=\"d0\" for=\"node\" attr.name=\"label\" attr.type=\"string\"> \n"
                "    <default>"
@@ -829,16 +829,16 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
         {
             if (QFile::copy(iconPath, copyIconFileNamePath))
             {
-                qDebug() << "default iconFile saved to:" << copyIconFileNamePath;
+                qCDebug(lcGraphIO) << "default iconFile saved to:" << copyIconFileNamePath;
             }
             else
             {
-                qDebug() << "ERROR saving default iconFile to:" << copyIconFileNamePath;
+                qCDebug(lcGraphIO) << "ERROR saving default iconFile to:" << copyIconFileNamePath;
             }
         }
         else
         {
-            qDebug() << "default iconFile already exists in:" << copyIconFileNamePath;
+            qCDebug(lcGraphIO) << "default iconFile already exists in:" << copyIconFileNamePath;
         }
         // And we write a new key (id 51) in our graphml for this default custom icon
         outText << "  <key id=\"d51\" for=\"node\" attr.name=\"custom-icon\" attr.type=\"string\"> \n"
@@ -872,12 +872,12 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
     // Save custom node attribute key definitions, if any.
     if (!vertexCustomAttributesList.isEmpty())
     {
-        qDebug() << "saving defaults for vertexCustomAttributesList:" << vertexCustomAttributesList;
+        qCDebug(lcGraphIO) << "saving defaults for vertexCustomAttributesList:" << vertexCustomAttributesList;
         QString customVertexAttrId;
         for (qsizetype i = 0; i < vertexCustomAttributesList.size(); ++i)
         {
             customVertexAttrId = 'd' + QString::number(1000 + i);
-            qDebug() << "customVertexAttrId:" << customVertexAttrId
+            qCDebug(lcGraphIO) << "customVertexAttrId:" << customVertexAttrId
                      << "customVertexAttr" << vertexCustomAttributesList.at(i);
             outText << "  <key id=\"" + customVertexAttrId + "\" for=\"node\" attr.name=\"" + vertexCustomAttributesList.at(i) + "\" attr.type=\"string\"> \n"
                        "    <default></default> \n"
@@ -888,12 +888,12 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
     // Save custom edge attribute key definitions, if any (IDs: d2000+).
     if (!edgeCustomAttributesList.isEmpty())
     {
-        qDebug() << "saving defaults for edgeCustomAttributesList:" << edgeCustomAttributesList;
+        qCDebug(lcGraphIO) << "saving defaults for edgeCustomAttributesList:" << edgeCustomAttributesList;
         QString customEdgeAttrId;
         for (qsizetype i = 0; i < edgeCustomAttributesList.size(); ++i)
         {
             customEdgeAttrId = 'd' + QString::number(2000 + i);
-            qDebug() << "customEdgeAttrId:" << customEdgeAttrId
+            qCDebug(lcGraphIO) << "customEdgeAttrId:" << customEdgeAttrId
                      << "customEdgeAttr" << edgeCustomAttributesList.at(i);
             outText << "  <key id=\"" + customEdgeAttrId + "\" for=\"edge\" attr.name=\"" + edgeCustomAttributesList.at(i) + "\" attr.type=\"string\"> \n"
                        "    <default></default> \n"
@@ -909,7 +909,7 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
     {
         relationName = (m_relationsList.at(i).simplified()).remove("\"");
         relationSet(i, false);
-        qDebug() << "writing graph tag. Relation:" << relationName;
+        qCDebug(lcGraphIO) << "writing graph tag. Relation:" << relationName;
 
         if (isUndirected())
             outText << "  <graph id=\""
@@ -920,12 +920,12 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
                     << ((relations() == 1) ? networkName : relationName)
                     << "\" edgedefault=\"directed\"> \n";
 
-        qDebug() << "writing nodes data...";
+        qCDebug(lcGraphIO) << "writing nodes data...";
         for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
         {
             if (!(*it)->isEnabled())
                 continue;
-            qDebug() << "Node id:" << (*it)->number();
+            qCDebug(lcGraphIO) << "Node id:" << (*it)->number();
             outText << "    <node id=\"" << (*it)->number() << "\"> \n";
             m_color = (*it)->color();
             m_size = (*it)->size();
@@ -939,7 +939,7 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
             rel_coord_x = (*it)->x() / (maxWidth);
             rel_coord_y = (*it)->y() / (maxHeight);
 
-            //            qDebug()<<"Rel coordinates: "
+            //            qCDebug(lcGraphIO)<<"Rel coordinates: "
             //                   << rel_coord_x
             //                   << ","
             //                   << rel_coord_y;
@@ -968,18 +968,18 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
                 {
                     if (QFile::copy(iconPath, copyIconFileNamePath))
                     {
-                        qDebug() << "iconFile for node:" << (*it)->number()
+                        qCDebug(lcGraphIO) << "iconFile for node:" << (*it)->number()
                                  << "saved to:" << copyIconFileNamePath;
                     }
                     else
                     {
-                        qDebug() << "ERROR saving iconFile for" << (*it)->number()
+                        qCDebug(lcGraphIO) << "ERROR saving iconFile for" << (*it)->number()
                                  << "saved to: " << copyIconFileNamePath;
                     }
                 }
                 else
                 {
-                    qDebug() << "iconFile for node:" << (*it)->number()
+                    qCDebug(lcGraphIO) << "iconFile for node:" << (*it)->number()
                              << "already exists in:" << copyIconFileNamePath;
                 }
                 outText << "      <data key=\"d51\">" << iconsSubDir + "/" + iconFileName << "</data>\n";
@@ -995,7 +995,7 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
                 outText << "      <data key=\"d7\">" << m_labelSize << "</data>\n";
             }
 
-            qDebug() << "m_vertexCustomAttributes:" << m_vertexCustomAttributes;
+            qCDebug(lcGraphIO) << "m_vertexCustomAttributes:" << m_vertexCustomAttributes;
             if (!m_vertexCustomAttributes.isEmpty())
             {
                 QString customVertexAttrId;
@@ -1012,7 +1012,7 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
             outText << "    </node>\n";
         }
 
-        qDebug() << "writing edges data...";
+        qCDebug(lcGraphIO) << "writing edges data...";
         edgeCount = 0;
         if (isDirected())
         {
@@ -1040,7 +1040,7 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
                         m_color = (*it)->outLinkColor(target);
                         m_label = edgeLabel(source, target);
                         m_label = htmlEscaped(m_label);
-                        //                        qDebug()<< "edge no:"
+                        //                        qCDebug(lcGraphIO)<< "edge no:"
                         //                                << edgeCount
                         //                                << "from n1=" << source << "to n2=" << target
                         //                                << "with weight" << weight
@@ -1213,11 +1213,11 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
  */
 bool Graph::saveToUCINETDLFormat(const QString &fileName)
 {
-    qDebug() << "Saving graph to UCINET DL file:" << fileName;
+    qCDebug(lcGraphIO) << "Saving graph to UCINET DL file:" << fileName;
 
     QFile f(fileName);
     if (!f.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        qDebug() << "Could not open (for writing) file:" << fileName;
+        qCDebug(lcGraphIO) << "Could not open (for writing) file:" << fileName;
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
@@ -1310,11 +1310,11 @@ bool Graph::saveToUCINETDLFormat(const QString &fileName)
  */
 bool Graph::saveToEdgeListWeightedFormat(const QString &fileName)
 {
-    qDebug() << "Saving graph to weighted edge list file:" << fileName;
+    qCDebug(lcGraphIO) << "Saving graph to weighted edge list file:" << fileName;
 
     QFile f(fileName);
     if (!f.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        qDebug() << "Could not open (for writing) file:" << fileName;
+        qCDebug(lcGraphIO) << "Could not open (for writing) file:" << fileName;
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
@@ -1377,11 +1377,11 @@ bool Graph::saveToEdgeListWeightedFormat(const QString &fileName)
  */
 bool Graph::saveToEdgeListSimpleFormat(const QString &fileName)
 {
-    qDebug() << "Saving graph to simple edge list file:" << fileName;
+    qCDebug(lcGraphIO) << "Saving graph to simple edge list file:" << fileName;
 
     QFile f(fileName);
     if (!f.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        qDebug() << "Could not open (for writing) file:" << fileName;
+        qCDebug(lcGraphIO) << "Could not open (for writing) file:" << fileName;
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
