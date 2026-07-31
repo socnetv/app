@@ -46,6 +46,7 @@
 cmake_minimum_required(VERSION 3.16) # 3.21 or 3.22 for better features and compatibility with modern tools.
 
 option(BUILD_CLI "Build headless regression CLI" ON)
+option(BUILD_MATRIX_BENCH "Build standalone APSP storage benchmark tool (WS5 A2.0)" OFF)
 
 # ==============================================================================
 # 1. Project Setup
@@ -540,6 +541,35 @@ if(BUILD_CLI)
     )
 
     qt_finalize_executable(${CLI_TARGET})
+endif()
+
+
+if(BUILD_MATRIX_BENCH)
+    set(MATRIX_BENCH_TARGET matrix-storage-bench)
+
+    qt_add_executable(${MATRIX_BENCH_TARGET}
+        MANUAL_FINALIZATION
+        src/tools/matrix_storage_bench.cpp
+        src/matrix.cpp
+    )
+
+    target_include_directories(${MATRIX_BENCH_TARGET} PUBLIC
+        "${CMAKE_SOURCE_DIR}/src"
+    )
+
+    target_link_libraries(${MATRIX_BENCH_TARGET} PRIVATE
+        Qt6::Core
+    )
+
+    set_target_properties(${MATRIX_BENCH_TARGET} PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON
+        AUTOMOC OFF
+        AUTOUIC OFF
+        AUTORCC OFF
+    )
+
+    qt_finalize_executable(${MATRIX_BENCH_TARGET})
 endif()
 
 
