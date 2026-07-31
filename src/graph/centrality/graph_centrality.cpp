@@ -26,11 +26,11 @@
 void Graph::centralityInformation(const bool considerWeights,
                                   const bool inverseWeights)
 {
-    qDebug() << "Graph::centralityInformation()";
+    qCDebug(lcCentrality) << "Graph::centralityInformation()";
 
     if (calculatedIC)
     {
-        qDebug() << "Graph::centralityInformation() - already computed. Return.";
+        qCDebug(lcCentrality) << "Graph::centralityInformation() - already computed. Return.";
         return;
     }
 
@@ -228,11 +228,11 @@ void Graph::centralityEigenvector(const bool &considerWeights,
 {
     if (calculatedEVC)
     {
-        qDebug() << "Graph not changed - EVC already computed. Return.";
+        qCDebug(lcCentrality) << "Graph not changed - EVC already computed. Return.";
         return;
     }
 
-    qDebug() << "(Re)Computing Eigenvector centrality scores...";
+    qCDebug(lcCentrality) << "(Re)Computing Eigenvector centrality scores...";
 
     progressStatus(tr("Calculating EVC scores..."));
 
@@ -284,7 +284,7 @@ void Graph::centralityEigenvector(const bool &considerWeights,
 
     if (useDegrees)
     {
-        qDebug() << "Using outDegree for initial EVC vector";
+        qCDebug(lcCentrality) << "Using outDegree for initial EVC vector";
 
         progressStatus(tr("Computing outDegrees. Please wait..."));
 
@@ -299,7 +299,7 @@ void Graph::centralityEigenvector(const bool &considerWeights,
     }
     else
     {
-        qDebug() << "Using unit initial EVC vector";
+        qCDebug(lcCentrality) << "Using unit initial EVC vector";
         for (int k = 0; k < N; k++)
             EVC[k] = 1;
     }
@@ -375,7 +375,7 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
 
     if (calculatedDC)
     {
-        qDebug() << "Graph not changed - no need to recompute degree centralities. Returning.";
+        qCDebug(lcCentrality) << "Graph not changed - no need to recompute degree centralities. Returning.";
         return;
     }
     qreal DC = 0, nom = 0, denom = 0, SDC = 0;
@@ -393,7 +393,7 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
     VList::const_iterator it, it1;
 
     QString pMsg = tr("Computing out-Degree Centralities for %1 nodes. \nPlease wait...").arg(N);
-    qDebug() << pMsg;
+    qCDebug(lcCentrality) << pMsg;
     progressStatus(pMsg);
     progressCreate(N, pMsg);
 
@@ -459,7 +459,7 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
         }
         (*it)->setSDC(SDC); // Set Standard DC
 
-        qDebug() << "vertex" << (*it)->number() << "-- DC=" << DC << "SDC=" << SDC;
+        qCDebug(lcCentrality) << "vertex" << (*it)->number() << "-- DC=" << DC << "SDC=" << SDC;
         sumSDC += SDC;
 
         resolveClasses(SDC, discreteSDCs, classesSDC);
@@ -539,11 +539,11 @@ void Graph::centralityClosenessIR(const bool considerWeights,
 
     if (calculatedIRCC)
     {
-        qDebug() << "Graph not changed - no need to recompute IRCC. Returning";
+        qCDebug(lcCentrality) << "Graph not changed - no need to recompute IRCC. Returning";
         return;
     }
 
-    qDebug() << "(Re)Computing IRCC closeness centrality...";
+    qCDebug(lcCentrality) << "(Re)Computing IRCC closeness centrality...";
 
     graphDistancesGeodesic(false, considerWeights, inverseWeights, dropIsolates);
     if (progressCanceled())
@@ -572,8 +572,8 @@ void Graph::centralityClosenessIR(const bool considerWeights,
     progressStatus(pMsg);
     progressCreate(N, pMsg);
 
-    qDebug() << "dropIsolates" << dropIsolates;
-    qDebug() << "computing scores for actors: " << N;
+    qCDebug(lcCentrality) << "dropIsolates" << dropIsolates;
+    qCDebug(lcCentrality) << "computing scores for actors: " << N;
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
@@ -610,11 +610,11 @@ void Graph::centralityClosenessIR(const bool considerWeights,
                 sumD += dist;
                 Ji++; // compute |Ji|
             }
-            qDebug() << "dist(" << (*it)->number()
+            qCDebug(lcCentrality) << "dist(" << (*it)->number()
                      << "," << (*jt)->number() << ") =" << dist << "sumD" << sumD << " Ji" << Ji;
         }
 
-        qDebug() << "" << (*it)->number()
+        qCDebug(lcCentrality) << "" << (*it)->number()
                  << " sumD" << sumD
                  << "distanceSum" << (*it)->distanceSum();
 
@@ -622,10 +622,10 @@ void Graph::centralityClosenessIR(const bool considerWeights,
         if (sumD != 0)
         {
             averageD = sumD / Ji;
-            qDebug() << "averageD = sumD /  Ji" << averageD;
-            qDebug() << "Ji / (N-1)" << Ji << "/" << N - 1;
+            qCDebug(lcCentrality) << "averageD = sumD /  Ji" << averageD;
+            qCDebug(lcCentrality) << "Ji / (N-1)" << Ji << "/" << N - 1;
             IRCC = (Ji / (qreal)(N - 1)) / averageD;
-            qDebug() << "[ Ji / (N-1) ] / [ sumD / Ji]" << IRCC;
+            qCDebug(lcCentrality) << "[ Ji / (N-1) ] / [ sumD / Ji]" << IRCC;
         }
 
         sumIRCC += IRCC;
@@ -667,7 +667,7 @@ void Graph::centralityClosenessIR(const bool considerWeights,
  */
 void Graph::minmax(qreal C, GraphVertex *v, qreal &max, qreal &min, int &maxNode, int &minNode)
 {
-    qDebug() << "MINMAX C = " << C << "  max = " << max << "  min = " << min << " name = " << v->number();
+    qCDebug(lcCentrality) << "MINMAX C = " << C << "  max = " << max << "  min = " << min << " name = " << v->number();
     if (C > max)
     {
         max = C;

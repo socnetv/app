@@ -27,11 +27,11 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
 
     if (calculatedDP)
     {
-        qDebug() << "Graph not changed - no need to recompute Degree Prestige scores. Returning";
+        qCDebug(lcCentrality) << "Graph not changed - no need to recompute Degree Prestige scores. Returning";
         return;
     }
 
-    qDebug() << "(Re)Computing Degree Prestige scores...";
+    qCDebug(lcCentrality) << "(Re)Computing Degree Prestige scores...";
 
     int N = vertices(dropIsolates);
     int v2 = 0, v1 = 0;
@@ -59,7 +59,7 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
     progressStatus(pMsg);
     progressCreate(N, pMsg);
 
-    qDebug() << "vertices"
+    qCDebug(lcCentrality) << "vertices"
              << N
              << "graph modified. Recomputing...";
 
@@ -74,17 +74,17 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
             return;
         }
         v1 = (*it)->number();
-        qDebug() << "computing DP for vertex" << v1;
+        qCDebug(lcCentrality) << "computing DP for vertex" << v1;
 
         DP = 0;
 
         if (!(*it)->isEnabled())
         {
-            qDebug() << "vertex disabled. Continue.";
+            qCDebug(lcCentrality) << "vertex disabled. Continue.";
             continue;
         }
 
-        qDebug() << "Iterate over inbound edges of "
+        qCDebug(lcCentrality) << "Iterate over inbound edges of "
                  << v1;
 
         enabledInEdges = (*it)->inEdgesEnabledHash();
@@ -96,12 +96,12 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
 
             v2 = hit.key();
 
-            qDebug() << "inbound edge from" << v2;
+            qCDebug(lcCentrality) << "inbound edge from" << v2;
 
             if (!edgeExists(v2, v1))
             {
                 // sanity check
-                qDebug() << "Cannot verify inbound edge"
+                qCDebug(lcCentrality) << "Cannot verify inbound edge"
                          << v2 << "CONTINUE";
                 ++hit;
                 continue;
@@ -127,7 +127,7 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
         (*it)->setDP(DP); // Set DP
         sumDP += DP;
 
-        qDebug() << "vertex " << (*it)->number()
+        qCDebug(lcCentrality) << "vertex " << (*it)->number()
                  << " DP " << DP;
     }
 
@@ -148,12 +148,12 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
         (*it)->setSDP(SDP);
         sumSDP += SDP;
 
-        qDebug() << "vertex " << (*it)->number() << " DP  "
+        qCDebug(lcCentrality) << "vertex " << (*it)->number() << " DP  "
                  << DP << " SDP " << (*it)->SDP();
 
         resolveClasses(SDP, discreteDPs, classesSDP);
 
-        qDebug("DP classes = %i ", classesSDP);
+        qCDebug(lcCentrality, "DP classes = %i ", classesSDP);
 
         if (maxSDP < SDP)
         {
@@ -172,7 +172,7 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
 
     meanSDP = sumSDP / (qreal)N;
 
-    qDebug("Graph: sumSDP = %f, meanSDP = %f", sumSDP, meanSDP);
+    qCDebug(lcCentrality, "Graph: sumSDP = %f, meanSDP = %f", sumSDP, meanSDP);
 
     // Calculate Variance and the Degree Prestigation of the whole graph. :)
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
@@ -197,7 +197,7 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
     if (!considerWeights)
     {
         groupDP = nom / denom;
-        qDebug("Graph: varianceSDP = %f, groupDP = %f", varianceSDP, groupDP);
+        qCDebug(lcCentrality, "Graph: varianceSDP = %f, groupDP = %f", varianceSDP, groupDP);
     }
 
     delete enabledInEdges;
@@ -216,11 +216,11 @@ void Graph::prestigeProximity(const bool considerWeights,
 {
     if (calculatedPP)
     {
-        qDebug() << "Graph not changed - no need to recompute proximity prestige. Returning";
+        qCDebug(lcCentrality) << "Graph not changed - no need to recompute proximity prestige. Returning";
         return;
     }
 
-    qDebug() << "(Re)Computing Proximity prestige scores...";
+    qCDebug(lcCentrality) << "(Re)Computing Proximity prestige scores...";
 
     graphDistancesGeodesic(false, considerWeights, inverseWeights, inverseWeights);
     if (progressCanceled())
@@ -285,7 +285,7 @@ void Graph::prestigeProximity(const bool considerWeights,
             }
         }
 
-        qDebug() << "vertex"
+        qCDebug(lcCentrality) << "vertex"
                  << (*it)->number()
                  << "actors in influence domain Ii" << Ii
                  << "actors in network" << (V - 1)
@@ -308,7 +308,6 @@ void Graph::prestigeProximity(const bool considerWeights,
 
         resolveClasses(PP, discretePPs, classesPP);
 
-        // qDebug("PP classes = %i ", classesPP);
         if (maxPP < PP)
         {
             maxPP = PP;
@@ -338,7 +337,7 @@ void Graph::prestigeProximity(const bool considerWeights,
 
     variancePP = variancePP / V;
 
-    qDebug() << "sumPP = " << sumPP
+    qCDebug(lcCentrality) << "sumPP = " << sumPP
              << " meanPP = " << meanPP
              << " variancePP " << variancePP;
 
@@ -356,11 +355,11 @@ void Graph::prestigePageRank(const bool &dropIsolates)
 
     if (calculatedPRP)
     {
-        qDebug() << "Graph not changed - no need to recompute Pagerank scores. Return ";
+        qCDebug(lcCentrality) << "Graph not changed - no need to recompute Pagerank scores. Return ";
         return;
     }
 
-    qDebug() << "(Re)Computing PageRank prestige scores...";
+    qCDebug(lcCentrality) << "(Re)Computing PageRank prestige scores...";
 
     discretePRPs.clear();
     sumPRP = 0;
@@ -406,7 +405,7 @@ void Graph::prestigePageRank(const bool &dropIsolates)
         // compute inEdgesCount() to warm up inEdgesConst for everyone
         inLinks = (*it)->inEdgesCount();
         outLinks = (*it)->outEdgesCount();
-        qDebug() << "node "
+        qCDebug(lcCentrality) << "node "
                  << (*it)->number() << " PR = " << (*it)->PRP()
                  << " inLinks (set const): " << inLinks
                  << " outLinks (set const): " << outLinks;
@@ -414,7 +413,7 @@ void Graph::prestigePageRank(const bool &dropIsolates)
 
     if (edgesEnabled() == 0)
     {
-        qDebug() << "all vertices are isolated and of equal PR. Stop";
+        qCDebug(lcCentrality) << "all vertices are isolated and of equal PR. Stop";
         return;
     }
 
@@ -428,7 +427,7 @@ void Graph::prestigePageRank(const bool &dropIsolates)
     while (maxDelta > delta)
     {
 
-        qDebug() << "ITERATION : " << iterations;
+        qCDebug(lcCentrality) << "ITERATION : " << iterations;
 
         sumPRP = 0;
         maxDelta = 0;
@@ -442,19 +441,19 @@ void Graph::prestigePageRank(const bool &dropIsolates)
             sumInLinksPR = 0;
             oldPRP = (*it)->PRP();
 
-            qDebug() << "computing PR for node: "
+            qCDebug(lcCentrality) << "computing PR for node: "
                      << (*it)->number() << " current PR " << oldPRP;
 
             if ((*it)->isIsolated())
             {
                 // isolates have constant PR = 1/N
-                qDebug() << "isolated - CONTINUE ";
+                qCDebug(lcCentrality) << "isolated - CONTINUE ";
                 continue;
             }
 
             jt = (*it)->m_inEdges.cbegin();
 
-            qDebug() << "Iterate over inEdges of "
+            qCDebug(lcCentrality) << "Iterate over inEdges of "
                      << (*it)->number();
 
             while (jt != (*it)->m_inEdges.cend())
@@ -474,7 +473,7 @@ void Graph::prestigePageRank(const bool &dropIsolates)
 
                 referrer = jt.key();
 
-                qDebug() << "Node " << (*it)->number()
+                qCDebug(lcCentrality) << "Node " << (*it)->number()
                          << " inLinked from neighbor " << referrer << " vpos "
                          << vpos[referrer];
 
@@ -487,7 +486,7 @@ void Graph::prestigePageRank(const bool &dropIsolates)
 
                     transferedPRP = (outLinks != 0) ? (PRP / outLinks) : PRP;
 
-                    qDebug() << "neighbor " << referrer
+                    qCDebug(lcCentrality) << "neighbor " << referrer
                              << " has PR = " << PRP
                              << " and outLinks = " << outLinks
                              << "  will transfer " << transferedPRP;
@@ -503,7 +502,7 @@ void Graph::prestigePageRank(const bool &dropIsolates)
 
             sumPRP += PRP;
 
-            qDebug() << "Node "
+            qCDebug(lcCentrality) << "Node "
                      << (*it)->number()
                      << " new PR = " << PRP
                      << " old PR was = " << oldPRP
@@ -515,14 +514,14 @@ void Graph::prestigePageRank(const bool &dropIsolates)
             if (maxDelta < fabs(PRP - oldPRP))
             {
                 maxDelta = fabs(PRP - oldPRP);
-                qDebug() << "Setting new maxDelta = "
+                qCDebug(lcCentrality) << "Setting new maxDelta = "
                          << maxDelta;
             }
         }
 
         // normalize in every iteration
 
-        qDebug() << "sumPRP for this iteration " << sumPRP;
+        qCDebug(lcCentrality) << "sumPRP for this iteration " << sumPRP;
 
         for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
         {
@@ -557,7 +556,7 @@ void Graph::prestigePageRank(const bool &dropIsolates)
         meanPRP = SPRP;
     }
 
-    qDebug() << "sumPRP = " << sumPRP << "  N = " << N
+    qCDebug(lcCentrality) << "sumPRP = " << sumPRP << "  N = " << N
              << "  meanPRP = " << meanPRP;
 
     // calculate std and min/max PRPs
@@ -575,20 +574,20 @@ void Graph::prestigePageRank(const bool &dropIsolates)
         SPRP = PRP / maxPRP;
         (*it)->setSPRP(SPRP);
 
-        qDebug() << "vertex: " << (*it)->number()
+        qCDebug(lcCentrality) << "vertex: " << (*it)->number()
                  << " PR = " << PRP << " standard PR = " << SPRP
                  << " t_sumPRP " << t_sumPRP;
 
         t_variance = (PRP - meanPRP);
         t_variance *= t_variance;
-        qDebug() << "PRP " << (*it)->PRP() << "  t_variance "
+        qCDebug(lcCentrality) << "PRP " << (*it)->PRP() << "  t_variance "
                  << PRP - meanPRP << " t_variance^2" << t_variance;
         variancePRP += t_variance;
     }
 
-    qDebug() << "PRP' Variance   " << variancePRP << " N " << N;
+    qCDebug(lcCentrality) << "PRP' Variance   " << variancePRP << " N " << N;
     variancePRP = variancePRP / (qreal)N;
-    qDebug() << "PRP' Variance: " << variancePRP;
+    qCDebug(lcCentrality) << "PRP' Variance: " << variancePRP;
 
     calculatedPRP = true;
 
