@@ -57,8 +57,6 @@ public:
     {
         if (t1.value == t2.value)
             return t1.key > t2.key;
-        //       qDebug () << t1.value << " > " << t2.value << "?"
-        //                 << ( t1.value > t2.value ) ;
         return t1.value > t2.value; // minimum priority
         // Returns true if t2.value smaller than t1.value
     }

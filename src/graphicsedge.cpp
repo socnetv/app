@@ -90,7 +90,6 @@ GraphicsEdge::GraphicsEdge(GraphicsWidget *gw,
 
     m_drawWeightNumber = weightNumbers;     // controls if weight number will be shown
 
-//    qDebug()<< "Constructed graphics edge:"
 //            << source->nodeNumber()
 //            << "->"
 //            << target->nodeNumber()
@@ -193,7 +192,6 @@ int GraphicsEdge::arrowSize() const {
  * edge lists is wasted work. See #260.
  */
 void GraphicsEdge::removeRefs(){
-//    qDebug() << "Removing edge refs...";
     if (graphicsWidget->isClearing())
         return;
     source->removeOutEdge(this);
@@ -245,7 +243,6 @@ QString GraphicsEdge::colorToPajek() {
  * @param w
  */
 void GraphicsEdge::setWeight(const qreal &w) {
-//    qDebug() << "Setting edge weight:" << w;
     prepareGeometryChange();
     m_weight = w;
     if ( fabs(m_weight) > 1  )  {
@@ -312,7 +309,6 @@ void GraphicsEdge::setWeightNumberVisibility (const bool &toggle) {
  * @param label
  */
 void GraphicsEdge::setLabel(const QString &label) {
-//    qDebug() << "Setting graphics edge label:" << label;
     prepareGeometryChange();
     m_label = label;
     if (m_drawLabel)
@@ -500,7 +496,6 @@ qreal GraphicsEdge::length() const
  * not a full path rebuild.
  */
 void GraphicsEdge::adjust(){
-    // qDebug() << "GraphicsEdge::adjust()";
     if (!source || !target) {
         return;
     }
@@ -618,7 +613,6 @@ void GraphicsEdge::adjust(){
  * @return QPainterPath
  */
 QPainterPath GraphicsEdge::shape () const {
-    //qDebug()<<"GraphicsEdge::shape()";		//too many debug messages...
     //    QPainterPath m_path_shape = m_path;
     //    m_path_shape.addPath(m_path.translated(1,1));
     //    m_path_shape.addPath(m_path.translated(-1,-1));
@@ -646,7 +640,6 @@ QRectF GraphicsEdge::boundingRect() const {
  * @brief Changes the direction type of edge A->B
   */
 void GraphicsEdge::setDirectionType(const int &dirType){
-//    qDebug()<< "Edge"
 //            << source->nodeNumber()
 //            << "->"
 //            << target->nodeNumber()
@@ -713,23 +706,18 @@ Qt::PenStyle GraphicsEdge::style() const{
  * @return
  */
 QPen GraphicsEdge::pen() const {
-    //qDebug() << "GraphicsEdge::pen() - returning pen "  ;
     switch (m_state) {
     case EDGE_STATE_REGULAR:
-        //qDebug() << "GraphicsEdge::pen() - returning pen for state REGULAR"  ;
         if (m_weight < 0 ){
             return  QPen(m_color, m_width, Qt::DashLine, Qt::RoundCap, Qt::RoundJoin);
         }
         return QPen(m_color, m_width, m_style, Qt::RoundCap, Qt::RoundJoin);
         break;
     case EDGE_STATE_HIGHLIGHT: // selected
-        //qDebug() << "GraphicsEdge::pen() - returning pen for state HIGHLIGHTED"  ;
         return QPen( QColor("red"), m_width, m_style, Qt::RoundCap, Qt::RoundJoin);
     case EDGE_STATE_HOVER: // hover
-        //qDebug() << "GraphicsEdge::pen() - returning pen for state HOVER"  ;
         return QPen(QColor("red"), m_width+1, m_style, Qt::RoundCap, Qt::RoundJoin);
     default:
-        //qDebug() << "GraphicsEdge::pen() - returning pen for state DEFAULT"  ;
         return QPen(m_color, m_width, m_style, Qt::RoundCap, Qt::RoundJoin);
     }
 
@@ -763,7 +751,6 @@ void GraphicsEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
     if (!source || !target)
         return;
 
-    //qDebug() <<"@@@ GraphicsEdge::paint() on" << painter->paintEngine()->type();
     //painter->setClipRect();
 
     //if the edge is being dragged around, darken it!
@@ -865,7 +852,6 @@ qreal GraphicsEdge::width() const{
  * @param flag
  */
 void GraphicsEdge::setHighlighted(const bool &flag) {
-    //qDebug()<< "GraphicsEdge::setHighlighted() - " << flag;
     if (flag && m_hoverHighlighting) {
         prepareGeometryChange();
         setState(EDGE_STATE_HIGHLIGHT);
@@ -897,7 +883,6 @@ void GraphicsEdge::setHighlighting(const bool &toggle) {
 // * @param event
 // */
 //void GraphicsEdge::mousePressEvent(QGraphicsSceneMouseEvent *e) {
-//    qDebug() << "GraphicsEdge::mousePressEvent() - click on an edge ";
 //    //setClicked();
 //    QGraphicsItem::mousePressEvent(e);
 //}
@@ -906,23 +891,19 @@ void GraphicsEdge::setHighlighting(const bool &toggle) {
 
 
 GraphicsEdge::~GraphicsEdge(){
-//    qDebug() << "self-destructing edge:"
 //             << sourceNodeNumber()<< "->" << targetNodeNumber()
 //             << "will remove refs first...";
 
     removeRefs();
 
-//    qDebug() << "removing edge weight number, if any...";
     if (m_drawWeightNumber)
         graphicsWidget->removeItem(weightNumber);
 
-//    qDebug() << "removing edge label, if any...";
     if (m_drawLabel)
         graphicsWidget->removeItem(edgeLabel);
 
     this->hide();
 
-//    qDebug() << "calling GW removeItem for this edge";
     graphicsWidget->removeItem(this);
 
 
