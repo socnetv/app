@@ -100,7 +100,7 @@ namespace
 int Graph::getProminenceIndexByName(const QString &prominenceIndexName)
 {
 
-    qDebug() << "Returning index type for index named: " << prominenceIndexName;
+    qCDebug(lcProminence) << "Returning index type for index named: " << prominenceIndexName;
 
     if (prominenceIndexName.contains("Degree Centr"))
     {
@@ -172,7 +172,7 @@ void Graph::prominenceDistribution(const int &index,
                                    const QString &distImageFileName)
 {
 
-    qDebug() << "Request to compute prominence distribution. "
+    qCDebug(lcProminence) << "Request to compute prominence distribution. "
              << "index" << index
              << "chart type: " << type
              << "distImageFileName" << distImageFileName;
@@ -184,7 +184,7 @@ void Graph::prominenceDistribution(const int &index,
 
     QString seriesName;
 
-    qDebug() << "setting prominence distribution series name and classes...";
+    qCDebug(lcProminence) << "setting prominence distribution series name and classes...";
     switch (index)
     {
     case 0:
@@ -271,7 +271,7 @@ void Graph::prominenceDistribution(const int &index,
     }
     }
 
-    qDebug() << "calling the relevant prominence distribution computation method...";
+    qCDebug(lcProminence) << "calling the relevant prominence distribution computation method...";
     switch (type)
     {
     case ChartType::None:
@@ -313,7 +313,7 @@ void Graph::prominenceDistributionSpline(const H_StrToInt &discreteClasses,
                                          const QString &seriesName,
                                          const QString &distImageFileName)
 {
-    qDebug() << "Computing prominence distribution as spline chart...";
+    qCDebug(lcProminence) << "Computing prominence distribution as spline chart...";
 
     const PromDistData data = computePromDistData(discreteClasses);
     uiProminenceDistributionSpline(
@@ -347,7 +347,7 @@ void Graph::prominenceDistributionArea(const H_StrToInt &discreteClasses,
                                        const QString &name,
                                        const QString &distImageFileName)
 {
-    qDebug() << "Computing prominence distribution as area chart...";
+    qCDebug(lcProminence) << "Computing prominence distribution as area chart...";
 
     const PromDistData data = computePromDistData(discreteClasses);
 
@@ -383,7 +383,7 @@ void Graph::prominenceDistributionBars(const H_StrToInt &discreteClasses,
                                        const QString &name,
                                        const QString &distImageFileName)
 {
-    qDebug() << "Computing prominence distribution as bar chart...";
+    qCDebug(lcProminence) << "Computing prominence distribution as bar chart...";
 
     const PromDistData data = computePromDistData(discreteClasses);
 
