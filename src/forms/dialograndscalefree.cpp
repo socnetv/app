@@ -17,6 +17,7 @@
 #include "dialograndscalefree.h"
 
 #include <QDebug>
+#include "forms_logging.h"
 #include <QSpinBox>
 #include <QRadioButton>
 #include <QPushButton>
@@ -25,7 +26,7 @@
 DialogRandScaleFree::DialogRandScaleFree(QWidget *parent) :
     QDialog(parent)
 {
-    qDebug() << "DialogRandScaleFree::DialogRandScaleFree() " ;
+    qCDebug(lcForms) << "DialogRandScaleFree::DialogRandScaleFree() " ;
 
     ui.setupUi(this);
 
@@ -79,7 +80,7 @@ void DialogRandScaleFree::setDiag (){
 }
 
 void DialogRandScaleFree::checkErrors() {
-    qDebug()<< " DialogRandSmallWorld::checkErrors()" ;
+    qCDebug(lcForms)<< " DialogRandSmallWorld::checkErrors()" ;
 
     //     if ( !ui.gnpRadioButton->isChecked() &&  !ui.gnmRadioButton->isChecked())
     //     {
@@ -97,7 +98,7 @@ void DialogRandScaleFree::checkErrors() {
 }
 
 void DialogRandScaleFree::getUserChoices() {
-    qDebug() << "DialogRandScaleFree::getUserChoices() " ;
+    qCDebug(lcForms) << "DialogRandScaleFree::getUserChoices() " ;
     nodes = ui.nodesSpinBox->value();
     power = ui.powerSpinBox->value();
     initialNodes = ui.initialNodesSpinBox->value();
@@ -106,10 +107,10 @@ void DialogRandScaleFree::getUserChoices() {
     mode = (ui.directedRadioButton->isChecked() ? "digraph" : "graph" );
  //   diag = (ui.diagCheckBox->isChecked() ? true : false);
 
-    qDebug() << "nodes " << nodes ;
-    qDebug() << "initialNodes " << initialNodes;
-    qDebug() << "mode " << mode;
-    qDebug() << "diag " << diag;
+    qCDebug(lcForms) << "nodes " << nodes ;
+    qCDebug(lcForms) << "initialNodes " << initialNodes;
+    qCDebug(lcForms) << "mode " << mode;
+    qCDebug(lcForms) << "diag " << diag;
     emit userChoices(nodes, power, initialNodes, edgesPerStep,zeroAppeal, mode);
 
 }

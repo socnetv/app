@@ -16,6 +16,7 @@
 #include "dialogfilteredgesbyweight.h"
 #include <QPushButton>
 #include <QDebug>
+#include "forms_logging.h"
 
 DialogFilterEdgesByWeight::DialogFilterEdgesByWeight(QWidget *parent) : QDialog(parent)
 {
@@ -28,17 +29,17 @@ DialogFilterEdgesByWeight::DialogFilterEdgesByWeight(QWidget *parent) : QDialog(
 }
 
 void DialogFilterEdgesByWeight::getUserChoices(){
-	qDebug()<< "Dialog: gathering Data!...";
+	qCDebug(lcForms)<< "Dialog: gathering Data!...";
 	bool overThreshold=false;
 	float my_threshold = static_cast <float> ( (ui.weightThreshold)->value() );
 	if ( ui.overThresholdBt->isChecked() ) {
-		qDebug()<< "Dialog: We will filter edges weighted more than threshold: " << my_threshold;
+		qCDebug(lcForms)<< "Dialog: We will filter edges weighted more than threshold: " << my_threshold;
 		overThreshold = true;
 	}
 	else {
-		qDebug()<< "Dialog: We will filter edges weighted less than threshold: " << my_threshold;
+		qCDebug(lcForms)<< "Dialog: We will filter edges weighted less than threshold: " << my_threshold;
 		overThreshold = false;
 	}	
-	qDebug()<< "Dialog: emitting userChoices" ;
+	qCDebug(lcForms)<< "Dialog: emitting userChoices" ;
 	emit userChoices( my_threshold, overThreshold );		
 }

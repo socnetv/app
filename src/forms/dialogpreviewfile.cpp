@@ -18,6 +18,7 @@
 #include <QtWidgets>
 #include <QTextCodec>
 #include "dialogpreviewfile.h"
+#include "forms_logging.h"
 
 DialogPreviewFile::DialogPreviewFile(QWidget *parent) :
     QDialog(parent)
@@ -80,7 +81,7 @@ void DialogPreviewFile::updateTextEdit()
     int mib = encodingComboBox->itemData(
                       encodingComboBox->currentIndex()).toInt();
     QTextCodec *codec = QTextCodec::codecForMib(mib);
-    qDebug () << "Selected codec name: " << codec->name();
+    qCDebug(lcForms) << "Selected codec name: " << codec->name();
     QTextStream in(&encodedData);
 
     decodedStr = codec->toUnicode(encodedData);
@@ -91,14 +92,9 @@ void DialogPreviewFile::updateTextEdit()
 //    if ( test_support.has_value()) {
 //        // Encoding supported
 //        in.setEncoding(test_support.value());
-//        qDebug () << " - codec: " << codec->name()
-//                 << " supported by QStringConverter. QTextStream Encoding set to: "
-//                 <<  QStringConverter::nameForEncoding(test_support.value());
 //    }
 //    else {
 //        // Encoding not supported. Retreat to UTF-9
-//        qDebug () << " - codec: " << codec->name()
-//                 << " NOT supported by QStringConverter. QTextStream set to autoDetectUnicode. ";
 //        in.setAutoDetectUnicode(false);
 //    }
 
@@ -113,7 +109,7 @@ void DialogPreviewFile::accept() {
     int mib = encodingComboBox->itemData(
                       encodingComboBox->currentIndex()).toInt();
     QTextCodec *codec = QTextCodec::codecForMib(mib);
-    qDebug () << "User accepted. Returning codec name:" << codec->name();
+    qCDebug(lcForms) << "User accepted. Returning codec name:" << codec->name();
     emit loadNetworkFileWithCodec(m_fileName, codec->name(), m_fileFormat);
     QDialog::accept();
 

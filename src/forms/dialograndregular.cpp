@@ -15,6 +15,7 @@
 
 
 #include <QDebug>
+#include "forms_logging.h"
 #include <QSpinBox>
 #include <QRadioButton>
 #include <QPushButton>
@@ -27,7 +28,7 @@
 DialogRandRegular::DialogRandRegular(QWidget *parent) :
     QDialog(parent)
 {
-    qDebug() << "::DialogRandRegular() " ;
+    qCDebug(lcForms) << "::DialogRandRegular() " ;
 
     ui.setupUi(this);
 
@@ -95,7 +96,7 @@ void DialogRandRegular::setDiag (){
 
 void DialogRandRegular::checkErrors(const int &i) {
     Q_UNUSED(i);
-    qDebug()<< " DialogRandRegular::checkErrors()" ;
+    qCDebug(lcForms)<< " DialogRandRegular::checkErrors()" ;
         if (  ( ui.degreeSpinBox->value() * ui.nodesSpinBox->value() )  % 2 !=0  ||
               ( (double) ui.degreeSpinBox->value() / (double) ui.nodesSpinBox->value() ) >= 0.5   ||
                ui.nodesSpinBox->value() < 6
@@ -114,15 +115,15 @@ void DialogRandRegular::checkErrors(const int &i) {
 }
 
 void DialogRandRegular::getUserChoices() {
-    qDebug() << "DialogRandRegular::getUserChoices() " ;
+    qCDebug(lcForms) << "DialogRandRegular::getUserChoices() " ;
     nodes = ui.nodesSpinBox->value();
     degree= ui.degreeSpinBox->value();
     mode = (ui.directedRadioButton->isChecked() ? "digraph" : "graph" );
     diag = (ui.diagCheckBox->isChecked() ? true : false);
-    qDebug() << "nodes " << nodes ;
-    qDebug() << "degree" << degree;
-    qDebug() << "mode " << mode;
-    qDebug() << "diag " << diag;
+    qCDebug(lcForms) << "nodes " << nodes ;
+    qCDebug(lcForms) << "degree" << degree;
+    qCDebug(lcForms) << "mode " << mode;
+    qCDebug(lcForms) << "diag " << diag;
     emit userChoices(nodes, degree, mode, diag);
 
 }

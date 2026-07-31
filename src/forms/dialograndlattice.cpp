@@ -15,6 +15,7 @@
 
 
 #include <QDebug>
+#include "forms_logging.h"
 #include <QSpinBox>
 #include <QRadioButton>
 #include <QPushButton>
@@ -63,19 +64,19 @@ void DialogRandLattice::lengthChanged(int l) {
 
 
 void DialogRandLattice::getUserChoices() {
-    qDebug() << "DialogRandSmallWorld::getUserChoices() " ;
+    qCDebug(lcForms) << "DialogRandSmallWorld::getUserChoices() " ;
     nodes = ui.nodesSpinBox->value();
     length = ui.lengthSpinBox->value();
     dimension = ui.dimSpinBox->value();
     neighLength = ui.neiSpinBox->value();
     mode = (ui.directedRadioButton->isChecked() ? "digraph" : "graph" );
     circular = (ui.circularCheckBox->isChecked() ? true : false);
-    qDebug() << "nodes " << nodes ;
-    qDebug() << "length " << length;
-    qDebug() << "dimension " << dimension;
-    qDebug() << "neighLength" << neighLength;
-    qDebug() << "mode " << mode;
-    qDebug() << "diag " << circular;
+    qCDebug(lcForms) << "nodes " << nodes ;
+    qCDebug(lcForms) << "length " << length;
+    qCDebug(lcForms) << "dimension " << dimension;
+    qCDebug(lcForms) << "neighLength" << neighLength;
+    qCDebug(lcForms) << "mode " << mode;
+    qCDebug(lcForms) << "diag " << circular;
 
     emit userChoices(nodes, length, dimension, neighLength, mode, circular);
 

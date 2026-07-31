@@ -21,6 +21,7 @@
 #include <QGlobalStatic>
 #include <QFileDialog>
 #include <QDebug>
+#include "forms_logging.h"
 #include <QLineEdit>
 #include <QSpinBox>
 #include <QToolButton>
@@ -54,7 +55,7 @@ DialogNodeEdit::DialogNodeEdit(QWidget *parent,
 {
     ui->setupUi(this);
 
-    qDebug() << "opening DialogNodeEdit."
+    qCDebug(lcForms) << "opening DialogNodeEdit."
              << "label" << nodeLabel
              << "size" << nodeSize
              << "color" << nodeColor
@@ -221,7 +222,7 @@ void DialogNodeEdit::getNodeShape(const int &nodeShapeIndex)
         break;
     }
 
-    qDebug() << "DialogNodeEdit::getNodeShape() - new node shape " << nodeShape;
+    qCDebug(lcForms) << "DialogNodeEdit::getNodeShape() - new node shape " << nodeShape;
 
     if (nodeShapeIndex == NodeShape::Custom)
     {
@@ -267,7 +268,7 @@ void DialogNodeEdit::getNodeIconFile()
                                                           tr("Images (*.png *.jpg *.jpeg *.svg);;All (*.*)"));
     if (!m_nodeIconFile.isEmpty())
     {
-        qDebug() << m_nodeIconFile;
+        qCDebug(lcForms) << m_nodeIconFile;
         ui->nodeIconSelectEdit->setText(m_nodeIconFile);
         ui->nodeIconSelectButton->setGraphicsEffect(0);
         ui->nodeIconSelectEdit->setGraphicsEffect(0);
@@ -291,7 +292,7 @@ void DialogNodeEdit::getNodeIconFile()
  */
 void DialogNodeEdit::getUserChoices()
 {
-    qDebug() << " DialogNodeEdit::getUserChoices()";
+    qCDebug(lcForms) << " DialogNodeEdit::getUserChoices()";
     nodeLabel = ui->labelEdit->text();
     nodeSize = ui->sizeSpin->value();
     nodeShape = "circle";
@@ -360,19 +361,19 @@ void DialogNodeEdit::getUserChoices()
 
 void DialogNodeEdit::selectColor()
 {
-    qDebug() << " DialogNodeEdit::selectColor()";
+    qCDebug(lcForms) << " DialogNodeEdit::selectColor()";
     nodeColor = QColorDialog::getColor(
         Qt::red, this, tr("Select node color"));
     if (nodeColor.isValid())
     {
-        qDebug() << " color selected " << nodeColor.name();
+        qCDebug(lcForms) << " color selected " << nodeColor.name();
         pixmap.fill(nodeColor);
         ui->colorButton->setIcon(QIcon(pixmap));
     }
     else
     {
         // user pressed Cancel
-        qDebug() << " Aborted node color";
+        qCDebug(lcForms) << " Aborted node color";
     }
 }
 
@@ -447,14 +448,14 @@ void DialogNodeEdit::on_removePropertyButton_clicked()
  */
 void DialogNodeEdit::checkErrors()
 {
-    qDebug() << " DialogNodeEdit::checkErrors()";
+    qCDebug(lcForms) << " DialogNodeEdit::checkErrors()";
     QString userLabel = ui->labelEdit->text();
     userLabel = userLabel.simplified();
     ui->labelEdit->setText(userLabel);
 
     if (ui->labelEdit->text().isEmpty())
     {
-        qDebug() << "empty label!";
+        qCDebug(lcForms) << "empty label!";
         QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
         effect->setColor(QColor("red"));
         ui->labelEdit->setGraphicsEffect(effect);

@@ -16,6 +16,7 @@
 
 #include "dialogsettings.h"
 #include "ui_dialogsettings.h"
+#include "forms_logging.h"
 
 #include <QFileDialog>
 #include <QColorDialog>
@@ -33,6 +34,8 @@
 
 SOCNETV_USE_NAMESPACE
 
+// WS14: definition for the category declared in forms_logging.h, shared by all src/forms/ dialogs.
+Q_LOGGING_CATEGORY(lcForms, "socnetv.forms")
 
 DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
                                 const QStringList &nodeShapeList,
@@ -85,7 +88,7 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
         break;
     }
 
-    qDebug() << "reportsChartTypeSelect"
+    qCDebug(lcForms) << "reportsChartTypeSelect"
              << ui->reportsChartTypeSelect->currentText();
 
 
@@ -196,7 +199,7 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
     else { //
         ui->canvasUpdateModeSelect->setCurrentText("Minimal" );
     }
-    qDebug() << "canvasUpdateModeSelect" << appSettings["canvasUpdateMode"];
+    qCDebug(lcForms) << "canvasUpdateModeSelect" << appSettings["canvasUpdateMode"];
 
 
     optionsList.clear();
@@ -212,7 +215,7 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
     else { //
         ui->canvasIndexMethodSelect->setCurrentText("BspTreeIndex" );
     }
-    qDebug() << "canvasIndexMethodSelect" << appSettings["canvasIndexMethod"];
+    qCDebug(lcForms) << "canvasIndexMethodSelect" << appSettings["canvasIndexMethod"];
 
 
 
@@ -593,7 +596,7 @@ void DialogSettings::getReportsLabelsLength( const int &length) {
  */
 void DialogSettings::getReportsChartType(const int &type){
     //if (!type.isEmpty() ) {
-    qDebug() << "DialogSettings::getReportsChartType() - type: " << type;
+    qCDebug(lcForms) << "DialogSettings::getReportsChartType() - type: " << type;
         m_appSettings["initReportsChartType"] = QString::number(type-1);
         emit setReportsChartType(type-1);
     //}
@@ -700,7 +703,7 @@ void DialogSettings::getNodeShapeIndex(const int &shape){
 
     m_appSettings["initNodeShape"] = m_shapeList[shape];
 
-    qDebug()<< "DialogSettings::getNodeShapeIndex() - "
+    qCDebug(lcForms)<< "DialogSettings::getNodeShapeIndex() - "
                "new default shape"
             << m_shapeList[shape];
 
@@ -750,7 +753,7 @@ void DialogSettings::getNodeIconFile(){
                                                     tr("Images (*.png *.jpg *.jpeg *.svg);;All (*.*)")
                                                            );
     if (!m_nodeIconFile.isEmpty()) {
-        qDebug() << m_nodeIconFile;
+        qCDebug(lcForms) << m_nodeIconFile;
        ui->nodeIconSelectEdit->setText(m_nodeIconFile);
        m_appSettings["initNodeIconPath"]= m_nodeIconFile;
        ui->nodeShapeComboBox->setItemIcon(NodeShape::Custom, QIcon(m_nodeIconFile));
@@ -993,7 +996,7 @@ void DialogSettings::getEdgeShape(){
     else if ( ui->edgeShapeRadioBezier->isChecked() ){
        m_appSettings["initEdgeShape"]  = "bezier";
     }
-    qDebug()<< "DialogSettings::getEdgeShape() - new default shape " <<
+    qCDebug(lcForms)<< "DialogSettings::getEdgeShape() - new default shape " <<
                m_appSettings["initEdgeShape"];
     emit setEdgesBezier(m_appSettings["initEdgeShape"] == "bezier");
 }
@@ -1006,7 +1009,7 @@ void DialogSettings::getEdgeShape(){
  * @param size
  */
 void DialogSettings::getEdgeOffsetFromNode( int offset) {
-    qDebug()<< "DialogSettings::getEdgeOffsetFromNode() - new offset:" << offset;
+    qCDebug(lcForms)<< "DialogSettings::getEdgeOffsetFromNode() - new offset:" << offset;
     m_appSettings["initEdgeOffsetFromNode"]= QString::number(offset);
     emit setEdgeOffsetFromNode(offset);
 }

@@ -19,6 +19,7 @@
 #include <QPushButton>
 #include <QImageWriter>
 #include <QDebug>
+#include "forms_logging.h"
 #include <QGraphicsColorizeEffect>
 #include <QFileDialog>
 
@@ -144,7 +145,7 @@ void DialogExportImage::getFilename(){
         (ui->buttonBox)->button (QDialogButtonBox::Ok)->setDefault(true);
     }
     else {
-        qDebug() << "Empty filaname or dir does not exist";
+        qCDebug(lcForms) << "Empty filaname or dir does not exist";
         QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
         effect->setColor(QColor("red"));
         ui->fileEdit->setGraphicsEffect(effect);
@@ -163,14 +164,14 @@ void DialogExportImage::getFilename(){
  */
 void DialogExportImage::getFormat(const QString &format){
     QString m_format = format.toLower();
-    qDebug() << "format:" << m_format;
+    qCDebug(lcForms) << "format:" << m_format;
     QString m_fileName = ui->fileEdit->text();
-    qDebug() << "filename" << m_fileName;
-    qDebug() << "suffix" << QFileInfo(m_fileName).suffix();
+    qCDebug(lcForms) << "filename" << m_fileName;
+    qCDebug(lcForms) << "suffix" << QFileInfo(m_fileName).suffix();
     if (  QString::compare(QFileInfo(m_fileName).suffix() , m_format, Qt::CaseInsensitive) != 0 ) {
         // User filename suffix differs from selected format. Correct the filename suffix.
         m_fileName = QFileInfo(m_fileName).absolutePath() + QDir::separator() + QFileInfo(m_fileName).completeBaseName().append("."+m_format);
-        qDebug() << "Corrected filename:" << m_fileName;
+        qCDebug(lcForms) << "Corrected filename:" << m_fileName;
     }
 
     ui->fileEdit->setText(m_fileName);
@@ -184,7 +185,7 @@ void DialogExportImage::getUserChoices(){
     int m_quality = ui->qualitySpinBox->value();
     int m_compression = ui->compressionSpinBox->value();
 
-    qDebug()<< "user choices: "
+    qCDebug(lcForms)<< "user choices: "
             << m_fileName
             << m_format
             << m_quality

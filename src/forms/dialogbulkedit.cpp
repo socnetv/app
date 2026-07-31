@@ -18,6 +18,7 @@
 #include "global.h"
 
 #include <QDebug>
+#include "forms_logging.h"
 #include <QColorDialog>
 #include <QPushButton>
 #include <QToolButton>
@@ -163,7 +164,7 @@ void DialogBulkEdit::getUserChoices()
     default: return;
     }
 
-    qDebug() << "DialogBulkEdit: property" << property << "value" << value;
+    qCDebug(lcForms) << "DialogBulkEdit: property" << property << "value" << value;
     emit userChoices(property, value);
     accept();
 }

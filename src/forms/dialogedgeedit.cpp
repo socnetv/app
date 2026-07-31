@@ -17,6 +17,7 @@
 #include "ui_dialogedgeedit.h"
 
 #include <QDebug>
+#include "forms_logging.h"
 #include <QColorDialog>
 #include <QGraphicsColorizeEffect>
 #include <QTableWidget>
@@ -40,7 +41,7 @@ DialogEdgeEdit::DialogEdgeEdit(QWidget *parent,
 {
     ui->setupUi(this);
 
-    qDebug() << "DialogEdgeEdit: edge" << v1 << "->" << v2
+    qCDebug(lcForms) << "DialogEdgeEdit: edge" << v1 << "->" << v2
              << "label" << label << "weight" << weight
              << "color" << color << "attrs" << customAttributes;
 
@@ -152,7 +153,7 @@ void DialogEdgeEdit::on_removePropertyBtn_clicked()
  */
 void DialogEdgeEdit::getUserChoices()
 {
-    qDebug() << "DialogEdgeEdit::getUserChoices()";
+    qCDebug(lcForms) << "DialogEdgeEdit::getUserChoices()";
     m_label  = ui->labelEdit->text();
     m_weight = ui->weightSpin->value();
 

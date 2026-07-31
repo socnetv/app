@@ -16,6 +16,7 @@
 #include "dialogdatasetselect.h"
 
 #include <QDebug>
+#include "forms_logging.h"
 #include <QPushButton>
 
 
@@ -83,10 +84,10 @@ DialogDataSetSelect::DialogDataSetSelect (QWidget *parent) :
 
 
 void DialogDataSetSelect::getUserChoices(){
-    qDebug()<< "DialogDataSetSelect: gathering Data!...";
+    qCDebug(lcForms)<< "DialogDataSetSelect: gathering Data!...";
     int index = (ui->selectBox)->currentIndex();
     QString dataset_name = datasets_filenames[index];
-    qDebug()<< "DialogDataSetSelect: user selected: " << dataset_name;
+    qCDebug(lcForms)<< "DialogDataSetSelect: user selected: " << dataset_name;
 	emit userChoices( dataset_name );
 			
 }

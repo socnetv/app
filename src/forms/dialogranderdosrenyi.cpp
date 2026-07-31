@@ -15,6 +15,7 @@
 
 
 #include <QDebug>
+#include "forms_logging.h"
 #include <QSpinBox>
 #include <QRadioButton>
 #include <QPushButton>
@@ -27,7 +28,7 @@ DialogRandErdosRenyi::DialogRandErdosRenyi(QWidget *parent, const qreal eprob) :
 
     QDialog(parent)
 {
-    qDebug() << "::DialogRandErdosRenyi() " ;
+    qCDebug(lcForms) << "::DialogRandErdosRenyi() " ;
 
     ui.setupUi(this);
 
@@ -105,7 +106,7 @@ void DialogRandErdosRenyi::setDiag (){
 }
 
 void DialogRandErdosRenyi::checkErrors() {
-    qDebug()<< " DialogRandErdosRenyi::checkErrors()" ;
+    qCDebug(lcForms)<< " DialogRandErdosRenyi::checkErrors()" ;
 
     if ( !ui.gnpRadioButton->isChecked() &&  !ui.gnmRadioButton->isChecked())
     {
@@ -126,7 +127,7 @@ void DialogRandErdosRenyi::checkErrors() {
 }
 
 void DialogRandErdosRenyi::getUserChoices() {
-    qDebug() << "DialogRandErdosRenyi::getUserChoices() " ;
+    qCDebug(lcForms) << "DialogRandErdosRenyi::getUserChoices() " ;
     nodes = ui.nodesSpinBox->value();
     model = ( ui.gnpRadioButton->isChecked() ) ? "G(n,p)" : "G(n,M)";
     if (  ui.gnpRadioButton->isChecked() ) {
@@ -137,12 +138,12 @@ void DialogRandErdosRenyi::getUserChoices() {
     }
     mode = (ui.directedRadioButton->isChecked() ? "digraph" : "graph" );
     diag = (ui.diagCheckBox->isChecked() ? true : false);
-    qDebug() << "nodes " << nodes ;
-    qDebug() << "model " << model;
-    qDebug() << "eprob " << ui.probDoubleSpinBox->value();
-    qDebug() << "edges " << edges;
-    qDebug() << "mode " << mode;
-    qDebug() << "diag " << diag;
+    qCDebug(lcForms) << "nodes " << nodes ;
+    qCDebug(lcForms) << "model " << model;
+    qCDebug(lcForms) << "eprob " << ui.probDoubleSpinBox->value();
+    qCDebug(lcForms) << "edges " << edges;
+    qCDebug(lcForms) << "mode " << mode;
+    qCDebug(lcForms) << "diag " << diag;
     emit userChoices(nodes, model, edges, ui.probDoubleSpinBox->value(), mode, diag);
 
 }

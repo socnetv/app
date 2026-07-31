@@ -18,6 +18,7 @@
 #include "ui_dialognodefind.h"
 
 #include <QDebug>
+#include "forms_logging.h"
 #include <QPushButton>
 
 #include <QGraphicsColorizeEffect>
@@ -89,7 +90,7 @@ void DialogNodeFind::getIndex(const QString &indexStr) {
 
     selectedIndex = ui->indexCombo->currentText();
 
-    qDebug() << "DialogNodeFind::getIndex() str"<<indexStr << "index" << selectedIndex;
+    qCDebug(lcForms) << "DialogNodeFind::getIndex() str"<<indexStr << "index" << selectedIndex;
 
 }
 
@@ -101,7 +102,7 @@ void DialogNodeFind::checkErrors()
 
     QString textEntered = ui->plainTextEdit->toPlainText();
 
-    qDebug()<< "DialogNodeFind::checkErrors() - raw text entered:"
+    qCDebug(lcForms)<< "DialogNodeFind::checkErrors() - raw text entered:"
             << textEntered;
 
     if ( ui->numbersRadioBtn->isChecked() ) {
@@ -123,7 +124,7 @@ void DialogNodeFind::checkErrors()
         searchType = "score";
     }
 
-    qDebug()<< "DialogNodeFind::checkErrors() - search type:" << searchType;
+    qCDebug(lcForms)<< "DialogNodeFind::checkErrors() - search type:" << searchType;
 
     list.clear();
     tempListA.clear();
@@ -155,7 +156,7 @@ void DialogNodeFind::checkErrors()
             // take every linefeed separated value
             str = tempListA.at(i).toLocal8Bit().constData();
 
-            qDebug()<< "DialogNodeFind::checkErrors() - line:" << i << "str:" << str;
+            qCDebug(lcForms)<< "DialogNodeFind::checkErrors() - line:" << i << "str:" << str;
 
             // check if user has entered comma
             tempListB = str.split(",", Qt::SkipEmptyParts);
@@ -165,7 +166,7 @@ void DialogNodeFind::checkErrors()
                 // take every comma separated value
                 str = tempListB.at(j).toLocal8Bit().constData();
 
-                qDebug()<< "DialogNodeFind::checkErrors() - line:" << i
+                qCDebug(lcForms)<< "DialogNodeFind::checkErrors() - line:" << i
                         << "element at pos:" << j << "is:" << str;
 
                 if (ui->numbersRadioBtn->isChecked()) {
@@ -177,11 +178,11 @@ void DialogNodeFind::checkErrors()
                     else {
 
                         if (str.contains(QRegularExpression("\\D+"))) {
-                            qDebug()<< "DialogNodeFind::checkErrors() - error! not number" << str;
+                            qCDebug(lcForms)<< "DialogNodeFind::checkErrors() - error! not number" << str;
                             setError(true);
                         }
                         else {
-                            qDebug()<< "DialogNodeFind::checkErrors() - adding number" << str;
+                            qCDebug(lcForms)<< "DialogNodeFind::checkErrors() - adding number" << str;
                             list << str;
                         }
                     }
@@ -189,7 +190,7 @@ void DialogNodeFind::checkErrors()
                 }
                 else {
                     // user wants to search by labels
-                    qDebug()<< "DialogNodeFind::checkErrors() - adding label" << str;
+                    qCDebug(lcForms)<< "DialogNodeFind::checkErrors() - adding label" << str;
                     list << str;
                 }
 
@@ -213,7 +214,7 @@ void DialogNodeFind::checkErrors()
                 list << str;
             }
             else {
-                qDebug()<< "DialogNodeFind::checkErrors() - error! search by index without > or <" ;
+                qCDebug(lcForms)<< "DialogNodeFind::checkErrors() - error! search by index without > or <" ;
                 setError(true);
             }
         }
@@ -229,8 +230,8 @@ void DialogNodeFind::checkErrors()
  */
 void DialogNodeFind::getUserChoices()
 {
-   qDebug()<< "DialogNodeFind::getUserChoices()" << list;
-      qDebug()<< "DialogNodeFind::getUserChoices() type" << searchType;
+   qCDebug(lcForms)<< "DialogNodeFind::getUserChoices()" << list;
+      qCDebug(lcForms)<< "DialogNodeFind::getUserChoices() type" << searchType;
    emit userChoices( list, searchType, selectedIndex );
 
 }
