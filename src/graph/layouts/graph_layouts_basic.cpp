@@ -28,7 +28,7 @@
  */
 void Graph::layoutRandom()
 {
-    qDebug() << "Graph::layoutRandom() ";
+    qCDebug(lcLayouts) << "Graph::layoutRandom() ";
     double new_x = 0, new_y = 0;
     VList::const_iterator it;
 
@@ -47,7 +47,7 @@ void Graph::layoutRandom()
         new_y = canvasRandomY();
         (*it)->setX(new_x);
         (*it)->setY(new_y);
-        qDebug() << "Graph::layoutRandom() - "
+        qCDebug(lcLayouts) << "Graph::layoutRandom() - "
                  << " vertex " << (*it)->number()
                  << " emitting setNodePos to new pos " << new_x << " , " << new_y;
         emit setNodePos((*it)->number(), new_x, new_y);
@@ -68,7 +68,7 @@ void Graph::layoutRandom()
  */
 void Graph::layoutRadialRandom(const bool &guides)
 {
-    qDebug() << "Graph::layoutRadialRandom - ";
+    qCDebug(lcLayouts) << "Graph::layoutRadialRandom - ";
     double rad = 0, new_radius = 0, new_x = 0, new_y = 0;
     double i = 0;
     double x0 = canvasWidth / 2.0;
@@ -95,7 +95,7 @@ void Graph::layoutRadialRandom(const bool &guides)
         randomDecimal = (qreal)(rand() % 100) / 100.0;
         new_radius = (maxRadius - (randomDecimal - offset) * maxRadius);
 
-        qDebug() << "Vertice " << (*it)->number()
+        qCDebug(lcLayouts) << "Vertice " << (*it)->number()
                  << " at x=" << (*it)->x()
                  << ", y= " << (*it)->y()
                  << ", maxradius " << maxRadius
@@ -108,7 +108,7 @@ void Graph::layoutRadialRandom(const bool &guides)
         new_y = y0 + new_radius * sin(i * rad);
         (*it)->setX(new_x);
         (*it)->setY(new_y);
-        qDebug("Vertice will move to x=%f and y=%f ", new_x, new_y);
+        qCDebug(lcLayouts, "Vertice will move to x=%f and y=%f ", new_x, new_y);
         // Move node to new position
         emit setNodePos((*it)->number(), new_x, new_y);
         i++;
@@ -137,7 +137,7 @@ void Graph::layoutRadialRandom(const bool &guides)
  */
 void Graph::layoutRandomInMemory()
 {
-    qDebug() << "Graph::layoutRandomInMemory()";
+    qCDebug(lcLayouts) << "Graph::layoutRandomInMemory()";
     VList::const_iterator it;
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
@@ -156,7 +156,7 @@ void Graph::layoutRandomInMemory()
 void Graph::layoutCircular(const double &x0, const double &y0,
                            const double &newRadius, const bool &guides)
 {
-    qDebug() << "Graph::layoutCircular - ";
+    qCDebug(lcLayouts) << "Graph::layoutCircular - ";
     double rad = 0, new_x = 0, new_y = 0;
     double i = 0;
     VList::const_iterator it;
@@ -174,7 +174,7 @@ void Graph::layoutCircular(const double &x0, const double &y0,
 
         if (!(*it)->isEnabled())
         {
-            qDebug() << "  vertex i" << (*it)->number() << " disabled. Continue";
+            qCDebug(lcLayouts) << "  vertex i" << (*it)->number() << " disabled. Continue";
             continue;
         }
 
@@ -184,7 +184,7 @@ void Graph::layoutCircular(const double &x0, const double &y0,
         new_y = y0 + newRadius * sin(i * rad);
         (*it)->setX(new_x);
         (*it)->setY(new_y);
-        qDebug("Vertice will move to x=%f and y=%f ", new_x, new_y);
+        qCDebug(lcLayouts, "Vertice will move to x=%f and y=%f ", new_x, new_y);
         // Move node to new position
         emit setNodePos((*it)->number(), new_x, new_y);
         i++;
@@ -240,7 +240,7 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
                                     const bool &inverseWeights,
                                     const bool &dropIsolates)
 {
-    qDebug() << "Applying layout by prominence index:"
+    qCDebug(lcLayouts) << "Applying layout by prominence index:"
              << prominenceIndex
              << "type:" << layoutType;
 
@@ -467,7 +467,7 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
         case 0:
         { // radial
 
-            qDebug() << "vertex" << (*it)->number()
+            qCDebug(lcLayouts) << "vertex" << (*it)->number()
                      << "pos x" << (*it)->x() << "y" << (*it)->y()
                      << "C" << C << "stdC" << stdC << "maxC" << maxC
                      << "norm (stdC/maxC)" << norm
@@ -480,7 +480,7 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
 
             case 0:
             {
-                qDebug("maxC=0.   Using maxRadius");
+                qCDebug(lcLayouts, "maxC=0.   Using maxRadius");
                 new_radius = maxRadius;
                 break;
             }
@@ -496,7 +496,7 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
             new_x = x0 + new_radius * cos(i * rad);
             new_y = y0 + new_radius * sin(i * rad);
 
-            qDebug() << "Finished calculation. "
+            qCDebug(lcLayouts) << "Finished calculation. "
                         "new radial pos: x"
                      << new_x << "y" << new_y;
 
@@ -516,7 +516,7 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
         case 1:
         { // level
 
-            qDebug() << "vertex" << (*it)->number()
+            qCDebug(lcLayouts) << "vertex" << (*it)->number()
                      << "pos x" << (*it)->x() << "y" << (*it)->y()
                      << "C" << C << "stdC" << stdC << "maxC " << maxC
                      << "norm (stdC/maxC)" << norm
@@ -531,7 +531,7 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
 
             case 0:
             {
-                qDebug("maxC=0.   Using maxHeight");
+                qCDebug(lcLayouts, "maxC=0.   Using maxHeight");
                 new_y = maxHeight;
                 break;
             }
@@ -545,7 +545,7 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
 
             new_x = offset / 2.0 + rand() % (static_cast<int>(maxWidth));
 
-            qDebug() << "Finished calculation. "
+            qCDebug(lcLayouts) << "Finished calculation. "
                         "new level pos: x"
                      << new_x << "y" << new_y;
 
@@ -565,7 +565,7 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
         case 2:
         { // node size
 
-            qDebug() << "vertex" << (*it)->number()
+            qCDebug(lcLayouts) << "vertex" << (*it)->number()
                      << "C=" << C << ", stdC=" << stdC << "maxC" << maxC
                      << "initVertexSize " << initVertexSize
                      << "norm (stdC/maxC) " << norm
@@ -577,7 +577,7 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
 
             case 0:
             {
-                qDebug() << "maxC=0.   Using initVertexSize";
+                qCDebug(lcLayouts) << "maxC=0.   Using initVertexSize";
                 new_size = initVertexSize;
                 break;
             }
@@ -590,7 +590,7 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
             };
 
             // set new vertex size and emit signal to change node size
-            qDebug() << "Finished calculation. "
+            qCDebug(lcLayouts) << "Finished calculation. "
                      << "new vertex size " << new_size << " call setSize()";
             (*it)->setSize(new_size);
             emit setNodeSize((*it)->number(), new_size);
@@ -601,7 +601,7 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
         case 3:
         { // node color
 
-            qDebug() << "vertex" << (*it)->number()
+            qCDebug(lcLayouts) << "vertex" << (*it)->number()
                      << "C=" << C << ", stdC=" << stdC << "maxC" << maxC
                      << "initVertexColor " << initVertexColor
                      << "norm (stdC/maxC) " << norm;
@@ -611,7 +611,7 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
             {
             case 0:
             {
-                qDebug() << "maxC=0.   Using initVertexColor";
+                qCDebug(lcLayouts) << "maxC=0.   Using initVertexColor";
                 new_color = QColor(initVertexColor);
                 break;
             }
@@ -625,7 +625,7 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
             };
 
             // change vertex color and emit signal to change node color as well
-            qDebug() << "new vertex color " << new_color << " call setSize()";
+            qCDebug(lcLayouts) << "new vertex color " << new_color << " call setSize()";
             (*it)->setColor(new_color.name());
 
             emit setNodeColor((*it)->number(), new_color.name());
@@ -661,7 +661,7 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
  */
 void Graph::layoutEgoRadial(const int egoVertex)
 {
-    qDebug() << "Graph::layoutEgoRadial() - ego:" << egoVertex;
+    qCDebug(lcLayouts) << "Graph::layoutEgoRadial() - ego:" << egoVertex;
 
     if (!vertexExists(egoVertex))
     {
@@ -679,7 +679,7 @@ void Graph::layoutEgoRadial(const int egoVertex)
     // --- Build neighbor set: all enabled out-edges of ego in current relation ---
     const QSet<int> neighbors = vertexOutNeighborsSet(egoVertex);
 
-    qDebug() << "Graph::layoutEgoRadial() - neighbors:" << neighbors.size()
+    qCDebug(lcLayouts) << "Graph::layoutEgoRadial() - neighbors:" << neighbors.size()
              << "other nodes:" << (N - 1 - neighbors.size());
 
     QString pMsg = tr("Embedding Ego Radial layout. \nPlease wait...");
