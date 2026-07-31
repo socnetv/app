@@ -16,13 +16,16 @@
 
 
 #include <QtWidgets>
+#include <QLoggingCategory>
 #include "texteditor.h"
+
+Q_LOGGING_CATEGORY(lcTextEditor, "socnetv.texteditor")
 
 TextEditor::TextEditor(const QString &fileName, QWidget *parent, const bool &format) :
     QMainWindow(parent),
     formatHTML(format)
 {
-	qDebug("TextEditor()");
+	qCDebug(lcTextEditor, "TextEditor()");
 	textEdit = new QTextEdit;
 	setCentralWidget(textEdit);
 
