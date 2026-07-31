@@ -29,7 +29,7 @@ HeadlessLoadResult loadGraphHeadless(
     out.tiesGraph = 0;
     out.elapsedTime = 0;
 
-    qDebug() << "[CLI] loadGraphHeadless() begin:" << fileName;
+    qCDebug(lcGraphIO) << "[CLI] loadGraphHeadless() begin:" << fileName;
 
     // Same semantics as Graph::loadFile()
     graph.relationsClear();
@@ -72,7 +72,7 @@ HeadlessLoadResult loadGraphHeadless(
                          out.message = message;
                          out.ok = (loadedFileType != FileType::UNRECOGNIZED);
 
-                         qDebug() << "[CLI] signalGraphLoaded:"
+                         qCDebug(lcGraphIO) << "[CLI] signalGraphLoaded:"
                                   << "ok" << out.ok
                                   << "nodes" << out.totalNodes
                                   << "tiesGraph" << out.tiesGraph
@@ -90,7 +90,7 @@ HeadlessLoadResult loadGraphHeadless(
                              return;
                          done = true;
 
-                         qDebug() << "[CLI] Parser finished:" << reason;
+                         qCDebug(lcGraphIO) << "[CLI] Parser finished:" << reason;
 
                          // If graph didn't emit signalGraphLoaded for some reason, still quit.
                          if (out.fileType == -1)
@@ -155,16 +155,16 @@ HeadlessLoadResult loadGraphHeadless(
     },
     Qt::QueuedConnection);
 
-    qDebug() << "[CLI] entering loop.exec()";
+    qCDebug(lcGraphIO) << "[CLI] entering loop.exec()";
     loop.exec();
-    qDebug() << "[CLI] left loop.exec()";
+    qCDebug(lcGraphIO) << "[CLI] left loop.exec()";
 
     parserThread.quit();
     parserThread.wait();
     delete parser;
     parser = nullptr;
 
-    qDebug() << "[CLI] loadGraphHeadless() end:" << out.ok;
+    qCDebug(lcGraphIO) << "[CLI] loadGraphHeadless() end:" << out.ok;
 
     return out;
 }
