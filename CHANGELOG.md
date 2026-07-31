@@ -159,12 +159,6 @@ All notable changes to this project are documented in this file.
 
 ### Maintenance
 
-  - WS3 roadmap renamed from "Domain Model Split" to **"Architecture &
-    Performance"** (`docs/roadmaps/roadmap_ws3_architecture_performance.md`);
-    title now reflects both the structural refactoring and the 2.7×–8.3×
-    parallelisation speedup shipped in v3.6.
-  - `docs/README_DEVELOPER_NOTES.md` "Current focus" section replaced with a
-    single pointer to the architectural roadmap.
   - `AUTHORS`: added Andreas as Debian package maintainer.
   - **Shipped Adjacency test dataset failed to load** (#256): one file in
     the regression suite's shipped-dataset roundtrip check
@@ -246,6 +240,29 @@ All notable changes to this project are documented in this file.
     on unrelated work, not evidence about whatever change was actually
     being tested. `linux-x86_64`'s baseline needs the same treatment but
     isn't reachable from this machine.
+  - **Removed `qDebug()` string-formatting cost from every hot computation
+    path, and made release builds quiet by default** (#268): a plain
+    `qDebug()` call unconditionally builds and formats its message before
+    checking whether anything will actually print it — so every debug
+    statement in a hot loop was paying full string-formatting cost on
+    every call, even in a normal release build with debug output off.
+    Converted to Qt's category-gated `qCDebug()`, which skips argument
+    evaluation entirely when its category is disabled (near-zero cost),
+    across the whole codebase — `DistanceEngine`, the parsers, `matrix.cpp`,
+    and every other file with a live `qDebug()` call, ~1760 call sites in
+    total. Separately, a no-flag launch could silently inherit a noisy
+    debug setting left over from a previous session (via the Settings
+    dialog's "print debug messages" checkbox) instead of coming up quiet —
+    fixed so a plain launch is always quiet regardless of what was last
+    saved. Measured, same machine: `DistanceEngine` CLI operations 43×–59×
+    faster; real GUI runs (which additionally hit contention between
+    `DistanceEngine`'s parallel worker threads all logging to stderr at
+    once) up to ~600× faster; GraphML/Pajek load ~1.4×–3×; Information
+    Centrality ~14× (and its "this may take 2+ minutes" warning dialog,
+    which hadn't been recalibrated since this cost existed, updated with
+    current numbers and a higher threshold). All golden regression
+    baselines pass unchanged throughout — purely a logging-mechanism
+    change, no computational or behavioural difference.
 
 ## [3.6] – May 26, 2026
 
