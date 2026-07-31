@@ -50,11 +50,11 @@ qreal Graph::clusteringCoefficientLocal(const int &v1)
     if (!isModified() && (m_graph[vpos[v1]]->hasCLC()))
     {
         qreal clucof = m_graph[vpos[v1]]->CLC();
-        qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
+        qCDebug(lcClustering) << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
                  << "Not modified. Returning cached clucof =" << clucof;
         return clucof;
     }
-    qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
+    qCDebug(lcClustering) << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
              << "Graph changed or clucof not yet calculated.";
 
     const bool isSymmetric = this->isSymmetric();
@@ -116,14 +116,14 @@ qreal Graph::clusteringCoefficientLocal(const int &v1)
 
     k = neighborhood.size();
 
-    qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
+    qCDebug(lcClustering) << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
              << "neighbourhood N_i size k =" << k
              << "members:" << neighborhood;
 
     if (k < 2)
     {
         // A node with 0 or 1 neighbour cannot form any triangle.
-        qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
+        qCDebug(lcClustering) << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
                  << "k < 2, returning 0.";
         m_graph[vpos[v1]]->setCLC(0);
         return 0;
@@ -163,7 +163,7 @@ qreal Graph::clusteringCoefficientLocal(const int &v1)
                         !neighborhoodEdges.contains(revedge))
                     {
                         neighborhoodEdges.insert(edge, true);
-                        qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
+                        qCDebug(lcClustering) << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
                                  << "Undirected edge added:" << edge;
                     }
                 }
@@ -173,7 +173,7 @@ qreal Graph::clusteringCoefficientLocal(const int &v1)
                     if (!neighborhoodEdges.contains(edge))
                     {
                         neighborhoodEdges.insert(edge, true);
-                        qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
+                        qCDebug(lcClustering) << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
                                  << "Directed edge added:" << edge;
                     }
                 }
@@ -182,12 +182,12 @@ qreal Graph::clusteringCoefficientLocal(const int &v1)
     }
 
     nom = neighborhoodEdges.size();
-    qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
+    qCDebug(lcClustering) << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
              << "edges in neighbourhood =" << nom;
 
     if (nom == 0)
     {
-        qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
+        qCDebug(lcClustering) << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
                  << "No edges in neighbourhood, returning 0.";
         m_graph[vpos[v1]]->setCLC(0);
         return 0;
@@ -203,18 +203,18 @@ qreal Graph::clusteringCoefficientLocal(const int &v1)
     if (isSymmetric)
     {
         denom = k * (k - 1.0) / 2.0;
-        qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
+        qCDebug(lcClustering) << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
                  << "Undirected graph. Max neighbourhood edges =" << denom;
     }
     else
     {
         denom = k * (k - 1.0);
-        qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
+        qCDebug(lcClustering) << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
                  << "Directed graph. Max neighbourhood edges =" << denom;
     }
 
     clucof = nom / denom;
-    qDebug() << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
+    qCDebug(lcClustering) << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
              << "CLUCOF =" << clucof;
 
     m_graph[vpos[v1]]->setCLC(clucof);
@@ -229,7 +229,7 @@ qreal Graph::clusteringCoefficientLocal(const int &v1)
  */
 qreal Graph::clusteringCoefficient(const bool updateProgress)
 {
-    qDebug() << "Graph::clusteringCoefficient()";
+    qCDebug(lcClustering) << "Graph::clusteringCoefficient()";
     averageCLC = 0;
     varianceCLC = 0;
     maxCLC = 0;
@@ -279,7 +279,7 @@ qreal Graph::clusteringCoefficient(const bool updateProgress)
 
     averageCLC = averageCLC / N;
 
-    qDebug() << "Graph::clusteringCoefficient() network average " << averageCLC;
+    qCDebug(lcClustering) << "Graph::clusteringCoefficient() network average " << averageCLC;
 
     for (vertex = m_graph.cbegin(); vertex != m_graph.cend(); ++vertex)
     {

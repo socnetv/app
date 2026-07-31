@@ -46,14 +46,14 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
 
     Q_UNUSED(inverseWeights);
 
-    qDebug() << "Graph::graphClusteringHierarchical() - "
+    qCDebug(lcClustering) << "Graph::graphClusteringHierarchical() - "
              << "metric" << metric
              << "method" << graphClusteringMethodTypeToString(method)
              << "diagonal" << diagonal
              << "diagram" << diagram
              << "dropIsolates" << dropIsolates;
 
-    qDebug() << "Graph::graphClusteringHierarchical() - STR_EQUIV matrix:";
+    qCDebug(lcClustering) << "Graph::graphClusteringHierarchical() - STR_EQUIV matrix:";
     // STR_EQUIV.printMatrixConsole(true);
 
     qreal min = RAND_MAX;
@@ -112,7 +112,7 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
 
     int N = DSM.rows();
 
-    qDebug() << "Graph::graphClusteringHierarchical() -"
+    qCDebug(lcClustering) << "Graph::graphClusteringHierarchical() -"
              << "initial matrix DSM contents:";
     // DSM.printMatrixConsole();
 
@@ -185,7 +185,7 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
             return false;
         }
 
-        qDebug() << "matrix DSM contents now:";
+        qCDebug(lcClustering) << "matrix DSM contents now:";
         // DSM.printMatrixConsole();
 
         //
@@ -201,7 +201,7 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
         clusteredItems.clear();
         clusteredItems = m_clustersIndex[mergedClusterIndex] + m_clustersIndex[deletedClusterIndex];
 
-        qDebug() << "Graph::graphClusteringHierarchical() -"
+        qCDebug(lcClustering) << "Graph::graphClusteringHierarchical() -"
                  << "level" << min
                  << "seq" << seq
                  << "clusteredItems in level" << clusteredItems;
@@ -242,7 +242,7 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
 
             m_clustersByName.insert("c" + QString::number(seq), clusteredItems);
 
-            qDebug() << "Computing diagram variables..." << "\n"
+            qCDebug(lcClustering) << "Computing diagram variables..." << "\n"
                      << "cluster1" << cluster1 << "\n"
                      << "cluster2" << cluster2 << "\n"
                      << "clusterPairNames" << clusterPairNames << "\n"
@@ -254,7 +254,7 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
         // map new cluster to a matrix index
         m_clustersIndex[mergedClusterIndex] = clusteredItems;
 
-        qDebug() << "  Clustering seq:"
+        qCDebug(lcClustering) << "  Clustering seq:"
                  << seq << "\n"
                  << "  Level:" << min << "\n"
                  << "  Neareast neighbors: (" << imin + 1 << "," << jmin + 1 << ")"
@@ -265,7 +265,7 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
                  << mergedClusterIndex + 1 << "\n"
                  << "  m_clustersPerSequence" << m_clustersPerSequence;
 
-        qDebug() << "  Remove key" << deletedClusterIndex
+        qCDebug(lcClustering) << "  Remove key" << deletedClusterIndex
                  << "and shift next values to left... ";
 
         it = m_clustersIndex.find(deletedClusterIndex);
@@ -277,12 +277,12 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
             if (it != m_clustersIndex.end())
             {
                 prev.value() = it.value();
-                // qDebug() << "  key now"<< prev.key() << ": " << prev.value() ;
+                // qCDebug(lcClustering) << "  key now"<< prev.key() << ": " << prev.value() ;
             }
         }
         m_clustersIndex.erase(--it); // erase the last element in map
 
-        qDebug() << "Finished. " << "\n"
+        qCDebug(lcClustering) << "Finished. " << "\n"
                  << "  m_clustersIndex now" << m_clustersIndex << "\n"
                  << "  Compute distances "
                     "between the new cluster and the old ones";
@@ -293,13 +293,13 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
         //
         int j = mergedClusterIndex;
 
-        qDebug() << "j = mergedClusterIndex " << mergedClusterIndex + 1;
+        qCDebug(lcClustering) << "j = mergedClusterIndex " << mergedClusterIndex + 1;
 
         for (int i = 0; i < clustersLeft; i++)
         {
             if (i == deletedClusterIndex)
             {
-                //                qDebug() << "Graph::graphClusteringHierarchical() -"
+                //                qCDebug(lcClustering) << "Graph::graphClusteringHierarchical() -"
                 //                          <<"SKIP this as it is one of the merged clusters.";
                 continue;
             }
@@ -315,7 +315,7 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
                 {
                     distanceNewCluster = (DSM.item(i, imin) < DSM.item(i, jmin)) ? DSM.item(i, imin) : DSM.item(i, jmin);
                 }
-                qDebug() << "Graph::graphClusteringHierarchical() - "
+                qCDebug(lcClustering) << "Graph::graphClusteringHierarchical() - "
                          << "  DSM(" << i + 1 << "," << imin + 1 << ") =" << DSM.item(i, imin)
                          << "  DSM(" << i + 1 << "," << jmin + 1 << ") =" << DSM.item(i, jmin)
                          << " ? minimum DSM(" << i + 1 << "," << j + 1 << " =" << distanceNewCluster;
@@ -330,7 +330,7 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
                 {
                     distanceNewCluster = (DSM.item(i, imin) > DSM.item(i, jmin)) ? DSM.item(i, imin) : DSM.item(i, jmin);
                 }
-                qDebug() << "Graph::graphClusteringHierarchical() - "
+                qCDebug(lcClustering) << "Graph::graphClusteringHierarchical() - "
                          << "  DSM(" << i + 1 << "," << imin + 1 << ") =" << DSM.item(i, imin)
                          << "  DSM(" << i + 1 << "," << jmin + 1 << ") =" << DSM.item(i, jmin)
                          << " ? maximum DSM(" << i + 1 << "," << j + 1 << " =" << distanceNewCluster;
@@ -345,7 +345,7 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
                 {
                     distanceNewCluster = (DSM.item(i, imin) + DSM.item(i, jmin)) / 2;
                 }
-                qDebug() << "Graph::graphClusteringHierarchical() - "
+                qCDebug(lcClustering) << "Graph::graphClusteringHierarchical() - "
                          << "  DSM(" << i + 1 << "," << imin + 1 << ") =" << DSM.item(i, imin)
                          << "  DSM(" << i + 1 << "," << jmin + 1 << ") =" << DSM.item(i, jmin)
                          << " ? average DSM(" << i + 1 << "," << j + 1 << " =" << distanceNewCluster;
@@ -363,7 +363,7 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
             // DSM.setItem(j, deletedClusterIndex, RAND_MAX);
         }
 
-        qDebug() << "Graph::graphClusteringHierarchical() - Finished."
+        qCDebug(lcClustering) << "Graph::graphClusteringHierarchical() - Finished."
                  << "Resizing old DSM matrix";
         // DSM.printMatrixConsole();
         DSM.deleteRowColumn(deletedClusterIndex);
@@ -381,7 +381,7 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
     clusteredItems.clear();
     m_clustersIndex.clear();
 
-    qDebug() << "m_clustersByName" << m_clustersByName;
+    qCDebug(lcClustering) << "m_clustersByName" << m_clustersByName;
 
     progressFinish();
 

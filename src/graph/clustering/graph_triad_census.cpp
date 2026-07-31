@@ -34,7 +34,7 @@ bool Graph::graphTriadCensus()
     VList::const_iterator v2;
     VList::const_iterator v3;
 
-    qDebug() << "Graph::graphTriadCensus()";
+    qCDebug(lcClustering) << "Graph::graphTriadCensus()";
     /*
      * QList::triadTypeFreqs stores triad type frequencies with the following order:
      * 0	1	2	3		4	5	6	7	8		9	10	11	12		13	14	15
@@ -44,7 +44,7 @@ bool Graph::graphTriadCensus()
     for (int i = 0; i <= 15; ++i)
     {
         triadTypeFreqs.append(0);
-        qDebug() << " initializing triadTypeFreqs[" << i << "] = " << triadTypeFreqs[i];
+        qCDebug(lcClustering) << " initializing triadTypeFreqs[" << i << "] = " << triadTypeFreqs[i];
     }
 
     QString pMsg = tr("Computing Triad Census. \nPlease wait...");
@@ -114,7 +114,7 @@ bool Graph::graphTriadCensus()
                 else
                     nul++;
 
-                qDebug() << "triad of (" << ver1 << "," << ver2 << "," << ver3
+                qCDebug(lcClustering) << "triad of (" << ver1 << "," << ver2 << "," << ver3
                          << ") = (" << mut << "," << asy << "," << nul << ")";
                 triadType_examine_MAN_label(mut, asy, nul, (*v1), (*v2), (*v3));
 
@@ -127,7 +127,7 @@ bool Graph::graphTriadCensus()
         } // end 2rd for
 
     } // end 1rd for
-    qDebug() << " ****** 003 COUNTER: " << counter_021;
+    qCDebug(lcClustering) << " ****** 003 COUNTER: " << counter_021;
 
     calculatedTriad = true;
 
@@ -150,7 +150,7 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
     bool isDown = false, isUp = false, isCycle = false, isTrans = false;
     bool isOutLinked = false, isInLinked = false;
 
-    qDebug() << "Graph::triadType_examine_MAN_label() "
+    qCDebug(lcClustering) << "Graph::triadType_examine_MAN_label() "
              << " adding (" << vert1->number() << "," << vert2->number()
              << "," << vert3->number() << ") to m_triad ";
 
@@ -169,10 +169,10 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
             break;
         case 2:
             // "021?" - find out!
-            //	qDebug() << "triad vertices: ( "<< vert1->number() << ", "<< vert2->number()<< ", "<< vert3->number()<< " ) = ("	<<mut<<","<< asy<<","<<nul<<")";
+            //	qCDebug(lcClustering) << "triad vertices: ( "<< vert1->number() << ", "<< vert2->number()<< ", "<< vert3->number()<< " ) = ("	<<mut<<","<< asy<<","<<nul<<")";
             foreach (GraphVertex *source, m_triad)
             {
-                // qDebug() << "  vertex " << source->number() ;
+                // qCDebug(lcClustering) << "  vertex " << source->number() ;
                 isOutLinked = false;
                 isInLinked = false;
 
@@ -200,7 +200,7 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
                     }
                     else if (target->hasEdgeTo(source->number()))
                     {
-                        //	qDebug() << "    vertex " << source->number()  << " is IN linked from " <<target->number();
+                        //	qCDebug(lcClustering) << "    vertex " << source->number()  << " is IN linked from " <<target->number();
                         if (isInLinked)
                         {
                             triadTypeFreqs[4]++; //"021U"
@@ -220,11 +220,11 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
             }
             break;
         case 3:
-            qDebug() << "triad vertices: ( " << vert1->number() << ", " << vert2->number() << ", " << vert3->number() << " ) = (" << mut << "," << asy << "," << nul << ")";
+            qCDebug(lcClustering) << "triad vertices: ( " << vert1->number() << ", " << vert2->number() << ", " << vert3->number() << " ) = (" << mut << "," << asy << "," << nul << ")";
             isTrans = false;
             foreach (GraphVertex *source, m_triad)
             {
-                qDebug() << "  vertex " << source->number();
+                qCDebug(lcClustering) << "  vertex " << source->number();
 
                 isOutLinked = false;
 
@@ -265,10 +265,10 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
             break;
         case 1:
             isUp = false;
-            // qDebug() << "triad vertices: ( "<< vert1->number() << ", "<< vert2->number()<< ", "<< vert3->number()<< " ) = ("	<<mut<<","<< asy<<","<<nul<<")";
+            // qCDebug(lcClustering) << "triad vertices: ( "<< vert1->number() << ", "<< vert2->number()<< ", "<< vert3->number()<< " ) = ("	<<mut<<","<< asy<<","<<nul<<")";
             foreach (GraphVertex *source, m_triad)
             {
-                //	qDebug() << "  vertex " << source->number() ;
+                //	qCDebug(lcClustering) << "  vertex " << source->number() ;
 
                 isInLinked = false;
 
@@ -302,13 +302,13 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
             isDown = false;
             isUp = false;
             isCycle = true;
-            qDebug() << "triad vertices: ( " << vert1->number() << ", "
+            qCDebug(lcClustering) << "triad vertices: ( " << vert1->number() << ", "
                      << vert2->number() << ", " << vert3->number() << " ) = ("
                      << mut << "," << asy << "," << nul << ")";
 
             foreach (GraphVertex *source, m_triad)
             {
-                // qDebug() << "  vertex " << source->number() ;
+                // qCDebug(lcClustering) << "  vertex " << source->number() ;
                 isOutLinked = false;
                 isInLinked = false;
 
@@ -339,7 +339,7 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
                     }
                     else if (target->hasEdgeTo(source->number()))
                     {
-                        //	qDebug() << "    vertex " << source->number()  << " is IN linked from " <<target->number();
+                        //	qCDebug(lcClustering) << "    vertex " << source->number()  << " is IN linked from " <<target->number();
                         if (source->hasEdgeTo(target->number()))
                         {
                             isOutLinked = true;
