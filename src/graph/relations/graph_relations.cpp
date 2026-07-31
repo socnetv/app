@@ -32,7 +32,7 @@
 void Graph::relationSet(int relNum, const bool &updateUI)
 {
 
-    qDebug() << "++ Request to change graph to relation:" << relNum
+    qCDebug(lcRelations) << "++ Request to change graph to relation:" << relNum
              << " - current relation:" << m_curRelation
              << "updateUI:" << updateUI;
 
@@ -42,14 +42,14 @@ void Graph::relationSet(int relNum, const bool &updateUI)
     if (m_curRelation == relNum)
     {
         // Same as current, don't do nothing
-        qDebug() << "++ Requested relation is the current one - END";
+        qCDebug(lcRelations) << "++ Requested relation is the current one - END";
         return;
     }
 
     if (relNum < 0)
     {
         // negative, don't do nothing
-        qDebug() << "++ Requested relation is negative - END ";
+        qCDebug(lcRelations) << "++ Requested relation is negative - END ";
         return;
     }
     else if (relNum == RAND_MAX)
@@ -60,7 +60,7 @@ void Graph::relationSet(int relNum, const bool &updateUI)
     else if (relNum > relations() - 1)
     {
         // Invalid relation, abort
-        qDebug() << "++ Invalid relation - END ";
+        qCDebug(lcRelations) << "++ Invalid relation - END ";
         return;
     }
 
@@ -76,7 +76,7 @@ void Graph::relationSet(int relNum, const bool &updateUI)
     VList::const_iterator it;
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-        qDebug() << "++ changing relation of vertex"
+        qCDebug(lcRelations) << "++ changing relation of vertex"
                  << (*it)->number()
                  << "to" << relNum;
         if (!(*it)->isEnabled())
@@ -124,7 +124,7 @@ void Graph::relationSet(int relNum, const bool &updateUI)
     //
     if (updateUI)
     {
-        qDebug() << "++ Signaling to update UI and GW and setting graph mod status to edge count changed.";
+        qCDebug(lcRelations) << "++ Signaling to update UI and GW and setting graph mod status to edge count changed.";
         // Notify MW to change combo box relation name
         emit signalRelationChangedToMW(m_curRelation);
         // Notify MW to update the edge-mode combo to match the new relation's directed state
@@ -141,7 +141,7 @@ void Graph::relationSet(int relNum, const bool &updateUI)
  */
 void Graph::relationPrev()
 {
-    qDebug() << "Changing to the previous relation...";
+    qCDebug(lcRelations) << "Changing to the previous relation...";
     int relNum = m_curRelation;
     if (m_curRelation > 0)
     {
@@ -156,7 +156,7 @@ void Graph::relationPrev()
  */
 void Graph::relationNext()
 {
-    qDebug() << "Changing to the next relation...";
+    qCDebug(lcRelations) << "Changing to the next relation...";
     int relNum = m_curRelation;
     if (relations() > 0 && relNum < relations())
     {
@@ -178,7 +178,7 @@ void Graph::relationNext()
 void Graph::relationAdd(const QString &relName, const bool &changeRelation)
 {
 
-    qDebug() << "Adding new relation named:" << relName;
+    qCDebug(lcRelations) << "Adding new relation named:" << relName;
 
     // Add the new relation to our relations list
     m_relationsList << relName;
@@ -214,7 +214,7 @@ int Graph::relationCurrent()
  */
 QString Graph::relationCurrentName() const
 {
-    //    qDebug() << "Returning the current relation name...";
+    //    qCDebug(lcRelations) << "Returning the current relation name...";
     return m_relationsList.value(m_curRelation);
 }
 
@@ -230,7 +230,7 @@ void Graph::relationCurrentRename(const QString &newName, const bool &signalMW)
     //
     if (!m_relationsList.isEmpty() && newName == m_relationsList[m_curRelation])
     {
-        qDebug() << "The new name of the relation is the same as the current name. Nothing to do. Returning.";
+        qCDebug(lcRelations) << "The new name of the relation is the same as the current name. Nothing to do. Returning.";
         return;
     }
 
@@ -239,14 +239,14 @@ void Graph::relationCurrentRename(const QString &newName, const bool &signalMW)
     //
     if (newName.isEmpty())
     {
-        qDebug() << "The new name of the relation is empty. Nothing to do. Returning.";
+        qCDebug(lcRelations) << "The new name of the relation is empty. Nothing to do. Returning.";
         return;
     }
 
     //
     // Rename current relation to newName
     //
-    qDebug() << "Renaming current relation:"
+    qCDebug(lcRelations) << "Renaming current relation:"
              << m_curRelation << "to:" << newName
              << " - signalMW:" << signalMW;
 
@@ -278,7 +278,7 @@ void Graph::relationCurrentRename(const QString &newName)
  */
 int Graph::relations()
 {
-    // qDebug () << " relations count " << m_relationsList.size();
+    // qCDebug(lcRelations) << " relations count " << m_relationsList.size();
     return m_relationsList.size();
 }
 
@@ -291,7 +291,7 @@ void Graph::relationsClear()
     m_relationsList.clear();
     m_relationsDirected.clear();
     m_curRelation = 0;
-    qDebug() << "Cleared" << oldRelationsCounter << "relation(s)"
+    qCDebug(lcRelations) << "Cleared" << oldRelationsCounter << "relation(s)"
              << "Emitting signalRelationsClear()";
     emit signalRelationsClear();
 }
@@ -305,7 +305,7 @@ void Graph::relationsClear()
 void Graph::addRelationSymmetricStrongTies(const bool &allRelations)
 {
 
-    qDebug() << "Creating new relation using strong ties only."
+    qCDebug(lcRelations) << "Creating new relation using strong ties only."
              << "initial relations" << relations();
 
     int y = 0, v2 = 0, v1 = 0, weight;
@@ -321,7 +321,7 @@ void Graph::addRelationSymmetricStrongTies(const bool &allRelations)
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
         v1 = (*it)->number();
-        qDebug() << "Graph::addRelationSymmetricStrongTies() - v" << v1
+        qCDebug(lcRelations) << "Graph::addRelationSymmetricStrongTies() - v" << v1
                  << "iterate over outEdges in all relations";
         outEdgesAll = (*it)->outEdgesEnabledHash(allRelations); // outEdgesAllRelationsUniqueHash();
         it1 = outEdgesAll.cbegin();
@@ -330,24 +330,24 @@ void Graph::addRelationSymmetricStrongTies(const bool &allRelations)
             v2 = it1.key();
             weight = it1.value();
             y = vpos[v2];
-            qDebug() << ""
+            qCDebug(lcRelations) << ""
                      << v1 << "->" << v2 << "=" << weight << "Checking opposite.";
             invertWeight = m_graph[y]->hasEdgeTo(v1, allRelations);
             if (invertWeight == 0)
             {
-                qDebug() << v1 << "<-" << v2 << " does not exist. Weak tie. Continue.";
+                qCDebug(lcRelations) << v1 << "<-" << v2 << " does not exist. Weak tie. Continue.";
             }
             else
             {
                 if (!strongTies->contains(QString::number(v1) + "--" + QString::number(v2)) &&
                     !strongTies->contains(QString::number(v2) + "--" + QString::number(v1)))
                 {
-                    qDebug() << v1 << "--" << v2 << " exists. Strong Tie. Adding";
+                    qCDebug(lcRelations) << v1 << "--" << v2 << " exists. Strong Tie. Adding";
                     strongTies->insert(QString::number(v1) + "--" + QString::number(v2), 1);
                 }
                 else
                 {
-                    qDebug() << v1 << "--" << v2 << " exists. Strong Tie already found. Continue";
+                    qCDebug(lcRelations) << v1 << "--" << v2 << " exists. Strong Tie already found. Continue";
                 }
             }
             ++it1;
@@ -359,16 +359,16 @@ void Graph::addRelationSymmetricStrongTies(const bool &allRelations)
     QHash<QString, qreal>::const_iterator it2;
     it2 = strongTies->constBegin();
     QStringList vertices;
-    qDebug() << "creating strong tie edges...";
+    qCDebug(lcRelations) << "creating strong tie edges...";
     while (it2 != strongTies->constEnd())
     {
         vertices = it2.key().split("--");
-        //        qDebug() << "tie " <<it2.key()
+        //        qCDebug(lcRelations) << "tie " <<it2.key()
         //                 << "vertices.at(0)" << vertices.at(0)
         //                 << "vertices.at(1)" << vertices.at(1);
         v1 = (vertices.at(0)).toInt();
         v2 = (vertices.at(1)).toInt();
-        //        qDebug() << "calling edgeCreate for" << v1 << "--"<<v2;
+        //        qCDebug(lcRelations) << "calling edgeCreate for" << v1 << "--"<<v2;
         edgeCreate(v1, v2, 1, initEdgeColor, EdgeType::Undirected, true, false,
                    QString(), false);
         ++it2;
@@ -392,7 +392,7 @@ void Graph::addRelationSymmetricStrongTies(const bool &allRelations)
  */
 void Graph::relationAddCocitation()
 {
-    qDebug() << "Graph::relationAddCocitation()"
+    qCDebug(lcRelations) << "Graph::relationAddCocitation()"
              << "initial relations" << relations();
 
     int v1 = 0, v2 = 0, i = 0, j = 0, weight;
@@ -424,7 +424,7 @@ void Graph::relationAddCocitation()
         j = 0;
         for (it1 = m_graph.cbegin(); it1 != m_graph.cend(); it1++)
         {
-            qDebug() << "Graph::relationAddCocitation() - (i,j)" << i + 1 << j + 1;
+            qCDebug(lcRelations) << "Graph::relationAddCocitation() - (i,j)" << i + 1 << j + 1;
             if (!(*it1)->isEnabled() || ((*it1)->isIsolated() && dropIsolates))
             {
                 continue;
@@ -434,12 +434,12 @@ void Graph::relationAddCocitation()
             if (v1 == v2)
             {
                 j++;
-                qDebug() << "Graph::relationAddCocitation() - skipping self loop" << v1 << v2;
+                qCDebug(lcRelations) << "Graph::relationAddCocitation() - skipping self loop" << v1 << v2;
                 continue;
             }
             if ((weight = CT->item(i, j)) != 0)
             {
-                qDebug() << "Graph::relationAddCocitation() - creating edge"
+                qCDebug(lcRelations) << "Graph::relationAddCocitation() - creating edge"
                          << v1 << "<->" << v2
                          << "because CT(" << i + 1 << "," << j + 1 << ") = " << weight;
                 edgeCreate(v1, v2, weight, initEdgeColor,
@@ -456,6 +456,6 @@ void Graph::relationAddCocitation()
     m_graphIsSymmetric = true;
 
     setModStatus(ModStatus::EdgeCount);
-    qDebug() << "Graph::relationAddCocitation()"
+    qCDebug(lcRelations) << "Graph::relationAddCocitation()"
              << "final relations" << relations();
 }
