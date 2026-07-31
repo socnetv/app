@@ -31,7 +31,7 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
                                            const bool &inverseWeights,
                                            const bool &dropIsolates)
 {
-    qDebug() << "Graph::graphMatrixShortestPathsCreate()";
+    qCDebug(lcDistances) << "Graph::graphMatrixShortestPathsCreate()";
 
     graphDistancesGeodesic(false, considerWeights, inverseWeights, dropIsolates);
 
@@ -47,7 +47,7 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
     int source = 0, target = 0;
     int i = 0, j = 0;
 
-    qDebug() << "Graph::graphMatrixShortestPathsCreate() - Resizing matrix to hold "
+    qCDebug(lcDistances) << "Graph::graphMatrixShortestPathsCreate() - Resizing matrix to hold "
              << N << " vertices";
 
     SIGMA.resize(N, N);
@@ -56,7 +56,7 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
     progressStatus(pMsg);
     progressCreate(N, pMsg);
 
-    qDebug() << "Graph::graphMatrixShortestPathsCreate() - Writing shortest paths matrix...";
+    qCDebug(lcDistances) << "Graph::graphMatrixShortestPathsCreate() - Writing shortest paths matrix...";
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
@@ -73,7 +73,7 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
 
         if ((*it)->isIsolated() && dropIsolates)
         {
-            qDebug() << "Graph::graphMatrixShortestPathsCreate() - "
+            qCDebug(lcDistances) << "Graph::graphMatrixShortestPathsCreate() - "
                      << source << "isolated. SKIP";
 
             continue;
@@ -81,12 +81,12 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
 
         if (!(*it)->isEnabled())
         {
-            qDebug() << "Graph::graphMatrixShortestPathsCreate() - "
+            qCDebug(lcDistances) << "Graph::graphMatrixShortestPathsCreate() - "
                      << source << "disabled. SKIP";
             continue;
         }
 
-        qDebug() << "Graph::graphMatrixShortestPathsCreate() - source" << source
+        qCDebug(lcDistances) << "Graph::graphMatrixShortestPathsCreate() - source" << source
                  << "i" << i;
 
         for (jt = m_graph.cbegin(); jt != m_graph.cend(); ++jt)
@@ -96,22 +96,22 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
 
             if ((*jt)->isIsolated() && dropIsolates)
             {
-                qDebug() << "Graph::graphMatrixShortestPathsCreate() - "
+                qCDebug(lcDistances) << "Graph::graphMatrixShortestPathsCreate() - "
                          << target << "isolated. SKIP";
                 continue;
             }
 
             if (!(*jt)->isEnabled())
             {
-                qDebug() << "Graph::graphMatrixShortestPathsCreate() - "
+                qCDebug(lcDistances) << "Graph::graphMatrixShortestPathsCreate() - "
                          << target << "disabled. SKIP";
                 continue;
             }
 
-            qDebug() << "Graph::graphMatrixShortestPathsCreate() - "
+            qCDebug(lcDistances) << "Graph::graphMatrixShortestPathsCreate() - "
                      << "target" << target << "j" << j;
 
-            qDebug() << "Graph::graphMatrixShortestPathsCreate() -  setting SIGMA ("
+            qCDebug(lcDistances) << "Graph::graphMatrixShortestPathsCreate() -  setting SIGMA ("
                      << i << "," << j << ") =" << (*it)->shortestPaths(target);
             SIGMA.setItem(i, j, (*it)->shortestPaths(target));
             j++;
@@ -144,7 +144,7 @@ bool Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
                                               const bool &inverseWeights,
                                               const bool &dropIsolates)
 {
-    qDebug() << "Graph::graphMatrixDistanceGeodesicCreate()";
+    qCDebug(lcDistances) << "Graph::graphMatrixDistanceGeodesicCreate()";
 
     // Phase 1: compute all geodesic distances via DistanceEngine.
     // The engine owns its own progress dialog for this phase.
@@ -161,7 +161,7 @@ bool Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
     int source = 0, target = 0;
     int i = 0, j = 0;
 
-    qDebug() << "Graph::graphMatrixDistanceGeodesicCreate() - "
+    qCDebug(lcDistances) << "Graph::graphMatrixDistanceGeodesicCreate() - "
                 "Resizing distance matrix to hold "
              << N << " vertices";
 
@@ -196,9 +196,9 @@ bool Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
                 continue;
             }
 
-            // qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() - "
+            // qCDebug(lcDistances) << "Graph: graphMatrixDistanceGeodesicCreate() - "
             //          << "target" << target << "j" << j;
-            // qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() - setting DM ("
+            // qCDebug(lcDistances) << "Graph: graphMatrixDistanceGeodesicCreate() - setting DM ("
             //          << i << "," << j << ") =" << (*it)->distance(target);
 
             DM.setItem(i, j, (*it)->distance(target));

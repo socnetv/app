@@ -36,7 +36,7 @@ int Graph::graphDistanceGeodesic(const int &v1, const int &v2,
                                  const bool &considerWeights,
                                  const bool &inverseWeights)
 {
-    qDebug() << "Graph::graphDistanceGeodesic()";
+    qCDebug(lcDistances) << "Graph::graphDistanceGeodesic()";
     graphDistancesGeodesic(false, considerWeights, inverseWeights, false);
     return m_graph[vpos[v1]]->distance(v2);
 }
@@ -59,7 +59,7 @@ int Graph::graphDistanceGeodesic(const int &v1, const int &v2,
 QMap<int, int> Graph::graphGeodesicDistanceDistribution(const bool &considerWeights,
                                                         const bool &inverseWeights)
 {
-    qDebug() << "Graph::graphGeodesicDistanceDistribution()";
+    qCDebug(lcDistances) << "Graph::graphGeodesicDistanceDistribution()";
 
     // Ensure the APSP result is available.  graphDistancesGeodesic() is a no-op
     // when calculatedDistances is true (i.e. graph structure is unchanged).
@@ -88,7 +88,7 @@ QMap<int, int> Graph::graphGeodesicDistanceDistribution(const bool &considerWeig
         }
     }
 
-    qDebug() << "Graph::graphGeodesicDistanceDistribution() - distribution:" << distribution;
+    qCDebug(lcDistances) << "Graph::graphGeodesicDistanceDistribution() - distribution:" << distribution;
     return distribution;
 }
 
@@ -108,11 +108,11 @@ bool Graph::writeGeodesicDistribution(const QString &fileName,
                                       const bool &considerWeights,
                                       const bool &inverseWeights)
 {
-    qDebug() << "Graph::writeGeodesicDistribution() ->" << fileName;
+    qCDebug(lcDistances) << "Graph::writeGeodesicDistribution() ->" << fileName;
 
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        qDebug() << "Graph::writeGeodesicDistribution() - cannot open file";
+        qCDebug(lcDistances) << "Graph::writeGeodesicDistribution() - cannot open file";
         return false;
     }
     QTextStream out(&file);
@@ -197,7 +197,7 @@ QList<int> Graph::graphGeodesicShortestPath(const int &v1, const int &v2,
                                              const bool &considerWeights,
                                              const bool &inverseWeights)
 {
-    qDebug() << "Graph::graphGeodesicShortestPath()" << v1 << "->" << v2;
+    qCDebug(lcDistances) << "Graph::graphGeodesicShortestPath()" << v1 << "->" << v2;
 
     if (v1 == v2 || !vpos.contains(v1) || !vpos.contains(v2))
         return QList<int>();
@@ -309,7 +309,7 @@ QList<int> Graph::graphGeodesicShortestPath(const int &v1, const int &v2,
     }
     path.prepend(v1);  // prepend source last so path reads v1 → … → v2
 
-    qDebug() << "Graph::graphGeodesicShortestPath() - path:" << path;
+    qCDebug(lcDistances) << "Graph::graphGeodesicShortestPath() - path:" << path;
     return path;
 }
 
@@ -323,7 +323,7 @@ QList<int> Graph::graphGeodesicShortestPath(const int &v1, const int &v2,
 int Graph::graphDiameter(const bool considerWeights,
                          const bool inverseWeights)
 {
-    qDebug() << "Graph::graphDiameter()";
+    qCDebug(lcDistances) << "Graph::graphDiameter()";
     graphDistancesGeodesic(false, considerWeights, inverseWeights, false);
     return m_graphDiameter;
 }
@@ -340,11 +340,11 @@ qreal Graph::graphDistanceGeodesicAverage(const bool considerWeights,
                                           const bool dropIsolates)
 {
 
-    qDebug() << "Graph::graphDistanceGeodesicAverage() - Computing distances...";
+    qCDebug(lcDistances) << "Graph::graphDistanceGeodesicAverage() - Computing distances...";
 
     graphDistancesGeodesic(false, considerWeights, inverseWeights, dropIsolates);
 
-    qDebug() << "Graph::graphDistanceGeodesicAverage() - "
+    qCDebug(lcDistances) << "Graph::graphDistanceGeodesicAverage() - "
              << "average distance:"
              << m_graphAverageDistance;
 
@@ -358,11 +358,11 @@ qreal Graph::graphDistanceGeodesicAverage(const bool considerWeights,
  */
 int Graph::getGeodesicsCount()
 {
-    qDebug() << "Graph::getGeodesicsCount()";
+    qCDebug(lcDistances) << "Graph::getGeodesicsCount()";
 
     graphDistancesGeodesic(false, false, false, false);
 
-    qDebug() << "Graph::getGeodesicsCount() - geodesics:" << m_graphGeodesicsCount;
+    qCDebug(lcDistances) << "Graph::getGeodesicsCount() - geodesics:" << m_graphGeodesicsCount;
     return m_graphGeodesicsCount;
 }
 
@@ -374,11 +374,11 @@ int Graph::getGeodesicsCount()
 bool Graph::isConnected()
 {
 
-    qDebug() << "Graph::isConnected() ";
+    qCDebug(lcDistances) << "Graph::isConnected() ";
 
     if (calculatedDistances)
     {
-        qDebug() << "Graph::isConnected() - graph unmodified. Returning:"
+        qCDebug(lcDistances) << "Graph::isConnected() - graph unmodified. Returning:"
                  << m_graphIsConnected;
         return m_graphIsConnected;
     }
@@ -437,11 +437,11 @@ bool Graph::isConnectedCached() const
 int Graph::graphWeaklyConnectedComponents()
 {
     if (m_graphWeaklyConnectedComponents > 0) {
-        qDebug() << "Graph::graphWeaklyConnectedComponents() - cached:" << m_graphWeaklyConnectedComponents;
+        qCDebug(lcDistances) << "Graph::graphWeaklyConnectedComponents() - cached:" << m_graphWeaklyConnectedComponents;
         return m_graphWeaklyConnectedComponents;
     }
 
-    qDebug() << "Graph::graphWeaklyConnectedComponents() - computing";
+    qCDebug(lcDistances) << "Graph::graphWeaklyConnectedComponents() - computing";
 
     const int currentRelation = relationCurrent();
     QHash<int, bool> visited;
@@ -490,7 +490,7 @@ int Graph::graphWeaklyConnectedComponents()
     }
 
     m_graphWeaklyConnectedComponents = componentId;
-    qDebug() << "Graph::graphWeaklyConnectedComponents() -" << componentId << "component(s)";
+    qCDebug(lcDistances) << "Graph::graphWeaklyConnectedComponents() -" << componentId << "component(s)";
     return m_graphWeaklyConnectedComponents;
 }
 
