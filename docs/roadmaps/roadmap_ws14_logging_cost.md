@@ -22,15 +22,19 @@ separately if it turns out to matter." It turned out to matter, by a lot.
 
 | Milestone | Status |
 |---|---|
-| L1 — Release builds quiet by default | 🟢 Done (2026-07-31) |
-| L2 — `DistanceEngine` → logging category | 🟢 Done (2026-07-31) |
-| L3 — Parsers → logging category | 🟢 Done (2026-07-31) |
-| L4 — `matrix.cpp` → logging category (+ decide fate of the unreachable Gauss-Jordan inverse) | 🟢 Done (2026-07-31) |
+| L1 — Release builds quiet by default | 🟢 Done |
+| L2 — `DistanceEngine` → logging category | 🟢 Done |
+| L3 — Parsers → logging category | 🟢 Done |
+| L4 — `matrix.cpp` → logging category (+ decide fate of the unreachable Gauss-Jordan inverse) | 🟢 Done |
+| Full tree sweep (beyond L1-L4's original scope) | 🟢 Done |
 
-L1-L4 (the roadmap's originally-scoped hot paths) are now all done. A further, broader sweep of
-every remaining live `qDebug()` call in the tree — including non-hot-path files the roadmap
-deliberately didn't scope in — is in progress beyond L1-L4; see the note near the end of this doc
-once that's complete.
+**The entire tree is now converted — zero `qDebug()` text remains anywhere in `src/`, live or
+commented-out.** L1-L4 were the roadmap's originally-scoped hot paths; after they landed, the user
+asked for the same treatment applied to every remaining call site, not just the hot-path subset —
+28 `Q_LOGGING_CATEGORY` definitions total (one per `src/graph/<domain>/` slice, one per other
+standalone file, two shared ones for `src/forms/` and the canvas-item files), ~1760 `qCDebug()` call
+sites. See "Full sweep evidence" below for the file-by-file breakdown and the real bugs found along
+the way.
 
 See "L1/L2 real-world evidence" below for measured before/after numbers (CLI and GUI) and two real
 bugs found while wiring up the GUI-side measurement — both are why the numbers below ended up
@@ -94,36 +98,22 @@ cmake -S . -B build-nodbg -DCMAKE_PREFIX_PATH=... -DBUILD_CLI=ON -DCMAKE_BUILD_T
 
 ## Live call-site inventory
 
-Counted excluding commented-out lines (a naive `grep qDebug` over-counts badly — most of the canvas
-hits are already commented out). **1645 live calls** across `src/`, of 1838 textual matches.
+**All converted — zero live `qDebug()` calls remain anywhere in `src/`.** This section originally
+tracked per-file counts while L1-L4 and the broader sweep were in progress; that table is gone since
+tracking is no longer useful once the answer is "all of them, everywhere." See "Full sweep evidence"
+below for the category scheme and the final tally (28 `Q_LOGGING_CATEGORY` definitions, ~1760
+`qCDebug()` call sites).
 
-**Corrected 2026-07-31** (a fresh full-tree research pass, done while scoping the post-L4 sweep,
-found the table below was stale in several places — not the printf-style-undercounting mechanism
-found in `distance_engine.cpp`, which turned out isolated to that file plus `parser_pajek.cpp`, just
-plain drift since this table was first written). True tree-wide live total: **~1638 calls**
-(excluding `distance_engine.cpp`, now 0 live / 78 `qCDebug`).
-
-| File | Roadmap's original count | Actual live count | Status |
-|---|---|---|---|
-| `mainwindow.cpp` | 301 | **313** | Not yet converted (post-L4 sweep) |
-| `matrix.cpp` | 96 | **118 → 0 live / 139 `qCDebug`** | **L4 — done** |
-| `parser/parser_graphml.cpp` | 99 | 99 (matches) | **L3 — done** |
-| `parser/parser_dl.cpp` | 88 | 88 (matches) | **L3 — done** |
-| `graph/reporting/graph_reports.cpp` | 85 | **92** | Not yet converted (post-L4 sweep) |
-| `engine/distance_engine.cpp` | 75 | **78** (3 printf-style calls undercounted) | **L2 — done** |
-| `graph/storage/graph_vertices.cpp` | 56 | 56 (matches) | Not yet converted (post-L4 sweep) |
-| `graphicswidget.cpp` | "12 already `qCDebug`" | **15 live remain**, 24 already `qCDebug` | **Not actually fully converted** despite this table previously implying it was — mixed-state file, next up in the cleanup pass |
-| `graphicsnode.cpp` | "1 already clean" | 1 live, 0 `qCDebug` | Never actually touched by the conversion; "clean" meant "low count", not "done" |
-| `graphicsedge.cpp` | 0 | 0 (confirmed — all matches are commented-out) | Genuinely clean |
-
-`lcGW` in `graphicswidget.cpp:45` is currently the **only other** file-local `Q_LOGGING_CATEGORY` in
-the tree besides `lcEngine` and `lcMatrix`, plus the new shared `lcParser` (`parser.h`). The canvas
-classes were the only ones already partially cleaned up (WS10 Phase 1) before this pass — see above,
-`graphicswidget.cpp` itself was never fully finished.
+One correction worth keeping: the original count of 1645 live calls (of 1838 textual matches,
+excluding comments) was stale in several places by the time the full sweep started — not from the
+printf-style undercounting mechanism found in `distance_engine.cpp` (isolated to that file plus
+`parser_pajek.cpp`), just plain drift. `matrix.cpp` was actually 118, not 96; `mainwindow.cpp` was
+313, not 301. Worth remembering next time a call-site count in this doc is used to estimate scope —
+re-verify rather than trust it at face value.
 
 ---
 
-## L1/L2 real-world evidence (2026-07-31)
+## L1/L2 real-world evidence
 
 Measured on a MacBook Pro M5, 24GB RAM (macOS arm64, Qt 6.10.1, Release `-O2`), same build directory
 rebuilt incrementally at each phase, `run_golden_compares.sh` + `run_golden_io_roundtrip.sh` clean after
@@ -227,7 +217,7 @@ shipped default sane.
 **Completion criteria:** launching without `-d` produces no debug output; `-d 1` and `-d 2` are
 unchanged; golden scripts pass.
 
-**Done (2026-07-31).** Both the fix above and two additional real bugs found while implementing it
+**Done.** Both the fix above and two additional real bugs found while implementing it
 — see "L1/L2 real-world evidence" above for the full writeup and measured numbers (~28×/~24× from
 L1 alone on the GUI, far above the ~3.5× estimated below before the parallel-stderr-contention
 effect was known). Landed as two commits: the `distances`/`distances centralities` interactive-script
@@ -252,7 +242,7 @@ pattern as `lcGW`. Purely mechanical — no logic or control-flow change.
 cases from the Evidence table and report actual before/after numbers, matching WS3 M1's evidence
 standard. The converted build should land close to the debug-free column.
 
-**Done (2026-07-31).** 78 sites converted, not 75 — the printf-style overload inside the BFS loop
+**Done.** 78 sites converted, not 75 — the printf-style overload inside the BFS loop
 was undercounted, see "Live call-site inventory" above. Also required a fix to `socnetv_cli.cpp`
 (it never called `setFilterRules()`, so the category gate was never actually engaged there — see
 "L1/L2 real-world evidence" above) without which this milestone would have measured as a no-op.
@@ -268,7 +258,7 @@ CLI numbers land within ~4% of this doc's original `QT_NO_DEBUG_OUTPUT`-instrume
 **Completion criteria:** golden + io_roundtrip pass; report measured `LOAD_MS` before/after on a
 large GraphML and a large Pajek file.
 
-**Done (2026-07-31).** One shared category (`Q_LOGGING_CATEGORY(lcParser, "socnetv.parser")`,
+**Done.** One shared category (`Q_LOGGING_CATEGORY(lcParser, "socnetv.parser")`,
 `Q_DECLARE_LOGGING_CATEGORY` in `parser.h`) across all 9 files (~409 sites), not one per file — new
 pattern vs. `lcGW`/`lcEngine`'s file-local precedent, deliberate. `parser_pajek.cpp`'s 10 printf-style
 calls handled individually by line to avoid touching its 12 (since deleted — no `qDebug()` text
@@ -298,7 +288,7 @@ modest — Pajek's parser has proportionally fewer `qDebug()` calls relative to 
 everything else. Do not leave it as-is. WS5's A5 currently plans to add cancellation support to this
 method — that plan should be revisited in light of it having no reachable caller.
 
-**Decision made (2026-07-31): keep it, convert its logging.** All 118 (not 96, see corrected
+**Decision made: keep it, convert its logging.** All 118 (not 96, see corrected
 inventory below) live `qDebug()` sites in `matrix.cpp`, including the 15 inside
 `inverseByGaussJordanElimination()`, converted to `qCDebug(lcMatrix)` — no deletion. WS5's A5
 cancellation-support plan for this method is unaffected by this decision either way (still worth
@@ -307,7 +297,7 @@ revisiting separately in light of it having no reachable caller, per WS5's own d
 **Completion criteria:** golden + io_roundtrip pass; a decision recorded here on the Gauss-Jordan
 method; measured before/after on an Information Centrality run over a large network.
 
-**Done (2026-07-31).** `Q_LOGGING_CATEGORY(lcMatrix, "socnetv.matrix")`, file-local (same pattern as
+**Done.** `Q_LOGGING_CATEGORY(lcMatrix, "socnetv.matrix")`, file-local (same pattern as
 `lcGW`/`lcEngine`). Two whitespace variants required care: `qDebug ()` (space before parens, ~24
 sites) alongside plain `qDebug()` — a literal-text grep undercounts these the same way the L2
 printf-style calls were undercounted; handled with one whitespace-tolerant sed pass. Measured
@@ -318,7 +308,7 @@ already clearly visible at N=300): **~4.27s → ~0.30s, ~14.2×**.
 
 ---
 
-## L3/L4 real-world evidence (2026-07-31)
+## L3/L4 real-world evidence
 
 Same discipline as L1/L2: measured on the same MacBook Pro M5, 24GB RAM, same build directory rebuilt incrementally
 (each "before" number from `git stash`-ing the milestone's still-uncommitted change and rebuilding,
@@ -356,6 +346,78 @@ total warnings, all 438 variadic-macro instances gone, remaining 67 pre-existing
 
 ---
 
+## Full sweep evidence
+
+Beyond L1-L4, every remaining live `qDebug()` call site in `src/` was converted, at the user's
+request — not because the roadmap's original scope required it, but because even non-hot-path calls
+still pay full formatting cost whenever debug output is ever turned on (a `-d 1`/`-d 2` session, or
+the Settings checkbox), and because a genuinely "no qDebug() left anywhere" codebase is easier to
+reason about than "hot paths converted, the rest still plain qDebug()". Same discipline throughout:
+mechanical conversions only, one logical module per commit (~30 commits total for this tier),
+`run_golden_compares.sh` + `run_golden_io_roundtrip.sh` clean after every one. No before/after
+timing was collected per-file for this tier (the roadmap already established these aren't hot
+loops — see the per-file hot/cold classification in "Live call-site inventory" above); a golden pass
+is the bar here, not a speedup number.
+
+### Category scheme
+
+- **One category per `src/graph/<domain>/` slice directory** (16 of them: `centrality`,
+  `clustering`, `cohesion`, `crawler`, `distances`, `filters`, `generators`, `io`, `layouts`,
+  `matrices`, `prominence`, `reachability`, `relations`, `reporting`, `similarity`, `ui`), plus
+  `lcGraph` for `graph.cpp` itself and `lcGraphCore` for the `core/` slice — all declared in `graph.h`
+  (already included by every slice `.cpp`) and defined once in `graph.cpp`, same reasoning as
+  `lcParser`.
+- **File-local categories** for other standalone files with their own `qDebug()` calls:
+  `lcMainWindow` (`mainwindow.cpp`), `lcWebCrawler` (`webcrawler.cpp`, distinct from
+  `graph/crawler/`'s `lcGraphCrawler` — different file, different job), `lcChart` (`chart.cpp`),
+  `lcTextEditor` (`texteditor.cpp`).
+- **`lcGW` promoted from file-local to shared**: `Q_DECLARE_LOGGING_CATEGORY` moved to
+  `graphicswidget.h`, reused by the five small canvas-item files (`graphicsnode.cpp`,
+  `graphicsedgelabel.cpp`, `graphicsedgeweight.cpp`, `graphicsnodelabel.cpp`,
+  `graphicsnodenumber.cpp`) that each had only 0-1 live calls — not enough to justify a category of
+  their own.
+- **New shared `lcForms`**: 22 `src/forms/*.cpp` dialog files (1-16 calls each, pure one-shot UI
+  code), no pre-existing shared header to piggyback on, so a small purpose-built
+  `src/forms/forms_logging.h` was added — same reasoning as `lcParser`/`lcGW`.
+- **`graphvertex.cpp`** (outside `src/graph/` but part of the core data model) and
+  **`tools/headless_graph_loader.cpp`** (CLI-only, part of the load pipeline) both reuse an existing
+  `src/graph/` category (`lcGraphCore`, `lcGraphIO`) rather than getting their own for a single call
+  site each.
+
+### Real problems found while doing this
+
+1. **`graphicswidget.cpp` was never actually fully converted**, despite the original inventory table
+   listing it as done — 14-15 live calls remained. Corrected as part of the cleanup pass.
+2. **A second undercounting variant beyond L2's printf-style discovery**: `qDebug ()` with a space
+   before the parens (found in `matrix.cpp`, ~24 sites) — a literal `qDebug()` grep misses this too.
+   Both `matrix.cpp` and `mainwindow.cpp` needed line-by-line handling for their printf-style calls
+   on top of the whitespace-tolerant pass.
+3. **The "no `qDebug()` text anywhere, not even in comments" policy surfaced a process bug**: the
+   per-file dead-comment-deletion step was, in several early files, run *after* the
+   `qDebug()`→`qCDebug()` rename — so it searched for text that no longer existed and silently
+   matched nothing, leaving dead comments alive under their new (renamed) spelling. Caught by a
+   dedicated whole-tree audit; fixed with a script that matches both `// qDebug(` and `// qCDebug(`
+   as dead-statement starts (handling multi-line streamed comments too), removing 291 lines across
+   20 files. A second, related bug: a blind `sed` conversion pass doesn't distinguish live code from
+   *prose* comments that merely mention `qDebug()` as a term (e.g. this document's own commit
+   messages, or explanatory code comments written during this sweep) — several of the session's own
+   explanatory comments got their generic "qDebug()" references incorrectly rewritten to a
+   file-specific category name (e.g. `qCDebug(lcMainWindow)`) by the mechanical rename; caught by
+   manual review before committing, not by any automated check.
+
+### Final numbers
+
+- **28 `Q_LOGGING_CATEGORY` definitions**, **~1760 `qCDebug()` call sites**, **zero live `qDebug()`
+  calls anywhere in `src/`** (verified by a final whole-tree grep with no exclusions needed beyond
+  a handful of legitimate prose comments).
+- Clean-rebuild warning count: 67 (all pre-existing, unrelated to this workstream) — confirms the
+  `-Wno-variadic-macro-arguments-omitted` fix from L3 scales correctly across the full conversion,
+  not just the milestone it landed with.
+- `run_golden_compares.sh`, `run_golden_io_roundtrip.sh` (19/19), and `run_benchmarks.sh` (all three
+  types: distance, io, clustering) all clean on the final build.
+
+---
+
 ## Why not just define `QT_NO_DEBUG_OUTPUT` in release builds?
 
 Because it would silently break the `-d 1` / `-d 2` command-line feature. `QT_NO_DEBUG_OUTPUT`
@@ -380,7 +442,7 @@ The one non-mechanical judgement call is L4's Gauss-Jordan decision.
 
 ## Not verified
 
-- ~~GUI-side end-to-end effect of L1 and L2.~~ **Verified 2026-07-31** — see "L1/L2 real-world
+- ~~GUI-side end-to-end effect of L1 and L2.~~ **Verified** — see "L1/L2 real-world
   evidence" above. Confirmed via real `SocNetV.app` runs driven by `--interactive-script`, not
   extrapolated from the CLI number; the GUI win turned out larger than the CLI one (~503×/~608×
   vs ~43×/~59×), not merely "transferred", because of the parallel-stderr-contention effect noted
