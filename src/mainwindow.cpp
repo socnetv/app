@@ -87,6 +87,8 @@
 #include "forms/dialogsettings.h"
 #include "forms/dialogsysteminfo.h"
 
+Q_LOGGING_CATEGORY(lcMainWindow, "socnetv.mainwindow")
+
 /**
  * @brief Constructs the MainWindow (MW) object
  *
@@ -101,7 +103,7 @@ MainWindow::MainWindow(const QString &m_fileName, const bool &forceProgress, con
 {
     m_encodingOverride = encodingOverride;
 
-    qDebug() << "=========== MainWindow (MW) constructor starting on thread:" << thread();
+    qCDebug(lcMainWindow) << "=========== MainWindow (MW) constructor starting on thread:" << thread();
 
     //
     // Setup debug messages/level
@@ -175,7 +177,7 @@ MainWindow::MainWindow(const QString &m_fileName, const bool &forceProgress, con
         windowMinHeight = 800;
     }
 
-    qDebug() << "primaryScreen: " << primaryScreenWidth << "x" << primaryScreenHeight
+    qCDebug(lcMainWindow) << "primaryScreen: " << primaryScreenWidth << "x" << primaryScreenHeight
              << "Set Minimum MW size to:" << windowMinWidth << "x" << windowMinHeight;
 
     // Set MW minimum size, before creating the graphics widget
@@ -184,7 +186,7 @@ MainWindow::MainWindow(const QString &m_fileName, const bool &forceProgress, con
     //
     // Initialize devices
     //
-    qDebug() << "Initialize devices...";
+    qCDebug(lcMainWindow) << "Initialize devices...";
 
     // Create printer devices
     printer = new QPrinter;
@@ -203,7 +205,7 @@ MainWindow::MainWindow(const QString &m_fileName, const bool &forceProgress, con
     //
     // Initialize widgets
     //
-    qDebug() << "Setup canvas, graph, widgets (actions, menus, panels, signal/slots) and init app...";
+    qCDebug(lcMainWindow) << "Setup canvas, graph, widgets (actions, menus, panels, signal/slots) and init app...";
     initView(); // Init our network view
 
     initGraph(); // Init the graph model
@@ -222,7 +224,7 @@ MainWindow::MainWindow(const QString &m_fileName, const bool &forceProgress, con
 
     if (maximized)
     {
-        qDebug() << "maximizing window as per user request.";
+        qCDebug(lcMainWindow) << "maximizing window as per user request.";
         showMaximized();
     }
     if (fullscreen)
@@ -237,10 +239,10 @@ MainWindow::MainWindow(const QString &m_fileName, const bool &forceProgress, con
     //
     // Load user-provided network file, if any
     //
-    qDebug() << "Checking if user provided file on startup...";
+    qCDebug(lcMainWindow) << "Checking if user provided file on startup...";
     if (!m_fileName.isEmpty())
     {
-        qDebug() << "Loading user provided file" << m_fileName;
+        qCDebug(lcMainWindow) << "Loading user provided file" << m_fileName;
         slotNetworkFileChoose(m_fileName);
     }
 
@@ -253,7 +255,7 @@ MainWindow::MainWindow(const QString &m_fileName, const bool &forceProgress, con
         runInteractiveScript(interactiveScriptPath);
     }
 
-    qDebug() << "@@@@ MW Constructor finished, on thread:" << thread();
+    qCDebug(lcMainWindow) << "@@@@ MW Constructor finished, on thread:" << thread();
 }
 
 /**
@@ -262,7 +264,7 @@ MainWindow::MainWindow(const QString &m_fileName, const bool &forceProgress, con
 MainWindow::~MainWindow()
 {
 
-    qDebug() << "Destructor for MW running...";
+    qCDebug(lcMainWindow) << "Destructor for MW running...";
 
     // Init app to clear all maps etc.
     initApp();
@@ -287,7 +289,7 @@ MainWindow::~MainWindow()
 
     codecs.clear();
 
-    qDebug() << "Destruct function finished - bye!";
+    qCDebug(lcMainWindow) << "Destruct function finished - bye!";
 }
 
 /**
@@ -300,22 +302,22 @@ void MainWindow::closeEvent(QCloseEvent *ce)
     //
     // Show a status message
     //
-    qDebug() << "Received close event. Show a status message to user...";
+    qCDebug(lcMainWindow) << "Received close event. Show a status message to user...";
     statusMessage(tr("Closing SocNetV. Bye!"));
 
     //
     // Check if the graph has been saved
     //
     bool userCancelled = false;
-    qDebug() << "Checking if current graph is saved...";
+    qCDebug(lcMainWindow) << "Checking if current graph is saved...";
     if (activeGraph->isSaved())
     {
         ce->accept();
-        qDebug() << "Graph is already saved. Nothing to do.";
+        qCDebug(lcMainWindow) << "Graph is already saved. Nothing to do.";
     }
     else
     {
-        qDebug() << "Graph NOT saved. Asking the user what to do.";
+        qCDebug(lcMainWindow) << "Graph NOT saved. Asking the user what to do.";
         switch (slotHelpMessageToUser(
             USER_MSG_QUESTION,
             tr("Save changes"),
@@ -342,35 +344,35 @@ void MainWindow::closeEvent(QCloseEvent *ce)
     }
     if (userCancelled)
     {
-        qDebug() << "User canceled (while saving graph). Returning without closing the app.";
+        qCDebug(lcMainWindow) << "User canceled (while saving graph). Returning without closing the app.";
         return;
     }
 
     //
     // Terminate running threads
     //
-    qDebug() << "I will terminate any running threads...";
+    qCDebug(lcMainWindow) << "I will terminate any running threads...";
     terminateThreads("closeEvent()");
 
     //
     // Delete other objects and pointers
     //
-    qDebug() << "Deleting other objects and pointers...";
+    qCDebug(lcMainWindow) << "Deleting other objects and pointers...";
 
-    qDebug() << "Deleting printer";
+    qCDebug(lcMainWindow) << "Deleting printer";
     delete printer;
-    qDebug() << "Deleting printerPDF";
+    qCDebug(lcMainWindow) << "Deleting printerPDF";
     delete printerPDF;
-    qDebug() << "Deleting graphicsWidget";
+    qCDebug(lcMainWindow) << "Deleting graphicsWidget";
     delete graphicsWidget;
-    qDebug() << "Deleting activeGraph";
+    qCDebug(lcMainWindow) << "Deleting activeGraph";
     delete activeGraph;
-    qDebug() << "Deleting Scene";
+    qCDebug(lcMainWindow) << "Deleting Scene";
     delete scene;
 
     //    delete miniChart;
 
-    qDebug() << "Clearing and deleting text editors...";
+    qCDebug(lcMainWindow) << "Clearing and deleting text editors...";
     foreach (TextEditor *ed, m_textEditors)
     {
         ed->close();
@@ -378,10 +380,10 @@ void MainWindow::closeEvent(QCloseEvent *ce)
     }
     m_textEditors.clear();
 
-    qDebug() << " Checking if networkManager thread is running...";
+    qCDebug(lcMainWindow) << " Checking if networkManager thread is running...";
     if (networkManager->thread()->isRunning())
     {
-        qDebug() << "networkManager thread running"
+        qCDebug(lcMainWindow) << "networkManager thread running"
                  << "Calling deleteLater();";
         networkManager->deleteLater();
     }
@@ -389,10 +391,10 @@ void MainWindow::closeEvent(QCloseEvent *ce)
     delete editNodePropertiesAct;
     delete editNodeRemoveAct;
 
-    qDebug() << "Clearing codecs...";
+    qCDebug(lcMainWindow) << "Clearing codecs...";
     codecs.clear();
 
-    qDebug() << "Finished. Bye!";
+    qCDebug(lcMainWindow) << "Finished. Bye!";
 }
 
 /**
@@ -402,14 +404,14 @@ void MainWindow::closeEvent(QCloseEvent *ce)
  */
 void MainWindow::terminateThreads(const QString &reason)
 {
-    qDebug() << "Terminating threads (those started from MW). Reason:" << reason
+    qCDebug(lcMainWindow) << "Terminating threads (those started from MW). Reason:" << reason
              << " Checking if graphThread is running...";
     if (graphThread.isRunning())
     {
-        qDebug() << "graphThread running."
+        qCDebug(lcMainWindow) << "graphThread running."
                  << "Calling graphThread.quit();";
         graphThread.quit();
-        qDebug() << "deleting activeGraph and pointer";
+        qCDebug(lcMainWindow) << "deleting activeGraph and pointer";
         delete activeGraph;
         activeGraph = 0; // see why here: https://goo.gl/tQxpGA
     }
@@ -427,8 +429,6 @@ void MainWindow::resizeEvent(QResizeEvent *e)
     //    int w=width();
     //    int h=height();
 
-    //    qDebug () << "MW resized:" << w0 << "x" << h0
-    //              << "-->" << w << "x" << h;
 
     //    statusMessage(
     //                 tr("Window resized to (%1, %2)px.")
@@ -442,7 +442,7 @@ void MainWindow::resizeEvent(QResizeEvent *e)
 QMap<QString, QString> MainWindow::initSettings(const int &debugLevel, const bool &forceProgress)
 {
 
-    qDebug() << "Initializing settings - debugLevel" << debugLevel;
+    qCDebug(lcMainWindow) << "Initializing settings - debugLevel" << debugLevel;
 
     //
     // Read used-defined settings or use defaults
@@ -528,23 +528,23 @@ QMap<QString, QString> MainWindow::initSettings(const int &debugLevel, const boo
     QDir socnetvDir(settingsDir);
     if (!socnetvDir.exists())
     {
-        qDebug() << "socnetv settings dir does not exist. Creating it...";
+        qCDebug(lcMainWindow) << "socnetv settings dir does not exist. Creating it...";
         socnetvDir.mkdir(settingsDir);
     }
     // Then check if the settings file exists inside the folder
     if (!socnetvDir.exists(settingsFilePath))
     {
-        qDebug() << "Settings file does not exist. Creating it with defaults at: "
+        qCDebug(lcMainWindow) << "Settings file does not exist. Creating it with defaults at: "
                  << settingsFilePath;
         saveSettings();
     }
     else
     {
-        qDebug() << "Settings file exist. Reading it...";
+        qCDebug(lcMainWindow) << "Settings file exist. Reading it...";
         QFile file(settingsFilePath);
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         {
-            qDebug() << "Could not open (for reading) file:" << settingsFilePath;
+            qCDebug(lcMainWindow) << "Could not open (for reading) file:" << settingsFilePath;
             slotHelpMessageToUser(USER_MSG_CRITICAL,
                                   tr("Error loading settings file"),
                                   tr("Error loading settings"),
@@ -663,10 +663,10 @@ QMap<QString, QString> MainWindow::initSettings(const int &debugLevel, const boo
     //
     // Initialize list of supported text codecs and prepare the preview file dialog
     //
-    qDebug() << "initializing text codecs list..";
+    qCDebug(lcMainWindow) << "initializing text codecs list..";
     initNetworkAvailableTextCodecs();
 
-    qDebug() << "creating preview file dialog and passing the codecs list: " << codecs;
+    qCDebug(lcMainWindow) << "creating preview file dialog and passing the codecs list: " << codecs;
     m_dialogPreviewFile = new DialogPreviewFile(this);
     m_dialogPreviewFile->setCodecList(codecs);
 
@@ -682,11 +682,11 @@ QMap<QString, QString> MainWindow::initSettings(const int &debugLevel, const boo
  */
 void MainWindow::saveSettings()
 {
-    qDebug() << "Saving app settings to file: " << settingsFilePath;
+    qCDebug(lcMainWindow) << "Saving app settings to file: " << settingsFilePath;
     QFile file(settingsFilePath);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open (for writing) file:" << settingsFilePath;
+        qCDebug(lcMainWindow) << "Could not open (for writing) file:" << settingsFilePath;
         slotHelpMessageToUser(USER_MSG_CRITICAL,
                               tr("Error writing settings file"),
                               tr("Error writing settings"),
@@ -702,11 +702,10 @@ void MainWindow::saveSettings()
     }
 
     QTextStream out(&file);
-    qDebug() << "Writing settings to settings file first ";
+    qCDebug(lcMainWindow) << "Writing settings to settings file first ";
     QMap<QString, QString>::const_iterator it = appSettings.constBegin();
     while (it != appSettings.constEnd())
     {
-        // qDebug() << "   setting: " <<  it.key() << " = " << it.value();
         out << it.key() << " = " << it.value() << "\n";
         ++it;
     }
@@ -881,7 +880,7 @@ void MainWindow::slotOpenSettingsDialog()
 void MainWindow::initView()
 {
 
-    qDebug() << "Creating graphics widget...";
+    qCDebug(lcMainWindow) << "Creating graphics widget...";
 
     // Create our scene
     scene = new QGraphicsScene();
@@ -967,7 +966,7 @@ void MainWindow::initView()
                                     "<p>To edit the properties of a node, <em>right-click</em> on it. </p>"
                                     "<p>To edit the properties of an edge, <em>right-click</em> on it.</p>"));
 
-    qDebug() << "Finished initialization of graphics widget. Dimensions:"
+    qCDebug(lcMainWindow) << "Finished initialization of graphics widget. Dimensions:"
              << graphicsWidget->width() << "x" << graphicsWidget->height();
 }
 
@@ -977,7 +976,7 @@ void MainWindow::initView()
 void MainWindow::initGraph()
 {
 
-    qDebug() << "creating activeGraph object...";
+    qCDebug(lcMainWindow) << "creating activeGraph object...";
 
     bool ok1;
     nodesEstimatedSize = (appSettings["initNodesEstimatedSize"]).toInt(&ok1, 10);
@@ -995,17 +994,17 @@ void MainWindow::initGraph()
 
     activeGraph = new Graph(nodesEstimatedSize, edgesPerNodeEstimatedSize);
 
-    qDebug() << "activeGraph created on thread:" << activeGraph->getThread()
+    qCDebug(lcMainWindow) << "activeGraph created on thread:" << activeGraph->getThread()
              << "moving it to new thread ";
 
     activeGraph->moveToThreadFacade(&graphThread);
 
-    qDebug() << "activeGraph moved to thread:" << activeGraph->getThread()
+    qCDebug(lcMainWindow) << "activeGraph moved to thread:" << activeGraph->getThread()
              << "starting new activeGraph thread...";
 
     graphThread.start();
 
-    qDebug() << "activeGraph thread now:" << activeGraph->getThread()
+    qCDebug(lcMainWindow) << "activeGraph thread now:" << activeGraph->getThread()
              << "Finished initialization of graph.";
 }
 
@@ -1018,7 +1017,7 @@ void MainWindow::initGraph()
 void MainWindow::initActions()
 {
 
-    qDebug() << "initializing actions...";
+    qCDebug(lcMainWindow) << "initializing actions...";
 
     /**
     Network menu actions
@@ -3523,7 +3522,7 @@ void MainWindow::initActions()
     helpAboutQt->setWhatsThis(tr("About\n\nAbout Qt"));
     connect(helpAboutQt, SIGNAL(triggered()), this, SLOT(slotAboutQt()));
 
-    qDebug() << "Finished actions initialization.";
+    qCDebug(lcMainWindow) << "Finished actions initialization.";
 }
 
 /**
@@ -3532,7 +3531,7 @@ void MainWindow::initActions()
 void MainWindow::initMenuBar()
 {
 
-    qDebug() << "Initializing menu bar...";
+    qCDebug(lcMainWindow) << "Initializing menu bar...";
 
     /** NETWORK MENU */
     networkMenu = menuBar()->addMenu(tr("&Network"));
@@ -3971,7 +3970,7 @@ void MainWindow::initMenuBar()
     helpMenu->addAction(helpAboutApp);
     helpMenu->addAction(helpAboutQt);
 
-    qDebug() << "Finished menu bar init.";
+    qCDebug(lcMainWindow) << "Finished menu bar init.";
 }
 
 /**
@@ -3980,7 +3979,7 @@ void MainWindow::initMenuBar()
 void MainWindow::initToolBar()
 {
 
-    qDebug() << "Initializing toolbar...";
+    qCDebug(lcMainWindow) << "Initializing toolbar...";
 
     toolBar = addToolBar("operations");
 
@@ -4053,7 +4052,7 @@ void MainWindow::initToolBar()
     toolBar->addAction(QWhatsThis::createAction(this));
     toolBar->setIconSize(QSize(16, 16));
 
-    qDebug() << "Finished toolbar init.";
+    qCDebug(lcMainWindow) << "Finished toolbar init.";
 }
 
 /**
@@ -4063,7 +4062,7 @@ void MainWindow::initToolBar()
 void MainWindow::initPanels()
 {
 
-    qDebug() << "Initializing panels...";
+    qCDebug(lcMainWindow) << "Initializing panels...";
 
     //
     // create widgets for the Control Panel
@@ -4956,7 +4955,7 @@ void MainWindow::initPanels()
     rightPanel->setObjectName("rightPanel");
     rightPanel->setLayout(propertiesGrid);
 
-    qDebug() << "Finished panels init.";
+    qCDebug(lcMainWindow) << "Finished panels init.";
 }
 
 /**
@@ -4967,7 +4966,7 @@ void MainWindow::initPanels()
 void MainWindow::initWindowLayout()
 {
 
-    qDebug() << "Initializing window layout...";
+    qCDebug(lcMainWindow) << "Initializing window layout...";
 
     int size = style()->pixelMetric(QStyle::PM_ToolBarIconSize);
     QSize iconSize(size, size);
@@ -5135,7 +5134,7 @@ void MainWindow::initWindowLayout()
         slotStyleSheetByName(":/qss/default.qss");
     }
 
-    qDebug() << "Finished window layout init.";
+    qCDebug(lcMainWindow) << "Finished window layout init.";
 }
 
 /**
@@ -5149,7 +5148,7 @@ void MainWindow::initWindowLayout()
  */
 void MainWindow::initSignalSlots()
 {
-    qDebug() << "setting up signals/slots between widgets (graphicsWidget, activeGraph and MW)...";
+    qCDebug(lcMainWindow) << "setting up signals/slots between widgets (graphicsWidget, activeGraph and MW)...";
 
     // Signals between graphicsWidget and MainWindow
 
@@ -5497,7 +5496,7 @@ void MainWindow::initSignalSlots()
 void MainWindow::initApp()
 {
 
-    qDebug() << "### Application initialization starts, on thread" << thread();
+    qCDebug(lcMainWindow) << "### Application initialization starts, on thread" << thread();
 
     statusMessage(tr("Application initialization. Please wait..."));
 
@@ -5519,7 +5518,7 @@ void MainWindow::initApp()
     networkSaveAct->setEnabled(false);
 
     /** Clear previous network data and reset user-selected settings */
-    qDebug() << "### Clearing current graph. Please wait...";
+    qCDebug(lcMainWindow) << "### Clearing current graph. Please wait...";
     activeGraph->clear();
 
     activeGraph->vertexShapeSetDefault(appSettings["initNodeShape"], appSettings["initNodeIconPath"]);
@@ -5549,7 +5548,7 @@ void MainWindow::initApp()
     emit signalSetReportsDataDir(appSettings["dataDir"]);
 
     /** Clear graphicsWidget and reset settings and transformations **/
-    qDebug() << "### Clearing graphicsWidget and resetting transformations. Please wait...";
+    qCDebug(lcMainWindow) << "### Clearing graphicsWidget and resetting transformations. Please wait...";
     graphicsWidget->clear();
     rotateSlider->setValue(0);
     zoomSlider->setValue((int)maxZoomIndex / 2.0);
@@ -5588,7 +5587,7 @@ void MainWindow::initApp()
     miniChart->resetToTrivial();
 
     /** Clear LCDs **/
-    qDebug() << "### Clearing Statistics panel LCDs. Please wait...";
+    qCDebug(lcMainWindow) << "### Clearing Statistics panel LCDs. Please wait...";
 
     rightPanelClickedNodeLCD->setText("-");
     rightPanelClickedNodeInDegreeLabel->setVisible(false);
@@ -5602,7 +5601,7 @@ void MainWindow::initApp()
     rightPanelClickedEdgeReciprocalWeightLCD->setVisible(false);
 
     /** Clear toolbox and menu checkboxes **/
-    qDebug() << "### Resetting toolbox. Please wait...";
+    qCDebug(lcMainWindow) << "### Resetting toolbox. Please wait...";
     toolBoxEditEdgeTransformSelect->setCurrentIndex(0);
     toolBoxEditEdgeModeSelect->setCurrentIndex(0);
 
@@ -5633,7 +5632,7 @@ void MainWindow::initApp()
 
     // editRelationChangeCombo->clear();
 
-    qDebug() << "### Clearing textEditors. Current count: " << m_textEditors.size() << "textEditors";
+    qCDebug(lcMainWindow) << "### Clearing textEditors. Current count: " << m_textEditors.size() << "textEditors";
     foreach (TextEditor *ed, m_textEditors)
     {
         ed->close();
@@ -5660,7 +5659,7 @@ void MainWindow::initApp()
 
     statusMessage(tr("Ready"));
 
-    qDebug() << "#### APP INITIALISATION FINISHED, ON THREAD" << thread();
+    qCDebug(lcMainWindow) << "#### APP INITIALISATION FINISHED, ON THREAD" << thread();
 }
 
 /**
@@ -5683,7 +5682,7 @@ void MainWindow::runInteractiveScript(const QString &scriptPath)
     QTextStream in(&file);
     m_interactiveScriptLines = in.readAll().split('\n');
     m_interactiveScriptIndex = 0;
-    qDebug() << "Loaded interactive script:" << scriptPath
+    qCDebug(lcMainWindow) << "Loaded interactive script:" << scriptPath
              << "-" << m_interactiveScriptLines.size() << "line(s)";
     QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
 }
@@ -5695,7 +5694,7 @@ void MainWindow::processNextInteractiveCommand()
 {
     if (m_interactiveScriptIndex >= m_interactiveScriptLines.size())
     {
-        qDebug() << "Interactive script finished.";
+        qCDebug(lcMainWindow) << "Interactive script finished.";
         return;
     }
     const QString line = m_interactiveScriptLines.at(m_interactiveScriptIndex).trimmed();
@@ -5707,7 +5706,7 @@ void MainWindow::processNextInteractiveCommand()
         return;
     }
 
-    qDebug() << "Interactive script command:" << line;
+    qCDebug(lcMainWindow) << "Interactive script command:" << line;
 
     if (line == "new")
     {
@@ -6091,7 +6090,7 @@ int MainWindow::slotHelpMessageToUser(const int type,
  */
 void MainWindow::toolBoxNetworkAutoCreateSelectChanged(const int &selectedIndex)
 {
-    qDebug() << "selected net auto create, index: " << selectedIndex;
+    qCDebug(lcMainWindow) << "selected net auto create, index: " << selectedIndex;
     switch (selectedIndex)
     {
     case 0:
@@ -6122,7 +6121,7 @@ void MainWindow::toolBoxNetworkAutoCreateSelectChanged(const int &selectedIndex)
         break;
     };
 
-    qDebug() << "Calling initComboBoxes() ";
+    qCDebug(lcMainWindow) << "Calling initComboBoxes() ";
     initComboBoxes();
 }
 
@@ -6133,7 +6132,7 @@ void MainWindow::toolBoxNetworkAutoCreateSelectChanged(const int &selectedIndex)
  */
 void MainWindow::toolBoxEditNodeSubgraphSelectChanged(const int &selectedIndex)
 {
-    qDebug() << "selected subgraph creation, text index: " << selectedIndex;
+    qCDebug(lcMainWindow) << "selected subgraph creation, text index: " << selectedIndex;
     switch (selectedIndex)
     {
     case 0:
@@ -6152,7 +6151,7 @@ void MainWindow::toolBoxEditNodeSubgraphSelectChanged(const int &selectedIndex)
         break;
     };
 
-    qDebug() << "Calling initComboBoxes() ";
+    qCDebug(lcMainWindow) << "Calling initComboBoxes() ";
     initComboBoxes();
 }
 
@@ -6163,7 +6162,7 @@ void MainWindow::toolBoxEditNodeSubgraphSelectChanged(const int &selectedIndex)
  */
 void MainWindow::toolBoxEditEdgeTransformSelectChanged(const int &selectedIndex)
 {
-    qDebug() << "selected edge transform, index: " << selectedIndex;
+    qCDebug(lcMainWindow) << "selected edge transform, index: " << selectedIndex;
     switch (selectedIndex)
     {
     case 0:
@@ -6190,7 +6189,7 @@ void MainWindow::toolBoxEditEdgeTransformSelectChanged(const int &selectedIndex)
  */
 void MainWindow::toolBoxFilterSelectChanged(const int &selectedIndex)
 {
-    qDebug() << "selected filter action, index: " << selectedIndex;
+    qCDebug(lcMainWindow) << "selected filter action, index: " << selectedIndex;
     switch (selectedIndex)
     {
     case 0:
@@ -6230,7 +6229,7 @@ void MainWindow::toolBoxFilterSelectChanged(const int &selectedIndex)
  */
 void MainWindow::toolBoxAnalysisMatricesSelectChanged(const int &selectedIndex)
 {
-    qDebug() << "selected matrix analysis, text index: " << selectedIndex;
+    qCDebug(lcMainWindow) << "selected matrix analysis, text index: " << selectedIndex;
     switch (selectedIndex)
     {
     case 0:
@@ -6258,7 +6257,7 @@ void MainWindow::toolBoxAnalysisMatricesSelectChanged(const int &selectedIndex)
         break;
     };
 
-    qDebug() << "Calling initComboBoxes() ";
+    qCDebug(lcMainWindow) << "Calling initComboBoxes() ";
     initComboBoxes();
 }
 
@@ -6269,7 +6268,7 @@ void MainWindow::toolBoxAnalysisMatricesSelectChanged(const int &selectedIndex)
  */
 void MainWindow::toolBoxAnalysisCohesionSelectChanged(const int &selectedIndex)
 {
-    qDebug() << "selected cohesion analysis, text index: " << selectedIndex;
+    qCDebug(lcMainWindow) << "selected cohesion analysis, text index: " << selectedIndex;
     switch (selectedIndex)
     {
     case 0:
@@ -6318,7 +6317,7 @@ void MainWindow::toolBoxAnalysisCohesionSelectChanged(const int &selectedIndex)
         break;
     };
 
-    qDebug() << "Calling initComboBoxes() ";
+    qCDebug(lcMainWindow) << "Calling initComboBoxes() ";
     initComboBoxes();
 }
 
@@ -6330,7 +6329,7 @@ void MainWindow::toolBoxAnalysisCohesionSelectChanged(const int &selectedIndex)
  */
 void MainWindow::toolBoxAnalysisCommunitiesSelectChanged(const int &selectedIndex)
 {
-    qDebug() << "selected community analysis, text index: " << selectedIndex;
+    qCDebug(lcMainWindow) << "selected community analysis, text index: " << selectedIndex;
     switch (selectedIndex)
     {
     case 0:
@@ -6342,7 +6341,7 @@ void MainWindow::toolBoxAnalysisCommunitiesSelectChanged(const int &selectedInde
         slotAnalyzeCommunitiesTriadCensus();
         break;
     };
-    qDebug() << "Calling initComboBoxes() ";
+    qCDebug(lcMainWindow) << "Calling initComboBoxes() ";
     initComboBoxes();
 }
 
@@ -6354,7 +6353,7 @@ void MainWindow::toolBoxAnalysisCommunitiesSelectChanged(const int &selectedInde
  */
 void MainWindow::toolBoxAnalysisStrEquivalenceSelectChanged(const int &selectedIndex)
 {
-    qDebug() << "selected struct. equivalence analysis, text index: " << selectedIndex;
+    qCDebug(lcMainWindow) << "selected struct. equivalence analysis, text index: " << selectedIndex;
     switch (selectedIndex)
     {
     case 0:
@@ -6373,7 +6372,7 @@ void MainWindow::toolBoxAnalysisStrEquivalenceSelectChanged(const int &selectedI
         break;
     };
 
-    qDebug() << "Calling initComboBoxes() ";
+    qCDebug(lcMainWindow) << "Calling initComboBoxes() ";
     initComboBoxes();
 }
 
@@ -6385,7 +6384,7 @@ void MainWindow::toolBoxAnalysisStrEquivalenceSelectChanged(const int &selectedI
  */
 void MainWindow::toolBoxAnalysisProminenceSelectChanged(const int &selectedIndex)
 {
-    qDebug() << "selected prominence analysis, text index: " << selectedIndex;
+    qCDebug(lcMainWindow) << "selected prominence analysis, text index: " << selectedIndex;
     switch (selectedIndex)
     {
     case 0:
@@ -6428,7 +6427,7 @@ void MainWindow::toolBoxAnalysisProminenceSelectChanged(const int &selectedIndex
         break;
     };
 
-    qDebug() << "Calling initComboBoxes() ";
+    qCDebug(lcMainWindow) << "Calling initComboBoxes() ";
     initComboBoxes();
 }
 
@@ -6438,11 +6437,11 @@ void MainWindow::toolBoxAnalysisProminenceSelectChanged(const int &selectedIndex
  */
 void MainWindow::toolBoxLayoutByIndexApplyBtnPressed()
 {
-    qDebug() << "User request to apply prominence-based layout...";
+    qCDebug(lcMainWindow) << "User request to apply prominence-based layout...";
     int selectedIndex = toolBoxLayoutByIndexSelect->currentIndex();
     QString selectedIndexText = toolBoxLayoutByIndexSelect->currentText();
     int selectedLayoutType = toolBoxLayoutByIndexTypeSelect->currentIndex();
-    qDebug() << "elected index is "
+    qCDebug(lcMainWindow) << "elected index is "
              << selectedIndexText << " : " << selectedIndex
              << " selected layout type is " << selectedLayoutType;
     switch (selectedIndex)
@@ -6476,10 +6475,10 @@ void MainWindow::toolBoxLayoutByIndexApplyBtnPressed()
  */
 void MainWindow::toolBoxLayoutForceDirectedApplyBtnPressed()
 {
-    qDebug() << "User selected to apply a FDP layout...";
+    qCDebug(lcMainWindow) << "User selected to apply a FDP layout...";
     int selectedModel = toolBoxLayoutForceDirectedSelect->currentIndex();
     QString selectedModelText = toolBoxLayoutForceDirectedSelect->currentText();
-    qDebug() << " selected index is " << selectedModelText << " : "
+    qCDebug(lcMainWindow) << " selected index is " << selectedModelText << " : "
              << selectedModel;
 
     switch (selectedModel)
@@ -6536,7 +6535,7 @@ QString MainWindow::getLastPath()
     {
         appSettings["lastUsedDirPath"] = appSettings["dataDir"];
     }
-    qDebug() << "Last path used: " << appSettings["lastUsedDirPath"];
+    qCDebug(lcMainWindow) << "Last path used: " << appSettings["lastUsedDirPath"];
     return appSettings["lastUsedDirPath"];
 }
 
@@ -6547,7 +6546,7 @@ QString MainWindow::getLastPath()
  */
 void MainWindow::setLastPath(const QString &filePath)
 {
-    qDebug() << "Setting last path and adding to recent files:" << filePath;
+    qCDebug(lcMainWindow) << "Setting last path and adding to recent files:" << filePath;
     QString currentPath = QFileInfo(filePath).dir().absolutePath();
     QDir::setCurrent(currentPath);
     appSettings["lastUsedDirPath"] = currentPath;
@@ -6583,7 +6582,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
                                        int fileFormat,
                                        const bool &checkSelectFileType)
 {
-    qDebug() << " m_fileName: " << m_fileName
+    qCDebug(lcMainWindow) << " m_fileName: " << m_fileName
              << " fileFormat " << fileFormat
              << " checkSelectFileType " << checkSelectFileType;
 
@@ -6668,7 +6667,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
         if (fileDialog->exec())
         {
             m_fileName = (fileDialog->selectedFiles()).at(0);
-            qDebug() << "m_fileName " << m_fileName;
+            qCDebug(lcMainWindow) << "m_fileName " << m_fileName;
         }
         else
         {
@@ -6853,7 +6852,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
             fileFormat = FileType::UNRECOGNIZED;
     }
 
-    qDebug() << "Calling slotNetworkFilePreview"
+    qCDebug(lcMainWindow) << "Calling slotNetworkFilePreview"
              << "with m_fileName" << m_fileName
              << "and fileFormat " << fileFormat;
 
@@ -6865,7 +6864,7 @@ void MainWindow::slotNetworkFileChoose(QString m_fileName,
  */
 void MainWindow::slotNetworkFileDialogRejected()
 {
-    qDebug() << "Dialog rejected. If a file was previously opened, get back to it.";
+    qCDebug(lcMainWindow) << "Dialog rejected. If a file was previously opened, get back to it.";
     statusMessage(tr("Opening aborted"));
 }
 
@@ -6875,57 +6874,57 @@ void MainWindow::slotNetworkFileDialogRejected()
  */
 void MainWindow::slotNetworkFileDialogFilterSelected(const QString &filter)
 {
-    qDebug() << "User selected network file filter" << filter;
+    qCDebug(lcMainWindow) << "User selected network file filter" << filter;
     if (filter.startsWith("GraphML", Qt::CaseInsensitive))
     {
         fileType = FileType::GRAPHML;
-        qDebug() << "fileType FileType::GRAPHML";
+        qCDebug(lcMainWindow) << "fileType FileType::GRAPHML";
     }
     else if (filter.contains("PAJEK", Qt::CaseInsensitive))
     {
         fileType = FileType::PAJEK;
-        qDebug() << "fileType FileType::PAJEK";
+        qCDebug(lcMainWindow) << "fileType FileType::PAJEK";
     }
     else if (filter.contains("DL", Qt::CaseInsensitive) ||
              filter.contains("UCINET", Qt::CaseInsensitive))
     {
         fileType = FileType::UCINET;
-        qDebug() << "fileType FileType::UCINET";
+        qCDebug(lcMainWindow) << "fileType FileType::UCINET";
     }
     else if (filter.contains("Adjacency", Qt::CaseInsensitive))
     {
         fileType = FileType::ADJACENCY;
-        qDebug() << "fileType FileType::ADJACENCY";
+        qCDebug(lcMainWindow) << "fileType FileType::ADJACENCY";
     }
     else if (filter.contains("GraphViz", Qt::CaseInsensitive))
     {
         fileType = FileType::GRAPHVIZ;
-        qDebug() << "fileType FileType::GRAPHVIZ";
+        qCDebug(lcMainWindow) << "fileType FileType::GRAPHVIZ";
     }
     else if (filter.contains("GML", Qt::CaseInsensitive))
     {
         fileType = FileType::GML;
-        qDebug() << "fileType FileType::GML";
+        qCDebug(lcMainWindow) << "fileType FileType::GML";
     }
     else if (filter.contains("Simple Edge List", Qt::CaseInsensitive))
     {
         fileType = FileType::EDGELIST_SIMPLE;
-        qDebug() << "fileType FileType::EDGELIST_SIMPLE";
+        qCDebug(lcMainWindow) << "fileType FileType::EDGELIST_SIMPLE";
     }
     else if (filter.contains("Weighted Edge List", Qt::CaseInsensitive))
     {
         fileType = FileType::EDGELIST_WEIGHTED;
-        qDebug() << "fileType FileType::EDGELIST_WEIGHTED";
+        qCDebug(lcMainWindow) << "fileType FileType::EDGELIST_WEIGHTED";
     }
     else if (filter.contains("Two-Mode", Qt::CaseInsensitive))
     {
         fileType = FileType::TWOMODE;
-        qDebug() << "fileType FileType::TWOMODE";
+        qCDebug(lcMainWindow) << "fileType FileType::TWOMODE";
     }
     else
     {
         fileType = FileType::UNRECOGNIZED;
-        qDebug() << "fileType FileType::UNRECOGNIZED";
+        qCDebug(lcMainWindow) << "fileType FileType::UNRECOGNIZED";
     }
 }
 
@@ -6937,7 +6936,7 @@ void MainWindow::slotNetworkFileDialogFilterSelected(const QString &filter)
  */
 void MainWindow::slotNetworkFileDialogFileSelected(const QString &fileName)
 {
-    qDebug() << "User selected filename:" << fileName
+    qCDebug(lcMainWindow) << "User selected filename:" << fileName
              << "calling slotNetworkFileChoose() with fileType" << fileType;
     slotNetworkFileChoose(fileName,
                           fileType,
@@ -7033,7 +7032,7 @@ void MainWindow::slotNetworkSave(const int &fileFormat)
  */
 void MainWindow::slotNetworkSaveAs()
 {
-    qDebug() << "User wants to save the file as a new name...";
+    qCDebug(lcMainWindow) << "User wants to save the file as a new name...";
     statusMessage(tr("Enter or select a filename to save the network..."));
 
     QString fn = QFileDialog::getSaveFileName(
@@ -7121,7 +7120,7 @@ void MainWindow::slotNetworkSavedStatus(const int &status)
 bool MainWindow::slotNetworkClose()
 {
 
-    qDebug() << "Request to close current network file. Check if it is saved...";
+    qCDebug(lcMainWindow) << "Request to close current network file. Check if it is saved...";
 
     statusMessage(tr("Closing network file..."));
 
@@ -7129,7 +7128,7 @@ bool MainWindow::slotNetworkClose()
     // unsaved changes as discarded so the script can run unattended. See #261.
     if (!activeGraph->isSaved() && !m_interactiveScriptLines.isEmpty())
     {
-        qDebug() << "Interactive script active - discarding unsaved changes without prompting.";
+        qCDebug(lcMainWindow) << "Interactive script active - discarding unsaved changes without prompting.";
     }
     else if (!activeGraph->isSaved())
     {
@@ -7150,9 +7149,9 @@ bool MainWindow::slotNetworkClose()
             break;
         }
     }
-    qDebug() << "Closing network file. Calling initApp ...";
+    qCDebug(lcMainWindow) << "Closing network file. Calling initApp ...";
     initApp();
-    qDebug() << "Network file closed...";
+    qCDebug(lcMainWindow) << "Network file closed...";
     statusMessage(tr("Ready."));
     return true;
 }
@@ -7232,7 +7231,7 @@ void MainWindow::slotNetworkImportUcinet()
 void MainWindow::slotNetworkImportEdgeList()
 {
 
-    qDebug() << "Importing an edge list network file...";
+    qCDebug(lcMainWindow) << "Importing an edge list network file...";
 
     bool m_checkSelectFileType = false;
 
@@ -7261,11 +7260,11 @@ void MainWindow::slotNetworkImportEdgeList()
                                   ))
     {
     case 1:
-        qDebug() << "Weighted list selected! ";
+        qCDebug(lcMainWindow) << "Weighted list selected! ";
         slotNetworkFileChoose(QString(), FileType::EDGELIST_WEIGHTED, m_checkSelectFileType);
         break;
     case 2:
-        qDebug() << "Simple list selected! ";
+        qCDebug(lcMainWindow) << "Simple list selected! ";
         slotNetworkFileChoose(QString(), FileType::EDGELIST_SIMPLE, m_checkSelectFileType);
         break;
     }
@@ -7276,7 +7275,7 @@ void MainWindow::slotNetworkImportEdgeList()
  */
 void MainWindow::slotNetworkImportTwoModeSM()
 {
-    qDebug() << "Importing a two mode sociomatrix network file...";
+    qCDebug(lcMainWindow) << "Importing a two mode sociomatrix network file...";
     bool m_checkSelectFileType = false;
     slotNetworkFileChoose(QString(), FileType::TWOMODE, m_checkSelectFileType);
 }
@@ -7286,7 +7285,7 @@ void MainWindow::slotNetworkImportTwoModeSM()
  */
 void MainWindow::initNetworkAvailableTextCodecs()
 {
-    qDebug() << "Checking which text codecs are supported and storing them to a list";
+    qCDebug(lcMainWindow) << "Checking which text codecs are supported and storing them to a list";
     QMap<QString, QTextCodec *> codecMap;
     QRegularExpression iso8859RegExp("ISO[- ]8859-([0-9]+).*");
     QRegularExpressionMatch match;
@@ -7346,7 +7345,7 @@ void MainWindow::initNetworkAvailableTextCodecs()
 bool MainWindow::slotNetworkFilePreview(const QString &m_fileName,
                                         const int &fileFormat)
 {
-    qDebug() << "Previewing file: " << m_fileName;
+    qCDebug(lcMainWindow) << "Previewing file: " << m_fileName;
     if (m_fileName.isEmpty())
     {
         statusMessage(tr("No file selected."));
@@ -7354,7 +7353,7 @@ bool MainWindow::slotNetworkFilePreview(const QString &m_fileName,
     }
     if (!m_encodingOverride.isEmpty())
     {
-        qDebug() << "Encoding override set via --encoding, skipping preview dialog:" << m_encodingOverride;
+        qCDebug(lcMainWindow) << "Encoding override set via --encoding, skipping preview dialog:" << m_encodingOverride;
         slotNetworkFileLoad(m_fileName, m_encodingOverride, fileFormat);
         return true;
     }
@@ -7388,7 +7387,7 @@ void MainWindow::slotNetworkFileLoadRecent()
     QAction *action = qobject_cast<QAction *>(sender());
     if (action)
     {
-        qDebug() << "Loading recent file: " << action->data().toString();
+        qCDebug(lcMainWindow) << "Loading recent file: " << action->data().toString();
         slotNetworkFileChoose(action->data().toString());
     }
 }
@@ -7406,7 +7405,7 @@ void MainWindow::slotNetworkFileLoad(const QString &fileNameToLoad,
                                      const QString &codecName,
                                      const int &fileFormat)
 {
-    qDebug() << "Request to to load the file:" << fileNameToLoad
+    qCDebug(lcMainWindow) << "Request to to load the file:" << fileNameToLoad
              << "codecName" << codecName
              << "fileFormat" << fileFormat;
 
@@ -7503,13 +7502,13 @@ void MainWindow::slotNetworkFileLoad(const QString &fileNameToLoad,
         {
             delimiter = " ";
         }
-        qDebug() << "selected delimiter" << delimiter;
+        qCDebug(lcMainWindow) << "selected delimiter" << delimiter;
     }
 
     // Change the cursor to wait cursor
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
-    qDebug() << "Calling graph to do the file load loading...";
+    qCDebug(lcMainWindow) << "Calling graph to do the file load loading...";
 
     activeGraph->loadFile(
         fileNameToLoad,
@@ -7549,7 +7548,7 @@ void MainWindow::slotNetworkFileLoaded(const int &type,
 
     if (type <= 0 || fName.isEmpty())
     {
-        qDebug() << "ERROR LOADING FILE. FILE UNRECOGNIZED. Message from Parser: "
+        qCDebug(lcMainWindow) << "ERROR LOADING FILE. FILE UNRECOGNIZED. Message from Parser: "
                  << message
                  << "Calling initApp()";
 
@@ -7577,7 +7576,7 @@ void MainWindow::slotNetworkFileLoaded(const int &type,
     // A file has been loaded successfully.
     // Update our MW UI and save file path in settings
 
-    qDebug() << "Got signal that a file was loaded:"
+    qCDebug(lcMainWindow) << "Got signal that a file was loaded:"
              << " filename" << fName
              << " type " << type
              << " totalNodes" << totalNodes
@@ -7664,7 +7663,7 @@ void MainWindow::slotNetworkFileLoaded(const int &type,
  */
 void MainWindow::slotEditDragModeSelection(bool checked)
 {
-    qDebug() << "User changed drag mode, checked" << checked;
+    qCDebug(lcMainWindow) << "User changed drag mode, checked" << checked;
 
     editMouseModeScrollAct->setChecked(false);
 
@@ -7688,7 +7687,7 @@ void MainWindow::slotEditDragModeSelection(bool checked)
 void MainWindow::slotEditDragModeScroll(bool checked)
 {
 
-    qDebug() << "User changed scroll mode, checked" << checked;
+    qCDebug(lcMainWindow) << "User changed scroll mode, checked" << checked;
 
     editMouseModeInteractiveAct->setChecked(false);
     graphicsWidget->setInteractive(false);
@@ -7709,7 +7708,7 @@ void MainWindow::slotEditDragModeScroll(bool checked)
  */
 void MainWindow::slotEditRelationsClear()
 {
-    qDebug() << "Clearing relations combo...";
+    qCDebug(lcMainWindow) << "Clearing relations combo...";
     editRelationChangeCombo->clear();
 }
 
@@ -7725,7 +7724,7 @@ void MainWindow::slotEditRelationAddPrompt()
     QString newRelationName;
     int relationsCounter = activeGraph->relations();
 
-    qDebug() << "Prompting the user for the new relation name to be added to the relations combo...";
+    qCDebug(lcMainWindow) << "Prompting the user for the new relation name to be added to the relations combo...";
 
     //
     // Prompt the user for the new relation name
@@ -7812,7 +7811,7 @@ void MainWindow::slotEditRelationAddPrompt()
 void MainWindow::slotEditRelationAdd(const QString &newRelationName)
 {
 
-    qDebug() << "Adding new relation to relations combo:"
+    qCDebug(lcMainWindow) << "Adding new relation to relations combo:"
              << newRelationName;
 
     if (!newRelationName.isNull())
@@ -7843,13 +7842,13 @@ void MainWindow::slotEditRelationChange(const int &relIndex)
 {
     if (relIndex == RAND_MAX)
     {
-        qDebug() << "relIndex==RANDMAX. Changing relation combo to last relation...";
+        qCDebug(lcMainWindow) << "relIndex==RANDMAX. Changing relation combo to last relation...";
         editRelationChangeCombo->setCurrentIndex(
             (editRelationChangeCombo->count() - 1));
     }
     else
     {
-        qDebug() << "Changing relation combo to index" << relIndex;
+        qCDebug(lcMainWindow) << "Changing relation combo to index" << relIndex;
         editRelationChangeCombo->setCurrentIndex(relIndex);
     }
 }
@@ -7862,7 +7861,7 @@ void MainWindow::slotEditRelationRename()
 
     bool ok = false;
 
-    qDebug() << "Request to rename current relation:"
+    qCDebug(lcMainWindow) << "Request to rename current relation:"
              << editRelationChangeCombo->currentText()
              << "Prompting for new name...";
 
@@ -7898,7 +7897,7 @@ void MainWindow::slotEditRelationRename()
  */
 void MainWindow::slotNetworkExportImageDialog()
 {
-    qDebug() << "Opening Image export dialog...";
+    qCDebug(lcMainWindow) << "Opening Image export dialog...";
 
     if (!activeNodes())
     {
@@ -7930,7 +7929,7 @@ void MainWindow::slotNetworkExportImage(const QString &filename,
                                         const int &compression)
 {
 
-    qDebug() << "Exporting network to image file" << filename;
+    qCDebug(lcMainWindow) << "Exporting network to image file" << filename;
 
     if (filename.isEmpty())
     {
@@ -7948,7 +7947,7 @@ void MainWindow::slotNetworkExportImage(const QString &filename,
     //
     //  Grab network from canvas
     //
-    qDebug() << "Grabbing network from the canvas";
+    qCDebug(lcMainWindow) << "Grabbing network from the canvas";
 
     qreal ratio = 1;
     qreal w = graphicsWidget->width() * ratio;
@@ -7956,19 +7955,19 @@ void MainWindow::slotNetworkExportImage(const QString &filename,
 
     QImage picture = QImage(w, h, QImage::Format_ARGB32_Premultiplied);
 
-    qDebug() << "Creating painter...";
+    qCDebug(lcMainWindow) << "Creating painter...";
     QPainter p;
 
-    qDebug() << "Begin painter on picture...";
+    qCDebug(lcMainWindow) << "Begin painter on picture...";
     p.begin(&picture);
 
-    qDebug() << "render scene on painter...";
+    qCDebug(lcMainWindow) << "render scene on painter...";
     graphicsWidget->render(&p);
 
     //
     // Add name and optionally log
     //
-    qDebug() << "Adding name (and logo)..";
+    qCDebug(lcMainWindow) << "Adding name (and logo)..";
     p.setFont(QFont("Helvetica", 10, QFont::Normal, false));
     if (appSettings["printLogo"] == "true")
     {
@@ -7981,12 +7980,12 @@ void MainWindow::slotNetworkExportImage(const QString &filename,
         p.drawText(5, 15, name);
     }
 
-    qDebug() << "End painter on picture...";
+    qCDebug(lcMainWindow) << "End painter on picture...";
     p.end();
 
     QString author = "SocNetV v" + VERSION;
 
-    qDebug() << "slotNetworkExportImage() - saving image to file:"
+    qCDebug(lcMainWindow) << "slotNetworkExportImage() - saving image to file:"
              << filename
              << "format" << format
              << "quality:" << quality
@@ -8027,7 +8026,7 @@ void MainWindow::slotNetworkExportImage(const QString &filename,
  */
 void MainWindow::slotNetworkExportPDFDialog()
 {
-    qDebug() << "MW::slotNetworkExportPDFDialog()";
+    qCDebug(lcMainWindow) << "MW::slotNetworkExportPDFDialog()";
     if (!activeNodes())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -8059,7 +8058,7 @@ void MainWindow::slotNetworkExportPDF(QString &pdfName,
                                       const QPrinter::PrinterMode printerMode = QPrinter::ScreenResolution,
                                       const QPageSize &pageSize = QPageSize(QPageSize::A4))
 {
-    qDebug() << "MW::slotNetworkExportPDF()";
+    qCDebug(lcMainWindow) << "MW::slotNetworkExportPDF()";
 
     //    Q_UNUSED(dpi);
 
@@ -8099,11 +8098,11 @@ void MainWindow::slotNetworkExportPDF(QString &pdfName,
             p.drawText(5, 15, name);
         }
 
-        qDebug() << "End painter on QPrinter...";
+        qCDebug(lcMainWindow) << "End painter on QPrinter...";
         p.end();
         delete printerPDF;
     }
-    qDebug() << "Exporting PDF to " << pdfName;
+    qCDebug(lcMainWindow) << "Exporting PDF to " << pdfName;
     tempFileNameNoPath = pdfName.split("/");
     setLastPath(pdfName);
     slotHelpMessageToUser(USER_MSG_INFO,
@@ -8118,7 +8117,7 @@ void MainWindow::slotNetworkExportPDF(QString &pdfName,
  */
 void MainWindow::slotNetworkExportPajek()
 {
-    qDebug() << "MW::slotNetworkExportPajek";
+    qCDebug(lcMainWindow) << "MW::slotNetworkExportPajek";
 
     if (!activeNodes())
     {
@@ -8161,7 +8160,7 @@ void MainWindow::slotNetworkExportPajek()
  */
 void MainWindow::slotNetworkExportSM()
 {
-    qDebug("MW: slotNetworkExportSM()");
+    qCDebug(lcMainWindow, "MW: slotNetworkExportSM()");
     if (!activeNodes())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -8491,7 +8490,7 @@ void MainWindow::slotNetworkExportEdgesJSON()
 void MainWindow::slotNetworkFileView()
 {
 
-    qDebug() << "Request to display current network file. Filename:" << fileName.toLatin1()
+    qCDebug(lcMainWindow) << "Request to display current network file. Filename:" << fileName.toLatin1()
              << "isLoaded:" << activeGraph->isLoaded()
              << "isSaved:" << activeGraph->isSaved()
              << "graph filename:" << activeGraph->getFileName();
@@ -8502,7 +8501,7 @@ void MainWindow::slotNetworkFileView()
         QFile f(fileName);
         if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
         {
-            qDebug("Error in open!");
+            qCDebug(lcMainWindow, "Error in open!");
             return;
         }
         TextEditor *ed = new TextEditor(fileName, this, false);
@@ -8571,7 +8570,7 @@ void MainWindow::slotNetworkFileView()
  */
 void MainWindow::slotNetworkTextEditor()
 {
-    qDebug() << "slotNetworkTextEditor() : ";
+    qCDebug(lcMainWindow) << "slotNetworkTextEditor() : ";
 
     TextEditor *ed = new TextEditor("", this, false);
     ed->setWindowTitle(tr("New Network File"));
@@ -8599,7 +8598,7 @@ void MainWindow::slotNetworkViewSociomatrix()
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-" + dateTime + ".html";
 
-    qDebug() << "MW::slotNetworkViewSociomatrix() - dataDir"
+    qCDebug(lcMainWindow) << "MW::slotNetworkViewSociomatrix() - dataDir"
              << appSettings["dataDir"]
              << "fn" << fn;
 
@@ -8612,7 +8611,7 @@ void MainWindow::slotNetworkViewSociomatrix()
     if (appSettings["viewReportsInSystemBrowser"] == "true")
     {
 
-        qDebug() << "MW::slotNetworkViewSociomatrix() - "
+        qCDebug(lcMainWindow) << "MW::slotNetworkViewSociomatrix() - "
                     "calling QDesktopServices::openUrl for"
                  << QUrl::fromLocalFile(fn);
 
@@ -8692,7 +8691,7 @@ void MainWindow::slotNetworkViewSociomatrixPlotText()
  */
 void MainWindow::slotNetworkDataSetSelect()
 {
-    qDebug() << "MW::slotNetworkDataSetSelect()";
+    qCDebug(lcMainWindow) << "MW::slotNetworkDataSetSelect()";
 
     // Close the current network
     if (!this->slotNetworkClose())
@@ -8719,7 +8718,7 @@ void MainWindow::slotNetworkDataSetRecreate(const QString m_fileName)
 
     int fileFormat = 0;
 
-    qDebug() << "MW::slotNetworkDataSetRecreate() datadir+fileName: "
+    qCDebug(lcMainWindow) << "MW::slotNetworkDataSetRecreate() datadir+fileName: "
              << appSettings["dataDir"] + m_fileName;
 
     activeGraph->writeDataSetToFile(appSettings["dataDir"], m_fileName);
@@ -8771,7 +8770,7 @@ void MainWindow::slotNetworkDataSetRecreate(const QString m_fileName)
 void MainWindow::slotNetworkRandomErdosRenyiDialog()
 {
 
-    qDebug() << "Showing the dialog to create a random Erdos-Renyi network ";
+    qCDebug(lcMainWindow) << "Showing the dialog to create a random Erdos-Renyi network ";
 
     // Close the current network
     if (!this->slotNetworkClose())
@@ -8808,7 +8807,7 @@ void MainWindow::slotNetworkRandomErdosRenyi(const int newNodes,
                                              const QString mode,
                                              const bool diag)
 {
-    qDebug() << "Request to create an Erdos-Renyi random network...";
+    qCDebug(lcMainWindow) << "Request to create an Erdos-Renyi random network...";
     statusMessage(tr("Creating new Erdos-Renyi random network. Please wait... "));
     appSettings["randomErdosEdgeProbability"] = QString::number(eprob);
 
@@ -8850,7 +8849,7 @@ void MainWindow::slotNetworkRandomErdosRenyi(const int newNodes,
 void MainWindow::slotNetworkRandomScaleFreeDialog()
 {
 
-    qDebug() << "Showing the dialog to create a random scale-free network ";
+    qCDebug(lcMainWindow) << "Showing the dialog to create a random scale-free network ";
 
     // Close the current network
     if (!this->slotNetworkClose())
@@ -8884,7 +8883,7 @@ void MainWindow::slotNetworkRandomScaleFree(const int &newNodes,
                                             const qreal &zeroAppeal,
                                             const QString &mode)
 {
-    qDebug() << "Request to create a new scale-free random network...";
+    qCDebug(lcMainWindow) << "Request to create a new scale-free random network...";
     if (!activeGraph->randomNetScaleFreeCreate(newNodes, power, initialNodes,
                                                edgesPerStep, zeroAppeal, mode))
     {
@@ -8906,7 +8905,7 @@ void MainWindow::slotNetworkRandomScaleFree(const int &newNodes,
  */
 void MainWindow::slotNetworkRandomSmallWorldDialog()
 {
-    qDebug() << "Showing the dialog to create a random small-world network ";
+    qCDebug(lcMainWindow) << "Showing the dialog to create a random small-world network ";
 
     // Close the current network
     if (!this->slotNetworkClose())
@@ -8940,7 +8939,7 @@ void MainWindow::slotNetworkRandomSmallWorld(const int &newNodes,
                                              const bool &diag)
 {
     Q_UNUSED(diag);
-    qDebug() << "Request to create a new small-world random network...";
+    qCDebug(lcMainWindow) << "Request to create a new small-world random network...";
     if (!activeGraph->randomNetSmallWorldCreate(newNodes, degree, beta, mode))
     {
         statusMessage(tr("Small-world network creation cancelled or did not finish."));
@@ -8961,7 +8960,7 @@ void MainWindow::slotNetworkRandomSmallWorld(const int &newNodes,
  */
 void MainWindow::slotNetworkRandomRegularDialog()
 {
-    qDebug() << "Showing the dialog to create a random d-regular network ";
+    qCDebug(lcMainWindow) << "Showing the dialog to create a random d-regular network ";
 
     // Close the current network
     if (!this->slotNetworkClose())
@@ -9090,7 +9089,7 @@ void MainWindow::slotNetworkRandomRingLattice()
  */
 void MainWindow::slotNetworkRandomLatticeDialog()
 {
-    qDebug() << "Showing the Random Lattice Dialog...";
+    qCDebug(lcMainWindow) << "Showing the Random Lattice Dialog...";
     statusMessage(tr("Generate a lattice network. "));
     m_randLatticeDialog = new DialogRandLattice(this);
 
@@ -9121,7 +9120,7 @@ void MainWindow::slotNetworkRandomLattice(const int &newNodes,
                                           const QString &mode,
                                           const bool &circular)
 {
-    qDebug() << "Request to create a new lattice random network...";
+    qCDebug(lcMainWindow) << "Request to create a new lattice random network...";
     initApp();
     if (!activeGraph->randomNetLatticeCreate(newNodes, length, dimension, nei, mode, circular))
     {
@@ -9152,7 +9151,7 @@ void MainWindow::slotNetworkWebCrawlerDialog()
         return;
     }
 
-    qDebug() << "Opening web crawler dialog...";
+    qCDebug(lcMainWindow) << "Opening web crawler dialog...";
 
     m_WebCrawlerDialog = new DialogWebCrawler(this);
 
@@ -9209,7 +9208,7 @@ void MainWindow::slotNetworkWebCrawler(const QUrl &startUrl,
     }
 
     // Start the web crawler
-    qDebug() << "Calling Graph::startWebCrawler() to start the crawler process.";
+    qCDebug(lcMainWindow) << "Calling Graph::startWebCrawler() to start the crawler process.";
     activeGraph->startWebCrawler(
         startUrl,
         urlPatternsIncluded,
@@ -9238,7 +9237,7 @@ void MainWindow::slotNetworkWebCrawler(const QUrl &startUrl,
 void MainWindow::slotNetworkManagerRequest(const QUrl &url, const NetworkRequestType &requestType)
 {
 
-    qDebug() << "New network request for url:" << url.toString() << "requestType:" << requestType;
+    qCDebug(lcMainWindow) << "New network request for url:" << url.toString() << "requestType:" << requestType;
 
     // Create a network request object
     QNetworkRequest request;
@@ -9252,7 +9251,7 @@ void MainWindow::slotNetworkManagerRequest(const QUrl &url, const NetworkRequest
         "SocNetV harmless spider - see https://socnetv.org");
 
     // Create a network reply object through which we will make the call and handle the reply content
-    qDebug() << "Creating a network reply object and making the call...";
+    qCDebug(lcMainWindow) << "Creating a network reply object and making the call...";
     QNetworkReply *reply = networkManager->get(request);
 
     // Connect signals and slots
@@ -9448,7 +9447,7 @@ void MainWindow::slotNetworkChanged(const bool &directed,
                                     const qreal &density, const bool &needsSaving)
 {
 
-    qDebug() << "Got signal that network changed. Updating mainwindow UI (LCDs, save icon, etc). Params: "
+    qCDebug(lcMainWindow) << "Got signal that network changed. Updating mainwindow UI (LCDs, save icon, etc). Params: "
              << "directed" << directed
              << "vertices" << vertices
              << "edges" << edges
@@ -9534,7 +9533,7 @@ void MainWindow::slotNetworkChanged(const bool &directed,
     rightPanelEdgesLCD->setText(QString::number(edges));
     rightPanelDensityLCD->setText(QString::number(density, 'f', 3));
 
-    qDebug() << "Finished updating mainwindow.";
+    qCDebug(lcMainWindow) << "Finished updating mainwindow.";
 }
 
 /**
@@ -9632,7 +9631,7 @@ void MainWindow::slotEditOpenContextMenu(const QPointF &mPos)
  */
 void MainWindow::slotEditNodeSelectAll()
 {
-    qDebug() << "Request to select all nodes...";
+    qCDebug(lcMainWindow) << "Request to select all nodes...";
     graphicsWidget->selectAll();
     statusMessage(tr("Selected nodes: %1")
                       .arg(activeGraph->getSelectedVerticesCount()));
@@ -9643,7 +9642,7 @@ void MainWindow::slotEditNodeSelectAll()
  */
 void MainWindow::slotEditNodeSelectNone()
 {
-    qDebug() << "Clearing node selection...";
+    qCDebug(lcMainWindow) << "Clearing node selection...";
     graphicsWidget->selectNone();
     statusMessage(QString(tr("Selection cleared")));
 }
@@ -9661,7 +9660,7 @@ void MainWindow::slotEditNodeSelectNone()
 void MainWindow::slotEditNodePosition(const int &nodeNumber,
                                       const int &x, const int &y)
 {
-    qDebug("Updating position for node %i - x: %i, y: %i", nodeNumber, x, y);
+    qCDebug(lcMainWindow, "Updating position for node %i - x: %i, y: %i", nodeNumber, x, y);
     activeGraph->vertexPosSet(nodeNumber, x, y);
 }
 
@@ -9672,7 +9671,7 @@ void MainWindow::slotEditNodePosition(const int &nodeNumber,
  */
 void MainWindow::slotEditNodeAdd()
 {
-    qDebug() << "Request to add a new random node...";
+    qCDebug(lcMainWindow) << "Request to add a new random node...";
     activeGraph->vertexCreateAtPosRandom(true);
     statusMessage(tr("New random positioned node (numbered %1) added.")
                       .arg(activeGraph->vertexNumberMax()));
@@ -9683,7 +9682,7 @@ void MainWindow::slotEditNodeAdd()
  */
 void MainWindow::slotEditNodeFindDialog()
 {
-    qDebug() << "Showing find node dialog...";
+    qCDebug(lcMainWindow) << "Showing find node dialog...";
     if (!activeNodes())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -9718,7 +9717,7 @@ void MainWindow::slotEditNodeFind(const QStringList &nodeList,
                                   const QString &indexStr)
 {
 
-    qDebug() << "Request to find nodes:" << nodeList
+    qCDebug(lcMainWindow) << "Request to find nodes:" << nodeList
              << "search type:" << searchType
              << "indexStr" << indexStr;
 
@@ -9763,7 +9762,7 @@ void MainWindow::slotEditNodeFind(const QStringList &nodeList,
  */
 void MainWindow::slotEditNodeRemove()
 {
-    qDebug() << "Request to remove a node...";
+    qCDebug(lcMainWindow) << "Request to remove a node...";
     if (!activeNodes())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -9787,7 +9786,7 @@ void MainWindow::slotEditNodeRemove()
     if (nodesSelected > 0)
     {
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-        qDebug() << "multiple nodes selected to be removed";
+        qCDebug(lcMainWindow) << "multiple nodes selected to be removed";
         foreach (int nodeNumber, activeGraph->getSelectedVertices())
         {
             activeGraph->vertexRemove(nodeNumber);
@@ -9806,7 +9805,7 @@ void MainWindow::slotEditNodeRemove()
 
         if (min == -1 || max == -1)
         {
-            qDebug("ERROR in finding min max nodeNumbers. Abort");
+            qCDebug(lcMainWindow, "ERROR in finding min max nodeNumbers. Abort");
             return;
         }
         else
@@ -9823,9 +9822,9 @@ void MainWindow::slotEditNodeRemove()
                 return;
             }
         }
-        qDebug("removing vertex with number %i from Graph", nodeNumber);
+        qCDebug(lcMainWindow, "removing vertex with number %i from Graph", nodeNumber);
         activeGraph->vertexRemove(nodeNumber);
-        qDebug("Completed. Node %i removed completely.", nodeNumber);
+        qCDebug(lcMainWindow, "Completed. Node %i removed completely.", nodeNumber);
         statusMessage(tr("Node removed completely."));
     }
 }
@@ -9836,7 +9835,7 @@ void MainWindow::slotEditNodeRemove()
  */
 void MainWindow::slotEditNodePropertiesDialog()
 {
-    qDebug() << "Request to open the node properties dialog...";
+    qCDebug(lcMainWindow) << "Request to open the node properties dialog...";
 
     if (!activeNodes())
     {
@@ -9867,7 +9866,7 @@ void MainWindow::slotEditNodePropertiesDialog()
     const QString iconPath = activeGraph->vertexShapeIconPath(nodeNumber);
     const QHash<QString, QString> customAttributes = activeGraph->vertexCustomAttributes(nodeNumber);
 
-    qDebug() << "opening DialogNodeEdit for node" << nodeNumber;
+    qCDebug(lcMainWindow) << "opening DialogNodeEdit for node" << nodeNumber;
 
     std::unique_ptr<DialogNodeEdit> m_nodeEditDialog = std::make_unique<DialogNodeEdit>(
         this, nodeShapeList, iconPathList, label, size, color, shape, iconPath, customAttributes);
@@ -9902,7 +9901,7 @@ void MainWindow::slotEditNodeProperties(const QString &label,
 
     int selectedNodesCount = activeGraph->getSelectedVerticesCount();
 
-    qDebug() << "Request to update node properties - new properties: "
+    qCDebug(lcMainWindow) << "Request to update node properties - new properties: "
              << " label " << label
              << " size " << size
              << " color " << color
@@ -9930,7 +9929,7 @@ void MainWindow::slotEditNodeProperties(const QString &label,
         int nodeNumber = 0;
         foreach (nodeNumber, activeGraph->getSelectedVertices())
         {
-            qDebug() << "node " << nodeNumber;
+            qCDebug(lcMainWindow) << "node " << nodeNumber;
             if (!label.isEmpty())
             {
                 if (selectedNodesCount > 1)
@@ -10114,7 +10113,7 @@ void MainWindow::slotEditEdgeSetPropertyForSelection()
  */
 void MainWindow::slotEditNodeSelectedToClique()
 {
-    qDebug() << "MW::slotEditNodeSelectedToClique()";
+    qCDebug(lcMainWindow) << "MW::slotEditNodeSelectedToClique()";
     if (!activeNodes())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -10146,7 +10145,7 @@ void MainWindow::slotEditNodeSelectedToClique()
  */
 void MainWindow::slotEditNodeSelectedToStar()
 {
-    qDebug() << "MW::slotEditNodeSelectedToStar()";
+    qCDebug(lcMainWindow) << "MW::slotEditNodeSelectedToStar()";
     if (!activeNodes())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -10196,7 +10195,7 @@ void MainWindow::slotEditNodeSelectedToStar()
  */
 void MainWindow::slotEditNodeSelectedToCycle()
 {
-    qDebug() << "MW::slotEditNodeSelectedToCycle()";
+    qCDebug(lcMainWindow) << "MW::slotEditNodeSelectedToCycle()";
     if (!activeNodes())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -10227,7 +10226,7 @@ void MainWindow::slotEditNodeSelectedToCycle()
  */
 void MainWindow::slotEditNodeSelectedToLine()
 {
-    qDebug() << "MW::slotEditNodeSelectedToLine()";
+    qCDebug(lcMainWindow) << "MW::slotEditNodeSelectedToLine()";
     if (!activeNodes())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -10273,7 +10272,7 @@ void MainWindow::slotEditNodeColorAll(QColor color)
     {
         appSettings["initNodeColor"] = color.name();
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-        qDebug() << "MW::slotEditNodeColorAll() : "
+        qCDebug(lcMainWindow) << "MW::slotEditNodeColorAll() : "
                  << appSettings["initNodeColor"];
         activeGraph->vertexColorSet(0, appSettings["initNodeColor"]);
         QApplication::restoreOverrideCursor();
@@ -10298,7 +10297,7 @@ void MainWindow::slotEditNodeColorAll(QColor color)
 void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized)
 {
     Q_UNUSED(normalized);
-    qDebug() << "MW: slotEditNodeSizeAll() - "
+    qCDebug(lcMainWindow) << "MW: slotEditNodeSizeAll() - "
              << " newSize " << newSize;
     if (newSize == 0 && !normalized)
     {
@@ -10337,7 +10336,7 @@ void MainWindow::slotEditNodeSizeAll(int newSize, const bool &normalized)
 void MainWindow::slotEditNodeShape(const int &vertex, QString shape,
                                    QString nodeIconPath)
 {
-    qDebug() << "MW::slotEditNodeShape() - vertex " << vertex
+    qCDebug(lcMainWindow) << "MW::slotEditNodeShape() - vertex " << vertex
              << "(0 means all)"
              << "new shape" << shape
              << "nodeIconPath" << nodeIconPath;
@@ -10406,7 +10405,7 @@ void MainWindow::slotEditNodeShape(const int &vertex, QString shape,
 void MainWindow::slotEditNodeNumberSize(int v1, int newSize, const bool prompt)
 {
     bool ok = false;
-    qDebug() << "MW::slotEditNodeNumberSize - newSize " << newSize;
+    qCDebug(lcMainWindow) << "MW::slotEditNodeNumberSize - newSize " << newSize;
     if (prompt)
     {
         newSize = QInputDialog::getInt(this, "Change text size",
@@ -10438,7 +10437,7 @@ void MainWindow::slotEditNodeNumberSize(int v1, int newSize, const bool prompt)
  */
 void MainWindow::slotEditNodeNumbersColor(const int &v1, QColor color)
 {
-    qDebug() << "MW:slotEditNodeNumbersColor() - new color " << color;
+    qCDebug(lcMainWindow) << "MW:slotEditNodeNumbersColor() - new color " << color;
     if (!color.isValid())
     {
         color = QColorDialog::getColor(QColor(appSettings["initNodeNumberColor"]),
@@ -10481,7 +10480,7 @@ void MainWindow::slotEditNodeNumbersColor(const int &v1, QColor color)
 void MainWindow::slotEditNodeNumberDistance(int v1, int newDistance)
 {
     bool ok = false;
-    qDebug() << "MW::slotEditNodeNumberDistance - newSize " << newDistance;
+    qCDebug(lcMainWindow) << "MW::slotEditNodeNumberDistance - newSize " << newDistance;
     if (!newDistance)
     {
         newDistance = QInputDialog::getInt(
@@ -10517,7 +10516,7 @@ void MainWindow::slotEditNodeNumberDistance(int v1, int newDistance)
 void MainWindow::slotEditNodeLabelSize(const int v1, int newSize)
 {
     bool ok = false;
-    qDebug() << "MW::slotEditNodeLabelSize - newSize " << newSize;
+    qCDebug(lcMainWindow) << "MW::slotEditNodeLabelSize - newSize " << newSize;
     if (!newSize)
     {
         newSize = QInputDialog::getInt(this, "Change text size",
@@ -10547,7 +10546,7 @@ void MainWindow::slotEditNodeLabelSize(const int v1, int newSize)
  */
 void MainWindow::slotEditNodeLabelsColor(QColor color)
 {
-    qDebug() << "MW::slotEditNodeNumbersColor() - new color " << color;
+    qCDebug(lcMainWindow) << "MW::slotEditNodeNumbersColor() - new color " << color;
     if (!color.isValid())
     {
         color = QColorDialog::getColor(QColor(appSettings["initNodeLabelColor"]),
@@ -10582,7 +10581,7 @@ void MainWindow::slotEditNodeLabelsColor(QColor color)
 void MainWindow::slotEditNodeLabelDistance(int v1, int newDistance)
 {
     bool ok = false;
-    qDebug() << "MW::slotEditNodeLabelDistance - newSize " << newDistance;
+    qCDebug(lcMainWindow) << "MW::slotEditNodeLabelDistance - newSize " << newDistance;
     if (!newDistance)
     {
         newDistance = QInputDialog::getInt(
@@ -10622,7 +10621,7 @@ void MainWindow::slotEditNodeLabelDistance(int v1, int newDistance)
 void MainWindow::slotEditNodeOpenContextMenu()
 {
 
-    qDebug("MW: slotEditNodeOpenContextMenu() for node %i at %i, %i",
+    qCDebug(lcMainWindow, "MW: slotEditNodeOpenContextMenu() for node %i at %i, %i",
            activeGraph->vertexClicked(), QCursor::pos().x(), QCursor::pos().y());
 
     QMenu *nodeContextMenu = new QMenu(QString::number(activeGraph->vertexClicked()), this);
@@ -10686,7 +10685,7 @@ void MainWindow::slotEditNodeOpenContextMenu()
  */
 void MainWindow::slotEditSelectionChanged(const int &selNodes, const int &selEdges)
 {
-    qDebug() << "Updating UI for new selection";
+    qCDebug(lcMainWindow) << "Updating UI for new selection";
     rightPanelSelectedNodesLCD->setText(QString::number(selNodes));
     rightPanelSelectedEdgesLCD->setText(QString::number(selEdges));
 
@@ -10746,7 +10745,7 @@ void MainWindow::slotEditNodeInfoStatusBar(const int &number,
                                            const int &outDegree)
 {
 
-    qDebug() << "Updating node info in status bar...";
+    qCDebug(lcMainWindow) << "Updating node info in status bar...";
     rightPanelClickedNodeLCD->setText(QString::number(number));
     const bool nodeClicked = (number != 0);
     rightPanelClickedNodeInDegreeLabel->setVisible(nodeClicked);
@@ -10797,13 +10796,6 @@ void MainWindow::slotEditEdgeClicked(const MyEdge &edge,
     qreal reverseWeight = edge.rWeight;
     int type = edge.type;
 
-    //    qDebug()<<"clicked edge"
-    //           << v1
-    //           << "->"
-    //           << v2
-    //           << "=" << weight
-    //           << "type" << type
-    //           << "openMenu"<<openMenu;
 
     if (v1 == 0 || v2 == 0)
     {
@@ -10899,7 +10891,7 @@ void MainWindow::slotEditEdgeClicked(const MyEdge &edge,
  */
 void MainWindow::slotEditEdgeOpenContextMenu(const QString &str)
 {
-    qDebug() << "MW: slotEditEdgeOpenContextMenu() for" << str
+    qCDebug(lcMainWindow) << "MW: slotEditEdgeOpenContextMenu() for" << str
              << "at" << QCursor::pos().x() << "," << QCursor::pos().y();
 
     const int edgesSelected = activeGraph->getSelectedEdgesCount();
@@ -10938,7 +10930,7 @@ void MainWindow::slotEditEdgeOpenContextMenu(const QString &str)
  */
 void MainWindow::slotEditEdgeAdd()
 {
-    qDebug() << "Request to add a new edge through UI. Opening source/target node dialogs...";
+    qCDebug(lcMainWindow) << "Request to add a new edge through UI. Opening source/target node dialogs...";
     if (!activeNodes())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -10972,11 +10964,11 @@ void MainWindow::slotEditEdgeAdd()
     else
         sourceNode = activeGraph->vertexClicked();
 
-    qDebug() << "sourceNode:" << sourceNode;
+    qCDebug(lcMainWindow) << "sourceNode:" << sourceNode;
 
     if (activeGraph->vertexExists(sourceNode) == -1)
     {
-        qDebug() << "Cannot find sourceNode" << sourceNode;
+        qCDebug(lcMainWindow) << "Cannot find sourceNode" << sourceNode;
         slotHelpMessageToUser(USER_MSG_CRITICAL,
                               tr("Error. That node does not exist!"),
                               tr("Error. That node does not exist!"),
@@ -10993,7 +10985,7 @@ void MainWindow::slotEditEdgeAdd()
     }
     if (activeGraph->vertexExists(targetNode) == -1)
     {
-        qDebug() << "Cannot find targetNode" << targetNode;
+        qCDebug(lcMainWindow) << "Cannot find targetNode" << targetNode;
         slotHelpMessageToUser(USER_MSG_CRITICAL,
                               tr("Error. That node does not exist!"),
                               tr("Error. That node does not exist!"),
@@ -11014,7 +11006,7 @@ void MainWindow::slotEditEdgeAdd()
     // Check if this edge already exists...
     if (activeGraph->edgeExists(sourceNode, targetNode) != 0)
     {
-        qDebug("edge exists. Aborting");
+        qCDebug(lcMainWindow, "edge exists. Aborting");
         slotHelpMessageToUser(USER_MSG_CRITICAL,
                               tr("Error. That edge already exists!"),
                               tr("Error. That edge already exists!"),
@@ -11034,7 +11026,7 @@ void MainWindow::slotEditEdgeAdd()
  */
 void MainWindow::slotEditEdgeCreate(const int &source, const int &target, const qreal &weight)
 {
-    qDebug() << "User requested to create a new edge"
+    qCDebug(lcMainWindow) << "User requested to create a new edge"
              << source << "->" << target << "weight" << weight
              << "Setting user settings and calling Graph to to do the job...";
 
@@ -11056,7 +11048,7 @@ void MainWindow::slotEditEdgeCreate(const int &source, const int &target, const 
  */
 void MainWindow::slotEditEdgePropertiesDialog()
 {
-    qDebug() << "MainWindow::slotEditEdgePropertiesDialog()";
+    qCDebug(lcMainWindow) << "MainWindow::slotEditEdgePropertiesDialog()";
     if (!activeNodes())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -11137,7 +11129,7 @@ void MainWindow::slotEditEdgeProperties(const int &v1,
                                         const QColor &color,
                                         const QHash<QString, QString> &customAttributes)
 {
-    qDebug() << "MainWindow::slotEditEdgeProperties()";
+    qCDebug(lcMainWindow) << "MainWindow::slotEditEdgeProperties()";
     if (v1 == 0 || v2 == 0)
         return;
 
@@ -11155,7 +11147,7 @@ void MainWindow::slotEditEdgeProperties(const int &v1,
 void MainWindow::slotEditEdgeRemove()
 {
 
-    qDebug() << "Removing selected edges...";
+    qCDebug(lcMainWindow) << "Removing selected edges...";
 
     if (!activeNodes() || activeEdges() == 0)
     {
@@ -11169,7 +11161,7 @@ void MainWindow::slotEditEdgeRemove()
 
     int selectedEdgeCount = activeGraph->getSelectedEdgesCount();
 
-    qDebug() << "Selected edges:" << selectedEdgeCount;
+    qCDebug(lcMainWindow) << "Selected edges:" << selectedEdgeCount;
 
     if (!selectedEdgeCount)
     {
@@ -11177,7 +11169,7 @@ void MainWindow::slotEditEdgeRemove()
         min = activeGraph->vertexNumberMin();
         max = activeGraph->vertexNumberMax();
 
-        qDebug() << "MW::slotEditEdgeRemove() - No edge selected. "
+        qCDebug(lcMainWindow) << "MW::slotEditEdgeRemove() - No edge selected. "
                     "Prompting user to select...";
 
         sourceNode = QInputDialog::getInt(
@@ -11225,7 +11217,7 @@ void MainWindow::slotEditEdgeRemove()
         if (selectedEdgeCount > 1)
         {
 
-            qDebug() << "MW::slotEditEdgeRemove() - Multiple edges selected. "
+            qCDebug(lcMainWindow) << "MW::slotEditEdgeRemove() - Multiple edges selected. "
                         "Calling Graph to remove all of them...";
 
             activeGraph->edgeRemoveSelectedAll();
@@ -11242,7 +11234,7 @@ void MainWindow::slotEditEdgeRemove()
             activeGraph->edgeClickedSet(selected.first, selected.second);
         }
 
-        qDebug() << "MW::slotEditEdgeRemove() - One edge selected: "
+        qCDebug(lcMainWindow) << "MW::slotEditEdgeRemove() - One edge selected: "
                  << activeGraph->edgeClicked().source
                  << "->"
                  << activeGraph->edgeClicked().target;
@@ -11293,7 +11285,7 @@ void MainWindow::slotEditEdgeRemove()
 
     activeGraph->edgeRemove(sourceNode, targetNode, removeOpposite);
 
-    qDebug() << "MW::slotEditEdgeRemove() -"
+    qCDebug(lcMainWindow) << "MW::slotEditEdgeRemove() -"
              << "View items now:" << graphicsWidget->items().size()
              << "Scene items now:" << graphicsWidget->scene()->items().size();
 }
@@ -11303,7 +11295,7 @@ void MainWindow::slotEditEdgeRemove()
  */
 void MainWindow::slotEditEdgeLabel()
 {
-    qDebug() << "MW::slotEditEdgeLabel()";
+    qCDebug(lcMainWindow) << "MW::slotEditEdgeLabel()";
     if (!activeEdges())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
@@ -11364,7 +11356,7 @@ void MainWindow::slotEditEdgeLabel()
 
     if (!label.isEmpty())
     {
-        qDebug() << "MW::slotEditEdgeLabel() - " << sourceNode << "->"
+        qCDebug(lcMainWindow) << "MW::slotEditEdgeLabel() - " << sourceNode << "->"
                  << targetNode << " new label " << label;
         activeGraph->edgeLabelSet(sourceNode, targetNode, label);
         slotOptionsEdgeLabelsVisibility(true);
@@ -11387,7 +11379,7 @@ void MainWindow::slotEditEdgeLabel()
  */
 void MainWindow::slotEditEdgeColorAll(QColor color, const int threshold)
 {
-    qDebug() << "Changing the color of all matching edges to color: " << color.name() << " threshold " << threshold;
+    qCDebug(lcMainWindow) << "Changing the color of all matching edges to color: " << color.name() << " threshold " << threshold;
     if (!color.isValid())
     {
         QString text;
@@ -11402,7 +11394,7 @@ void MainWindow::slotEditEdgeColorAll(QColor color, const int threshold)
     }
     if (color.isValid())
     {
-        qDebug() << "new edge color: " << color.name() << " threshold " << threshold;
+        qCDebug(lcMainWindow) << "new edge color: " << color.name() << " threshold " << threshold;
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
         if (threshold < 0)
         {
@@ -11433,7 +11425,7 @@ void MainWindow::slotEditEdgeColorAll(QColor color, const int threshold)
  */
 void MainWindow::slotEditEdgeColor()
 {
-    qDebug() << "MW::slotEditEdgeColor()";
+    qCDebug(lcMainWindow) << "MW::slotEditEdgeColor()";
     if (!activeEdges())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
@@ -11499,7 +11491,7 @@ void MainWindow::slotEditEdgeColor()
     if (color.isValid())
     {
         QString newColor = color.name();
-        qDebug() << "MW::slotEditEdgeColor() - " << sourceNode << "->"
+        qCDebug(lcMainWindow) << "MW::slotEditEdgeColor() - " << sourceNode << "->"
                  << targetNode << " newColor "
                  << newColor;
         activeGraph->edgeColorSet(sourceNode, targetNode, newColor);
@@ -11523,7 +11515,7 @@ void MainWindow::slotEditEdgeWeight()
         return;
     }
 
-    qDebug("MW::slotEditEdgeWeight()");
+    qCDebug(lcMainWindow, "MW::slotEditEdgeWeight()");
     int sourceNode = -1, targetNode = -1;
     qreal newWeight = 1.0;
     int min = activeGraph->vertexNumberMin();
@@ -11561,13 +11553,13 @@ void MainWindow::slotEditEdgeWeight()
             return;
         }
 
-        qDebug("source %i target %i", sourceNode, targetNode);
+        qCDebug(lcMainWindow, "source %i target %i", sourceNode, targetNode);
     }
     else
     {
         // An edge is clicked/selected.
 
-        qDebug() << "MW: slotEditEdgeWeight() - an Edge has already been clicked";
+        qCDebug(lcMainWindow) << "MW: slotEditEdgeWeight() - an Edge has already been clicked";
 
         // Check if clicked edge is reciprocated
         if (activeGraph->edgeClicked().type == EdgeType::Reciprocated)
@@ -11609,7 +11601,7 @@ void MainWindow::slotEditEdgeWeight()
             targetNode = activeGraph->edgeClicked().target;
         }
 
-        qDebug() << "MW: slotEditEdgeWeight() from "
+        qCDebug(lcMainWindow) << "MW: slotEditEdgeWeight() from "
                  << sourceNode << " to " << targetNode;
     }
 
@@ -11663,7 +11655,7 @@ void MainWindow::slotEditEdgeSymmetrizeAll()
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
-    qDebug() << "Request to symmetrize all edges...";
+    qCDebug(lcMainWindow) << "Request to symmetrize all edges...";
     activeGraph->setSymmetric();
     slotHelpMessageToUser(USER_MSG_INFO,
                           tr("All ties have been symmetrized."),
@@ -11683,7 +11675,7 @@ void MainWindow::slotEditEdgeSymmetrizeCocitation()
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
-    qDebug() << "Request to add a new symmetric relation using cocited nodes...";
+    qCDebug(lcMainWindow) << "Request to add a new symmetric relation using cocited nodes...";
     activeGraph->relationAddCocitation();
 
     slotHelpMessageToUser(USER_MSG_INFO,
@@ -11705,7 +11697,7 @@ void MainWindow::slotEditEdgeDichotomizationDialog()
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
-    qDebug() << "MW: slotEditEdgeDichotomizationDialog() - "
+    qCDebug(lcMainWindow) << "MW: slotEditEdgeDichotomizationDialog() - "
                 "spawning edgeDichotomizationDialog";
 
     m_edgeDichotomizationDialog = new DialogEdgeDichotomization(this);
@@ -11727,7 +11719,7 @@ void MainWindow::slotEditEdgeDichotomization(const qreal threshold)
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
-    qDebug("MW: slotEditEdgeDichotomization() calling graphDichotomization()");
+    qCDebug(lcMainWindow, "MW: slotEditEdgeDichotomization() calling graphDichotomization()");
     activeGraph->graphDichotomization(threshold);
     slotHelpMessageToUser(USER_MSG_INFO, tr("New binary relation added."),
                           tr("New dichotomized relation created"),
@@ -11748,7 +11740,7 @@ void MainWindow::slotEditEdgeSymmetrizeStrongTies()
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
-    qDebug() << "MW::slotEditEdgeSymmetrizeStrongTies() - calling addRelationSymmetricStrongTies()";
+    qCDebug(lcMainWindow) << "MW::slotEditEdgeSymmetrizeStrongTies() - calling addRelationSymmetricStrongTies()";
     int oldRelationsCounter = activeGraph->relations();
     int answer = 0;
     if (oldRelationsCounter > 0)
@@ -11787,7 +11779,7 @@ void MainWindow::slotEditEdgeSymmetrizeStrongTies()
  */
 void MainWindow::slotEditEdgeUndirectedAll(const bool &toggle)
 {
-    qDebug() << "MW: slotEditEdgeUndirectedAll() - calling Graph::graphUndirectedSet()";
+    qCDebug(lcMainWindow) << "MW: slotEditEdgeUndirectedAll() - calling Graph::graphUndirectedSet()";
     if (toggle)
     {
         activeGraph->setUndirected(true);
@@ -11832,9 +11824,9 @@ void MainWindow::slotEditEdgeMode(const int &mode)
 {
     if (mode == 1)
     {
-        qDebug() << "Changing edge mode to undirected. Informing Graph...";
+        qCDebug(lcMainWindow) << "Changing edge mode to undirected. Informing Graph...";
         activeGraph->setUndirected(true);
-        qDebug() << "Setting optionsEdgeArrowsAct to false";
+        qCDebug(lcMainWindow) << "Setting optionsEdgeArrowsAct to false";
         optionsEdgeArrowsAct->setChecked(false);
         if (activeEdges() != 0)
         {
@@ -11850,11 +11842,11 @@ void MainWindow::slotEditEdgeMode(const int &mode)
     }
     else
     {
-        qDebug() << "Changing edge mode to directed. Informing Graph...";
+        qCDebug(lcMainWindow) << "Changing edge mode to directed. Informing Graph...";
         activeGraph->setDirected(true);
-        qDebug() << "Triggering optionsEdgeArrowsAct checkbox";
+        qCDebug(lcMainWindow) << "Triggering optionsEdgeArrowsAct checkbox";
         optionsEdgeArrowsAct->trigger();
-        qDebug() << "Setting optionsEdgeArrowsAct to true";
+        qCDebug(lcMainWindow) << "Setting optionsEdgeArrowsAct to true";
         optionsEdgeArrowsAct->setChecked(true);
         if (activeEdges() != 0)
         {
@@ -11881,7 +11873,7 @@ void MainWindow::slotEditEdgeMode(const int &mode)
  */
 void MainWindow::slotEditGraphDirectedChanged(const bool &directed)
 {
-    qDebug() << "MainWindow::slotEditGraphDirectedChanged - directed:" << directed;
+    qCDebug(lcMainWindow) << "MainWindow::slotEditGraphDirectedChanged - directed:" << directed;
     // Block the combo's signal so we don't re-enter slotEditEdgeMode and
     // accidentally call setDirected/setUndirected (which mutate edges).
     toolBoxEditEdgeModeSelect->blockSignals(true);
@@ -12540,7 +12532,7 @@ void MainWindow::slotLayoutRandom()
  */
 void MainWindow::slotLayoutRadialRandom()
 {
-    qDebug() << "MainWindow::slotLayoutRadialRandom()";
+    qCDebug(lcMainWindow) << "MainWindow::slotLayoutRadialRandom()";
     if (!activeNodes())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -12562,7 +12554,7 @@ void MainWindow::slotLayoutRadialRandom()
  */
 void MainWindow::slotLayoutEgoRadial()
 {
-    qDebug() << "MainWindow::slotLayoutEgoRadial()";
+    qCDebug(lcMainWindow) << "MainWindow::slotLayoutEgoRadial()";
     if (!activeNodes())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -12588,7 +12580,7 @@ void MainWindow::slotLayoutEgoRadial()
  */
 void MainWindow::slotLayoutSpringEmbedder()
 {
-    qDebug() << "MW::slotLayoutSpringEmbedder";
+    qCDebug(lcMainWindow) << "MW::slotLayoutSpringEmbedder";
     if (!activeNodes())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -12622,7 +12614,7 @@ void MainWindow::slotLayoutSpringEmbedder()
  */
 void MainWindow::slotLayoutFruchterman()
 {
-    qDebug("MW: slotLayoutFruchterman ()");
+    qCDebug(lcMainWindow, "MW: slotLayoutFruchterman ()");
     if (!activeNodes())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -12640,7 +12632,7 @@ void MainWindow::slotLayoutFruchterman()
  */
 void MainWindow::slotLayoutKamadaKawai()
 {
-    qDebug() << "MW::slotLayoutKamadaKawai ()";
+    qCDebug(lcMainWindow) << "MW::slotLayoutKamadaKawai ()";
     if (!activeNodes())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -12661,7 +12653,7 @@ void MainWindow::slotLayoutKamadaKawai()
  */
 void MainWindow::slotLayoutRadialByProminenceIndex()
 {
-    qDebug() << "Got request to apply a radial layout by prominence index. Checking what index is requested...";
+    qCDebug(lcMainWindow) << "Got request to apply a radial layout by prominence index. Checking what index is requested...";
     if (!activeNodes())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -12682,7 +12674,7 @@ void MainWindow::slotLayoutRadialByProminenceIndex()
  */
 void MainWindow::slotLayoutRadialByProminenceIndex(QString prominenceIndexName = "")
 {
-    qDebug() << "Will apply a radial layout by prominence index: " << prominenceIndexName;
+    qCDebug(lcMainWindow) << "Will apply a radial layout by prominence index: " << prominenceIndexName;
 
     if (!activeNodes())
     {
@@ -12696,7 +12688,7 @@ void MainWindow::slotLayoutRadialByProminenceIndex(QString prominenceIndexName =
 
     indexType = activeGraph->getProminenceIndexByName(prominenceIndexName);
 
-    qDebug() << "indexType" << indexType;
+    qCDebug(lcMainWindow) << "indexType" << indexType;
 
     toolBoxLayoutByIndexSelect->blockSignals(true);
     toolBoxLayoutByIndexSelect->setCurrentIndex(indexType + 1);
@@ -12771,7 +12763,7 @@ void MainWindow::slotLayoutRadialByProminenceIndex(QString prominenceIndexName =
  */
 void MainWindow::slotLayoutLevelByProminenceIndex()
 {
-    qDebug() << "Got request to apply a level layout by prominence index. Checking what index is requested...";
+    qCDebug(lcMainWindow) << "Got request to apply a level layout by prominence index. Checking what index is requested...";
     if (!activeNodes())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -12792,7 +12784,7 @@ void MainWindow::slotLayoutLevelByProminenceIndex()
  */
 void MainWindow::slotLayoutLevelByProminenceIndex(QString prominenceIndexName = "")
 {
-    qDebug() << "Will apply a level layout by prominence index: " << prominenceIndexName;
+    qCDebug(lcMainWindow) << "Will apply a level layout by prominence index: " << prominenceIndexName;
 
     if (!activeNodes())
     {
@@ -12805,7 +12797,7 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString prominenceIndexName = 
 
     indexType = activeGraph->getProminenceIndexByName(prominenceIndexName);
 
-    qDebug() << "indexType" << indexType;
+    qCDebug(lcMainWindow) << "indexType" << indexType;
 
     toolBoxLayoutByIndexSelect->blockSignals(true);
     toolBoxLayoutByIndexSelect->setCurrentIndex(indexType + 1);
@@ -12880,7 +12872,7 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString prominenceIndexName = 
  */
 void MainWindow::slotLayoutNodeSizeByProminenceIndex()
 {
-    qDebug() << "Got request to apply a color layout by prominence index. Checking what index is requested...";
+    qCDebug(lcMainWindow) << "Got request to apply a color layout by prominence index. Checking what index is requested...";
 
     if (!activeNodes())
     {
@@ -12902,7 +12894,7 @@ void MainWindow::slotLayoutNodeSizeByProminenceIndex()
  */
 void MainWindow::slotLayoutNodeSizeByProminenceIndex(QString prominenceIndexName = "")
 {
-    qDebug() << "Will apply a node size layout by prominence index: " << prominenceIndexName;
+    qCDebug(lcMainWindow) << "Will apply a node size layout by prominence index: " << prominenceIndexName;
 
     if (!activeNodes())
     {
@@ -12914,7 +12906,7 @@ void MainWindow::slotLayoutNodeSizeByProminenceIndex(QString prominenceIndexName
 
     indexType = activeGraph->getProminenceIndexByName(prominenceIndexName);
 
-    qDebug() << "indexType" << indexType;
+    qCDebug(lcMainWindow) << "indexType" << indexType;
 
     toolBoxLayoutByIndexSelect->blockSignals(true);
     toolBoxLayoutByIndexSelect->setCurrentIndex(indexType + 1);
@@ -13011,7 +13003,7 @@ void MainWindow::slotLayoutNodeColorByProminenceIndex()
  */
 void MainWindow::slotLayoutNodeColorByProminenceIndex(QString prominenceIndexName = "")
 {
-    qDebug() << "Will apply a node color layout by prominence index: " << prominenceIndexName;
+    qCDebug(lcMainWindow) << "Will apply a node color layout by prominence index: " << prominenceIndexName;
     if (!activeNodes())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -13021,7 +13013,7 @@ void MainWindow::slotLayoutNodeColorByProminenceIndex(QString prominenceIndexNam
 
     indexType = activeGraph->getProminenceIndexByName(prominenceIndexName);
 
-    qDebug() << "indexType" << indexType;
+    qCDebug(lcMainWindow) << "indexType" << indexType;
 
     toolBoxLayoutByIndexSelect->blockSignals(true);
     toolBoxLayoutByIndexSelect->setCurrentIndex(indexType + 1);
@@ -13095,7 +13087,7 @@ void MainWindow::slotLayoutNodeColorByProminenceIndex(QString prominenceIndexNam
  */
 void MainWindow::slotLayoutNodeColorByComponent()
 {
-    qDebug() << "MW::slotLayoutNodeColorByComponent()";
+    qCDebug(lcMainWindow) << "MW::slotLayoutNodeColorByComponent()";
 
     if (!activeNodes())
     {
@@ -13141,7 +13133,7 @@ void MainWindow::slotLayoutNodeColorByComponent()
  */
 void MainWindow::slotLayoutGuides(const bool &toggle)
 {
-    qDebug() << "MW:slotLayoutGuides()";
+    qCDebug(lcMainWindow) << "MW:slotLayoutGuides()";
     if (!activeNodes())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -13166,7 +13158,7 @@ void MainWindow::slotLayoutGuides(const bool &toggle)
  */
 int MainWindow::activeEdges()
 {
-    qDebug() << "MW::activeEdges()";
+    qCDebug(lcMainWindow) << "MW::activeEdges()";
     return activeGraph->edgesEnabled();
 }
 
@@ -13416,7 +13408,7 @@ void MainWindow::slotAnalyzeMatrixLaplacian()
         return;
     }
 
-    qDebug() << "MW:slotAnalyzeMatrixLaplacian()";
+    qCDebug(lcMainWindow) << "MW:slotAnalyzeMatrixLaplacian()";
 
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-laplacian-" + dateTime + ".html";
@@ -13455,7 +13447,7 @@ void MainWindow::slotAnalyzeMatrixLaplacian()
 void MainWindow::askAboutEdgeWeights(const bool userTriggered)
 {
 
-    qDebug() << "MW::askAboutEdgeWeights() - checking if graph weighted.";
+    qCDebug(lcMainWindow) << "MW::askAboutEdgeWeights() - checking if graph weighted.";
 
     if (userTriggered)
     {
@@ -13480,14 +13472,14 @@ void MainWindow::askAboutEdgeWeights(const bool userTriggered)
             return;
         }
     }
-    qDebug() << "MW::askAboutEdgeWeights() - graph weighted - checking if we have asked user.";
+    qCDebug(lcMainWindow) << "MW::askAboutEdgeWeights() - graph weighted - checking if we have asked user.";
 
     if (askedAboutWeights)
     {
         return;
     }
 
-    qDebug() << "MW::askAboutEdgeWeights() - graph weighted - let's ask the user.";
+    qCDebug(lcMainWindow) << "MW::askAboutEdgeWeights() - graph weighted - let's ask the user.";
 
     switch (
         slotHelpMessageToUser(USER_MSG_QUESTION,
@@ -13590,7 +13582,7 @@ void MainWindow::slotAnalyzeDistance()
         return;
     }
 
-    qDebug() << "Computing geodesic distance:" << sourceNum << "->" << targetNum;
+    qCDebug(lcMainWindow) << "Computing geodesic distance:" << sourceNum << "->" << targetNum;
 
     if (activeGraph->isSymmetric() && sourceNum > targetNum)
     {
@@ -13612,7 +13604,7 @@ void MainWindow::slotAnalyzeDistance()
         [this, sourceNum, targetNum, considerWeights, inverseWeightsFinal, distanceGeodesic]() {
             if (*distanceGeodesic > 0 && *distanceGeodesic < RAND_MAX)
             {
-                qDebug() << "geodesic distance" << sourceNum << "->" << targetNum << "=" << *distanceGeodesic;
+                qCDebug(lcMainWindow) << "geodesic distance" << sourceNum << "->" << targetNum << "=" << *distanceGeodesic;
 
                 // Reconstruct the actual shortest path so the user sees the intermediate nodes.
                 // Cheap regardless of network size (single-source BFS/Dijkstra, not the full
@@ -13646,7 +13638,7 @@ void MainWindow::slotAnalyzeDistance()
             }
             else
             {
-                qDebug() << "geodesic distance" << sourceNum << "->" << targetNum << "is infinite.";
+                qCDebug(lcMainWindow) << "geodesic distance" << sourceNum << "->" << targetNum << "is infinite.";
                 slotHelpMessageToUser(
                     USER_MSG_INFO,
                     tr("Geodesic Distance: %1").arg(QString("\xE2\x88\x9E")),
@@ -13664,7 +13656,7 @@ void MainWindow::slotAnalyzeDistance()
  */
 void MainWindow::slotAnalyzeMatrixDistances()
 {
-    qDebug() << "Request to compute the matrix of geodesic distances. Please wait...";
+    qCDebug(lcMainWindow) << "Request to compute the matrix of geodesic distances. Please wait...";
     if (!activeNodes())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -13713,7 +13705,7 @@ void MainWindow::slotAnalyzeMatrixDistances()
  */
 void MainWindow::slotAnalyzeMatrixGeodesics()
 {
-    qDebug() << "Request to compute the matrix of geodesics. Please wait...";
+    qCDebug(lcMainWindow) << "Request to compute the matrix of geodesics. Please wait...";
 
     if (!activeNodes())
     {
@@ -13894,7 +13886,7 @@ void MainWindow::slotAnalyzeDistanceAverage()
  */
 void MainWindow::slotAnalyzeGeodesicDistribution()
 {
-    qDebug() << "MW::slotAnalyzeGeodesicDistribution()";
+    qCDebug(lcMainWindow) << "MW::slotAnalyzeGeodesicDistribution()";
 
     if (!activeNodes())
     {
@@ -13985,7 +13977,7 @@ void MainWindow::slotAnalyzeEccentricity()
  */
 void MainWindow::slotAnalyzeConnectedness()
 {
-    qDebug() << "MW::slotAnalyzeConnectedness()";
+    qCDebug(lcMainWindow) << "MW::slotAnalyzeConnectedness()";
 
     int N = activeGraph->vertices();
 
@@ -14017,7 +14009,7 @@ void MainWindow::slotAnalyzeConnectedness()
         // there?" consistently for both directed and undirected networks.
         bool isConnected = (components == 1);
 
-        qDebug() << "MW::slotAnalyzeConnectedness result connected:" << isConnected
+        qCDebug(lcMainWindow) << "MW::slotAnalyzeConnectedness result connected:" << isConnected
                  << "components:" << components;
 
         const QString compStr = QString::number(components);
@@ -14353,7 +14345,7 @@ void MainWindow::slotAnalyzeCommunitiesTriadCensus()
  */
 void MainWindow::slotAnalyzeStrEquivalenceSimilarityMeasureDialog()
 {
-    qDebug() << "MW::slotAnalyzeStrEquivalenceSimilarityMeasureDialog()";
+    qCDebug(lcMainWindow) << "MW::slotAnalyzeStrEquivalenceSimilarityMeasureDialog()";
 
     if (!activeNodes())
     {
@@ -14439,7 +14431,7 @@ void MainWindow::slotAnalyzeStrEquivalenceSimilarityByMeasure(const QString &mat
  */
 void MainWindow::slotAnalyzeStrEquivalenceDissimilaritiesDialog()
 {
-    qDebug() << "MW::slotAnalyzeStrEquivalenceDissimilaritiesDialog()";
+    qCDebug(lcMainWindow) << "MW::slotAnalyzeStrEquivalenceDissimilaritiesDialog()";
 
     m_dialogdissimilarities = new DialogDissimilarities(this);
 
@@ -14460,7 +14452,7 @@ void MainWindow::slotAnalyzeStrEquivalenceDissimilaritiesTieProfile(const QStrin
                                                                     const QString &varLocation,
                                                                     const bool &diagonal)
 {
-    qDebug() << "MW::slotAnalyzeStrEquivalenceDissimilaritiesTieProfile()";
+    qCDebug(lcMainWindow) << "MW::slotAnalyzeStrEquivalenceDissimilaritiesTieProfile()";
     if (!activeNodes())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -14519,7 +14511,7 @@ void MainWindow::slotAnalyzeStrEquivalenceDissimilaritiesTieProfile(const QStrin
  */
 void MainWindow::slotAnalyzeStrEquivalencePearsonDialog()
 {
-    qDebug() << "MW::slotAnalyzeStrEquivalencePearsonDialog()";
+    qCDebug(lcMainWindow) << "MW::slotAnalyzeStrEquivalencePearsonDialog()";
     if (!activeNodes())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -14582,7 +14574,7 @@ void MainWindow::slotAnalyzeStrEquivalencePearson(const QString &matrix,
  */
 void MainWindow::slotAnalyzeStrEquivalenceClusteringHierarchicalDialog()
 {
-    qDebug() << "MW::slotAnalyzeStrEquivalenceClusteringHierarchicalDialog()";
+    qCDebug(lcMainWindow) << "MW::slotAnalyzeStrEquivalenceClusteringHierarchicalDialog()";
 
     if (!activeNodes())
     {
@@ -14620,7 +14612,7 @@ void MainWindow::slotAnalyzeStrEquivalenceClusteringHierarchical(const QString &
                                                                  const bool &diagram)
 {
 
-    qDebug() << "MW::slotAnalyzeStrEquivalenceClusteringHierarchical()";
+    qCDebug(lcMainWindow) << "MW::slotAnalyzeStrEquivalenceClusteringHierarchical()";
 
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-equivalence-hierarchical-clustering-" + dateTime + ".html";
@@ -14707,7 +14699,7 @@ void MainWindow::slotAnalyzeCentralityDegree()
  */
 void MainWindow::slotAnalyzeCentralityCloseness()
 {
-    qDebug() << "MW::slotAnalyzeCentralityCloseness()";
+    qCDebug(lcMainWindow) << "MW::slotAnalyzeCentralityCloseness()";
     if (!activeNodes())
     {
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
@@ -14975,7 +14967,7 @@ void MainWindow::slotAnalyzePrestigeProximity()
 void MainWindow::slotAnalyzeCentralityInformation()
 {
 
-    qDebug() << "MW::slotAnalyzeCentralityInformation()";
+    qCDebug(lcMainWindow) << "MW::slotAnalyzeCentralityInformation()";
 
     if (!activeNodes())
     {
@@ -15258,11 +15250,11 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
 
     Q_UNUSED(minF);
 
-    qDebug() << "Updating the prominence distribution miniChart";
+    qCDebug(lcMainWindow) << "Updating the prominence distribution miniChart";
 
     if (series == Q_NULLPTR)
     {
-        qDebug() << "series is null! Resetting to trivial";
+        qCDebug(lcMainWindow) << "series is null! Resetting to trivial";
         miniChart->resetToTrivial();
         return;
     }
@@ -15271,10 +15263,10 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
     switch (series->type())
     {
     case QAbstractSeries::SeriesTypeBar:
-        qDebug() << "this an BarSeries";
+        qCDebug(lcMainWindow) << "this an BarSeries";
         break;
     case QAbstractSeries::SeriesTypeArea:
-        qDebug() << "this an AreaSeries";
+        qCDebug(lcMainWindow) << "this an AreaSeries";
 
         break;
     default:
@@ -15319,7 +15311,7 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
     {
         if (axisX != Q_NULLPTR)
         {
-            qDebug() << "MW::slotAnalyzeProminenceDistributionChartUpdate() - "
+            qCDebug(lcMainWindow) << "MW::slotAnalyzeProminenceDistributionChartUpdate() - "
                         "axisX not null. Setting it to miniChart";
             miniChart->setAxisX(axisX, series);
 
@@ -15331,7 +15323,7 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
         }
         if (axisY != Q_NULLPTR)
         {
-            qDebug() << "MW::slotAnalyzeProminenceDistributionChartUpdate() - "
+            qCDebug(lcMainWindow) << "MW::slotAnalyzeProminenceDistributionChartUpdate() - "
                         "axisY not null. Setting it to miniChart";
             miniChart->setAxisY(axisY, series);
             miniChart->setAxisYMin(0);
@@ -15344,11 +15336,11 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
     if ((axisX == Q_NULLPTR && axisY == Q_NULLPTR) || useDefaultAxes)
     {
 
-        qDebug() << "MW::slotAnalyzeProminenceDistributionChartUpdate() - "
+        qCDebug(lcMainWindow) << "MW::slotAnalyzeProminenceDistributionChartUpdate() - "
                     "axisX and axisY null. Calling createDefaultAxes()";
         miniChart->createDefaultAxes();
 
-        qDebug() << "MW::slotAnalyzeProminenceDistributionChartUpdate() - setting axis min";
+        qCDebug(lcMainWindow) << "MW::slotAnalyzeProminenceDistributionChartUpdate() - setting axis min";
         miniChart->setAxisYMin(0);
         miniChart->setAxisXMin(0);
 
@@ -15370,7 +15362,7 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
  */
 void MainWindow::slotProgressBoxCreate(const int &max, const QString &msg)
 {
-    qDebug() << "MW::slotProgressBoxCreate";
+    qCDebug(lcMainWindow) << "MW::slotProgressBoxCreate";
     if (appSettings["showProgressBar"] == "true")
     {
         int duration = (max == 0) ? activeNodes() : max;
@@ -15385,7 +15377,7 @@ void MainWindow::slotProgressBoxCreate(const int &max, const QString &msg)
             // Push nullptr sentinel so slotProgressBoxDestroy knows
             // this is a sub-step finish and should not destroy the real dialog.
             progressDialogs.push(nullptr);
-            qDebug() << "MW::slotProgressBoxCreate - reusing existing dialog for sub-step";
+            qCDebug(lcMainWindow) << "MW::slotProgressBoxCreate - reusing existing dialog for sub-step";
             QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
             return;
         }
@@ -15524,7 +15516,7 @@ void MainWindow::runGraphOperationAsync(std::function<void()> operation,
  */
 void MainWindow::slotProgressBoxDestroy(const int &max)
 {
-    qDebug() << "MainWindow::slotProgressBoxDestroy";
+    qCDebug(lcMainWindow) << "MainWindow::slotProgressBoxDestroy";
     QApplication::restoreOverrideCursor();
     if (appSettings["showProgressBar"] == "true" && max > -1)
     {
@@ -15534,7 +15526,7 @@ void MainWindow::slotProgressBoxDestroy(const int &max)
             if (progressBox == nullptr)
             {
                 // Sub-step sentinel — real dialog stays alive.
-                qDebug() << "MW::slotProgressBoxDestroy - sub-step sentinel, skipping destroy";
+                qCDebug(lcMainWindow) << "MW::slotProgressBoxDestroy - sub-step sentinel, skipping destroy";
                 return;
             }
             progressBox->reset();
@@ -15550,7 +15542,7 @@ void MainWindow::slotProgressBoxDestroy(const int &max)
  */
 void MainWindow::slotOptionsNodeNumbersVisibility(bool toggle)
 {
-    qDebug() << "MW::slotOptionsNodeNumbersVisibility()" << toggle;
+    qCDebug(lcMainWindow) << "MW::slotOptionsNodeNumbersVisibility()" << toggle;
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     statusMessage(tr("Toggle Nodes Numbers. Please wait..."));
     appSettings["initNodeNumbersVisibility"] = (toggle) ? "true" : "false";
@@ -15577,7 +15569,7 @@ void MainWindow::slotOptionsNodeNumbersVisibility(bool toggle)
  */
 void MainWindow::slotOptionsNodeNumbersInside(bool toggle)
 {
-    qDebug() << "MW::slotOptionsNodeNumbersInside()" << toggle;
+    qCDebug(lcMainWindow) << "MW::slotOptionsNodeNumbersInside()" << toggle;
 
     statusMessage(tr("Toggle Numbers inside nodes. Please wait..."));
 
@@ -15608,7 +15600,7 @@ void MainWindow::slotOptionsNodeNumbersInside(bool toggle)
  */
 void MainWindow::slotOptionsNodeLabelsVisibility(bool toggle)
 {
-    qDebug() << "MW::slotOptionsNodeLabelsVisibility()" << toggle;
+    qCDebug(lcMainWindow) << "MW::slotOptionsNodeLabelsVisibility()" << toggle;
 
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
@@ -15664,7 +15656,7 @@ void MainWindow::slotOptionsEdgesVisibility(bool toggle)
  */
 void MainWindow::slotOptionsEdgeArrowsVisibility(bool toggle)
 {
-    qDebug() << "Request to toggle edges arrows to:" << toggle;
+    qCDebug(lcMainWindow) << "Request to toggle edges arrows to:" << toggle;
 
     statusMessage(tr("Toggling Edges' Arrows. Please wait..."));
     appSettings["initEdgeArrows"] = (toggle) ? "true" : "false";
@@ -15686,7 +15678,7 @@ void MainWindow::slotOptionsEdgeArrowsVisibility(bool toggle)
  */
 void MainWindow::slotOptionsEdgeArrowSize(const int &size)
 {
-    qDebug() << "MW::slotOptionsEdgeArrowSize - new size" << size;
+    qCDebug(lcMainWindow) << "MW::slotOptionsEdgeArrowSize - new size" << size;
     appSettings["initEdgeArrowSize"] = QString::number(size);
     graphicsWidget->setEdgeArrowSize(size);
     statusMessage(tr("Changed edge arrow size to %1.").arg(size));
@@ -15747,7 +15739,7 @@ void MainWindow::slotOptionsEdgeThicknessPerWeight(bool toggle)
 void MainWindow::slotOptionsEdgeOffsetFromNode(const int &offset, const int &v1, const int &v2)
 {
     bool ok = false;
-    qDebug() << "MW::slotOptionsEdgeOffsetFromNode - new offset " << offset;
+    qCDebug(lcMainWindow) << "MW::slotOptionsEdgeOffsetFromNode - new offset " << offset;
     int newOffset = offset;
 
     if (!newOffset)
@@ -15787,7 +15779,7 @@ void MainWindow::slotOptionsEdgeOffsetFromNode(const int &offset, const int &v1,
  */
 void MainWindow::slotOptionsEdgeWeightNumbersVisibility(bool toggle)
 {
-    qDebug() << "MW::slotOptionsEdgeWeightNumbersVisibility - Toggling Edges Weights";
+    qCDebug(lcMainWindow) << "MW::slotOptionsEdgeWeightNumbersVisibility - Toggling Edges Weights";
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     statusMessage(tr("Toggle Edges Weights. Please wait..."));
     appSettings["initEdgeWeightNumbersVisibility"] = (toggle) ? "true" : "false";
@@ -15813,7 +15805,7 @@ void MainWindow::slotOptionsEdgeWeightNumbersVisibility(bool toggle)
  */
 void MainWindow::slotOptionsEdgeLabelsVisibility(bool toggle)
 {
-    qDebug() << "MW::slotOptionsEdgeLabelsVisibility - Toggling Edges Weights";
+    qCDebug(lcMainWindow) << "MW::slotOptionsEdgeLabelsVisibility - Toggling Edges Weights";
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     statusMessage(tr("Toggle Edges Labels. Please wait..."));
 
@@ -15839,7 +15831,7 @@ void MainWindow::slotOptionsEdgeLabelsVisibility(bool toggle)
  */
 void MainWindow::slotOptionsSaveZeroWeightEdges(bool toggle)
 {
-    qDebug() << "MW::slotOptionsSaveZeroWeightEdges - Toggling saving zero weight edges";
+    qCDebug(lcMainWindow) << "MW::slotOptionsSaveZeroWeightEdges - Toggling saving zero weight edges";
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     statusMessage(tr("Toggle zero-weight edges saving. Please wait..."));
 
@@ -15862,7 +15854,7 @@ void MainWindow::slotOptionsSaveZeroWeightEdges(bool toggle)
  */
 void MainWindow::slotOptionsShowZeroWeightEdges(bool toggle)
 {
-    qDebug() << "MW::slotOptionsShowZeroWeightEdges - toggle:" << toggle;
+    qCDebug(lcMainWindow) << "MW::slotOptionsShowZeroWeightEdges - toggle:" << toggle;
     appSettings["showZeroWeightEdges"] = (toggle) ? "true" : "false";
     activeGraph->showZeroWeightEdgesSet(toggle);
     statusMessage(toggle
@@ -15903,7 +15895,7 @@ void MainWindow::slotOptionsCanvasOpenGL(const bool &toggle)
 void MainWindow::slotOptionsCanvasAntialiasing(bool toggle)
 {
 
-    qDebug() << "MW::slotOptionsCanvasAntialiasingAutoAdjust() " << toggle;
+    qCDebug(lcMainWindow) << "MW::slotOptionsCanvasAntialiasingAutoAdjust() " << toggle;
 
     statusMessage(tr("Toggle anti-aliasing. Please wait..."));
 
@@ -15931,7 +15923,7 @@ void MainWindow::slotOptionsCanvasAntialiasing(bool toggle)
 void MainWindow::slotOptionsCanvasAntialiasingAutoAdjust(const bool &toggle)
 {
 
-    qDebug() << "MW::slotOptionsCanvasAntialiasingAutoAdjust() " << toggle;
+    qCDebug(lcMainWindow) << "MW::slotOptionsCanvasAntialiasingAutoAdjust() " << toggle;
 
     statusMessage(tr("Toggle anti-aliasing auto adjust. Please wait..."));
 
@@ -15960,7 +15952,7 @@ void MainWindow::slotOptionsCanvasAntialiasingAutoAdjust(const bool &toggle)
 void MainWindow::slotOptionsCanvasSmoothPixmapTransform(const bool &toggle)
 {
 
-    qDebug() << "MW::slotOptionsCanvasSmoothPixmapTransform() " << toggle;
+    qCDebug(lcMainWindow) << "MW::slotOptionsCanvasSmoothPixmapTransform() " << toggle;
 
     statusMessage(tr("Toggle smooth pixmap transformations. Please wait..."));
 
@@ -15989,7 +15981,7 @@ void MainWindow::slotOptionsCanvasSmoothPixmapTransform(const bool &toggle)
 void MainWindow::slotOptionsCanvasSavePainterState(const bool &toggle)
 {
 
-    qDebug() << "MW::slotOptionsCanvasSavePainterState() " << toggle;
+    qCDebug(lcMainWindow) << "MW::slotOptionsCanvasSavePainterState() " << toggle;
 
     statusMessage(tr("Toggle saving painter state. Please wait..."));
 
@@ -16018,7 +16010,7 @@ void MainWindow::slotOptionsCanvasSavePainterState(const bool &toggle)
 void MainWindow::slotOptionsCanvasCacheBackground(const bool &toggle)
 {
 
-    qDebug() << "MW::slotOptionsCanvasCacheBackground() " << toggle;
+    qCDebug(lcMainWindow) << "MW::slotOptionsCanvasCacheBackground() " << toggle;
 
     statusMessage(tr("Toggle canvas background caching state. Please wait..."));
 
@@ -16047,7 +16039,7 @@ void MainWindow::slotOptionsCanvasCacheBackground(const bool &toggle)
 void MainWindow::slotOptionsCanvasEdgeHighlighting(const bool &toggle)
 {
 
-    qDebug() << "MW::slotOptionsCanvasEdgeHighlighting() " << toggle;
+    qCDebug(lcMainWindow) << "MW::slotOptionsCanvasEdgeHighlighting() " << toggle;
 
     statusMessage(tr("Toggle edge highlighting state. Please wait..."));
 
@@ -16076,7 +16068,7 @@ void MainWindow::slotOptionsCanvasEdgeHighlighting(const bool &toggle)
 void MainWindow::slotOptionsCanvasUpdateMode(const QString &mode)
 {
 
-    qDebug() << "MW::slotOptionsCanvasUpdateMode() " << mode;
+    qCDebug(lcMainWindow) << "MW::slotOptionsCanvasUpdateMode() " << mode;
 
     statusMessage(tr("Setting canvas update mode. Please wait..."));
 
@@ -16124,7 +16116,7 @@ void MainWindow::slotOptionsCanvasUpdateMode(const QString &mode)
 void MainWindow::slotOptionsCanvasIndexMethod(const QString &method)
 {
 
-    qDebug() << "Changing graphics scene index method to:" << method;
+    qCDebug(lcMainWindow) << "Changing graphics scene index method to:" << method;
 
     statusMessage(tr("Setting canvas index method. Please wait..."));
 
@@ -16198,7 +16190,7 @@ void MainWindow::slotOptionsDebugMessages(bool toggle)
 {
     if (!toggle)
     {
-        qDebug() << "Disabling debugging messages";
+        qCDebug(lcMainWindow) << "Disabling debugging messages";
         appSettings["printDebug"] = "false";
         QLoggingCategory::setFilterRules("default.debug=false\n"
                                          "socnetv.*.debug=false");
@@ -16209,7 +16201,7 @@ void MainWindow::slotOptionsDebugMessages(bool toggle)
         appSettings["printDebug"] = "true";
         QLoggingCategory::setFilterRules("default.debug=true\n"
                                          "socnetv.*.debug=true");
-        qDebug() << "Enabled debugging messages";
+        qCDebug(lcMainWindow) << "Enabled debugging messages";
         statusMessage(tr("Debug messages on."));
     }
 }
@@ -16453,7 +16445,7 @@ void MainWindow::slotOptionsCustomStylesheet(const bool checked = true)
 void MainWindow::slotStyleSheetByName(const QString &sheetFileName)
 {
 
-    qDebug() << "Opening stylesheet file: " << sheetFileName;
+    qCDebug(lcMainWindow) << "Opening stylesheet file: " << sheetFileName;
 
     QString styleSheet = "";
 
@@ -16464,7 +16456,7 @@ void MainWindow::slotStyleSheetByName(const QString &sheetFileName)
 
         if (!file.open(QFile::ReadOnly))
         {
-            qDebug() << "Could not open (for reading) file:" << sheetFileName;
+            qCDebug(lcMainWindow) << "Could not open (for reading) file:" << sheetFileName;
             slotHelpMessageToUserError(
                 tr("Cannot read stylesheet file %1:\n%2")
                     .arg(sheetFileName)
@@ -16589,7 +16581,7 @@ void MainWindow::slotHelpCheckUpdateDialog()
 
     QString url = "https://socnetv.org/latestversion.txt";
 
-    qDebug() << "Will make a 'check for updates' request to url:" << url;
+    qCDebug(lcMainWindow) << "Will make a 'check for updates' request to url:" << url;
 
     slotNetworkManagerRequest(QUrl(url), NetworkRequestType::CheckUpdate);
 }
@@ -16625,7 +16617,7 @@ static int compareVersions(const QString &a, const QString &b)
  */
 void MainWindow::slotHelpCheckUpdateParse()
 {
-    qDebug() << "MW::slotHelpCheckUpdateParse()";
+    qCDebug(lcMainWindow) << "MW::slotHelpCheckUpdateParse()";
 
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     QByteArray ba = reply->readAll();
@@ -16658,7 +16650,7 @@ void MainWindow::slotHelpCheckUpdateParse()
     static const QRegularExpression preReleaseSuffixRx(R"([-.]?(beta|rc|dev)\d*)", QRegularExpression::CaseInsensitiveOption);
     localVersion.remove(preReleaseSuffixRx);
 
-    qDebug() << "MW::slotHelpCheckUpdateParse() - localVersion:" << localVersion
+    qCDebug(lcMainWindow) << "MW::slotHelpCheckUpdateParse() - localVersion:" << localVersion
              << "remoteVersion:" << remoteVersion;
 
     const int cmp = compareVersions(remoteVersion, localVersion);
@@ -16704,7 +16696,7 @@ void MainWindow::slotHelpCheckUpdateParse()
  */
 void MainWindow::slotHelpSystemInfo()
 {
-    qDebug() << "MW: slotHelpSystemInfo()";
+    qCDebug(lcMainWindow) << "MW: slotHelpSystemInfo()";
 
     m_systemInfoDialog = new DialogSystemInfo(this);
 
