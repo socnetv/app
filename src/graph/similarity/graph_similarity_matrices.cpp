@@ -40,7 +40,6 @@ void Graph::createMatrixDissimilarities(Matrix &INPUT_MATRIX,
 
     DSM = INPUT_MATRIX.distancesMatrix(metric, varLocation, diagonal, considerWeights);
 
-    //    qCDebug(lcSimilarity)<<"Graph::createMatrixDissimilarities() - matrix DSM:";
     // DSM.printMatrixConsole(true);
 }
 

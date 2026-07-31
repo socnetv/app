@@ -175,7 +175,6 @@ void WebCrawler::parse(QNetworkReply *reply){
 
     }
 
-    //    qCDebug(lcWebCrawler) <<  " \npage contents: " << page << "\n\n";
 
     // We only search inside <body>...</body> tags
     qCDebug(lcWebCrawler) << "Finding <body></body> tags";
@@ -548,7 +547,6 @@ void WebCrawler::newLink(int s, QUrl target,  bool enqueue_to_frontier) {
             qCDebug(lcWebCrawler) << "delay requested between signalStartSpider() calls. Setting a deadline for:" << m_wait_msecs << "msecs";
             QDeadlineTimer deadline(m_wait_msecs);
             do {
-//                qCDebug(lcWebCrawler) << "deadline.remainingTime():" << deadline.remainingTime() << "msecs";
             } while (deadline.remainingTime() > 0 && this->thread()->isRunning());
 
             if ( QThread::currentThread()->isInterruptionRequested() ) {

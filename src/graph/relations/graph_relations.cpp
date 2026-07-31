@@ -214,7 +214,6 @@ int Graph::relationCurrent()
  */
 QString Graph::relationCurrentName() const
 {
-    //    qCDebug(lcRelations) << "Returning the current relation name...";
     return m_relationsList.value(m_curRelation);
 }
 
@@ -278,7 +277,6 @@ void Graph::relationCurrentRename(const QString &newName)
  */
 int Graph::relations()
 {
-    // qCDebug(lcRelations) << " relations count " << m_relationsList.size();
     return m_relationsList.size();
 }
 
@@ -363,12 +361,8 @@ void Graph::addRelationSymmetricStrongTies(const bool &allRelations)
     while (it2 != strongTies->constEnd())
     {
         vertices = it2.key().split("--");
-        //        qCDebug(lcRelations) << "tie " <<it2.key()
-        //                 << "vertices.at(0)" << vertices.at(0)
-        //                 << "vertices.at(1)" << vertices.at(1);
         v1 = (vertices.at(0)).toInt();
         v2 = (vertices.at(1)).toInt();
-        //        qCDebug(lcRelations) << "calling edgeCreate for" << v1 << "--"<<v2;
         edgeCreate(v1, v2, 1, initEdgeColor, EdgeType::Undirected, true, false,
                    QString(), false);
         ++it2;

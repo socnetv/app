@@ -152,10 +152,6 @@ bool Graph::isSymmetric()
             {
 
                 m_graphIsSymmetric = false;
-                //                qCDebug(lcGraphCore) <<"Graph::isSymmetric() - "
-                //                         << " graph not symmetric because "
-                //                         << v1 << "->" << v2 << " weight " << weight
-                //                         << " differs from " << v2 << "->" << v1 ;
 
                 break;
             }
@@ -182,24 +178,20 @@ void Graph::setSymmetric()
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
         v1 = (*it)->number();
-        //        qCDebug(lcGraphCore) << "iterate over edges of v1 " << v1;
         enabledOutEdges = (*it)->outEdgesEnabledHash();
         it1 = enabledOutEdges.cbegin();
         while (it1 != enabledOutEdges.cend())
         {
             v2 = it1.key();
             weight = it1.value();
-            //            qCDebug(lcGraphCore) << "v1" << v1 << "outLinked to" << v2 << ", weight:" << weight;
             invertWeight = edgeExists(v2, v1);
             if (invertWeight == 0)
             {
-                //                qCDebug(lcGraphCore) << "v1" << v1 << "is NOT inLinked from v2" <<  v2  ;
                 edgeCreate(v2, v1, weight, initEdgeColor, false, true, false,
                            QString(), false);
             }
             else
             {
-                //                qCDebug(lcGraphCore) << "v1" << v1 << "is inLinked from v2" <<  v2  ;
                 if (weight != invertWeight)
                     edgeWeightSet(v2, v1, weight);
             }
@@ -323,6 +315,5 @@ bool Graph::isDirected()
  */
 bool Graph::isUndirected()
 {
-    //    qCDebug(lcGraphCore) << "isUndirected: " << !m_graphIsDirected;
     return !m_graphIsDirected;
 }

@@ -335,7 +335,6 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
         {
             nodes_flag = true;
             nodeNum = lineElement[0].toInt(&intOk, 10);
-            // qCDebug(lcParser)<<"node number: "<<nodeNum;
             if (nodeNum == 0)
             {
                 qCDebug(lcParser, "Node is zero numbered! Raising zero-start-flag - increasing nodenum");
@@ -407,7 +406,6 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                             break;
                         }
                     }
-                    // qCDebug(lcParser)<<"nodeColor:" << nodeColor;
                     if (nodeColor.contains("."))
                         nodeColor = initNodeColor;
                     if (nodeColor.startsWith("RGB"))
@@ -425,7 +423,6 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                     for (int c = 0; c < lineElement.size(); c++)
                     {
                         temp = lineElement.at(c);
-                        //		qCDebug(lcParser)<< temp.toLatin1();
                         if ((coordIndex = temp.indexOf(".", Qt::CaseInsensitive)) != -1)
                         {
                             if (lineElement.at(c - 1) == "ic")
@@ -457,14 +454,12 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                             break;
                         }
                     }
-                    // qCDebug(lcParser)<<"Coords: "<<randX << randY<< gwHeight;
                 }
                 else
                 {
                     fileContainsNodeCoords = false;
                     randX = rand() % gwWidth;
                     randY = rand() % gwHeight;
-                    // qCDebug(lcParser)<<"No coords. Using random "<<randX << randY;
                 }
             }
             // START NODE CREATION
@@ -596,7 +591,6 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                     edgeWeight = 1.0;
                 }
 
-                // qCDebug(lcParser)<<"weight "<< weight;
 
                 if (lineElement.contains("c", Qt::CaseSensitive))
                 {
@@ -609,7 +603,6 @@ bool Parser::parseAsPajek(const QByteArray &rawData)
                         edgeColor = lineElement[colorIndex];
                     if (edgeColor.contains("."))
                         edgeColor = initEdgeColor;
-                    // qCDebug(lcParser)<< " current color "<< edgeColor;
                 }
                 else
                 {

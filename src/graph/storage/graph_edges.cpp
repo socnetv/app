@@ -129,10 +129,6 @@ bool Graph::edgeCreate(const int &v1,
             //   makes the pair more symmetric. Directedness is determined by
             //   the overall graph state after full import completes.
             //
-            // qCDebug(lcStorage) << "edgeCreate(): v1->v2 exists as directed arc but request"
-            //             " is Undirected and reverse v2->v1 is missing."
-            //             " Storing reverse arc and upgrading visual to Reciprocated:"
-            //          << v1 << "<->" << v2;
 
             // Store the reverse arc in the data model.
             edgeAdd(v2, v1, weight, EdgeType::Directed, label,
@@ -168,10 +164,6 @@ bool Graph::edgeCreate(const int &v1,
     {
         // Undirected edge: edgeAdd stores BOTH v1->v2 and v2->v1 internally.
         // The UI draws a single undirected edge between the two nodes.
-        // qCDebug(lcStorage) << "edgeCreate(): Creating new UNDIRECTED edge:"
-        //          << v1 << "-" << v2
-        //          << "weight" << weight
-        //          << "label" << label;
 
         edgeAdd(v1, v2, weight, type, label,
                 ((weight == 0) ? initEdgeColorZero : color));
@@ -187,11 +179,6 @@ bool Graph::edgeCreate(const int &v1,
         // Adding v1->v2 now makes the relationship reciprocal (bidirectional).
         // Upgrade the edge type to Reciprocated so both the data model and
         // the UI reflect the bidirectional relationship.
-        // qCDebug(lcStorage) << "edgeCreate(): Creating new RECIPROCAL edge:"
-        //          << v1 << "->" << v2
-        //          << "weight" << weight
-        //          << "label" << label
-        //          << "(reverse v2->v1 already exists)";
 
         edgeAdd(v1, v2, weight, EdgeType::Reciprocated, label, color);
 
@@ -205,10 +192,6 @@ bool Graph::edgeCreate(const int &v1,
     {
         // Neither v1->v2 nor v2->v1 exists.
         // Create a plain directed arc from v1 to v2.
-        // qCDebug(lcStorage) << "edgeCreate(): Creating new DIRECTED edge:"
-        //          << v1 << "->" << v2
-        //          << "weight" << weight
-        //          << "label" << label;
 
         edgeAdd(v1, v2, weight, EdgeType::Directed, label,
                 ((weight == 0) ? initEdgeColorZero : color));
@@ -244,7 +227,6 @@ bool Graph::edgeCreate(const int &v1,
  */
 void Graph::edgeCreateWebCrawler(const int &source, const int &target)
 {
-    //    qCDebug(lcStorage)<< " will create edge from" << source << "to" << target ;
     qreal weight = 1.0;
     bool drawArrows = true;
     bool bezier = false;
@@ -300,9 +282,6 @@ void Graph::edgeAdd(const int &v1,
     int source = vpos[v1];
     int target = vpos[v2];
 
-    // qCDebug(lcStorage) << "edgeAdd(): Adding arc from vertex" << v1 << "[idx" << source << "]"
-    //          << "to vertex" << v2 << "[idx" << target << "]"
-    //          << "weight" << weight << "type" << type << "label" << label;
 
     // Store the forward arc v1->v2.
     // OutEdge on v1: carries weight, color, and label (full arc metadata).
@@ -333,8 +312,6 @@ void Graph::edgeAdd(const int &v1,
         //
         // Note: only weight is stored on the reverse arc.
         // Color and label are not duplicated on the reverse direction.
-        // qCDebug(lcStorage) << "edgeAdd(): Edge is Undirected — also adding reverse arc"
-        //          << v2 << "->" << v1;
 
         m_graph[target]->addOutEdge(v1, weight);
         m_graph[source]->addInEdge(v2, weight);
@@ -475,7 +452,6 @@ qreal Graph::edgeExists(const int &v1, const int &v2, const bool &checkReciproca
 {
 
     edgeWeightTemp = m_graph[vpos[v1]]->hasEdgeTo(v2);
-    //    qCDebug(lcStorage) << "Checking if edge exists:" << v1 << "->" << v2 << "=" << edgeWeightTemp  ;
 
     if (!checkReciprocal)
     {
@@ -484,7 +460,6 @@ qreal Graph::edgeExists(const int &v1, const int &v2, const bool &checkReciproca
     else if (edgeWeightTemp != 0)
     {
         edgeReverseWeightTemp = m_graph[vpos[v2]]->hasEdgeTo(v1);
-        //        qCDebug(lcStorage) << "Checking if reverse edge exists: " << v2 << "->" << v1 << "=" << edgeWeightTemp  ;
         if (edgeWeightTemp == edgeReverseWeightTemp)
         {
             return edgeWeightTemp;

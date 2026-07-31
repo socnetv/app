@@ -146,8 +146,6 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations)
             // dereferences inside the O(N) inner loop.
             const int s = (*v1)->number();
 
-            // qCDebug(lcLayouts) << "********* Calculate forces for source s" << s
-            //          << " pos" << (*v1)->x() << "," << (*v1)->y();
 
             for (v2 = m_graph.cbegin(); v2 != m_graph.cend(); ++v2)
             {
@@ -176,8 +174,6 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations)
                 (*v1)->disp().rx() += sign(DV.x()) * f_rep;
                 (*v1)->disp().ry() += sign(DV.y()) * f_rep;
 
-                // qCDebug(lcLayouts) << "  s=" << s << " pushed away from t=" << t
-                //          << " dist" << dist << " f_rep=" << f_rep;
 
                 // --- Attractive (spring) force (Eades: log spring, adjacent pairs only) ---
                 // Inlined from layoutForceDirected_F_att("Eades",...).
@@ -193,15 +189,9 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations)
                     (*v2)->disp().rx() -= sign(DV.x()) * f_att;
                     (*v2)->disp().ry() -= sign(DV.y()) * f_att;
 
-                    // qCDebug(lcLayouts) << "  s=" << s << " attracted by t=" << t
-                    //          << " dist" << dist << " f_att=" << f_att
-                    //          << " disp_s=(" << (*v1)->disp().rx() << "," << (*v1)->disp().ry() << ")"
-                    //          << " disp_t=(" << (*v2)->disp().rx() << "," << (*v2)->disp().ry() << ")";
                 }
             } // end for v2
 
-            // qCDebug(lcLayouts) << "  >>> final s=" << s
-            //          << " disp=(" << (*v1)->disp().rx() << "," << (*v1)->disp().ry() << ")";
         } // end for v1
 
         // Apply displacements with current cooling factor and track max displacement
@@ -318,7 +308,6 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations)
         {
             (*v1)->disp().rx() = 0;
             (*v1)->disp().ry() = 0;
-            // qCDebug(lcLayouts) << " 0000 s " << (*v1)->number() << " zeroing rx/ry";
         }
 
         for (v1 = m_graph.cbegin(); v1 != m_graph.cend(); ++v1)
@@ -511,7 +500,6 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
     l = DM;
     l.multiplyScalar(L);
 
-    //    qCDebug(lcLayouts)<< "Graph::layoutForceDirectedKamadaKawai() - l=" ;
     //    l.printMatrixConsole();
 
     // Compute kij for 1 <= i!=j <= n using the formula:
@@ -538,7 +526,6 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
             k.setItem(i, j, K / (dij * dij));
         }
     }
-    //    qCDebug(lcLayouts)<< "Graph::layoutForceDirectedKamadaKawai() - k=" ;
     //    k.printMatrixConsole();
 
     // Build a local index mapping: vertex number → sequential KK matrix index.
@@ -599,7 +586,6 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
         }
         if (progressCounter == maxIterations)
         {
-            //            qCDebug(lcLayouts)<< "Reached maxIterations. BREAK";
             break;
         }
 
@@ -623,15 +609,10 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
             xm = (*v1)->x();
             ym = (*v1)->y();
 
-            //            qCDebug(lcLayouts)<< "Compute partial derivatives E for particle" << pn
-            //                    << " kkIdx m" <<  m
-            //                    << " pos"<< xm << ", "<< ym;
 
             if (!(*v1)->isEnabled())
             {
 
-                //                qCDebug(lcLayouts) << "  particle " << pn
-                //                         << " vpos m " << m << " disabled. Continue";
                 continue;
             }
 
@@ -668,12 +649,10 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
 
             Delta_m = sqrt(partDrvtEx * partDrvtEx + partDrvtEy * partDrvtEy);
 
-            //            qCDebug(lcLayouts)<< "m" << m << " Delta_m" << Delta_m;
 
             if (Delta_m > Delta_max)
             {
 
-                //                qCDebug(lcLayouts)<< "m" << m << " Delta_m > Delta_max. Setting new Delta_max = "<< Delta_m;
 
                 Delta_max = Delta_m;
                 partDrvtEx_m = partDrvtEx;
@@ -690,7 +669,6 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
 
         if (pnm < 0)
         {
-            //            qCDebug(lcLayouts) << "No particle left with Delta_m > epsilon -- BREAK";
             break;
         }
 
@@ -700,9 +678,6 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
         xm = xpm;
         ym = ypm;
 
-        //        qCDebug(lcLayouts) << "m"<< m<< "has max Delta_m"<< Delta_max
-        //                  << " Starting minimizing Delta_m - "
-        //                << " initial m pos " << xm << ym;
 
         minimizationIterations = 0;
 
@@ -716,8 +691,6 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
             }
             minimizationIterations++;
 
-            //            qCDebug(lcLayouts) << "Started minimizing Delta_m for m"<< m
-            //                      << "First compute dx and dy by solving equations 11 and 12 ";
 
             // compute dx and dy by solving equations 11 and 12
 
@@ -770,29 +743,22 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
 
             Delta_m = sqrt(partDrvtEx_m * partDrvtEx_m + partDrvtEy_m * partDrvtEy_m);
 
-            //            qCDebug(lcLayouts) << "m"<< m << " new Delta_m" << Delta_m;
 
             LIN_EQ_COEF.setItem(0, 0, partDrvtExSec_m);
             LIN_EQ_COEF.setItem(0, 1, partDrvtExEySec_m);
             LIN_EQ_COEF.setItem(1, 0, partDrvtEyExSec_m);
             LIN_EQ_COEF.setItem(1, 1, partDrvtEySec_m);
-            //            qCDebug(lcLayouts)<< "Jacobian Matrix of coefficients for linear system (eq. 11 & 12) is:";
             //            LIN_EQ_COEF.printMatrixConsole();
             b[0] = -partDrvtEx_m;
             b[1] = -partDrvtEy_m;
-            //            qCDebug(lcLayouts)<< "right hand vector is: \n"  << b[0] << " \n" << b[1];
-            //            qCDebug(lcLayouts)<< "solving linear system...";
             if (!LIN_EQ_COEF.solve(b))
             {
                 couldNotSolveLinearSystem = true;
                 continue;
             }
-            //            qCDebug(lcLayouts)<< "solved linear system.";
             dx = b[0];
             dy = b[1];
-            //            qCDebug(lcLayouts)<< "Solution \n b[0] = dx =" << dx << "\n b[1] = dy =" << dy;
 
-            //            qCDebug(lcLayouts) << "m"<< m << " current m pos " << xm << ym << " new m pos " << xm +dx << ym+dy;
 
             // Clamp new position to visible canvas area.
             // Previously used canvasRandomX/Y() as fallback — a random teleport

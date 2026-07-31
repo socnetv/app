@@ -162,7 +162,6 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW)
         // This is called from any method that alters the graph structure,
         // thus all prior computations are invalidated
 
-        //        qCDebug(lcGraphCore)<<"Major changes, invalidating computations, setting graph as changed...";
 
         m_graphModStatus = graphNewStatus;
 
@@ -194,7 +193,6 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW)
         if (signalMW)
         {
 
-            //            qCDebug(lcGraphCore) << "signaling to MW that the graph is modified...";
 
             emit signalGraphModified(isDirected(),
                                      m_totalVertices,
@@ -215,7 +213,6 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW)
             //  Do not change status if current status is > MajorChanges
             m_graphModStatus = graphNewStatus;
         }
-        //        qCDebug(lcGraphCore)<<"minor changes but needs saving...";
         emit signalGraphSavedStatus(false);
         return;
     }

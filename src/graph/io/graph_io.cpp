@@ -939,10 +939,6 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
             rel_coord_x = (*it)->x() / (maxWidth);
             rel_coord_y = (*it)->y() / (maxHeight);
 
-            //            qCDebug(lcGraphIO)<<"Rel coordinates: "
-            //                   << rel_coord_x
-            //                   << ","
-            //                   << rel_coord_y;
 
             outText << "      <data key=\"d1\">" << rel_coord_x << "</data>\n";
             outText << "      <data key=\"d2\">" << rel_coord_y << "</data>\n";
@@ -1040,11 +1036,6 @@ bool Graph::saveToGraphMLFormat(const QString &fileName,
                         m_color = (*it)->outLinkColor(target);
                         m_label = edgeLabel(source, target);
                         m_label = htmlEscaped(m_label);
-                        //                        qCDebug(lcGraphIO)<< "edge no:"
-                        //                                << edgeCount
-                        //                                << "from n1=" << source << "to n2=" << target
-                        //                                << "with weight" << weight
-                        //                                << "and color" << m_color.toUtf8() ;
                         outText << "    <edge id=\"" << "e" + QString::number(edgeCount)
                                 << "\" directed=\"" << "true" << "\" source=\"" << source
                                 << "\" target=\"" << target << "\"";

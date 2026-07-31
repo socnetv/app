@@ -715,7 +715,6 @@ bool Graph::isEmpty() const
  */
 int Graph::vertexExists(const int &v1)
 {
-    //    qCDebug(lcStorage) << "Checking if vertex exists, with number:" << v1;
     if (vpos.contains(v1))
     {
         if (m_graph[vpos[v1]]->number() == v1)

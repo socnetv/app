@@ -169,10 +169,8 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
             break;
         case 2:
             // "021?" - find out!
-            //	qCDebug(lcClustering) << "triad vertices: ( "<< vert1->number() << ", "<< vert2->number()<< ", "<< vert3->number()<< " ) = ("	<<mut<<","<< asy<<","<<nul<<")";
             foreach (GraphVertex *source, m_triad)
             {
-                // qCDebug(lcClustering) << "  vertex " << source->number() ;
                 isOutLinked = false;
                 isInLinked = false;
 
@@ -200,7 +198,6 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
                     }
                     else if (target->hasEdgeTo(source->number()))
                     {
-                        //	qCDebug(lcClustering) << "    vertex " << source->number()  << " is IN linked from " <<target->number();
                         if (isInLinked)
                         {
                             triadTypeFreqs[4]++; //"021U"
@@ -265,10 +262,8 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
             break;
         case 1:
             isUp = false;
-            // qCDebug(lcClustering) << "triad vertices: ( "<< vert1->number() << ", "<< vert2->number()<< ", "<< vert3->number()<< " ) = ("	<<mut<<","<< asy<<","<<nul<<")";
             foreach (GraphVertex *source, m_triad)
             {
-                //	qCDebug(lcClustering) << "  vertex " << source->number() ;
 
                 isInLinked = false;
 
@@ -308,7 +303,6 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
 
             foreach (GraphVertex *source, m_triad)
             {
-                // qCDebug(lcClustering) << "  vertex " << source->number() ;
                 isOutLinked = false;
                 isInLinked = false;
 
@@ -339,7 +333,6 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
                     }
                     else if (target->hasEdgeTo(source->number()))
                     {
-                        //	qCDebug(lcClustering) << "    vertex " << source->number()  << " is IN linked from " <<target->number();
                         if (source->hasEdgeTo(target->number()))
                         {
                             isOutLinked = true;

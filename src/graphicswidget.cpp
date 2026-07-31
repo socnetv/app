@@ -298,10 +298,6 @@ void GraphicsWidget::drawNode( const QPointF &p,
                                const int &labelDistance
 
                                ) {
-//    qCDebug(lcGW)<< "Will draw new node:" << nodeNum
-//            << " at:" << p.x() << ", "<< p.y()
-//            << "shape"<<nodeShape
-//            << "nodeIconPath"<<nodeIconPath;
 
     // Draw node
     GraphicsNode *jim= new GraphicsNode ( this,
@@ -387,9 +383,6 @@ void GraphicsWidget::drawEdge(const int &sourceNum, const int &targetNum,
         GraphicsEdge *e = edgesHash.value(m_edgeKey, nullptr);
         if (!e)
         {
-            // qCDebug(lcGW) << "drawEdge(): WARNING - Reciprocated edge visual not found"
-            //          << "for key" << m_edgeKey
-            //          << "- skipping visual upgrade.";
             return;
         }
         e->setDirectionType(type);
@@ -407,15 +400,12 @@ void GraphicsWidget::drawEdge(const int &sourceNum, const int &targetNum,
  */
 void GraphicsWidget::handleDoubleClickOnNode(GraphicsNode *node){
     if (hasDoubleClickedNode){
-//        qCDebug(lcGW)<< "Got second consecutive double click. "
-//                   "signaling to MW to create a new edge...";
         secondDoubleClickedNode=node;
         emit userMiddleClicked(firstDoubleClickedNode->nodeNumber(), secondDoubleClickedNode->nodeNumber() );
         emit setCursor(Qt::ArrowCursor);
         hasDoubleClickedNode=false;
     }
     else{
-//        qCDebug(lcGW)<<"Got first double click to create a new edge...";
         firstDoubleClickedNode=node;
         hasDoubleClickedNode=true;
         emit setCursor( Qt::PointingHandCursor );
@@ -437,9 +427,7 @@ void GraphicsWidget::handleDoubleClickOnNode(GraphicsNode *node){
  */
 void GraphicsWidget::setNodeClicked(GraphicsNode *node){
     if ( node ) {
-//        qCDebug(lcGW) << "Emitting userClickedNode()";
         if (clickedEdge) {
-//            qCDebug(lcGW) << "Also unsetting previously clicked edge";
             setEdgeClicked(0);
         }
         emit userClickedNode(
@@ -463,18 +451,12 @@ void GraphicsWidget::setNodeClicked(GraphicsNode *node){
  */
 void GraphicsWidget::setEdgeClicked(GraphicsEdge *edge, const bool &openMenu){
     if (edge) {
-//        qCDebug(lcGW) << "Setting new clicked edge"
-//                 << edge->sourceNode()->nodeNumber()
-//                 << "->"
-//                 << edge->targetNode()->nodeNumber()
-//                 << "signalling...";
         clickedEdge=edge;
         emit userClickedEdge(edge->sourceNode()->nodeNumber(),
                              edge->targetNode()->nodeNumber(),
                              openMenu);
     }
     else {
-//        qCDebug(lcGW) <<"Empty edge parameter. Unsetting clickedEdge...";
         clickedEdge=0;
         emit userClickedEdge(0,0,openMenu);
     }
@@ -496,7 +478,6 @@ void GraphicsWidget::setEdgeClicked(GraphicsEdge *edge, const bool &openMenu){
  * @param y
  */
 void GraphicsWidget::moveNode(const int &nodeNum, const qreal &x, const qreal &y){
-//    qCDebug(lcGW) << "Moving node" << nodeNum << "to pos:" << x << "," << y;
     nodeHash.value(nodeNum)->setPos(x,y);
 }
 
@@ -581,17 +562,13 @@ void GraphicsWidget::removeEdge(const int &sourceNum,
   */
 void GraphicsWidget::removeItem( GraphicsNode *node){
     int i=node->nodeNumber();
-//    qCDebug(lcGW) << "Removing node with number: " <<  i;
     if (firstDoubleClickedNode == node) {
-//        qCDebug(lcGW) << "Node" <<  i
-//                 << "previously set as source node for a new edge. Unsetting.";
         hasDoubleClickedNode = false;
         emit setCursor(Qt::ArrowCursor);
     }
     nodeHash.remove(i);
     scene()->removeItem(node);
     node->deleteLater ();
-//    qCDebug(lcGW) << "Node removed. ";
 }
 
 
@@ -608,15 +585,10 @@ void GraphicsWidget::removeItem( GraphicsNode *node){
  */
 void GraphicsWidget::removeItem( GraphicsEdge * edge){
     m_edgeKey = edgeKey(edge->sourceNodeNumber(), edge->targetNodeNumber() ) ;
-//    qCDebug(lcGW) << "Removing edge"<< m_edgeKey << "Calling edgeClicked(0)" ;
     setEdgeClicked(0);
-//    qCDebug(lcGW) << "removing edge from edges hash" ;
     edgesHash.remove(m_edgeKey);
-//    qCDebug(lcGW) << "removing edge from scene" ;
     scene()->removeItem(edge);
-//    qCDebug(lcGW) << "Calling edge->deleteLater()" ;
     edge->deleteLater();
-//    qCDebug(lcGW) << "Edge removed.Finished";
 }
 
 
@@ -626,7 +598,6 @@ void GraphicsWidget::removeItem( GraphicsEdge * edge){
  * @param edgeWeight
  */
 void GraphicsWidget::removeItem( GraphicsEdgeWeight *edgeWeight){
-//    qCDebug(lcGW) << "Removing edge weight";
     scene()->removeItem(edgeWeight);
     edgeWeight->deleteLater();
 }
@@ -639,7 +610,6 @@ void GraphicsWidget::removeItem( GraphicsEdgeWeight *edgeWeight){
  * @param edgeLabel
  */
 void GraphicsWidget::removeItem( GraphicsEdgeLabel *edgeLabel){
-//    qCDebug(lcGW) << "Removing edgeLabel";
     scene()->removeItem(edgeLabel);
     edgeLabel->deleteLater();
 }
@@ -652,7 +622,6 @@ void GraphicsWidget::removeItem( GraphicsEdgeLabel *edgeLabel){
  * @param nodeLabel
  */
 void GraphicsWidget::removeItem( GraphicsNodeLabel *nodeLabel){
-//    qCDebug(lcGW) << "Removing label of node" << nodeLabel->node()->nodeNumber();
     scene()->removeItem(nodeLabel);
     nodeLabel->deleteLater();
 }
@@ -663,7 +632,6 @@ void GraphicsWidget::removeItem( GraphicsNodeLabel *nodeLabel){
  * @param nodeNumber
  */
 void GraphicsWidget::removeItem( GraphicsNodeNumber *nodeNumber){
-//    qCDebug(lcGW) << "removing number of node " <<  nodeNumber->node()->nodeNumber();
     scene()->removeItem(nodeNumber);
     nodeNumber->deleteLater();
 }
@@ -683,7 +651,6 @@ void GraphicsWidget::removeItem( GraphicsNodeNumber *nodeNumber){
  * @return
  */
 bool GraphicsWidget::setNodeColor(const int &nodeNum, const QString &color){
-//    qCDebug(lcGW) << "Setting node"<< nodeNum << "new color to:" << color;
     nodeHash.value(nodeNum)->setColor(color);
     return true;
 }
@@ -701,7 +668,6 @@ bool GraphicsWidget::setNodeColor(const int &nodeNum, const QString &color){
 bool GraphicsWidget::setNodeShape(const int &nodeNum,
                                   const QString &shape,
                                   const QString &iconPath){
-//    qCDebug(lcGW) << "Setting node"<< nodeNum << "new shape to:" << shape;
     nodeHash.value(nodeNum)->setShape(shape,iconPath);
     return true;
 \
@@ -716,7 +682,6 @@ bool GraphicsWidget::setNodeShape(const int &nodeNum,
  * @param toggle
  */
 void GraphicsWidget::setNodeLabelsVisibility (const bool &toggle){
-//    qCDebug(lcGW)<< "Toggling node labels visibility to:" << toggle;
     viewport()->setUpdatesEnabled(false);
     foreach ( GraphicsNode *m_node, nodeHash) {
         m_node->setLabelVisibility(toggle);
@@ -734,7 +699,6 @@ void GraphicsWidget::setNodeLabelsVisibility (const bool &toggle){
  * @return
  */
 bool GraphicsWidget::setNodeLabel(const int &nodeNumber, const QString &label){
-//    qCDebug(lcGW) << "Setting node"<< nodeNumber << "new label to:" << label;
     nodeHash.value(nodeNumber)->setLabelText (label);
     return true;
 
@@ -748,7 +712,6 @@ bool GraphicsWidget::setNodeLabel(const int &nodeNumber, const QString &label){
  * @param numIn
  */
 void GraphicsWidget::setNumbersInsideNodes(const bool &toggle){
-//    qCDebug(lcGW)<< "Toggling node numbers inside:" << toggle;
     viewport()->setUpdatesEnabled(false);
     foreach ( GraphicsNode *m_node, nodeHash) {
         m_node->setNumberInside(toggle);
@@ -769,7 +732,6 @@ void GraphicsWidget::setNumbersInsideNodes(const bool &toggle){
  * @param size
  */
 void GraphicsWidget::setInitNodeSize(int size){
-//    qCDebug(lcGW)<< "Setting default node size to" << size;
     m_nodeSize=size;
 }
 
@@ -837,7 +799,6 @@ bool GraphicsWidget::setNodeSize(const int &nodeNum, const int &size ){
  * @param toggle
  */
 void GraphicsWidget::setNodeNumberVisibility(const bool &toggle){
-//    qCDebug(lcGW)<< "toggling visibility of all node numbers to" << toggle;
     viewport()->setUpdatesEnabled(false);
     foreach ( GraphicsNode *m_node, nodeHash) {
         m_node->setNumberVisibility(toggle);
@@ -1021,10 +982,6 @@ void GraphicsWidget::setEdgeColor(const int &source,
 bool GraphicsWidget::setEdgeDirectionType(const int &source,
                                           const int &target,
                                           const int &dirType){
-//    qCDebug(lcGW) << "Changing the direction type of edge: "
-//             << source
-//             << "->" << target
-//             << "to type:" << dirType;
 
     m_edgeKey = edgeKey( source, target );
 
@@ -1078,7 +1035,6 @@ bool GraphicsWidget::setEdgeWeight(const int &source,
  * @param toggle
  */
 void GraphicsWidget::setEdgeArrowsVisibility(const bool &toggle){
-//    qCDebug(lcGW)<< "Setting visibility of all edge arrows to:" << toggle;
     viewport()->setUpdatesEnabled(false);
     foreach ( GraphicsEdge *m_edge, edgesHash) {
         m_edge->showArrows(toggle);
@@ -1116,8 +1072,6 @@ void GraphicsWidget::setEdgeArrowSize(const int &size) {
 void GraphicsWidget::setEdgeOffsetFromNode(const int &source,
                                            const int &target,
                                            const int &offset){
-//    qCDebug(lcGW) << "Changing offset of edge: " << source << "->" << target
-//             << ", new offset" << offset;
 
     if (source && target) {
 
@@ -1144,7 +1098,6 @@ void GraphicsWidget::setEdgeOffsetFromNode(const int &source,
  * @param toggle
  */
 void GraphicsWidget::setEdgeWeightNumbersVisibility (const bool &toggle){
-//    qCDebug(lcGW)<< "Toggling all edge weight numbers' visibility" << toggle;
     viewport()->setUpdatesEnabled(false);
     foreach ( GraphicsEdge *m_edge, edgesHash) {
         m_edge->setWeightNumberVisibility(toggle);
@@ -1159,8 +1112,6 @@ void GraphicsWidget::setEdgeWeightNumbersVisibility (const bool &toggle){
  * @param toggle
  */
 void GraphicsWidget::setEdgeLabelsVisibility (const bool &toggle){
-//    qCDebug(lcGW)<< "GW::setEdgeLabelsVisibility() " << toggle
-//               << "for edgesHash.count: " << edgesHash.size();
     viewport()->setUpdatesEnabled(false);
     foreach ( GraphicsEdge *m_edge, edgesHash) {
         m_edge->setLabelVisibility(toggle);
@@ -1180,7 +1131,6 @@ void GraphicsWidget::setEdgeLabelsVisibility (const bool &toggle){
  * @param toggle
  */
 void GraphicsWidget::setEdgeHighlighting(const bool &toggle){
-//    qCDebug(lcGW)<< "Toggling edge highlighting" << toggle;
     viewport()->setUpdatesEnabled(false);
     foreach ( GraphicsNode *m_node, nodeHash) {
         m_node->setEdgeHighLighting(toggle);

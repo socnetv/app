@@ -460,10 +460,6 @@ void Parser::readGraphMLElementNode(QXmlStreamReader &xml)
     node_id = (xmlStreamAttr.value("id")).toString();
     totalNodes++;
 
-    //    qCDebug(lcParser)<< "reading node id"<<  node_id
-    //           << "index" << totalNodes
-    //           << "added to nodeHash"
-    //           << "gwWidth, gwHeight "<< gwWidth<< "," <<gwHeight;
 
     nodeHash[node_id] = totalNodes;
 
@@ -563,11 +559,6 @@ void Parser::readGraphMLElementEdge(QXmlStreamAttributes &xmlStreamAttr)
     edge_target = xmlStreamAttr.value("target").toString();
     edge_directed = xmlStreamAttr.value("directed").toString();
 
-    //    qCDebug(lcParser)<< "Parsing edge id: "
-    //            <<	xmlStreamAttr.value("id").toString()
-    //                << "edge_source " << edge_source
-    //                << "edge_target " << edge_target
-    //                << "directed " << edge_directed;
 
     missingNode = false;
     edgeWeight = initEdgeWeight;

@@ -177,7 +177,6 @@ void Matrix::identityMatrix(int dim) {
     m_cols=dim;
     row = new (nothrow) MatrixRow [m_rows];
     Q_CHECK_PTR( row );
-    //qCDebug(lcMatrix) << "Matrix: resize() -- resizing each row";
     for (int i=0;i<m_rows; i++) {
         row[i].resize(m_rows);
         setItem(i,i, 1);
@@ -198,7 +197,6 @@ void Matrix::zeroMatrix(const int m, const int n) {
     m_cols=n;
     row = new (nothrow) MatrixRow [m_rows];
     Q_CHECK_PTR( row );
-    //qCDebug(lcMatrix) << "Matrix::zeroMatrix - resizing each row";
     for (int i=0;i<m_rows; i++) {
         row[i].resize(m_cols);
         for (int j=0;j<m_cols; j++) {
@@ -263,36 +261,20 @@ void Matrix::deleteRowColumn(int erased){
     qCDebug(lcMatrix) << "Matrix:deleteRowColumn() - m_rows now " << m_rows << ". Resizing...";
     for (int i=0;i<m_rows+1; i++) {
         for (int j=0;j<m_rows+1; j++) {
-//            qCDebug(lcMatrix) << "Matrix:deleteRowColumn() -"
-//                        <<"item ("<< i+1 << "," << j+1 << ") ="<< item(i, j) ;
             if (i>=m_rows || j>=m_rows) {
                 setItem( i, j, RAND_MAX) ;
-//                qCDebug(lcMatrix) << "Matrix:deleteRowColumn() -"
-//                         <<"both i,j>=m_rows, corner case (will be deleted). Setting to RAND_MAX."
-//                        << "New item value (" <<  i+1 << ", " << j+1 << ") ="<< item(i, j) ;
             }
             else if (i<erased && j< erased) {
-//                qCDebug(lcMatrix) << "Matrix:deleteRowColumn() -"
-//                         << "i, j < erased. Skipping. Item unchanged.";
                 continue;
             }
             else if (i<erased && j>=erased) {
                 setItem( i, j, item(i,j+1) ) ;
-//                qCDebug(lcMatrix) << "Matrix:deleteRowColumn() -"
-//                            <<"j>=erased, shifting column left"
-//                           << "New item value (" <<  i+1 << ", " << j+1 << ") ="<< item(i, j) ;
             }
             else if (i>=erased && j<erased) {
                 setItem( i, j, item(i+1,j) ) ;
-//                qCDebug(lcMatrix) << "Matrix:deleteRowColumn() -"
-//                         <<"i>=erased, shifting rows up."
-//                        << "New item value (" <<  i+1 << ", " << j+1 << ") ="<< item(i, j) ;
             }
             else if (i>=erased && j>=erased) {
                 setItem( i, j, item(i+1,j+1) ) ;
-//                qCDebug(lcMatrix) << "Matrix:deleteRowColumn() -"
-//                         <<"both i,j>=erased, shifting row up and column left."
-//                        << "New item value (" <<  i+1 << ", " << j+1 << ") ="<< item(i, j) ;
             }
 
         }
@@ -599,7 +581,6 @@ void Matrix::product(Matrix &A, Matrix & B, bool symmetry)  {
             }
         }
     }
-//    qCDebug(lcMatrix) << "Matrix::product() - this";
     *this = *P;
 
     //this->printMatrixConsole();
@@ -680,11 +661,9 @@ Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
         qCDebug(lcMatrix) <<"Matrix::expBySquaring2() - n = 1. Computing PM = X*Y where "
                    "X = " ;
         //X.printMatrixConsole();
-        //qCDebug(lcMatrix) <<"Matrix::expBySquaring2() - n = 1. And Y = ";
         //Y.printMatrixConsole();
         Matrix *PM = new Matrix(rows(), cols());
         PM->product(X, Y, symmetry);
-        //qCDebug(lcMatrix)<<"Matrix::expBySquaring2() - n = 1. PM = X*Y ="  ;
         //PM->printMatrixConsole();
         return *PM;
     }
@@ -693,7 +672,6 @@ Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
                << "Computing PM = X * X";
         Matrix PM(rows(), cols());
         PM.product(X,X,symmetry);
-        //qCDebug(lcMatrix)<<"Matrix::expBySquaring2() - even n =" << n << ". PM = X * X = " ;
         //PM.printMatrixConsole();
         return expBySquaring2 ( Y, PM, n/2 );
     }
@@ -703,12 +681,10 @@ Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
         Matrix PM(rows(), cols());
         Matrix PM2(rows(), cols());
         PM.product(X,Y,symmetry);
-        //qCDebug(lcMatrix)<<"Matrix::expBySquaring2() - odd n =" << n << ". PM = X * Y = " ;
         //PM.printMatrixConsole();
         qCDebug(lcMatrix)<<"Matrix::expBySquaring2() - odd n =" << n
                << "Now compute PM2 = X * X";
         PM2.product(X,X,symmetry);
-        //qCDebug(lcMatrix)<<"Matrix::expBySquaring2() - odd n =" << n << ". PM2 = X * X = " ;
         //PM2.printMatrixConsole();
         return expBySquaring2 ( PM, PM2, (n-1)/2 );
     }
@@ -1338,9 +1314,7 @@ bool Matrix::solve(qreal b[])
         return false ;
     }
 
-//    qCDebug(lcMatrix) << "Matrix::solve() - call lubksb";
     lubksb(*A, n, indx, b);
-//    qCDebug(lcMatrix) << "Matrix::solve() - finished!";
 
     return true;
 }
@@ -1391,7 +1365,6 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                 max = 0;
                 for (int j = 0 ; j < N ; j++ ) {
 
-//                    qCDebug(lcMatrix) <<  "(i,j)" << i<< ","<<j << "(k,j)" << k<<","<<j;
 
                     if (!diagonal && (i==j || k==j)) {
                         continue;
@@ -1417,7 +1390,6 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                             distTemp = RAND_MAX;
                         }
                         else {
-//                            qCDebug(lcMatrix) <<  item(i,j) << "-" << item(k,j) <<"^2";
                             distTemp += ( item(i,j) - item(k,j) )*( item(i,j) - item(k,j) ); //compute (x - y)^2
                         }
                         break;
@@ -1470,8 +1442,6 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                 }
 
 
-//                qCDebug(lcMatrix) << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
-//                         << "matchRatio("<<i+1<<","<<k+1<<") =" << distance;
 
                 T->setItem(i,k, distance);
                 T->setItem(k,i, distance);
@@ -1577,7 +1547,6 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                 }
 
 
-//                qCDebug(lcMatrix) << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
 
 //                         << "distance("<<i+1<<","<<k+1<<") =" << distance;
 
@@ -1704,7 +1673,6 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
 
 
-//                qCDebug(lcMatrix) << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
 
 //                         << "matchRatio("<<i+1<<","<<k+1<<") =" << distance;
 

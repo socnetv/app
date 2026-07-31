@@ -613,7 +613,6 @@ void Graph::vertexLabelDistanceInit(const int &distance)
  */
 void Graph::vertexCustomAttributesSet(const int &v1, const QHash<QString, QString> &customAttributes)
 {
-    // qCDebug(lcGraphUI) << "Setting custom attributes for vertex" << v1 << ":"<< customAttributes;
     m_graph[vpos[v1]]->setCustomAttributes(customAttributes);
     setModStatus(ModStatus::VertexMetadata);
 }

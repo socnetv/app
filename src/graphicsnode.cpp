@@ -145,11 +145,9 @@ GraphicsNode::GraphicsNode ( GraphicsWidget* gw,
  * @param colorStr
  */
 void GraphicsNode::setColor(const QString &colorName) {
-//    qCDebug(lcGW)<< "Changing the node color to named color:" << colorName << "setting mcol:" << QColor(colorName);
     prepareGeometryChange();
     m_col_orig=m_col=QColor(colorName);
     m_colHover = m_col.darker(120);
-//    qCDebug(lcGW)<< "Calling update()";
     update();
 }
 
@@ -162,11 +160,9 @@ void GraphicsNode::setColor(const QString &colorName) {
  * @param color
  */
 void GraphicsNode::setColor(QColor color){
-//    qCDebug(lcGW)<< "Changing the node Qcolor to:" << color;
     prepareGeometryChange();
     m_col=color;
     m_colHover = m_col.darker(120);
-//    qCDebug(lcGW)<< "Calling update()";
     update();
 }
 
@@ -188,18 +184,14 @@ QString GraphicsNode::color() {
  * @param size
  */
 void GraphicsNode::setSize(const int &size){
-//    qCDebug(lcGW)<< "Changing the node size to:" << size;
     prepareGeometryChange();
     m_size=size;
     for (GraphicsEdge *edge: inEdgeList) {
-//        qCDebug(lcGW)<< "Informing inbound edges";
         edge->setTargetNodeSize(size);
     }
     for (GraphicsEdge *edge: outEdgeList) {
-//        qCDebug(lcGW)<< "Informing oubound edges";
         edge->setSourceNodeSize(size);
     }
-//    qCDebug(lcGW)<< "calling setShape()";
     setShape(m_shape);
 }
 
@@ -238,10 +230,6 @@ void GraphicsNode::setShape(const QString shape, const QString &iconPath) {
 
     m_shape=shape;
 
-//    qCDebug(lcGW)<< "Setting shape for node:" << nodeNumber()
-//            << "shape:" << m_shape
-//            << "iconPath" << iconPath
-//            << "pos:"<<  x() << "," <<  y();
 
     QPainterPath path;
 
@@ -369,7 +357,6 @@ QPainterPath GraphicsNode::shape() const {
  * @return
  */
 QRectF GraphicsNode::boundingRect() const {
-    //qCDebug(lcGW)<< "GraphicsNode::boundingRect() " << m_path.controlPointRect();
     return m_path.controlPointRect();
     //qreal adjust = 5;
     // return QRectF(-m_size -adjust , -m_size-adjust , 2*m_size+adjust , 2*m_size +adjust);
@@ -387,15 +374,12 @@ QRectF GraphicsNode::boundingRect() const {
 void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) {
     //	painter->setClipRect( option->exposedRect );
 
-//    qCDebug(lcGW)<< "GraphicsNode::paint() - m_col:" << m_col << "color name:" << m_col.name();
 
     if (option->state & QStyle::State_MouseOver) {
-//        qCDebug(lcGW)<< "Highlighting node because of mouse hover ";
         painter->setBrush(m_colHover);
         setZValue(ZValueNodeHighlighted);
     }
     else {
-//        qCDebug(lcGW)<< "GraphicsNode::paint() - no mouse over " << m_col;
         painter->setBrush(m_col);
         setZValue(ZValueNode);
     }
@@ -459,7 +443,6 @@ void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
  */
 QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &value) {
 
-//    qCDebug(lcGW)<<"GraphicsNode::itemChange - change:" << change<< "value:" << value << "m_col" << m_col.name();
 
     switch (change) {
     case ItemPositionHasChanged: {
@@ -482,11 +465,9 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
         break;
     }
     case ItemEnabledHasChanged:{
-//        qCDebug(lcGW) << "Node item has been enabled";
         break;
     }
     case ItemSelectedHasChanged:{
-//         qCDebug(lcGW) << "Node ItemSelectedHasChanged";
         if (value.toBool()) {
             setZValue(ZValueNodeHighlighted);
             m_size_orig = m_size;
@@ -574,7 +555,6 @@ void GraphicsNode::setEdgeHighLighting(const bool &toggle) {
  * @param edge
  */
 void GraphicsNode::addInEdge( GraphicsEdge *edge ) {
-//    qCDebug(lcGW) << "adding inEdge"<< nodeNumber() << "<-" << edge->sourceNodeNumber();
     inEdgeList.push_back( edge);
 }
 
@@ -598,7 +578,6 @@ void GraphicsNode::removeInEdge( GraphicsEdge *edge ){
  * @param edge
  */
 void GraphicsNode::addOutEdge( GraphicsEdge *edge ) {
-//    qCDebug(lcGW) << "adding outEdge"<< nodeNumber() << "->" << edge->targetNodeNumber();
     outEdgeList.push_back(edge);
 }
 
@@ -620,7 +599,6 @@ void GraphicsNode::removeOutEdge(GraphicsEdge *edge){
  * @brief Creates a graphics label to this node.
  */
 void GraphicsNode::addLabel ()  {
-//    qCDebug(lcGW)<< "Creating a graphics label for this node." ;
     m_label = new  GraphicsNodeLabel (this, m_labelText, m_labelSize);
     m_label->setDefaultTextColor (m_labelColor);
     m_label->setPos( m_size, m_labelDistance+m_size);
@@ -644,7 +622,6 @@ GraphicsNodeLabel* GraphicsNode::label(){
  * @brief Deletes the graphics label of this node.
  */
 void GraphicsNode::deleteLabel(){
-//    qCDebug(lcGW)<< "Deleting the graphics label of this node";
     if (m_hasLabel) {
         m_hasLabel=false;
         m_label->hide();
@@ -660,7 +637,6 @@ void GraphicsNode::deleteLabel(){
  * @param label
  */
 void GraphicsNode::setLabelText (const QString &label) {
-//    qCDebug(lcGW)<< "Changing the label of this node to:" << label;
     prepareGeometryChange();
     m_labelText = label;
     if (m_hasLabel)
@@ -686,7 +662,6 @@ QString GraphicsNode::labelText ( ) {
  * @param color
  */
 void GraphicsNode::setLabelColor ( const QString &color) {
-//    qCDebug(lcGW)<< "Changing the color of node label to:" << color;
     prepareGeometryChange();
     m_labelColor= color;
     if (m_hasLabel)
@@ -755,7 +730,6 @@ void GraphicsNode::setLabelDistance(const int &distance) {
  * @brief Adds a graphics number to the node
  */
 void GraphicsNode::addNumber () {
-//    qCDebug(lcGW)<<"Adding node graphics number... " ;
     m_hasNumber=true;
     m_hasNumberInside = false;
     m_number= new  GraphicsNodeNumber ( this, QString::number(m_num), m_numSize);
@@ -790,7 +764,6 @@ void GraphicsNode::deleteNumber( ){
  * @param toggle
  */
 void GraphicsNode::setNumberVisibility(const bool &toggle) {
-//    qCDebug(lcGW) << "Changing visibility of node number to:" << toggle;
     if (toggle) { //show
         if (!m_hasNumber) {
             m_hasNumber=toggle;
@@ -814,7 +787,6 @@ void GraphicsNode::setNumberVisibility(const bool &toggle) {
  * @param toggle
  */
 void GraphicsNode::setNumberInside (const bool &toggle){
-//    qCDebug(lcGW)<<"GraphicsNode::setNumberInside() " << toggle;
     if (toggle) { // set number inside
         deleteNumber();
     }
@@ -886,9 +858,6 @@ void GraphicsNode::setNumberDistance(const int &distance) {
 
 
 GraphicsNode::~GraphicsNode(){
-//    qCDebug(lcGW) << "Destructing node "<< nodeNumber()
-//                << "- inEdgeList:" << inEdgeList.size()
-//                << "- outEdgeList: " << outEdgeList.size();
 
     // Skipped during a bulk GraphicsWidget::clear(): every edge is itself a top-level
     // scene item, so scene()->clear() destroys it directly regardless of what happens
@@ -920,9 +889,7 @@ GraphicsNode::~GraphicsNode(){
 
     inEdgeList.clear();
     outEdgeList.clear();
-//    qCDebug(lcGW) << "node" << nodeNumber() << "hiding node...";
     this->hide();
-//    qCDebug(lcGW) << "node" << nodeNumber() << "calling GW removeItem...";
     graphicsWidget->removeItem(this);
 
 }

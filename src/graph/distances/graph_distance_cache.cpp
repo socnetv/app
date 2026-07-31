@@ -196,10 +196,6 @@ bool Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
                 continue;
             }
 
-            // qCDebug(lcDistances) << "Graph: graphMatrixDistanceGeodesicCreate() - "
-            //          << "target" << target << "j" << j;
-            // qCDebug(lcDistances) << "Graph: graphMatrixDistanceGeodesicCreate() - setting DM ("
-            //          << i << "," << j << ") =" << (*it)->distance(target);
 
             DM.setItem(i, j, (*it)->distance(target));
             j++;

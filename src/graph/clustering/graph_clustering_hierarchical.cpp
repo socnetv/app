@@ -277,7 +277,6 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
             if (it != m_clustersIndex.end())
             {
                 prev.value() = it.value();
-                // qCDebug(lcClustering) << "  key now"<< prev.key() << ": " << prev.value() ;
             }
         }
         m_clustersIndex.erase(--it); // erase the last element in map
@@ -299,8 +298,6 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
         {
             if (i == deletedClusterIndex)
             {
-                //                qCDebug(lcClustering) << "Graph::graphClusteringHierarchical() -"
-                //                          <<"SKIP this as it is one of the merged clusters.";
                 continue;
             }
 
