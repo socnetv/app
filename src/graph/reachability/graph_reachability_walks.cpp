@@ -27,7 +27,7 @@
  */
 bool Graph::graphReachable(const int &v1, const int &v2)
 {
-    qDebug() << "Graph::reachable()";
+    qCDebug(lcReachability) << "Graph::reachable()";
     graphDistancesGeodesic(false);
     return (m_graph[vpos[v1]]->distance(v2) != RAND_MAX) ? true : false;
 }
@@ -37,7 +37,7 @@ bool Graph::graphReachable(const int &v1, const int &v2)
  */
 void Graph::createMatrixReachability()
 {
-    qDebug() << "Creating the Reachability Matrix...";
+    qCDebug(lcReachability) << "Creating the Reachability Matrix...";
 
     graphDistancesGeodesic(false);
     if (progressCanceled())
@@ -59,7 +59,7 @@ void Graph::createMatrixReachability()
     progressStatus(pMsg);
     progressCreate(N, pMsg);
 
-    qDebug() << "Writing Reachability matrix...";
+    qCDebug(lcReachability) << "Writing Reachability matrix...";
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
@@ -74,11 +74,11 @@ void Graph::createMatrixReachability()
 
         if (!(*it)->isEnabled())
         {
-            qDebug() << "source vertex" << source << "disabled. SKIP";
+            qCDebug(lcReachability) << "source vertex" << source << "disabled. SKIP";
             continue;
         }
 
-        qDebug() << "source vertex" << source << "i" << i;
+        qCDebug(lcReachability) << "source vertex" << source << "i" << i;
 
         for (jt = m_graph.cbegin(); jt != m_graph.cend(); ++jt)
         {
@@ -87,14 +87,14 @@ void Graph::createMatrixReachability()
 
             if (!(*jt)->isEnabled())
             {
-                qDebug() << "target vertex" << target << "disabled. SKIP";
+                qCDebug(lcReachability) << "target vertex" << target << "disabled. SKIP";
                 continue;
             }
 
-            qDebug() << "target vertex" << target << "j" << j;
+            qCDebug(lcReachability) << "target vertex" << target << "j" << j;
 
             reachVal = ((*it)->distance(target) != RAND_MAX) ? 1 : 0;
-            qDebug() << "Setting XRM (" << i << "," << j << ") =" << reachVal;
+            qCDebug(lcReachability) << "Setting XRM (" << i << "," << j << ") =" << reachVal;
             XRM.setItem(i, j, reachVal);
 
             j++;
@@ -159,7 +159,7 @@ void Graph::graphWalksMatrixCreate(const int &N,
     }
     if (length > 0)
     {
-        qDebug() << "Graph::graphWalksMatrixCreate() - "
+        qCDebug(lcReachability) << "Graph::graphWalksMatrixCreate() - "
                     "Calculating sociomatrix power"
                  << length;
 
@@ -175,7 +175,7 @@ void Graph::graphWalksMatrixCreate(const int &N,
     }
     else
     {
-        qDebug() << "Graph::graphWalksMatrixCreate() - "
+        qCDebug(lcReachability) << "Graph::graphWalksMatrixCreate() - "
                     "Calculating all sociomatrix powers up to"
                  << N - 1;
 
@@ -228,7 +228,7 @@ void Graph::graphWalksMatrixCreate(const int &N,
 QList<int> Graph::vertexinfluenceRange(int v1)
 {
 
-    qDebug() << "Graph::vertexinfluenceRange() - vertex:" << v1;
+    qCDebug(lcReachability) << "Graph::vertexinfluenceRange() - vertex:" << v1;
 
     graphDistancesGeodesic(false);
     if (progressCanceled())
@@ -262,14 +262,14 @@ QList<int> Graph::vertexinfluenceRange(int v1)
 
         if (!(*jt)->isEnabled())
         {
-            qDebug() << "Graph::vertexinfluenceRange() - target:"
+            qCDebug(lcReachability) << "Graph::vertexinfluenceRange() - target:"
                      << target << "disabled. SKIP";
             continue;
         }
 
         if (graphDistanceGeodesic(v1, target) != RAND_MAX)
         {
-            qDebug() << "Graph::vertexinfluenceRange() - v1 can reach:" << target;
+            qCDebug(lcReachability) << "Graph::vertexinfluenceRange() - v1 can reach:" << target;
             influenceRanges.insert(v1, target);
         }
     }
@@ -290,7 +290,7 @@ QList<int> Graph::vertexinfluenceRange(int v1)
  */
 QList<int> Graph::vertexinfluenceDomain(int v1)
 {
-    qDebug() << "Graph::vertexinfluenceDomain() - vertex:" << v1;
+    qCDebug(lcReachability) << "Graph::vertexinfluenceDomain() - vertex:" << v1;
 
     graphDistancesGeodesic(false);
     if (progressCanceled())
@@ -324,14 +324,14 @@ QList<int> Graph::vertexinfluenceDomain(int v1)
 
         if (!(*it)->isEnabled())
         {
-            qDebug() << "Graph::vertexinfluenceDomain() - "
+            qCDebug(lcReachability) << "Graph::vertexinfluenceDomain() - "
                      << source << "disabled. SKIP";
             continue;
         }
 
         if ((*it)->distance(v1) != RAND_MAX)
         {
-            qDebug() << "Graph::vertexinfluenceDomain() - v1 reachable from:" << source;
+            qCDebug(lcReachability) << "Graph::vertexinfluenceDomain() - v1 reachable from:" << source;
             influenceDomains.insert(v1, source);
         }
     }
