@@ -50,7 +50,7 @@ bool Graph::randomNetErdosCreate(const int &N,
                                  const QString &mode,
                                  const bool &diag)
 {
-    qDebug() << "Creating Erdos-Renyi random network:"
+    qCDebug(lcGenerators) << "Creating Erdos-Renyi random network:"
              << "N" << N
              << "model" << model
              << "edges" << m
@@ -87,7 +87,7 @@ bool Graph::randomNetErdosCreate(const int &N,
             QPoint(x, y), initVertexShape, initVertexIconPath, false);
     }
 
-    qDebug() << "Nodes created. Creating edges using model" << model;
+    qCDebug(lcGenerators) << "Nodes created. Creating edges using model" << model;
 
     if (model == "G(n,p)")
     {
@@ -208,7 +208,7 @@ bool Graph::randomNetScaleFreeCreate(const int &N,
                                      const qreal &alpha,
                                      const QString &mode)
 {
-    qDebug() << "Graph::randomNetScaleFreeCreate() -"
+    qCDebug(lcGenerators) << "Graph::randomNetScaleFreeCreate() -"
              << "N" << N
              << "power" << power
              << "m0" << m0
@@ -243,7 +243,7 @@ bool Graph::randomNetScaleFreeCreate(const int &N,
     progressCreate(N, pMsg);
 
     // Phase 1: create the initial seed clique of m0 nodes
-    qDebug() << "Graph::randomNetScaleFreeCreate() - creating seed clique of" << m0 << "nodes";
+    qCDebug(lcGenerators) << "Graph::randomNetScaleFreeCreate() - creating seed clique of" << m0 << "nodes";
 
     for (int i = 0; i < m0; ++i)
     {
@@ -284,7 +284,7 @@ bool Graph::randomNetScaleFreeCreate(const int &N,
     }
 
     // Phase 2: grow the network to N nodes via preferential attachment
-    qDebug() << "Graph::randomNetScaleFreeCreate() - growing network to" << N << "nodes";
+    qCDebug(lcGenerators) << "Graph::randomNetScaleFreeCreate() - growing network to" << N << "nodes";
 
     for (int i = m0; i < N; ++i)
     {
@@ -351,13 +351,13 @@ bool Graph::randomNetScaleFreeCreate(const int &N,
                 break;
         }
 
-        qDebug() << "Graph::randomNetScaleFreeCreate() -"
+        qCDebug(lcGenerators) << "Graph::randomNetScaleFreeCreate() -"
                  << m << "edges attached for node" << i + 1;
     }
 
     relationCurrentRename(tr("scale-free"), true);
 
-    qDebug() << "Graph::randomNetScaleFreeCreate() - finished.";
+    qCDebug(lcGenerators) << "Graph::randomNetScaleFreeCreate() - finished.";
 
     setModStatus(ModStatus::VertexEdgeCount);
 
@@ -384,7 +384,7 @@ bool Graph::randomNetScaleFreeCreate(const int &N,
 bool Graph::randomNetSmallWorldCreate(const int &N, const int &degree,
                                       const double &beta, const QString &mode)
 {
-    qDebug() << "Creating small-world random network. Vertices:" << N
+    qCDebug(lcGenerators) << "Creating small-world random network. Vertices:" << N
              << "degree:" << degree
              << "beta:" << beta
              << "mode:" << mode;
@@ -408,7 +408,7 @@ bool Graph::randomNetSmallWorldCreate(const int &N, const int &degree,
     progressStatus(pMsg);
     progressCreate(N, pMsg);
 
-    qDebug() << "Rewiring starts...";
+    qCDebug(lcGenerators) << "Rewiring starts...";
 
     int candidate = 0;
     int progressCounter = 1;
@@ -481,7 +481,7 @@ bool Graph::randomNetRegularCreate(const int &N,
                                    const int &degree,
                                    const QString &mode, const bool &diag)
 {
-    qDebug() << "Creating d-regular random network..."
+    qCDebug(lcGenerators) << "Creating d-regular random network..."
              << "N" << N << "degree" << degree << "mode" << mode;
     Q_UNUSED(diag);
 
@@ -547,7 +547,7 @@ bool Graph::randomNetRegularCreate(const int &N,
         }
     }
 
-    qDebug() << "Edge list count:" << m_edges.size()
+    qCDebug(lcGenerators) << "Edge list count:" << m_edges.size()
              << "Randomising by swapping edge endpoint pairs...";
 
     // Randomise by repeatedly swapping endpoints of two randomly chosen edges,
@@ -630,7 +630,7 @@ bool Graph::randomNetRegularCreate(const int &N,
 bool Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
                                        const bool updateProgress)
 {
-    qDebug() << "Creating ring lattice random network...";
+    qCDebug(lcGenerators) << "Creating ring lattice random network...";
     int x = 0;
     int y = 0;
     int progressCounter = 0;
@@ -726,7 +726,7 @@ bool Graph::randomNetLatticeCreate(const int &N,
                                    const QString &mode,
                                    const bool &circular)
 {
-    qDebug() << "Creating lattice network..."
+    qCDebug(lcGenerators) << "Creating lattice network..."
              << "N" << N
              << "length" << length
              << "neighborhoodLength" << neighborhoodLength
@@ -769,7 +769,7 @@ bool Graph::randomNetLatticeCreate(const int &N,
     nodeHPadding = (canvasWidth) / (double)(length + 2);
     nodeVPadding = (canvasHeight) / (double)(length + 2);
 
-    qDebug() << "Creating" << N << "vertices in a" << length << "x" << length
+    qCDebug(lcGenerators) << "Creating" << N << "vertices in a" << length << "x" << length
              << "grid - nodeHPadding" << nodeHPadding
              << "nodeVPadding" << nodeVPadding;
 
@@ -797,7 +797,7 @@ bool Graph::randomNetLatticeCreate(const int &N,
 
     // Compute the edge list: for each node, find all neighbours
     // within neighborhoodLength steps in both axes
-    qDebug() << "Computing edges...";
+    qCDebug(lcGenerators) << "Computing edges...";
 
     if (mode == "graph")
     {
@@ -848,7 +848,7 @@ bool Graph::randomNetLatticeCreate(const int &N,
     }
 
     // Draw edges; progress tracks actual edge count for accuracy
-    qDebug() << "Drawing" << latticeEdges.size() << "edges...";
+    qCDebug(lcGenerators) << "Drawing" << latticeEdges.size() << "edges...";
 
     progressFraction = (latticeEdges.size() > 0) ? 1.0 / (qreal)latticeEdges.size() : 1.0;
 
