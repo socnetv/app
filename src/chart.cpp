@@ -17,6 +17,7 @@
 #include "chart.h"
 
 #include <QDebug>
+#include <QLoggingCategory>
 #include <QtCharts/QChart>
 #include <QtCharts/QPieSeries>
 #include <QtCharts/QPieSlice>
@@ -33,11 +34,13 @@
 #include <QtCharts/QBarCategoryAxis>
 #include <QVBoxLayout>
 
+Q_LOGGING_CATEGORY(lcChart, "socnetv.chart")
+
 Chart::Chart(QWidget *parent) :
     QChartView (parent ),
     m_chart(new QChart)
 {
-    qDebug() << "Constructing a Chart";
+    qCDebug(lcChart) << "Constructing a Chart";
 
     setChart(m_chart);
 
@@ -46,7 +49,7 @@ Chart::Chart(QWidget *parent) :
 
 
 Chart::~Chart(){
-    qDebug()<< "Deleting m_chart pointer";
+    qCDebug(lcChart)<< "Deleting m_chart pointer";
     delete m_chart;
     //m_series->clear();
 }
@@ -61,10 +64,10 @@ Chart::~Chart(){
  * @param series
  */
 void Chart::addSeries(QAbstractSeries *series) {
-    qDebug() << "Adding a series to chart" ;
+    qCDebug(lcChart) << "Adding a series to chart" ;
     if (series) {
         m_chart->addSeries(series);
-        qDebug() << "added series with name"<< series->name() ;
+        qCDebug(lcChart) << "added series with name"<< series->name() ;
     }
     else {
         // default: a trivial series with one point
@@ -74,7 +77,7 @@ void Chart::addSeries(QAbstractSeries *series) {
         *m_series << QPointF(0,0);
         m_series->setName("trivial");
         m_chart->addSeries(m_series);
-        qDebug() << "trivial series with one point created.";
+        qCDebug(lcChart) << "trivial series with one point created.";
     }
 
 }
@@ -86,7 +89,7 @@ void Chart::addSeries(QAbstractSeries *series) {
  * @param p
  */
 void Chart::appendToSeries(const QPointF &p) {
-    qDebug() <<"Appending a QPoint to series"  ;
+    qCDebug(lcChart) <<"Appending a QPoint to series"  ;
     m_series->append(p);
 }
 
@@ -95,11 +98,11 @@ void Chart::appendToSeries(const QPointF &p) {
  * @brief Removes and deletes all series objects that have been added to the chart.
  */
 void Chart::removeAllSeries() {
-    qDebug() <<"Removing all series... "  ;
+    qCDebug(lcChart) <<"Removing all series... "  ;
 
     if ( ! m_chart->series().empty() ) {
         m_chart->removeAllSeries();
-        qDebug() <<"series count:"  << m_chart->series().size();
+        qCDebug(lcChart) <<"series count:"  << m_chart->series().size();
     }
 
 }
@@ -111,7 +114,7 @@ void Chart::removeAllSeries() {
  * @brief Creates default axes. Must be called AFTER loading a series to the chart
  */
 void Chart::createDefaultAxes(){
-    qDebug() << "Creating default axes..." ;
+    qCDebug(lcChart) << "Creating default axes..." ;
     m_chart->createDefaultAxes();
 
 }
@@ -119,13 +122,13 @@ void Chart::createDefaultAxes(){
 
 QList<QAbstractAxis *> Chart::axes(Qt::Orientations orientation,
                             QAbstractSeries *series) const {
-    qDebug() << "Chart::axes()" ;
+    qCDebug(lcChart) << "Chart::axes()" ;
     if (series == Q_NULLPTR) {
-        qDebug() << "Chart::axes() - no series defined" ;
+        qCDebug(lcChart) << "Chart::axes() - no series defined" ;
         return m_chart->axes(orientation);
     }
     else {
-        qDebug() << "Chart::axes() - a series was defined" ;
+        qCDebug(lcChart) << "Chart::axes() - a series was defined" ;
         return m_chart->axes(orientation, series);
     }
 
@@ -136,17 +139,17 @@ QList<QAbstractAxis *> Chart::axes(Qt::Orientations orientation,
  */
 void Chart::removeAllAxes(){
 
-    qDebug() << "Removing all axes";
+    qCDebug(lcChart) << "Removing all axes";
 
     if ( ! axes(Qt::Horizontal).isEmpty() )  {
-        qDebug() << "Looping over horizontal axes to delete - count: "<< m_chart->axes(Qt::Horizontal).size();
+        qCDebug(lcChart) << "Looping over horizontal axes to delete - count: "<< m_chart->axes(Qt::Horizontal).size();
         foreach ( QAbstractAxis *axe, axes(Qt::Horizontal) ) {
             m_chart->removeAxis(axe);
         }
     }
 
     if ( ! axes(Qt::Vertical).isEmpty() )  {
-        qDebug() << "Looping over vertical axes to delete - count: "<< m_chart->axes(Qt::Vertical).size();
+        qCDebug(lcChart) << "Looping over vertical axes to delete - count: "<< m_chart->axes(Qt::Vertical).size();
         foreach ( QAbstractAxis *axe, axes(Qt::Vertical) ) {
             m_chart->removeAxis(axe);
         }
@@ -165,9 +168,9 @@ void Chart::removeAllAxes(){
  * @param series
  */
 void Chart::setAxisX(QAbstractAxis *axis, QAbstractSeries *series) {
-    qDebug()<<"Adding axis X to chart";
+    qCDebug(lcChart)<<"Adding axis X to chart";
     addAxis(axis, Qt::AlignBottom);
-    qDebug()<<"Attaching axis X to current series " << series->name();
+    qCDebug(lcChart)<<"Attaching axis X to current series " << series->name();
     series->attachAxis(axis);
 }
 
@@ -180,9 +183,9 @@ void Chart::setAxisX(QAbstractAxis *axis, QAbstractSeries *series) {
  * @param series
  */
 void Chart::setAxisY(QAbstractAxis *axis, QAbstractSeries *series) {
-    qDebug()<<"Adding axis Y to chart";
+    qCDebug(lcChart)<<"Adding axis Y to chart";
     addAxis(axis, Qt::AlignLeft);
-    qDebug()<<"Attaching axis Y to current series " << series->name();
+    qCDebug(lcChart)<<"Attaching axis Y to current series " << series->name();
     series->attachAxis(axis);
 
 }
@@ -195,7 +198,7 @@ void Chart::setAxisY(QAbstractAxis *axis, QAbstractSeries *series) {
  * @param alignment
  */
 void Chart::addAxis(QAbstractAxis *axis, Qt::Alignment alignment) {
-    qDebug()<< "Adding axis to chart";
+    qCDebug(lcChart)<< "Adding axis to chart";
     m_chart->addAxis(axis,alignment);
     // We could also check if m_series and do:
     // barSeries->attachAxis(axisY);
@@ -209,7 +212,7 @@ void Chart::addAxis(QAbstractAxis *axis, Qt::Alignment alignment) {
  * @param max
  */
 void Chart::setAxisXRange(const QVariant &min, const QVariant &max){
-    qDebug()<< "Setting axis X range...";
+    qCDebug(lcChart)<< "Setting axis X range...";
     m_chart->axes(Qt::Horizontal).first()->setRange(min, max);
 }
 
@@ -219,7 +222,7 @@ void Chart::setAxisXRange(const QVariant &min, const QVariant &max){
  * @param min
  */
 void Chart::setAxisXMin(const QVariant &min){
-    qDebug()<< "Setting axis X min...";
+    qCDebug(lcChart)<< "Setting axis X min...";
     m_chart->axes(Qt::Horizontal).first()->setMin(min);
 }
 
@@ -231,7 +234,7 @@ void Chart::setAxisXMin(const QVariant &min){
  * @param max
  */
 void Chart::setAxisYRange(const QVariant &min, const QVariant &max){
-    qDebug()<< "Setting axis Y range...";
+    qCDebug(lcChart)<< "Setting axis Y range...";
     m_chart->axes(Qt::Vertical).first()->setRange(min, max);
 }
 
@@ -242,14 +245,14 @@ void Chart::setAxisYRange(const QVariant &min, const QVariant &max){
  * @param min
  */
 void Chart::setAxisYMin(const QVariant &min){
-    qDebug()<< "Setting axis X min...";
+    qCDebug(lcChart)<< "Setting axis X min...";
     m_chart->axes(Qt::Vertical).first()->setMin(min);
 }
 
 
 
 void Chart::setAxisXLabelsAngle (const int &angle){
-    qDebug()<< "Setting axis X label angle...";
+    qCDebug(lcChart)<< "Setting axis X label angle...";
     m_chart->axes(Qt::Horizontal).first()->setLabelsAngle(angle);
 
 }
@@ -259,7 +262,7 @@ void Chart::setAxisXLabelsAngle (const int &angle){
  * @param font
  */
 void Chart::setAxisXLabelFont(const QFont &font){
-    qDebug()<< "Setting axis X label font...";
+    qCDebug(lcChart)<< "Setting axis X label font...";
     m_chart->axes(Qt::Horizontal).first()->setLabelsFont(font);
 }
 
@@ -270,7 +273,7 @@ void Chart::setAxisXLabelFont(const QFont &font){
  * @param font
  */
 void Chart::setAxisYLabelFont(const QFont &font){
-    qDebug()<< "Setting axis Y label font...";
+    qCDebug(lcChart)<< "Setting axis Y label font...";
     m_chart->axes(Qt::Vertical).first()->setLabelsFont(font);
 }
 
@@ -282,7 +285,7 @@ void Chart::setAxisYLabelFont(const QFont &font){
  * @param font
  */
 void Chart::setAxisXLinePen(const QPen &pen){
-    qDebug()<< "Setting axis X line pen...";
+    qCDebug(lcChart)<< "Setting axis X line pen...";
     m_chart->axes(Qt::Horizontal).first()->setLinePen(pen);
 }
 
@@ -293,7 +296,7 @@ void Chart::setAxisXLinePen(const QPen &pen){
  * @param font
  */
 void Chart::setAxisYLinePen(const QPen &pen){
-    qDebug()<< "Setting axis Y line pen...";
+    qCDebug(lcChart)<< "Setting axis Y line pen...";
     m_chart->axes(Qt::Vertical).first()->setLinePen(pen);
 
 }
@@ -306,7 +309,7 @@ void Chart::setAxisYLinePen(const QPen &pen){
  * @param font
  */
 void Chart::setAxisXGridLinePen(const QPen &pen){
-    qDebug()<< "Setting axis X grid line pen...";
+    qCDebug(lcChart)<< "Setting axis X grid line pen...";
     m_chart->axes(Qt::Horizontal).first()->setGridLinePen(pen);
 }
 
@@ -317,7 +320,7 @@ void Chart::setAxisXGridLinePen(const QPen &pen){
  * @param font
  */
 void Chart::setAxisYGridLinePen(const QPen &pen){
-    qDebug()<< "Setting axis Y grid line pen...";
+    qCDebug(lcChart)<< "Setting axis Y grid line pen...";
     m_chart->axes(Qt::Vertical).first()->setGridLinePen(pen);
 
 }
@@ -331,7 +334,7 @@ void Chart::setAxisYGridLinePen(const QPen &pen){
  * @param toggle
  */
 void Chart::toggleLegend(const bool &toggle){
-    qDebug()<< "toggling chart legend...";
+    qCDebug(lcChart)<< "toggling chart legend...";
     if (toggle) {
         m_chart->legend()->show();
     }
@@ -346,7 +349,7 @@ void Chart::toggleLegend(const bool &toggle){
  * @param brush
  */
 void Chart::setChartBackgroundBrush(const QBrush & brush) {
-    qDebug()<< "Setting chart background brush...";
+    qCDebug(lcChart)<< "Setting chart background brush...";
    m_chart->setBackgroundBrush(brush);
 }
 
@@ -357,7 +360,7 @@ void Chart::setChartBackgroundBrush(const QBrush & brush) {
  * @param brush
  */
 void Chart::setChartBackgroundPen(const QPen & pen) {
-   qDebug()<< "Setting chart background pen...";
+   qCDebug(lcChart)<< "Setting chart background pen...";
    m_chart->setBackgroundPen(pen);
 }
 
@@ -367,7 +370,7 @@ void Chart::setChartBackgroundPen(const QPen & pen) {
  * @param theme
  */
 void Chart::setTheme(QChart::ChartTheme theme) {
-    qDebug()<< "Setting chart theme...";
+    qCDebug(lcChart)<< "Setting chart theme...";
     m_chart->setTheme(theme);
 }
 
@@ -377,7 +380,7 @@ void Chart::setTheme(QChart::ChartTheme theme) {
  * @param chartHeight
  */
 void Chart::setThemeSmallWidget(const int minWidth, const int minHeight) {
-    qDebug()<< "Setting small chart widget theme...";
+    qCDebug(lcChart)<< "Setting small chart widget theme...";
     setTheme();
     setBackgroundBrush(QBrush(Qt::transparent));
     setChartBackgroundBrush();
@@ -399,7 +402,7 @@ void Chart::setThemeSmallWidget(const int minWidth, const int minHeight) {
  * @param margins
  */
 void Chart::setMargins(const QMargins &margins){
-    qDebug()<< "Setting chart margins...";
+    qCDebug(lcChart)<< "Setting chart margins...";
     m_chart->setMargins(margins);
 }
 
@@ -409,7 +412,7 @@ void Chart::setMargins(const QMargins &margins){
  * @param title
  */
 void Chart::setTitle(const QString &title, const QFont &font){
-    qDebug() << "Setting chart title..." ;
+    qCDebug(lcChart) << "Setting chart title..." ;
     m_chart->setTitleFont(font);
     m_chart->setTitle(title);
 }
@@ -420,7 +423,7 @@ void Chart::setTitle(const QString &title, const QFont &font){
  * WARNING: Axes must be already attached to m_chart
  */
 void Chart::setAxesThemeDefault() {
-    qDebug()<< "Setting a simple theme to chart axes...";
+    qCDebug(lcChart)<< "Setting a simple theme to chart axes...";
     setAxisXLabelFont();
     setAxisXLinePen();
     setAxisXGridLinePen();
@@ -434,7 +437,7 @@ void Chart::setAxesThemeDefault() {
 
 
 void Chart::resetToTrivial() {
-    qDebug()<< "Resetting chart to trivial...";
+    qCDebug(lcChart)<< "Resetting chart to trivial...";
     removeAllSeries();
     addSeries();
     createDefaultAxes();
