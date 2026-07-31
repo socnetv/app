@@ -30,7 +30,7 @@
  */
 void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
 {
-    qDebug() << "Writing reciprocity report to file:" << fileName;
+    qCDebug(lcReporting) << "Writing reciprocity report to file:" << fileName;
 
     Q_UNUSED(considerWeights);
 
@@ -40,7 +40,7 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open file for writing. Abort.";
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
         return;
     }
@@ -176,7 +176,7 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
         progressUpdate(++progressCounter);
 
         rowCount++;
-        qDebug() << "Graph::writeReciprocity outnon  - innon - rec"
+        qCDebug(lcReporting) << "Graph::writeReciprocity outnon  - innon - rec"
                  << (*it)->outEdgesNonSym()
                  << (*it)->inEdgesNonSym()
                  << (*it)->outEdgesReciprocated();
@@ -281,7 +281,7 @@ bool Graph::writeEccentricity(const QString fileName, const bool considerWeights
                               const bool inverseWeights, const bool dropIsolates)
 {
 
-    qDebug() << "Writing Eccentricity report to file:" << fileName;
+    qCDebug(lcReporting) << "Writing Eccentricity report to file:" << fileName;
 
     QElapsedTimer computationTimer;
     computationTimer.start();
@@ -289,7 +289,7 @@ bool Graph::writeEccentricity(const QString fileName, const bool considerWeights
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open file for writing. Abort.";
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
@@ -377,14 +377,14 @@ bool Graph::writeEccentricity(const QString fileName, const bool considerWeights
         progressUpdate(++progressCounter);
         rowCount++;
         eccentr = (*it)->eccentricity();
-        qDebug() << "Graph::writeEccentricity() - actor "
+        qCDebug(lcReporting) << "Graph::writeEccentricity() - actor "
                  << (*it)->number()
                  << "eccentricity"
                  << eccentr;
 
         if (!(*it)->isEnabled())
         {
-            qDebug() << "Graph::writeEccentricity() - actor disabled. SKIP.";
+            qCDebug(lcReporting) << "Graph::writeEccentricity() - actor disabled. SKIP.";
             continue; // do not print disabled nodes
         }
 
@@ -476,7 +476,7 @@ bool Graph::writeCentralityInformation(const QString fileName,
                                        const bool inverseWeights)
 {
 
-    qDebug() << "Writing Information Centrality report to file:" << fileName;
+    qCDebug(lcReporting) << "Writing Information Centrality report to file:" << fileName;
 
     QElapsedTimer computationTimer;
     computationTimer.start();
@@ -484,7 +484,7 @@ bool Graph::writeCentralityInformation(const QString fileName,
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open file for writing. Abort.";
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
@@ -746,7 +746,7 @@ bool Graph::writeCentralityEigenvector(const QString fileName,
                                        const bool &dropIsolates)
 {
 
-    qDebug() << "Writing Eigenvector Centrality report to file:" << fileName;
+    qCDebug(lcReporting) << "Writing Eigenvector Centrality report to file:" << fileName;
 
     QElapsedTimer computationTimer;
     computationTimer.start();
@@ -754,7 +754,7 @@ bool Graph::writeCentralityEigenvector(const QString fileName,
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open file for writing. Abort.";
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
@@ -999,7 +999,7 @@ bool Graph::writeCentralityDegree(const QString fileName,
                                   const bool dropIsolates)
 {
 
-    qDebug() << "Writing Degree Centrality report to file:" << fileName
+    qCDebug(lcReporting) << "Writing Degree Centrality report to file:" << fileName
              << "considerWeights:" << considerWeights
              << "dropIsolates:" << dropIsolates;
 
@@ -1009,7 +1009,7 @@ bool Graph::writeCentralityDegree(const QString fileName,
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open file for writing. Abort.";
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false; 
     }
@@ -1295,7 +1295,7 @@ bool Graph::writeCentralityCloseness(const QString fileName,
     QElapsedTimer computationTimer;
     computationTimer.start();
 
-    qDebug() << "Writing closeness Centrality report to file:" << fileName
+    qCDebug(lcReporting) << "Writing closeness Centrality report to file:" << fileName
              << "considerWeights" << considerWeights
              << "inverseWeights" << inverseWeights
              << "dropIsolates" << dropIsolates
@@ -1304,7 +1304,7 @@ bool Graph::writeCentralityCloseness(const QString fileName,
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open file for writing. Abort.";
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
@@ -1586,7 +1586,7 @@ bool Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
                                                    const bool dropIsolates)
 {
 
-    qDebug() << "Writing IR Closeness Centrality report to file:" << fileName;
+    qCDebug(lcReporting) << "Writing IR Closeness Centrality report to file:" << fileName;
 
     QElapsedTimer computationTimer;
     computationTimer.start();
@@ -1594,7 +1594,7 @@ bool Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open file for writing. Abort.";
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
@@ -1821,7 +1821,7 @@ bool Graph::writeCentralityBetweenness(const QString fileName,
                                        const bool dropIsolates)
 {
 
-    qDebug() << "Writing Betweenness Centrality report to file:" << fileName;
+    qCDebug(lcReporting) << "Writing Betweenness Centrality report to file:" << fileName;
 
     QElapsedTimer computationTimer;
     computationTimer.start();
@@ -1829,7 +1829,7 @@ bool Graph::writeCentralityBetweenness(const QString fileName,
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open file for writing. Abort.";
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
@@ -2105,7 +2105,7 @@ bool Graph::writeCentralityStress(const QString fileName,
                                   const bool dropIsolates)
 {
 
-    qDebug() << "Writing Stress Centrality report to file:" << fileName;
+    qCDebug(lcReporting) << "Writing Stress Centrality report to file:" << fileName;
 
     QElapsedTimer computationTimer;
     computationTimer.start();
@@ -2113,7 +2113,7 @@ bool Graph::writeCentralityStress(const QString fileName,
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open file for writing. Abort.";
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
@@ -2350,7 +2350,7 @@ bool Graph::writeCentralityEccentricity(const QString fileName,
                                         const bool dropIsolates)
 {
 
-    qDebug() << "Writing Eccentricity Centrality report to file:" << fileName;
+    qCDebug(lcReporting) << "Writing Eccentricity Centrality report to file:" << fileName;
 
     QElapsedTimer computationTimer;
     computationTimer.start();
@@ -2358,7 +2358,7 @@ bool Graph::writeCentralityEccentricity(const QString fileName,
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open file for writing. Abort.";
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
@@ -2577,7 +2577,7 @@ bool Graph::writeCentralityPower(const QString fileName,
                                  const bool dropIsolates)
 {
 
-    qDebug() << "Writing Power Centrality report to file:" << fileName;
+    qCDebug(lcReporting) << "Writing Power Centrality report to file:" << fileName;
 
     QElapsedTimer computationTimer;
     computationTimer.start();
@@ -2585,7 +2585,7 @@ bool Graph::writeCentralityPower(const QString fileName,
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open file for writing. Abort.";
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
@@ -2854,7 +2854,7 @@ bool Graph::writePrestigeDegree(const QString fileName,
                                 const bool dropIsolates)
 {
 
-    qDebug() << "Writing Degree Prestige report to file:" << fileName;
+    qCDebug(lcReporting) << "Writing Degree Prestige report to file:" << fileName;
 
     QElapsedTimer computationTimer;
     computationTimer.start();
@@ -2862,7 +2862,7 @@ bool Graph::writePrestigeDegree(const QString fileName,
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open file for writing. Abort.";
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
@@ -3146,7 +3146,7 @@ bool Graph::writePrestigeProximity(const QString fileName,
                                    const bool dropIsolates)
 {
 
-    qDebug() << "Writing Proximity Prestige report to file:" << fileName;
+    qCDebug(lcReporting) << "Writing Proximity Prestige report to file:" << fileName;
 
     QElapsedTimer computationTimer;
     computationTimer.start();
@@ -3154,7 +3154,7 @@ bool Graph::writePrestigeProximity(const QString fileName,
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open file for writing. Abort.";
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
@@ -3373,7 +3373,7 @@ bool Graph::writePrestigePageRank(const QString fileName,
                                   const bool dropIsolates)
 {
 
-    qDebug() << "Writing PageRank Prestige report to file:" << fileName;
+    qCDebug(lcReporting) << "Writing PageRank Prestige report to file:" << fileName;
 
     QElapsedTimer computationTimer;
     computationTimer.start();
@@ -3381,7 +3381,7 @@ bool Graph::writePrestigePageRank(const QString fileName,
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open file for writing. Abort.";
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
@@ -3622,7 +3622,7 @@ void Graph::writeMatrixWalks(const QString &fn,
                              const bool &simpler)
 {
 
-    qDebug() << "I will write walks of length:" << length
+    qCDebug(lcReporting) << "I will write walks of length:" << length
              << "to file:" << fn;
 
     QElapsedTimer computationTimer;
@@ -3633,7 +3633,7 @@ void Graph::writeMatrixWalks(const QString &fn,
     QFile file(fn);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open file for writing. Abort.";
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fn);
         return;
     }
@@ -3707,7 +3707,7 @@ void Graph::writeMatrixWalks(const QString &fn,
     }
 
     progressStatus(tr("Writing Walks matrix to file:") + fn);
-    qDebug() << "Graph::writeMatrixWalks() - Writing XM to file";
+    qCDebug(lcReporting) << "Graph::writeMatrixWalks() - Writing XM to file";
 
     if (length > 0)
     {
@@ -3739,13 +3739,13 @@ void Graph::writeMatrixWalks(const QString &fn,
 void Graph::writeReachabilityMatrixPlainText(const QString &fn, const bool &dropIsolates)
 {
 
-    qDebug() << "Writing Reachability Matrix plain text to file:" << fn;
+    qCDebug(lcReporting) << "Writing Reachability Matrix plain text to file:" << fn;
 
     QFile file(fn);
 
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open file for writing. Abort.";
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fn);
         return;
     }
@@ -3781,7 +3781,7 @@ bool Graph::writeClusteringCoefficient(const QString fileName,
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open file for writing. Abort.";
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
@@ -3981,7 +3981,7 @@ bool Graph::writeTriadCensus(const QString fileName,
                              const bool considerWeights)
 {
 
-    qDebug() << "Graph::writeTriadCensus()";
+    qCDebug(lcReporting) << "Graph::writeTriadCensus()";
 
     QElapsedTimer computationTimer;
     computationTimer.start();
@@ -3990,7 +3990,7 @@ bool Graph::writeTriadCensus(const QString fileName,
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open file for writing. Abort.";
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
@@ -4003,7 +4003,7 @@ bool Graph::writeTriadCensus(const QString fileName,
     {
         if (!graphTriadCensus())
         {
-            qDebug() << "Error in graphTriadCensus(). Exiting...";
+            qCDebug(lcReporting) << "Error in graphTriadCensus(). Exiting...";
             file.close();
             return false;
         }
@@ -4136,7 +4136,7 @@ bool Graph::writeCliqueCensus(const QString &fileName,
     QElapsedTimer computationTimer;
     computationTimer.start();
 
-    qDebug() << "Graph::writeCliqueCensus() ";
+    qCDebug(lcReporting) << "Graph::writeCliqueCensus() ";
 
     Q_UNUSED(considerWeights);
 
@@ -4146,7 +4146,7 @@ bool Graph::writeCliqueCensus(const QString &fileName,
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open file for writing. Abort.";
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
@@ -4168,7 +4168,7 @@ bool Graph::writeCliqueCensus(const QString &fileName,
     // compute clique census
     pMsg = tr("Computing Clique Census. Please wait..");
     progressStatus(pMsg);
-    qDebug() << "Graph::writeCliqueCensus() - calling graphCliques";
+    qCDebug(lcReporting) << "Graph::writeCliqueCensus() - calling graphCliques";
 
     csRecDepth = 0;
 
@@ -4484,7 +4484,7 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
     QElapsedTimer computationTimer;
     computationTimer.start();
 
-    qDebug() << "Graph::writeClusteringHierarchical() - matrix:"
+    qCDebug(lcReporting) << "Graph::writeClusteringHierarchical() - matrix:"
              << matrix
              << "varLocation" << varLocation
              << "metric" << metric
@@ -4498,7 +4498,7 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open file for writing. Abort.";
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
@@ -4544,7 +4544,7 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
                                      inverseWeights,
                                      dropIsolates))
     {
-        qDebug() << "Graph::writeClusteringHierarchical() - HCA failed. Returning...";
+        qCDebug(lcReporting) << "Graph::writeClusteringHierarchical() - HCA failed. Returning...";
         file.close();
         progressStatus("Error completing HCA analysis");
         return false;
@@ -4651,7 +4651,7 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
     outText << htmlEnd;
 
     file.close();
-    qDebug() << "Graph::writeClusteringHierarchical() - finished";
+    qCDebug(lcReporting) << "Graph::writeClusteringHierarchical() - finished";
 
     progressUpdate(N);
     progressFinish();
@@ -4672,7 +4672,7 @@ void Graph::writeClusteringHierarchicalResultsToStream(QTextStream &outText,
                                                        const bool &dendrogram)
 {
 
-    qDebug() << "Writing Hierarchical Clustering results to stream. "
+    qCDebug(lcReporting) << "Writing Hierarchical Clustering results to stream. "
              << "N" << N
              << "dendrogram" << dendrogram;
 
@@ -4699,7 +4699,7 @@ void Graph::writeClusteringHierarchicalResultsToStream(QTextStream &outText,
     if (dendrogram)
     {
 
-        qDebug() << "Writing SVG dendrogram...";
+        qCDebug(lcReporting) << "Writing SVG dendrogram...";
 
         outText << "<p>"
                 << "<span class=\"info\">"
@@ -4737,7 +4737,7 @@ void Graph::writeClusteringHierarchicalResultsToStream(QTextStream &outText,
 
         maxLevelValue = m_clusteringLevel.last();
 
-        qDebug() << "m_clustersPerSequence" << m_clustersPerSequence
+        qCDebug(lcReporting) << "m_clustersPerSequence" << m_clustersPerSequence
                  << "\n"
                  << "maxLevelValue" << maxLevelValue
                  << "\n"
@@ -4786,7 +4786,7 @@ void Graph::writeClusteringHierarchicalResultsToStream(QTextStream &outText,
         for (pit = m_clusterPairNamesPerSeq.constBegin(); pit != m_clusterPairNamesPerSeq.constEnd(); ++pit)
         {
             level = m_clusteringLevel.at(pit.key() - 1);
-            qDebug() << "seq" << pit.key()
+            qCDebug(lcReporting) << "seq" << pit.key()
                      << "level" << level
                      << "cluster pair" << pit.value();
 
@@ -4794,17 +4794,17 @@ void Graph::writeClusteringHierarchicalResultsToStream(QTextStream &outText,
             {
 
                 clusterName = pit.value().at(i);
-                qDebug() << "clusterName" << clusterName;
+                qCDebug(lcReporting) << "clusterName" << clusterName;
 
                 if (i == 0)
                 {
                     endPoint1 = clusterEndPoint.value(clusterName, QPoint());
-                    qDebug() << "endPoint1" << endPoint1;
+                    qCDebug(lcReporting) << "endPoint1" << endPoint1;
                 }
                 else
                 {
                     endPoint2 = clusterEndPoint.value(clusterName, QPoint());
-                    qDebug() << "endPoint2" << endPoint2;
+                    qCDebug(lcReporting) << "endPoint2" << endPoint2;
                 }
             }
 
@@ -4819,7 +4819,7 @@ void Graph::writeClusteringHierarchicalResultsToStream(QTextStream &outText,
 
             clusterEndPoint.insert("c" + QString::number(pit.key()), endPointLevel);
 
-            qDebug() << "(pit.key() / maxLevelValue)" << (diagramPaddingLeft + level / maxLevelValue)
+            qCDebug(lcReporting) << "(pit.key() / maxLevelValue)" << (diagramPaddingLeft + level / maxLevelValue)
                      << "endPointLevel" << endPointLevel;
 
             // print path
@@ -4891,7 +4891,7 @@ bool Graph::writeMatrixDissimilarities(const QString fileName,
                                        const bool &considerWeights)
 {
 
-    qDebug() << "Graph::writeMatrixDissimilarities()"
+    qCDebug(lcReporting) << "Graph::writeMatrixDissimilarities()"
              << "metric" << metricStr
              << "varLocation" << varLocation
              << "diagonal" << diagonal;
@@ -4902,7 +4902,7 @@ bool Graph::writeMatrixDissimilarities(const QString fileName,
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open file for writing. Abort.";
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
@@ -5031,7 +5031,7 @@ bool Graph::writeMatrixSimilarityMatching(const QString fileName,
                                           const bool &considerWeights)
 {
 
-    qDebug() << "Writing similarity matrix to file:" << fileName;
+    qCDebug(lcReporting) << "Writing similarity matrix to file:" << fileName;
 
     QElapsedTimer computationTimer;
     computationTimer.start();
@@ -5043,7 +5043,7 @@ bool Graph::writeMatrixSimilarityMatching(const QString fileName,
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open (for writing) file:" << fileName;
+        qCDebug(lcReporting) << "Could not open (for writing) file:" << fileName;
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
@@ -5214,7 +5214,7 @@ bool Graph::writeMatrixSimilarityPearson(const QString fileName,
                                          const bool &diagonal)
 {
 
-    qDebug() << "Writing Pearson Correlation coefficients to file:" << fileName;
+    qCDebug(lcReporting) << "Writing Pearson Correlation coefficients to file:" << fileName;
 
     QElapsedTimer computationTimer;
     computationTimer.start();
@@ -5223,7 +5223,7 @@ bool Graph::writeMatrixSimilarityPearson(const QString fileName,
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open (for writing) file:" << fileName;
+        qCDebug(lcReporting) << "Could not open (for writing) file:" << fileName;
         progressStatus(tr("Error. Could not write to ") + fileName);
         return false;
     }
@@ -5369,12 +5369,12 @@ bool Graph::writeMatrixSimilarityPearson(const QString fileName,
 void Graph::writeDataSetToFile(const QString dir, const QString fileName)
 {
 
-    qDebug() << "Writing famous dataset to file:" << dir + fileName;
+    qCDebug(lcReporting) << "Writing famous dataset to file:" << dir + fileName;
 
     QFile file(dir + fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open (for writing) file:" << fileName;
+        qCDebug(lcReporting) << "Could not open (for writing) file:" << fileName;
         progressStatus(tr("Error. Could not write to ") + fileName);
         return;
     }
@@ -5394,10 +5394,10 @@ void Graph::writeDataSetToFile(const QString dir, const QString fileName)
     }
     virtualFile.close();
 
-    qDebug() << "		... writing dataset ";
+    qCDebug(lcReporting) << "		... writing dataset ";
     if (fileName == "Campnet.paj")
     {
-        qDebug() << "		... to  " << fileName;
+        qCDebug(lcReporting) << "		... to  " << fileName;
         datasetDescription = tr("Campnet dataset\n\n"
                                 "The dataset is the interactions among 18 people, "
                                 "including 4 instructors, "
@@ -5419,7 +5419,7 @@ void Graph::writeDataSetToFile(const QString dir, const QString fileName)
     }
     if (fileName == "Herschel_Graph.paj")
     {
-        qDebug() << "		... to  " << fileName;
+        qCDebug(lcReporting) << "		... to  " << fileName;
         datasetDescription = tr("Herschel graph \n\n"
                                 "The Herschel graph is the smallest nonhamiltonian "
                                 "polyhedral graph. \n"
@@ -5428,7 +5428,7 @@ void Graph::writeDataSetToFile(const QString dir, const QString fileName)
     }
     else if (fileName == "Krackhardt_High-tech_managers.paj")
     {
-        qDebug() << "		... to  " << fileName;
+        qCDebug(lcReporting) << "		... to  " << fileName;
         datasetDescription = tr("High-tech Managers\n\n"
                                 "Krackhardt's High-tech Managers is a famous social network "
                                 "of 21 managers of a high-tech US company. \n\n"
@@ -5563,7 +5563,7 @@ void Graph::writeDataSetToFile(const QString dir, const QString fileName)
     }
     else if (fileName == "Freeman_EIES_networks_32actors.dl")
     {
-        qDebug() << "		... to  " << fileName;
+        qCDebug(lcReporting) << "		... to  " << fileName;
         datasetDescription = tr(
             "Freeman's EIES Networks\n\n"
             "This data comes from an early experiment on computer mediated communication. \n"
@@ -5590,18 +5590,18 @@ void Graph::writeDataSetToFile(const QString dir, const QString fileName)
     }
     else if (fileName == "Freeman_EIES_network_48actors_Acquaintanceship_at_time_1.dl")
     {
-        qDebug() << "		... to  " << fileName;
+        qCDebug(lcReporting) << "		... to  " << fileName;
         datasetDescription = tr("Freeman's EIES network (Acquaintanceship) at time 1");
     }
     else if (fileName == "Freeman_EIES_network_48actors_Acquaintanceship_at_time_2.dl")
     {
-        qDebug() << "		... to  " << fileName;
+        qCDebug(lcReporting) << "		... to  " << fileName;
         datasetDescription = tr("Freeman's EIES network (Acquaintanceship) at time 2");
     }
     else if (fileName == "Freeman_EIES_network_48actors_Messages.dl")
     {
         datasetDescription = tr("Freeman's EIES network (Messages)");
-        qDebug() << "		... to  " << fileName;
+        qCDebug(lcReporting) << "		... to  " << fileName;
     }
     else if (fileName == "Freeman_34_possible_graphs_with_N_5_multirelational.paj")
     {
@@ -5630,7 +5630,7 @@ void Graph::writeDataSetToFile(const QString dir, const QString fileName)
     }
     else if (fileName == "Stephenson_Zelen_40_AIDS_patients_sex_contact.paj")
     {
-        qDebug() << "Stephenson_Zelen_40_AIDS_patiens";
+        qCDebug(lcReporting) << "Stephenson_Zelen_40_AIDS_patiens";
         datasetDescription = tr("Stephenson & Zelen's AIDS patients network (sex contact)\n\n"
                                 "The data described by Auerbach et al. (1984) and Klovdahl (1985) consists of information on 40 homosexual men diagnosed with AIDS. "
                                 "Initially, 19 men residing in the Los Angeles and Orange County area were interviewed about their previous sexual contacts. "
@@ -5639,7 +5639,7 @@ void Graph::writeDataSetToFile(const QString dir, const QString fileName)
     }
     else if (fileName == "Stephenson_Zelen_5actors_6edges_IC_test_dataset.paj")
     {
-        qDebug() << "Stephenson_Zelen_5actors_6edges_IC_test_dataset.paj";
+        qCDebug(lcReporting) << "Stephenson_Zelen_5actors_6edges_IC_test_dataset.paj";
     }
 
     else if (fileName == "Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj")
@@ -5651,17 +5651,17 @@ void Graph::writeDataSetToFile(const QString dir, const QString fileName)
     }
     else if (fileName == "Wasserman_Faust_7actors_star_circle_line_graphs.paj")
     {
-        qDebug() << "Wasserman_Faust_7actors_star_circle_line_graphs.paj";
+        qCDebug(lcReporting) << "Wasserman_Faust_7actors_star_circle_line_graphs.paj";
         datasetDescription = tr("Wasserman & Faust's 7 actors graphs\n\n");
     }
     else if (fileName == "Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek")
     {
         datasetDescription = tr("Wasserman & Faust's Countries Trade Data (manufactured goods)\n\n");
-        qDebug() << "		Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek written... ";
+        qCDebug(lcReporting) << "		Wasserman_Faust_Countries_Trade_Data_Basic_Manufactured_Goods.pajek written... ";
     }
     else if (fileName == "Petersen_Graph.paj")
     {
-        qDebug() << "		Petersen_Graph.paj written... ";
+        qCDebug(lcReporting) << "		Petersen_Graph.paj written... ";
         datasetDescription = tr("This data set is just a famous non-planar mathematical graph, \n"
                                 "named after Julius Petersen, who constructed it in 1898.\n"
                                 "The Petersen graph is undirected with 10 vertices and 15 edges \n"
@@ -5704,7 +5704,7 @@ bool Graph::writeMatrix(const QString &fn,
                         const bool &simpler)
 {
 
-    qDebug() << "Writing specified matrix:" << matrix << "to file:" << fn << " -- dropIsolates:" << dropIsolates;
+    qCDebug(lcReporting) << "Writing specified matrix:" << matrix << "to file:" << fn << " -- dropIsolates:" << dropIsolates;
 
     QElapsedTimer computationTimer;
     computationTimer.start();
@@ -5714,7 +5714,7 @@ bool Graph::writeMatrix(const QString &fn,
     QFile file(fn);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open (for writing) file:" << fn;
+        qCDebug(lcReporting) << "Could not open (for writing) file:" << fn;
         progressStatus(tr("Error. Could not write to ") + fn);
         return false;
     }
@@ -6117,7 +6117,7 @@ void Graph::writeMatrixHTMLTable(QTextStream &outText,
 
     Q_UNUSED(plain);
 
-    qDebug() << "Graph::writeMatrixHTMLTable() -"
+    qCDebug(lcReporting) << "Graph::writeMatrixHTMLTable() -"
              << "markDiag" << markDiag
              << "plain" << plain
              << " dropIsolates " << dropIsolates;
@@ -6137,7 +6137,7 @@ void Graph::writeMatrixHTMLTable(QTextStream &outText,
 
     outText << ((hasRealNumbers) ? qSetRealNumberPrecision(3) : qSetRealNumberPrecision(0));
 
-    qDebug() << "Graph::writeMatrixHTMLTable() - minVal" << minVal
+    qCDebug(lcReporting) << "Graph::writeMatrixHTMLTable() - minVal" << minVal
              << "maxVal" << maxVal << "hasRealNumbers" << hasRealNumbers;
 
     outText << "<table  border=\"1\" cellspacing=\"0\" cellpadding=\"0\" class=\"stripes\">"
@@ -6191,7 +6191,7 @@ void Graph::writeMatrixHTMLTable(QTextStream &outText,
 
             element = M.item(i, j);
 
-            qDebug() << "Graph::writeMatrixHTMLTable() - M(" << i << "," << j << ") =" << M.item(i, j);
+            qCDebug(lcReporting) << "Graph::writeMatrixHTMLTable() - M(" << i << "," << j << ") =" << M.item(i, j);
 
             if ((element == RAND_MAX) && printInfinity)
             {
@@ -6253,7 +6253,7 @@ void Graph::writeMatrixHTMLTable(QTextStream &outText,
 void Graph::writeMatrixAdjacencyTo(QTextStream &os,
                                    const bool &saveEdgeWeights)
 {
-    qDebug("Graph: adjacencyMatrix(), writing matrix with %i vertices", vertices());
+    qCDebug(lcReporting, "Graph: adjacencyMatrix(), writing matrix with %i vertices", vertices());
     VList::const_iterator it, it1;
     qreal weight = RAND_MAX;
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
@@ -6283,7 +6283,7 @@ void Graph::writeMatrixAdjacency(const QString fn,
                                  const bool &markDiag)
 {
 
-    qDebug() << "Writing adjacency matrix to file:" << fn;
+    qCDebug(lcReporting) << "Writing adjacency matrix to file:" << fn;
 
     QElapsedTimer computationTimer;
     computationTimer.start();
@@ -6291,7 +6291,7 @@ void Graph::writeMatrixAdjacency(const QString fn,
     QFile file(fn);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open (for writing) file:" << fn;
+        qCDebug(lcReporting) << "Could not open (for writing) file:" << fn;
         progressStatus(tr("Error. Could not write to ") + fn);
         return;
     }
@@ -6391,11 +6391,11 @@ void Graph::writeMatrixAdjacency(const QString fn,
     }
     outText << "</tbody></table>";
 
-    qDebug("Graph: Found a total of %i edge", sum);
+    qCDebug(lcReporting, "Graph: Found a total of %i edge", sum);
     if (sum != edgesEnabled())
-        qDebug("Error in edge count found!!!");
+        qCDebug(lcReporting, "Error in edge count found!!!");
     else
-        qDebug("Edge count OK!");
+        qCDebug(lcReporting, "Edge count OK!");
 
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";
@@ -6426,7 +6426,7 @@ void Graph::writeMatrixAdjacencyPlot(const QString fn,
                                      const bool &simpler)
 {
 
-    qDebug() << "Writing adjacency matrix plot to file:" << fn;
+    qCDebug(lcReporting) << "Writing adjacency matrix plot to file:" << fn;
 
     QElapsedTimer computationTimer;
     computationTimer.start();
@@ -6434,7 +6434,7 @@ void Graph::writeMatrixAdjacencyPlot(const QString fn,
     QFile file(fn);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Could not open (for writing) file:" << fn;
+        qCDebug(lcReporting) << "Could not open (for writing) file:" << fn;
         progressStatus(tr("Error. Could not write to ") + fn);
         return;
     }
@@ -6561,11 +6561,11 @@ void Graph::writeMatrixAdjacencyPlot(const QString fn,
         }
         outText << "</p>";
     }
-    qDebug("Graph: Found a total of %i edge", sum);
+    qCDebug(lcReporting, "Graph: Found a total of %i edge", sum);
     if (sum != edgesEnabled())
-        qDebug("Error in edge count found!!!");
+        qCDebug(lcReporting, "Error in edge count found!!!");
     else
-        qDebug("Edge count OK!");
+        qCDebug(lcReporting, "Edge count OK!");
 
     outText << "<p>&nbsp;</p>";
     outText << "<p class=\"small\">";

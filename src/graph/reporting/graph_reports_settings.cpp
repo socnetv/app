@@ -53,7 +53,7 @@ void Graph::setReportsLabelLength(const int &length)
  */
 void Graph::setReportsChartType(const int &type)
 {
-    qDebug() << "Graph::setReportsChartType() - type:" << type;
+    qCDebug(lcReporting) << "Graph::setReportsChartType() - type:" << type;
     if (type == -1)
     {
         m_reportsChartType = ChartType::None;
