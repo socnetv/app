@@ -31,7 +31,7 @@ void Graph::canvasSizeSet(const int &width, const int &height)
     qreal fY = (static_cast<qreal>(height)) / canvasHeight;
     qreal newX, newY;
 
-    qDebug() << "Canvas was resized: " << width << "x" << height
+    qCDebug(lcGraphUI) << "Canvas was resized: " << width << "x" << height
              << "Adjusting node positions, if any. Please wait...";
     VList::const_iterator it;
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
@@ -54,7 +54,7 @@ void Graph::canvasSizeSet(const int &width, const int &height)
     // QueuedConnection ordering guarantees all setNodePos() calls are processed
     // on the main thread before zoomToFit() runs.
     emit signalLayoutFinished();
-    qDebug() << "Finished resizing.";
+    qCDebug(lcGraphUI) << "Finished resizing.";
 }
 
 /**

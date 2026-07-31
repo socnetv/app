@@ -41,7 +41,7 @@ void Graph::uiProminenceDistributionSpline(const QVector<QPair<qreal, qreal>> &p
     // constructs real QtCharts objects and (for PNG export) grabs a QChartView, both of which
     // are only safe on the main/GUI thread. See Graph::runOnGuiThread() for why this is needed.
     runOnGuiThread([this, points, min, max, minF, maxF, seriesName, distImageFileName]() {
-    qDebug() << "Computing prominence distribution as spline chart...";
+    qCDebug(lcGraphUI) << "Computing prominence distribution as spline chart...";
 
     auto *series = new QLineSeries();
     series->setName(seriesName);
@@ -74,7 +74,7 @@ void Graph::uiProminenceDistributionSpline(const QVector<QPair<qreal, qreal>> &p
 
     if (!distImageFileName.isEmpty())
     {
-        qDebug() << "saving prominence distribution image to" << distImageFileName;
+        qCDebug(lcGraphUI) << "saving prominence distribution image to" << distImageFileName;
 
         axisX1->setMin(min);
         axisX1->setMax(max);
@@ -108,7 +108,7 @@ void Graph::uiProminenceDistributionSpline(const QVector<QPair<qreal, qreal>> &p
         delete chartView; // matches your old “don’t delete axes too early” rationale
     }
 
-    qDebug() << "emitting signal to MW update the prominence distribution spline chart";
+    qCDebug(lcGraphUI) << "emitting signal to MW update the prominence distribution spline chart";
     emit signalPromininenceDistributionChartUpdate(series, axisX, min, max, axisY, minF, maxF);
     });
 }
@@ -159,7 +159,7 @@ void Graph::uiProminenceDistributionArea(const QVector<QPair<qreal, qreal>> &poi
 
     if (!distImageFileName.isEmpty())
     {
-        qDebug() << "saving distribution image to" << distImageFileName;
+        qCDebug(lcGraphUI) << "saving distribution image to" << distImageFileName;
 
         axisX1->setMin(min);
         axisX1->setMax(max);
@@ -202,7 +202,7 @@ void Graph::uiProminenceDistributionArea(const QVector<QPair<qreal, qreal>> &poi
         delete chartView;
     }
 
-    qDebug() << "emitting signal to MW update the prominence distribution area chart";
+    qCDebug(lcGraphUI) << "emitting signal to MW update the prominence distribution area chart";
     emit signalPromininenceDistributionChartUpdate(series, axisX, min, max, axisY, minF, maxF);
     });
 }
@@ -219,7 +219,7 @@ void Graph::uiProminenceDistributionBars(const QStringList &categories,
     // Guarantees GUI-thread execution regardless of the calling thread - see
     // Graph::runOnGuiThread() and the same note in uiProminenceDistributionSpline() above.
     runOnGuiThread([this, categories, frequencies, min, max, minF, maxF, name, distImageFileName]() {
-    qDebug() << "Computing prominence distribution as bar chart (UI layer)...";
+    qCDebug(lcGraphUI) << "Computing prominence distribution as bar chart (UI layer)...";
 
     auto *series = new QBarSeries();
     series->setName(name);
@@ -260,7 +260,7 @@ void Graph::uiProminenceDistributionBars(const QStringList &categories,
 
     if (!distImageFileName.isEmpty())
     {
-        qDebug() << "saving distribution image to" << distImageFileName;
+        qCDebug(lcGraphUI) << "saving distribution image to" << distImageFileName;
 
         // Export copies (old code only built these when filename non-empty)
         axisX1->append(categories);
@@ -303,7 +303,7 @@ void Graph::uiProminenceDistributionBars(const QStringList &categories,
         delete chartView;
     }
 
-    qDebug() << "emitting signal to MW update the prominence distribution bar chart";
+    qCDebug(lcGraphUI) << "emitting signal to MW update the prominence distribution bar chart";
     emit signalPromininenceDistributionChartUpdate(series,
                                                    axisX, min, max,
                                                    axisY, minF, maxF);

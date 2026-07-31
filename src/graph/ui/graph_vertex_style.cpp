@@ -44,13 +44,13 @@ void Graph::vertexSizeSet(const int &v, const int &size)
 {
     if (v)
     {
-        qDebug() << "Changing size of vertex" << v << "new size" << size;
+        qCDebug(lcGraphUI) << "Changing size of vertex" << v << "new size" << size;
         m_graph[vpos[v]]->setSize(size);
         emit setNodeSize(v, size);
     }
     else
     {
-        qDebug() << "Changing size of all vertices, new size" << size;
+        qCDebug(lcGraphUI) << "Changing size of all vertices, new size" << size;
         vertexSizeInit(size);
         VList::const_iterator it;
         for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
@@ -107,7 +107,7 @@ void Graph::vertexShapeSet(const int &v1, const QString &shape, const QString &i
 
     if (v1 == -1)
     {
-        qDebug() << "Changing shape for all vertices, new shape:" << shape
+        qCDebug(lcGraphUI) << "Changing shape for all vertices, new shape:" << shape
                  << "iconPath:" << iconPath;
         vertexShapeSetDefault(shape, iconPath);
         VList::const_iterator it;
@@ -126,7 +126,7 @@ void Graph::vertexShapeSet(const int &v1, const QString &shape, const QString &i
     }
     else
     {
-        qDebug() << "Changing shape for vertex:" << v1
+        qCDebug(lcGraphUI) << "Changing shape for vertex:" << v1
                  << "new shape:" << shape
                  << "iconPath:" << iconPath;
         m_graph[vpos[v1]]->setShape(shape, iconPath);
@@ -230,13 +230,13 @@ void Graph::vertexColorSet(const int &v1, const QString &color)
 
     if (v1)
     {
-        qDebug() << "Setting vertex" << v1 << "new color" << color;
+        qCDebug(lcGraphUI) << "Setting vertex" << v1 << "new color" << color;
         m_graph[vpos[v1]]->setColor(color);
         emit setNodeColor(m_graph[vpos[v1]]->number(), color);
     }
     else
     {
-        qDebug() << "Setting new color for all vertices:" << color;
+        qCDebug(lcGraphUI) << "Setting new color for all vertices:" << color;
         vertexColorInit(color);
         VList::const_iterator it;
         for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
@@ -247,7 +247,7 @@ void Graph::vertexColorSet(const int &v1, const QString &color)
             }
             else
             {
-                qDebug() << "for all, setting vertex" << (*it)->number()
+                qCDebug(lcGraphUI) << "for all, setting vertex" << (*it)->number()
                          << " new color" << color;
                 (*it)->setColor(color);
                 emit setNodeColor((*it)->number(), color);
@@ -298,7 +298,7 @@ void Graph::vertexNumberColorInit(const QString &color)
  */
 void Graph::vertexNumberColorSet(const int &v1, const QString &color)
 {
-    qDebug() << "Setting number color for vertex:" << v1 << "new number color:" << color;
+    qCDebug(lcGraphUI) << "Setting number color for vertex:" << v1 << "new number color:" << color;
     if (v1)
     {
         m_graph[vpos[v1]]->setNumberColor(color);
@@ -306,7 +306,7 @@ void Graph::vertexNumberColorSet(const int &v1, const QString &color)
     }
     else
     {
-        qDebug() << "Changing color for all node numbers";
+        qCDebug(lcGraphUI) << "Changing color for all node numbers";
         vertexNumberColorInit(color);
         VList::const_iterator it;
         for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
@@ -344,13 +344,13 @@ void Graph::vertexNumberSizeSet(const int &v, const int &size)
 
     if (v)
     {
-        qDebug() << "Changing number size for vertex" << v << "new number size" << size;
+        qCDebug(lcGraphUI) << "Changing number size for vertex" << v << "new number size" << size;
         m_graph[vpos[v]]->setNumberSize(size);
         emit setNodeNumberSize(m_graph[vpos[v]]->number(), size);
     }
     else
     {
-        qDebug() << "Setting new number size for all vertices to:" << size;
+        qCDebug(lcGraphUI) << "Setting new number size for all vertices to:" << size;
         vertexNumberSizeInit(size);
         VList::const_iterator it;
         for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
@@ -361,7 +361,7 @@ void Graph::vertexNumberSizeSet(const int &v, const int &size)
             }
             else
             {
-                qDebug() << "for all, setting vertex" << (*it)->number()
+                qCDebug(lcGraphUI) << "for all, setting vertex" << (*it)->number()
                          << " new number size " << size;
                 (*it)->setNumberSize(size);
                 emit setNodeNumberSize((*it)->number(), size);
@@ -390,7 +390,7 @@ void Graph::vertexNumberDistanceSet(const int &v, const int &newDistance)
 {
     if (v)
     {
-        qDebug() << "Changing number distance for vertex" << v
+        qCDebug(lcGraphUI) << "Changing number distance for vertex" << v
                  << "new number distance"
                  << newDistance;
 
@@ -399,7 +399,7 @@ void Graph::vertexNumberDistanceSet(const int &v, const int &newDistance)
     }
     else
     {
-        qDebug() << "Changing number distance for all vertices, "
+        qCDebug(lcGraphUI) << "Changing number distance for all vertices, "
                     "new number distance"
                  << newDistance;
         vertexNumberDistanceInit(newDistance);
@@ -431,7 +431,7 @@ void Graph::vertexNumberDistanceSet(const int &v, const int &newDistance)
  */
 void Graph::vertexLabelSet(const int &v1, const QString &label)
 {
-    qDebug() << "Graph::vertexLabelSet() - vertex " << v1
+    qCDebug(lcGraphUI) << "Graph::vertexLabelSet() - vertex " << v1
              << "vpos " << vpos[v1]
              << "new label" << label;
     m_graph[vpos[v1]]->setLabel(label);
@@ -469,14 +469,14 @@ void Graph::vertexLabelSizeSet(const int &v1, const int &labelSize)
 {
     if (v1)
     {
-        qDebug() << "Changing the label size of vertex" << v1
+        qCDebug(lcGraphUI) << "Changing the label size of vertex" << v1
                  << "new label size:" << labelSize;
         m_graph[vpos[v1]]->setLabelSize(labelSize);
         emit setNodeLabelSize(v1, labelSize);
     }
     else
     {
-        qDebug() << "Changing the label size of all vertices, new label size"
+        qCDebug(lcGraphUI) << "Changing the label size of all vertices, new label size"
                  << labelSize;
         vertexLabelSizeInit(labelSize);
         VList::const_iterator it;
@@ -488,7 +488,7 @@ void Graph::vertexLabelSizeSet(const int &v1, const int &labelSize)
             }
             else
             {
-                qDebug() << "Changing label size of all vertices, set vertex"
+                qCDebug(lcGraphUI) << "Changing label size of all vertices, set vertex"
                          << (*it)->number()
                          << "new label size"
                          << labelSize;
@@ -510,14 +510,14 @@ void Graph::vertexLabelColorSet(const int &v1, const QString &color)
 {
     if (v1)
     {
-        qDebug() << "Changing the label color of vertex" << v1
+        qCDebug(lcGraphUI) << "Changing the label color of vertex" << v1
                  << "new label color" << color;
         m_graph[vpos[v1]]->setLabelColor(color);
         emit setNodeLabelColor(v1, color);
     }
     else
     {
-        qDebug() << "Changing the label color of all vertices, "
+        qCDebug(lcGraphUI) << "Changing the label color of all vertices, "
                     "new label color"
                  << color;
         vertexLabelColorInit(color);
@@ -530,7 +530,7 @@ void Graph::vertexLabelColorSet(const int &v1, const QString &color)
             }
             else
             {
-                qDebug() << "Changing the label color of all, set vertex"
+                qCDebug(lcGraphUI) << "Changing the label color of all, set vertex"
                          << v1
                          << "new label color"
                          << color;
@@ -571,7 +571,7 @@ void Graph::vertexLabelDistanceSet(const int &v, const int &newDistance)
  */
 void Graph::vertexLabelDistanceAllSet(const int &newDistance)
 {
-    qDebug() << "Changing the label distance of all vertices to:" << newDistance;
+    qCDebug(lcGraphUI) << "Changing the label distance of all vertices to:" << newDistance;
     vertexLabelDistanceInit(newDistance);
     VList::const_iterator it;
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
@@ -582,7 +582,7 @@ void Graph::vertexLabelDistanceAllSet(const int &newDistance)
         }
         else
         {
-            qDebug() << "vertex" << (*it)->number()
+            qCDebug(lcGraphUI) << "vertex" << (*it)->number()
                      << " new label distance:" << newDistance;
             (*it)->setLabelDistance(newDistance);
             emit setNodeLabelDistance((*it)->number(), newDistance);
@@ -613,7 +613,7 @@ void Graph::vertexLabelDistanceInit(const int &distance)
  */
 void Graph::vertexCustomAttributesSet(const int &v1, const QHash<QString, QString> &customAttributes)
 {
-    // qDebug() << "Setting custom attributes for vertex" << v1 << ":"<< customAttributes;
+    // qCDebug(lcGraphUI) << "Setting custom attributes for vertex" << v1 << ":"<< customAttributes;
     m_graph[vpos[v1]]->setCustomAttributes(customAttributes);
     setModStatus(ModStatus::VertexMetadata);
 }
@@ -715,6 +715,6 @@ int Graph::vertexAttributesImport(const QStringList &headers,
         }
         ++matched;
     }
-    qDebug() << "vertexAttributesImport: matched" << matched << "of" << rows.size() << "rows";
+    qCDebug(lcGraphUI) << "vertexAttributesImport: matched" << matched << "of" << rows.size() << "rows";
     return matched;
 }

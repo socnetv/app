@@ -61,7 +61,7 @@ void Graph::showZeroWeightEdgesSet(const bool &toggle)
  */
 bool Graph::edgeColorAllSet(const QString &color, const int &threshold)
 {
-    qDebug() << "Graph::edgeColorAllSet() - new color: " << color;
+    qCDebug(lcGraphUI) << "Graph::edgeColorAllSet() - new color: " << color;
     int target = 0, source = 0;
     edgeColorInit(color);
     QHash<int, qreal> enabledOutEdges;
@@ -82,7 +82,7 @@ bool Graph::edgeColorAllSet(const QString &color, const int &threshold)
             {
                 if (it1.value() == threshold)
                 {
-                    qDebug() << " Graph::edgeColorAllSet() zero weight threshold "
+                    qCDebug(lcGraphUI) << " Graph::edgeColorAllSet() zero weight threshold "
                              << threshold << " - edge "
                              << source << "->" << target << " new color " << color;
                     (*it)->setOutLinkColor(target, color);
@@ -93,7 +93,7 @@ bool Graph::edgeColorAllSet(const QString &color, const int &threshold)
             {
                 if (it1.value() <= threshold)
                 {
-                    qDebug() << " Graph::edgeColorAllSet() below weight threshold "
+                    qCDebug(lcGraphUI) << " Graph::edgeColorAllSet() below weight threshold "
                              << threshold << " - edge "
                              << source << "->" << target << " new color " << color;
                     (*it)->setOutLinkColor(target, color);
@@ -102,7 +102,7 @@ bool Graph::edgeColorAllSet(const QString &color, const int &threshold)
             }
             else
             {
-                qDebug() << " Graph::edgeColorAllSet() : "
+                qCDebug(lcGraphUI) << " Graph::edgeColorAllSet() : "
                          << source << "->" << target << " new color " << color;
                 (*it)->setOutLinkColor(target, color);
                 emit setEdgeColor(source, target, color);
@@ -125,7 +125,7 @@ bool Graph::edgeColorAllSet(const QString &color, const int &threshold)
  */
 void Graph::edgeColorSet(const int &v1, const int &v2, const QString &color)
 {
-    qDebug() << "Graph::edgeColorSet() - " << v1 << "->" << v2
+    qCDebug(lcGraphUI) << "Graph::edgeColorSet() - " << v1 << "->" << v2
              << " vpos (" << vpos[v1] << "->" << vpos[v2] << ")"
              << " new color " << color;
     m_graph[vpos[v1]]->setOutLinkColor(v2, color);
@@ -161,7 +161,7 @@ QString Graph::edgeColor(const int &v1, const int &v2)
  */
 void Graph::edgeLabelSet(const int &v1, const int &v2, const QString &label)
 {
-    qDebug() << "Graph::edgeLabelSet()  " << v1 << "[" << vpos[v1]
+    qCDebug(lcGraphUI) << "Graph::edgeLabelSet()  " << v1 << "[" << vpos[v1]
              << "]->" << v2 << "[" << vpos[v2] << "]" << " label " << label;
     m_graph[vpos[v1]]->setOutEdgeLabel(v2, label);
 
@@ -268,7 +268,7 @@ int Graph::edgeAttributesImport(const QStringList &headers,
             edgeCustomAttributesSet(src, tgt, newCustomAttrs);
         ++matched;
     }
-    qDebug() << "edgeAttributesImport: matched" << matched << "of" << rows.size() << "rows";
+    qCDebug(lcGraphUI) << "edgeAttributesImport: matched" << matched << "of" << rows.size() << "rows";
     return matched;
 }
 

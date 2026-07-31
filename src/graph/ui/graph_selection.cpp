@@ -25,7 +25,7 @@
  */
 void Graph::graphClickedEmptySpace(const QPointF &p)
 {
-    qDebug() << "Click on empty space at" << p << " - resetting clicked edge and node...";
+    qCDebug(lcGraphUI) << "Click on empty space at" << p << " - resetting clicked edge and node...";
     // Reset clicked vertices
     this->vertexClickedSet(0, p);
     // Reset clicked edges
@@ -47,7 +47,7 @@ void Graph::setSelectionChanged(const QList<int> selectedVertices,
     m_verticesSelected = selectedVertices;
     m_selectedEdges = selectedEdges;
 
-    qDebug() << "Selection changed. Vertices" << m_verticesSelected << "Edges" << m_selectedEdges << "Emitting to MW...";
+    qCDebug(lcGraphUI) << "Selection changed. Vertices" << m_verticesSelected << "Edges" << m_selectedEdges << "Emitting to MW...";
 
     emit signalSelectionChanged(m_verticesSelected.size(), m_selectedEdges.size());
 }
@@ -128,7 +128,7 @@ int Graph::getSelectedEdgesCount() const
  */
 void Graph::vertexClickedSet(const int &v1, const QPointF &p)
 {
-    qDebug() << "Setting clicked vertex: " << v1 << "click at " << p;
+    qCDebug(lcGraphUI) << "Setting clicked vertex: " << v1 << "click at " << p;
     m_vertexClicked = v1;
     if (v1 == 0)
     {
@@ -175,14 +175,14 @@ void Graph::edgeClickedSet(const int &v1, const int &v2, const bool &openMenu)
         return;
     }
     qreal weight = m_graph[vpos[m_clickedEdge.source]]->hasEdgeTo(m_clickedEdge.target);
-    qDebug() << "Setting clicked edge: " << v1 << "->" << v2 << "weight:" << weight;
+    qCDebug(lcGraphUI) << "Setting clicked edge: " << v1 << "->" << v2 << "weight:" << weight;
 
     int type = EdgeType::Directed;
     // Check if the reverse tie exists. If yes, this is a reciprocated edge
     qreal oppositeWeight = edgeExists(m_clickedEdge.target, m_clickedEdge.source, false);
     if (oppositeWeight)
     {
-        qDebug() << "Reverse tie" << v2 << "->" << v1 << "exists. Weight:" << oppositeWeight;
+        qCDebug(lcGraphUI) << "Reverse tie" << v2 << "->" << v1 << "exists. Weight:" << oppositeWeight;
         if (!isDirected())
         {
             type = EdgeType::Undirected;
