@@ -29,7 +29,7 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
                                   const bool inverseWeights,
                                   const bool symmetrize)
 {
-    qDebug() << "Graph::createMatrixAdjacency() "
+    qCDebug(lcGraphMatrices) << "Graph::createMatrixAdjacency() "
              << "dropIsolates" << dropIsolates
              << "considerWeights" << considerWeights
              << "inverseWeights" << inverseWeights
@@ -39,7 +39,7 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
     int N = vertices(dropIsolates, false, true), progressCounter = 0;
     VList::const_iterator it, jt;
 
-    qDebug() << "Graph::createMatrixAdjacency() -resizing AM to" << N;
+    qCDebug(lcGraphMatrices) << "Graph::createMatrixAdjacency() -resizing AM to" << N;
     AM.resize(N, N);
 
     QString pMsg = tr("Creating Adjacency Matrix. \nPlease wait...");
@@ -49,7 +49,7 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
-        qDebug() << "Graph::createMatrixAdjacency() - i" << i << "name" << (*it)->number();
+        qCDebug(lcGraphMatrices) << "Graph::createMatrixAdjacency() - i" << i << "name" << (*it)->number();
 
         progressUpdate(++progressCounter);
         if (progressCanceled())
@@ -59,7 +59,7 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
         }
         if (!(*it)->isEnabled() || ((*it)->isIsolated() && dropIsolates))
         {
-            qDebug() << "Graph::createMatrixAdjacency() - SKIP i" << i << "name" << (*it)->number();
+            qCDebug(lcGraphMatrices) << "Graph::createMatrixAdjacency() - SKIP i" << i << "name" << (*it)->number();
             continue;
         }
 
@@ -68,11 +68,11 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
         for (jt = it; jt != m_graph.end(); jt++)
         {
 
-            qDebug() << "Graph::createMatrixAdjacency() - j" << j << "name" << (*jt)->number();
+            qCDebug(lcGraphMatrices) << "Graph::createMatrixAdjacency() - j" << j << "name" << (*jt)->number();
 
             if (!(*jt)->isEnabled() || ((*jt)->isIsolated() && dropIsolates))
             {
-                qDebug() << "Graph::createMatrixAdjacency() - SKIP j" << j << "name" << (*jt)->number();
+                qCDebug(lcGraphMatrices) << "Graph::createMatrixAdjacency() - SKIP j" << j << "name" << (*jt)->number();
                 continue;
             }
 
@@ -95,7 +95,7 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
                 AM.setItem(i, j, 0);
             }
 
-            qDebug() << " AM(" << i << "," << j << ") = " << AM.item(i, j);
+            qCDebug(lcGraphMatrices) << " AM(" << i << "," << j << ") = " << AM.item(i, j);
 
             if (i != j)
             {
@@ -123,7 +123,7 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
                     if (symmetrize && (AM.item(i, j) != AM.item(j, i)))
                         AM.setItem(j, i, AM.item(i, j));
                 }
-                qDebug() << " AM(" << j << "," << i << ") = " << AM.item(j, i);
+                qCDebug(lcGraphMatrices) << " AM(" << j << "," << i << ") = " << AM.item(j, i);
             }
             j++;
         }
@@ -142,7 +142,7 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
  */
 bool Graph::createMatrixAdjacencyInverse(const QString &method)
 {
-    qDebug() << "Graph::createMatrixAdjacencyInverse() ";
+    qCDebug(lcGraphMatrices) << "Graph::createMatrixAdjacencyInverse() ";
 
     bool considerWeights = false;
     int i = 0, j = 0;
