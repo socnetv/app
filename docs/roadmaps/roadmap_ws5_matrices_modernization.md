@@ -112,8 +112,8 @@ whether to proceed with the full migration, adjust the design (e.g. only switch 
 component is large/dense enough to be worth it), or drop this milestone. This replaces "the matrix
 approach is obviously better" with an actual answer.
 
-**Status: A2.0 has not been run** (checked 2026-07-30 — `git log --grep=A2.0` returns only the docs
-commit that created this gate). It is still the prerequisite for everything else in A2.
+**Status: done, 2026-07-31 — result is GO.** See "A2.0 results" below for the measured data and
+the resulting decision.
 
 **New supporting evidence for running it (2026-07-30).** Profiling (`sample`, 2000N/40000E, all
 centralities) a build with the WS14 logging cost removed — i.e. with the dominant noise source gone,
@@ -151,15 +151,90 @@ raw sample count is itself worth noting: profiling this codebase for anything no
 bigger input than it used to, since typical operations finish fast enough that a 1ms-interval
 sampler barely gets a look in.
 
+**A2.0 results (2026-07-31).** Built a standalone tool, `src/tools/matrix_storage_bench.cpp`
+(CMake option `BUILD_MATRIX_BENCH`, off by default), driven by
+`scripts/run_matrix_storage_bench.sh`. It builds one structure — `QHash<int, QPair<int,qreal>>`
+per vertex (mirrors `GraphVertex::m_distance`/`setDistance()`/`distance()` exactly) or a single
+flat `Matrix` — for a given N and topology in one process, times construction and a full O(N²)
+lookup sweep (matching `finalize()`'s actual access pattern), and reports a checksum so the
+compiler can't dead-code-eliminate the reads. Checksums matched exactly between `qhash` and
+`matrix` for every (N, topology) pair, confirming both structures held identical values.
+
+Three topologies, not two — a third was added mid-investigation (see below):
+- **connected** — every vertex reachable from every other.
+- **disconnected** — ~8 roughly-equal-sized fully-connected components plus ~5% isolates (the
+  topology originally specified above).
+- **giant** — one dominant component (90% of N) plus a long tail of halving-sized components
+  down to isolates. Added because "8 equal islands" turned out to be an unrealistic shape for
+  actual networks, which typically have one large component and a long tail of small ones, not
+  several similarly-sized ones — see the finding below.
+
+*Methodology correction, worth recording:* the tool originally measured RSS in-process
+(`mach_task_basic_info` on macOS, later `getrusage`'s `ru_maxrss`), and initially reported implausibly
+small memory deltas at N=20,000 (hundreds of MB where multi-GB was expected). Cross-checked against
+macOS's own `/usr/bin/time -l` on the same run, which reported ~8 GB — a 6×-14× discrepancy. Root
+cause: `ru_maxrss` is updated by the kernel on bookkeeping events (page faults, scheduling activity),
+and this tool's tight, single-threaded, syscall-free construction loop doesn't generate enough of
+those events for the in-process value to catch up to the true peak before the process reads it —
+only the parent-side `wait4()` view (what `time -l`/`time -v` use, read after the child exits) is
+accurate here. Fixed by moving memory measurement out of the tool entirely: the driver script wraps
+each run in `/usr/bin/time -l` (macOS) or `time -v` (Linux, GNU coreutils) and parses the peak RSS
+from there instead.
+
+Measured (peak RSS minus the ~12.3 MB fixed Qt Core process floor, which swamps everything at
+N=100 — those rows are omitted as noise):
+
+| N | Topology | Structure | Construct (ms) | Lookup (ms) | Memory |
+|---|---|---|---|---|---|
+| 1,000 | connected | qhash | 70 | 65 | 34.0 MB |
+| 1,000 | connected | matrix | 6 | 2 | 7.8 MB |
+| 1,000 | disconnected | qhash | 7 | 51 | 4.0 MB |
+| 1,000 | disconnected | matrix | 2 | 2 | 7.8 MB |
+| 1,000 | giant | qhash | 54 | 58 | 29.6 MB |
+| 1,000 | giant | matrix | 5 | 2 | 7.8 MB |
+| 7,343 | connected | qhash | 3,606 | 3,523 | 1,919 MB |
+| 7,343 | connected | matrix | 325 | 117 | 461 MB |
+| 7,343 | disconnected | qhash | 403 | 2,656 | 225 MB |
+| 7,343 | disconnected | matrix | 120 | 117 | 461 MB |
+| 7,343 | giant | qhash | 2,896 | 3,244 | 1,601 MB |
+| 7,343 | giant | matrix | 289 | 123 | 461 MB |
+
+**Lookup speed:** `matrix` wins in every configuration, 22×-32×, independent of topology — this
+was never the open question, and the data confirms it cleanly.
+
+**Memory — this was the open question, and it resolves in favor of migrating.** `Matrix`'s
+footprint is topology-independent (always N² cells — ~461 MB at N=7,343 regardless of shape).
+`QHash`'s footprint depends entirely on how reachable the graph is:
+- **connected**: qhash costs **4.2× more** than matrix (1,919 MB vs 461 MB).
+- **disconnected** (8 equal islands): qhash costs **2.0× less** than matrix (225 MB vs 461 MB) —
+  the only configuration favoring qhash.
+- **giant** (dominant component + long tail — the realistic shape): qhash costs **3.5× more**
+  than matrix (1,601 MB vs 461 MB).
+
+"8 equal disconnected islands" turned out to be the unrealistic case, not the representative one.
+A single large reachable component dominates the total pair count even alongside a long tail of
+small components/isolates, so `giant` behaves much closer to `connected` than to `disconnected`.
+Real networks — including `geom.net`-scale ones this migration targets — look like "one giant
+component plus a long tail," not "several similarly-sized islands." On that basis, `Matrix` wins
+on both memory and lookup speed for the topologies that actually matter.
+
+Also worth noting: these `Matrix` numbers are against its **current** N+1-separate-allocation
+implementation (measured ~461 MB vs. a theoretical ~411 MB for N=7,343 if it were one contiguous
+buffer) — i.e. the numbers above are conservative. A3's contiguous-buffer work would only widen
+`Matrix`'s memory advantage further, not narrow it.
+
+**Decision: GO.** Proceed with the full A2 migration (`Graph::m_apspDist`/`m_apspSigma` as
+`QHash<relation_id, Matrix>`, replacing per-vertex `QHash` storage on `GraphVertex`).
+
 **Extension:** `reachability/graph_reachability_walks.cpp` (the walks/A^k matrix code, one of A1's
 six scatter locations) already uses `Matrix::pow()` directly with no `QHash`/`QMap` involved, so it
 doesn't need this migration.
 
-**Completion criteria:** A2.0 run and reported first. If it confirms a net win for realistic
-network sizes/topologies: `run_golden_compares.sh` and `run_benchmarks.sh` pass with no regression;
-benchmark the back-propagation-heavy cases specifically (e.g. `DIST_GRAPHML_1000N_10000A_C1_W0`)
-for a measured speedup, matching the evidence standard WS3 M1 set with its 2.7×–8.3× benchmark
-table.
+**Completion criteria for the rest of A2** (A2.0 itself is done — see above): implement the
+`QHash<relation_id, Matrix>` migration; `run_golden_compares.sh` and `run_benchmarks.sh` pass with
+no regression; benchmark the back-propagation-heavy cases specifically (e.g.
+`DIST_GRAPHML_1000N_10000A_C1_W0`) for a measured speedup, matching the evidence standard WS3 M1
+set with its 2.7×–8.3× benchmark table.
 
 ### A3 — `Matrix` contiguous storage (P1)
 
