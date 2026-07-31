@@ -86,7 +86,7 @@ Graph::Graph(const int &reserveVerticesSize, const int &reserveEdgesPerVertexSiz
     // to prevent reallocations and memory fragmentation.
     if (reserveVerticesSize > 0)
     {
-        qDebug() << "Graph reserving this vertices estimate:" << reserveVerticesSize;
+        qCDebug(lcGraph) << "Graph reserving this vertices estimate:" << reserveVerticesSize;
         m_graph.reserve(reserveVerticesSize);
     }
     // Store the
@@ -278,7 +278,7 @@ Graph::Graph(const int &reserveVerticesSize, const int &reserveEdgesPerVertexSiz
  */
 Graph::~Graph()
 {
-    qDebug() << "Graph destructing (because app exit?)...Calling clear()";
+    qCDebug(lcGraph) << "Graph destructing (because app exit?)...Calling clear()";
     this->clear("exit");
     delete file_parser;
 }
@@ -289,9 +289,9 @@ Graph::~Graph()
  */
 void Graph::clear(const QString &reason)
 {
-    qDebug() << "Clearing graph, vertices and data structures... Reason:" << reason;
+    qCDebug(lcGraph) << "Clearing graph, vertices and data structures... Reason:" << reason;
 
-    qDebug() << "Asking parser and crawler threads to terminate...";
+    qCDebug(lcGraph) << "Asking parser and crawler threads to terminate...";
 
     graphLoadedTerminateParserThreads("clear");
     webCrawlTerminateThreads("clear");
@@ -316,47 +316,47 @@ void Graph::clear(const QString &reason)
 
     if (DM.size() > 0)
     {
-        qDebug() << "clearing DM matrix";
+        qCDebug(lcGraph) << "clearing DM matrix";
         DM.clear();
     }
     if (SIGMA.size() > 0)
     {
-        qDebug() << "clearing SIGMA matrix";
+        qCDebug(lcGraph) << "clearing SIGMA matrix";
         SIGMA.clear();
     }
     if (sumM.size() > 0)
     {
-        qDebug() << "clearing sumM";
+        qCDebug(lcGraph) << "clearing sumM";
         sumM.clear();
     }
     if (invAM.size() > 0)
     {
-        qDebug() << "clearing invAM";
+        qCDebug(lcGraph) << "clearing invAM";
         invAM.clear();
     }
     if (AM.size() > 0)
     {
-        qDebug() << "clearing AM";
+        qCDebug(lcGraph) << "clearing AM";
         AM.clear();
     }
     if (invM.size() > 0)
     {
-        qDebug() << "clearing invM";
+        qCDebug(lcGraph) << "clearing invM";
         invM.clear();
     }
     if (XM.size() > 0)
     {
-        qDebug() << "clearing XM";
+        qCDebug(lcGraph) << "clearing XM";
         XM.clear();
     }
     if (XSM.size() > 0)
     {
-        qDebug() << "clearing XSM";
+        qCDebug(lcGraph) << "clearing XSM";
         XSM.clear();
     }
     if (XRM.size() > 0)
     {
-        qDebug() << "clearing XRM";
+        qCDebug(lcGraph) << "clearing XRM";
         XRM.clear();
     }
 
@@ -444,8 +444,8 @@ void Graph::clear(const QString &reason)
 
     if (reason != "exit")
     {
-        qDebug() << "Finished clearing graph data. Changing graph modification status to" << m_graphModStatus;
+        qCDebug(lcGraph) << "Finished clearing graph data. Changing graph modification status to" << m_graphModStatus;
         setModStatus(m_graphModStatus, true);
     }
-    qDebug() << "Finished clearing graph data and structures.";
+    qCDebug(lcGraph) << "Finished clearing graph data and structures.";
 }

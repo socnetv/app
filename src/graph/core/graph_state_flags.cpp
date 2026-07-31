@@ -35,7 +35,7 @@ bool Graph::isWeighted()
 
     if (calculatedGraphWeighted)
     {
-        qDebug() << "graph not modified. Returning isWeighted: "
+        qCDebug(lcGraphCore) << "graph not modified. Returning isWeighted: "
                  << m_graphIsWeighted;
         return m_graphIsWeighted;
     }
@@ -68,7 +68,7 @@ bool Graph::isWeighted()
         }
     }
     calculatedGraphWeighted = true;
-    qDebug() << "graph is weighted:" << m_graphIsWeighted;
+    qCDebug(lcGraphCore) << "graph is weighted:" << m_graphIsWeighted;
 
     return m_graphIsWeighted;
 }
@@ -113,11 +113,11 @@ void Graph::setWeighted(const bool &toggle)
  */
 bool Graph::isSymmetric()
 {
-    qDebug() << "Graph::isSymmetric() ";
+    qCDebug(lcGraphCore) << "Graph::isSymmetric() ";
 
     if (calculatedGraphSymmetry)
     {
-        qDebug() << "Graph::isSymmetric() - graph not modified and "
+        qCDebug(lcGraphCore) << "Graph::isSymmetric() - graph not modified and "
                     "already calculated symmetry. Returning previous result: "
                  << m_graphIsSymmetric;
         return m_graphIsSymmetric;
@@ -152,7 +152,7 @@ bool Graph::isSymmetric()
             {
 
                 m_graphIsSymmetric = false;
-                //                qDebug() <<"Graph::isSymmetric() - "
+                //                qCDebug(lcGraphCore) <<"Graph::isSymmetric() - "
                 //                         << " graph not symmetric because "
                 //                         << v1 << "->" << v2 << " weight " << weight
                 //                         << " differs from " << v2 << "->" << v1 ;
@@ -163,7 +163,7 @@ bool Graph::isSymmetric()
         }
     }
     // delete enabledOutEdges;
-    qDebug() << "Graph: isSymmetric() - Finished. Result:" << m_graphIsSymmetric;
+    qCDebug(lcGraphCore) << "Graph: isSymmetric() - Finished. Result:" << m_graphIsSymmetric;
     calculatedGraphSymmetry = true;
     return m_graphIsSymmetric;
 }
@@ -173,7 +173,7 @@ bool Graph::isSymmetric()
  */
 void Graph::setSymmetric()
 {
-    qDebug() << "Tranforming graph to symmetric...";
+    qCDebug(lcGraphCore) << "Tranforming graph to symmetric...";
     VList::const_iterator it;
     int v2 = 0, v1 = 0, weight;
     qreal invertWeight = 0;
@@ -182,24 +182,24 @@ void Graph::setSymmetric()
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
         v1 = (*it)->number();
-        //        qDebug() << "iterate over edges of v1 " << v1;
+        //        qCDebug(lcGraphCore) << "iterate over edges of v1 " << v1;
         enabledOutEdges = (*it)->outEdgesEnabledHash();
         it1 = enabledOutEdges.cbegin();
         while (it1 != enabledOutEdges.cend())
         {
             v2 = it1.key();
             weight = it1.value();
-            //            qDebug() << "v1" << v1 << "outLinked to" << v2 << ", weight:" << weight;
+            //            qCDebug(lcGraphCore) << "v1" << v1 << "outLinked to" << v2 << ", weight:" << weight;
             invertWeight = edgeExists(v2, v1);
             if (invertWeight == 0)
             {
-                //                qDebug() << "v1" << v1 << "is NOT inLinked from v2" <<  v2  ;
+                //                qCDebug(lcGraphCore) << "v1" << v1 << "is NOT inLinked from v2" <<  v2  ;
                 edgeCreate(v2, v1, weight, initEdgeColor, false, true, false,
                            QString(), false);
             }
             else
             {
-                //                qDebug() << "v1" << v1 << "is inLinked from v2" <<  v2  ;
+                //                qCDebug(lcGraphCore) << "v1" << v1 << "is inLinked from v2" <<  v2  ;
                 if (weight != invertWeight)
                     edgeWeightSet(v2, v1, weight);
             }
@@ -222,7 +222,7 @@ void Graph::setSymmetric()
  */
 void Graph::setDirected(const bool &toggle, const bool &signalMW)
 {
-    qDebug() << "Graph::setDirected - Setting graph directed to:" << toggle;
+    qCDebug(lcGraphCore) << "Graph::setDirected - Setting graph directed to:" << toggle;
     if (!toggle)
     {
         setUndirected(true, signalMW);
@@ -230,7 +230,7 @@ void Graph::setDirected(const bool &toggle, const bool &signalMW)
     }
     if (toggle == isDirected())
     {
-        qDebug() << "Graph::setDirected - Same as now, nothing to do.";
+        qCDebug(lcGraphCore) << "Graph::setDirected - Same as now, nothing to do.";
         return;
     }
     m_graphIsDirected = true;
@@ -247,8 +247,8 @@ void Graph::setDirected(const bool &toggle, const bool &signalMW)
  */
 void Graph::setUndirected(const bool &toggle, const bool &signalMW)
 {
-    qDebug() << "Graph::setUndirected - Toggling graph undirected to" << toggle;
-    qDebug() << "Graph::setUndirected - m_graphIsSymmetric:" << m_graphIsSymmetric
+    qCDebug(lcGraphCore) << "Graph::setUndirected - Toggling graph undirected to" << toggle;
+    qCDebug(lcGraphCore) << "Graph::setUndirected - m_graphIsSymmetric:" << m_graphIsSymmetric
              << "m_graphIsDirected:" << m_graphIsDirected
              << "m_totalEdges:" << m_totalEdges
              << "calculatedEdges:" << calculatedEdges;
@@ -260,7 +260,7 @@ void Graph::setUndirected(const bool &toggle, const bool &signalMW)
     }
     if (toggle == isUndirected())
     {
-        qDebug() << "Graph::setUndirected - Same as now, nothing to do.";
+        qCDebug(lcGraphCore) << "Graph::setUndirected - Same as now, nothing to do.";
         return;
     }
     // NOTE: We set m_graphIsDirected = false BEFORE the loop so that
@@ -283,14 +283,14 @@ void Graph::setUndirected(const bool &toggle, const bool &signalMW)
         for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
         {
             v1 = (*it)->number();
-            qDebug() << "Graph::setUndirected - Iterating over edges of v1 " << v1;
+            qCDebug(lcGraphCore) << "Graph::setUndirected - Iterating over edges of v1 " << v1;
             enabledOutEdges = (*it)->outEdgesEnabledHash();
             it1 = enabledOutEdges.cbegin();
             while (it1 != enabledOutEdges.cend())
             {
                 v2 = it1.key();
                 weight = it1.value();
-                qDebug() << "edge" << "v1" << v1 << "->" << v2 << " = " << "weight" << weight;
+                qCDebug(lcGraphCore) << "edge" << "v1" << v1 << "->" << v2 << " = " << "weight" << weight;
                 edgeTypeSet(v1, v2, weight, EdgeType::Undirected);
                 ++it1;
             }
@@ -298,7 +298,7 @@ void Graph::setUndirected(const bool &toggle, const bool &signalMW)
     }
     else
     {
-        qDebug() << "Graph::setUndirected -Graph already has symmetric arcs (m_graphIsSymmetric=true); skipping reverse-arc addition.";
+        qCDebug(lcGraphCore) << "Graph::setUndirected -Graph already has symmetric arcs (m_graphIsSymmetric=true); skipping reverse-arc addition.";
     }
 
     m_graphIsSymmetric = true;
@@ -312,7 +312,7 @@ void Graph::setUndirected(const bool &toggle, const bool &signalMW)
  */
 bool Graph::isDirected()
 {
-    qDebug() << "Graph::isDirected m_graphIsDirected" << m_graphIsDirected;
+    qCDebug(lcGraphCore) << "Graph::isDirected m_graphIsDirected" << m_graphIsDirected;
     return m_graphIsDirected;
 }
 
@@ -323,6 +323,6 @@ bool Graph::isDirected()
  */
 bool Graph::isUndirected()
 {
-    //    qDebug() << "isUndirected: " << !m_graphIsDirected;
+    //    qCDebug(lcGraphCore) << "isUndirected: " << !m_graphIsDirected;
     return !m_graphIsDirected;
 }
