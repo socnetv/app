@@ -1,0 +1,8 @@
+erdos 2000 0.02 undirected
+delay 1
+render
+bulk-node-size 30
+bulk-edge-color red
+move 1 500 500
+render
+quit
