@@ -27,7 +27,7 @@ void Graph::graphCliqueAdd(const QList<int> &clique)
 
     m_cliques.insert(clique.size(), clique);
 
-    qDebug() << "Graph::graphCliqueAdd() - Added clique:"
+    qCDebug(lcCohesion) << "Graph::graphCliqueAdd() - Added clique:"
              << clique
              << "of size"
              << clique.size()
@@ -37,7 +37,7 @@ void Graph::graphCliqueAdd(const QList<int> &clique)
     foreach (int actor1, clique)
     {
         index1 = vpos[actor1];
-        qDebug() << "Graph::graphCliqueAdd() - Updating cliques in actor1:"
+        qCDebug(lcCohesion) << "Graph::graphCliqueAdd() - Updating cliques in actor1:"
                  << actor1
                  << "vpos:"
                  << index1;
@@ -47,7 +47,7 @@ void Graph::graphCliqueAdd(const QList<int> &clique)
             index2 = vpos[actor2];
             cliqueCount = CLQM.item(index1, index2);
             CLQM.setItem(index1, index2, (cliqueCount + 1));
-            qDebug() << "Graph::graphCliqueAdd() - Updated co-membership matrix CLQM"
+            qCDebug(lcCohesion) << "Graph::graphCliqueAdd() - Updated co-membership matrix CLQM"
                      << "actor1:"
                      << actor1
                      << "actor2:"
@@ -114,7 +114,7 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X)
 {
     csRecDepth++;
 
-    qDebug() << "Graph::graphCliques() - STARTS HERE. csRecDepth:"
+    qCDebug(lcCohesion) << "Graph::graphCliques() - STARTS HERE. csRecDepth:"
              << csRecDepth
              << " - Check if we are at initialization step";
 
@@ -134,7 +134,7 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X)
         X.reserve(V);
         P = verticesSet();  // P starts as the full vertex set
 
-        qDebug() << "Graph::graphCliques() - initialization step. R, X empty and P=V(G): " << P;
+        qCDebug(lcCohesion) << "Graph::graphCliques() - initialization step. R, X empty and P=V(G): " << P;
 
         CLQM.zeroMatrix(V, V);  // co-membership matrix reset
         m_cliques.clear();
@@ -150,13 +150,13 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X)
             myNeightbors = (*it)->reciprocalNeighborhoodList();
             neighboursHash[vertex] = QSet<int>(myNeightbors.constBegin(), myNeightbors.constEnd());
 
-            qDebug() << "Graph::graphCliques() - init. NeighborhoodList of v" << vertex
+            qCDebug(lcCohesion) << "Graph::graphCliques() - init. NeighborhoodList of v" << vertex
                      << ": " << neighboursHash[vertex];
             (*it)->clearCliques();
         }
     }
 
-    qDebug() << "Graph::graphCliques() - check if P and X are both empty...";
+    qCDebug(lcCohesion) << "Graph::graphCliques() - check if P and X are both empty...";
 
     // -----------------------------------------------------------------------
     // Base case: P and X are both empty.
@@ -164,7 +164,7 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X)
     // -----------------------------------------------------------------------
     if (P.isEmpty() && X.isEmpty())
     {
-        qDebug() << "Graph::graphCliques() - P and X are both empty. MAXIMAL clique R=" << R;
+        qCDebug(lcCohesion) << "Graph::graphCliques() - P and X are both empty. MAXIMAL clique R=" << R;
         QList<int> clique = R.values();
         graphCliqueAdd(clique);
         csRecDepth--;
@@ -201,7 +201,7 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X)
     // (see header comment for the correctness argument).
     const QSet<int> candidates = P - neighboursHash[pivot];
 
-    qDebug() << "Graph::graphCliques() - pivot:" << pivot
+    qCDebug(lcCohesion) << "Graph::graphCliques() - pivot:" << pivot
              << " |N(pivot)∩P|:" << bestCoverage
              << " |P\\N(pivot)|:" << candidates.size()
              << " (saved" << (P.size() - candidates.size()) << "branches)";
@@ -217,13 +217,13 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X)
     // (v is moved from P to X after its recursive subtree is explored).
     const QList<int> candidateList = candidates.values();
 
-    qDebug() << "Graph::graphCliques() - Start looping over candidates P\\N(pivot)";
+    qCDebug(lcCohesion) << "Graph::graphCliques() - Start looping over candidates P\\N(pivot)";
 
     for (int v : candidateList)
     {
         counter++;
 
-        qDebug() << "Graph::graphCliques() - CURRENT v:" << v
+        qCDebug(lcCohesion) << "Graph::graphCliques() - CURRENT v:" << v
                  << " P:" << P << " P.count=" << P.size()
                  << " R:" << R << " X:" << X;
 
@@ -232,7 +232,7 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X)
         // Skip self-loops: a vertex with only a tie to itself cannot join any clique.
         if (NBS.size() == 1 && NBS.contains(v))
         {
-            qDebug() << "Graph::graphCliques() - v:" << v << "has only a self-tie, skip";
+            qCDebug(lcCohesion) << "Graph::graphCliques() - v:" << v << "has only a self-tie, skip";
             // Move v from P to X so it is not re-visited.
             P.remove(v);
             X.insert(v);
@@ -248,7 +248,7 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X)
         Pnext = P & NBS;          // P ∩ N(v)
         Xnext = X & NBS;          // X ∩ N(v)
 
-        qDebug() << "Graph::graphCliques() - v:" << v
+        qCDebug(lcCohesion) << "Graph::graphCliques() - v:" << v
                  << "RECURSIVE CALL: R⋃{v}=" << Rnext
                  << " P⋂N(v)=" << Pnext
                  << " X⋂N(v)=" << Xnext;
@@ -272,7 +272,7 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X)
         }
         catch (...)
         {
-            qDebug() << "Graph::graphCliques() - ERROR in recursive call";
+            qCDebug(lcCohesion) << "Graph::graphCliques() - ERROR in recursive call";
             return;
         }
 
@@ -282,13 +282,13 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X)
         P.remove(v);
         X.insert(v);
 
-        qDebug() << "Graph::graphCliques() - v:" << v
+        qCDebug(lcCohesion) << "Graph::graphCliques() - v:" << v
                  << " returned from recursion. Moved to X."
                  << " P=" << P << " X=" << X;
 
     } // end for candidateList
 
-    qDebug() << "Graph::graphCliques() - FINISHED candidate loop at csRecDepth:" << csRecDepth;
+    qCDebug(lcCohesion) << "Graph::graphCliques() - FINISHED candidate loop at csRecDepth:" << csRecDepth;
 
     csRecDepth--;
 }
@@ -298,7 +298,7 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X)
 */
 int Graph::graphCliquesContaining(const int &actor, const int &size)
 {
-    qDebug() << "*** Graph::graphCliquesContaining(" << actor << ")";
+    qCDebug(lcCohesion) << "*** Graph::graphCliquesContaining(" << actor << ")";
     int cliqueCounter = 0;
     foreach (QList<int> clique, m_cliques)
     {
@@ -323,7 +323,7 @@ int Graph::graphCliquesContaining(const int &actor, const int &size)
  */
 int Graph::graphCliquesOfSize(const int &size)
 {
-    qDebug() << "Graph::graphCliquesOfSize()";
+    qCDebug(lcCohesion) << "Graph::graphCliquesOfSize()";
 
     return m_cliques.values(size).size();
 }
