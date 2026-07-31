@@ -134,6 +134,23 @@ profile is unreadable — `qDebug()` formatting swamps everything at 43×–72×
 number measured through that noise would be meaningless. See
 [`roadmap_ws14_logging_cost.md`](roadmap_ws14_logging_cost.md).
 
+**Re-profiled against WS14's finished state (2000N/40000E, `socnetv-cli --kernel distance -c 1`,
+same finalize()/GraphVertex::distance() path as above):** the finding holds, but the profile itself
+got much thinner, since WS14's full sweep (not just L2) is done now — `sample` only caught 44 total
+samples in `DistanceEngine::compute()` for this network, down from 6369 in the pre-sweep capture
+above. Of `finalize()`'s 44 samples: **32 (≈73 %) in `GraphVertex::distance()`**, 6 in
+`GraphVertex::number()`, 1 in `GraphVertex::isEnabled()`. Same conclusion (the QHash lookup
+dominates what's left of `finalize()`'s cost) but a much wider confidence interval than the
+191-sample capture this section was originally written against — 44 samples isn't a lot to build a
+percentage on. A follow-up profiling run against a larger stress-test network (attempted here at
+N=8000/~640K edges, but the synthetic network file got truncated mid-save when the generating
+process was killed too early — needs a longer wait for the async save to finish, or a completion
+signal instead of a fixed delay) would give a more statistically solid number if this profile is
+used as go/no-go evidence for A2 rather than just directional confirmation. The dramatic drop in
+raw sample count is itself worth noting: profiling this codebase for anything now generally needs a
+bigger input than it used to, since typical operations finish fast enough that a 1ms-interval
+sampler barely gets a look in.
+
 **Extension:** `reachability/graph_reachability_walks.cpp` (the walks/A^k matrix code, one of A1's
 six scatter locations) already uses `Matrix::pow()` directly with no `QHash`/`QMap` involved, so it
 doesn't need this migration.
