@@ -310,7 +310,15 @@ void MainWindow::closeEvent(QCloseEvent *ce)
     //
     bool userCancelled = false;
     qCDebug(lcMainWindow) << "Checking if current graph is saved...";
-    if (activeGraph->isSaved())
+    if (m_interactiveScriptQuitting)
+    {
+        // 'quit' interactive-script command: no one is present to answer the save-changes
+        // prompt below, so skip it entirely - same "bypass modal dialogs that would block a
+        // scripted run" precedent already used by 'erdos'/'add-node'/etc.
+        ce->accept();
+        qCDebug(lcMainWindow) << "Interactive script quit - skipping save-changes prompt.";
+    }
+    else if (activeGraph->isSaved())
     {
         ce->accept();
         qCDebug(lcMainWindow) << "Graph is already saved. Nothing to do.";
@@ -5848,6 +5856,95 @@ void MainWindow::processNextInteractiveCommand()
                     << "elapsed_ms=" << timer.elapsed();
         }, Qt::QueuedConnection);
         QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+    }
+    else if (line == "render")
+    {
+        // WS10/WS6.6 render-perf benchmarking aid: forces a synchronous repaint (unlike
+        // update(), which only schedules one), so this measures the actual paint cost of
+        // the current canvas state rather than whether a repaint got scheduled at all.
+        QElapsedTimer timer;
+        timer.start();
+        graphicsWidget->viewport()->repaint();
+        qInfo() << "BENCH render N=" << activeNodes() << "E=" << activeEdges()
+                << "elapsed_ms=" << timer.elapsed();
+        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+    }
+    else if (line.startsWith("bulk-node-size "))
+    {
+        // bulk-node-size <N> - calls slotEditNodeSizeAll() directly with a nonzero size so
+        // its modal QInputDialog (used when newSize==0) never opens, which would otherwise
+        // block a scripted run with no one to click it.
+        bool ok = false;
+        const int newSize = line.mid(15).trimmed().toInt(&ok);
+        if (!ok || newSize <= 0)
+        {
+            qWarning() << "Malformed 'bulk-node-size' command, skipping:" << line;
+            processNextInteractiveCommand();
+            return;
+        }
+        QElapsedTimer timer;
+        timer.start();
+        slotEditNodeSizeAll(newSize);
+        qInfo() << "BENCH bulk-node-size N=" << activeNodes() << "E=" << activeEdges()
+                << "elapsed_ms=" << timer.elapsed();
+        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+    }
+    else if (line.startsWith("bulk-edge-color "))
+    {
+        // bulk-edge-color <name> - calls slotEditEdgeColorAll() directly with a valid QColor
+        // so its modal QColorDialog (used when color is invalid) never opens.
+        const QString name = line.mid(16).trimmed();
+        const QColor color(name);
+        if (!color.isValid())
+        {
+            qWarning() << "Malformed 'bulk-edge-color' command, skipping:" << line;
+            processNextInteractiveCommand();
+            return;
+        }
+        QElapsedTimer timer;
+        timer.start();
+        slotEditEdgeColorAll(color);
+        qInfo() << "BENCH bulk-edge-color N=" << activeNodes() << "E=" << activeEdges()
+                << "elapsed_ms=" << timer.elapsed();
+        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+    }
+    else if (line.startsWith("move "))
+    {
+        // move <node> <x> <y> - simulates a single-node drag (and its cascading edge-geometry
+        // updates) by setting an absolute canvas position, same backlog item named in
+        // roadmap_ws12_cli_scripting_mode.md.
+        const QStringList parts = line.mid(5).trimmed().split(' ', Qt::SkipEmptyParts);
+        bool nodeOk = false, xOk = false, yOk = false;
+        const int node = parts.value(0).toInt(&nodeOk);
+        const int x = parts.value(1).toInt(&xOk);
+        const int y = parts.value(2).toInt(&yOk);
+        if (!nodeOk || !xOk || !yOk)
+        {
+            qWarning() << "Malformed 'move' command, skipping:" << line;
+            processNextInteractiveCommand();
+            return;
+        }
+        QMetaObject::invokeMethod(activeGraph, [this, node, x, y]() {
+            QElapsedTimer timer;
+            timer.start();
+            activeGraph->vertexPosSet(node, x, y);
+            qInfo() << "BENCH move N=" << activeNodes() << "E=" << activeEdges()
+                    << "elapsed_ms=" << timer.elapsed();
+        }, Qt::QueuedConnection);
+        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+    }
+    else if (line == "quit")
+    {
+        // Every scripted run before this command existed had to be killed externally
+        // (gtimeout/pkill) since the app has no other way to end after a script finishes -
+        // worth having generally, not just for one benchmark script. Goes through the real
+        // close() / closeEvent() path (not a raw QCoreApplication::quit(), which still routes
+        // through closeEvent() during Qt's shutdown and would otherwise block forever on the
+        // "save changes?" modal with no one present to answer it) with m_interactiveScriptQuitting
+        // set so that prompt is skipped.
+        qCDebug(lcMainWindow) << "Interactive script requested quit.";
+        m_interactiveScriptQuitting = true;
+        close();
     }
     else
     {

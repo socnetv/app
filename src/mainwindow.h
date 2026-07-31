@@ -622,6 +622,7 @@ private:
     QString m_encodingOverride;
     QStringList m_interactiveScriptLines;
     int m_interactiveScriptIndex;
+    bool m_interactiveScriptQuitting = false;
     QString settingsFilePath, settingsDir ;
     QStringList fortuneCookie;
     QStringList tempFileNameNoPath, tips;
