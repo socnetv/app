@@ -143,8 +143,8 @@ in the roadmap.
    future rendering-cost and feature work scoped but not prioritised yet.
 2. **WS6** — regression safety (ongoing support — continuously active underneath every other
    workstream, not "next in queue").
-3. **WS5** — matrices. Receives the M1-continuation APSP migration from WS3. WS14's completion
-   makes A2.0's profiling evidence readable now — worth picking up.
+3. **WS5** — matrices. Receives the M1-continuation APSP migration from WS3. A2.0's empirical
+   validation is done (GO decision, 2026-07-31) — the full APSP migration (A2) is next.
 4. **WS7** — MainWindow decomposition. Solid milestone roadmap (MW1–MW7) exists; zero code written
    yet.
 5. **WS8** — IO layer stabilization. Roadmap scoped; zero code written yet.
