@@ -33,7 +33,7 @@ void Graph::vertexFilterByQuery(const GraphQuery &query)
     if (query.conditions.isEmpty())
         return;
 
-    qDebug() << "Graph::vertexFilterByQuery()" << query.conditions.size() << "condition(s)";
+    qCDebug(lcFilters) << "Graph::vertexFilterByQuery()" << query.conditions.size() << "condition(s)";
 
     // Build visible set: vertices satisfying ALL conditions.
     QSet<int> visibleSet;
@@ -142,7 +142,7 @@ void Graph::edgeFilterByQuery(const GraphQuery &query)
     if (query.conditions.isEmpty())
         return;
 
-    qDebug() << "Graph::edgeFilterByQuery()" << query.conditions.size() << "condition(s)";
+    qCDebug(lcFilters) << "Graph::edgeFilterByQuery()" << query.conditions.size() << "condition(s)";
 
     // Count matching edges (for early-exit guard).
     int matchCount = 0;

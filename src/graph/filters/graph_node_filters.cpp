@@ -53,14 +53,14 @@ void Graph::vertexFilterByCentrality(const float threshold,
                                      const bool overThreshold,
                                      const IndexType centralityIndex)
 {
-    qDebug() << "Graph::vertexFilterByCentrality()"
+    qCDebug(lcFilters) << "Graph::vertexFilterByCentrality()"
              << "index:" << static_cast<int>(centralityIndex)
              << "threshold:" << threshold
              << "overThreshold:" << overThreshold;
 
     if (!isCentralityIndexComputed(centralityIndex))
     {
-        qDebug() << "Graph::vertexFilterByCentrality() - "
+        qCDebug(lcFilters) << "Graph::vertexFilterByCentrality() - "
                     "index"
                  << static_cast<int>(centralityIndex)
                  << "not yet computed. Aborting.";
@@ -163,7 +163,7 @@ void Graph::vertexFilterByCentrality(const float threshold,
         const bool shouldDisable = overThreshold ? (score >= thresh) : (score <= thresh);
         const bool currentlyEnabled = (*it)->isEnabled();
 
-        qDebug() << "PASS 1 - vertex" << (*it)->number()
+        qCDebug(lcFilters) << "PASS 1 - vertex" << (*it)->number()
                  << "score=" << score
                  << condition << threshold
                  << "shouldDisable:" << shouldDisable
@@ -199,7 +199,7 @@ void Graph::vertexFilterByCentrality(const float threshold,
             const bool targetEnabled = vertexAtIndex(vertexIndexByNumber(target))->isEnabled();
             const bool edgeVisible = sourceEnabled && targetEnabled;
 
-            qDebug() << "PASS 2 - edge" << v << "->" << target
+            qCDebug(lcFilters) << "PASS 2 - edge" << v << "->" << target
                      << "sourceEnabled:" << sourceEnabled
                      << "targetEnabled:" << targetEnabled
                      << "edgeVisible:" << edgeVisible;
@@ -247,11 +247,11 @@ void Graph::vertexFilterByEgoNetwork(const int v1, const int depth)
 {
     Q_UNUSED(depth); // reserved for future k-hop support
 
-    qDebug() << "Graph::vertexFilterByEgoNetwork() - ego:" << v1;
+    qCDebug(lcFilters) << "Graph::vertexFilterByEgoNetwork() - ego:" << v1;
 
     if (!vertexExists(v1))
     {
-        qDebug() << "Graph::vertexFilterByEgoNetwork() - vertex" << v1 << "not found. Aborting.";
+        qCDebug(lcFilters) << "Graph::vertexFilterByEgoNetwork() - vertex" << v1 << "not found. Aborting.";
         return;
     }
 
@@ -273,7 +273,7 @@ void Graph::vertexFilterByEgoNetwork(const int v1, const int depth)
         ++it;
     }
 
-    qDebug() << "Graph::vertexFilterByEgoNetwork() - visible set:" << visibleSet;
+    qCDebug(lcFilters) << "Graph::vertexFilterByEgoNetwork() - visible set:" << visibleSet;
 
     // ------------------------------------------------------------------
     // Snapshot current visibility state BEFORE making any changes.
@@ -381,11 +381,11 @@ void Graph::vertexFilterByEgoNetwork(const int v1, const int depth)
  */
 void Graph::vertexFilterBySelection(const QList<int> &selectedVertices)
 {
-    qDebug() << "Graph::vertexFilterBySelection() - selection:" << selectedVertices;
+    qCDebug(lcFilters) << "Graph::vertexFilterBySelection() - selection:" << selectedVertices;
 
     if (selectedVertices.isEmpty())
     {
-        qDebug() << "Graph::vertexFilterBySelection() - empty selection, aborting.";
+        qCDebug(lcFilters) << "Graph::vertexFilterBySelection() - empty selection, aborting.";
         progressStatus(tr("No nodes selected. Please select at least one node first."));
         return;
     }
@@ -498,7 +498,7 @@ void Graph::vertexFilterBySelection(const QList<int> &selectedVertices)
  */
 void Graph::vertexFilterByAttribute(const FilterCondition &cond)
 {
-    qDebug() << "Graph::vertexFilterByAttribute() key:" << cond.key
+    qCDebug(lcFilters) << "Graph::vertexFilterByAttribute() key:" << cond.key
              << "op:" << static_cast<int>(cond.op) << "value:" << cond.value;
 
     // Build visible set: vertices that satisfy the condition.
@@ -602,11 +602,11 @@ void Graph::vertexFilterByAttribute(const FilterCondition &cond)
  */
 void Graph::vertexFilterRestoreAll()
 {
-    qDebug() << "Graph::vertexFilterRestoreAll()";
+    qCDebug(lcFilters) << "Graph::vertexFilterRestoreAll()";
 
     if (m_visibilityHistory.isEmpty())
     {
-        qDebug() << "Graph::vertexFilterRestoreAll() - history stack empty, nothing to restore.";
+        qCDebug(lcFilters) << "Graph::vertexFilterRestoreAll() - history stack empty, nothing to restore.";
         progressStatus(tr("No active filter to restore."));
         return;
     }

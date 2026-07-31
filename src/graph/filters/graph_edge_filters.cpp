@@ -35,12 +35,12 @@ void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold
 
     if (overThreshold)
     {
-        qDebug() << "filtering edges with weight over or equal" << m_threshold;
+        qCDebug(lcFilters) << "filtering edges with weight over or equal" << m_threshold;
         words = "equal or over";
     }
     else
     {
-        qDebug() << "Filtering edges with weight below or equal" << m_threshold;
+        qCDebug(lcFilters) << "Filtering edges with weight below or equal" << m_threshold;
         words = "equal or under";
     }
 
@@ -171,7 +171,7 @@ void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold
  */
 void Graph::edgeFilterReset()
 {
-    qDebug() << "Graph::edgeFilterReset()";
+    qCDebug(lcFilters) << "Graph::edgeFilterReset()";
 
     VList::const_iterator it;
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
@@ -209,7 +209,7 @@ void Graph::edgeFilterReset()
  */
 void Graph::edgeFilterUnilateral(const bool &toggle)
 {
-    qDebug() << "Toggling unilateral edges:" << toggle;
+    qCDebug(lcFilters) << "Toggling unilateral edges:" << toggle;
     // Collected into one batch and dispatched once (WS3 M2) - see the matching comment in
     // relationSet().
     QList<EdgeVisibilityChange> visibilityChanges;
@@ -235,7 +235,7 @@ void Graph::edgeFilterUnilateral(const bool &toggle)
  */
 void Graph::edgeFilterByAttribute(const FilterCondition &cond)
 {
-    qDebug() << "Graph::edgeFilterByAttribute() key:" << cond.key
+    qCDebug(lcFilters) << "Graph::edgeFilterByAttribute() key:" << cond.key
              << "op:" << static_cast<int>(cond.op) << "value:" << cond.value;
 
     // Count matching edges (for early-exit guard).
