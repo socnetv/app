@@ -35,19 +35,14 @@ The `Graph` object is a façade and state coordinator — not a monolith. Algori
 
 # Completed Workstreams
 
-| WS  | Name                              | Status         |
-|-----|-----------------------------------|----------------|
-| WS1 | Algorithm extraction              | ✔ complete     |
-| WS2 | Graph façade                      | ✔ complete     |
-| WS3 | Architecture & Performance        | ✔ complete (v3.6 + 2026-07) |
-| WS4 | IO / Parser modernization         | ✔ complete     |
-| WS9 | Graph exploration & data workflows| ✔ shipped v3.5/v3.6 |
-
-WS3 shipped `PerSourceScratch` extraction + parallel `DistanceEngine` source loop (v3.6), and
-`GraphVertex`'s `QObject` removal + edge-visibility signal batching. Its original "separate domain
-model" goal turned out unnecessary — see `roadmap_ws3_architecture_performance.md` for why.
-
-Details: [`docs/roadmaps/roadmap_ws9_graph_exploration.md`](roadmaps/roadmap_ws9_graph_exploration.md)
+| WS   | Name                               | Status                       | Roadmap |
+|------|-------------------------------------|-------------------------------|---------|
+| WS1  | Algorithm extraction                | ✔ complete                    | [`roadmap_ws1_distances_geodesic_engine.md`](roadmaps/roadmap_ws1_distances_geodesic_engine.md) |
+| WS2  | Graph façade                        | ✔ complete                    | [`roadmap_ws2_ui_graph_facade.md`](roadmaps/roadmap_ws2_ui_graph_facade.md) |
+| WS3  | Architecture & Performance          | ✔ complete (v3.6 + 2026-07)   | [`roadmap_ws3_architecture_performance.md`](roadmaps/roadmap_ws3_architecture_performance.md) |
+| WS4  | IO / Parser modernization           | ✔ complete                    | [`roadmap_ws4_io_parser_refactor.md`](roadmaps/roadmap_ws4_io_parser_refactor.md) |
+| WS9  | Graph exploration & data workflows  | ✔ shipped v3.5/v3.6           | [`roadmap_ws9_graph_exploration.md`](roadmaps/roadmap_ws9_graph_exploration.md) |
+| WS14 | Logging Cost & Release-Build Hygiene| ✔ complete (2026-07, v3.7)    | [`roadmap_ws14_logging_cost.md`](roadmaps/roadmap_ws14_logging_cost.md) |
 
 ---
 
@@ -125,7 +120,8 @@ of GUI-triggered flows the headless `socnetv-cli` tool can't reach. First step s
 `--encoding`, `--interactive-script` with `delay`/`new` commands) — was the tool that made it
 possible to root-cause #260. Seven more commands shipped (#262: `relation`, `unilateral`, `erdos`,
 `save`, `add-node`, `add-edge`, `add-relation`), built specifically to stress-test WS3's
-edge-visibility batching change end-to-end.
+edge-visibility batching change end-to-end. `distances`/`distances centralities` added during WS14
+to get real GUI-side before/after timing evidence instead of assuming the CLI number transfers.
 
 ---
 
@@ -141,36 +137,21 @@ in the roadmap.
 
 ---
 
-## WS14 — Logging Cost & Release-Build Hygiene
-
-Roadmap: [`docs/roadmaps/roadmap_ws14_logging_cost.md`](roadmaps/roadmap_ws14_logging_cost.md)
-
-Convert hot-path `qDebug()` calls to runtime-disablable `qCDebug()` logging categories, and make
-shipped builds quiet by default. Spun out of WS3's #254 "secondary finding, still open" once it was
-measured: removing the formatting cost makes `DistanceEngine` **43×–72× faster** on real networks,
-golden baselines unchanged — an order of magnitude more than WS3 M1's parallelisation win, and the
-largest single measured performance problem currently known in the codebase. Covers
-`DistanceEngine`, the parsers, `matrix.cpp`, and the shipped GUI default. Tracked as #268. Just
-created, not started.
-
----
-
 # Priorities
 
-1. **WS14** — logging cost. Largest measured win available (43×–72× on `DistanceEngine`), mechanical
-   and golden-covered. Just created, not started.
-2. **WS10** — GraphicsWidget canvas rendering & features. Phase 1 (#250) and #260 fully shipped;
+1. **WS10** — GraphicsWidget canvas rendering & features. Phase 1 (#250) and #260 fully shipped;
    future rendering-cost and feature work scoped but not prioritised yet.
-3. **WS6** — regression safety (ongoing support — continuously active underneath every other
+2. **WS6** — regression safety (ongoing support — continuously active underneath every other
    workstream, not "next in queue").
-4. **WS5** — matrices. Receives the M1-continuation APSP migration from WS3.
-5. **WS7** — MainWindow decomposition. Solid milestone roadmap (MW1–MW7) exists; zero code written
+3. **WS5** — matrices. Receives the M1-continuation APSP migration from WS3. WS14's completion
+   makes A2.0's profiling evidence readable now — worth picking up.
+4. **WS7** — MainWindow decomposition. Solid milestone roadmap (MW1–MW7) exists; zero code written
    yet.
-6. **WS8** — IO layer stabilization. Roadmap scoped; zero code written yet.
-7. **WS11** — algorithm additions. Just created; not prioritised yet, no code written.
-8. **WS12** — CLI scripting mode. Two steps shipped (#261, #262); further commands backlog, not
+5. **WS8** — IO layer stabilization. Roadmap scoped; zero code written yet.
+6. **WS11** — algorithm additions. Just created; not prioritised yet, no code written.
+7. **WS12** — CLI scripting mode. Two steps shipped (#261, #262); further commands backlog, not
    prioritised.
-9. **WS13** — undo/redo. Just created; not prioritised yet, no code written.
+8. **WS13** — undo/redo. Just created; not prioritised yet, no code written.
 
 ---
 
