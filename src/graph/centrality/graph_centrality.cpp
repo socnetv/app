@@ -603,7 +603,7 @@ void Graph::centralityClosenessIR(const bool considerWeights,
                 continue;
             }
 
-            dist = (*it)->distance((*jt)->number());
+            dist = apspDistance((*it)->number(), (*jt)->number());
 
             if (dist != RAND_MAX)
             {

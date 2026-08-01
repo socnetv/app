@@ -276,7 +276,7 @@ void Graph::prestigeProximity(const bool considerWeights,
                 continue;
             }
 
-            dist = (*jt)->distance((*it)->number());
+            dist = apspDistance((*jt)->number(), (*it)->number());
 
             if (dist != RAND_MAX)
             {
