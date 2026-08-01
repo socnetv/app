@@ -38,7 +38,41 @@ int Graph::graphDistanceGeodesic(const int &v1, const int &v2,
 {
     qCDebug(lcDistances) << "Graph::graphDistanceGeodesic()";
     graphDistancesGeodesic(false, considerWeights, inverseWeights, false);
-    return m_graph[vpos[v1]]->distance(v2);
+    return apspDistance(v1, v2);
+}
+
+/**
+ * @brief Returns the already-computed geodesic distance from vertex v1 to vertex v2, for the
+ * current relation, without triggering a recompute (unlike graphDistanceGeodesic() above).
+ * RAND_MAX if either vertex is unknown or nothing has been computed yet for this relation.
+ */
+qreal Graph::apspDistance(const int &v1, const int &v2)
+{
+    const int i = vertexIndexByNumber(v1);
+    const int j = vertexIndexByNumber(v2);
+    if (i < 0 || j < 0)
+        return RAND_MAX;
+    auto it = m_apspDist.find(relationCurrent());
+    if (it == m_apspDist.end())
+        return RAND_MAX;
+    return it->item(i, j);
+}
+
+/**
+ * @brief Returns the already-computed number of shortest paths from vertex v1 to vertex v2,
+ * for the current relation, without triggering a recompute. 0 if either vertex is unknown or
+ * nothing has been computed yet for this relation.
+ */
+int Graph::apspShortestPaths(const int &v1, const int &v2)
+{
+    const int i = vertexIndexByNumber(v1);
+    const int j = vertexIndexByNumber(v2);
+    if (i < 0 || j < 0)
+        return 0;
+    auto it = m_apspSigma.find(relationCurrent());
+    if (it == m_apspSigma.end())
+        return 0;
+    return static_cast<int>(it->item(i, j));
 }
 
 /**
@@ -76,7 +110,7 @@ QMap<int, int> Graph::graphGeodesicDistanceDistribution(const bool &considerWeig
             const int tgt = (*it2)->number();
             if (src == tgt) continue;  // skip self-pairs
 
-            const qreal d = (*it1)->distance(tgt);
+            const qreal d = apspDistance(src, tgt);
 
             // Exclude unreachable pairs (RAND_MAX is the sentinel used by DistanceEngine).
             if (d <= 0 || d >= static_cast<qreal>(RAND_MAX)) continue;

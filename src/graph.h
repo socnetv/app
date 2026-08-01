@@ -1024,6 +1024,14 @@ public:
                               const bool &considerWeights = false,
                               const bool &inverseWeights = true);
 
+    // WS5 A2: read-only accessors into m_apspDist/m_apspSigma (the flat-matrix APSP storage
+    // DistanceEngine populates) for the current relation. Unlike graphDistanceGeodesic() above,
+    // these never trigger a recompute - callers are expected to have already run
+    // graphDistancesGeodesic() themselves. Returns RAND_MAX / 0 respectively if either vertex
+    // number is unknown or nothing has been computed yet for the current relation.
+    qreal apspDistance(const int &v1, const int &v2);
+    int apspShortestPaths(const int &v1, const int &v2);
+
     QMap<int, int> graphGeodesicDistanceDistribution(const bool &considerWeights = false,
                                                      const bool &inverseWeights = false);
 
