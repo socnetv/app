@@ -2,10 +2,6 @@
 
 Tracking issue: [#268](https://github.com/socnetv/app/issues/268).
 
-> **Before committing any change described in this roadmap:** run
-> `./scripts/run_golden_compares.sh`. All golden JSON baselines must still pass — this applies to
-> every milestone below, not just the ones that call it out explicitly.
-
 ## Goal
 
 Stop paying `qDebug()` string-formatting cost in hot loops. This is currently the single largest
@@ -18,7 +14,9 @@ cleaner". Origin: the *"Secondary finding, still open"* filed against #254 in
 [`roadmap_ws3_architecture_performance.md`](roadmap_ws3_architecture_performance.md) — "filed
 separately if it turns out to matter." It turned out to matter, by a lot.
 
-## Status at a Glance
+## Status
+
+✅ Done — full tree converted, zero `qDebug()` remains.
 
 | Milestone | Status |
 |---|---|

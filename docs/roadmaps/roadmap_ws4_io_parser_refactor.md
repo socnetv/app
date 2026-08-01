@@ -4,6 +4,10 @@
 
 Reduce tight coupling between `Parser` (Qt signals/threads) and core `Graph` state, while preserving **identical parsing semantics** and **deterministic outputs** (golden parity required).
 
+## Status
+
+✅ Done (P1–P6). P7 is optional and not started.
+
 ## Scope & Non-Goals
 
 * ✅ Mechanical extraction / boundary cleanup

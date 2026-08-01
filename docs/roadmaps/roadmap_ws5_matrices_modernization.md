@@ -6,6 +6,11 @@
 - Isolate matrix creation and computation into coherent, testable types.
 - Cancellation-aware algebra kernels.
 
+## Status
+
+🚧 In progress. A1 (inventory) and A2.0 (empirical validation, GO decision) done. A2 (the actual
+APSP storage migration) is scoped, not yet implemented. A3–A7 not started.
+
 ## Current Reality
 
 - Matrix-related logic is scattered: code that constructs/populates `Graph`'s 11 named `Matrix`

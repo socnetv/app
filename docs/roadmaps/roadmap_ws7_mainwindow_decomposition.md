@@ -15,6 +15,10 @@ context around every occurrence); the scatter is a real maintenance cost, not a 
 performance one. If a genuine performance finding turns up during MW1-MW7 execution, it gets its
 own evidence and completion criteria the same way WS3/WS5 findings did — none is assumed here.
 
+## Status
+
+📋 Scoped (MW1–MW7 milestone plan exists), not started.
+
 ---
 
 ## Motivation

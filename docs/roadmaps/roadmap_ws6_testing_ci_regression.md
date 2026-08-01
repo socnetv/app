@@ -3,6 +3,12 @@
 ## Goal
 Prevent silent regressions during modernization.
 
+## Status
+
+🚧 Ongoing, supporting workstream (no fixed end state — continuously active underneath every other
+workstream). T1–T3 done; T4 (CI integration, WS6.5) is explicitly last and not started. WS6.1–WS6.4
+in progress; WS6.6 (canvas rendering-perf kernel) done.
+
 ## Current Reality
 - Manual comparisons exist; headless CLI now prints metrics.
 

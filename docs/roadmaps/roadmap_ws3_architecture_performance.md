@@ -1,9 +1,5 @@
 # Architecture & Performance Roadmap (WS3)
 
-> **Before committing any change described in this roadmap:** run
-> `./scripts/run_golden_compares.sh`. All golden JSON baselines must still pass — this applies to
-> every phase, group, and item below, not just the ones that call it out explicitly.
-
 ## Goal
 
 Fix specific, measured performance and correctness problems in `Graph`/`GraphVertex` — not build a
@@ -17,7 +13,9 @@ class built toward the original goal, was removed (`b9508c17`) after never findi
 the M2 section below for what happened and its commit messages for the detail. WS3 is now closed;
 see [`ARCHITECTURAL_REFACTORING_ROADMAP.md`](../ARCHITECTURAL_REFACTORING_ROADMAP.md).
 
-## Status at a Glance
+## Status
+
+✅ Done — see [`ARCHITECTURAL_REFACTORING_ROADMAP.md`](../ARCHITECTURAL_REFACTORING_ROADMAP.md).
 
 | Milestone | Status |
 |---|---|

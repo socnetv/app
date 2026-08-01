@@ -5,9 +5,6 @@
 This document records the detailed execution of **WS2**:
 turning `Graph` from a monolithic algorithm host into a thin façade / coordinator.
 
-WS2 is complete.
-This document now serves as an architectural reference and historical record.
-
 ---
 
 ## Goal (Achieved)
@@ -19,6 +16,10 @@ Make `Graph` a thin coordinator that:
 * delegates algorithms to slices / engines
 * centralizes UI orchestration (signals, thread affinity)
 * does not host algorithm logic directly
+
+## Status
+
+✅ Complete. This document now serves as an architectural reference and historical record.
 
 ---
 

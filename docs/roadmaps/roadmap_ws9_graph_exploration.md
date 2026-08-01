@@ -8,6 +8,10 @@ This roadmap documents the evolution of SocNetV from a visualization-focused app
 * **Feature 2 (#215)**: Filtering, querying & subgraphs ✔
 * **Feature 3 (#223)**: Structured data workflows ✔
 
+## Status
+
+✅ Complete. All three feature tracks shipped in v3.5–v3.6.
+
 ---
 
 ## Core Vision

@@ -1,15 +1,16 @@
 # Distance & Geodesic Engine Refactor Roadmap (WS1)
 
-**Status: Complete.** This document is an architectural history and reference record.
-Active DistanceEngine work is tracked in [`roadmap_ws3_architecture_performance.md`](roadmap_ws3_architecture_performance.md) (WS3).
-
----
-
 ## Goal
 
 Extract `Graph::graphDistancesGeodesic()` — a monolithic BFS/Dijkstra + Brandes + progress
 + result-storage method — into a standalone, testable `DistanceEngine` while preserving
 exact numeric results and UI behaviour.
+
+## Status
+
+✅ Complete. This document is an architectural history and reference record. Active
+DistanceEngine work is tracked in
+[`roadmap_ws3_architecture_performance.md`](roadmap_ws3_architecture_performance.md) (WS3).
 
 ---
 
