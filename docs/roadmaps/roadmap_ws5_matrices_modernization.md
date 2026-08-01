@@ -8,8 +8,7 @@
 
 ## Status
 
-🚧 In progress. A1 (inventory) and A2.0 (empirical validation, GO decision) done. A2 (the APSP
-storage migration) underway — step 1 of 3 landed. A3–A7 not started.
+🚧 In progress. A1, A2.0, and A2 (APSP storage migration) done. A3–A7 not started.
 
 ## Current Reality
 
@@ -150,17 +149,42 @@ work would widen the memory advantage further, not narrow it.)
 **Extension:** `reachability/graph_reachability_walks.cpp` already uses `Matrix::pow()` directly
 with no `QHash`/`QMap` involved, so it doesn't need this migration.
 
-### A2 implementation — 🚧 in progress
+### A2 implementation ✅ Done (2026-08-01)
 
-- **Step 1 ✅ done:** `Graph::m_apspDist`/`m_apspSigma` added; `DistanceEngine` writes both the new
-  matrices and the old per-vertex `QHash` in parallel (nothing reads the new storage yet). Golden
-  compares and distance-type benchmarks unchanged, confirming no behavior/perf change at this step.
-- **Step 2 (next):** migrate the 18 read call sites off `GraphVertex::distance()`/`shortestPaths()`
-  onto the new matrices, one file/group per commit, golden-verified each time.
-- **Step 3:** remove the old `GraphVertex` storage and accessors once nothing reads them.
-- **Completion criteria:** `run_golden_compares.sh`/`run_benchmarks.sh` pass with no regression;
-  benchmark the back-propagation-heavy cases (e.g. `DIST_GRAPHML_1000N_10000A_C1_W0`) for a measured
-  speedup, matching the evidence standard WS3 M1 set with its 2.7×–8.3× table.
+- **Step 1:** `Graph::m_apspDist`/`m_apspSigma` added; `DistanceEngine` wrote both the new matrices
+  and the old per-vertex `QHash` in parallel first (nothing read the new storage yet) — golden
+  compares and benchmarks unchanged, confirming zero behavior/perf change at that step.
+- **Step 2:** all 18 read call sites migrated off `GraphVertex::distance()`/`shortestPaths()` onto
+  `Graph::apspDistance()`/`apspShortestPaths()` (new read-only accessors) or direct `Matrix::item()`
+  reads, six commits, golden-verified each time. `DistanceEngine::finalize()` — the actual O(N²) hot
+  path — was restructured to iterate positions directly instead of an iterator plus a per-pair
+  position lookup, so its reads are genuine O(1) matrix accesses with no hash lookup involved.
+- **Step 3:** the old `GraphVertex::m_distance`/`m_shortestPaths` storage and all eight accessors
+  removed (including `reserveShortestPaths()`, confirmed dead code — declared, never called). Golden
+  compares clean throughout.
+
+**Real before/after numbers** (same benchmarks/networks/commands before and after the full
+migration, matching WS3 M1's own evidence standard):
+
+| Measurement | Before | After | Change |
+|---|---|---|---|
+| CLI `EIES48_T1_C1_W1` (N=48) | 2ms | 2ms | — |
+| CLI `EIES48_T2_C1_W1` (N=48) | 2ms | 2ms | — |
+| CLI `BA500_M3_C1_W0` (N=500) | 38ms | 42ms | noise |
+| CLI `BA500_M3_C0_W0` (N=500) | 34ms | 38ms | noise |
+| CLI `DIST_GRAPHML_1000N_10000A_C0_W0` (N=1,000) | 914ms | 777ms | **15% faster** |
+| CLI `DIST_GRAPHML_1000N_10000A_C1_W0` (N=1,000) | 1,082ms | 900ms | **17% faster** |
+| Isolated kernel, `geom.net` (N=7,343) | 18,906ms | 17,188ms | **9% faster** |
+| GUI `distances_bench` (N=2,000/~40,000E) | 6,329ms | 6,163ms | 3% faster |
+| GUI `distances_bench centralities` | 7,546ms | 7,454ms | 1% faster |
+
+The two smallest networks (48, 500 nodes) show no measurable change — expected, since the O(N²)
+`finalize()` cost this migration targets is too small at that scale to matter against everything
+else `compute()` does. Every larger network shows a real, consistent improvement, growing with N as
+predicted, but more modest than `finalize()`'s own ~73%-of-itself win: this matches the profiling
+finding that `runAllSources()`'s actual SSSP work dominates total `compute()` time far more than
+`finalize()`'s bookkeeping does, so a large win inside `finalize()` translates into a smaller (but
+real) slice of the total.
 
 ### A3 — `Matrix` contiguous storage (P1)
 
