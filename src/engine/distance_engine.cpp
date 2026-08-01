@@ -240,6 +240,20 @@ void DistanceEngine::initRun(const bool computeCentralities,
                 (*ds.it)->setShortestPaths((*ds.it1)->number(), 0);
             }
         }
+
+        // WS5 A2: same all-pairs-unreachable state, in the flat-matrix storage. E==0 means
+        // no source loop runs (compute() skips runAllSources() entirely for E==0), so this
+        // is the only place that needs to populate it for this case.
+        {
+            int totalV = 0;
+            for (auto it = graph.verticesBegin(); it != graph.verticesEnd(); ++it)
+                ++totalV;
+            const int relation = graph.relationCurrent();
+            graph.m_apspDist[relation].resize(totalV, totalV);
+            graph.m_apspSigma[relation].resize(totalV, totalV);
+            graph.m_apspDist[relation].fillMatrix(RAND_MAX);
+            // Sigma stays at 0 - Matrix::resize() zero-initializes every cell already.
+        }
         if (ds.N < 2)
         {
             // singleton graph consisting of a single isolated node
@@ -444,6 +458,14 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
     for (auto it = graph.verticesBegin(); it != graph.verticesEnd(); ++it)
         ++totalV;
 
+    // WS5 A2: relation-keyed flat-matrix APSP storage, resized fresh for this run (same
+    // always-reconstruct convention every other Graph matrix field already follows - see
+    // createMatrixAdjacency()/graphMatrixDistanceGeodesicCreate()). Written alongside the
+    // per-vertex QHash writes below; nothing reads from it yet.
+    const int relation = graph.relationCurrent();
+    graph.m_apspDist[relation].resize(totalV, totalV);
+    graph.m_apspSigma[relation].resize(totalV, totalV);
+
     // Over-allocate the state vector generously.  The pool has at most
     // idealThreadCount() workers; doubling + 4 guards against unexpected
     // pool growth (e.g., other Qt internals adding threads mid-run) without
@@ -527,11 +549,20 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
                  << "— writing APSP results back to vertex" << si;
 
         // APSP write-back: persist tls.pss.dist / sigma into vertex si's per-pair storage.
-        // Safe: si is unique across all concurrent lambda invocations.
-        // Unreachable vertices (dist == RAND_MAX) are skipped; the vertex-hash default
-        // already returns RAND_MAX for missing entries.
+        // Safe: si is unique across all concurrent lambda invocations - both the matrix row
+        // si and the per-vertex hash belonging to vertex si are exclusively owned by this
+        // source's iteration, so two sources never write the same memory.
+        //
+        // The matrix write is unconditional (row si, every column vi) - tls.pss.dist[vi]
+        // already holds RAND_MAX for every unreached vi (PerSourceScratch::resetPerSource()
+        // fills it before every source, unconditionally, so this isn't new work - it just
+        // reuses a reset that was already happening). The per-vertex hash write below stays
+        // conditional (skips unreached pairs) - that skip is what keeps the hash small.
         for (int vi = 0; vi < totalV; ++vi)
         {
+            graph.m_apspDist[relation].setItem(si, vi, tls.pss.dist[vi]);
+            graph.m_apspSigma[relation].setItem(si, vi, (qreal)tls.pss.sigma[vi]);
+
             if (tls.pss.dist[vi] != (qreal)RAND_MAX)
             {
                 int vnum = graph.vertexAtIndex(vi)->number();

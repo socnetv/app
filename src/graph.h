@@ -1404,6 +1404,12 @@ private:
     Matrix SIGMA, DM, sumM, invAM, AM, invM, WM;
     Matrix XM, XSM, XRM, CLQM;
 
+    // WS5 A2: relation-keyed flat-matrix APSP storage, replacing GraphVertex's per-vertex
+    // QHash<int, QPair<int,qreal>>. Row = source vertex position, column = target vertex
+    // position (see Graph::vertexIndexByNumber()/vertexAtIndex()), not vertex number.
+    QHash<int, Matrix> m_apspDist;
+    QHash<int, Matrix> m_apspSigma;
+
     /** used in resolveClasses and graphDistancesGeodesic() */
     H_StrToInt discreteDPs, discreteSDCs, discreteCCs, discreteBCs, discreteSCs;
     H_StrToInt discreteIRCCs, discreteECs, discreteEccentricities;
