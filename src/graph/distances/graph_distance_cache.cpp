@@ -112,8 +112,8 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
                      << "target" << target << "j" << j;
 
             qCDebug(lcDistances) << "Graph::graphMatrixShortestPathsCreate() -  setting SIGMA ("
-                     << i << "," << j << ") =" << (*it)->shortestPaths(target);
-            SIGMA.setItem(i, j, (*it)->shortestPaths(target));
+                     << i << "," << j << ") =" << apspShortestPaths(source, target);
+            SIGMA.setItem(i, j, apspShortestPaths(source, target));
             j++;
         }
         j = 0;
@@ -197,7 +197,7 @@ bool Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
             }
 
 
-            DM.setItem(i, j, (*it)->distance(target));
+            DM.setItem(i, j, apspDistance(source, target));
             j++;
         }
         j = 0;
