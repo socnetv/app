@@ -230,30 +230,18 @@ void DistanceEngine::initRun(const bool computeCentralities,
 
     if (ds.E == 0)
     {
-        for (ds.it = graph.verticesBegin(); ds.it != graph.verticesEnd(); ++ds.it)
-        {
-            for (ds.it1 = graph.verticesBegin(); ds.it1 != graph.verticesEnd(); ++ds.it1)
-            {
-                // Set all pair-wise distances to RAND_MAX
-                (*ds.it)->setDistance((*ds.it1)->number(), RAND_MAX);
-                // Set all pair-wise shortest-path counts (sigmas) to 0
-                (*ds.it)->setShortestPaths((*ds.it1)->number(), 0);
-            }
-        }
+        // All pairs unreachable. E==0 means no source loop runs (compute() skips
+        // runAllSources() entirely for E==0), so this is the only place that needs to
+        // populate m_apspDist/m_apspSigma for this case.
+        int totalV = 0;
+        for (auto it = graph.verticesBegin(); it != graph.verticesEnd(); ++it)
+            ++totalV;
+        const int relation = graph.relationCurrent();
+        graph.m_apspDist[relation].resize(totalV, totalV);
+        graph.m_apspSigma[relation].resize(totalV, totalV);
+        graph.m_apspDist[relation].fillMatrix(RAND_MAX);
+        // Sigma stays at 0 - Matrix::resize() zero-initializes every cell already.
 
-        // WS5 A2: same all-pairs-unreachable state, in the flat-matrix storage. E==0 means
-        // no source loop runs (compute() skips runAllSources() entirely for E==0), so this
-        // is the only place that needs to populate it for this case.
-        {
-            int totalV = 0;
-            for (auto it = graph.verticesBegin(); it != graph.verticesEnd(); ++it)
-                ++totalV;
-            const int relation = graph.relationCurrent();
-            graph.m_apspDist[relation].resize(totalV, totalV);
-            graph.m_apspSigma[relation].resize(totalV, totalV);
-            graph.m_apspDist[relation].fillMatrix(RAND_MAX);
-            // Sigma stays at 0 - Matrix::resize() zero-initializes every cell already.
-        }
         if (ds.N < 2)
         {
             // singleton graph consisting of a single isolated node
@@ -385,15 +373,6 @@ void DistanceEngine::initRun(const bool computeCentralities,
         {
             for (ds.it1 = graph.verticesBegin(); ds.it1 != graph.verticesEnd(); ++ds.it1)
             {
-                // All pair-wise distances are set to RAND_MAX by default
-                // inside GraphVertex::distance()
-                // so we don't need to explicitly set them here.
-                // We just clear distance hashmap of each actor.
-                (*ds.it)->clearDistance();
-                // Set all pair-wise shortest-path counts (sigmas) to 0
-                // (*it)->setShortestPaths((*it1)->number(), 0);
-                (*ds.it)->clearShortestPaths();
-
                 if (considerWeights && inverseWeights)
                 {
                     // find the max weight in the network.
@@ -548,27 +527,16 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
         qCDebug(lcEngine) << "***** PHASE 1 (SSSP): FINISHED BFS/DIJKSTRA for s" << s
                  << "— writing APSP results back to vertex" << si;
 
-        // APSP write-back: persist tls.pss.dist / sigma into vertex si's per-pair storage.
-        // Safe: si is unique across all concurrent lambda invocations - both the matrix row
-        // si and the per-vertex hash belonging to vertex si are exclusively owned by this
-        // source's iteration, so two sources never write the same memory.
-        //
-        // The matrix write is unconditional (row si, every column vi) - tls.pss.dist[vi]
-        // already holds RAND_MAX for every unreached vi (PerSourceScratch::resetPerSource()
-        // fills it before every source, unconditionally, so this isn't new work - it just
-        // reuses a reset that was already happening). The per-vertex hash write below stays
-        // conditional (skips unreached pairs) - that skip is what keeps the hash small.
+        // APSP write-back: persist tls.pss.dist / sigma into row si of the flat matrices.
+        // Safe: si is unique across all concurrent lambda invocations, so no two sources ever
+        // write the same row. Unconditional (every column vi, not just reached ones) -
+        // tls.pss.dist[vi] already holds RAND_MAX for every unreached vi
+        // (PerSourceScratch::resetPerSource() fills it before every source, unconditionally),
+        // so this isn't new work - it reuses a reset that was already happening.
         for (int vi = 0; vi < totalV; ++vi)
         {
             graph.m_apspDist[relation].setItem(si, vi, tls.pss.dist[vi]);
             graph.m_apspSigma[relation].setItem(si, vi, (qreal)tls.pss.sigma[vi]);
-
-            if (tls.pss.dist[vi] != (qreal)RAND_MAX)
-            {
-                int vnum = graph.vertexAtIndex(vi)->number();
-                graph.vertexAtIndex(si)->setDistance(vnum, tls.pss.dist[vi]);
-                graph.vertexAtIndex(si)->setShortestPaths(vnum, tls.pss.sigma[vi]);
-            }
         }
 
         if (computeCentralities)

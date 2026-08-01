@@ -1135,113 +1135,6 @@ QList<EdgeVisibilityChange> GraphVertex::setEnabledEdgesByRelation(const int rel
 
 
 /**
- * @brief Stores the geodesic distance to vertex v1
- *
- * @param v1
- * @param dist
- */
-void GraphVertex::setDistance (const int &v1, const qreal &d) {
-    m_distance.insert( v1, pair_i_f(m_curRelation, d ) );
-}
-
-
-/**
- * @brief Reserves N items for the distance hash. See QHash Algorithmic Complexity
- * Not to be used on large nets, atm.
- * @param N
- */
-void GraphVertex::reserveDistance (const int &N) {
-    m_distance.reserve(N);
-}
-
-
-
-/**
- * @brief Returns the geodesic distance to vertex v1.
- *
- * If d to v1 has not been set previously, returns RAND_MAX
- *
- * @param v1
- */
-qreal GraphVertex::distance (const int &v1) {
-    qreal d=RAND_MAX;
-    int relation=0;
-    H_distance::const_iterator it1=m_distance.constFind(v1);
-    while (it1 != m_distance.constEnd() && it1.key() == v1 ) {
-        relation = it1.value().first;
-        if ( relation == m_curRelation ) {
-            d = it1.value().second;
-            break;
-        }
-        ++it1;
-    }
-    return d;
-}
-
-
-/**
- * @brief Removes all items from m_distance hash dictionary
- */
-void GraphVertex::clearDistance() {
-    m_distance.clear();
-}
-
-
-/**
- * @brief Stores the number of shortest paths from this vertex to vertex v1
- *
- * @param v1
- * @param sp
- */
-void GraphVertex::setShortestPaths (const int &v1, const int &sp) {
-    m_shortestPaths.insert( v1, pair_i_i( m_curRelation, sp ) );
-}
-
-
-/**
- * @brief Returns the stored number of shortest paths to vertex v1
- *
- * If it has not been set previously, then returns 0
- *
- * @param v1
- */
-int GraphVertex::shortestPaths (const int &v1) {
-    int sp=0;
-    int relation=0;
-    H_shortestPaths::const_iterator it1=m_shortestPaths.constFind(v1);
-    while (it1 != m_shortestPaths.constEnd() && it1.key() == v1 ) {
-        relation = it1.value().first;
-        if ( relation == m_curRelation ) {
-            sp = it1.value().second;
-            break;
-        }
-        ++it1;
-    }
-    return sp;
-}
-
-
-/**
- * @brief Reserves N items for the ShortestPaths hash.
- *
- * See QHash Algorithmic Complexit. Not to be used on large nets, atm.
- *
- * @param N
- */
-void GraphVertex::reserveShortestPaths (const int &N) {
-    m_shortestPaths.reserve(N);
-}
-
-
-/**
- * @brief Removes all items from m_shortestPaths hash dictionary
- */
-void GraphVertex::clearShortestPaths() {
-    m_shortestPaths.clear();
-}
-
-
-/**
  * @brief Stores the eccentricity of the vertex
  * @param c
  */
@@ -1294,12 +1187,6 @@ GraphVertex::~GraphVertex() {
     m_outEdgeLabels.squeeze();
 
     m_outEdgeCustomAttributes.clear();
-
-    m_shortestPaths.clear();
-    m_shortestPaths.squeeze();
-
-    m_distance.clear();
-    m_distance.squeeze();
 
     m_cliques.clear();
     m_cliques.squeeze();

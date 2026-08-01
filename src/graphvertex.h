@@ -44,12 +44,6 @@ typedef QPair <qreal, bool> pair_f_b;
 typedef QPair <int, pair_f_b > pair_i_fb;
 typedef QMultiHash < int, pair_i_fb > H_edges;
 
-typedef QPair <int, qreal > pair_i_f;
-typedef QHash < int, pair_i_f > H_distance;
-
-typedef QPair <int, int> pair_i_i;
-typedef QHash < int, pair_i_i > H_shortestPaths;
-
 
 /**
  * @class GraphVertex
@@ -185,16 +179,6 @@ public:
     QList<EdgeVisibilityChange> setEnabledEdgesByRelation(const int relation, const bool status);
     QList<EdgeVisibilityChange> setEnabledUnilateralEdges(const bool &status=false);
 
-    qreal distance(const int &v1) ;
-    void setDistance (const int &v1, const qreal &d) ;
-    void reserveDistance(const int &N);
-    void clearDistance();
-
-    int shortestPaths(const int &v1) ;
-    void setShortestPaths(const int &v1, const int &sp) ;
-    void reserveShortestPaths(const int &N);
-    void clearShortestPaths();
-
     void setEccentricity(const qreal &c);
     qreal eccentricity();
 
@@ -283,13 +267,6 @@ public:
 
     //Hashes of all outbound and inbound edges of this vertex.
     H_edges m_outEdges, m_inEdges;
-
-    //Hash dictionary of this vertex pair-wise distances to all other vertices for each relationship
-    //The key is the relationship
-    //The value is a QPair < int target, qreal weight >
-    H_distance m_distance;
-
-    H_shortestPaths m_shortestPaths;
 
 protected:
 
