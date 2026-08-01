@@ -8,8 +8,8 @@
 
 ## Status
 
-🚧 In progress. A1 (inventory) and A2.0 (empirical validation, GO decision) done. A2 (the actual
-APSP storage migration) is scoped, not yet implemented. A3–A7 not started.
+🚧 In progress. A1 (inventory) and A2.0 (empirical validation, GO decision) done. A2 (the APSP
+storage migration) underway — step 1 of 3 landed. A3–A7 not started.
 
 ## Current Reality
 
@@ -80,10 +80,12 @@ the "M1 continuation" section.*
 
 **Current state (post WS3 M1):** `m_distance` and `m_shortestPaths` on `GraphVertex` are
 per-vertex `QHash<target_vertex_num, QPair<relation_id, value>>`. Access during back-propagation:
-`shortestPaths(v1)` iterates all entries for key `v1` to find the one matching `m_curRelation` — a
+`shortestPaths(v1)` iterates entries for key `v1` to find the one matching `m_curRelation` — a
 hash lookup per predecessor per vertex per source. For V=5,000 sources with average degree k=10,
-that's O(V²k) = 250M hash lookups just for sigma reads. WS3 M1 also introduced a per-vertex
-`std::mutex` array purely to make this QHash storage thread-safe under Phase 2's parallel loop.
+that's O(V²k) = 250M hash lookups just for sigma reads. Confirmed by live profiling (`sample`,
+2000N/40000E, post-WS14 so the `qDebug()` noise that made earlier profiles unreadable is gone):
+`DistanceEngine::finalize()`'s O(N²) pair loop spends ~73% of its samples in
+`GraphVertex::distance()` — the QHash lookup this migration removes.
 
 **Target state:** a centralised relation-keyed matrix pair on `Graph`:
 ```
@@ -91,103 +93,32 @@ Graph::m_apspDist:   QHash< relation_id, Matrix >   — geodesic distances
 Graph::m_apspSigma:  QHash< relation_id, Matrix >   — sigma counts
 ```
 Row = source vertex position, column = target vertex position. APSP reads become flat array
-lookups (`sigma[si][wi]`, O(1)); write-back becomes a single flat write with no mutex needed (each
-parallel source owns its own row — WS3 M1's mutex array is removed entirely).
+lookups (O(1)); write-back is a single flat write per source, safe without any lock since each
+parallel source owns its own row exclusively — no mutex involved, in either the old or new storage
+(per-source row-uniqueness already made the QHash write-back race-free, per
+`roadmap_ws3_architecture_performance.md`). A2's win is lookup speed and, per A2.0 below, memory —
+not synchronization.
 
-**Memory — worked through, not assumed:** `m_distance` stores roughly N−1 entries per vertex for a
-connected graph (APSP reaches every other vertex), so ~N² QHash entries total — same order as a
-dense matrix, not smaller. Each entry carries a `QPair<int,qreal>` payload (~16 bytes) plus Qt's
-hash-table bucket/chain overhead, which is real but not precisely quantified here — that requires
-checking Qt 6.10's actual internal `QHash` layout, not assuming a number. A flat `Matrix` cell is
-exactly 8 bytes, no per-entry overhead, so the matrix should win on memory too for **connected**
-graphs. It should **lose** on memory for graphs with many isolates/disconnected components — the
-matrix allocates all N² cells regardless, while the QHash simply never stores an entry for
-unreachable pairs. Whether that crossover point matters for realistic SocNetV networks is an open
-question, not a settled one — see A2.0.
+**Memory — the open question, resolved by A2.0 below:** a flat `Matrix` always allocates N² cells;
+`QHash` only stores entries for reachable pairs. So `Matrix` should win for connected graphs and
+could lose for graphs with many isolates/disconnected components — whether that crossover matters
+for realistic SocNetV networks is what A2.0 measures.
 
-**A2.0 — Empirical validation (prerequisite, before committing to the rest of A2):** build a small
-standalone measurement comparing actual memory (process RSS, not theoretical byte-counting) and
-lookup speed for `QHash<int, QPair<int,qreal>>` vs. a flat `Matrix`, at:
-- N=100, N=1,000, N=7343 (matching `geom.net`)
-- Both a fully-connected topology and a topology with several disconnected components/isolates
-  (the case flagged above as a possible matrix loss)
+### A2.0 — Empirical validation ✅ Done, GO (2026-07-31)
 
-Report actual numbers — memory delta and lookup-time delta per configuration — before deciding
-whether to proceed with the full migration, adjust the design (e.g. only switch to `Matrix` when a
-component is large/dense enough to be worth it), or drop this milestone. This replaces "the matrix
-approach is obviously better" with an actual answer.
+Built a standalone tool, `src/tools/matrix_storage_bench.cpp` (`BUILD_MATRIX_BENCH`, off by
+default) + `scripts/run_matrix_storage_bench.sh`, comparing `QHash<int, QPair<int,qreal>>`
+(mirrors `GraphVertex::m_distance` exactly) against a flat `Matrix`, at N=1,000/7,343, across three
+topologies: **connected** (every vertex reachable), **disconnected** (~8 equal-sized components +
+5% isolates), and **giant** (one dominant component + a long tail of small ones — the realistic
+shape for real networks; added after finding "8 equal islands" was an unrepresentative test case).
+Checksums matched exactly between `qhash` and `matrix` for every configuration, confirming both
+held identical values.
 
-**Status: done, 2026-07-31 — result is GO.** See "A2.0 results" below for the measured data and
-the resulting decision.
-
-**New supporting evidence for running it (2026-07-30).** Profiling (`sample`, 2000N/40000E, all
-centralities) a build with the WS14 logging cost removed — i.e. with the dominant noise source gone,
-so the remaining profile is meaningful — shows the QHash lookups this milestone targets are now the
-visible cost inside `finalize()`:
-
-- 6106 / 6369 samples in `DistanceEngine::runAllSources()` — the actual parallel SSSP work.
-- Within `DistanceEngine::finalize()` (191 samples): **126 samples, 66 %, in
-  `GraphVertex::distance(int const&)`** — the per-vertex `m_distance` QHash lookup.
-
-`finalize()` is an O(N²) nested vertex-pair loop (`distance_engine.cpp:688-736`), so that is ~N²
-hash lookups where the target design gives flat row-major array reads. This does not pre-judge
-A2.0's memory question (which remains genuinely open, and is the reason the gate exists) — it only
-confirms the lookup cost A2 is meant to remove is real and measurable rather than assumed.
-
-**Sequencing note:** run A2.0 *after* WS14's L2, not before. On the current `develop` build this
-profile is unreadable — `qDebug()` formatting swamps everything at 43×–72×, and any lookup-speed
-number measured through that noise would be meaningless. See
-[`roadmap_ws14_logging_cost.md`](roadmap_ws14_logging_cost.md).
-
-**Re-profiled against WS14's finished state (2000N/40000E, `socnetv-cli --kernel distance -c 1`,
-same finalize()/GraphVertex::distance() path as above):** the finding holds, but the profile itself
-got much thinner, since WS14's full sweep (not just L2) is done now — `sample` only caught 44 total
-samples in `DistanceEngine::compute()` for this network, down from 6369 in the pre-sweep capture
-above. Of `finalize()`'s 44 samples: **32 (≈73 %) in `GraphVertex::distance()`**, 6 in
-`GraphVertex::number()`, 1 in `GraphVertex::isEnabled()`. Same conclusion (the QHash lookup
-dominates what's left of `finalize()`'s cost) but a much wider confidence interval than the
-191-sample capture this section was originally written against — 44 samples isn't a lot to build a
-percentage on. A follow-up profiling run against a larger stress-test network (attempted here at
-N=8000/~640K edges, but the synthetic network file got truncated mid-save when the generating
-process was killed too early — needs a longer wait for the async save to finish, or a completion
-signal instead of a fixed delay) would give a more statistically solid number if this profile is
-used as go/no-go evidence for A2 rather than just directional confirmation. The dramatic drop in
-raw sample count is itself worth noting: profiling this codebase for anything now generally needs a
-bigger input than it used to, since typical operations finish fast enough that a 1ms-interval
-sampler barely gets a look in.
-
-**A2.0 results (2026-07-31).** Built a standalone tool, `src/tools/matrix_storage_bench.cpp`
-(CMake option `BUILD_MATRIX_BENCH`, off by default), driven by
-`scripts/run_matrix_storage_bench.sh`. It builds one structure — `QHash<int, QPair<int,qreal>>`
-per vertex (mirrors `GraphVertex::m_distance`/`setDistance()`/`distance()` exactly) or a single
-flat `Matrix` — for a given N and topology in one process, times construction and a full O(N²)
-lookup sweep (matching `finalize()`'s actual access pattern), and reports a checksum so the
-compiler can't dead-code-eliminate the reads. Checksums matched exactly between `qhash` and
-`matrix` for every (N, topology) pair, confirming both structures held identical values.
-
-Three topologies, not two — a third was added mid-investigation (see below):
-- **connected** — every vertex reachable from every other.
-- **disconnected** — ~8 roughly-equal-sized fully-connected components plus ~5% isolates (the
-  topology originally specified above).
-- **giant** — one dominant component (90% of N) plus a long tail of halving-sized components
-  down to isolates. Added because "8 equal islands" turned out to be an unrealistic shape for
-  actual networks, which typically have one large component and a long tail of small ones, not
-  several similarly-sized ones — see the finding below.
-
-*Methodology correction, worth recording:* the tool originally measured RSS in-process
-(`mach_task_basic_info` on macOS, later `getrusage`'s `ru_maxrss`), and initially reported implausibly
-small memory deltas at N=20,000 (hundreds of MB where multi-GB was expected). Cross-checked against
-macOS's own `/usr/bin/time -l` on the same run, which reported ~8 GB — a 6×-14× discrepancy. Root
-cause: `ru_maxrss` is updated by the kernel on bookkeeping events (page faults, scheduling activity),
-and this tool's tight, single-threaded, syscall-free construction loop doesn't generate enough of
-those events for the in-process value to catch up to the true peak before the process reads it —
-only the parent-side `wait4()` view (what `time -l`/`time -v` use, read after the child exits) is
-accurate here. Fixed by moving memory measurement out of the tool entirely: the driver script wraps
-each run in `/usr/bin/time -l` (macOS) or `time -v` (Linux, GNU coreutils) and parses the peak RSS
-from there instead.
-
-Measured (peak RSS minus the ~12.3 MB fixed Qt Core process floor, which swamps everything at
-N=100 — those rows are omitted as noise):
+*Methodology note:* memory was originally measured in-process (`getrusage`/`mach_task_basic_info`),
+which under-reported by 6×-14× at scale — this tool's tight, single-threaded, syscall-free loops
+don't generate enough kernel bookkeeping events for those counters to keep up. Fixed by measuring
+externally instead, via `/usr/bin/time -l`/`time -v` wrapping each run.
 
 | N | Topology | Structure | Construct (ms) | Lookup (ms) | Memory |
 |---|---|---|---|---|---|
@@ -204,42 +135,32 @@ N=100 — those rows are omitted as noise):
 | 7,343 | giant | qhash | 2,896 | 3,244 | 1,601 MB |
 | 7,343 | giant | matrix | 289 | 123 | 461 MB |
 
-**Lookup speed:** `matrix` wins in every configuration, 22×-32×, independent of topology — this
-was never the open question, and the data confirms it cleanly.
+**Lookup speed:** `matrix` wins every configuration, 22×-32×, independent of topology.
 
-**Memory — this was the open question, and it resolves in favor of migrating.** `Matrix`'s
-footprint is topology-independent (always N² cells — ~461 MB at N=7,343 regardless of shape).
-`QHash`'s footprint depends entirely on how reachable the graph is:
-- **connected**: qhash costs **4.2× more** than matrix (1,919 MB vs 461 MB).
-- **disconnected** (8 equal islands): qhash costs **2.0× less** than matrix (225 MB vs 461 MB) —
-  the only configuration favoring qhash.
-- **giant** (dominant component + long tail — the realistic shape): qhash costs **3.5× more**
-  than matrix (1,601 MB vs 461 MB).
+**Memory:** `Matrix`'s footprint is topology-independent (always N² cells, ~461 MB at N=7,343).
+`QHash`'s footprint tracks reachability: **4.2× more** than matrix when connected, **2.0× less**
+only for the artificial "8 equal islands" case, **3.5× more** for the realistic `giant` shape. Real
+networks — including `geom.net`-scale ones this migration targets — look like `giant`, not "equal
+islands," so `Matrix` wins on both memory and speed for the topologies that actually matter. (These
+numbers are also against `Matrix`'s current N+1-allocation implementation — A3's contiguous-buffer
+work would widen the memory advantage further, not narrow it.)
 
-"8 equal disconnected islands" turned out to be the unrealistic case, not the representative one.
-A single large reachable component dominates the total pair count even alongside a long tail of
-small components/isolates, so `giant` behaves much closer to `connected` than to `disconnected`.
-Real networks — including `geom.net`-scale ones this migration targets — look like "one giant
-component plus a long tail," not "several similarly-sized islands." On that basis, `Matrix` wins
-on both memory and lookup speed for the topologies that actually matter.
+**Decision: GO.**
 
-Also worth noting: these `Matrix` numbers are against its **current** N+1-separate-allocation
-implementation (measured ~461 MB vs. a theoretical ~411 MB for N=7,343 if it were one contiguous
-buffer) — i.e. the numbers above are conservative. A3's contiguous-buffer work would only widen
-`Matrix`'s memory advantage further, not narrow it.
+**Extension:** `reachability/graph_reachability_walks.cpp` already uses `Matrix::pow()` directly
+with no `QHash`/`QMap` involved, so it doesn't need this migration.
 
-**Decision: GO.** Proceed with the full A2 migration (`Graph::m_apspDist`/`m_apspSigma` as
-`QHash<relation_id, Matrix>`, replacing per-vertex `QHash` storage on `GraphVertex`).
+### A2 implementation — 🚧 in progress
 
-**Extension:** `reachability/graph_reachability_walks.cpp` (the walks/A^k matrix code, one of A1's
-six scatter locations) already uses `Matrix::pow()` directly with no `QHash`/`QMap` involved, so it
-doesn't need this migration.
-
-**Completion criteria for the rest of A2** (A2.0 itself is done — see above): implement the
-`QHash<relation_id, Matrix>` migration; `run_golden_compares.sh` and `run_benchmarks.sh` pass with
-no regression; benchmark the back-propagation-heavy cases specifically (e.g.
-`DIST_GRAPHML_1000N_10000A_C1_W0`) for a measured speedup, matching the evidence standard WS3 M1
-set with its 2.7×–8.3× benchmark table.
+- **Step 1 ✅ done:** `Graph::m_apspDist`/`m_apspSigma` added; `DistanceEngine` writes both the new
+  matrices and the old per-vertex `QHash` in parallel (nothing reads the new storage yet). Golden
+  compares and distance-type benchmarks unchanged, confirming no behavior/perf change at this step.
+- **Step 2 (next):** migrate the 18 read call sites off `GraphVertex::distance()`/`shortestPaths()`
+  onto the new matrices, one file/group per commit, golden-verified each time.
+- **Step 3:** remove the old `GraphVertex` storage and accessors once nothing reads them.
+- **Completion criteria:** `run_golden_compares.sh`/`run_benchmarks.sh` pass with no regression;
+  benchmark the back-propagation-heavy cases (e.g. `DIST_GRAPHML_1000N_10000A_C1_W0`) for a measured
+  speedup, matching the evidence standard WS3 M1 set with its 2.7×–8.3× table.
 
 ### A3 — `Matrix` contiguous storage (P1)
 
