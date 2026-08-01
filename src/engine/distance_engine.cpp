@@ -719,6 +719,15 @@ void DistanceEngine::finalize(const bool computeCentralities,
 
     graph.setConnectedCached(true);
 
+    // WS5 A2: this pair loop is O(N^2) - the actual hot path A2 targets. i is looked up once per
+    // outer iteration (O(N) total, negligible); the inner loop iterates positions directly
+    // (vertexAtIndex(j), not an iterator + a per-pair position lookup), so each pair read is a
+    // genuine O(1) matrix access with no hash lookup involved.
+    int totalV = 0;
+    for (auto it = graph.verticesBegin(); it != graph.verticesEnd(); ++it)
+        ++totalV;
+    const int relation = graph.relationCurrent();
+
     for (ds.it = graph.verticesBegin(); ds.it != graph.verticesEnd(); ++ds.it)
     {
         if (!(*ds.it)->isEnabled())
@@ -728,32 +737,35 @@ void DistanceEngine::finalize(const bool computeCentralities,
         }
 
         ds.pairDistance = 0;
+        const int i = graph.vertexIndexByNumber((*ds.it)->number());
 
-        for (ds.it1 = graph.verticesBegin(); ds.it1 != graph.verticesEnd(); ++ds.it1)
+        for (int j = 0; j < totalV; ++j)
         {
-            if (!(*ds.it1)->isEnabled())
+            GraphVertex *v1 = graph.vertexAtIndex(j);
+
+            if (!v1->isEnabled())
             {
-                qCDebug(lcEngine) << "   actor j" << (*ds.it1)->number() << "disabled. SKIP/CONTINUE";
+                qCDebug(lcEngine) << "   actor j" << v1->number() << "disabled. SKIP/CONTINUE";
                 continue;
             }
-            if ((*ds.it1)->number() == (*ds.it)->number())
+            if (v1->number() == (*ds.it)->number())
             {
-                qCDebug(lcEngine) << "   == actor j" << (*ds.it1)->number() << "SKIP/CONTINUE";
+                qCDebug(lcEngine) << "   == actor j" << v1->number() << "SKIP/CONTINUE";
                 continue;
             }
 
-            ds.pairDistance = (*ds.it)->distance((*ds.it1)->number());
+            ds.pairDistance = graph.m_apspDist[relation].item(i, j);
 
             if (ds.pairDistance == RAND_MAX)
             {
-                graph.notConnectedPairsInsert((*ds.it)->number(), (*ds.it1)->number());
+                graph.notConnectedPairsInsert((*ds.it)->number(), v1->number());
                 (*ds.it)->setEccentricity(RAND_MAX);
                 graph.setConnectedCached(false);
 
                 qCDebug(lcEngine) << "actor i" << (*ds.it)->number()
                          << "has infinite eccentricity. "
                             "There is no path from it to actor j"
-                         << (*ds.it1)->number();
+                         << v1->number();
             }
             else
             {
