@@ -5697,6 +5697,28 @@ void MainWindow::runInteractiveScript(const QString &scriptPath)
 
 /**
  * @brief Executes one line of the interactive script, then schedules the next. See #261.
+ *
+ * Two dispatch patterns recur throughout this function, since most of the work here must run on
+ * activeGraph's own thread, not this one:
+ *
+ * - **Single-step dispatch** (most commands): the work is handed over via
+ *   `QMetaObject::invokeMethod(activeGraph, lambda, Qt::QueuedConnection)` - "queue this lambda to
+ *   run on activeGraph's thread, whenever that thread is free." `invokeMethod()` only *queues* the
+ *   job and returns immediately - it does not wait for the lambda to finish. So any timing
+ *   (`QElapsedTimer`) or `BENCH` logging has to happen *inside* that same lambda, at the point the
+ *   work is genuinely done - never outside/after the `invokeMethod()` call itself, since nothing
+ *   is finished yet at that point.
+ * - **Two-step dispatch** (`distances`/`distances_bench`): used when the work can take many
+ *   seconds and should show a progress dialog, via the `runGraphOperationAsync()` helper. It takes
+ *   two separate lambdas - one that performs the (possibly slow) computation, one that runs only
+ *   after that computation has fully completed, to report on it and advance the script. Because
+ *   both lambdas need to see the same timer/result values, and a plain local variable would not
+ *   survive between two separate lambdas, those values are wrapped in `std::shared_ptr` instead -
+ *   each lambda holds its own copy of the pointer, all pointing at the same shared value.
+ *
+ * Every command logs one `"BENCH <command> ... elapsed_ms=<N>"` line via `qInfo()` (not
+ * `qDebug()`/`qCDebug()`) on completion, so this keeps printing even when debug output is quiet by
+ * default.
  */
 void MainWindow::processNextInteractiveCommand()
 {
@@ -5718,7 +5740,11 @@ void MainWindow::processNextInteractiveCommand()
 
     if (line == "new")
     {
+        QElapsedTimer timer;
+        timer.start();
         slotNetworkNew();
+        qInfo() << "BENCH new N=" << activeNodes() << "E=" << activeEdges()
+                << "elapsed_ms=" << timer.elapsed();
         QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
     }
     else if (line.startsWith("delay "))
@@ -5731,7 +5757,14 @@ void MainWindow::processNextInteractiveCommand()
             processNextInteractiveCommand();
             return;
         }
-        QTimer::singleShot(qRound(seconds * 1000), this, &MainWindow::processNextInteractiveCommand);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+        QTimer::singleShot(qRound(seconds * 1000), this, [this, timer]() {
+            // elapsed_ms should read ~= the requested delay - a cheap sanity check that
+            // scripted delays aren't drifting under load.
+            qInfo() << "BENCH delay elapsed_ms=" << timer->elapsed();
+            processNextInteractiveCommand();
+        });
     }
     else if (line.startsWith("relation "))
     {
@@ -5745,8 +5778,13 @@ void MainWindow::processNextInteractiveCommand()
             processNextInteractiveCommand();
             return;
         }
-        QMetaObject::invokeMethod(activeGraph, "relationSet", Qt::QueuedConnection,
-                                  Q_ARG(int, relNum));
+        QMetaObject::invokeMethod(activeGraph, [this, relNum]() {
+            QElapsedTimer timer;
+            timer.start();
+            activeGraph->relationSet(relNum);
+            qInfo() << "BENCH relation N=" << activeNodes() << "E=" << activeEdges()
+                    << "elapsed_ms=" << timer.elapsed();
+        }, Qt::QueuedConnection);
         QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
     }
     else if (line.startsWith("erdos "))
@@ -5770,7 +5808,11 @@ void MainWindow::processNextInteractiveCommand()
         }
         const QString mode = (directedness == "undirected") ? "graph" : "digraph";
         QMetaObject::invokeMethod(activeGraph, [this, n, p, mode]() {
+            QElapsedTimer timer;
+            timer.start();
             activeGraph->randomNetErdosCreate(n, "G(n,p)", 0, p, mode, false);
+            qInfo() << "BENCH erdos N=" << activeNodes() << "E=" << activeEdges()
+                    << "elapsed_ms=" << timer.elapsed();
         }, Qt::QueuedConnection);
         QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
     }
@@ -5779,7 +5821,11 @@ void MainWindow::processNextInteractiveCommand()
         // Same QAction the toolbar/menu item triggers, so this exercises the exact same
         // code path (including its own pre-existing direct-call blocking behavior) as a
         // real user click, not a shortcut around it.
+        QElapsedTimer timer;
+        timer.start();
         editFilterEdgesUnilateralAct->trigger();
+        qInfo() << "BENCH unilateral N=" << activeNodes() << "E=" << activeEdges()
+                << "elapsed_ms=" << timer.elapsed();
         QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
     }
     else if (line.startsWith("save "))
@@ -5794,14 +5840,22 @@ void MainWindow::processNextInteractiveCommand()
             return;
         }
         QMetaObject::invokeMethod(activeGraph, [this, path]() {
+            QElapsedTimer timer;
+            timer.start();
             activeGraph->saveToFile(path, FileType::GRAPHML, true, true);
+            qInfo() << "BENCH save N=" << activeNodes() << "E=" << activeEdges()
+                    << "elapsed_ms=" << timer.elapsed();
         }, Qt::QueuedConnection);
         QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
     }
     else if (line == "add-node")
     {
         QMetaObject::invokeMethod(activeGraph, [this]() {
+            QElapsedTimer timer;
+            timer.start();
             activeGraph->vertexCreateAtPosRandom(false);
+            qInfo() << "BENCH add-node N=" << activeNodes() << "E=" << activeEdges()
+                    << "elapsed_ms=" << timer.elapsed();
         }, Qt::QueuedConnection);
         QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
     }
@@ -5819,8 +5873,12 @@ void MainWindow::processNextInteractiveCommand()
             return;
         }
         QMetaObject::invokeMethod(activeGraph, [this, source, target, weight]() {
+            QElapsedTimer timer;
+            timer.start();
             activeGraph->edgeCreate(source, target, weight, "black", EdgeType::Directed,
                                     true, false, QString(), true);
+            qInfo() << "BENCH add-edge N=" << activeNodes() << "E=" << activeEdges()
+                    << "elapsed_ms=" << timer.elapsed();
         }, Qt::QueuedConnection);
         QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
     }
@@ -5834,28 +5892,79 @@ void MainWindow::processNextInteractiveCommand()
             return;
         }
         QMetaObject::invokeMethod(activeGraph, [this, name]() {
-            activeGraph->relationAdd(name, true);
-        }, Qt::QueuedConnection);
-        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
-    }
-    else if (line == "distances" || line == "distances centralities")
-    {
-        // WS14 benchmarking aid: triggers DistanceEngine work directly (bypassing
-        // slotAnalyzeMatrixDistances()'s report-writing/HTML-viewer path, which isn't
-        // needed here) so before/after logging-cost comparisons can be driven from a
-        // script instead of manual clicking. Uses qInfo(), not qDebug()/qCDebug(), since
-        // this instrumentation must keep printing even once WS14 makes debug output
-        // quiet by default - that is the entire point of measuring it.
-        const bool computeCentralities = (line == "distances centralities");
-        QMetaObject::invokeMethod(activeGraph, [this, computeCentralities]() {
             QElapsedTimer timer;
             timer.start();
-            activeGraph->graphDistancesGeodesic(computeCentralities, false, false, false);
-            qInfo() << "BENCH distances centralities=" << computeCentralities
-                    << "N=" << activeNodes() << "E=" << activeEdges()
+            activeGraph->relationAdd(name, true);
+            qInfo() << "BENCH add-relation N=" << activeNodes() << "E=" << activeEdges()
                     << "elapsed_ms=" << timer.elapsed();
         }, Qt::QueuedConnection);
         QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+    }
+    else if (line == "distances" || line.startsWith("distances "))
+    {
+        // distances [weights] [inverse] [dropisolates] - mirrors the real Cohesion > Distances
+        // Matrix menu action (slotAnalyzeMatrixDistances()) exactly: same computation
+        // (writeMatrix() -> graphMatrixDistanceGeodesicCreate()), same runGraphOperationAsync()
+        // dispatch, same output file - just without opening a TextEditor afterward (no one
+        // present to view it in a script). Also skips askAboutEdgeWeights()'s modal prompt
+        // entirely - the tokens below already answer what it would ask.
+        const QStringList tokens = line.mid(9).trimmed().split(' ', Qt::SkipEmptyParts);
+        const bool considerWeights = tokens.contains("weights");
+        const bool inverseWeights = tokens.contains("inverse");
+        const bool dropIsolates = tokens.contains("dropisolates");
+
+        const QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+        const QString fn = appSettings["dataDir"] + "socnetv-report-matrix-geodesic-distances-" + dateTime + ".html";
+        auto success = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, fn, considerWeights, inverseWeights, dropIsolates, success]() {
+                *success = activeGraph->writeMatrix(fn, MATRIX_DISTANCES,
+                                                    considerWeights, inverseWeights, dropIsolates);
+            },
+            tr("Computing geodesic distances. Please wait..."),
+            [this, considerWeights, inverseWeights, dropIsolates, success, timer]() {
+                qInfo() << "BENCH distances weights=" << considerWeights
+                        << "inverse=" << inverseWeights << "dropisolates=" << dropIsolates
+                        << "success=" << *success
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "distances_bench" || line.startsWith("distances_bench "))
+    {
+        // distances_bench [weights] [inverse] [dropisolates] [centralities] - benchmarking-only
+        // variant of 'distances' above: same dispatch mechanism (runGraphOperationAsync) and
+        // same underlying computation, but skips the disk write entirely, for isolating pure
+        // computation cost. 'centralities' has no real-menu equivalent (the GUI computes each
+        // centrality index via ~9 separate menu actions, not one combined action), so it lives
+        // here rather than on 'distances'.
+        const QStringList tokens = line.mid(15).trimmed().split(' ', Qt::SkipEmptyParts);
+        const bool considerWeights = tokens.contains("weights");
+        const bool inverseWeights = tokens.contains("inverse");
+        const bool dropIsolates = tokens.contains("dropisolates");
+        const bool computeCentralities = tokens.contains("centralities");
+
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, computeCentralities, considerWeights, inverseWeights, dropIsolates]() {
+                activeGraph->graphDistancesGeodesic(computeCentralities, considerWeights,
+                                                    inverseWeights, dropIsolates);
+            },
+            tr("Computing geodesic distances (benchmark, no disk write). Please wait..."),
+            [this, considerWeights, inverseWeights, dropIsolates, computeCentralities, timer]() {
+                qInfo() << "BENCH distances_bench weights=" << considerWeights
+                        << "inverse=" << inverseWeights << "dropisolates=" << dropIsolates
+                        << "centralities=" << computeCentralities
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
     }
     else if (line == "render")
     {
@@ -5935,14 +6044,19 @@ void MainWindow::processNextInteractiveCommand()
     }
     else if (line == "quit")
     {
-        // Every scripted run before this command existed had to be killed externally
-        // (gtimeout/pkill) since the app has no other way to end after a script finishes -
-        // worth having generally, not just for one benchmark script. Goes through the real
-        // close() / closeEvent() path (not a raw QCoreApplication::quit(), which still routes
-        // through closeEvent() during Qt's shutdown and would otherwise block forever on the
-        // "save changes?" modal with no one present to answer it) with m_interactiveScriptQuitting
-        // set so that prompt is skipped.
+        // Ends the app cleanly so a scripted run doesn't need to be killed externally. Goes
+        // through the real close() / closeEvent() path (not a raw QCoreApplication::quit(),
+        // which still routes through closeEvent() during Qt's shutdown) with
+        // m_interactiveScriptQuitting set, so the "save changes?" modal - which would otherwise
+        // block forever with no one present to answer it - is skipped.
+        QElapsedTimer timer;
+        timer.start();
         qCDebug(lcMainWindow) << "Interactive script requested quit.";
+        // Log BENCH *before* close(), not after: close() can trigger teardown of activeGraph
+        // as part of application shutdown, so reading activeNodes()/activeEdges() afterward
+        // would touch already-torn-down state.
+        qInfo() << "BENCH quit N=" << activeNodes() << "E=" << activeEdges()
+                << "elapsed_ms=" << timer.elapsed();
         m_interactiveScriptQuitting = true;
         close();
     }
