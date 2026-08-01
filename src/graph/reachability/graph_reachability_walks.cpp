@@ -29,7 +29,7 @@ bool Graph::graphReachable(const int &v1, const int &v2)
 {
     qCDebug(lcReachability) << "Graph::reachable()";
     graphDistancesGeodesic(false);
-    return (m_graph[vpos[v1]]->distance(v2) != RAND_MAX) ? true : false;
+    return (apspDistance(v1, v2) != RAND_MAX) ? true : false;
 }
 
 /**
@@ -93,7 +93,7 @@ void Graph::createMatrixReachability()
 
             qCDebug(lcReachability) << "target vertex" << target << "j" << j;
 
-            reachVal = ((*it)->distance(target) != RAND_MAX) ? 1 : 0;
+            reachVal = (apspDistance(source, target) != RAND_MAX) ? 1 : 0;
             qCDebug(lcReachability) << "Setting XRM (" << i << "," << j << ") =" << reachVal;
             XRM.setItem(i, j, reachVal);
 
@@ -329,7 +329,7 @@ QList<int> Graph::vertexinfluenceDomain(int v1)
             continue;
         }
 
-        if ((*it)->distance(v1) != RAND_MAX)
+        if (apspDistance(source, v1) != RAND_MAX)
         {
             qCDebug(lcReachability) << "Graph::vertexinfluenceDomain() - v1 reachable from:" << source;
             influenceDomains.insert(v1, source);
