@@ -67,6 +67,31 @@ the existing partial fix). See I1.
 (`graph/reporting/graph_reports.cpp:5698`) for the `MATRIX_DISTANCES_EUCLIDEAN`/`HAMMING`/`JACCARD`/
 `MANHATTAN`/`CHEBYSHEV` cases — no cancel guards yet.
 
+### Correctness (found while building WS6.7's `kernel_matrix_v8`)
+
+**C1 — `createMatrixAdjacencyInverse()` reports `invertible=true` for a mathematically singular
+matrix** ([#269](https://github.com/socnetv/app/issues/269)). Its singularity check
+(`graph/matrices/graph_matrix_adjacency.cpp:143`) is backwards: it runs the LU-decomposition
+inversion regardless of whether the input can actually be inverted, then scans the *result* for any
+nonzero off-diagonal entry to decide "not singular." A singular input still produces output — just
+numerical garbage from a near-zero pivot — and that garbage usually has nonzero off-diagonal
+entries too, so the check gets fooled. Confirmed directly: `TinyPath_N3_E2` (a 3-node path graph)
+has two structurally-equivalent end nodes, so its adjacency matrix has two identical columns and is
+therefore singular by construction (det=0); the computed "inverse" contained `1e+20`/`-1e+20`
+entries (the classic near-zero-pivot blowup signature) while `invertible` still read `true`.
+Anything trusting that flag before using the inverse — Information Centrality is the real
+downstream consumer — could silently compute on garbage for singular/disconnected/tree-shaped
+networks with no signal anything went wrong.
+
+**Proposed fix, not yet implemented:** check pivot magnitude *during* LU decomposition
+(`ludcmp()`, feeding `Matrix::inverse()` at `src/matrix.cpp:1256`) rather than inspecting the
+inverted result afterward — flag singular the moment a pivot is smaller than some epsilon,
+instead of running the division anyway. The epsilon should be a *relative* tolerance (scaled to
+the matrix's own entry magnitudes), not a fixed absolute cutoff like `1e-11` — the right "basically
+zero" threshold for a 0/1 adjacency matrix isn't necessarily right for a weighted matrix with
+entries in the thousands. Not scoped into a specific milestone yet; natural fit alongside A5
+(cancellation-aware algebra kernels) since both touch `Matrix::inverse()`'s internals.
+
 ## Milestones
 
 ### A1 — Inventory (done as part of this design pass)
