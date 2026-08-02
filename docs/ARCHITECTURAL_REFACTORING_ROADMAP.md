@@ -39,10 +39,10 @@ The `Graph` object is a façade and state coordinator — not a monolith. Algori
 |------|-------------------------------------|-------------------------------|---------|
 | WS1  | Algorithm extraction                | ✔ complete                    | [`roadmap_ws1_distances_geodesic_engine.md`](roadmaps/roadmap_ws1_distances_geodesic_engine.md) |
 | WS2  | Graph façade                        | ✔ complete                    | [`roadmap_ws2_ui_graph_facade.md`](roadmaps/roadmap_ws2_ui_graph_facade.md) |
-| WS3  | Architecture & Performance          | ✔ complete (v3.6 + 2026-07)   | [`roadmap_ws3_architecture_performance.md`](roadmaps/roadmap_ws3_architecture_performance.md) |
+| WS3  | Architecture & Performance          | ✔ complete (v3.6/v3.7)        | [`roadmap_ws3_architecture_performance.md`](roadmaps/roadmap_ws3_architecture_performance.md) |
 | WS4  | IO / Parser modernization           | ✔ complete                    | [`roadmap_ws4_io_parser_refactor.md`](roadmaps/roadmap_ws4_io_parser_refactor.md) |
 | WS9  | Graph exploration & data workflows  | ✔ shipped v3.5/v3.6           | [`roadmap_ws9_graph_exploration.md`](roadmaps/roadmap_ws9_graph_exploration.md) |
-| WS14 | Logging Cost & Release-Build Hygiene| ✔ complete (2026-07, v3.7)    | [`roadmap_ws14_logging_cost.md`](roadmaps/roadmap_ws14_logging_cost.md) |
+| WS14 | Logging Cost & Release-Build Hygiene| ✔ complete (v3.7, #268)       | [`roadmap_ws14_logging_cost.md`](roadmaps/roadmap_ws14_logging_cost.md) |
 
 ---
 

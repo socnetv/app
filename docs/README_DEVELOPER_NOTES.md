@@ -433,6 +433,36 @@ Each kernel owns its execution logic, JSON schema, and comparison logic.
 
 ---
 
+# Logging
+
+All debug-level logging uses Qt's category system (`qCDebug(category)`) — never plain `qDebug()`.
+`qDebug()` unconditionally constructs a `QDebug` object and formats every argument before the
+result is ever discarded; `qCDebug(category)` compiles to a check that skips argument evaluation
+entirely when the category is disabled (~0.4 ns/call disabled vs. 618-2,193 ns/call for `qDebug()`,
+depending on output destination — a ~1,500× difference). This matters most in hot loops:
+`DistanceEngine`'s inner BFS/Dijkstra loops and its O(N²) `finalize()` pass were, at one point, the
+single largest measured performance cost in the codebase, purely from unconditional `qDebug()`
+formatting — see `roadmap_ws14_logging_cost.md` for the full numbers.
+
+**Categories**: one per `src/graph/<domain>/` slice directory (`lcCentrality`, `lcDistances`,
+`lcMatrices`, etc. — declared in `graph.h`, defined once in `graph.cpp`); file-local for other
+standalone files (`lcMainWindow`, `lcEngine` for `distance_engine.cpp`, `lcMatrix` for
+`matrix.cpp`); or a small shared header for files with too few calls each to justify their own
+category (`lcParser` for all `src/parser/` files via `parser.h`; `lcForms` for `src/forms/*.cpp` via
+a small `forms_logging.h`; `lcGW` shared by `GraphicsWidget` and the small canvas-item files via
+`graphicswidget.h`).
+
+**Release builds are quiet by default** — a no-flag launch disables all `*.debug` categories via
+`QLoggingCategory::setFilterRules()`. `-d 1`/`-d 2` re-enable them at runtime — this is why
+`QT_NO_DEBUG_OUTPUT` was never used instead: it compiles logging out entirely, with no way to turn
+it back on for a bug report from a shipped build.
+
+**Adding logging to a new file**: reuse the existing category for that `src/graph/<domain>/`
+directory, or declare a new file-local one (`Q_LOGGING_CATEGORY(lcYourFile, "socnetv.yourfile")`)
+following the existing pattern — never plain `qDebug()`.
+
+---
+
 # Development Workflow
 
 ## Build
