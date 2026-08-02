@@ -207,6 +207,8 @@ Typical mutation calls:
 
 ```
 createNode(...)
+createNodeAtPosRandom(...)
+createNodeAtPosRandomWithLabel(...)
 createEdge(...)
 setRelation(...)
 addNewRelation(...)
@@ -214,7 +216,32 @@ removeDummyNode(...)
 fileLoaded(...)
 ```
 
-GUI and CLI share the same mutation pipeline — deterministic behavior is guaranteed.
+GUI and CLI share the same mutation pipeline — deterministic behavior is guaranteed. Legacy
+Qt mutation signals from `Parser` to `Graph` no longer exist; `IGraphParseSink` is the sole
+mutation plane.
+
+**Waiting for a load to finish (headless loaders):** block on `Graph::signalGraphLoaded`
+(preferred) with `Parser::finished(QString)` as a fallback — `finished` is lifecycle completion
+only, `signalGraphLoaded` is the actual "mutations are done" signal.
+
+**Format parsers** live one-per-translation-unit under `src/parser/` (`parser.cpp` is just the
+constructor/destructor, sink wiring, and the `load()` dispatcher):
+
+```
+src/parser/
+  parser_common.cpp     ← shared helpers (isComment, ...)
+  parser_edgelist.cpp
+  parser_adjacency.cpp
+  parser_dl.cpp          (UCINET)
+  parser_pajek.cpp
+  parser_graphml.cpp
+  parser_gml.cpp
+  parser_dot.cpp         (GraphViz)
+```
+
+Adding a new format: add its own `parser_<format>.cpp`, wire it into `Parser::load()`'s dispatcher,
+add a golden `io_roundtrip` baseline (`socnetv-cli --kernel io_roundtrip ... --dump-json`,
+committed under `src/tools/baselines/io_roundtrip/`, wired into `run_golden_compares.sh`).
 
 ---
 
