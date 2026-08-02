@@ -30,7 +30,7 @@ lives in [`README_DEVELOPER_NOTES.md`](../README_DEVELOPER_NOTES.md)'s "Graph as
 
 ## Notes for the Future
 
-- **F4 had a real gap, found and closed during WS3 (#254, 2026-07):** F4 separated *who* constructs
+- **F4 had a real gap, found and closed during WS3 (#254):** F4 separated *who* constructs
   QtCharts objects but not *which thread* runs that code — it was safe by accident (every
   `MainWindow` → `Graph` call was, incorrectly, a direct synchronous call, so UI façade code always
   happened to run on the GUI thread already). Once #254 made `Graph` methods actually run on their
