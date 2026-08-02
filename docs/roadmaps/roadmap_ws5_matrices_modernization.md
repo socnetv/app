@@ -8,7 +8,9 @@
 
 ## Status
 
-🚧 In progress. A1, A2.0, and A2 (APSP storage migration) done. A3–A7 not started.
+🚧 In progress. A1, A2.0, and A2 (APSP storage migration) done. A7 scoped, moved to WS6, and done
+there (WS6.7). A3 de-risked by investigation and now unblocked — WS6.7's golden safety net is in
+place. A4's inventory corrected. A5/A6 ready to implement directly. None of A3–A6 started yet.
 
 ## Current Reality
 
@@ -39,7 +41,7 @@
 ### Performance
 
 **P1 — `Matrix` storage is N+1 heap allocations instead of 1 contiguous buffer.** See Current
-Reality above. Re-verified against current code 2026-07-30 — `Matrix::Matrix()` (`src/matrix.cpp:33-39`)
+Reality above. Re-verified against current code — `Matrix::Matrix()` (`src/matrix.cpp:33-39`)
 and `MatrixRow`'s own `new qreal[]` (`src/matrix.h:51-60`) are both unchanged, so A3's premise still
 holds as written.
 
@@ -103,7 +105,7 @@ not synchronization.
 could lose for graphs with many isolates/disconnected components — whether that crossover matters
 for realistic SocNetV networks is what A2.0 measures.
 
-### A2.0 — Empirical validation ✅ Done, GO (2026-07-31)
+### A2.0 — Empirical validation ✅ Done, GO (v3.7)
 
 Built a standalone tool, `src/tools/matrix_storage_bench.cpp` (`BUILD_MATRIX_BENCH`, off by
 default) + `scripts/run_matrix_storage_bench.sh`, comparing `QHash<int, QPair<int,qreal>>`
@@ -149,7 +151,7 @@ work would widen the memory advantage further, not narrow it.)
 **Extension:** `reachability/graph_reachability_walks.cpp` already uses `Matrix::pow()` directly
 with no `QHash`/`QMap` involved, so it doesn't need this migration.
 
-### A2 implementation ✅ Done (2026-08-01)
+### A2 implementation ✅ Done (v3.7)
 
 - **Step 1:** `Graph::m_apspDist`/`m_apspSigma` added; `DistanceEngine` wrote both the new matrices
   and the old per-vertex `QHash` in parallel first (nothing read the new storage yet) — golden
@@ -189,21 +191,49 @@ real) slice of the total.
 ### A3 — `Matrix` contiguous storage (P1)
 
 Replace `MatrixRow*` (N separately-allocated row objects) with one contiguous `qreal*` buffer of
-size `rows*cols`, row-major, inside `Matrix` itself. `MatrixRow`'s public interface (`column()`,
-`operator[]`, `setColumn()`) can likely be preserved as a thin non-owning view into a slice of the
-shared buffer, keeping every existing call site source-compatible — verify this as the actual
-implementation approach before starting.
+size `rows*cols`, row-major, inside `Matrix` itself.
 
-**Completion criteria:** `run_golden_compares.sh` and `run_benchmarks.sh` pass with no numeric
-change; measure allocation count and construction time for a large reference matrix (e.g. building
-`AM` for `geom.net`, N=7343) before and after — one allocation instead of 7344, with the actual
-measured construction-time delta reported, same evidence standard as A2.0.
+**De-risked by direct investigation, not just proposed:** every `MatrixRow` reference
+in the codebase was checked — it's used exclusively inside `matrix.h`/`matrix.cpp` itself; nothing
+in `src/graph/` or anywhere else touches `MatrixRow` directly, only ever through `Matrix::item()`/
+`setItem()`. Every `row[i].resize(...)` call site (6 total) resizes every row to the same width
+within one `Matrix` object — confirms the existing invariant is already rectangular, never ragged.
+Net effect: `MatrixRow` can be simplified or eliminated entirely (direct `m_data[r*cols+c]`
+indexing inside `Matrix`) with **zero changes needed outside `matrix.cpp`/`matrix.h`** — this is a
+pure internal refactor, not the "verify the approach first" open question it was previously scoped
+as.
+
+**Sequencing: unblocked.** WS6.7's `kernel_matrix_v8` (`roadmap_ws6_testing_ci_regression.md`) is
+done — a direct golden baseline on `Matrix`'s actual contents, not just downstream centrality
+scores, now exists. A3 can start.
+
+**Completion criteria:** `run_golden_compares.sh`, `run_benchmarks.sh`, and WS6.7's `kernel_matrix_v8`
+all pass with no numeric change; measure allocation count and construction time for a large
+reference matrix (e.g. building `AM` for `geom.net`, N=7343) before and after — one allocation
+instead of 7344, with the actual measured construction-time delta reported, same evidence standard
+as A2.0.
 
 ### A4 — Isolate construction into `matrices/`
 
-Migrate the five misplaced construction sites (everything outside
-`matrices/graph_matrix_adjacency.cpp` from A1's inventory) into the `matrices/` slice directory,
-one call site at a time, golden-regression-verified after each move.
+**Inventory, checked directly — corrects A1's vague "five sites":** five matrix fields
+are constructed outside `matrices/graph_matrix_adjacency.cpp`, across three files:
+- `graph/distances/graph_distance_cache.cpp:53,168` — `SIGMA`, `DM`
+- `graph/centrality/graph_centrality.cpp:102-103` — `WM`, `invM`
+- `graph/reachability/graph_reachability_walks.cpp:56` — `XRM`
+
+Two more fields are also constructed outside `matrices/`, via assignment/arithmetic operators
+rather than `.resize()` — missed by the original count entirely:
+- `XM`/`XSM` — `graph/reachability/graph_reachability_walks.cpp` (`XM = AM.pow(...)`, `XM *= AM`,
+  `XSM += XM`)
+- `CLQM` — `graph/cohesion/graph_cliques.cpp:139` (via `.zeroMatrix()`)
+
+**Also found: `sumM` (one of the 11 named fields) is dead.** It's declared and cleared on graph
+reset (`graph.cpp:327-330`) but never populated anywhere in the codebase — same category as the
+`reserveShortestPaths()` dead-method finding from A2. Worth deciding whether to delete it outright
+as part of A4, rather than migrating a field nothing ever writes to.
+
+Migrate the seven real construction sites into the `matrices/` slice directory, one call site at a
+time, golden-regression-verified after each move.
 
 ### A5 — Cancellation-aware algebra kernels (I1, I2)
 
@@ -212,7 +242,7 @@ Insertion points, found by reading each method directly:
   the actual cost is a `for (j=0; j<n; j++)` loop calling `lubksb()` once per column (line 1279).
   A cancellation check at the top of this loop interrupts between columns.
 - **`Matrix::inverseByGaussJordanElimination()`** (`src/matrix.cpp:1003`) — same treatment, its own
-  outer loop. **But check reachability first (2026-07-30): this method has no reachable caller.**
+  outer loop. **But check reachability first: this method has no reachable caller.**
   `createMatrixAdjacencyInverse()` only calls it when `method == "gauss"`
   (`graph/matrices/graph_matrix_adjacency.cpp:162-165`), its sole caller passes `"lu"`
   (`graph/reporting/graph_reports.cpp:5780`), and the parameter default is also `"lu"`
@@ -223,7 +253,7 @@ Insertion points, found by reading each method directly:
   [WS14](roadmap_ws14_logging_cost.md)'s L4 needs the same decision. Make it once, in whichever
   workstream gets there first, and record it in both.
 
-  **Decision made (2026-07-31, in WS14's L4): keep it, don't delete.** Its logging was converted to
+  **Decision made in WS14's L4: keep it, don't delete.** Its logging was converted to
   `qCDebug(lcMatrix)` like the rest of `matrix.cpp` — the O(N³) landmine above is defused (near-free
   when the category is disabled) but the method itself still has no reachable caller. A5's
   cancellation-support work on this method is therefore still adding a feature to dead code — that
@@ -249,15 +279,17 @@ Add `progressCanceled()` checks to the `MATRIX_DISTANCES_EUCLIDEAN`/`HAMMING`/`J
 `CHEBYSHEV` cases in `writeMatrix()` (`graph/reporting/graph_reports.cpp:5698`), matching the
 pattern I3 already established for the file-handle-cleanup paths in the same function.
 
-### A7 — Golden coverage for matrix operations
+### A7 — Golden coverage for matrix operations ✅ Done, via WS6
 
-Extend the CLI kernel harness (WS6) with small golden-output baselines for at least one operation
-per matrix category (adjacency, inverse, distance, similarity), ahead of A3/A5.
+Owned by [`roadmap_ws6_testing_ci_regression.md`](roadmap_ws6_testing_ci_regression.md)'s **WS6.7**
+— a testing-harness concern, not a matrix-design one. `kernel_matrix_v8` shipped there: full
+coverage audit, design decisions, and the empirical XSM/CLQM timing findings all live in that doc.
 
 ## Work Rules
 
 - Performance claims must be measured (allocation counts, RSS, benchmark deltas), not asserted —
   A2.0 exists specifically to enforce this for the APSP migration.
 - `run_golden_compares.sh` and `run_benchmarks.sh` must pass after every milestone.
-- A3 (storage) and A5 (cancellation) are independent and can proceed in either order; A4
-  (isolation) should wait until both have landed so it moves settled code.
+- A3 (storage) is unblocked now that WS6.7's golden coverage has landed. A5 (cancellation) is
+  independent and can proceed in parallel. A4 (isolation) should wait until A3 and A5 have landed
+  so it moves settled code.

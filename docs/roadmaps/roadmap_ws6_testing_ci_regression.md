@@ -6,29 +6,12 @@ Prevent silent regressions during modernization.
 ## Status
 
 🚧 Ongoing, supporting workstream (no fixed end state — continuously active underneath every other
-workstream). T1–T3 done; T4 (CI integration, WS6.5) is explicitly last and not started. WS6.1–WS6.4
-in progress; WS6.6 (canvas rendering-perf kernel) done.
+workstream). The original schema/golden-baseline/comparison-mode goals (see Current State below)
+are all live; CI integration (WS6.5) is explicitly last and not started. WS6.1–WS6.4 in progress;
+WS6.6 (canvas rendering-perf kernel) done; WS6.7 (matrix operation golden coverage,
+`kernel_matrix_v8`) done — WS5's A3 is unblocked.
 
-## Current Reality
-- Manual comparisons exist; headless CLI now prints metrics.
-
-## Target Direction
-- Golden outputs committed in-repo
-- A deterministic comparison tool
-- CI job that runs core datasets
-
-## Milestones
-- T1: Define output schemas (metrics + per-node vectors)
-- T2: Add golden baselines for a small suite of datasets
-- T3: Add comparison mode (fail on mismatch)
-- T4: Integrate into CI (GitHub Actions)
-
-## Work Rules
-- Keep outputs stable (version schemas when changing format).
-
----
-
-## Updated Current State (Post-WS1/WS2/WS4)
+## Current State (Post-WS1/WS2/WS4)
 
 The regression harness is now a first-class part of the modernization effort.
 
@@ -54,6 +37,7 @@ kernel_prominence_v4.cpp
 kernel_io_roundtrip_v5.cpp
 kernel_clustering_v6.cpp
 kernel_connectivity_v7.cpp
+kernel_matrix_v8.cpp
 
 ```
 
@@ -118,21 +102,137 @@ src/tools/baselines/io_roundtrip/
 
 ```
 
-### What is already implemented vs the original milestones
+---
 
-The original milestone plan is still valid, but several items are already implemented:
+## Milestones
 
-- **T1 (schemas):** JSON-based outputs exist and are baseline-locked via `--dump-json` + `--compare-json`.
-- **T2 (golden suite):** Golden baselines exist for multiple kernels and multiple IO formats (including export-skipped locking where exporters are missing).
-- **T3 (comparison mode):** JSON comparison exists (`--compare-json`) and is exercised by `run_golden_compares.sh`.
-- **T4 (CI):** still pending (CI integration is the main remaining step).
+WS6 should prioritize expanding **headless feature coverage** and making the harness easier to run
+locally. CI integration is explicitly a later step. Done items are listed first, for a quick
+"what's already shipped" scan; the rest follow in rough priority order.
+
+### WS6.6 — Canvas rendering performance kernel (#240) ✅ Done (v3.7)
+
+Goal:
+
+The existing golden harness covers computation kernels (distance, prominence, clustering, etc.) but has no coverage of the graphics layer.  A rendering-performance kernel would let us catch regressions in `GraphicsWidget` / `GraphicsEdge` / `GraphicsNode` paint paths automatically.
+
+**Approach taken — deviates from the original plan below, for a concrete reason.** The original
+idea (kept for context, see "Original approach" below) was a headless `socnetv-cli` kernel using
+`QOffscreenSurface`/`QImage`. That doesn't fit this codebase: `socnetv-cli`
+(`src/tools/socnetv_cli.cpp:28`) constructs a `QCoreApplication`, not a `QApplication`, and
+`GraphicsWidget`/`QGraphicsScene` are QtWidgets classes that need a real `QApplication` to behave
+correctly. Retrofitting `QApplication` into the CLI tool for one kernel is exactly the kind of
+`GraphicsWidget`/canvas change that should be verified live rather than assumed to work.
+
+Instead, this extends the already-proven WS12 `--interactive-script` mechanism
+(`roadmap_ws12_cli_scripting_mode.md`), running the real `SocNetV` GUI binary with
+`QT_QPA_PLATFORM=offscreen` (Qt's standard headless-widget-testing mechanism — no visible window,
+same paint/geometry code path as a real session):
+
+- Five new interactive-script commands (`mainwindow.cpp`): `render` (forces a synchronous
+  `viewport()->repaint()`, timed), `bulk-node-size <N>` (`slotEditNodeSizeAll()`),
+  `bulk-edge-color <name>` (`slotEditEdgeColorAll()`), `move <node> <x> <y>`
+  (`Graph::vertexPosSet()`), and `quit` (ends the script cleanly — needed because nothing
+  previously stopped a scripted GUI run; every earlier manual test had to be killed externally).
+  Each of the first four logs one `qInfo() << "BENCH ..."` line, same pattern as WS14's
+  `distances`/`distances centralities` commands.
+- Fixed reference script: `scripts/fixtures/render_perf_script.txt` — generates a reference network
+  via the existing `erdos 2000 0.02 undirected` command (matching the network size used throughout
+  WS14's own profiling) rather than depending on an external dataset file, then runs the fixed
+  sequence: render, bulk-node-size, bulk-edge-color, move, render, quit.
+- Driver: `scripts/run_render_perf_bench.sh`, structured to match `run_benchmarks.sh`'s existing
+  conventions (`scripts/lib/find_socnetv_gui.sh` mirrors `find_socnetv_cli.sh`; same
+  auto-detected/overridable baseline-set resolution; same `--record` bootstrapping flow). Runs
+  `QT_QPA_PLATFORM=offscreen <gui binary> --interactive-script <fixture>`, parses the five `BENCH`
+  lines, and compares each `elapsed_ms` against an upper-bound threshold (2× the recorded reference
+  run) — "must be faster than X ms", not exact equality.
+- Baseline: `scripts/perf_baselines/macos-m5/render_perf_expected.env`. Other platforms
+  (`macos-arm64`, `linux-x86_64`) don't have a recording yet — the script degrades gracefully
+  (prints `SKIP` per threshold) when no baseline file exists for the current machine, rather than
+  failing; someone running `--record` there once is the way to add coverage for that platform.
+  **Not yet verified on Linux** — `QT_QPA_PLATFORM=offscreen` availability/behavior there hasn't
+  been checked live.
+
+**On-screen vs. offscreen timing — measured, not assumed.** Ran the same fixture script both ways
+on the recording machine, 3 times each, to check whether `QT_QPA_PLATFORM=offscreen` changes what's
+being measured:
+
+| Command | On-screen | Offscreen |
+|---|---|---|
+| `render` (initial) | ~297-303ms | ~131-158ms |
+| `bulk-node-size` | ~44-49ms | ~46-52ms |
+| `bulk-edge-color` | ~45-78ms | ~44-45ms |
+| `render` (after mutations) | ~294-303ms | ~120-138ms |
+
+`render`'s actual paint cost is consistently ~2×-2.4× faster offscreen — no compositor/backing-store
+round trip on macOS — but the non-paint bulk operations measure the same either way. Confirmed the
+`render` command's own timing is genuinely synchronous (not partially deferred) by running two
+`render` calls back-to-back with a 2-second gap between them: both reported the identical elapsed
+time, which is what you'd expect from `QWidget::repaint()`'s documented synchronous contract (unlike
+`update()`, which only schedules a repaint) and wouldn't hold if any part of the cost were being
+silently deferred past the call returning. Conclusion: offscreen thresholds are only meaningful
+against other offscreen runs, not as a claim about real on-screen user-perceived performance — which
+is fine, since this kernel's job is regression detection, not UX measurement.
+
+**Recorded reference run (MacBook Pro M5, 24GB RAM, offscreen, N=2000/~39,800E):**
+`render`=154ms, `bulk-node-size`=46ms, `bulk-edge-color`=44ms, `move`=0ms,
+`render`-after-mutations=120ms. Thresholds recorded at 2× each (with a 15ms floor for near-instant
+operations like `move`, since doubling a 0-1ms reading would produce a threshold too tight to
+survive normal jitter).
+
+Why this matters:
+
+`GraphicsWidget` bulk operations (`setEdgeArrowSize`, etc.) currently fire thousands of individual `prepareGeometryChange()` calls without batching.  Phase 1–5 of #240 fix the worst offenders, but without a regression kernel there is no automated guard to prevent the problems returning.
+
+**Not done in this pass, and CI integration stays out too** per WS6.5's "CI is last" policy. The
+bigger open gap: the golden harness still has no *correctness* coverage of the canvas, only
+performance coverage. Verifying that `GraphicsWidget::setEdgesVisibilityBatch()` actually left the
+right set of edges visible/hidden after a relation switch or a unilateral-edge toggle has no
+automated check today — the only verification is live manual testing via WS12's
+`--interactive-script` mechanism (`roadmap_ws12_cli_scripting_mode.md`), built partly for this
+reason. A future canvas kernel should assert on actual `GraphicsWidget` *state* after a fixed
+operation sequence (which edges/nodes end up visible, positioned where expected, etc.), not just
+timing — same offscreen-rendering constraint as this kernel, but a state-comparison kernel rather
+than a timing-threshold one. Could plausibly share this kernel's harness scaffolding, or be a
+sibling kernel (`kernel_render_state_v9`-shaped) — not scoped in detail yet.
 
 ---
 
-## Next Steps (WS6 priority)
+### WS6.7 — Matrix operation golden coverage (`kernel_matrix_v8`) — ✅ Done (v3.7)
 
-WS6 should prioritize expanding **headless feature coverage** and making the harness easier to run locally.
-CI integration is explicitly a later step.
+`Matrix`-producing operations had no direct golden coverage before this — every existing kernel
+only ever checked downstream results (centrality scores, distance values, clique counts), so a
+subtle get/set indexing bug in a new storage layout (WS5's A3 target) could still produce correct
+downstream numbers by coincidence. `kernel_matrix_v8` dumps raw matrix contents instead, for all
+seven categories audited as having no direct coverage: adjacency (`AM`), inverse (`invAM`),
+distances (`DM`), similarity (a local `SCM`, matching metric), reachability (`XRM`), walks (`XM`,
+fixed length) and total walks (`XSM`), and clique co-membership (`CLQM`).
+
+**New `Graph` accessors** (`matrixAdjacency()`, `matrixAdjacencyInverse()`, `matrixDistances()`,
+`matrixReachability()`, `matrixWalks()`, `matrixTotalWalks()`, `matrixCliqueCoMembership()`,
+`graph.h`) expose these previously-private fields read-only-by-convention — non-const because
+`Matrix::item()`/`rows()`/`cols()` are themselves non-const everywhere in the codebase.
+
+**Dump format is size-dependent**, decided empirically:
+- Small fixtures (`TinyPath_N3_E2`, `TinyDisconnected_Undir_N6_E4` — reused, no new fixtures added)
+  dump the full N×N grid.
+- The big/sparse tier uses `Benchmark_BA_Directed_N500_m3` (N=500, already shipped, already used by
+  `run_benchmarks.sh`) rather than an out-of-repo `~/socnetv/library` path, so the baseline
+  reproduces on any machine or in CI. It dumps a compact summary instead of the full grid (250K
+  cells): per-row/column sums, the trace, and five sampled cells (corners + center).
+- **Total walks (`XSM`) is skipped above N=50** (`kTotalWalksSkipThreshold`,
+  `kernel_matrix_v8.cpp`) — measured directly, not assumed: summing matrix powers up to N-1 took
+  **~9.2 minutes (553,940 ms)** at N=500 on the big fixture (MacBook Pro M5, unoptimized build).
+  Clique co-membership needed no such gate — **6 ms** on the same run, since Bron-Kerbosch stays
+  cheap on sparse graphs — so it's computed unconditionally at every size.
+
+**Verified the actual point of this kernel**: manually introduced a one-line off-by-one into
+`Matrix::item()` (`(c + 1) % m_cols` instead of `c`), reran `run_golden_compares.sh` — all three
+matrix baselines went red, plus several pre-existing kernels that also read `Matrix::item()`
+indirectly (distance, prominence, reachability, walks). Reverted; suite is clean again. WS5's A3
+now has the safety net it was waiting on.
+
+---
 
 ### WS6.1 — Expand CLI kernel coverage (UI-adjacent functionality, headless)
 
@@ -182,61 +282,6 @@ More of the application’s “user-facing” features become regression-testabl
 
 ---
 
-### WS6.2 — Systematically expand datasets and coverage
-
-Goal:
-
-Increase confidence by testing more networks and more edge cases in a structured way.
-
-Approach:
-
-- grow the dataset suite gradually
-- include representative small/medium/large graphs
-- include tricky parser edge cases per format (GraphML/DOT/Pajek quirks)
-- where formats lack exporters, keep using export-skipped baseline locking
-- prefer shipped datasets under `src/data` where possible; add external datasets only if licensing permits
-
-Rules:
-
-- add datasets incrementally
-- baseline additions must be reviewed (do not bulk-regenerate)
-
----
-
-### WS6.3 — Refactor the golden harness scripts for modularity
-
-Problem:
-
-`run_golden_compares.sh` currently does a lot and can be noisy.
-
-Goal:
-
-Split goldens into subscripts and keep a master runner that can execute:
-
-- all suites (default)
-- one suite
-- a selected subset
-
-Direction:
-
-- create per-suite scripts (examples):
-  - `scripts/goldens/golden_distance.sh`
-  - `scripts/goldens/golden_reachability.sh`
-  - `scripts/goldens/golden_walks.sh`
-  - `scripts/goldens/golden_prominence.sh`
-  - `scripts/goldens/golden_io_roundtrip.sh`
-- add a master runner that supports:
-  - `--list` (print available suites)
-  - `--only <suite1,suite2,...>`
-  - `--skip <suite1,suite2,...>`
-  - default: run all
-
-Outcome:
-
-Faster local workflows and easier diagnosis when one suite fails.
-
----
-
 ### WS6.4 — Tighten determinism, measurement stability, and reporting
 
 Goal:
@@ -252,7 +297,7 @@ Possible improvements:
 
 #### Known: parallel reduction is FP non-deterministic, with ~2.9× tolerance headroom
 
-Found 2026-07-30 while measuring something else. **Not a live failure — a thin margin worth knowing
+Found while measuring something else. **Not a live failure — a thin margin worth knowing
 before baselines grow.**
 
 The same binary produces a *different* result on every run. Measured: 40 consecutive runs of the
@@ -336,6 +381,61 @@ stripped.
 
 ---
 
+### WS6.2 — Systematically expand datasets and coverage
+
+Goal:
+
+Increase confidence by testing more networks and more edge cases in a structured way.
+
+Approach:
+
+- grow the dataset suite gradually
+- include representative small/medium/large graphs
+- include tricky parser edge cases per format (GraphML/DOT/Pajek quirks)
+- where formats lack exporters, keep using export-skipped baseline locking
+- prefer shipped datasets under `src/data` where possible; add external datasets only if licensing permits
+
+Rules:
+
+- add datasets incrementally
+- baseline additions must be reviewed (do not bulk-regenerate)
+
+---
+
+### WS6.3 — Refactor the golden harness scripts for modularity
+
+Problem:
+
+`run_golden_compares.sh` currently does a lot and can be noisy.
+
+Goal:
+
+Split goldens into subscripts and keep a master runner that can execute:
+
+- all suites (default)
+- one suite
+- a selected subset
+
+Direction:
+
+- create per-suite scripts (examples):
+  - `scripts/goldens/golden_distance.sh`
+  - `scripts/goldens/golden_reachability.sh`
+  - `scripts/goldens/golden_walks.sh`
+  - `scripts/goldens/golden_prominence.sh`
+  - `scripts/goldens/golden_io_roundtrip.sh`
+- add a master runner that supports:
+  - `--list` (print available suites)
+  - `--only <suite1,suite2,...>`
+  - `--skip <suite1,suite2,...>`
+  - default: run all
+
+Outcome:
+
+Faster local workflows and easier diagnosis when one suite fails.
+
+---
+
 ### WS6.5 — CI integration (LAST)
 
 Goal:
@@ -356,125 +456,19 @@ Heavier suites can run nightly or on-demand.
 
 ---
 
-### WS6.6 — Canvas rendering performance kernel (#240) ✅ Done (2026-07-31)
+## Work Rules
 
-Goal:
-
-The existing golden harness covers computation kernels (distance, prominence, clustering, etc.) but has no coverage of the graphics layer.  A rendering-performance kernel would let us catch regressions in `GraphicsWidget` / `GraphicsEdge` / `GraphicsNode` paint paths automatically.
-
-**Approach taken — deviates from the original plan below, for a concrete reason.** The original
-idea (kept for context, see "Original approach" below) was a headless `socnetv-cli` kernel using
-`QOffscreenSurface`/`QImage`. That doesn't fit this codebase: `socnetv-cli`
-(`src/tools/socnetv_cli.cpp:28`) constructs a `QCoreApplication`, not a `QApplication`, and
-`GraphicsWidget`/`QGraphicsScene` are QtWidgets classes that need a real `QApplication` to behave
-correctly. Retrofitting `QApplication` into the CLI tool for one kernel is exactly the kind of
-`GraphicsWidget`/canvas change that should be verified live rather than assumed to work.
-
-Instead, this extends the already-proven WS12 `--interactive-script` mechanism
-(`roadmap_ws12_cli_scripting_mode.md`), running the real `SocNetV` GUI binary with
-`QT_QPA_PLATFORM=offscreen` (Qt's standard headless-widget-testing mechanism — no visible window,
-same paint/geometry code path as a real session):
-
-- Five new interactive-script commands (`mainwindow.cpp`): `render` (forces a synchronous
-  `viewport()->repaint()`, timed), `bulk-node-size <N>` (`slotEditNodeSizeAll()`),
-  `bulk-edge-color <name>` (`slotEditEdgeColorAll()`), `move <node> <x> <y>`
-  (`Graph::vertexPosSet()`), and `quit` (ends the script cleanly — needed because nothing
-  previously stopped a scripted GUI run; every earlier manual test had to be killed externally).
-  Each of the first four logs one `qInfo() << "BENCH ..."` line, same pattern as WS14's
-  `distances`/`distances centralities` commands.
-- Fixed reference script: `scripts/fixtures/render_perf_script.txt` — generates a reference network
-  via the existing `erdos 2000 0.02 undirected` command (matching the network size used throughout
-  WS14's own profiling) rather than depending on an external dataset file, then runs the fixed
-  sequence: render, bulk-node-size, bulk-edge-color, move, render, quit.
-- Driver: `scripts/run_render_perf_bench.sh`, structured to match `run_benchmarks.sh`'s existing
-  conventions (`scripts/lib/find_socnetv_gui.sh` mirrors `find_socnetv_cli.sh`; same
-  auto-detected/overridable baseline-set resolution; same `--record` bootstrapping flow). Runs
-  `QT_QPA_PLATFORM=offscreen <gui binary> --interactive-script <fixture>`, parses the five `BENCH`
-  lines, and compares each `elapsed_ms` against an upper-bound threshold (2× the recorded reference
-  run) — "must be faster than X ms", not exact equality.
-- Baseline: `scripts/perf_baselines/macos-m5/render_perf_expected.env`. Other platforms
-  (`macos-arm64`, `linux-x86_64`) don't have a recording yet — the script degrades gracefully
-  (prints `SKIP` per threshold) when no baseline file exists for the current machine, rather than
-  failing; someone running `--record` there once is the way to add coverage for that platform.
-  **Not yet verified on Linux** — `QT_QPA_PLATFORM=offscreen` availability/behavior there hasn't
-  been checked live.
-
-**On-screen vs. offscreen timing — measured, not assumed.** Ran the same fixture script both ways
-on the recording machine, 3 times each, to check whether `QT_QPA_PLATFORM=offscreen` changes what's
-being measured:
-
-| Command | On-screen | Offscreen |
-|---|---|---|
-| `render` (initial) | ~297-303ms | ~131-158ms |
-| `bulk-node-size` | ~44-49ms | ~46-52ms |
-| `bulk-edge-color` | ~45-78ms | ~44-45ms |
-| `render` (after mutations) | ~294-303ms | ~120-138ms |
-
-`render`'s actual paint cost is consistently ~2×-2.4× faster offscreen — no compositor/backing-store
-round trip on macOS — but the non-paint bulk operations measure the same either way. Confirmed the
-`render` command's own timing is genuinely synchronous (not partially deferred) by running two
-`render` calls back-to-back with a 2-second gap between them: both reported the identical elapsed
-time, which is what you'd expect from `QWidget::repaint()`'s documented synchronous contract (unlike
-`update()`, which only schedules a repaint) and wouldn't hold if any part of the cost were being
-silently deferred past the call returning. Conclusion: offscreen thresholds are only meaningful
-against other offscreen runs, not as a claim about real on-screen user-perceived performance — which
-is fine, since this kernel's job is regression detection, not UX measurement.
-
-**Recorded reference run (2026-07-31, MacBook Pro M5, 24GB RAM, offscreen, N=2000/~39,800E):**
-`render`=154ms, `bulk-node-size`=46ms, `bulk-edge-color`=44ms, `move`=0ms,
-`render`-after-mutations=120ms. Thresholds recorded at 2× each (with a 15ms floor for near-instant
-operations like `move`, since doubling a 0-1ms reading would produce a threshold too tight to
-survive normal jitter).
-
-Why this matters:
-
-`GraphicsWidget` bulk operations (`setEdgeArrowSize`, etc.) currently fire thousands of individual `prepareGeometryChange()` calls without batching.  Phase 1–5 of #240 fix the worst offenders, but without a regression kernel there is no automated guard to prevent the problems returning.
-
-**Not done in this pass:** the correctness/state-comparison kernel WS6.6 also floats below (asserting
-`GraphicsWidget` state after a fixed operation sequence, not just timing) — separate, larger design,
-not scoped here. CI integration also stays out per WS6.5's "CI is last" policy.
-
-#### Original approach (superseded, kept for context)
-
-- Build a new CLI kernel (`kernel_render_perf_v8` or similar) that:
-  - Loads a fixed, large-ish reference network (e.g. `Bernard_Killworth_Fraternity` or a synthetic dense graph) into a `QGraphicsScene` without showing a window (`QOffscreenSurface` / `QImage` render target)
-  - Drives a fixed sequence of operations: full scene render, bulk node-size change, bulk edge-color change, simulated node drag (move one high-degree node N steps)
-  - Measures wall-clock time for each operation and writes a JSON result (`"render_ms"`, `"bulk_node_size_ms"`, etc.)
-- Baselines store the JSON with **timing upper bounds** (not exact values) so the comparison is a "must be faster than X ms" guard, not a brittle equality check
-- `run_benchmarks.sh` gains a `--render` flag to include this kernel; CI keeps it off by default (GPU/display availability varies)
-
-Rules:
-
-- kernel must not open any visible window (offscreen rendering only)
-- timing thresholds set conservatively (2× measured baseline on reference hardware) to tolerate CI noise
-- add new threshold fields to the existing benchmark JSON schema
-
-**Gap found 2026-07-29, while shipping WS3 M2's batched-signal work:** the golden harness has no
-*correctness* coverage of the canvas either, not just no performance coverage. Verifying that
-`GraphicsWidget::setEdgesVisibilityBatch()` actually left the right set of edges visible/hidden
-after a relation switch or a unilateral-edge toggle had no automated check available — the only
-verification was live manual testing (`docs/roadmaps/roadmap_ws12_cli_scripting_mode.md`'s
-`--interactive-script` mechanism, built partly for this reason). A future canvas kernel should
-assert on actual `GraphicsWidget` *state* after a fixed operation sequence (which edges/nodes end
-up visible, positioned where expected, etc.), not just timing — same offscreen-rendering
-constraint as the performance kernel above, but a state-comparison kernel rather than a
-timing-threshold one. Could plausibly share the same kernel/harness scaffolding as WS6.6, or be a
-sibling kernel (`kernel_render_state_v9`-shaped) — not scoped in detail yet.
-
----
-
-## Notes
-
+- Keep outputs stable (version schemas when changing format).
 - Baseline regeneration should be treated as exceptional.
-- Any “FAIL” in benchmarks must be investigated; if it is noise, prefer mitigation via more stable measurement rather than loosening thresholds by default.
+- Any "FAIL" in benchmarks must be investigated; if it is noise, prefer mitigation via more stable measurement rather than loosening thresholds by default.
 - WS6 work should remain incremental: small changes, deterministic evidence, and consistent scripts.
-```
 
-### One small thing to fix later (not required now)
+## Open Findings
 
-Your benchmark script output still shows `BUILD_TYPE=Debug` even when you run the Release binary. That’s a script-reporting detail (not a functional bug), but it can confuse future contributors. It’s a good tiny WS6 task.
+### `run_benchmarks.sh` reports `BUILD_TYPE=Debug` even against a Release binary
 
-If you paste me your current `docs/roadmaps/roadmap_ws6_testing_ci_regression.md` file path/contents (if it differs from the skeleton you showed), I can also produce a `diff`-style patch, but you don’t need to — the above is ready to drop in.
+Script-reporting detail, not a functional bug, but it can confuse future contributors reading
+benchmark output. Good tiny WS6 task whenever there's a lull.
 
 ### Continuous release page shows a stale "published" date (#255 follow-up)
 
@@ -489,6 +483,8 @@ to run once, before any of the parallel upload steps, to avoid a race. Separatel
 script computes `commitMessage` (the commit's subject line) but never uses it in the description
 text — worth including once this is revisited.
 
+## Resolved Findings
+
 ### Shipped-dataset roundtrip script fails on a custom-delimiter fixture (#256) ✅ Fixed
 
 `run_io_roundtrip_shipped_datasets.sh` globs every file under `src/data` and loads each one via
@@ -500,7 +496,7 @@ space-delimiter assumption. This went unnoticed because the script isn't part of
 regression gate (see the three scripts listed under "Regression discipline" in
 `README_DEVELOPER_NOTES.md`) or CI.
 
-**Fixed (2026-07-29, `802b0097`)** by reformatting the fixture file itself to plain space
+**Fixed (`802b0097`)** by reformatting the fixture file itself to plain space
 delimiters, matching every other `.adj` file in `src/data/` — simpler than either of the two
 alternatives originally considered here (a per-file delimiter override table, or promoting the
 script into CI), since the nonstandard delimiter wasn't actually load-bearing for what the fixture
@@ -510,10 +506,10 @@ open, now unblocked.
 ### Perf benchmark baselines predated the M1 DistanceEngine speedup — ✅ Fixed on all three sets
 
 All three committed baselines predated M1's DistanceEngine parallelization
-(`7900809e`/`11da8ef4`, 2026-05-26, the same day v3.6 shipped) by months:
-`scripts/perf_baselines/macos-arm64/perf_expected.env` (2026-03-03, `ada8e613`),
-`scripts/perf_baselines/macos-m5/perf_expected.env` (2026-02-17, `5661b7eb`), and
-`scripts/perf_baselines/linux-x86_64/perf_expected.env` (2026-03-03, `013c05ce`). `run_benchmarks.sh`
+(`7900809e`/`11da8ef4`, the same day v3.6 shipped) by months:
+`scripts/perf_baselines/macos-arm64/perf_expected.env` (`ada8e613`),
+`scripts/perf_baselines/macos-m5/perf_expected.env` (`5661b7eb`), and
+`scripts/perf_baselines/linux-x86_64/perf_expected.env` (`013c05ce`). `run_benchmarks.sh`
 still ran and reported "OK" against these stale baselines, but the "beats baseline by 30–70%"
 results on the DistanceEngine-heavy benchmarks (EIES48, BA500, DIST_GRAPHML) weren't drift or
 noise — they were exactly M1's real 2.7×–8.3× speedup being measured against a pre-M1 floor. A
@@ -522,7 +518,7 @@ baseline." Found when a benchmark run was (wrongly) cited as regression evidence
 M2 change; the actual evidence for that change was architectural (equivalent lookup complexity),
 not the benchmark comparison, which prompted checking why the margins looked so large.
 
-**`macos-arm64` and `macos-m5` fixed (2026-07-29)**, both from this machine: checked out the `v3.6`
+**`macos-arm64` and `macos-m5` fixed (`9679782f`)**, both from this machine: checked out the `v3.6`
 tag directly (a clean release point, not just "whatever HEAD happens to be today"), built, and ran
 `run_benchmarks.sh --record` there — `macos-arm64` via the script's own `uname`-based
 auto-detection (which can only ever resolve to `macos-arm64` on any Apple Silicon Mac, M1 through
@@ -532,7 +528,7 @@ Verified against current `develop`: every benchmark on both sets now lands withi
 baseline (not 30–70% "faster"), confirming no regression from the WS3/WS10 work landed since v3.6,
 and that future comparisons on this machine are meaningful again.
 
-**`linux-x86_64` fixed (2026-07-29)**, from a 12-core Ryzen Linux x86_64 box: same method — a
+**`linux-x86_64` fixed (`b9a88096`)**, from a 12-core Ryzen Linux x86_64 box: same method — a
 temporary `git worktree` checked out at the `v3.6` tag (kept `develop` untouched), built with
 `-DBUILD_CLI=ON` against Qt 6.8.3 (`/home/dimitris/Qt/6.8.3/gcc_64`), then
 `run_benchmarks.sh --record` there. `auto_baseline_set` resolved to `linux-x86_64` on its own
