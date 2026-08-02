@@ -135,23 +135,71 @@ same paint/geometry code path as a real session):
   (`Graph::vertexPosSet()`), and `quit` (ends the script cleanly — needed because nothing
   previously stopped a scripted GUI run; every earlier manual test had to be killed externally).
   Each of the first four logs one `qInfo() << "BENCH ..."` line, same pattern as WS14's
-  `distances`/`distances centralities` commands.
+  `distances`/`distances centralities` commands. WS12's later uniform-BENCH-logging pass extended
+  this to every interactive-script command, not just these four — relevant below.
 - Fixed reference script: `scripts/fixtures/render_perf_script.txt` — generates a reference network
-  via the existing `erdos 2000 0.02 undirected` command (matching the network size used throughout
-  WS14's own profiling) rather than depending on an external dataset file, then runs the fixed
-  sequence: render, bulk-node-size, bulk-edge-color, move, render, quit.
+  via `erdos-m 2000 40000 undirected` (a new command, `Graph::randomNetErdosCreate()`'s existing
+  `G(n,M)` mode exposed to the interactive-script grammar) rather than depending on an external
+  dataset file, then runs the fixed sequence: render, bulk-node-size, bulk-edge-color, move,
+  render, quit. **Originally used `erdos 2000 0.02 undirected` (G(n,p)) instead** — its own code
+  comment already says plainly it's "deterministic-shape (though not deterministic-content, since
+  it's still randomized)": node count is exact, but edge count only concentrates around its
+  expected value rather than landing on it exactly. `erdos-m`'s `G(n,M)` mode places exactly M
+  edges, so N and E are now both exactly reproducible run to run (which specific edges land where
+  is still randomized, which doesn't matter for a timing kernel).
 - Driver: `scripts/run_render_perf_bench.sh`, structured to match `run_benchmarks.sh`'s existing
   conventions (`scripts/lib/find_socnetv_gui.sh` mirrors `find_socnetv_cli.sh`; same
   auto-detected/overridable baseline-set resolution; same `--record` bootstrapping flow). Runs
-  `QT_QPA_PLATFORM=offscreen <gui binary> --interactive-script <fixture>`, parses the five `BENCH`
-  lines, and compares each `elapsed_ms` against an upper-bound threshold (2× the recorded reference
-  run) — "must be faster than X ms", not exact equality.
-- Baseline: `scripts/perf_baselines/macos-m5/render_perf_expected.env`. Other platforms
-  (`macos-arm64`, `linux-x86_64`) don't have a recording yet — the script degrades gracefully
+  `QT_QPA_PLATFORM=offscreen <gui binary> --interactive-script <fixture>` `RENDER_BENCH_RUNS`
+  times (default 7), parses the five `BENCH` lines per run, and compares each metric's
+  **median-of-N** `elapsed_ms` against an upper-bound threshold (2× the recorded median-of-N
+  reference run) — "must be faster than X ms", not exact equality.
+- Baseline: `scripts/perf_baselines/macos-arm64/render_perf_expected.env` and
+  `scripts/perf_baselines/macos-m5/render_perf_expected.env`, both recorded from this machine
+  (mirrors the compute-benchmark convention of keeping a generic per-arch baseline alongside a
+  chip-exact one). `linux-x86_64` doesn't have a recording yet — the script degrades gracefully
   (prints `SKIP` per threshold) when no baseline file exists for the current machine, rather than
   failing; someone running `--record` there once is the way to add coverage for that platform.
   **Not yet verified on Linux** — `QT_QPA_PLATFORM=offscreen` availability/behavior there hasn't
   been checked live.
+
+**Three real bugs found and fixed while re-verifying this kernel, not just a documentation pass:**
+
+1. **The "degrades gracefully" claim above was false until now.** The script's missing-baseline
+   check did `exit 2` with a hard `ERROR` when the baseline *file* didn't exist at all — the SKIP
+   path only ever covered a file that exists but is missing one specific variable. Concretely: this
+   exact recording machine (a MacBook Pro M5) auto-resolves to the generic `macos-arm64` baseline
+   set (`uname -m` can't distinguish Apple Silicon generations), which wasn't recorded at the time
+   — only `macos-m5` was. So running the script with no explicit override failed outright on the
+   very machine it was recorded on. Fixed: the missing-file case now prints an `INFO` notice and
+   continues with every metric legitimately `SKIP`ped, matching what this doc always claimed (and
+   `macos-arm64` is now recorded too, so the failure mode no longer triggers here anyway).
+2. **BENCH-line parsing was silently misaligned.** The comparator greped every line containing
+   `"BENCH "` and read the first five as `render, bulk-node-size, bulk-edge-color, move, render`
+   by fixed position. That held when this kernel first shipped, but WS12's later uniform-logging
+   pass added `BENCH` lines to every command, including the fixture's own setup/teardown
+   (`erdos`/`erdos-m`, `delay`, `quit`) — nobody re-tested this script after that landed. The
+   comparator was silently reading `erdos-m`'s and `delay`'s timings as `RENDER_INITIAL` and
+   `BULK_NODE_SIZE`, while the real `move` and second `render` measurements were dropped entirely
+   (only the first five lines were ever read). It still printed "OK" throughout, since the
+   mismatched values all happened to be small millisecond timings that stayed under threshold by
+   coincidence — this was a real, live correctness gap, not just stale docs. Fixed: the grep now
+   allowlists the four metric command names (`^BENCH (render|bulk-node-size|bulk-edge-color|move) `)
+   instead of matching any `BENCH` line, which is robust against the fixture gaining more
+   setup/teardown commands later without needing this filter touched again.
+3. **Single-shot measurement made both the recording and the comparison noisy.** `--record`
+   originally ran the fixture exactly once and doubled its raw readings; a repeat-run check found
+   `render`'s own timing swinging ~104-131ms (~25%) run to run on identical hardware/build. Two
+   baselines recorded minutes apart from the literal same machine (`macos-arm64` vs `macos-m5`,
+   before this fix) differed by up to 24% on `BULK_NODE_SIZE` purely from that noise, not from any
+   real difference between the two "targets." Fixed: the script now runs the fixture
+   `RENDER_BENCH_RUNS` times (default 7, override via env var) and uses the per-metric **median**
+   across runs for both recording and comparison — matching `run_benchmarks.sh`'s own
+   median-of-N convention for the headless compute kernels, just implemented as an external loop
+   here since each run launches a fresh GUI process rather than looping inside one CLI invocation.
+   Re-recorded both `macos-arm64` and `macos-m5` from scratch against the corrected parser, the
+   new deterministic fixture, and median-of-7: the two are now within a few ms of each other on
+   every metric, confirming the previous divergence really was recording noise.
 
 **On-screen vs. offscreen timing — measured, not assumed.** Ran the same fixture script both ways
 on the recording machine, 3 times each, to check whether `QT_QPA_PLATFORM=offscreen` changes what's

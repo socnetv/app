@@ -1,4 +1,4 @@
-erdos 2000 0.02 undirected
+erdos-m 2000 40000 undirected
 delay 1
 render
 bulk-node-size 30

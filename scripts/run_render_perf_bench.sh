@@ -9,6 +9,13 @@ set -euo pipefail
 # against an upper-bound threshold: "must be faster than X ms", not exact equality, since
 # GUI-driven timing has more run-to-run variance than the headless compute kernels.
 #
+# Runs the full fixture RENDER_BENCH_RUNS times (default 7) and uses the per-metric MEDIAN
+# across runs, both when recording and when comparing - a single-shot measurement was found to
+# vary run-to-run by ~25% on the recording machine, which made both the recorded threshold and
+# any comparison against it noisy in either direction. Matches run_benchmarks.sh's median-of-N
+# convention for the headless compute kernels (there via the CLI's own --bench flag; here via an
+# external loop, since each run launches a fresh GUI process).
+#
 # Why offscreen, and why its numbers differ from a real on-screen session (measured, not
 # assumed): on the recording machine, the `render` command is ~2x-2.4x FASTER offscreen than
 # on-screen (no compositor/backing-store round trip) - but non-paint bulk operations
@@ -21,6 +28,7 @@ set -euo pipefail
 # Usage:
 #   ./scripts/run_render_perf_bench.sh
 #   ./scripts/run_render_perf_bench.sh --record
+#   RENDER_BENCH_RUNS=11 ./scripts/run_render_perf_bench.sh --record
 #   RENDER_BENCH_BASELINE_SET=macos-m5 ./scripts/run_render_perf_bench.sh
 #   SOCNETV_GUI=./build/SocNetV.app/Contents/MacOS/SocNetV ./scripts/run_render_perf_bench.sh
 #
@@ -31,6 +39,7 @@ set -euo pipefail
 
 RECORD=0
 BUILD_TYPE="${BENCH_BUILD_TYPE:-Debug}"  # hint only, matches run_benchmarks.sh's convention
+RUNS="${RENDER_BENCH_RUNS:-7}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -41,6 +50,11 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+if ! [[ "$RUNS" =~ ^[0-9]+$ ]] || (( RUNS < 1 )); then
+  echo "ERROR: RENDER_BENCH_RUNS must be a positive integer, got: $RUNS" >&2
+  exit 2
+fi
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FIXTURE="$ROOT_DIR/scripts/fixtures/render_perf_script.txt"
@@ -90,6 +104,20 @@ resolve_expected_file() {
   echo "${BASELINE_ROOT}/${set_name}/render_perf_expected.env"
 }
 
+# Prints the median of its integer arguments to stdout. Odd count picks the middle sorted
+# value directly; even count averages the two middle sorted values (integer division).
+median_of() {
+  local -a sorted
+  mapfile -t sorted < <(printf '%s\n' "$@" | sort -n)
+  local n="${#sorted[@]}"
+  local mid=$(( n / 2 ))
+  if (( n % 2 == 1 )); then
+    echo "${sorted[$mid]}"
+  else
+    echo $(( (sorted[mid - 1] + sorted[mid]) / 2 ))
+  fi
+}
+
 EXPECTED_FILE="$(resolve_expected_file)"
 RESOLVED_SET="$(sanitize_id "${RENDER_BENCH_BASELINE_SET:-$(auto_baseline_set)}")"
 BASELINE_SET_USED="${RESOLVED_SET}"
@@ -106,35 +134,67 @@ fi
 
 if [[ "${RECORD}" != "1" ]]; then
   if [[ ! -f "$EXPECTED_FILE" ]]; then
-    echo "ERROR: expected render-perf file missing: $EXPECTED_FILE" >&2
-    echo "Hint: run with --record on the target machine to create it." >&2
-    exit 2
+    echo "INFO: no render-perf baseline for this machine (${EXPECTED_FILE} not found)." >&2
+    echo "Hint: run with --record on this machine to create one. Continuing with all metrics SKIPPED." >&2
+  else
+    # shellcheck disable=SC1090
+    source "$EXPECTED_FILE"
   fi
-  # shellcheck disable=SC1090
-  source "$EXPECTED_FILE"
 fi
 
-echo "INFO: SOCNETV_GUI=$SOCNETV_GUI BASELINE_SET=${BASELINE_SET_USED} EXPECTED_FILE=${EXPECTED_FILE} RECORD=${RECORD}" >&2
-
-RAW_OUTPUT="$(QT_QPA_PLATFORM=offscreen "$SOCNETV_GUI" --interactive-script "$FIXTURE" 2>&1)"
-BENCH_LINES="$(echo "$RAW_OUTPUT" | grep "BENCH " || true)"
-
-if [[ -z "$BENCH_LINES" ]]; then
-  echo "ERROR: no BENCH lines produced. Full output:" >&2
-  echo "$RAW_OUTPUT" >&2
-  exit 1
-fi
-
-echo "$BENCH_LINES"
-
-# BENCH lines appear in fixed script order: render, bulk-node-size, bulk-edge-color, move, render.
-declare -a MS_VALUES=()
-while IFS= read -r line; do
-  # qInfo()'s stream operator inserts a space after "elapsed_ms=" between the two << operands.
-  MS_VALUES+=("$(echo "$line" | sed -nE 's/.*elapsed_ms= *(-?[0-9]+).*/\1/p')")
-done <<< "$BENCH_LINES"
+echo "INFO: SOCNETV_GUI=$SOCNETV_GUI BASELINE_SET=${BASELINE_SET_USED} EXPECTED_FILE=${EXPECTED_FILE} RECORD=${RECORD} RUNS=${RUNS}" >&2
 
 NAMES=(RENDER_INITIAL BULK_NODE_SIZE BULK_EDGE_COLOR MOVE RENDER_AFTER_MUTATIONS)
+declare -a RUN_VALUES_0=() RUN_VALUES_1=() RUN_VALUES_2=() RUN_VALUES_3=() RUN_VALUES_4=()
+
+for (( run = 1; run <= RUNS; run++ )); do
+  RAW_OUTPUT="$(QT_QPA_PLATFORM=offscreen "$SOCNETV_GUI" --interactive-script "$FIXTURE" 2>&1)"
+  # Allowlist match on the metric commands only - every interactive-script command logs its own
+  # "BENCH <name> ..." line (uniform logging added after this kernel first shipped), so a bare
+  # "BENCH " grep would also pick up setup/teardown commands (erdos-m, delay, quit, ...) and
+  # shift every downstream value out of alignment. Matching by name is robust against the
+  # fixture script gaining more setup commands later without needing this filter updated again.
+  BENCH_LINES="$(echo "$RAW_OUTPUT" | grep -E "^BENCH (render|bulk-node-size|bulk-edge-color|move) " || true)"
+
+  if [[ -z "$BENCH_LINES" ]]; then
+    echo "ERROR: no BENCH lines produced on run ${run}/${RUNS}. Full output:" >&2
+    echo "$RAW_OUTPUT" >&2
+    exit 1
+  fi
+
+  echo "--- run ${run}/${RUNS} ---" >&2
+  echo "$BENCH_LINES" >&2
+
+  # BENCH lines appear in fixed script order: render, bulk-node-size, bulk-edge-color, move, render.
+  declare -a MS_VALUES=()
+  while IFS= read -r line; do
+    # qInfo()'s stream operator inserts a space after "elapsed_ms=" between the two << operands.
+    MS_VALUES+=("$(echo "$line" | sed -nE 's/.*elapsed_ms= *(-?[0-9]+).*/\1/p')")
+  done <<< "$BENCH_LINES"
+
+  if [[ "${#MS_VALUES[@]}" -ne "${#NAMES[@]}" ]]; then
+    echo "ERROR: expected ${#NAMES[@]} BENCH lines on run ${run}/${RUNS}, got ${#MS_VALUES[@]}." >&2
+    exit 1
+  fi
+
+  RUN_VALUES_0+=("${MS_VALUES[0]}")
+  RUN_VALUES_1+=("${MS_VALUES[1]}")
+  RUN_VALUES_2+=("${MS_VALUES[2]}")
+  RUN_VALUES_3+=("${MS_VALUES[3]}")
+  RUN_VALUES_4+=("${MS_VALUES[4]}")
+done
+
+MEDIANS=(
+  "$(median_of "${RUN_VALUES_0[@]}")"
+  "$(median_of "${RUN_VALUES_1[@]}")"
+  "$(median_of "${RUN_VALUES_2[@]}")"
+  "$(median_of "${RUN_VALUES_3[@]}")"
+  "$(median_of "${RUN_VALUES_4[@]}")"
+)
+
+for i in "${!NAMES[@]}"; do
+  echo "MEDIAN ${NAMES[$i]}=${MEDIANS[$i]}ms (of ${RUNS} runs)"
+done
 
 if [[ "${RECORD}" == "1" ]]; then
   OUT_DIR="${BASELINE_ROOT}/${BASELINE_SET_USED}"
@@ -144,10 +204,10 @@ if [[ "${RECORD}" == "1" ]]; then
     echo "# Auto-generated by scripts/run_render_perf_bench.sh --record"
     echo "# BASELINE_SET=${BASELINE_SET_USED}"
     echo "# BASELINE_FILE=scripts/perf_baselines/${BASELINE_SET_USED}/render_perf_expected.env"
-    echo "# Thresholds are 2x the measured reference run (upper bound, not exact-value)."
+    echo "# Thresholds are 2x the median-of-${RUNS} measured reference run (upper bound, not exact-value)."
     echo
     for i in "${!NAMES[@]}"; do
-      value="${MS_VALUES[$i]:-0}"
+      value="${MEDIANS[$i]:-0}"
       threshold=$(( value * 2 ))
       # Floor at 15ms: some operations (e.g. a single-vertex "move") measure near-instant, and
       # doubling a 0-1ms reading would produce a threshold too tight to survive normal jitter.
@@ -164,7 +224,7 @@ fi
 FAIL=0
 for i in "${!NAMES[@]}"; do
   name="${NAMES[$i]}"
-  value="${MS_VALUES[$i]:-}"
+  value="${MEDIANS[$i]:-}"
   var="EXP_${name}_MAX_MS"
   expected="${!var:-}"
   if [[ -z "$expected" ]]; then
@@ -177,10 +237,10 @@ for i in "${!NAMES[@]}"; do
     continue
   fi
   if (( value > expected )); then
-    echo "FAIL: $name measured=${value}ms exceeds threshold=${expected}ms"
+    echo "FAIL: $name median=${value}ms exceeds threshold=${expected}ms"
     FAIL=1
   else
-    echo "OK: $name measured=${value}ms within threshold=${expected}ms"
+    echo "OK: $name median=${value}ms within threshold=${expected}ms"
   fi
 done
 

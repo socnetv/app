@@ -5816,6 +5816,36 @@ void MainWindow::processNextInteractiveCommand()
         }, Qt::QueuedConnection);
         QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
     }
+    else if (line.startsWith("erdos-m "))
+    {
+        // erdos-m <N> <M> <directed|undirected> - same as 'erdos' but G(n,M): exactly M edges
+        // placed at random, instead of each edge existing independently with probability p.
+        // Node and edge *count* are then exactly reproducible run to run (which edges land
+        // where is still randomized) - unlike G(n,p), where edge count only concentrates
+        // around its expected value. Used by the WS6.6 render-perf fixture, where a stable
+        // N/E shape matters for comparing timing thresholds across runs.
+        const QStringList parts = line.mid(8).trimmed().split(' ', Qt::SkipEmptyParts);
+        bool nOk = false, mOk = false;
+        const int n = parts.value(0).toInt(&nOk);
+        const int m = parts.value(1).toInt(&mOk);
+        const QString directedness = parts.value(2, "directed");
+        if (!nOk || !mOk || n <= 0 || m < 0
+            || (directedness != "directed" && directedness != "undirected"))
+        {
+            qWarning() << "Malformed 'erdos-m' command, skipping:" << line;
+            processNextInteractiveCommand();
+            return;
+        }
+        const QString mode = (directedness == "undirected") ? "graph" : "digraph";
+        QMetaObject::invokeMethod(activeGraph, [this, n, m, mode]() {
+            QElapsedTimer timer;
+            timer.start();
+            activeGraph->randomNetErdosCreate(n, "G(n,M)", m, 0, mode, false);
+            qInfo() << "BENCH erdos-m N=" << activeNodes() << "E=" << activeEdges()
+                    << "elapsed_ms=" << timer.elapsed();
+        }, Qt::QueuedConnection);
+        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+    }
     else if (line == "unilateral")
     {
         // Same QAction the toolbar/menu item triggers, so this exercises the exact same
