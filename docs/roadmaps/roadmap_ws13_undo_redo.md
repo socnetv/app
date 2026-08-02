@@ -15,9 +15,9 @@ prerequisite is stated in the issue itself.
 This was previously tracked as a cross-cutting dependency of
 [`roadmap_ws3_architecture_performance.md`](roadmap_ws3_architecture_performance.md), gated on "at
 least M2" of that roadmap under the assumption that structural undo needs a stable domain model
-first. That assumption was investigated on 2026-07-30 and found false — see WS3's "History: the
-domain-model assumption, and why it's gone" section for the full trace. Undo doesn't structurally
-depend on anything WS3 was building. Spun out to its own workstream rather than folded back into WS3
+first. That assumption was investigated and found false — WS3's own domain-model plan itself turned
+out unnecessary (see its Goal section) and was dropped, so undo never structurally depended on
+anything WS3 was building. Spun out to its own workstream rather than folded back into WS3
 (now narrowed to evidence-driven fixes, not a home for "things that need `Graph` to be cleaner
 first") or into WS9 (marked complete/shipped; reopening it to add a substantial new feature was the
 wrong container — same reasoning that led to spinning up WS11/WS12 as their own workstreams earlier).

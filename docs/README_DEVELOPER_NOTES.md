@@ -230,6 +230,32 @@ All filters push a `FilterSpec` onto `m_visibilityHistory`. Undo restores the pr
 
 ---
 
+# Dispatching Long-Running Graph Operations (MainWindow → Graph)
+
+`Graph` lives on `graphThread`, not the GUI thread — but a plain C++ method call always executes on
+the *caller's* thread regardless of the callee `QObject`'s thread affinity. Calling a slow `Graph`
+method directly from a `MainWindow` slot freezes the whole application for the computation's
+duration (confirmed: computing a weighted/inverted centrality index on a 7,343-node network showed
+795-900% CPU with the window completely unresponsive to input or repaint for several minutes — #254).
+
+**Always dispatch long-running `Graph` operations via
+`MainWindow::runGraphOperationAsync(operation, waitMessage, doneMessage)`** (`mainwindow.cpp`),
+which posts `operation` onto `graphThread` via `QMetaObject::invokeMethod(activeGraph, ...,
+Qt::QueuedConnection)` and shows an indeterminate, `ApplicationModal` `QProgressDialog` for the
+duration — which also prevents the user from mutating `Graph` from the GUI thread mid-operation,
+since `Graph` has no internal synchronization against that. Not `QtConcurrent::run()`:
+`DistanceEngine::compute()` already parallelizes internally via `blockingMap` over the *global*
+thread pool, so a second `QtConcurrent::run()` task would contend with those worker tasks for the
+same pool.
+
+Two gotchas already hit with this pattern:
+- Close the progress dialog with `reset()`, not `close()` — `close()` triggers `QProgressDialog`'s
+  internal `cancel()` path, which silently marks the (actually successful) operation as cancelled.
+- Any `src/graph/ui/` function invoked this way that constructs real Qt GUI objects (charts, etc.)
+  must wrap its body in `Graph::runOnGuiThread()` — see "UI façade layer" above.
+
+---
+
 # Graph → Canvas Rendering System
 
 ## Threading model
