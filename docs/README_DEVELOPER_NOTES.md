@@ -247,13 +247,35 @@ committed under `src/tools/baselines/io_roundtrip/`, wired into `run_golden_comp
 
 # Filter Layer
 
-Non-destructive node/edge visibility filtering via snapshot/restore:
+Non-destructive node/edge visibility filtering — the graph itself is never mutated, only
+visibility state:
 
-- `vertexFilterByEgoNetwork()`, `vertexFilterBySelection()`, `vertexFilterByAttribute()`
-- `edgeFilterByWeight()`, `edgeFilterByAttribute()`, `vertexFilterByQuery()`
-- `vertexFilterRestoreAll()` — replays the filter stack in reverse
+- `vertexFilterByEgoNetwork()`, `vertexFilterBySelection()`, `vertexFilterByAttribute()`,
+  `vertexFilterByQuery()`
+- `edgeFilterByWeight()`, `edgeFilterByAttribute()`, `edgeFilterByQuery()`
+- `vertexFilterRestoreAll()` — drains the full stack back to the base graph
 
-All filters push a `FilterSpec` onto `m_visibilityHistory`. Undo restores the prior snapshot.
+Every filter pushes a `FilterSpec` (`src/graph/filters/filter_spec.h`) onto
+`m_visibilityHistory`. **Arbitrary removal**, not just undo-the-last-one: `vertexFilterRemoveAt(int
+stackIndex)` restores the base graph, then replays every *remaining* spec in order via
+`vertexFilterReplaySpec()` — a full dispatch table over every `FilterSpec::Type`. This only works
+for filter types that store enough in their spec to replay (`Attribute`, `EdgeAttribute`,
+`EdgeWeight`, `Query`, `EdgeQuery`); `Selection`/`Ego`/`Centrality` chips currently only support
+removal from the top of the stack.
+
+Attribute/structural queries are built from `FilterCondition` (`src/graph/filters/filter_condition.h`
+— scope/key/op/value, numeric-aware comparison) and `GraphQuery` (`src/graph/filters/graph_query.h`
+— a list of conditions, AND-only today).
+
+**Subgraph extraction** (non-destructive filtering's natural counterpart — makes a filtered view
+permanent): `Graph::subgraphExtract()` / `subgraphExtractFromSelection()`, both built on private
+`Graph::subgraphFromVertexList()` — renumbers vertices from 1, mirrors all relations, preserves
+custom attributes.
+
+**Structured table data** (node/edge table dock, CSV/JSON import/export) lives in
+`src/graph/io/table_export.*` / `table_import.*` (`TableExport`/`TableImport`, free functions,
+QtCore-only, any `QAbstractItemModel*`) plus `NodeTableModel`/`EdgeTableModel`/`GraphTableWidget`
+(`src/widgets/`) for the UI side.
 
 ---
 
