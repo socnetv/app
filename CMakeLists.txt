@@ -170,6 +170,7 @@ set(CLI_SOURCES
     src/tools/cli/kernels/kernel_io_roundtrip_v5.cpp
     src/tools/cli/kernels/kernel_clustering_v6.cpp
     src/tools/cli/kernels/kernel_connectivity_v7.cpp
+    src/tools/cli/kernels/kernel_matrix_v8.cpp
 )
 
 

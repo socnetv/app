@@ -1,0 +1,211 @@
+{
+    "counts": {
+        "links_sna": 4,
+        "nodes": 3,
+        "ties_graph": 2
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "TinyPath_N3_E2.paj",
+        "path": "src/data/TinyPath_N3_E2.paj"
+    },
+    "graph": {
+        "directed": false,
+        "weighted": false
+    },
+    "kernel": "matrix",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 2,
+        "load_msg": "",
+        "net_name": "TinyPath_N3_E2.paj",
+        "ok": true
+    },
+    "matrices": {
+        "adjacency": {
+            "cols": 3,
+            "data": [
+                [
+                    "0",
+                    "1",
+                    "0"
+                ],
+                [
+                    "1",
+                    "0",
+                    "1"
+                ],
+                [
+                    "0",
+                    "1",
+                    "0"
+                ]
+            ],
+            "dump_mode": "full",
+            "rows": 3
+        },
+        "adjacency_inverse": {
+            "cols": 3,
+            "data": [
+                [
+                    "1e+20",
+                    "1",
+                    "-1e+20"
+                ],
+                [
+                    "1",
+                    "0",
+                    "0"
+                ],
+                [
+                    "-1e+20",
+                    "0",
+                    "1e+20"
+                ]
+            ],
+            "dump_mode": "full",
+            "invertible": true,
+            "rows": 3
+        },
+        "clique_comembership": {
+            "cols": 3,
+            "data": [
+                [
+                    "1",
+                    "1",
+                    "0"
+                ],
+                [
+                    "1",
+                    "2",
+                    "1"
+                ],
+                [
+                    "0",
+                    "1",
+                    "1"
+                ]
+            ],
+            "dump_mode": "full",
+            "rows": 3
+        },
+        "distances": {
+            "cols": 3,
+            "data": [
+                [
+                    "0",
+                    "1",
+                    "2"
+                ],
+                [
+                    "1",
+                    "0",
+                    "1"
+                ],
+                [
+                    "2",
+                    "1",
+                    "0"
+                ]
+            ],
+            "dump_mode": "full",
+            "rows": 3
+        },
+        "reachability": {
+            "cols": 3,
+            "data": [
+                [
+                    "1",
+                    "1",
+                    "1"
+                ],
+                [
+                    "1",
+                    "1",
+                    "1"
+                ],
+                [
+                    "1",
+                    "1",
+                    "1"
+                ]
+            ],
+            "dump_mode": "full",
+            "rows": 3
+        },
+        "similarity": {
+            "cols": 3,
+            "data": [
+                [
+                    "1",
+                    "0",
+                    "1"
+                ],
+                [
+                    "0",
+                    "1",
+                    "0"
+                ],
+                [
+                    "1",
+                    "0",
+                    "1"
+                ]
+            ],
+            "dump_mode": "full",
+            "metric": "simple_matching",
+            "rows": 3
+        },
+        "total_walks": {
+            "cols": 3,
+            "data": [
+                [
+                    "1",
+                    "1",
+                    "1"
+                ],
+                [
+                    "1",
+                    "2",
+                    "1"
+                ],
+                [
+                    "1",
+                    "1",
+                    "1"
+                ]
+            ],
+            "dump_mode": "full",
+            "rows": 3
+        },
+        "walks": {
+            "cols": 3,
+            "data": [
+                [
+                    "1",
+                    "0",
+                    "1"
+                ],
+                [
+                    "0",
+                    "2",
+                    "0"
+                ],
+                [
+                    "1",
+                    "0",
+                    "1"
+                ]
+            ],
+            "dump_mode": "full",
+            "length": 2,
+            "rows": 3
+        }
+    },
+    "run": {
+        "considerWeights": false,
+        "dropIsolates": false,
+        "inverseWeights": true
+    },
+    "schema_version": 8
+}

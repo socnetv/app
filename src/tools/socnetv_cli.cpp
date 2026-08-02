@@ -22,6 +22,7 @@
 #include "tools/cli/kernels/kernel_io_roundtrip_v5.h"
 #include "tools/cli/kernels/kernel_clustering_v6.h"
 #include "tools/cli/kernels/kernel_connectivity_v7.h"
+#include "tools/cli/kernels/kernel_matrix_v8.h"
 
 int main(int argc, char *argv[])
 {
@@ -52,7 +53,7 @@ int main(int argc, char *argv[])
                                 "N", "0");
 
     QCommandLineOption kernelOpt(QStringList() << "kernel",
-                                 "Kernel: distance|reachability|walks_matrix|prominence|io_roundtrip|clustering|connectivity",
+                                 "Kernel: distance|reachability|walks_matrix|prominence|io_roundtrip|clustering|connectivity|matrix",
                                  "name", "distance");
 
     QCommandLineOption walksLenOpt(QStringList() << "walks-length",
@@ -192,6 +193,9 @@ int main(int argc, char *argv[])
 
     if (cfg.kernel == "connectivity")
         return cli::runKernelConnectivityV7(cfg, load, g);
+
+    if (cfg.kernel == "matrix")
+        return cli::runKernelMatrixV8(cfg, load, g);
 
     QTextStream(stderr) << "ERROR: unsupported --kernel: " << cfg.kernel << "\n";
     return 2;

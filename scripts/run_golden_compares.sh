@@ -18,6 +18,8 @@
 #                        baseline locks in the skipped outcome too)
 #   v6  clustering    — clustering coefficient + triad census + clique census
 #   v7  connectivity  — weakly connected components count + per-node component IDs
+#   v8  matrix        — raw contents of every Matrix-producing operation (adjacency,
+#                        inverse, distances, similarity, reachability, walks, cliques)
 #
 # Baselines:
 #   src/tools/baselines/             (distance v1)
@@ -27,6 +29,7 @@
 #   src/tools/baselines/io_roundtrip/ (v5)
 #   src/tools/baselines/clustering/   (v6)
 #   src/tools/baselines/connectivity/ (v7)
+#   src/tools/baselines/matrix/       (v8)
 #
 # To add a new case:
 #   1. Run socnetv-cli --kernel <k> ... --dump-json <baseline.json>
@@ -65,6 +68,7 @@ BASE_PROM="${ROOT_DIR}/src/tools/baselines/prominence"
 BASE_IO="${ROOT_DIR}/src/tools/baselines/io_roundtrip"
 BASE_CLUST="${ROOT_DIR}/src/tools/baselines/clustering"
 BASE_CONN="${ROOT_DIR}/src/tools/baselines/connectivity"
+BASE_MATRIX="${ROOT_DIR}/src/tools/baselines/matrix"
 DATA="${ROOT_DIR}/src/data"
 
 if [[ ! -x "$CLI" ]]; then
@@ -148,6 +152,18 @@ run_case_connectivity() {
 
   echo "==> $(basename "$baseline")"
   if ! "$CLI" --kernel connectivity -i "$input" -f "$ftype" --compare-json "$baseline"; then
+    echo "[FAIL] $(basename "$baseline")"
+    FAILS=$((FAILS+1))
+  fi
+}
+
+run_case_matrix() {
+  local input="$1"
+  local ftype="$2"
+  local baseline="${!#}"
+
+  echo "==> $(basename "$baseline")"
+  if ! "$CLI" --kernel matrix -i "$input" -f "$ftype" -c 0 --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
   fi
@@ -368,6 +384,25 @@ run_case_connectivity \
   "${DATA}/TinyIsolated_Undir_N3_E0.paj" \
   2 \
   "${BASE_CONN}/TinyIsolated_Undir_N3_E0__CONN__V7__FT2.json"
+
+# MATRIX (schema v8) - see WS6.7 in roadmap_ws6_testing_ci_regression.md.
+# Note: Benchmark_BA_Directed_N500_m3 is dumped in summary mode (row/col sums, trace,
+# sampled cells) and skips the total_walks category - see kTotalWalksSkipThreshold in
+# kernel_matrix_v8.cpp for why (total walks alone measured ~9 min at N=500).
+run_case_matrix \
+  "${DATA}/TinyPath_N3_E2.paj" \
+  2 \
+  "${BASE_MATRIX}/TinyPath_N3_E2__MATRIX__V8__FT2__W0_IW1_DI0.json"
+
+run_case_matrix \
+  "${DATA}/TinyDisconnected_Undir_N6_E4.paj" \
+  2 \
+  "${BASE_MATRIX}/TinyDisconnected_Undir_N6_E4__MATRIX__V8__FT2__W0_IW1_DI0.json"
+
+run_case_matrix \
+  "${DATA}/Benchmark_BA_Directed_N500_m3.paj" \
+  2 \
+  "${BASE_MATRIX}/Benchmark_BA_Directed_N500_m3__MATRIX__V8__FT2__W0_IW1_DI0.json"
 
 echo
 if [[ "$FAILS" -eq 0 ]]; then

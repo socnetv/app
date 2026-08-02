@@ -843,6 +843,16 @@ public:
 
     const QHash<int,int> &vertexComponentId() const { return m_vertexComponentId; }
 
+    // WS6.7: read-only-by-convention accessors for kernel_matrix_v8's golden coverage.
+    // Non-const because Matrix::item()/rows()/cols() are themselves non-const throughout.
+    Matrix &matrixAdjacency() { return AM; }
+    Matrix &matrixAdjacencyInverse() { return invAM; }
+    Matrix &matrixDistances() { return DM; }
+    Matrix &matrixReachability() { return XRM; }
+    Matrix &matrixWalks() { return XM; }
+    Matrix &matrixTotalWalks() { return XSM; }
+    Matrix &matrixCliqueCoMembership() { return CLQM; }
+
     void createMatrixAdjacency(const bool dropIsolates = false,
                                const bool considerWeights = true,
                                const bool inverseWeights = false,
