@@ -135,19 +135,42 @@ src/engine/
   distance_progress_sink.h
   graph_distance_progress_sink.cpp
   per_source_scratch.h        ← introduced in WS3 Phase 1
+  thread_local_state.h
 ```
 
 The engine runs from both the GUI and the CLI regression harness.
 
-**WS3 parallelisation is complete (Phases 1 and 2 shipped).** The source loop in
-`DistanceEngine::runAllSources()` now runs concurrently across all CPU cores via
-`QtConcurrent::blockingMap`. Each worker thread owns a `ThreadLocalState` (see
-`thread_local_state.h`) holding a reused `PerSourceScratch`, partial BC/SC accumulators,
-and running totals for graph-wide aggregates. A single-threaded reduction step after
-the loop merges everything into graph state.
+Call flow:
 
-Benchmark results (Debug build, 24-core Linux): 2.7×–8.3× speedup depending on network
-size and whether centralities are computed. All 36 golden regression baselines pass.
+```
+DistanceEngine::compute(computeCentralities, considerWeights, inverseWeights, dropIsolates)
+  initRun()
+  runAllSources()          ← parallel via QtConcurrent::blockingMap (WS3 Phase 2)
+  finalize()
+```
+
+Scratch state is layered by scope — never held on `Graph`/`GraphVertex` directly:
+
+| Struct | Scope | Location |
+|---|---|---|
+| `DistanceScratch` | Per run (N/E snapshots, iterators, connectivity) | `distance_engine.h` |
+| `PerSourceScratch` | Per source vertex — reused within a thread | `src/engine/per_source_scratch.h` |
+| `ThreadLocalState` | Per worker thread — owns a `PerSourceScratch` + partial BC/SC arrays | `src/engine/thread_local_state.h` |
+
+**WS3 parallelisation is complete (Phases 1 and 2 shipped).** The source loop in
+`DistanceEngine::runAllSources()` runs concurrently across all CPU cores via
+`QtConcurrent::blockingMap`. Each worker thread owns a `ThreadLocalState` holding a reused
+`PerSourceScratch`, partial BC/SC accumulators, and running totals for graph-wide aggregates. A
+single-threaded reduction step after the loop merges everything into graph state.
+
+Benchmark results (Debug build, 24-core Linux): 2.7×–8.3× speedup depending on network size and
+whether centralities are computed.
+
+**APSP results (geodesic distances, sigma counts) live in `Graph::m_apspDist`/`m_apspSigma`**
+(`QHash<relation_id, Matrix>`, row = source vertex position, column = target vertex position;
+read via `Graph::apspDistance()`/`apspShortestPaths()`) — not on `GraphVertex` (WS5 A2 migrated this
+off a per-vertex `QHash` for lookup speed and memory; see
+`roadmap_ws5_matrices_modernization.md`).
 
 Do not add new per-source mutable state to `Graph` or `GraphVertex` — put it in `PerSourceScratch`.
 
