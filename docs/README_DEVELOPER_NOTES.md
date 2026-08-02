@@ -64,6 +64,7 @@ Everything else lives under `src/graph/`, organized by responsibility:
 centrality/
 clustering/
 cohesion/
+core/
 crawler/
 distances/
 filters/
@@ -113,6 +114,13 @@ Example:
 ```
 src/graph/ui/graph_ui_prominence_distribution.cpp
 ```
+
+**Must run on the GUI thread.** `src/graph/ui/` functions are plain `Graph::` methods — same
+`QObject`, same thread affinity as `Graph` itself, which runs on `graphThread`, not the GUI thread.
+Constructing real Qt GUI objects (e.g. `QtCharts`) off the GUI thread is undefined behaviour. Wrap
+the entire function body in `Graph::runOnGuiThread(std::function<void()>)`
+(`graph_ui_facade.cpp`) to force GUI-thread execution regardless of the calling thread — see the
+`uiProminenceDistribution{Spline,Area,Bars}()` functions for the pattern.
 
 ## Rule for New Code
 
