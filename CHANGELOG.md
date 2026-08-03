@@ -263,6 +263,27 @@ All notable changes to this project are documented in this file.
     current numbers and a higher threshold). All golden regression
     baselines pass unchanged throughout — purely a logging-mechanism
     change, no computational or behavioural difference.
+  - **APSP results moved off per-vertex `QHash` onto a centralised `Matrix` pair**
+    (WS5 A2): `GraphVertex::m_distance`/`m_shortestPaths` were replaced with
+    `Graph::m_apspDist`/`m_apspSigma` (`QHash<relation_id, Matrix>`), removing a
+    hash lookup per predecessor per vertex per source that profiling found
+    responsible for ~73% of `DistanceEngine::finalize()`'s samples. Measured:
+    15-17% faster at 1,000 nodes, 9% faster at 7,343 nodes (`geom.net`),
+    1-3% faster end-to-end in the GUI; no measurable change at ≤500 nodes,
+    where this cost is too small to matter. All golden regression baselines
+    pass unchanged.
+  - **`Matrix`'s internal storage is now one contiguous buffer, not N+1
+    separate allocations** (WS5 A3): replaced per-row heap objects with a
+    single flat buffer plus a precomputed row-pointer index, removing
+    7,343 of 7,344 allocations for a `geom.net`-scale matrix. Measured
+    (median of 5 runs, N=7,343): 38-64% faster construction, 14-19% faster
+    cell access, depending on network topology; no measurable change to
+    `DistanceEngine`'s own end-to-end time, since matrix access there is a
+    minority of total work next to BFS traversal. Along the way: fixed an
+    out-of-bounds-write risk in `operator*` (wrong result-matrix shape,
+    no current callers) and a `rows()`-vs-`cols()` bug in `swapRows()`/
+    `multiplyRow()` (only correct for square matrices), and marked one
+    dead method `OBSOLETE`. All golden regression baselines pass unchanged.
 
 ## [3.6] – May 26, 2026
 
