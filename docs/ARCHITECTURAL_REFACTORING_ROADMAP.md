@@ -139,14 +139,15 @@ in the roadmap.
 
 # Priorities
 
-1. **WS10** — GraphicsWidget canvas rendering & features. Phase 1 (#250), #260, and the
-   rendering-perf regression kernel (WS6.6) all shipped; the rest of the Performance/Feature
-   checklists remain scoped but not prioritised yet.
+1. **WS5** — matrices. A1, A2.0, A2 (APSP storage migration), A3 (contiguous storage), and A7
+   (golden coverage, via WS6.7) all done, real measured speedups throughout. Only A4-A6 remain,
+   each fully scoped and small (isolate construction call sites, cancellation-aware algebra
+   kernels, cancel guards in `writeMatrix()`) — prioritised to close out the workstream for 3.7.
 2. **WS6** — regression safety (ongoing support — continuously active underneath every other
    workstream, not "next in queue").
-3. **WS5** — matrices. The M1-continuation APSP migration from WS3 (A2.0 empirical validation +
-   the full A2 storage migration) is done, real measured speedups. A7 (golden coverage, done via
-   WS6.7) unblocked A3. A3–A6 remain.
+3. **WS10** — GraphicsWidget canvas rendering & features. Phase 1 (#250), #260, and the
+   rendering-perf regression kernel (WS6.6) all shipped; the rest of the Performance/Feature
+   checklists remain scoped but not prioritised yet.
 4. **WS7** — MainWindow decomposition. Solid milestone roadmap (MW1–MW7) exists; zero code written
    yet.
 5. **WS8** — IO layer stabilization. Roadmap scoped; zero code written yet.
