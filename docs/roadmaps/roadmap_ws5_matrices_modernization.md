@@ -8,9 +8,10 @@
 
 ## Status
 
-🚧 In progress. A1, A2.0, and A2 (APSP storage migration) done. A7 scoped, moved to WS6, and done
-there (WS6.7). A3 de-risked by investigation and now unblocked — WS6.7's golden safety net is in
-place. A4's inventory corrected. A5/A6 ready to implement directly. None of A3–A6 started yet.
+🚧 In progress. A1, A2.0, A2 (APSP storage migration), and A3 (contiguous storage) done. A7 scoped,
+moved to WS6, and done there (WS6.7). A4's inventory corrected. A5/A6 ready to implement directly.
+A3 still has open sub-scope (formal access-throughput benchmark, `prominence --bench`), detailed
+under A3 below. None of A4–A6 started yet.
 
 ## Current Reality
 
@@ -18,21 +19,10 @@ place. A4's inventory corrected. A5/A6 ready to implement directly. None of A3�
   fields (`SIGMA, DM, sumM, invAM, AM, invM, WM, XM, XSM, XRM, CLQM`) lives across six different
   `src/graph/` slice directories, not one (`centrality/`, `distances/`, `cohesion/`, `matrices/`,
   `reachability/`, `reporting/`). Only one of the six is the `matrices/` directory that nominally
-  owns this concern.
-- **`Matrix`'s own internal storage does N+1 separate heap allocations per matrix, not one.**
-  Confirmed by reading the constructor directly (`src/matrix.cpp:33-39`):
-  ```cpp
-  Matrix::Matrix (int rowDim, int colDim) : m_rows(rowDim), m_cols(colDim) {
-      row = new MatrixRow[m_rows];              // allocation #1: the row objects
-      for (int i=0; i<m_rows; i++)
-          row[i].resize(m_cols);                // allocation #2..N+1: one per row
-  }
-  ```
-  Each `MatrixRow` (`src/matrix.h:51-110`) owns its own separately-`new`'d `qreal[]` buffer. For a
-  7343-node network (`geom.net`), constructing a single N×N matrix means **7344 separate heap
-  allocations** instead of 1. Rows aren't guaranteed contiguous in memory, so row-to-row traversal
-  (the common `for(i) for(j) M[i][j]` access pattern used throughout the centrality/distance code)
-  doesn't benefit from cache prefetching the way a single flat buffer would.
+  owns this concern — this is A4's target.
+- `Matrix`'s internal storage (flat buffer + row-pointer index, since A3) and its `QHash`-vs-`Matrix`
+  APSP storage decision (since A2) are documented in `README_DEVELOPER_NOTES.md`'s "Matrix Storage"
+  section — that's the current, durable reference; this doc tracks remaining/future work only.
 - Matrix algebra methods (inverse, power iteration, etc.) run synchronously on the main thread with
   no cancellation support (see Known Issues below).
 
@@ -40,13 +30,8 @@ place. A4's inventory corrected. A5/A6 ready to implement directly. None of A3�
 
 ### Performance
 
-**P1 — `Matrix` storage is N+1 heap allocations instead of 1 contiguous buffer.** See Current
-Reality above. Re-verified against current code — `Matrix::Matrix()` (`src/matrix.cpp:33-39`)
-and `MatrixRow`'s own `new qreal[]` (`src/matrix.h:51-60`) are both unchanged, so A3's premise still
-holds as written.
-
-**P2 — APSP per-vertex QHash storage** (`GraphVertex::m_distance` / `m_shortestPaths`) — the
-incoming migration from WS3 M1, detailed as A2 below.
+Resolved: `Matrix` storage (A3, N+1 allocations → 1) and APSP per-vertex `QHash` storage (A2) — see
+`README_DEVELOPER_NOTES.md`'s "Matrix Storage" / "Distance Engine" sections.
 
 ### Cancellation (found during #52 Cancel-button fix)
 
@@ -99,144 +84,67 @@ entries in the thousands. Not scoped into a specific milestone yet; natural fit 
 The six-directory scatter and the 11-field catalog in Current Reality above is A1's output.
 Prerequisite for A4 (isolating construction into `matrices/`).
 
-### A2 — APSP Storage Migration (incoming from WS3 M1)
+### A2 — APSP Storage Migration ✅ Done (v3.7)
 
-*Handed off from [`roadmap_ws3_architecture_performance.md`](roadmap_ws3_architecture_performance.md),
-the "M1 continuation" section.*
-
-**Current state (post WS3 M1):** `m_distance` and `m_shortestPaths` on `GraphVertex` are
-per-vertex `QHash<target_vertex_num, QPair<relation_id, value>>`. Access during back-propagation:
-`shortestPaths(v1)` iterates entries for key `v1` to find the one matching `m_curRelation` — a
-hash lookup per predecessor per vertex per source. For V=5,000 sources with average degree k=10,
-that's O(V²k) = 250M hash lookups just for sigma reads. Confirmed by live profiling (`sample`,
-2000N/40000E, post-WS14 so the `qDebug()` noise that made earlier profiles unreadable is gone):
-`DistanceEngine::finalize()`'s O(N²) pair loop spends ~73% of its samples in
-`GraphVertex::distance()` — the QHash lookup this migration removes.
-
-**Target state:** a centralised relation-keyed matrix pair on `Graph`:
-```
-Graph::m_apspDist:   QHash< relation_id, Matrix >   — geodesic distances
-Graph::m_apspSigma:  QHash< relation_id, Matrix >   — sigma counts
-```
-Row = source vertex position, column = target vertex position. APSP reads become flat array
-lookups (O(1)); write-back is a single flat write per source, safe without any lock since each
-parallel source owns its own row exclusively — no mutex involved, in either the old or new storage
-(per-source row-uniqueness already made the QHash write-back race-free, per
-`roadmap_ws3_architecture_performance.md`). A2's win is lookup speed and, per A2.0 below, memory —
-not synchronization.
-
-**Memory — the open question, resolved by A2.0 below:** a flat `Matrix` always allocates N² cells;
-`QHash` only stores entries for reachable pairs. So `Matrix` should win for connected graphs and
-could lose for graphs with many isolates/disconnected components — whether that crossover matters
-for realistic SocNetV networks is what A2.0 measures.
+Handed off from [`roadmap_ws3_architecture_performance.md`](roadmap_ws3_architecture_performance.md)'s
+"M1 continuation" section: `GraphVertex::m_distance`/`m_shortestPaths` (per-vertex `QHash`) caused
+~73% of `DistanceEngine::finalize()`'s samples to go to hash lookups (profiled at 2,000N/40,000E).
+Replaced with `Graph::m_apspDist`/`m_apspSigma` (`QHash<relation_id, Matrix>`, flat O(1) reads) — see
+"Distance Engine" in `README_DEVELOPER_NOTES.md` for the current design.
 
 ### A2.0 — Empirical validation ✅ Done, GO (v3.7)
 
-Built a standalone tool, `src/tools/matrix_storage_bench.cpp` (`BUILD_MATRIX_BENCH`, off by
-default) + `scripts/run_matrix_storage_bench.sh`, comparing `QHash<int, QPair<int,qreal>>`
-(mirrors `GraphVertex::m_distance` exactly) against a flat `Matrix`, at N=1,000/7,343, across three
-topologies: **connected** (every vertex reachable), **disconnected** (~8 equal-sized components +
-5% isolates), and **giant** (one dominant component + a long tail of small ones — the realistic
-shape for real networks; added after finding "8 equal islands" was an unrepresentative test case).
-Checksums matched exactly between `qhash` and `matrix` for every configuration, confirming both
-held identical values.
-
-*Methodology note:* memory was originally measured in-process (`getrusage`/`mach_task_basic_info`),
-which under-reported by 6×-14× at scale — this tool's tight, single-threaded, syscall-free loops
-don't generate enough kernel bookkeeping events for those counters to keep up. Fixed by measuring
-externally instead, via `/usr/bin/time -l`/`time -v` wrapping each run.
-
-| N | Topology | Structure | Construct (ms) | Lookup (ms) | Memory |
-|---|---|---|---|---|---|
-| 1,000 | connected | qhash | 70 | 65 | 34.0 MB |
-| 1,000 | connected | matrix | 6 | 2 | 7.8 MB |
-| 1,000 | disconnected | qhash | 7 | 51 | 4.0 MB |
-| 1,000 | disconnected | matrix | 2 | 2 | 7.8 MB |
-| 1,000 | giant | qhash | 54 | 58 | 29.6 MB |
-| 1,000 | giant | matrix | 5 | 2 | 7.8 MB |
-| 7,343 | connected | qhash | 3,606 | 3,523 | 1,919 MB |
-| 7,343 | connected | matrix | 325 | 117 | 461 MB |
-| 7,343 | disconnected | qhash | 403 | 2,656 | 225 MB |
-| 7,343 | disconnected | matrix | 120 | 117 | 461 MB |
-| 7,343 | giant | qhash | 2,896 | 3,244 | 1,601 MB |
-| 7,343 | giant | matrix | 289 | 123 | 461 MB |
-
-**Lookup speed:** `matrix` wins every configuration, 22×-32×, independent of topology.
-
-**Memory:** `Matrix`'s footprint is topology-independent (always N² cells, ~461 MB at N=7,343).
-`QHash`'s footprint tracks reachability: **4.2× more** than matrix when connected, **2.0× less**
-only for the artificial "8 equal islands" case, **3.5× more** for the realistic `giant` shape. Real
-networks — including `geom.net`-scale ones this migration targets — look like `giant`, not "equal
-islands," so `Matrix` wins on both memory and speed for the topologies that actually matter. (These
-numbers are also against `Matrix`'s current N+1-allocation implementation — A3's contiguous-buffer
-work would widen the memory advantage further, not narrow it.)
-
-**Decision: GO.**
-
-**Extension:** `reachability/graph_reachability_walks.cpp` already uses `Matrix::pow()` directly
-with no `QHash`/`QMap` involved, so it doesn't need this migration.
+`src/tools/matrix_storage_bench.cpp` (`BUILD_MATRIX_BENCH`) compared `QHash<int, QPair<int,qreal>>`
+(mirroring `GraphVertex::m_distance`) against `Matrix`, at N=1,000/7,343 across connected/
+disconnected/giant-component topologies. **Decision: GO** — `Matrix` wins lookup speed 22×-32× in
+every configuration, and wins memory too for any topology with one dominant connected component
+(what real networks look like); `QHash` only wins memory for artificial many-equal-islands graphs.
+See "Matrix Storage" in `README_DEVELOPER_NOTES.md` for the durable finding and reasoning.
 
 ### A2 implementation ✅ Done (v3.7)
 
-- **Step 1:** `Graph::m_apspDist`/`m_apspSigma` added; `DistanceEngine` wrote both the new matrices
-  and the old per-vertex `QHash` in parallel first (nothing read the new storage yet) — golden
-  compares and benchmarks unchanged, confirming zero behavior/perf change at that step.
-- **Step 2:** all 18 read call sites migrated off `GraphVertex::distance()`/`shortestPaths()` onto
-  `Graph::apspDistance()`/`apspShortestPaths()` (new read-only accessors) or direct `Matrix::item()`
-  reads, six commits, golden-verified each time. `DistanceEngine::finalize()` — the actual O(N²) hot
-  path — was restructured to iterate positions directly instead of an iterator plus a per-pair
-  position lookup, so its reads are genuine O(1) matrix accesses with no hash lookup involved.
-- **Step 3:** the old `GraphVertex::m_distance`/`m_shortestPaths` storage and all eight accessors
-  removed (including `reserveShortestPaths()`, confirmed dead code — declared, never called). Golden
-  compares clean throughout.
+`Graph::m_apspDist`/`m_apspSigma` (`QHash<relation_id, Matrix>`) replaced the old per-vertex
+`GraphVertex::m_distance`/`m_shortestPaths` QHash storage, migrated in three golden-verified steps
+(dual-write → read-site migration → old storage removal). Real before/after benchmarks: no
+measurable change at N≤500 (too small for the targeted O(N²) cost to matter), 15-17% faster at
+N=1,000, 9% faster at N=7,343 (`geom.net`), 1-3% faster end-to-end in the GUI. See "Distance Engine"
+in `README_DEVELOPER_NOTES.md` for where this storage lives today.
 
-**Real before/after numbers** (same benchmarks/networks/commands before and after the full
-migration, matching WS3 M1's own evidence standard):
+### A3 — `Matrix` contiguous storage (P1) ✅ Done
 
-| Measurement | Before | After | Change |
-|---|---|---|---|
-| CLI `EIES48_T1_C1_W1` (N=48) | 2ms | 2ms | — |
-| CLI `EIES48_T2_C1_W1` (N=48) | 2ms | 2ms | — |
-| CLI `BA500_M3_C1_W0` (N=500) | 38ms | 42ms | noise |
-| CLI `BA500_M3_C0_W0` (N=500) | 34ms | 38ms | noise |
-| CLI `DIST_GRAPHML_1000N_10000A_C0_W0` (N=1,000) | 914ms | 777ms | **15% faster** |
-| CLI `DIST_GRAPHML_1000N_10000A_C1_W0` (N=1,000) | 1,082ms | 900ms | **17% faster** |
-| Isolated kernel, `geom.net` (N=7,343) | 18,906ms | 17,188ms | **9% faster** |
-| GUI `distances_bench` (N=2,000/~40,000E) | 6,329ms | 6,163ms | 3% faster |
-| GUI `distances_bench centralities` | 7,546ms | 7,454ms | 1% faster |
+Replaced `MatrixRow*` (N separately-allocated row objects, one `new` per row) with one contiguous
+`qreal*` buffer plus a precomputed row-pointer index (`m_rowPtr`) — see "Matrix Storage" in
+`README_DEVELOPER_NOTES.md` for the design and why the row-pointer index (not just flattening) was
+necessary to actually win. Zero external callers of `MatrixRow`/`operator[]`/`operator()` existed
+outside `matrix.cpp` itself, so this was a pure internal refactor.
 
-The two smallest networks (48, 500 nodes) show no measurable change — expected, since the O(N²)
-`finalize()` cost this migration targets is too small at that scale to matter against everything
-else `compute()` does. Every larger network shows a real, consistent improvement, growing with N as
-predicted, but more modest than `finalize()`'s own ~73%-of-itself win: this matches the profiling
-finding that `runAllSources()`'s actual SSSP work dominates total `compute()` time far more than
-`finalize()`'s bookkeeping does, so a large win inside `finalize()` translates into a smaller (but
-real) slice of the total.
+**Delivered:**
+- Allocation count 7,344→1 for a `geom.net`-scale matrix (structural, not measured).
+- Full doxygen pass across every `Matrix` method, with Big-O complexity notes on the
+  non-trivial ones.
+- Three real bugs fixed, found during that pass: `operator*` allocated the wrong result shape
+  (OOB-write risk, zero current callers); `swapRows()`/`multiplyRow()` used `rows()` instead of
+  `cols()` as row length (only correct for square matrices). `productSym()` marked `OBSOLETE`
+  (dead code, no caller). `powerIteration()` re-verified — no bug found.
+- Verified via `run_golden_compares.sh` (incl. WS6.7's `kernel_matrix_v8`, including a deliberate
+  indexing-bug injection/reversion check) and `run_benchmarks.sh`, clean throughout.
+- **End-to-end result: no measurable change**, and that's expected, not a shortfall — see "A win in
+  isolated cell-access throughput does not guarantee an end-to-end win" in `README_DEVELOPER_NOTES.md`'s
+  Matrix Storage section. `DistanceEngine`'s BFS traversal dominates total work over matrix writes,
+  so a real isolated access-throughput win doesn't move the end-to-end number outside normal
+  run-to-run noise on this workload.
 
-### A3 — `Matrix` contiguous storage (P1)
-
-Replace `MatrixRow*` (N separately-allocated row objects) with one contiguous `qreal*` buffer of
-size `rows*cols`, row-major, inside `Matrix` itself.
-
-**De-risked by direct investigation, not just proposed:** every `MatrixRow` reference
-in the codebase was checked — it's used exclusively inside `matrix.h`/`matrix.cpp` itself; nothing
-in `src/graph/` or anywhere else touches `MatrixRow` directly, only ever through `Matrix::item()`/
-`setItem()`. Every `row[i].resize(...)` call site (6 total) resizes every row to the same width
-within one `Matrix` object — confirms the existing invariant is already rectangular, never ragged.
-Net effect: `MatrixRow` can be simplified or eliminated entirely (direct `m_data[r*cols+c]`
-indexing inside `Matrix`) with **zero changes needed outside `matrix.cpp`/`matrix.h`** — this is a
-pure internal refactor, not the "verify the approach first" open question it was previously scoped
-as.
-
-**Sequencing: unblocked.** WS6.7's `kernel_matrix_v8` (`roadmap_ws6_testing_ci_regression.md`) is
-done — a direct golden baseline on `Matrix`'s actual contents, not just downstream centrality
-scores, now exists. A3 can start.
-
-**Completion criteria:** `run_golden_compares.sh`, `run_benchmarks.sh`, and WS6.7's `kernel_matrix_v8`
-all pass with no numeric change; measure allocation count and construction time for a large
-reference matrix (e.g. building `AM` for `geom.net`, N=7343) before and after — one allocation
-instead of 7344, with the actual measured construction-time delta reported, same evidence standard
-as A2.0.
+**Still open, folded into this milestone's remaining scope:**
+- Formal construction-time and raw access-throughput benchmark modes in `matrix_storage_bench.cpp`
+  (isolated-benchmark evidence for the structural/access wins above, not yet built).
+- `run_benchmarks.sh` has no `prominence`-kernel case — `AM`/`invAM`/`WM` (adjacency, inverse,
+  walks) are only exercised via the **prominence** kernel (Information Centrality, Eigenvector
+  Centrality), which has no `--bench` support (`socnetv_cli.cpp:133` hard-blocks `--bench` for
+  anything but `--kernel distance`). Needs: a median-of-N loop in `kernel_prominence_v4.cpp`
+  (mirroring `kernel_distance_v1.cpp:315-341`), the CLI dispatch check relaxed to an allowlist, a
+  new `run_benchmarks.sh` case (`Benchmark_BA_Directed_N500_m3.paj`, N=500 — not `geom.net`-scale,
+  since Information Centrality/Eigenvector Centrality are O(N³)-ish), and baselines recorded on
+  both this machine (`macos-arm64`/`macos-m5`) and the Linux x86_64 box.
 
 ### A4 — Isolate construction into `matrices/`
 

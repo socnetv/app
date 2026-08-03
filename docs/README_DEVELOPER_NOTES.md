@@ -184,6 +184,49 @@ Do not add new per-source mutable state to `Graph` or `GraphVertex` — put it i
 
 ---
 
+# Matrix Storage
+
+`Matrix` (`src/matrix.h`/`.cpp`) is the general-purpose dense matrix used throughout SocNetV for
+adjacency, distance, similarity, and sociomatrix data (`AM`, `invAM`, `DM`, `WM`, and the other
+named fields on `Graph`).
+
+**Storage: 2D access on a 1D array, via a precomputed row-pointer index.** Every cell lives in one
+contiguous allocation (`m_data`, row-major) — one allocation for the whole grid, not one per row.
+A second, much smaller array (`m_rowPtr`) records where each row starts inside `m_data`, rebuilt
+once whenever the matrix is constructed or resized (`rebuildRowPtr()`). Reading or writing cell
+`(r,c)` is then: look up row `r`'s start address in `m_rowPtr` (one array read), step `c` cells
+forward from it (one pointer offset) — no multiplication at access time, regardless of matrix size.
+This matters because `m_cols` is a runtime value, not a compile-time constant: computing a cell's
+address as `r*m_cols+c` on every access is a genuine multiply every time, not something the compiler
+can fold away — precomputing each row's address once avoids repeating that multiply on every single
+cell access in the O(N²)/O(N³) algorithm loops that dominate `matrix.cpp`.
+
+**API:** `item()`/`setItem()`/`clearItem()` (copy-in/copy-out) are the normal read/write path used
+everywhere in the codebase. `operator[]` (`a[i][j]`, returns a raw `qreal*` via `m_rowPtr`) exists
+only because `ludcmp()`/`lubksb()`/`inverse()` need to modify cells in place with compound
+assignment (`a[i][j] -= x`), which a copy-in/copy-out getter/setter pair can't express — every other
+caller should use `item()`/`setItem()`.
+
+**`QHash` vs `Matrix` for per-relation lookup tables** (`Graph::m_apspDist`/`m_apspSigma`, see
+Distance Engine above): `Matrix` always allocates N² cells regardless of reachability; `QHash` only
+stores entries for reachable pairs. Measured across connected/disconnected/realistic topologies:
+`Matrix` wins on both memory and lookup speed for any topology dominated by one giant connected
+component — which is what real networks look like. `QHash` only wins on memory for artificial
+graphs with many equal-sized disconnected islands, a shape that doesn't occur in practice. Default
+to `Matrix` for this kind of table unless a specific network's topology is known to be many
+disconnected islands.
+
+**A win in isolated cell-access throughput does not guarantee an end-to-end win.** Confirmed when
+evaluating the `Matrix` flat-buffer refactor: raw `item()`/`setItem()` throughput improved measurably
+in isolation, but `DistanceEngine`'s real BFS-driven compute showed no measurable end-to-end change
+— old and new code overlapped well within normal run-to-run noise. Cause: `DistanceEngine`'s BFS
+traversal is O(N·(V+E)), matrix writes are only O(N²); for typical graphs traversal work dominates,
+so a real win in matrix-access cost alone doesn't move the total by enough to rise above measurement
+noise. When evaluating a `Matrix`-layer optimization, measure the actual call site's end-to-end time,
+not just isolated access throughput — the two can disagree.
+
+---
+
 # Parsing and I/O
 
 The parsing pipeline:
