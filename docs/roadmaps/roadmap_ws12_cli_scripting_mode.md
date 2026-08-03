@@ -93,6 +93,20 @@ Candidate commands, not yet scoped:
 - Basic control flow (`repeat N { ... }`) for stress-testing/averaging timing across runs
 - Script-level variables/parameters passed from the command line, instead of everything hardcoded
   in the script text
+- `cancel` — invoke `Graph::slotCancelComputation()` directly (same effect as clicking a
+  `QProgressDialog`'s Cancel button, without needing one). Needs two prerequisites first, not just
+  the command itself:
+  - **A non-blocking dispatch variant.** Every long-running command today
+    (`distances`/`distances_bench`, and any future `runGraphOperationAsync`-based command) only
+    advances the script *after* the operation completes — `processNextInteractiveCommand()` is
+    called from inside `onComplete`. So a script can never run `cancel` while a prior command is
+    still in flight; the next line isn't dispatched until the previous one is already done.
+  - **A way to trigger Information Centrality / Eigenvector Centrality from a script at all.**
+    Neither `distances` nor `distances_bench` reaches `Matrix::inverse()`/`powerIteration()` — no
+    existing command does.
+
+  Motivating use case: verifying WS5 A5's cancellation-aware algebra kernels actually interrupt a
+  real in-progress computation, not just accept the parameter without exercising it.
 
 ## Long-term direction
 
