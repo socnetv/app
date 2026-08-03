@@ -22,7 +22,7 @@
 #                        inverse, distances, similarity, reachability, walks, cliques)
 #
 # Baselines:
-#   src/tools/baselines/             (distance v1)
+#   src/tools/baselines/distance/     (v1)
 #   src/tools/baselines/reachability/ (v2)
 #   src/tools/baselines/walks/        (v3)
 #   src/tools/baselines/prominence/   (v4)
@@ -61,7 +61,7 @@ fi
 
 echo "[golden] Using CLI: $CLI"
 
-BASE="${ROOT_DIR}/src/tools/baselines"
+BASE_DISTANCE="${ROOT_DIR}/src/tools/baselines/distance"
 BASE_REACH="${ROOT_DIR}/src/tools/baselines/reachability"
 BASE_WALKS="${ROOT_DIR}/src/tools/baselines/walks"
 BASE_PROM="${ROOT_DIR}/src/tools/baselines/prominence"
@@ -195,25 +195,25 @@ run_case \
   "${DATA}/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj" \
   2 \
   -c 1 -w 0 -x 1 -k 0 \
-  "${BASE}/DunbarGelada_H22a__FT2__C1_W0_IW1_DI0.json"
+  "${BASE_DISTANCE}/DunbarGelada_H22a__FT2__C1_W0_IW1_DI0.json"
 
 run_case \
   "${DATA}/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj" \
   2 \
   -c 1 -w 1 -x 1 -k 0 \
-  "${BASE}/DunbarGelada_H22a__FT2__C1_W1_IW1_DI0.json"
+  "${BASE_DISTANCE}/DunbarGelada_H22a__FT2__C1_W1_IW1_DI0.json"
 
 run_case \
   "${DATA}/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl" \
   5 \
   -c 1 -w 0 -x 1 -k 0 \
-  "${BASE}/StokmanZiegler_Netherlands__FT5__C1_W0_IW1_DI0.json"
+  "${BASE_DISTANCE}/StokmanZiegler_Netherlands__FT5__C1_W0_IW1_DI0.json"
 
 run_case \
   "${DATA}/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl" \
   5 \
   -c 1 -w 1 -x 1 -k 0 \
-  "${BASE}/StokmanZiegler_Netherlands__FT5__C1_W1_IW1_DI0.json"
+  "${BASE_DISTANCE}/StokmanZiegler_Netherlands__FT5__C1_W1_IW1_DI0.json"
 
 # REACHABILITY (schema v2)
 run_case_reachability \

@@ -16,7 +16,7 @@ Each algorithm family owns a dedicated schema version.
 
 | Kernel        | Schema | Folder |
 |---------------|--------|--------|
-| distance      | v1     | `src/tools/baselines/` |
+| distance      | v1     | `src/tools/baselines/distance/` |
 | reachability  | v2     | `src/tools/baselines/reachability/` |
 | walks_matrix  | v3     | `src/tools/baselines/walks/` |
 | prominence    | v4     | `src/tools/baselines/prominence/` |
@@ -24,10 +24,6 @@ Each algorithm family owns a dedicated schema version.
 | clustering    | v6     | `src/tools/baselines/clustering/` |
 | connectivity  | v7     | `src/tools/baselines/connectivity/` |
 | matrix        | v8     | `src/tools/baselines/matrix/` |
-
-distance (v1) has no subfolder — it was the only kernel when the tool was first built, so nothing
-needed disambiguating yet. Every kernel added afterward got its own subfolder; distance's existing
-baselines were left where they were rather than moved for no functional reason.
 
 Schemas are never modified retroactively.
 
@@ -153,7 +149,7 @@ If any case reports a mismatch:
 ./build/socnetv-cli \
   -i <dataset> -f <filetype> \
   -c <0|1> -w <0|1> -x <0|1> -k <0|1> \
-  --dump-json src/tools/baselines/<NAME>.json
+  --dump-json src/tools/baselines/distance/<NAME>.json
 ```
 
 ## Reachability (v2)
@@ -325,7 +321,7 @@ scores, distance values, clique counts), never a `Matrix`'s actual contents — 
 
 | Kernel        | Directory |
 |---------------|-----------|
-| distance v1   | `src/tools/baselines/` |
+| distance v1   | `src/tools/baselines/distance/` |
 | reachability v2 | `src/tools/baselines/reachability/` |
 | walks v3      | `src/tools/baselines/walks/` |
 | prominence v4 | `src/tools/baselines/prominence/` |
