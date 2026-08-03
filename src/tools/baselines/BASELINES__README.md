@@ -23,6 +23,11 @@ Each algorithm family owns a dedicated schema version.
 | io_roundtrip  | v5     | `src/tools/baselines/io_roundtrip/` |
 | clustering    | v6     | `src/tools/baselines/clustering/` |
 | connectivity  | v7     | `src/tools/baselines/connectivity/` |
+| matrix        | v8     | `src/tools/baselines/matrix/` |
+
+distance (v1) has no subfolder — it was the only kernel when the tool was first built, so nothing
+needed disambiguating yet. Every kernel added afterward got its own subfolder; distance's existing
+baselines were left where they were rather than moved for no functional reason.
 
 Schemas are never modified retroactively.
 
@@ -112,6 +117,18 @@ Example: `TinyDisconnected_Undir_N6_E4__CONN__V7__FT2.json`
 
 ---
 
+## Matrix Kernel (schema v8)
+
+```
+<DATASET>__MATRIX__V8__FT<filetype>__W<0|1>_IW<0|1>_DI<0|1>.json
+```
+
+Note: `C` is not encoded — matrix always computes every category.
+
+Example: `TinyPath_N3_E2__MATRIX__V8__FT2__W0_IW1_DI0.json`
+
+---
+
 # 3. Golden Checklist (Pre-Release)
 
 Before tagging a release:
@@ -191,6 +208,15 @@ If any case reports a mismatch:
   --dump-json src/tools/baselines/connectivity/<NAME>.json
 ```
 
+## Matrix (v8)
+
+```bash
+./build/socnetv-cli --kernel matrix \
+  -i <dataset> -f <filetype> \
+  -c 0 -w <0|1> -x <0|1> -k <0|1> \
+  --dump-json src/tools/baselines/matrix/<NAME>.json
+```
+
 ---
 
 # 5. What Is Verified
@@ -268,6 +294,22 @@ Connectivity semantics:
 
 ---
 
+## Matrix Kernel (v8)
+
+Raw contents of every `Matrix`-producing `Graph` operation: adjacency, adjacency inverse,
+distances, similarity, reachability, walks, total walks (skipped above `kTotalWalksSkipThreshold`
+nodes — see `kernel_matrix_v8.cpp`), clique co-membership.
+
+Networks above `kFullGridSizeLimit` (20 nodes) are dumped as a compact summary (row/col sums,
+trace, five sampled cells) instead of the full N×N grid — a full-grid dump is impractical past a
+few dozen nodes (WS5 A2.0 measured ~461 MB for one `Matrix` at N=7,343).
+
+Exists specifically because every other kernel only ever checks downstream results (centrality
+scores, distance values, clique counts), never a `Matrix`'s actual contents — see
+`roadmap_ws6_testing_ci_regression.md`'s WS6.7 section for the full design rationale.
+
+---
+
 # 6. Exit Codes & CI Integration
 
 `socnetv-cli --compare-json` exits with:
@@ -290,6 +332,7 @@ Connectivity semantics:
 | io_roundtrip v5 | `src/tools/baselines/io_roundtrip/` |
 | clustering v6 | `src/tools/baselines/clustering/` |
 | connectivity v7 | `src/tools/baselines/connectivity/` |
+| matrix v8     | `src/tools/baselines/matrix/` |
 
 ---
 
