@@ -10,8 +10,7 @@
 
 🚧 In progress. A1, A2.0, A2 (APSP storage migration), and A3 (contiguous storage) done. A7 scoped,
 moved to WS6, and done there (WS6.7). A4's inventory corrected. A5/A6 ready to implement directly.
-A3 still has one open sub-scope item (`prominence --bench` support), detailed under A3 below. None
-of A4–A6 started yet.
+None of A4–A6 started yet.
 
 ## Current Reality
 
@@ -144,15 +143,26 @@ Consistent, real wins on both axes, in every topology — much lower run-to-run 
 end-to-end `DistanceEngine` check above, confirming those isolated wins are genuine even though they
 don't surface end-to-end on that particular call site.
 
-**Still open, folded into this milestone's remaining scope:**
-- `run_benchmarks.sh` has no `prominence`-kernel case — `AM`/`invAM`/`WM` (adjacency, inverse,
-  walks) are only exercised via the **prominence** kernel (Information Centrality, Eigenvector
-  Centrality), which has no `--bench` support (`socnetv_cli.cpp:133` hard-blocks `--bench` for
-  anything but `--kernel distance`). Needs: a median-of-N loop in `kernel_prominence_v4.cpp`
-  (mirroring `kernel_distance_v1.cpp:315-341`), the CLI dispatch check relaxed to an allowlist, a
-  new `run_benchmarks.sh` case (`Benchmark_BA_Directed_N500_m3.paj`, N=500 — not `geom.net`-scale,
-  since Information Centrality/Eigenvector Centrality are O(N³)-ish), and baselines recorded on
-  both this machine (`macos-arm64`/`macos-m5`) and the Linux x86_64 box.
+**`prominence --bench` support ✅ Done.** `run_benchmarks.sh` had no `prominence`-kernel case —
+`AM`/`invAM`/`WM` (adjacency, inverse, walks) are only exercised via the **prominence** kernel
+(Information Centrality, Eigenvector Centrality), which had no `--bench` support
+(`socnetv_cli.cpp:133` hard-blocked `--bench` for anything but `--kernel distance`). Added: a
+median-of-N loop in `kernel_prominence_v4.cpp` (mirroring `kernel_distance_v1.cpp`'s), the CLI
+dispatch check relaxed to an allowlist, and a new `run_benchmarks.sh --type prominence` case
+(`PROM_BA500_M3`, `Benchmark_BA_Directed_N500_m3.paj`, N=500 — not `geom.net`-scale, since
+Information Centrality/Eigenvector Centrality are O(N³)-ish).
+
+**Baseline recording deferred to the v3.7 tag, not done now.** Confirmed (checked out the `v3.6`
+tag, rebuilt, reran the full suite) that every committed `perf_expected.env` was recorded during
+the v3.6 cycle, matching the project rule that baselines are only re-recorded against a clean
+tagged release, never `develop` HEAD — recording now would embed unrelated `develop`-only changes
+into what's supposed to be a release snapshot. `PROM_BA500_M3` has no `v3.6` baseline to compare
+against anyway (that build predates `--bench` support for this kernel entirely). Interim reading,
+this machine, current `develop` HEAD, for reference only until the real recording happens at the
+v3.7 tag: **`PROM_BA500_M3` median 40ms** (N=500, `--bench 20`).
+
+Also found while checking this: `README__RELEASE_PROCEDURE.md` has no step at all for
+(re-)recording perf baselines at release time — worth adding once this is done.
 
 ### A4 — Isolate construction into `matrices/`
 

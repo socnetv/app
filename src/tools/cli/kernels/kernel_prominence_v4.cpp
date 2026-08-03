@@ -16,6 +16,10 @@
 #include <QJsonArray>
 #include <QTextStream>
 
+#include <algorithm>
+#include <numeric>
+#include <vector>
+
 namespace cli
 {
 
@@ -323,34 +327,72 @@ namespace cli
                               const HeadlessLoadResult &load,
                               Graph &g)
     {
-        // Force recomputation
-        g.resetDistanceCentralityCacheFlags();
+        auto run_compute_once_ms = [&]() -> qint64
+        {
+            // Force recomputation
+            g.resetDistanceCentralityCacheFlags();
 
-        QElapsedTimer t;
-        t.start();
+            QElapsedTimer t;
+            t.start();
 
-        // 1. Geodesic-based centralities
-        g.graphDistancesGeodesic(true,
-                                 cfg.considerWeights,
-                                 cfg.inverseWeights,
-                                 cfg.dropIsolates);
+            // 1. Geodesic-based centralities
+            g.graphDistancesGeodesic(true,
+                                     cfg.considerWeights,
+                                     cfg.inverseWeights,
+                                     cfg.dropIsolates);
 
-        // 2. Standalone centralities
-        g.centralityDegree(cfg.considerWeights, cfg.dropIsolates);
-        g.centralityInformation(cfg.considerWeights, cfg.dropIsolates);
-        g.centralityEigenvector(cfg.considerWeights, cfg.dropIsolates);
-        g.centralityClosenessIR(cfg.considerWeights,
+            // 2. Standalone centralities
+            g.centralityDegree(cfg.considerWeights, cfg.dropIsolates);
+            g.centralityInformation(cfg.considerWeights, cfg.dropIsolates);
+            g.centralityEigenvector(cfg.considerWeights, cfg.dropIsolates);
+            g.centralityClosenessIR(cfg.considerWeights,
+                                    cfg.inverseWeights,
+                                    cfg.dropIsolates);
+
+            // 3. Prestige
+            g.prestigeDegree(cfg.considerWeights, cfg.dropIsolates);
+            g.prestigeProximity(cfg.considerWeights,
                                 cfg.inverseWeights,
                                 cfg.dropIsolates);
+            g.prestigePageRank(cfg.dropIsolates);
 
-        // 3. Prestige
-        g.prestigeDegree(cfg.considerWeights, cfg.dropIsolates);
-        g.prestigeProximity(cfg.considerWeights,
-                            cfg.inverseWeights,
-                            cfg.dropIsolates);
-        g.prestigePageRank(cfg.dropIsolates);
+            return t.elapsed();
+        };
 
-        const qint64 computeMs = t.elapsed();
+        if (cfg.benchRuns > 0)
+        {
+            // warmup (not measured)
+            (void)run_compute_once_ms();
+
+            std::vector<qint64> ms;
+            ms.reserve(static_cast<size_t>(cfg.benchRuns));
+
+            for (int r = 0; r < cfg.benchRuns; ++r)
+                ms.push_back(run_compute_once_ms());
+
+            std::sort(ms.begin(), ms.end());
+
+            const qint64 minMs = ms.front();
+            const qint64 maxMs = ms.back();
+
+            const double meanMs =
+                std::accumulate(ms.begin(), ms.end(), 0.0) / static_cast<double>(ms.size());
+
+            const qint64 medianMs =
+                (ms.size() % 2 == 1)
+                    ? ms[ms.size() / 2]
+                    : (ms[ms.size() / 2 - 1] + ms[ms.size() / 2]) / 2;
+
+            printKV("COMPUTE_RUNS", cfg.benchRuns);
+            printKV("COMPUTE_MS_MIN", minMs);
+            printKV("COMPUTE_MS_MEDIAN", medianMs);
+            printKV("COMPUTE_MS_MEAN", meanMs);
+            printKV("COMPUTE_MS_MAX", maxMs);
+
+            return 0;
+        }
+
+        const qint64 computeMs = run_compute_once_ms();
         printKV("COMPUTE_MS", computeMs);
 
         const QJsonObject actual =

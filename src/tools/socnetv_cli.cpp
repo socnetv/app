@@ -130,9 +130,9 @@ int main(int argc, char *argv[])
         return 2;
     }
 
-    if (cfg.benchRuns > 0 && cfg.kernel != "distance")
+    if (cfg.benchRuns > 0 && cfg.kernel != "distance" && cfg.kernel != "prominence")
     {
-        QTextStream(stderr) << "ERROR: --bench is only supported with --kernel distance\n";
+        QTextStream(stderr) << "ERROR: --bench is only supported with --kernel distance or prominence\n";
         return 2;
     }
 
