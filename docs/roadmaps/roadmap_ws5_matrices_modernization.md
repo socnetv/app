@@ -10,8 +10,8 @@
 
 🚧 In progress. A1, A2.0, A2 (APSP storage migration), and A3 (contiguous storage) done. A7 scoped,
 moved to WS6, and done there (WS6.7). A4's inventory corrected. A5/A6 ready to implement directly.
-A3 still has open sub-scope (formal access-throughput benchmark, `prominence --bench`), detailed
-under A3 below. None of A4–A6 started yet.
+A3 still has one open sub-scope item (`prominence --bench` support), detailed under A3 below. None
+of A4–A6 started yet.
 
 ## Current Reality
 
@@ -27,11 +27,6 @@ under A3 below. None of A4–A6 started yet.
   no cancellation support (see Known Issues below).
 
 ## Known Issues
-
-### Performance
-
-Resolved: `Matrix` storage (A3, N+1 allocations → 1) and APSP per-vertex `QHash` storage (A2) — see
-`README_DEVELOPER_NOTES.md`'s "Matrix Storage" / "Distance Engine" sections.
 
 ### Cancellation (found during #52 Cancel-button fix)
 
@@ -92,7 +87,7 @@ Handed off from [`roadmap_ws3_architecture_performance.md`](roadmap_ws3_architec
 Replaced with `Graph::m_apspDist`/`m_apspSigma` (`QHash<relation_id, Matrix>`, flat O(1) reads) — see
 "Distance Engine" in `README_DEVELOPER_NOTES.md` for the current design.
 
-### A2.0 — Empirical validation ✅ Done, GO (v3.7)
+### A2.0 — Empirical validation ✅ Done (v3.7)
 
 `src/tools/matrix_storage_bench.cpp` (`BUILD_MATRIX_BENCH`) compared `QHash<int, QPair<int,qreal>>`
 (mirroring `GraphVertex::m_distance`) against `Matrix`, at N=1,000/7,343 across connected/
@@ -134,9 +129,22 @@ outside `matrix.cpp` itself, so this was a pure internal refactor.
   so a real isolated access-throughput win doesn't move the end-to-end number outside normal
   run-to-run noise on this workload.
 
+**Construction/access-throughput evidence** — `src/tools/matrix_storage_bench.cpp`'s existing
+`--structure matrix` branch already isolates exactly this (no new tool needed, reused as-is): built
+against a pre-A3 worktree (`MatrixRow`) and current code (flat buffer + `m_rowPtr`), median of 5 runs
+at N=7,343 across all three A2.0 topologies, checksums identical confirming no correctness change:
+
+| Topology | Construct: old→new | Change | Lookup: old→new | Change |
+|---|---|---|---|---|
+| connected | 349ms→213ms | **39% faster** | 120ms→99ms | **18% faster** |
+| disconnected | 120ms→43ms | **64% faster** | 121ms→98ms | **19% faster** |
+| giant | 285ms→176ms | **38% faster** | 116ms→100ms | **14% faster** |
+
+Consistent, real wins on both axes, in every topology — much lower run-to-run noise than the
+end-to-end `DistanceEngine` check above, confirming those isolated wins are genuine even though they
+don't surface end-to-end on that particular call site.
+
 **Still open, folded into this milestone's remaining scope:**
-- Formal construction-time and raw access-throughput benchmark modes in `matrix_storage_bench.cpp`
-  (isolated-benchmark evidence for the structural/access wins above, not yet built).
 - `run_benchmarks.sh` has no `prominence`-kernel case — `AM`/`invAM`/`WM` (adjacency, inverse,
   walks) are only exercised via the **prominence** kernel (Information Centrality, Eigenvector
   Centrality), which has no `--bench` support (`socnetv_cli.cpp:133` hard-blocks `--bench` for
