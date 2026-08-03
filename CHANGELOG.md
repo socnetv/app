@@ -284,6 +284,13 @@ All notable changes to this project are documented in this file.
     no current callers) and a `rows()`-vs-`cols()` bug in `swapRows()`/
     `multiplyRow()` (only correct for square matrices), and marked one
     dead method `OBSOLETE`. All golden regression baselines pass unchanged.
+  - **`Matrix::inverse()`/`powerIteration()` are now cancellation-aware**
+    (WS5 A5): Information Centrality and Eigenvector Centrality could not
+    previously be interrupted once started — clicking Cancel was accepted
+    but had no effect until the whole computation finished. Both methods now
+    check the cancel flag once per outer-loop iteration (per matrix column
+    for the inverse, per power-iteration step) and stop early instead of
+    running to completion. All golden regression baselines pass unchanged.
 
 ## [3.6] – May 26, 2026
 

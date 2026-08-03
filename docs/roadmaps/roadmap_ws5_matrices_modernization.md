@@ -8,9 +8,9 @@
 
 ## Status
 
-🚧 In progress. A1, A2.0, A2 (APSP storage migration), and A3 (contiguous storage) done. A7 scoped,
-moved to WS6, and done there (WS6.7). A4's inventory corrected. A5/A6 ready to implement directly.
-None of A4–A6 started yet.
+🚧 In progress. A1, A2.0, A2 (APSP storage migration), A3 (contiguous storage), and A5
+(cancellation-aware algebra kernels) done. A7 scoped, moved to WS6, and done there (WS6.7). A4's
+inventory corrected, ready to implement. A6 ready to implement. Neither started yet.
 
 ## Current Reality
 
@@ -186,43 +186,44 @@ as part of A4, rather than migrating a field nothing ever writes to.
 Migrate the seven real construction sites into the `matrices/` slice directory, one call site at a
 time, golden-regression-verified after each move.
 
-### A5 — Cancellation-aware algebra kernels (I1, I2)
+### A5 — Cancellation-aware algebra kernels (I1, I2) ✅ Done (code), live test deferred
 
-Insertion points, found by reading each method directly:
-- **`Matrix::inverse()`** (`src/matrix.cpp:1256`) — after the one-time `ludcmp()` decomposition,
-  the actual cost is a `for (j=0; j<n; j++)` loop calling `lubksb()` once per column (line 1279).
-  A cancellation check at the top of this loop interrupts between columns.
-- **`Matrix::inverseByGaussJordanElimination()`** (`src/matrix.cpp:1003`) — same treatment, its own
-  outer loop. **But check reachability first: this method has no reachable caller.**
-  `createMatrixAdjacencyInverse()` only calls it when `method == "gauss"`
-  (`graph/matrices/graph_matrix_adjacency.cpp:162-165`), its sole caller passes `"lu"`
-  (`graph/reporting/graph_reports.cpp:5780`), and the parameter default is also `"lu"`
-  (`graph.h:823`). Adding cancellation support to dead code is wasted work — decide whether to
-  delete the method outright before doing A5 on it. It also carries an O(N³) logging problem (4
-  unconditional `qDebug()` calls in its innermost `for k` loop, `src/matrix.cpp:1057-1074`, three of
-  which compute arithmetic purely in order to print it), which is why
-  [WS14](roadmap_ws14_logging_cost.md)'s L4 needs the same decision. Make it once, in whichever
-  workstream gets there first, and record it in both.
-
-  **Decision made in WS14's L4: keep it, don't delete.** Its logging was converted to
-  `qCDebug(lcMatrix)` like the rest of `matrix.cpp` — the O(N³) landmine above is defused (near-free
-  when the category is disabled) but the method itself still has no reachable caller. A5's
-  cancellation-support work on this method is therefore still adding a feature to dead code — that
-  part of the original concern stands regardless of the logging decision, and is A5's call to make,
-  not WS14's.
-- **`Matrix::powerIteration()`** (`src/matrix.cpp:808`) — already a bounded
-  `do { ... } while (iter < maxIter && ...)` loop; check goes at the top of the existing loop body.
-
-**Approach:** add an optional `std::function<bool()> cancelCheck` parameter to each method
-(defaults to `nullptr` — a no-op for every existing call site), matching the existing
+`Matrix::inverse()` and `Matrix::powerIteration()` each gained an optional
+`std::function<bool()> cancelCheck = nullptr` parameter, matching the existing
 `Graph::progressCanceled()` convention already checked at ~30 call sites across `centrality/`,
-`clustering/`, `distances/`, `generators/`, `cohesion/`. `createMatrixAdjacencyInverse()`
-(`graph/matrices/graph_matrix_adjacency.cpp:143`) would pass `[this]{ return progressCanceled(); }`
-instead of only checking before the call (I2's current partial fix).
+`clustering/`, `distances/`, `generators/`, `cohesion/`. Checked once per outer-loop iteration
+(`inverse()`'s per-column loop, `powerIteration()`'s `do`/`while` body) — a cancel breaks out
+early rather than running to completion. Default `nullptr` keeps every other call site unaffected.
 
-**Completion criteria:** golden/benchmark scripts pass unchanged; manual test — cancel a slow
-inversion/power-iteration mid-computation on a large network, confirm the app returns to
-responsive state within roughly one loop iteration instead of running to completion.
+Wired at the three real call sites, each passing `[this]{ return progressCanceled(); }`:
+`createMatrixAdjacencyInverse()` (`graph/matrices/graph_matrix_adjacency.cpp`, `"lu"` branch only —
+also added the missing post-call `progressCanceled()` check per I2, so a canceled/partial inverse
+isn't then treated as valid), `centralityInformation()`, `centralityEigenvector()`
+(`graph/centrality/graph_centrality.cpp` — both already had a post-call check, just needed the
+`cancelCheck` argument wired in).
+
+**`Matrix::inverseByGaussJordanElimination()` deliberately untouched** — confirmed again it still
+has zero reachable callers (same finding as before), so adding cancellation support to it would be
+work spent on dead code.
+
+**Verified:** `run_golden_compares.sh` and `run_benchmarks.sh` both pass unchanged (default
+`nullptr`, so this is behavior-preserving when nothing is actually canceled).
+
+**Live cancellation test deferred, not skipped:** confirming a real in-progress computation
+actually gets interrupted (not just that the parameter compiles) needs a way to trigger this from
+`--interactive-script` — doesn't exist yet, scoped as a WS12 backlog item
+(`roadmap_ws12_cli_scripting_mode.md`) needing two prerequisites (a non-blocking dispatch variant,
+and a way to trigger Information Centrality/Eigenvector Centrality from a script at all) before the
+`cancel` command itself is useful. Manual GUI testing is the fallback until that lands: trigger
+Information Centrality or Eigenvector Centrality on a large network, click Cancel mid-computation,
+confirm the app returns to responsive state within roughly one loop iteration instead of running to
+completion.
+
+**Related finding, filed separately:** while tracing these call sites, found `MainWindow` currently
+runs two separate progress-dialog systems simultaneously for many operations (and ~20 operations
+that only use the older linear one aren't dispatched through `runGraphOperationAsync` at all, so
+they still block the GUI thread during computation) — recorded under
+`roadmap_ws7_mainwindow_decomposition.md`, not part of A5's own scope.
 
 ### A6 — Cancel guards in `writeMatrix()` (I4)
 
