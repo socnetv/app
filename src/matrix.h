@@ -19,6 +19,7 @@
 
 #include <QtGlobal>
 #include <QString>  //for static const QString declares below
+#include <functional>   // std::function, for the optional cancelCheck callback
 #include <utility>      // std::pair, std::make_pair
 #include <vector>
 
@@ -160,7 +161,8 @@ public:
             int &xmaxi,
             qreal &xmin,
             int &xmini,
-            const qreal eps, const int &maxIter);
+            const qreal eps, const int &maxIter,
+            std::function<bool()> cancelCheck = nullptr);
 
     Matrix& degreeMatrix();
 
@@ -173,7 +175,7 @@ public:
 
     Matrix& inverseByGaussJordanElimination(Matrix &a);
 
-    Matrix& inverse(Matrix &a);
+    Matrix& inverse(Matrix &a, std::function<bool()> cancelCheck = nullptr);
 
     bool solve(qreal b[]);
 

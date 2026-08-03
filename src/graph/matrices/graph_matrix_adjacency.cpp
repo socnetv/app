@@ -165,7 +165,11 @@ bool Graph::createMatrixAdjacencyInverse(const QString &method)
     }
     else
     {
-        invAM.inverse(AM);
+        invAM.inverse(AM, [this] { return progressCanceled(); });
+        if (progressCanceled())
+        {
+            return false;
+        }
     }
 
     VList::const_iterator it, it1;

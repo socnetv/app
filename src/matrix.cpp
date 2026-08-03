@@ -762,6 +762,9 @@ qreal Matrix::distanceEuclidean(
  * @param xmini
  * @param eps
  * @param maxIter
+ * @param cancelCheck Optional callback checked once per iteration; if it returns true, the
+ * loop stops early (x/xsum/xmax/xmin reflect the last completed iteration, not a full result).
+ * Defaults to nullptr (never cancels), so existing callers are unaffected.
  */
 void Matrix::powerIteration (
         qreal x[],
@@ -771,7 +774,8 @@ void Matrix::powerIteration (
         qreal &xmin,
         int &xmini,
         const qreal eps,
-        const int &maxIter) {
+        const int &maxIter,
+        std::function<bool()> cancelCheck) {
 
     qCDebug(lcMatrix) << "Matrix::powerIteration() - maxIter"
              << maxIter
@@ -789,6 +793,11 @@ void Matrix::powerIteration (
     int iter = 0;
 
     do {
+        if (cancelCheck && cancelCheck()) {
+            qCDebug(lcMatrix) << "Matrix::powerIteration() - canceled at iteration" << iter;
+            break;
+        }
+
         qCDebug(lcMatrix) << "Matrix::powerIteration() - iteration"
                  << iter ;
 
@@ -1218,9 +1227,15 @@ void Matrix::lubksb(Matrix &a, const int &n, int indx[], qreal b[])
  * Complexity: O(n^3) for the one-time ludcmp() decomposition, plus O(n) calls to lubksb()
  * at O(n^2) each (one per column) - O(n^3) overall, same order as the decomposition itself.
  * @param a
- * @return This matrix, now holding a's inverse (or unmodified, if a is singular).
+ * @param cancelCheck Optional callback checked once per column, before that column's lubksb()
+ * call; if it returns true, the loop stops early and this matrix holds only the columns
+ * already solved (the rest are left at whatever resize()/identityMatrix() initialized them
+ * to - not a valid inverse). Defaults to nullptr (never cancels), so existing callers are
+ * unaffected.
+ * @return This matrix, now holding a's inverse (or unmodified/partial, if a is singular or
+ * cancelCheck fired).
  */
-Matrix& Matrix::inverse(Matrix &a)
+Matrix& Matrix::inverse(Matrix &a, std::function<bool()> cancelCheck)
 {
     int i,j, n=a.rows();
     qreal d;
@@ -1244,6 +1259,11 @@ Matrix& Matrix::inverse(Matrix &a)
 
     qCDebug(lcMatrix) << "Matrix::inverse() - find inverse by columns";
     for ( j=0; j<n; j++) {    //    Find inverse by columns.
+        if (cancelCheck && cancelCheck()) {
+            qCDebug(lcMatrix) << "Matrix::inverse() - canceled at column" << j;
+            break;
+        }
+
         for( i=0; i<n; i++)
             col[i]=0;
         col[j]=1.0;

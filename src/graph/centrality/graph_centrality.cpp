@@ -125,7 +125,7 @@ void Graph::centralityInformation(const bool considerWeights,
     }
 
     progressStatus(tr("Computing inverse adjacency matrix. Please wait..."));
-    invM.inverse(WM);
+    invM.inverse(WM, [this] { return progressCanceled(); });
 
     progressStatus(tr("Computing IC scores. Please wait..."));
     progressUpdate(2 * n / 3);
@@ -314,7 +314,8 @@ void Graph::centralityEigenvector(const bool &considerWeights,
 
     AM.powerIteration(EVC, sumEVC, maxEVC, maxNodeEVC,
                       minEVC, minNodeEVC,
-                      0.0000001, 500);
+                      0.0000001, 500,
+                      [this] { return progressCanceled(); });
 
     progressUpdate(2 * N / 3);
     if (progressCanceled())
