@@ -126,6 +126,8 @@ public:
 
     void polishProgressDialog(QProgressDialog* dialog);
 
+    void setAppBusy(bool busy);
+
     void runGraphOperationAsync(std::function<void()> operation,
                                 const QString &waitMessage,
                                 const QString &doneMessage = QString());

@@ -15664,6 +15664,27 @@ void MainWindow::polishProgressDialog(QProgressDialog *dialog)
 }
 
 /**
+ * @brief Enables/disables the menu bar, toolbar, and canvas while a graphThread operation runs.
+ *
+ * Fixes a live, reproducible crash (WS15 P2, roadmap_ws15_cancellation_progress_unification.md):
+ * graph-mutating actions (e.g. "New") run directly on the GUI thread with no dispatch to
+ * graphThread and no guard, so one could run concurrently with an in-flight graphThread
+ * computation - a genuine use-after-free race on Graph's own data. The Qt::ApplicationModal
+ * progress dialog was assumed to already prevent this but doesn't reliably (root cause not fully
+ * understood, see the roadmap); this is an unconditional second layer that doesn't depend on
+ * understanding that gap. graphicsWidget is included because add-node/add-edge via mouse
+ * (mousePressEvent/mouseDoubleClickEvent) bypasses the menu/toolbar entirely.
+ *
+ * @param busy true to disable (operation starting), false to re-enable (operation complete)
+ */
+void MainWindow::setAppBusy(bool busy)
+{
+    menuBar()->setEnabled(!busy);
+    toolBar->setEnabled(!busy);
+    graphicsWidget->setEnabled(!busy);
+}
+
+/**
  * @brief Runs a slow Graph operation on graphThread without blocking the GUI thread (fix #254).
  *
  * `activeGraph` already lives on graphThread (see MainWindow::initGraph()) - this dispatches
@@ -15740,11 +15761,13 @@ void MainWindow::runGraphOperationAsync(std::function<void()> operation,
     busyDialog->show();
 
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    setAppBusy(true);
 
     QMetaObject::invokeMethod(activeGraph, [this, operation, onComplete, busyDialog]() {
         operation();
         QMetaObject::invokeMethod(this, [this, onComplete, busyDialog]() {
             QApplication::restoreOverrideCursor();
+            setAppBusy(false);
             // reset(), not close(): QProgressDialog::close() triggers its internal cancel()
             // path and emits canceled() -> Graph::slotCancelComputation() -> m_progressCanceled
             // stays true until the next progressCreate() call, silently no-op'ing every
