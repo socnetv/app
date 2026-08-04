@@ -15631,8 +15631,12 @@ void MainWindow::slotProgressBoxCreate(const int &max, const QString &msg)
         progressBox->setWindowModality(Qt::ApplicationModal);
         connect(activeGraph, &Graph::signalProgressBoxUpdate,
                 progressBox, &QProgressDialog::setValue);
+        // Qt::DirectConnection: runs slotCancelComputation() synchronously on this (GUI) thread at
+        // click-time, instead of queueing onto graphThread's event loop - which is exactly what's
+        // blocked for the whole duration of the computation this button is meant to interrupt. See
+        // WS15 P1 (roadmap_ws15_cancellation_progress_unification.md).
         connect(progressBox, &QProgressDialog::canceled,
-                activeGraph, &Graph::slotCancelComputation);
+                activeGraph, &Graph::slotCancelComputation, Qt::DirectConnection);
         progressBox->setMinimumDuration(0);
         progressBox->setAutoClose(true);
         progressBox->setAutoReset(true);
@@ -15729,8 +15733,10 @@ void MainWindow::runGraphOperationAsync(std::function<void()> operation,
     busyDialog->setAutoClose(false);
     busyDialog->setAutoReset(false);
     polishProgressDialog(busyDialog);
+    // Qt::DirectConnection - see the matching comment in slotProgressBoxCreate() above; same
+    // reasoning applies here (WS15 P1).
     connect(busyDialog, &QProgressDialog::canceled,
-            activeGraph, &Graph::slotCancelComputation);
+            activeGraph, &Graph::slotCancelComputation, Qt::DirectConnection);
     busyDialog->show();
 
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));

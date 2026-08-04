@@ -27,6 +27,7 @@
 #include <QThread>
 #include <QStack>
 #include <QLoggingCategory>
+#include <atomic>
 #include <functional>
 
 
@@ -1520,7 +1521,10 @@ private:
     bool calculatedTriad;
     bool calculatedGraphSymmetry, calculatedGraphReciprocity;
     bool calculatedGraphDensity, calculatedGraphWeighted;
-    bool m_progressCanceled;
+    // Written by slotCancelComputation() (GUI thread, via Qt::DirectConnection) and read by
+    // progressCanceled() (graphThread, mid-computation) - see WS15's P1 for why a plain bool and a
+    // queued connection can't deliver this in time.
+    std::atomic<bool> m_progressCanceled;
     bool m_graphIsDirected, m_graphIsSymmetric, m_graphIsWeighted, m_graphIsConnected;
     int m_graphWeaklyConnectedComponents;
     QHash<int,int> m_vertexComponentId;

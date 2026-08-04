@@ -1054,12 +1054,20 @@ Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
  * @param n: input size of matrix
  * @param indx: output vector, records the row permutation effected by the partial pivoting
  * @param d: output as ±1 depending on whether the number of row interchanges was even or odd
+ * @param cancelCheck Optional callback, checked once per outer-loop iteration in both the O(n^2)
+ * scaling pass and the O(n^3) Crout's-method pass; if it returns true, decomposition stops early
+ * and this returns false (same as the singular-matrix case - callers must not distinguish the two
+ * from this return value alone; inverse()'s post-cancelCheck() logic is what does that, not this).
+ * Defaults to nullptr (never cancels), so existing callers are unaffected. Added because ludcmp()
+ * is the dominant O(n^3) cost inverse() wraps - without this, inverse()'s own per-column
+ * cancelCheck (see below) can never fire in time, since it's only reached after ludcmp() already
+ * finished (see WS15 P1, roadmap_ws15_cancellation_progress_unification.md).
  * @return:
  *
  * Code adapted from Knuth's Numerical Recipes in C, pp 46
  *
  */
-bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d) {
+bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d, std::function<bool()> cancelCheck) {
     qCDebug(lcMatrix) << "Matrix::ludcmp () - decomposing matrix a to L*U";
     int i=0, j=0, imax=0, k;
     qreal big,temp;
@@ -1075,6 +1083,11 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d) {
 
     qCDebug(lcMatrix) << "Matrix::ludcmp() - loop over row to get scaling info" ;
     for (i=0;i<n;i++) {  // Loop over rows to get the implicit scaling information.
+        if (cancelCheck && cancelCheck()) {
+            qCDebug(lcMatrix) << "Matrix::ludcmp() - canceled at scaling row" << i;
+            delete[] vv;
+            return false;
+        }
         qCDebug(lcMatrix) << "Matrix::ludcmp() - row i " <<  i+1;
         big=0;
         for (j=0;j<n;j++) {
@@ -1094,6 +1107,11 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d) {
 
     for (j=0;j<n;j++) //     This is the loop over columns of Crout’s method.
     {
+        if (cancelCheck && cancelCheck()) {
+            qCDebug(lcMatrix) << "Matrix::ludcmp() - canceled at Crout column" << j;
+            delete[] vv;
+            return false;
+        }
         qCDebug(lcMatrix) << "Matrix::ludcmp() - COLUMN j " <<  j+1 << " search largest pivot";
         big=0;  //      Initialize for the search for largest pivot element.
         imax = j;
@@ -1227,11 +1245,16 @@ void Matrix::lubksb(Matrix &a, const int &n, int indx[], qreal b[])
  * Complexity: O(n^3) for the one-time ludcmp() decomposition, plus O(n) calls to lubksb()
  * at O(n^2) each (one per column) - O(n^3) overall, same order as the decomposition itself.
  * @param a
- * @param cancelCheck Optional callback checked once per column, before that column's lubksb()
- * call; if it returns true, the loop stops early and this matrix holds only the columns
- * already solved (the rest are left at whatever resize()/identityMatrix() initialized them
+ * @param cancelCheck Optional callback, also forwarded to ludcmp() (see its own doc) since
+ * ludcmp()'s one-time O(n^3) decomposition is what this method actually spends most of its time
+ * in - checked there once per outer-loop iteration, and here once per column, before that
+ * column's lubksb() call; if it returns true, the loop stops early and this matrix holds only the
+ * columns already solved (the rest are left at whatever resize()/identityMatrix() initialized them
  * to - not a valid inverse). Defaults to nullptr (never cancels), so existing callers are
- * unaffected.
+ * unaffected. Callers must check their own cancellation flag after calling this, not infer it from
+ * the return value - ludcmp() returns false identically for "canceled" and "singular", and this
+ * method has no way to tell those apart either (createMatrixAdjacencyInverse() and
+ * centralityInformation() already do this correctly).
  * @return This matrix, now holding a's inverse (or unmodified/partial, if a is singular or
  * cancelCheck fired).
  */
@@ -1251,9 +1274,9 @@ Matrix& Matrix::inverse(Matrix &a, std::function<bool()> cancelCheck)
     if (n==0) {
         return (*this);
     }
-    if ( ! ludcmp(a,n,indx,d) )
+    if ( ! ludcmp(a,n,indx,d,cancelCheck) )
     { //  Decompose the matrix just once.
-        qCDebug(lcMatrix) << "Matrix::inverse() - matrix a singular - RETURN";
+        qCDebug(lcMatrix) << "Matrix::inverse() - matrix a singular or canceled - RETURN";
         return *this;
     }
 

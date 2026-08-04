@@ -179,7 +179,7 @@ public:
 
     bool solve(qreal b[]);
 
-    bool ludcmp (Matrix &a, const int &n, int indx[], qreal &d ) ;
+    bool ludcmp (Matrix &a, const int &n, int indx[], qreal &d, std::function<bool()> cancelCheck = nullptr) ;
 
     void lubksb (Matrix &a, const int &n, int indx[], qreal b[]);
 
