@@ -258,7 +258,7 @@ Found while scoping WS5 A5 (cancellation-aware algebra kernels) — a behavioral
 structural extraction, and it turned out to be tangled up with a broader cancellation/threading
 problem bigger than either WS5 or WS7's own scope. **Moved to
 [`roadmap_ws15_cancellation_progress_unification.md`](roadmap_ws15_cancellation_progress_unification.md)
-(P2)** — the full call-site survey (Group A double-dialog sites, Group B unwrapped/GUI-blocking
+(P3)** — the full call-site survey (Group A double-dialog sites, Group B unwrapped/GUI-blocking
 sites) lives there now, alongside the cancellation-delivery fix and crash-bug fix it shares root
 cause with.
 

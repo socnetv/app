@@ -152,10 +152,10 @@ computation) found during the same investigation. Just created, not started.
 
 # Priorities
 
-1. **WS15** — cancellation & progress-dialog unification. Includes a live, reproducible crash fix
-   (P3) — prioritised above everything else for that reason alone. P1 (cancellation delivery) is
-   small and fully designed; P2 (dialog retirement) and P3 (busy guard) need design sign-off on open
-   questions before implementation.
+1. **WS15** — cancellation & progress-dialog unification. P1 (cancellation delivery) and P2 (global
+   busy guard, closing a live crash) both done and live-verified. Only P3 (linear progress-dialog
+   retirement) remains — lower urgency, no bug attached, kept prioritised here to close out the
+   workstream.
 2. **WS5** — matrices. A1, A2.0, A2 (APSP storage migration), A3 (contiguous storage), A5
    (cancellation-aware algebra kernels — plumbing done, delivery fix now WS15's), and A7 (golden
    coverage, via WS6.7) all done, real measured speedups throughout. Only A4 and A6 remain, each

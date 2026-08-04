@@ -211,8 +211,8 @@ found the `cancelCheck` lambdas inert in practice (a Graph/MainWindow signal-del
 `Matrix`/algebra one), fixed and live-verified in
 [`roadmap_ws15_cancellation_progress_unification.md`](roadmap_ws15_cancellation_progress_unification.md)
 (P1 — atomic flag + `Qt::DirectConnection`, plus extending cancellation into `ludcmp()` itself, the
-actual O(n³) bottleneck `inverse()` wraps). WS15 also tracks a related crash bug (P3) found during
-the same investigation and the progress-dialog-duplication finding (P2, moved there from WS7).
+actual O(n³) bottleneck `inverse()` wraps). WS15 also tracks a related crash bug (P2) found during
+the same investigation and the progress-dialog-duplication finding (P3, moved there from WS7).
 
 ### A6 — Cancel guards in `writeMatrix()` (I4)
 
