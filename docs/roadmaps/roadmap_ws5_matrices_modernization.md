@@ -9,7 +9,8 @@
 ## Status
 
 🚧 In progress. A1, A2.0, A2 (APSP storage migration), A3 (contiguous storage), and A5
-(cancellation-aware algebra kernels) done. A7 scoped, moved to WS6, and done there (WS6.7). A4's
+(cancellation-aware algebra kernels — plumbing shipped; making the flag delivery actually work is
+tracked in WS15, not here) done. A7 scoped, moved to WS6, and done there (WS6.7). A4's
 inventory corrected, ready to implement. A6 ready to implement. Neither started yet.
 
 ## Current Reality
@@ -29,16 +30,12 @@ inventory corrected, ready to implement. A6 ready to implement. Neither started 
 
 ### Cancellation (found during #52 Cancel-button fix)
 
-**I1 — Matrix algebra methods are not cancellation-aware.** `Matrix::inverse()`
-(`src/matrix.cpp:1256`), `Matrix::inverseByGaussJordanElimination()` (`src/matrix.cpp:1003`), and
-`Matrix::powerIteration()` (`src/matrix.cpp:808`) run to completion regardless of user cancel.
-Affected callers: `createMatrixAdjacencyInverse()` → `invAM.inverse(AM)` /
-`invAM.inverseByGaussJordanElimination(AM)`; `centralityEigenvector()` → `AM.powerIteration(...)`;
-`centralityInformation()` → `invM.inverse(WM)`.
-
-**I2 — `createMatrixAdjacencyInverse()` doesn't check the cancel flag mid-computation**, only
-before `inverse()`/`inverseByGaussJordanElimination()` starts (`graph/matrices/graph_matrix_adjacency.cpp:156`,
-the existing partial fix). See I1.
+**I1/I2 — ✅ Resolved, via [`roadmap_ws15_cancellation_progress_unification.md`](roadmap_ws15_cancellation_progress_unification.md) P1.**
+A5 (below) shipped the `cancelCheck` plumbing these called for; live testing found the flag delivery
+mechanism itself was broken (a queued cross-thread Qt connection that can't be processed while the
+very loop it's meant to interrupt is blocking that thread's event loop) — a Graph/MainWindow wiring
+problem, not a `Matrix` one, fixed in WS15 (atomic flag + `Qt::DirectConnection`, plus extending
+`cancelCheck` into `ludcmp()` itself once testing showed that was the actual bottleneck). Live-verified.
 
 **I3 — `writeMatrix()` had missing `file.close()` on cancel paths.** Fixed during #52.
 
@@ -186,7 +183,7 @@ as part of A4, rather than migrating a field nothing ever writes to.
 Migrate the seven real construction sites into the `matrices/` slice directory, one call site at a
 time, golden-regression-verified after each move.
 
-### A5 — Cancellation-aware algebra kernels (I1, I2) ✅ Done (code), live test deferred
+### A5 — Cancellation-aware algebra kernels (I1, I2) ✅ Done
 
 `Matrix::inverse()` and `Matrix::powerIteration()` each gained an optional
 `std::function<bool()> cancelCheck = nullptr` parameter, matching the existing
@@ -209,21 +206,13 @@ work spent on dead code.
 **Verified:** `run_golden_compares.sh` and `run_benchmarks.sh` both pass unchanged (default
 `nullptr`, so this is behavior-preserving when nothing is actually canceled).
 
-**Live cancellation test deferred, not skipped:** confirming a real in-progress computation
-actually gets interrupted (not just that the parameter compiles) needs a way to trigger this from
-`--interactive-script` — doesn't exist yet, scoped as a WS12 backlog item
-(`roadmap_ws12_cli_scripting_mode.md`) needing two prerequisites (a non-blocking dispatch variant,
-and a way to trigger Information Centrality/Eigenvector Centrality from a script at all) before the
-`cancel` command itself is useful. Manual GUI testing is the fallback until that lands: trigger
-Information Centrality or Eigenvector Centrality on a large network, click Cancel mid-computation,
-confirm the app returns to responsive state within roughly one loop iteration instead of running to
-completion.
-
-**Related finding, filed separately:** while tracing these call sites, found `MainWindow` currently
-runs two separate progress-dialog systems simultaneously for many operations (and ~20 operations
-that only use the older linear one aren't dispatched through `runGraphOperationAsync` at all, so
-they still block the GUI thread during computation) — recorded under
-`roadmap_ws7_mainwindow_decomposition.md`, not part of A5's own scope.
+**A5's own scope ends here — this plumbing is correct and complete.** Live GUI testing initially
+found the `cancelCheck` lambdas inert in practice (a Graph/MainWindow signal-delivery problem, not a
+`Matrix`/algebra one), fixed and live-verified in
+[`roadmap_ws15_cancellation_progress_unification.md`](roadmap_ws15_cancellation_progress_unification.md)
+(P1 — atomic flag + `Qt::DirectConnection`, plus extending cancellation into `ludcmp()` itself, the
+actual O(n³) bottleneck `inverse()` wraps). WS15 also tracks a related crash bug (P3) found during
+the same investigation and the progress-dialog-duplication finding (P2, moved there from WS7).
 
 ### A6 — Cancel guards in `writeMatrix()` (I4)
 

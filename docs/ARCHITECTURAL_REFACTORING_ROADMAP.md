@@ -137,24 +137,42 @@ in the roadmap.
 
 ---
 
+## WS15 — Cancellation & Progress-Dialog Unification
+
+Roadmap: [`docs/roadmaps/roadmap_ws15_cancellation_progress_unification.md`](roadmaps/roadmap_ws15_cancellation_progress_unification.md)
+
+Split off from WS5 (A5's cancellation plumbing turned out to be inert in practice — a threading/
+signal-delivery bug, not a `Matrix` bug) and WS7 (the progress-dialog-duplication finding, which
+shares the same root cause). Three pieces: make cancellation delivery actually work (atomic flag +
+`Qt::DirectConnection`), retire the redundant linear progress-dialog system in favor of the faster
+indeterminate one, and fix a live, reproducible crash (graph mutation racing an in-flight background
+computation) found during the same investigation. Just created, not started.
+
+---
+
 # Priorities
 
-1. **WS5** — matrices. A1, A2.0, A2 (APSP storage migration), A3 (contiguous storage), and A7
-   (golden coverage, via WS6.7) all done, real measured speedups throughout. Only A4-A6 remain,
-   each fully scoped and small (isolate construction call sites, cancellation-aware algebra
-   kernels, cancel guards in `writeMatrix()`) — prioritised to close out the workstream for 3.7.
-2. **WS6** — regression safety (ongoing support — continuously active underneath every other
+1. **WS15** — cancellation & progress-dialog unification. Includes a live, reproducible crash fix
+   (P3) — prioritised above everything else for that reason alone. P1 (cancellation delivery) is
+   small and fully designed; P2 (dialog retirement) and P3 (busy guard) need design sign-off on open
+   questions before implementation.
+2. **WS5** — matrices. A1, A2.0, A2 (APSP storage migration), A3 (contiguous storage), A5
+   (cancellation-aware algebra kernels — plumbing done, delivery fix now WS15's), and A7 (golden
+   coverage, via WS6.7) all done, real measured speedups throughout. Only A4 and A6 remain, each
+   fully scoped and small (isolate construction call sites, cancel guards in `writeMatrix()`) —
+   prioritised to close out the workstream for 3.7.
+3. **WS6** — regression safety (ongoing support — continuously active underneath every other
    workstream, not "next in queue").
-3. **WS10** — GraphicsWidget canvas rendering & features. Phase 1 (#250), #260, and the
+4. **WS10** — GraphicsWidget canvas rendering & features. Phase 1 (#250), #260, and the
    rendering-perf regression kernel (WS6.6) all shipped; the rest of the Performance/Feature
    checklists remain scoped but not prioritised yet.
-4. **WS7** — MainWindow decomposition. Solid milestone roadmap (MW1–MW7) exists; zero code written
+5. **WS7** — MainWindow decomposition. Solid milestone roadmap (MW1–MW7) exists; zero code written
    yet.
-5. **WS8** — IO layer stabilization. Roadmap scoped; zero code written yet.
-6. **WS11** — algorithm additions. Just created; not prioritised yet, no code written.
-7. **WS12** — CLI scripting mode. Two steps shipped (#261, #262); further commands backlog, not
+6. **WS8** — IO layer stabilization. Roadmap scoped; zero code written yet.
+7. **WS11** — algorithm additions. Just created; not prioritised yet, no code written.
+8. **WS12** — CLI scripting mode. Two steps shipped (#261, #262); further commands backlog, not
    prioritised.
-8. **WS13** — undo/redo. Just created; not prioritised yet, no code written.
+9. **WS13** — undo/redo. Just created; not prioritised yet, no code written.
 
 ---
 

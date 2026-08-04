@@ -17,8 +17,8 @@ own evidence and completion criteria the same way WS3/WS5 findings did — none 
 
 ## Status
 
-📋 Scoped (MW1–MW7 milestone plan exists), not started. One related finding recorded below
-(progress-dialog duplication + unwrapped GUI-blocking operations), also not started.
+📋 Scoped (MW1–MW7 milestone plan exists), not started. One related finding (progress-dialog
+duplication + unwrapped GUI-blocking operations) moved to WS15 — see below.
 
 ---
 
@@ -254,43 +254,13 @@ For every milestone:
 
 ## Related Finding: Progress-Dialog Duplication & Unwrapped GUI-Blocking Operations
 
-Found while scoping WS5 A5 (cancellation-aware algebra kernels), not part of MW1-MW7's structural
-scope — a behavioral finding, not a pure extraction. Two separate progress-reporting systems
-coexist in `MainWindow`:
-
-- **Linear** (`Graph::progressCreate()`/`progressUpdate()`/`progressFinish()` →
-  `signalProgressBoxCreate`/`Update`/`Kill` → `MainWindow::slotProgressBoxCreate()`/
-  `slotProgressBoxDestroy()`, `mainwindow.cpp:5282-5286`): a real `QProgressDialog` with a numeric
-  0..N range, gated on `appSettings["showProgressBar"]` (defaults to `"true"`, `mainwindow.cpp:507`
-  - enabled out of the box).
-- **Indeterminate** (`MainWindow::runGraphOperationAsync()`, `mainwindow.cpp:15726`): its own
-  local `QProgressDialog` with `min=max=0` ("busy" mode), created for every operation it wraps.
-
-**Call-site survey** (every `Graph::` method calling `progressCreate()`, checked against whether
-its `MainWindow` entry point uses `runGraphOperationAsync`):
-
-- **Double-dialog group (~13 sites)** — already wrapped in `runGraphOperationAsync`, so these show
-  both dialogs stacked simultaneously today: `writeCentralityBetweenness/Eccentricity/Eigenvector/
-  Information/Power/Stress`, `writeEccentricity`, `writeMatrixSimilarityMatching`, all three
-  `layoutForceDirected*`, `layoutByProminenceIndex` (4 call sites). Low-fuss cleanup: drop the
-  internal `progressCreate()`/`progressUpdate()`/`progressFinish()` calls in these `Graph::`
-  methods - the indeterminate dialog already covers them.
-- **Linear-only group (~20 sites), not just a dialog question:** `writeCentralityDegree/Closeness/
-  ClosenessInfluenceRange`, `writeCliqueCensus`, `writeClusteringCoefficient/Hierarchical`,
-  `writePrestigeDegree/PageRank/Proximity`, `writeTriadCensus`, `writeMatrixAdjacency/
-  AdjacencyPlot`, `writeReciprocity`, `verticesCreateSubgraph` (4 sites), every `randomNet*`
-  generator (6 methods, several sites each), `layoutEgoRadial/RadialRandom/Random`. None of these
-  go through `runGraphOperationAsync` - they're called directly, synchronously, from `MainWindow`
-  slots. So the linear dialog is currently their *only* progress feedback, **and** they still
-  block the GUI thread during computation - the same class of problem #254 found and
-  `runGraphOperationAsync` was built to fix, just never applied to this list.
-
-**Consequence:** the linear system cannot be removed outright. The double-dialog group can lose
-their redundant internal calls with little risk. The linear-only group needs migrating onto
-`runGraphOperationAsync` first (which would also fix their GUI-blocking problem as a side effect)
-before their linear dialog can be safely removed too. Not scoped into a milestone yet; natural fit
-alongside MW4 (`DialogManager`) since both touch dialog lifecycle, though the GUI-blocking half of
-this finding is a behavior fix, not a pure structural extraction like the rest of WS7.
+Found while scoping WS5 A5 (cancellation-aware algebra kernels) — a behavioral finding, not a pure
+structural extraction, and it turned out to be tangled up with a broader cancellation/threading
+problem bigger than either WS5 or WS7's own scope. **Moved to
+[`roadmap_ws15_cancellation_progress_unification.md`](roadmap_ws15_cancellation_progress_unification.md)
+(P2)** — the full call-site survey (Group A double-dialog sites, Group B unwrapped/GUI-blocking
+sites) lives there now, alongside the cancellation-delivery fix and crash-bug fix it shares root
+cause with.
 
 ---
 
