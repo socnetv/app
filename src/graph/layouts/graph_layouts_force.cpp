@@ -68,7 +68,6 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations)
     const qreal epsilon = 2.0;
 
     int iteration = 1;
-    int progressCounter = 0;
     qreal dist = 0;
     qreal f_rep = 0, f_att = 0;
     QPointF DV;
@@ -122,7 +121,6 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations)
     QString pMsg = tr("Embedding Eades Spring-Gravitational model. \n"
                       "Please wait ....");
     progressStatus(pMsg);
-    progressCreate(maxIterations, pMsg);
 
     for (iteration = 1; iteration <= maxIterations; iteration++)
     {
@@ -198,11 +196,8 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations)
         // for convergence detection.
         const qreal maxDisp = layoutForceDirected_Eades_moveNodes(c4);
 
-        progressUpdate(++progressCounter);
-
         if (progressCanceled())
         {
-            progressFinish();
             setModStatus(ModStatus::VertexPositions);
             return;
         }
@@ -226,7 +221,6 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations)
         emit setNodePos((*v1)->number(), (*v1)->x(), (*v1)->y());
     }
 
-    progressFinish();
     setModStatus(ModStatus::VertexPositions);
     emit signalLayoutFinished();
 }
@@ -244,7 +238,6 @@ void Graph::layoutForceDirectedSpringEmbedder(const int maxIterations)
  */
 void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations)
 {
-    int progressCounter = 0;
     qreal dist = 0;
     qreal f_att, f_rep;
     QPointF DV; // difference vector
@@ -297,8 +290,6 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations)
     QString pMsg = tr("Embedding Fruchterman & Reingold forces model. \n"
                       "Please wait ...");
     progressStatus(pMsg);
-
-    progressCreate(maxIterations, pMsg);
 
     for (iteration = 1; iteration <= maxIterations; iteration++)
     {
@@ -359,10 +350,8 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations)
         const qreal maxDisp = layoutForceDirected_FR_moveNodes(
             layoutForceDirected_FR_temperature(iteration));
 
-        progressUpdate(++progressCounter);
         if (progressCanceled())
         {
-            progressFinish();
             setModStatus(ModStatus::VertexPositions);
             return;
         }
@@ -384,8 +373,6 @@ void Graph::layoutForceDirectedFruchtermanReingold(const int maxIterations)
     {
         emit setNodePos((*v1)->number(), (*v1)->x(), (*v1)->y());
     }
-
-    progressFinish();
 
     setModStatus(ModStatus::VertexPositions); // was missing on normal exit path
     emit signalLayoutFinished();
@@ -569,18 +556,18 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
     QString pMsg = tr("Embedding Kamada & Kawai spring model.\n"
                       "Please wait...");
     progressStatus(pMsg);
-    progressCreate(maxIterations, pMsg);
 
     // while ( max_D_i > e )
     while (Delta_max > epsilon)
     {
         couldNotSolveLinearSystem = false;
 
+        // progressCounter is also this loop's iteration-count guard (see the
+        // maxIterations check below), not just a dialog display value - kept even
+        // though the progressUpdate() dialog call it used to feed is gone.
         progressCounter++;
-        progressUpdate(progressCounter);
         if (progressCanceled())
         {
-            progressFinish();
             setModStatus(ModStatus::VertexPositions);
             return;
         }
@@ -795,7 +782,6 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
 
         emit setNodePos((*v1)->number(), (*v1)->pos().x(), (*v1)->pos().y());
     }
-    progressFinish();
 
     setModStatus(ModStatus::VertexPositions);
     emit signalLayoutFinished();

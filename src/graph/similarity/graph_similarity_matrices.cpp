@@ -61,11 +61,7 @@ void Graph::createMatrixSimilarityMatching(Matrix &AM,
 {
     qCDebug(lcSimilarity) << "Graph::createMatrixSimilarityMatching()";
 
-    QString pMsg = tr("Computing Similarity coefficients matrix. \nPlease wait...");
-    progressCreate(1, pMsg);
     SCM.similarityMatrix(AM, measure, varLocation, diagonal, considerWeights);
-    progressUpdate(1);
-    progressFinish();
 }
 
 /**

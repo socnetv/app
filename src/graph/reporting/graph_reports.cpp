@@ -307,15 +307,12 @@ bool Graph::writeEccentricity(const QString fileName, const bool considerWeights
         progressStatus(tr("Computation canceled."));
         return false;
     }
-    int progressCounter = 0;
     int rowCount = 0;
     int N = vertices();
     qreal eccentr = 0;
 
     QString pMsg = tr("Writing Eccentricity scores to file. \nPlease wait...");
     progressStatus(pMsg);
-
-    progressCreate(N, pMsg);
 
     outText << htmlHead;
 
@@ -374,7 +371,6 @@ bool Graph::writeEccentricity(const QString fileName, const bool considerWeights
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
-        progressUpdate(++progressCounter);
         rowCount++;
         eccentr = (*it)->eccentricity();
         qCDebug(lcReporting) << "Graph::writeEccentricity() - actor "
@@ -460,8 +456,6 @@ bool Graph::writeEccentricity(const QString fileName, const bool considerWeights
 
     file.close();
 
-    progressFinish();
-
     return true;
 }
 
@@ -517,11 +511,8 @@ bool Graph::writeCentralityInformation(const QString fileName,
     int rowCount = 0;
     int N = vertices(dropIsolates, false, true);
 
-    int progressCounter = 0;
-
     QString pMsg = tr("Writing Information Centralities to file. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     outText.setRealNumberPrecision(m_reportsRealPrecision);
 
@@ -594,8 +585,6 @@ bool Graph::writeCentralityInformation(const QString fileName,
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-
-        progressUpdate(++progressCounter);
 
         rowCount++;
 
@@ -728,8 +717,6 @@ bool Graph::writeCentralityInformation(const QString fileName,
 
     file.close();
 
-    progressFinish();
-
     return true;
 }
 
@@ -783,11 +770,9 @@ bool Graph::writeCentralityEigenvector(const QString fileName,
 
     int rowCount = 0;
     int N = vertices();
-    int progressCounter = 0;
 
     QString pMsg = tr("Writing Eigenvector Centrality scores to file. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     outText.setRealNumberPrecision(m_reportsRealPrecision);
 
@@ -868,8 +853,6 @@ bool Graph::writeCentralityEigenvector(const QString fileName,
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-
-        progressUpdate(++progressCounter);
 
         rowCount++;
 
@@ -982,8 +965,6 @@ bool Graph::writeCentralityEigenvector(const QString fileName,
     outText << htmlEnd;
 
     file.close();
-
-    progressFinish();
 
     return true;
 }
@@ -1854,12 +1835,11 @@ bool Graph::writeCentralityBetweenness(const QString fileName,
 
     prominenceDistribution(IndexType::BC, m_reportsChartType, distImageFileName);
 
-    int rowCount = 0, progressCounter = 0;
+    int rowCount = 0;
     int N = vertices();
 
     QString pMsg = tr("Writing Betweenness Centrality scores to file. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     outText << htmlHead;
 
@@ -1933,7 +1913,6 @@ bool Graph::writeCentralityBetweenness(const QString fileName,
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-        progressUpdate(++progressCounter);
         rowCount++;
 
         outText << Qt::fixed;
@@ -2087,8 +2066,6 @@ bool Graph::writeCentralityBetweenness(const QString fileName,
 
     file.close();
 
-    progressFinish();
-
     return true;
 }
 
@@ -2142,11 +2119,9 @@ bool Graph::writeCentralityStress(const QString fileName,
 
     int rowCount = 0;
     int N = vertices();
-    int progressCounter = 0;
 
     QString pMsg = tr("Writing Stress Centralities. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     outText << htmlHead;
 
@@ -2214,8 +2189,6 @@ bool Graph::writeCentralityStress(const QString fileName,
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-
-        progressUpdate(++progressCounter);
 
         rowCount++;
 
@@ -2332,8 +2305,6 @@ bool Graph::writeCentralityStress(const QString fileName,
 
     file.close();
 
-    progressFinish();
-
     return true;
 }
 
@@ -2387,11 +2358,9 @@ bool Graph::writeCentralityEccentricity(const QString fileName,
 
     int rowCount = 0;
     int N = vertices();
-    int progressCounter = 0;
 
     QString pMsg = tr("Writing Eccentricity Centralities to file. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     outText << htmlHead;
 
@@ -2451,8 +2420,6 @@ bool Graph::writeCentralityEccentricity(const QString fileName,
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-
-        progressUpdate(++progressCounter);
 
         rowCount++;
 
@@ -2559,8 +2526,6 @@ bool Graph::writeCentralityEccentricity(const QString fileName,
 
     file.close();
 
-    progressFinish();
-
     return true;
 }
 
@@ -2613,11 +2578,9 @@ bool Graph::writeCentralityPower(const QString fileName,
 
     int rowCount = 0;
     int N = vertices();
-    int progressCounter = 0;
 
     QString pMsg = tr("Writing Gil-Schmidt Power Centralities to file. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     outText << htmlHead;
 
@@ -2686,8 +2649,6 @@ bool Graph::writeCentralityPower(const QString fileName,
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-
-        progressUpdate(++progressCounter);
 
         rowCount++;
 
@@ -2837,8 +2798,6 @@ bool Graph::writeCentralityPower(const QString fileName,
     outText << htmlEnd;
 
     file.close();
-
-    progressFinish();
 
     return true;
 }
@@ -5080,7 +5039,6 @@ bool Graph::writeMatrixSimilarityMatching(const QString fileName,
 
     QString pMsg = tr("Writing Similarity coefficients to file. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(1, pMsg);
 
     outText.setRealNumberPrecision(m_reportsRealPrecision);
 
@@ -5148,8 +5106,6 @@ bool Graph::writeMatrixSimilarityMatching(const QString fileName,
             << "</span>"
             << "</p>";
 
-    progressUpdate(0);
-
     writeMatrixHTMLTable(outText, SCM, true);
 
     outText << "<p class=\"description\">";
@@ -5194,9 +5150,6 @@ bool Graph::writeMatrixSimilarityMatching(const QString fileName,
     outText << htmlEnd;
 
     file.close();
-
-    progressUpdate(1);
-    progressFinish();
 
     return true;
 }

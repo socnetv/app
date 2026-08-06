@@ -15990,6 +15990,15 @@ void MainWindow::runGraphOperationAsync(std::function<void()> operation,
                                         const QString &waitMessage,
                                         std::function<void()> onComplete)
 {
+    // Must happen before the busy dialog exists (let alone is shown), not just before dispatch:
+    // resetProgressCanceled() was previously only ever called from Graph::progressCreate() (the
+    // linear dialog) or DistanceEngine's progress sink. Every operation wrapped here that has no
+    // such call anywhere in its chain (all of Group C, and Group A once its own progressCreate()
+    // calls are removed as redundant) would otherwise never reset the flag - so a single earlier
+    // cancel would silently no-op every subsequent wrapped operation's cancelCheck() forever
+    // after. See WS15 P3 Phase 2 (roadmap_ws15_cancellation_progress_unification.md).
+    activeGraph->resetProgressCanceled();
+
     statusMessage(waitMessage);
 
     QProgressDialog *busyDialog = new QProgressDialog(waitMessage, tr("Cancel"), 0, 0, this);
