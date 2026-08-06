@@ -5447,29 +5447,39 @@ void MainWindow::initSignalSlots()
             this, [this](int barIndex, FilterCondition::Scope /*scope*/)
             {
         // barIndex == stackIndex: every filter (node or edge) pushes exactly one snapshot.
-        activeGraph->vertexFilterRemoveAt(barIndex);
-        m_filterChips.removeAt(barIndex);
-        // Rebuild bar from remaining chips (preserves original application order).
-        m_filterBar->clearAllChips();
-        for (const auto &chip : std::as_const(m_filterChips))
-            m_filterBar->addChip(chip.first, chip.second);
-        // Update restore-action states.
-        bool hasNodeFilters = false, hasEdgeFilters = false;
-        for (const auto &chip : std::as_const(m_filterChips)) {
-            if (chip.second != FilterCondition::Scope::Edges) hasNodeFilters = true;
-            else                                               hasEdgeFilters = true;
-        }
-        filterNodesRestoreAllAct->setEnabled(hasNodeFilters);
-        editFilterEdgesRestoreAllAct->setEnabled(hasEdgeFilters); });
+        runGraphOperationAsync(
+            [this, barIndex]() { activeGraph->vertexFilterRemoveAt(barIndex); },
+            tr("Removing filter..."),
+            [this, barIndex]() {
+                m_filterChips.removeAt(barIndex);
+                // Rebuild bar from remaining chips (preserves original application order).
+                m_filterBar->clearAllChips();
+                for (const auto &chip : std::as_const(m_filterChips))
+                    m_filterBar->addChip(chip.first, chip.second);
+                // Update restore-action states.
+                bool hasNodeFilters = false, hasEdgeFilters = false;
+                for (const auto &chip : std::as_const(m_filterChips)) {
+                    if (chip.second != FilterCondition::Scope::Edges) hasNodeFilters = true;
+                    else                                               hasEdgeFilters = true;
+                }
+                filterNodesRestoreAllAct->setEnabled(hasNodeFilters);
+                editFilterEdgesRestoreAllAct->setEnabled(hasEdgeFilters);
+            }); });
     connect(m_filterBar, &FilterBarWidget::clearAllRequested,
             this, [this]()
             {
-        while (!activeGraph->visibilityHistoryEmpty())
-            activeGraph->vertexFilterRestoreAll();
-        m_filterChips.clear();
-        filterNodesRestoreAllAct->setEnabled(false);
-        editFilterEdgesRestoreAllAct->setEnabled(false);
-        m_filterBar->clearAllChips(); });
+        runGraphOperationAsync(
+            [this]() {
+                while (!activeGraph->visibilityHistoryEmpty())
+                    activeGraph->vertexFilterRestoreAll();
+            },
+            tr("Clearing all filters..."),
+            [this]() {
+                m_filterChips.clear();
+                filterNodesRestoreAllAct->setEnabled(false);
+                editFilterEdgesRestoreAllAct->setEnabled(false);
+                m_filterBar->clearAllChips();
+            }); });
 
     connect(toolBoxAnalysisMatricesSelect, SIGNAL(currentIndexChanged(int)),
             this, SLOT(toolBoxAnalysisMatricesSelectChanged(int)));
@@ -5849,8 +5859,9 @@ void MainWindow::processNextInteractiveCommand()
     else if (line == "unilateral")
     {
         // Same QAction the toolbar/menu item triggers, so this exercises the exact same
-        // code path (including its own pre-existing direct-call blocking behavior) as a
-        // real user click, not a shortcut around it.
+        // code path as a real user click, not a shortcut around it - including WS15 P3's
+        // runGraphOperationAsync wrap (slotEditFilterEdgesUnilateral() is no longer a
+        // direct blocking call as of that change).
         QElapsedTimer timer;
         timer.start();
         editFilterEdgesUnilateralAct->trigger();
@@ -5929,6 +5940,128 @@ void MainWindow::processNextInteractiveCommand()
                     << "elapsed_ms=" << timer.elapsed();
         }, Qt::QueuedConnection);
         QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+    }
+    else if (line.startsWith("click-node "))
+    {
+        // click-node <id> - sets Graph::vertexClicked() without going through GraphicsWidget's
+        // real mouse-press/selection-changed chain (which also gates filterNodesByEgoNetworkAct's
+        // enabled state - irrelevant here since the commands below call Graph:: methods directly,
+        // not via that QAction). Prerequisite for 'filter_ego'.
+        bool ok = false;
+        const int id = line.mid(11).trimmed().toInt(&ok);
+        if (!ok)
+        {
+            qWarning() << "Malformed 'click-node' command, skipping:" << line;
+            processNextInteractiveCommand();
+            return;
+        }
+        QMetaObject::invokeMethod(activeGraph, [this, id]() {
+            QElapsedTimer timer;
+            timer.start();
+            activeGraph->vertexClickedSet(id, QPointF());
+            qInfo() << "BENCH click-node id=" << id << "elapsed_ms=" << timer.elapsed();
+        }, Qt::QueuedConnection);
+        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+    }
+    else if (line == "filter_ego")
+    {
+        // WS15 P3 Group C test aid: mirrors slotFilterNodesByEgoNetwork()'s real
+        // vertexFilterByEgoNetwork() call and runGraphOperationAsync dispatch, skipping only the
+        // GUI-only filter-chip/filter-bar bookkeeping (same philosophy as distances_bench skipping
+        // the disk write) - added specifically to reproduce and verify the fix for the reported
+        // multi-minute freeze on a large network (2000+ nodes) with only the OS beachball as
+        // feedback. Needs 'click-node <id>' first.
+        //
+        // vertexClicked() is read *inside* the graphThread-dispatched lambda below, not here on
+        // the GUI thread before dispatch (unlike the real slotFilterNodesByEgoNetwork(), which
+        // reads it on the GUI thread - safe there since a real user's node-click and menu-click
+        // are two separate actions with ample time between them for click-node's own queued
+        // vertexClickedSet() call to complete). Back-to-back scripted commands have no such gap:
+        // reading it here raced with click-node's still-pending queued call and read 0. Reading
+        // it inside this lambda instead makes it FIFO-ordered with click-node's own queued call,
+        // since both run on graphThread's single event queue.
+        auto v1 = std::make_shared<int>(0);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+        runGraphOperationAsync(
+            [this, v1]() {
+                *v1 = activeGraph->vertexClicked();
+                activeGraph->vertexFilterByEgoNetwork(*v1);
+            },
+            tr("Filtering ego network (script)..."),
+            [this, v1, timer]() {
+                qInfo() << "BENCH filter_ego v1=" << *v1
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line.startsWith("filter_isolates "))
+    {
+        // filter_isolates <on|off> - direct Graph::vertexIsolatedAllToggle() call via
+        // runGraphOperationAsync, same dispatch as the real editFilterNodesIsolatesAct-driven
+        // slotEditFilterNodesIsolates(), skipping only the QAction/status-message side effects.
+        const QString arg = line.mid(16).trimmed();
+        if (arg != "on" && arg != "off")
+        {
+            qWarning() << "Malformed 'filter_isolates' command, skipping:" << line;
+            processNextInteractiveCommand();
+            return;
+        }
+        const bool disableIsolates = (arg == "on");
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+        runGraphOperationAsync(
+            [this, disableIsolates]() { activeGraph->vertexIsolatedAllToggle(disableIsolates); },
+            tr("Filtering isolate nodes (script)..."),
+            [this, disableIsolates, timer]() {
+                qInfo() << "BENCH filter_isolates disable=" << disableIsolates
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line.startsWith("symmetrize_strongties "))
+    {
+        // symmetrize_strongties <all|current> - direct Graph::addRelationSymmetricStrongTies()
+        // call via runGraphOperationAsync. Only safe to script on a single-relation network - the
+        // real slotEditEdgeSymmetrizeStrongTies() shows a modal chooser dialog when multiple
+        // relations exist, which would block an unattended script (same reason 'erdos'/'save'
+        // bypass their own real slots' modal dialogs).
+        const QString arg = line.mid(22).trimmed();
+        if (arg != "all" && arg != "current")
+        {
+            qWarning() << "Malformed 'symmetrize_strongties' command, skipping:" << line;
+            processNextInteractiveCommand();
+            return;
+        }
+        const bool allRelations = (arg == "all");
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+        runGraphOperationAsync(
+            [this, allRelations]() { activeGraph->addRelationSymmetricStrongTies(allRelations); },
+            tr("Symmetrizing strong ties (script)..."),
+            [this, allRelations, timer]() {
+                qInfo() << "BENCH symmetrize_strongties all=" << allRelations
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "symmetrize_cocitation")
+    {
+        // Direct Graph::relationAddCocitation() call via runGraphOperationAsync - no modal
+        // dialog in the real slot for this one, so no bypass needed.
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+        runGraphOperationAsync(
+            [this]() { activeGraph->relationAddCocitation(); },
+            tr("Computing cocitation relation (script)..."),
+            [this, timer]() {
+                qInfo() << "BENCH symmetrize_cocitation N=" << activeNodes()
+                        << "E=" << activeEdges() << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
     }
     else if (line == "distances" || line.startsWith("distances "))
     {
@@ -10280,25 +10413,36 @@ void MainWindow::slotEditNodeSetPropertyForSelection()
     connect(dlg.get(), &DialogBulkEdit::userChoices,
             this, [this, selectedNodes](const QString &property, const QString &value)
             {
-        for (const int v : selectedNodes) {
-            if (property == QLatin1String("Label")) {
-                activeGraph->vertexLabelSet(v, value);
-            } else if (property == QLatin1String("Size")) {
-                activeGraph->vertexSizeSet(v, value.toInt());
-            } else if (property == QLatin1String("Color")) {
-                activeGraph->vertexColorSet(v, value);
-            } else if (property == QLatin1String("Shape")) {
-                const int idx = nodeShapeList.indexOf(value);
-                const QString iconPath = (idx >= 0 && idx < iconPathList.size())
-                                            ? iconPathList[idx] : QString();
-                activeGraph->vertexShapeSet(v, value, iconPath);
-            } else {
-                activeGraph->vertexCustomAttributeSet(v, property, value);
-            }
+        // Resolved once here (doesn't depend on which vertex) rather than per-iteration inside
+        // the dispatched lambda below, which also keeps that lambda from reading
+        // nodeShapeList/iconPathList (MainWindow-owned) on graphThread at all.
+        QString shapeIconPath;
+        if (property == QLatin1String("Shape")) {
+            const int idx = nodeShapeList.indexOf(value);
+            shapeIconPath = (idx >= 0 && idx < iconPathList.size()) ? iconPathList[idx] : QString();
         }
-        statusMessage(tr("Set '%1' on %2 node(s).").arg(property).arg(selectedNodes.size()));
-        if (m_tableDock && m_tableDock->isVisible())
-            m_tableWidget->refresh(activeGraph); });
+        runGraphOperationAsync(
+            [this, selectedNodes, property, value, shapeIconPath]() {
+                for (const int v : selectedNodes) {
+                    if (property == QLatin1String("Label")) {
+                        activeGraph->vertexLabelSet(v, value);
+                    } else if (property == QLatin1String("Size")) {
+                        activeGraph->vertexSizeSet(v, value.toInt());
+                    } else if (property == QLatin1String("Color")) {
+                        activeGraph->vertexColorSet(v, value);
+                    } else if (property == QLatin1String("Shape")) {
+                        activeGraph->vertexShapeSet(v, value, shapeIconPath);
+                    } else {
+                        activeGraph->vertexCustomAttributeSet(v, property, value);
+                    }
+                }
+            },
+            tr("Applying bulk edit..."),
+            [this, selectedNodes, property]() {
+                statusMessage(tr("Set '%1' on %2 node(s).").arg(property).arg(selectedNodes.size()));
+                if (m_tableDock && m_tableDock->isVisible())
+                    m_tableWidget->refresh(activeGraph);
+            }); });
 
     dlg->exec();
 }
@@ -10330,21 +10474,27 @@ void MainWindow::slotEditEdgeSetPropertyForSelection()
     connect(dlg.get(), &DialogBulkEdit::userChoices,
             this, [this, selectedEdges](const QString &property, const QString &value)
             {
-        for (const SelectedEdge &e : selectedEdges) {
-            if (property == QLatin1String("Label")) {
-                activeGraph->edgeLabelSet(e.first, e.second, value);
-            } else if (property == QLatin1String("Weight")) {
-                activeGraph->edgeWeightSet(e.first, e.second, value.toDouble());
-            } else if (property == QLatin1String("Color")) {
-                activeGraph->edgeColorSet(e.first, e.second, value);
-            } else {
-                activeGraph->edgeCustomAttributesSet(
-                    e.first, e.second, {{property, value}});
-            }
-        }
-        statusMessage(tr("Set '%1' on %2 edge(s).").arg(property).arg(selectedEdges.size()));
-        if (m_tableDock && m_tableDock->isVisible())
-            m_tableWidget->refresh(activeGraph); });
+        runGraphOperationAsync(
+            [this, selectedEdges, property, value]() {
+                for (const SelectedEdge &e : selectedEdges) {
+                    if (property == QLatin1String("Label")) {
+                        activeGraph->edgeLabelSet(e.first, e.second, value);
+                    } else if (property == QLatin1String("Weight")) {
+                        activeGraph->edgeWeightSet(e.first, e.second, value.toDouble());
+                    } else if (property == QLatin1String("Color")) {
+                        activeGraph->edgeColorSet(e.first, e.second, value);
+                    } else {
+                        activeGraph->edgeCustomAttributesSet(
+                            e.first, e.second, {{property, value}});
+                    }
+                }
+            },
+            tr("Applying bulk edit..."),
+            [this, selectedEdges, property]() {
+                statusMessage(tr("Set '%1' on %2 edge(s).").arg(property).arg(selectedEdges.size()));
+                if (m_tableDock && m_tableDock->isVisible())
+                    m_tableWidget->refresh(activeGraph);
+            }); });
 
     dlg->exec();
 }
@@ -11917,12 +12067,15 @@ void MainWindow::slotEditEdgeSymmetrizeCocitation()
         return;
     }
     qCDebug(lcMainWindow) << "Request to add a new symmetric relation using cocited nodes...";
-    activeGraph->relationAddCocitation();
-
-    slotHelpMessageToUser(USER_MSG_INFO,
-                          tr("New cocitation relation added. Ready"),
-                          tr("New cocitation relation has been added to the network."),
-                          tr("In the new relation, there are ties only between pairs of nodes who were cocited by others."));
+    runGraphOperationAsync(
+        [this]() { activeGraph->relationAddCocitation(); },
+        tr("Computing cocitation relation..."),
+        [this]() {
+            slotHelpMessageToUser(USER_MSG_INFO,
+                                  tr("New cocitation relation added. Ready"),
+                                  tr("New cocitation relation has been added to the network."),
+                                  tr("In the new relation, there are ties only between pairs of nodes who were cocited by others."));
+        });
 }
 
 /**
@@ -11983,35 +12136,46 @@ void MainWindow::slotEditEdgeSymmetrizeStrongTies()
     }
     qCDebug(lcMainWindow) << "MW::slotEditEdgeSymmetrizeStrongTies() - calling addRelationSymmetricStrongTies()";
     int oldRelationsCounter = activeGraph->relations();
-    int answer = 0;
+    // callIt stays false (silent return, no info dialog) if the multi-relation dialog below is
+    // dismissed without picking 1 or 2 - matches the original switch's lack of a default case.
+    bool callIt = true;
+    bool allRelations = false;
     if (oldRelationsCounter > 0)
     {
         switch (
-            answer = slotHelpMessageToUser(USER_MSG_QUESTION_CUSTOM, tr("Select"),
-                                           tr("Symmetrize social network by examining strong ties"),
-                                           tr("This network has multiple relations. "
-                                              "Symmetrize by examining reciprocated ties across all relations or just the current relation?"),
-                                           QMessageBox::NoButton, QMessageBox::NoButton,
-                                           tr("all relations"), tr("current relation")))
+            slotHelpMessageToUser(USER_MSG_QUESTION_CUSTOM, tr("Select"),
+                                  tr("Symmetrize social network by examining strong ties"),
+                                  tr("This network has multiple relations. "
+                                     "Symmetrize by examining reciprocated ties across all relations or just the current relation?"),
+                                  QMessageBox::NoButton, QMessageBox::NoButton,
+                                  tr("all relations"), tr("current relation")))
         {
         case 1:
-            activeGraph->addRelationSymmetricStrongTies(true);
+            allRelations = true;
             break;
         case 2:
-            activeGraph->addRelationSymmetricStrongTies(false);
+            allRelations = false;
+            break;
+        default:
+            callIt = false;
             break;
         }
     }
-    else
-    {
-        activeGraph->addRelationSymmetricStrongTies(false);
-    }
-    slotHelpMessageToUser(USER_MSG_INFO, tr("New symmetric relation created from strong ties"),
-                          tr("New relation created from strong ties"),
-                          tr("A new relation \"%1\" has been added to the network. "
-                             "by counting reciprocated ties only. "
-                             "This relation is binary and symmetric. ")
-                              .arg("Strong Ties"));
+
+    if (!callIt)
+        return;
+
+    runGraphOperationAsync(
+        [this, allRelations]() { activeGraph->addRelationSymmetricStrongTies(allRelations); },
+        tr("Symmetrizing strong ties..."),
+        [this]() {
+            slotHelpMessageToUser(USER_MSG_INFO, tr("New symmetric relation created from strong ties"),
+                                  tr("New relation created from strong ties"),
+                                  tr("A new relation \"%1\" has been added to the network. "
+                                     "by counting reciprocated ties only. "
+                                     "This relation is binary and symmetric. ")
+                                      .arg("Strong Ties"));
+        });
 }
 
 /**
@@ -12158,17 +12322,26 @@ void MainWindow::slotFilterNodesDialogByCentrality()
                                       computedMask,
                                       this);
 
+    // Not connected straight to activeGraph anymore: that resolved to a queued cross-thread
+    // connection (dialog on GUI thread, Graph on graphThread) with no busy-guard and no progress
+    // feedback - the same unprotected-async-dispatch shape WS15 P2 closed for computations,
+    // just for filtering. Routed through a local lambda + runGraphOperationAsync instead.
     connect(&dlg,
             &DialogFilterNodesByCentrality::userChoices,
-            activeGraph,
-            &Graph::vertexFilterByCentrality);
+            this, [this](const float threshold, const bool overThreshold, const IndexType centralityIndex)
+            {
+        runGraphOperationAsync(
+            [this, threshold, overThreshold, centralityIndex]() {
+                activeGraph->vertexFilterByCentrality(threshold, overThreshold, centralityIndex);
+            },
+            tr("Filtering by centrality..."),
+            [this]() {
+                filterNodesRestoreAllAct->setEnabled(true);
+                m_filterChips.append({tr("Nodes: centrality filter"), FilterCondition::Scope::Nodes});
+                m_filterBar->addChip(tr("Nodes: centrality filter"), FilterCondition::Scope::Nodes);
+            }); });
 
-    if (dlg.exec() == QDialog::Accepted)
-    {
-        filterNodesRestoreAllAct->setEnabled(true);
-        m_filterChips.append({tr("Nodes: centrality filter"), FilterCondition::Scope::Nodes});
-        m_filterBar->addChip(tr("Nodes: centrality filter"), FilterCondition::Scope::Nodes);
-    }
+    dlg.exec();
 }
 
 /**
@@ -12192,10 +12365,14 @@ void MainWindow::slotFilterNodesBySelection()
                               tr("Please select at least one node first."));
         return;
     }
-    activeGraph->vertexFilterBySelection(selection);
-    filterNodesRestoreAllAct->setEnabled(true);
-    m_filterChips.append({tr("Nodes: selection"), FilterCondition::Scope::Nodes});
-    m_filterBar->addChip(tr("Nodes: selection"), FilterCondition::Scope::Nodes);
+    runGraphOperationAsync(
+        [this, selection]() { activeGraph->vertexFilterBySelection(selection); },
+        tr("Filtering by selection..."),
+        [this]() {
+            filterNodesRestoreAllAct->setEnabled(true);
+            m_filterChips.append({tr("Nodes: selection"), FilterCondition::Scope::Nodes});
+            m_filterBar->addChip(tr("Nodes: selection"), FilterCondition::Scope::Nodes);
+        });
 }
 
 /**
@@ -12216,10 +12393,14 @@ void MainWindow::slotFilterNodesByEgoNetwork()
                               tr("Please click on a node first."));
         return;
     }
-    activeGraph->vertexFilterByEgoNetwork(v1);
-    filterNodesRestoreAllAct->setEnabled(true);
-    m_filterChips.append({tr("Nodes: ego network"), FilterCondition::Scope::Nodes});
-    m_filterBar->addChip(tr("Nodes: ego network"), FilterCondition::Scope::Nodes);
+    runGraphOperationAsync(
+        [this, v1]() { activeGraph->vertexFilterByEgoNetwork(v1); },
+        tr("Filtering ego network..."),
+        [this]() {
+            filterNodesRestoreAllAct->setEnabled(true);
+            m_filterChips.append({tr("Nodes: ego network"), FilterCondition::Scope::Nodes});
+            m_filterBar->addChip(tr("Nodes: ego network"), FilterCondition::Scope::Nodes);
+        });
 }
 
 /**
@@ -12254,30 +12435,40 @@ void MainWindow::slotFilterNodesByAttribute()
     connect(&dlg, &DialogFilterByAttribute::userChoices,
             this, [this](const FilterCondition &cond)
             {
-        if (cond.scope == FilterCondition::Scope::Edges) {
-            activeGraph->edgeFilterByAttribute(cond);
-            m_filterChips.append({cond.label(), FilterCondition::Scope::Edges});
-            m_filterBar->addChip(cond.label(), FilterCondition::Scope::Edges);
-        } else if (cond.scope == FilterCondition::Scope::Both) {
-            activeGraph->vertexFilterByAttribute(cond);
-            activeGraph->edgeFilterByAttribute(cond);
-            // Split into two chips so each scope can be closed independently.
-            FilterCondition nc = cond; nc.scope = FilterCondition::Scope::Nodes;
-            FilterCondition ec = cond; ec.scope = FilterCondition::Scope::Edges;
-            m_filterChips.append({nc.label(), FilterCondition::Scope::Nodes});
-            m_filterChips.append({ec.label(), FilterCondition::Scope::Edges});
-            m_filterBar->addChip(nc.label(), FilterCondition::Scope::Nodes);
-            m_filterBar->addChip(ec.label(), FilterCondition::Scope::Edges);
-        } else {
-            activeGraph->vertexFilterByAttribute(cond);
-            m_filterChips.append({cond.label(), FilterCondition::Scope::Nodes});
-            m_filterBar->addChip(cond.label(), FilterCondition::Scope::Nodes);
-        }
-        if (cond.scope != FilterCondition::Scope::Edges)
-            filterNodesRestoreAllAct->setEnabled(true);
-        if (cond.scope == FilterCondition::Scope::Edges ||
-            cond.scope == FilterCondition::Scope::Both)
-            editFilterEdgesRestoreAllAct->setEnabled(true); });
+        runGraphOperationAsync(
+            [this, cond]() {
+                if (cond.scope == FilterCondition::Scope::Edges) {
+                    activeGraph->edgeFilterByAttribute(cond);
+                } else if (cond.scope == FilterCondition::Scope::Both) {
+                    activeGraph->vertexFilterByAttribute(cond);
+                    activeGraph->edgeFilterByAttribute(cond);
+                } else {
+                    activeGraph->vertexFilterByAttribute(cond);
+                }
+            },
+            tr("Filtering by attribute..."),
+            [this, cond]() {
+                if (cond.scope == FilterCondition::Scope::Edges) {
+                    m_filterChips.append({cond.label(), FilterCondition::Scope::Edges});
+                    m_filterBar->addChip(cond.label(), FilterCondition::Scope::Edges);
+                } else if (cond.scope == FilterCondition::Scope::Both) {
+                    // Split into two chips so each scope can be closed independently.
+                    FilterCondition nc = cond; nc.scope = FilterCondition::Scope::Nodes;
+                    FilterCondition ec = cond; ec.scope = FilterCondition::Scope::Edges;
+                    m_filterChips.append({nc.label(), FilterCondition::Scope::Nodes});
+                    m_filterChips.append({ec.label(), FilterCondition::Scope::Edges});
+                    m_filterBar->addChip(nc.label(), FilterCondition::Scope::Nodes);
+                    m_filterBar->addChip(ec.label(), FilterCondition::Scope::Edges);
+                } else {
+                    m_filterChips.append({cond.label(), FilterCondition::Scope::Nodes});
+                    m_filterBar->addChip(cond.label(), FilterCondition::Scope::Nodes);
+                }
+                if (cond.scope != FilterCondition::Scope::Edges)
+                    filterNodesRestoreAllAct->setEnabled(true);
+                if (cond.scope == FilterCondition::Scope::Edges ||
+                    cond.scope == FilterCondition::Scope::Both)
+                    editFilterEdgesRestoreAllAct->setEnabled(true);
+            }); });
 
     dlg.exec();
 
@@ -12322,19 +12513,28 @@ void MainWindow::slotFilterByQueryBuilder()
         const FilterCondition::Scope scope = query.conditions.first().scope;
         const int n = query.conditions.size();
 
-        if (scope == FilterCondition::Scope::Edges) {
-            activeGraph->edgeFilterByQuery(query);
-            const QString label = tr("Edges: query (%1 condition(s))").arg(n);
-            m_filterChips.append({label, FilterCondition::Scope::Edges});
-            m_filterBar->addChip(label, FilterCondition::Scope::Edges);
-            editFilterEdgesRestoreAllAct->setEnabled(true);
-        } else {
-            activeGraph->vertexFilterByQuery(query);
-            const QString label = tr("Nodes: query (%1 condition(s))").arg(n);
-            m_filterChips.append({label, FilterCondition::Scope::Nodes});
-            m_filterBar->addChip(label, FilterCondition::Scope::Nodes);
-            filterNodesRestoreAllAct->setEnabled(true);
-        } });
+        runGraphOperationAsync(
+            [this, query, scope]() {
+                if (scope == FilterCondition::Scope::Edges) {
+                    activeGraph->edgeFilterByQuery(query);
+                } else {
+                    activeGraph->vertexFilterByQuery(query);
+                }
+            },
+            tr("Applying query filter..."),
+            [this, scope, n]() {
+                if (scope == FilterCondition::Scope::Edges) {
+                    const QString label = tr("Edges: query (%1 condition(s))").arg(n);
+                    m_filterChips.append({label, FilterCondition::Scope::Edges});
+                    m_filterBar->addChip(label, FilterCondition::Scope::Edges);
+                    editFilterEdgesRestoreAllAct->setEnabled(true);
+                } else {
+                    const QString label = tr("Nodes: query (%1 condition(s))").arg(n);
+                    m_filterChips.append({label, FilterCondition::Scope::Nodes});
+                    m_filterBar->addChip(label, FilterCondition::Scope::Nodes);
+                    filterNodesRestoreAllAct->setEnabled(true);
+                }
+            }); });
 
     dlg->exec();
 }
@@ -12357,20 +12557,24 @@ void MainWindow::slotFilterNodesRestoreAll()
     if (lastNodeIdx < 0)
         return;
 
-    activeGraph->vertexFilterRemoveAt(lastNodeIdx);
-    m_filterChips.removeAt(lastNodeIdx);
-    m_filterBar->clearAllChips();
-    for (const auto &chip : std::as_const(m_filterChips))
-        m_filterBar->addChip(chip.first, chip.second);
+    runGraphOperationAsync(
+        [this, lastNodeIdx]() { activeGraph->vertexFilterRemoveAt(lastNodeIdx); },
+        tr("Restoring filtered nodes..."),
+        [this, lastNodeIdx]() {
+            m_filterChips.removeAt(lastNodeIdx);
+            m_filterBar->clearAllChips();
+            for (const auto &chip : std::as_const(m_filterChips))
+                m_filterBar->addChip(chip.first, chip.second);
 
-    bool hasNodeFilters = false;
-    for (const auto &chip : std::as_const(m_filterChips))
-        if (chip.second != FilterCondition::Scope::Edges)
-        {
-            hasNodeFilters = true;
-            break;
-        }
-    filterNodesRestoreAllAct->setEnabled(hasNodeFilters);
+            bool hasNodeFilters = false;
+            for (const auto &chip : std::as_const(m_filterChips))
+                if (chip.second != FilterCondition::Scope::Edges)
+                {
+                    hasNodeFilters = true;
+                    break;
+                }
+            filterNodesRestoreAllAct->setEnabled(hasNodeFilters);
+        });
 }
 
 /**
@@ -12386,15 +12590,20 @@ void MainWindow::slotEditFilterNodesIsolates(bool checked)
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
-    activeGraph->vertexIsolatedAllToggle(!editFilterNodesIsolatesAct->isChecked());
-    if (checked)
-    {
-        statusMessage(tr("Isolated nodes disabled."));
-    }
-    else
-    {
-        statusMessage(tr("Isolated nodes enabled."));
-    }
+    const bool toggleTo = !editFilterNodesIsolatesAct->isChecked();
+    runGraphOperationAsync(
+        [this, toggleTo]() { activeGraph->vertexIsolatedAllToggle(toggleTo); },
+        tr("Toggling isolated nodes..."),
+        [this, checked]() {
+            if (checked)
+            {
+                statusMessage(tr("Isolated nodes disabled."));
+            }
+            else
+            {
+                statusMessage(tr("Isolated nodes enabled."));
+            }
+        });
 }
 
 /**
@@ -12410,17 +12619,24 @@ void MainWindow::slotEditFilterEdgesByWeightDialog()
     // Create a new edge filtering dialog
     m_DialogEdgeFilterByWeight = new DialogFilterEdgesByWeight(this);
 
-    // Connect dialog signal to the graph
+    // Was two separate connections to userChoices: one straight to activeGraph (a queued
+    // cross-thread dispatch with no busy-guard/progress feedback - the same shape WS15 P2 closed
+    // for computations), and a second, entirely independent one doing the GUI chip bookkeeping
+    // immediately, with no actual dependency on the filter having completed. Merged into one
+    // handler via runGraphOperationAsync, so the chip only appears once the filter is done.
     connect(m_DialogEdgeFilterByWeight, &DialogFilterEdgesByWeight::userChoices,
-            activeGraph, &Graph::edgeFilterByWeight);
-
-    // Enable restore action and add filter bar chip after filter is applied
-    connect(m_DialogEdgeFilterByWeight, &DialogFilterEdgesByWeight::userChoices,
-            this, [this]()
+            this, [this](const qreal threshold, const bool overThreshold)
             {
-        editFilterEdgesRestoreAllAct->setEnabled(true);
-        m_filterChips.append({tr("Edges: weight filter"), FilterCondition::Scope::Edges});
-        m_filterBar->addChip(tr("Edges: weight filter"), FilterCondition::Scope::Edges); });
+        runGraphOperationAsync(
+            [this, threshold, overThreshold]() {
+                activeGraph->edgeFilterByWeight(threshold, overThreshold);
+            },
+            tr("Filtering edges by weight..."),
+            [this]() {
+                editFilterEdgesRestoreAllAct->setEnabled(true);
+                m_filterChips.append({tr("Edges: weight filter"), FilterCondition::Scope::Edges});
+                m_filterBar->addChip(tr("Edges: weight filter"), FilterCondition::Scope::Edges);
+            }); });
 
     // Show the dialog
     m_DialogEdgeFilterByWeight->exec();
@@ -12431,20 +12647,30 @@ void MainWindow::slotEditFilterEdgesByWeightDialog()
  */
 void MainWindow::slotEditFilterEdgesReset()
 {
-    // Remove all edge-scope chips via the snapshot stack (highest index first
-    // so each vertexFilterRemoveAt operates on the correct stack position).
+    // Collect edge-scope chip indices first (highest index first, so each
+    // vertexFilterRemoveAt below - and the matching m_filterChips removal in
+    // onComplete - operates on the correct stack position without the two
+    // lists needing to be mutated in lockstep inside the same loop anymore.
+    QList<int> edgeChipIndices;
     for (int i = m_filterChips.size() - 1; i >= 0; --i)
     {
         if (m_filterChips[i].second == FilterCondition::Scope::Edges)
-        {
-            activeGraph->vertexFilterRemoveAt(i);
-            m_filterChips.removeAt(i);
-        }
+            edgeChipIndices.append(i);
     }
-    m_filterBar->clearAllChips();
-    for (const auto &chip : std::as_const(m_filterChips))
-        m_filterBar->addChip(chip.first, chip.second);
-    editFilterEdgesRestoreAllAct->setEnabled(false);
+    runGraphOperationAsync(
+        [this, edgeChipIndices]() {
+            for (int i : edgeChipIndices)
+                activeGraph->vertexFilterRemoveAt(i);
+        },
+        tr("Resetting edge filters..."),
+        [this, edgeChipIndices]() {
+            for (int i : edgeChipIndices)
+                m_filterChips.removeAt(i);
+            m_filterBar->clearAllChips();
+            for (const auto &chip : std::as_const(m_filterChips))
+                m_filterBar->addChip(chip.first, chip.second);
+            editFilterEdgesRestoreAllAct->setEnabled(false);
+        });
 }
 
 /**
@@ -12460,15 +12686,20 @@ void MainWindow::slotEditFilterEdgesUnilateral(bool checked)
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_EDGES);
         return;
     }
-    activeGraph->edgeFilterUnilateral(!editFilterEdgesUnilateralAct->isChecked());
-    if (checked)
-    {
-        statusMessage(tr("Unilateral (weak) edges disabled."));
-    }
-    else
-    {
-        statusMessage(tr("Unilateral (weak) edges enabled."));
-    }
+    const bool toggleTo = !editFilterEdgesUnilateralAct->isChecked();
+    runGraphOperationAsync(
+        [this, toggleTo]() { activeGraph->edgeFilterUnilateral(toggleTo); },
+        tr("Filtering unilateral edges..."),
+        [this, checked]() {
+            if (checked)
+            {
+                statusMessage(tr("Unilateral (weak) edges disabled."));
+            }
+            else
+            {
+                statusMessage(tr("Unilateral (weak) edges enabled."));
+            }
+        });
 }
 
 /**
@@ -12499,14 +12730,22 @@ void MainWindow::slotEditSubgraphExtract()
     if (!ok || subgraphName.trimmed().isEmpty())
         return;
 
-    Graph *sub = activeGraph->subgraphExtract(subgraphName.trimmed());
-    if (!sub)
-    {
-        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
-        return;
-    }
-
-    saveSubgraphToFile(sub, subgraphName.trimmed());
+    // sub is written on graphThread (inside the dispatched lambda) and read back here in
+    // onComplete (GUI thread) - a std::shared_ptr box makes that value visible across the
+    // thread hop, same pattern the writeCentralityX() slots use for their success flag.
+    const QString name = subgraphName.trimmed();
+    auto sub = std::make_shared<Graph *>(nullptr);
+    runGraphOperationAsync(
+        [this, name, sub]() { *sub = activeGraph->subgraphExtract(name); },
+        tr("Extracting subgraph..."),
+        [this, name, sub]() {
+            if (!*sub)
+            {
+                slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+                return;
+            }
+            saveSubgraphToFile(*sub, name);
+        });
 }
 
 /**
@@ -12533,14 +12772,19 @@ void MainWindow::slotEditSubgraphExtractFromSelection()
     if (!ok || subgraphName.trimmed().isEmpty())
         return;
 
-    Graph *sub = activeGraph->subgraphExtractFromSelection(subgraphName.trimmed());
-    if (!sub)
-    {
-        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
-        return;
-    }
-
-    saveSubgraphToFile(sub, subgraphName.trimmed());
+    const QString name = subgraphName.trimmed();
+    auto sub = std::make_shared<Graph *>(nullptr);
+    runGraphOperationAsync(
+        [this, name, sub]() { *sub = activeGraph->subgraphExtractFromSelection(name); },
+        tr("Extracting subgraph..."),
+        [this, name, sub]() {
+            if (!*sub)
+            {
+                slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+                return;
+            }
+            saveSubgraphToFile(*sub, name);
+        });
 }
 
 /**
