@@ -48,7 +48,6 @@ void Graph::createMatrixReachability()
 
     int N = vertices(false, false, true);
 
-    int progressCounter = 0;
     int source = 0, target = 0;
     int i = 0, j = 0;
     int reachVal = 0;
@@ -57,17 +56,14 @@ void Graph::createMatrixReachability()
 
     QString pMsg = tr("Creating reachability matrix. \nPlease wait ");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     qCDebug(lcReachability) << "Writing Reachability matrix...";
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
-        progressUpdate(++progressCounter);
         if (progressCanceled())
         {
-            progressFinish();
             return;
         }
         source = (*it)->number();
@@ -102,8 +98,6 @@ void Graph::createMatrixReachability()
         j = 0;
         i++;
     }
-
-    progressFinish();
 }
 
 /**

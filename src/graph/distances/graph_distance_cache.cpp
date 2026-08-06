@@ -43,7 +43,6 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
 
     VList::const_iterator it, jt;
     int N = vertices(dropIsolates, false, true);
-    int progressCounter = 0;
     int source = 0, target = 0;
     int i = 0, j = 0;
 
@@ -54,18 +53,15 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
 
     QString pMsg = tr("Creating shortest paths matrix. \nPlease wait ");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     qCDebug(lcDistances) << "Graph::graphMatrixShortestPathsCreate() - Writing shortest paths matrix...";
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
-        progressUpdate(++progressCounter);
         if (progressCanceled())
         {
             calculatedDistances = false;
-            progressFinish();
             return;
         }
 
@@ -119,8 +115,6 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
         j = 0;
         i++;
     }
-
-    progressFinish();
 }
 
 /**

@@ -251,7 +251,6 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
     double maxWidth = 0, maxHeight = 0;
     qreal offset = 0;
     int new_size = 0;
-    int progressCounter = 0;
 
     int N = vertices();
     VList::const_iterator it;
@@ -351,8 +350,6 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
     }
     }
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
-
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
@@ -458,8 +455,6 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
         };
 
         norm = stdC / maxC;
-
-        progressUpdate(++progressCounter);
 
         switch (layoutType)
         {
@@ -634,8 +629,6 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
         }
         };
     }
-
-    progressFinish();
 
     setModStatus(ModStatus::VertexPositions);
 
