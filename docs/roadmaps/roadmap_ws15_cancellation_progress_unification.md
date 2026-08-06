@@ -240,7 +240,7 @@ filter operations have **neither** system — no dialog, no `setAppBusy()` guard
 every `MainWindow` caller of that method, then whether each caller path is wrapped in
 `runGraphOperationAsync`):
 
-**Group A — double-dialog, unambiguous, safe to deduplicate directly (13 methods).** Every call
+**Group A — double-dialog, unambiguous, safe to deduplicate directly (14 methods).** Every call
 path into these is wrapped, so deleting their internal `progressCreate()`/`progressUpdate()`/
 `progressFinish()` calls is pure redundancy removal, no behavior change:
 `writeCentralityBetweenness/Eccentricity/Eigenvector/Information/Power/Stress` (`graph_reports.cpp`),
@@ -251,15 +251,18 @@ Also effectively in this group despite having no *direct* `MainWindow` caller: `
 nested `graphMatrixShortestPathsCreate`/`createMatrixReachability` calls — every one of the 9
 `writeMatrix()` call sites in `MainWindow` is wrapped.
 
-**Progress (2026-08-06), Phase 2 in progress:** ✅ Done —
+**Progress (2026-08-07), Phase 2 done:** ✅ All of Group A —
 `writeCentralityBetweenness/Eccentricity/Eigenvector/Information/Power/Stress`, `writeEccentricity`,
 `writeMatrixSimilarityMatching` (Finding 3's double-fire bug fixed as a direct side effect — both
 its own and `createMatrixSimilarityMatching()`'s `progressCreate()` triads removed),
-`layoutForceDirectedSpringEmbedder/FruchtermanReingold/KamadaKawai`. Each verified individually:
-`run_golden_compares.sh` clean after every method. **Not yet done:** `layoutByProminenceIndex`
-(`graph_layouts_basic.cpp`), `graphMatrixShortestPathsCreate` (`graph_distance_cache.cpp`),
-`createMatrixReachability` (`graph_reachability_walks.cpp`) — confirmed via direct read, both
-still have their own full `progressCreate`/`progressUpdate`/`progressFinish` triad.
+`layoutForceDirectedSpringEmbedder/FruchtermanReingold/KamadaKawai`, `layoutByProminenceIndex`,
+`graphMatrixShortestPathsCreate`, `createMatrixReachability`. The latter two also had a mid-loop
+`progressCanceled()` cancel-check whose branch called `progressFinish()` before returning — the
+`progressFinish()` was removed (it paired with the now-deleted `progressCreate()`), but the
+`progressCanceled()` check and early return themselves were kept, since they're the actual
+cancellation behavior, not dialog bookkeeping. Each method verified individually:
+`run_golden_compares.sh` clean after every method; full `run_golden_compares.sh` +
+`run_benchmarks.sh` + `run_golden_io_roundtrip.sh` pass clean at the end.
 
 **Non-obvious per-method care needed, recorded so the same mistake isn't made twice:** several of
 these methods have an *earlier*, unrelated `progressCanceled()`/`progressFinish()` pair before
@@ -388,8 +391,9 @@ too, ruling out any connection to this cycle's dispatch changes.
    freeze, zero feedback), and structurally the same fix shape as Group B (wrap in
    `runGraphOperationAsync`). Live-verified 2026-08-06, `run_golden_compares.sh`/`run_benchmarks.sh`
    clean.
-2. **Group A** — pure deletions, no dependency on anything, lowest risk. 🚧 In progress: 11/14
-   methods done (see progress note above), 3 remain.
+2. **Group A ✅ Done** — pure deletions, no dependency on anything, lowest risk. All 14 methods
+   done, verified, see progress note above. Live-verified 2026-08-07,
+   `run_golden_compares.sh`/`run_benchmarks.sh`/`run_golden_io_roundtrip.sh` clean.
 3. **Group A-tangled** (Findings 1, 2, 5) — each needs its own small design decision per call path,
    not mechanical deletion. Do after the easy wins are banked.
 4. **Group B** — migrate one method at a time onto `runGraphOperationAsync`, golden/benchmark-verified
