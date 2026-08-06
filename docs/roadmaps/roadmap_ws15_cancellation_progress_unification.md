@@ -251,6 +251,36 @@ Also effectively in this group despite having no *direct* `MainWindow` caller: `
 nested `graphMatrixShortestPathsCreate`/`createMatrixReachability` calls — every one of the 9
 `writeMatrix()` call sites in `MainWindow` is wrapped.
 
+**Progress (2026-08-06), Phase 2 in progress:** ✅ Done —
+`writeCentralityBetweenness/Eccentricity/Eigenvector/Information/Power/Stress`, `writeEccentricity`,
+`writeMatrixSimilarityMatching` (Finding 3's double-fire bug fixed as a direct side effect — both
+its own and `createMatrixSimilarityMatching()`'s `progressCreate()` triads removed),
+`layoutForceDirectedSpringEmbedder/FruchtermanReingold/KamadaKawai`. Each verified individually:
+`run_golden_compares.sh` clean after every method. **Not yet done:** `layoutByProminenceIndex`
+(`graph_layouts_basic.cpp`), `graphMatrixShortestPathsCreate` (`graph_distance_cache.cpp`),
+`createMatrixReachability` (`graph_reachability_walks.cpp`) — confirmed via direct read, both
+still have their own full `progressCreate`/`progressUpdate`/`progressFinish` triad.
+
+**Non-obvious per-method care needed, recorded so the same mistake isn't made twice:** several of
+these methods have an *earlier*, unrelated `progressCanceled()`/`progressFinish()` pair before
+their own `progressCreate()` — cleaning up a dialog opened by an ancestor call (e.g.
+`graphDistancesGeodesic()`), not this method's own. Only the triad that actually pairs with *this*
+method's own `progressCreate()` gets removed; the ancestor-cleanup calls stay untouched.
+`layoutForceDirectedKamadaKawai`'s loop counter (`progressCounter`) is dual-purpose - also its
+iteration-count guard, not just a display value - so the variable and its increment stay; only the
+`progressUpdate()` call itself was removed.
+
+**Infrastructure fix found necessary before any Group A removal could be safe:**
+`resetProgressCanceled()` was previously called from exactly two places in the whole codebase -
+`Graph::progressCreate()` and `DistanceEngine`'s progress sink - and nowhere in
+`MainWindow::runGraphOperationAsync()` itself. Removing Group A's `progressCreate()` calls would
+therefore have removed the *only* reset point for any operation whose chain has no other one -
+meaning a single earlier cancel would silently no-op every subsequent wrapped operation's
+`cancelCheck()` forever after. This was a latent risk in **Phase 1's Group C wrapping too**, not
+just a Phase 2 concern. Fixed centrally: `runGraphOperationAsync()` now calls
+`activeGraph->resetProgressCanceled()` itself, first thing, before the busy dialog is even created
+- covers every current and future wrapped operation, not just Group A's.
+
 **Group A-tangled — same double-dialog problem, but wrapping is inconsistent per call path, not
 per method (7 methods, needs its own design pass, not mechanical deletion).** `prestigeDegree`,
 `prestigeProximity`, `prestigePageRank`, `centralityInformation`, `centralityEigenvector`,
@@ -358,7 +388,8 @@ too, ruling out any connection to this cycle's dispatch changes.
    freeze, zero feedback), and structurally the same fix shape as Group B (wrap in
    `runGraphOperationAsync`). Live-verified 2026-08-06, `run_golden_compares.sh`/`run_benchmarks.sh`
    clean.
-2. **Group A** — pure deletions, no dependency on anything, lowest risk.
+2. **Group A** — pure deletions, no dependency on anything, lowest risk. 🚧 In progress: 11/14
+   methods done (see progress note above), 3 remain.
 3. **Group A-tangled** (Findings 1, 2, 5) — each needs its own small design decision per call path,
    not mechanical deletion. Do after the easy wins are banked.
 4. **Group B** — migrate one method at a time onto `runGraphOperationAsync`, golden/benchmark-verified
