@@ -137,25 +137,27 @@ in the roadmap.
 
 ---
 
-## WS15 — Cancellation & Progress-Dialog Unification
+## WS15 — App Responsiveness Contract (Dispatch, Cancellation, Busy-Guard & Parallelization)
 
 Roadmap: [`docs/roadmaps/roadmap_ws15_cancellation_progress_unification.md`](roadmaps/roadmap_ws15_cancellation_progress_unification.md)
 
 Split off from WS5 (A5's cancellation plumbing turned out to be inert in practice — a threading/
 signal-delivery bug, not a `Matrix` bug) and WS7 (the progress-dialog-duplication finding, which
-shares the same root cause). Three pieces: make cancellation delivery actually work (atomic flag +
-`Qt::DirectConnection`), retire the redundant linear progress-dialog system in favor of the faster
-indeterminate one, and fix a live, reproducible crash (graph mutation racing an in-flight background
-computation) found during the same investigation. Just created, not started.
+shares the same root cause), then reorganized (2026-08-05) around an explicit 4-property
+"responsiveness contract" — non-blocking dispatch, working cancellation, busy-guard coverage, and
+internal parallelization where the algorithm allows it — checked independently per operation, so
+fixing one property doesn't get mistaken for having fixed all four (as happened with #52's
+"comprehensive" cancel fix in v3.4, which silently regressed under `runGraphOperationAsync`).
 
 ---
 
 # Priorities
 
-1. **WS15** — cancellation & progress-dialog unification. P1 (cancellation delivery) and P2 (global
-   busy guard, closing a live crash) both done and live-verified. Only P3 (linear progress-dialog
-   retirement) remains — lower urgency, no bug attached, kept prioritised here to close out the
-   workstream.
+1. **WS15** — app responsiveness contract. P1 (cancellation delivery) and P2 (global busy guard,
+   closing a live crash) both done and live-verified. P3's Phase 1 (Group C — 18 unwrapped
+   graph-mutating call sites, incl. filters) done and live-verified; Phases 2-5 not started. P4's
+   audit (parallelization, across all long-running `Graph::` operations) done; implementation not
+   started.
 2. **WS5** — matrices. A1, A2.0, A2 (APSP storage migration), A3 (contiguous storage), A5
    (cancellation-aware algebra kernels — plumbing done, delivery fix now WS15's), and A7 (golden
    coverage, via WS6.7) all done, real measured speedups throughout. Only A4 and A6 remain, each
