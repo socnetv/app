@@ -4450,8 +4450,14 @@ void MainWindow::initPanels()
                         << "Proximity Prestige"
                         << "Clustering Coefficient";
 
+    // Clustering Coefficient is excluded here: toolBoxAnalysisProminenceSelectChanged()
+    // has no case for it (the Cohesion dropdown already offers it, via the same
+    // slotAnalyzeClusteringCoefficient() - a 3rd entry point would be pure duplication).
+    // prominenceIndexList itself keeps it, for Node Find / layout-by-index / filter-by-
+    // centrality, which all handle it correctly via their own dedicated code paths.
     QStringList prominenceCommands;
     prominenceCommands << "Select" << prominenceIndexList;
+    prominenceCommands.removeAll("Clustering Coefficient");
     toolBoxAnalysisProminenceSelect->addItems(prominenceCommands);
     toolBoxAnalysisProminenceSelect->setMinimumWidth(120);
 
