@@ -10544,11 +10544,20 @@ void MainWindow::slotEditNodeSelectedToClique()
         return;
     }
 
-    activeGraph->verticesCreateSubgraph(QList<int>(), SUBGRAPH_CLIQUE);
-
-    slotHelpMessageToUser(USER_MSG_INFO,
-                          tr("Clique created."),
-                          tr("A new clique has been created from ") + QString::number(selectedNodesCount) + tr(" nodes"));
+    runGraphOperationAsync(
+        [this]() {
+            activeGraph->verticesCreateSubgraph(QList<int>(), SUBGRAPH_CLIQUE);
+        },
+        tr("Creating subgraph. Please wait..."),
+        [this, selectedNodesCount]() {
+            if (activeGraph->progressCanceled())
+            {
+                return;
+            }
+            slotHelpMessageToUser(USER_MSG_INFO,
+                                  tr("Clique created."),
+                                  tr("A new clique has been created from ") + QString::number(selectedNodesCount) + tr(" nodes"));
+        });
 }
 
 /**
@@ -10594,12 +10603,21 @@ void MainWindow::slotEditNodeSelectedToStar()
         return;
     }
 
-    activeGraph->verticesCreateSubgraph(QList<int>(), SUBGRAPH_STAR, center);
-
-    slotHelpMessageToUser(USER_MSG_INFO,
-                          tr("Star subgraph created."),
-                          tr("A new star subgraph has been created with ") +
-                              QString::number(selectedNodesCount) + tr(" nodes."));
+    runGraphOperationAsync(
+        [this, center]() {
+            activeGraph->verticesCreateSubgraph(QList<int>(), SUBGRAPH_STAR, center);
+        },
+        tr("Creating subgraph. Please wait..."),
+        [this, selectedNodesCount]() {
+            if (activeGraph->progressCanceled())
+            {
+                return;
+            }
+            slotHelpMessageToUser(USER_MSG_INFO,
+                                  tr("Star subgraph created."),
+                                  tr("A new star subgraph has been created with ") +
+                                      QString::number(selectedNodesCount) + tr(" nodes."));
+        });
 }
 
 /**
@@ -10626,11 +10644,20 @@ void MainWindow::slotEditNodeSelectedToCycle()
         return;
     }
 
-    activeGraph->verticesCreateSubgraph(QList<int>(), SUBGRAPH_CYCLE);
-
-    slotHelpMessageToUser(USER_MSG_INFO,
-                          tr("Cycle subgraph created."),
-                          tr("A new cycle subgraph has been created with ") + QString::number(selectedNodesCount) + tr(" select nodes."));
+    runGraphOperationAsync(
+        [this]() {
+            activeGraph->verticesCreateSubgraph(QList<int>(), SUBGRAPH_CYCLE);
+        },
+        tr("Creating subgraph. Please wait..."),
+        [this, selectedNodesCount]() {
+            if (activeGraph->progressCanceled())
+            {
+                return;
+            }
+            slotHelpMessageToUser(USER_MSG_INFO,
+                                  tr("Cycle subgraph created."),
+                                  tr("A new cycle subgraph has been created with ") + QString::number(selectedNodesCount) + tr(" select nodes."));
+        });
 }
 
 /**
@@ -10657,11 +10684,20 @@ void MainWindow::slotEditNodeSelectedToLine()
         return;
     }
 
-    activeGraph->verticesCreateSubgraph(QList<int>(), SUBGRAPH_LINE);
-
-    slotHelpMessageToUser(USER_MSG_INFO,
-                          tr("Line subgraph created."),
-                          tr("A new line subgraph has been created with ") + QString::number(selectedNodesCount) + tr(" selected nodes."));
+    runGraphOperationAsync(
+        [this]() {
+            activeGraph->verticesCreateSubgraph(QList<int>(), SUBGRAPH_LINE);
+        },
+        tr("Creating subgraph. Please wait..."),
+        [this, selectedNodesCount]() {
+            if (activeGraph->progressCanceled())
+            {
+                return;
+            }
+            slotHelpMessageToUser(USER_MSG_INFO,
+                                  tr("Line subgraph created."),
+                                  tr("A new line subgraph has been created with ") + QString::number(selectedNodesCount) + tr(" selected nodes."));
+        });
 }
 
 /**

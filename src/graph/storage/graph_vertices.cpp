@@ -440,10 +440,8 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
     qCDebug(lcStorage) << "Graph::verticesCreateSubgraph() - type:" << type
              << "vList:" << vList;
 
-    int progressCounter = 0;
     QString pMsg = tr("Creating subgraph. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(vList.size(), pMsg);
 
     qreal weight;
 
@@ -456,10 +454,8 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
         for (int i = 0; i < vList.size(); ++i)
         {
 
-            progressUpdate(++progressCounter);
             if (progressCanceled())
             {
-                progressFinish();
                 return;
             }            
 
@@ -497,10 +493,8 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
         for (int j = 0; j < vList.size(); ++j)
         {
 
-            progressUpdate(++progressCounter);
             if (progressCanceled())
             {
-                progressFinish();
                 return;
             }
 
@@ -536,10 +530,8 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
         for (int i = 0; i < vList.size(); ++i)
         {
 
-            progressUpdate(++progressCounter);
             if (progressCanceled())
             {
-                progressFinish();
                 return;
             }
             j = (i == vList.size() - 1) ? 0 : i + 1;
@@ -573,10 +565,8 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
         for (int i = 0; i < vList.size(); ++i)
         {
 
-            progressUpdate(++progressCounter);
             if (progressCanceled())
             {
-                progressFinish();
                 return;
             }
             if (i == vList.size() - 1)
@@ -608,10 +598,8 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
     }
     else
     {
-        progressFinish();
         return;
     }
-    progressFinish();
 }
 
 //
