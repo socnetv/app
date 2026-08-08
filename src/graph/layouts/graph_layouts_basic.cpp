@@ -32,17 +32,12 @@ void Graph::layoutRandom()
     double new_x = 0, new_y = 0;
     VList::const_iterator it;
 
-    int N = vertices();
-    int progressCounter = 0;
-
     QString pMsg = tr("Embedding Random Layout. \n"
                       "Please wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-        progressUpdate(++progressCounter);
         new_x = canvasRandomX();
         new_y = canvasRandomY();
         (*it)->setX(new_x);
@@ -52,8 +47,6 @@ void Graph::layoutRandom()
                  << " emitting setNodePos to new pos " << new_x << " , " << new_y;
         emit setNodePos((*it)->number(), new_x, new_y);
     }
-
-    progressFinish();
 
     setModStatus(ModStatus::VertexPositions);
     emit signalLayoutFinished();
@@ -77,7 +70,6 @@ void Graph::layoutRadialRandom(const bool &guides)
     double maxRadius = canvasMaxRadius();
     // offset controls how far from the centre the central nodes be positioned
     qreal offset = 0.06, randomDecimal = 0;
-    int progressCounter = 0;
     VList::const_iterator it;
 
     int N = vertices();
@@ -85,12 +77,9 @@ void Graph::layoutRadialRandom(const bool &guides)
     QString pMsg = tr("Embedding Random Radial layout. \n"
                       "Please wait ....");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-
-        progressUpdate(++progressCounter);
 
         randomDecimal = (qreal)(rand() % 100) / 100.0;
         new_radius = (maxRadius - (randomDecimal - offset) * maxRadius);
@@ -118,7 +107,6 @@ void Graph::layoutRadialRandom(const bool &guides)
         }
     }
 
-    progressFinish();
     setModStatus(ModStatus::VertexPositions);
     emit signalLayoutFinished();
 }
@@ -677,14 +665,11 @@ void Graph::layoutEgoRadial(const int egoVertex)
 
     QString pMsg = tr("Embedding Ego Radial layout. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
-    int progressCounter = 0;
 
     // --- Place ego at center ---
     m_graph[vpos[egoVertex]]->setX(x0);
     m_graph[vpos[egoVertex]]->setY(y0);
     emit setNodePos(egoVertex, x0, y0);
-    progressUpdate(++progressCounter);
 
     // --- Place neighbors evenly on ring1 ---
     const int ring1Count = neighbors.size();
@@ -699,7 +684,6 @@ void Graph::layoutEgoRadial(const int egoVertex)
             m_graph[vpos[neighbor]]->setX(new_x);
             m_graph[vpos[neighbor]]->setY(new_y);
             emit setNodePos(neighbor, new_x, new_y);
-            progressUpdate(++progressCounter);
             ++i;
         }
         emit addGuideCircle(x0, y0, ring1Radius);
@@ -729,12 +713,10 @@ void Graph::layoutEgoRadial(const int egoVertex)
             m_graph[vpos[ring2Nodes[i]]]->setX(new_x);
             m_graph[vpos[ring2Nodes[i]]]->setY(new_y);
             emit setNodePos(ring2Nodes[i], new_x, new_y);
-            progressUpdate(++progressCounter);
         }
         emit addGuideCircle(x0, y0, ring2Radius);
     }
 
-    progressFinish();
     setModStatus(ModStatus::VertexPositions);
     emit signalLayoutFinished();
 }

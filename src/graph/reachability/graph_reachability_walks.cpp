@@ -159,13 +159,8 @@ void Graph::graphWalksMatrixCreate(const int &N,
 
         QString pMsg = tr("Computing walks of length %1. \nPlease wait...").arg(length);
         progressStatus(pMsg);
-        if (updateProgress)
-            progressCreate(length, pMsg);
 
         XM = AM.pow(length, false);
-
-        if (updateProgress)
-            progressUpdate(length);
     }
     else
     {
@@ -178,8 +173,6 @@ void Graph::graphWalksMatrixCreate(const int &N,
 
         QString pMsg = tr("Computing sociomatrix powers up to %1. \nPlease wait...").arg(N - 1);
         progressStatus(pMsg);
-        if (updateProgress)
-            progressCreate(N - 1, pMsg);
 
         for (int i = 2; i <= (N - 1); ++i)
         {
@@ -191,23 +184,12 @@ void Graph::graphWalksMatrixCreate(const int &N,
             XM *= AM;
             XSM += XM;
 
-            if (updateProgress)
+            if (progressCanceled())
             {
-                progressUpdate(i);
-                if (progressCanceled())
-                {
-                    progressFinish();
-                    return;
-                }
+                return;
             }
         }
-
-        if (updateProgress)
-            progressUpdate(N - 1);
     }
-
-    if (updateProgress)
-        progressFinish();
 }
 
 /**

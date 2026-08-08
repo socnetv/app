@@ -13117,9 +13117,12 @@ void MainWindow::slotLayoutRandom()
 
     graphicsWidget->clearGuides();
 
-    activeGraph->layoutRandom();
-
-    statusMessage(tr("Nodes in random positions."));
+    runGraphOperationAsync(
+        [this]() {
+            activeGraph->layoutRandom();
+        },
+        tr("Placing nodes in random positions. Please wait..."),
+        tr("Nodes in random positions."));
 }
 
 /**
@@ -13137,10 +13140,15 @@ void MainWindow::slotLayoutRadialRandom()
 
     slotLayoutGuides(false);
 
-    activeGraph->layoutRadialRandom(true);
-
-    slotLayoutGuides(true);
-    statusMessage(tr("Nodes in random concentric circles."));
+    runGraphOperationAsync(
+        [this]() {
+            activeGraph->layoutRadialRandom(true);
+        },
+        tr("Placing nodes in random concentric circles. Please wait..."),
+        [this]() {
+            slotLayoutGuides(true);
+            statusMessage(tr("Nodes in random concentric circles."));
+        });
 }
 
 /**
@@ -13166,8 +13174,14 @@ void MainWindow::slotLayoutEgoRadial()
         statusMessage(tr("Please select or click one node first."));
         return;
     }
-    activeGraph->layoutEgoRadial(egoVertex);
-    statusMessage(tr("Ego radial layout centered on vertex %1.").arg(egoVertex));
+    runGraphOperationAsync(
+        [this, egoVertex]() {
+            activeGraph->layoutEgoRadial(egoVertex);
+        },
+        tr("Computing ego radial layout. Please wait..."),
+        [this, egoVertex]() {
+            statusMessage(tr("Ego radial layout centered on vertex %1.").arg(egoVertex));
+        });
 }
 
 /**
@@ -14696,27 +14710,29 @@ void MainWindow::slotAnalyzeWalksLength()
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-walks-length-" + QString::number(length) + "-" + dateTime + ".html";
 
-    statusMessage(tr("Computing walks of length %1. Please wait...").arg(length));
-
-    activeGraph->writeMatrixWalks(fn, length);
-    if (activeGraph->progressCanceled())
-    {
-        statusMessage(tr("Computation canceled."));
-        return;
-    }
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Walks of length %1 matrix saved as: ").arg(length) + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, length]() {
+            activeGraph->writeMatrixWalks(fn, length);
+        },
+        tr("Computing walks of length %1. Please wait...").arg(length),
+        [this, fn, length]() {
+            if (activeGraph->progressCanceled())
+            {
+                statusMessage(tr("Computation canceled."));
+                return;
+            }
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Walks of length %1 matrix saved as: ").arg(length) + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
