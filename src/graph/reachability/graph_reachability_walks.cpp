@@ -109,14 +109,13 @@ void Graph::createMatrixReachability()
  */
 int Graph::walksBetween(int v1, int v2, int length)
 {
-    const bool updateProgress = false;
+    const bool dropIsolates = false;
     const bool considerWeights = false; // counting walks, not weight-products
     const bool inverseWeights = false;
-    const bool dropIsolates = false;
     const bool symmetrize = false;
-    graphWalksMatrixCreate(vertices(), length, updateProgress,
-                           considerWeights, inverseWeights,
-                           dropIsolates, symmetrize);
+    graphWalksMatrixCreate(vertices(), length,
+                           dropIsolates, considerWeights,
+                           inverseWeights, symmetrize);
     return XM.item(v1 - 1, v2 - 1);
 }
 
@@ -131,13 +130,11 @@ int Graph::walksBetween(int v1, int v2, int length)
  * possible walks.
  * @param N - dimension of the sociomatrix (number of vertices). Default is 0, in which case it will be calculated as the number of vertices in the graph.
  * @param length - the length of walks to be calculated. Default is 0, in which case all walks of any length will be calculated.
- * @param updateProgress
  */
 // src/graph/reachability/graph_reachability_walks.cpp
 
 void Graph::graphWalksMatrixCreate(const int &N,
                                    const int &length,
-                                   const bool &updateProgress,
                                    const bool &dropIsolates,
                                    const bool &considerWeights,
                                    const bool &inverseWeights,
@@ -147,8 +144,6 @@ void Graph::graphWalksMatrixCreate(const int &N,
     createMatrixAdjacency(dropIsolates, considerWeights, inverseWeights, symmetrize);
     if (progressCanceled())
     {
-        if (updateProgress)
-            progressFinish();
         return;
     }
     if (length > 0)

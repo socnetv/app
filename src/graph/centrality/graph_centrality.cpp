@@ -89,7 +89,6 @@ void Graph::centralityInformation(const bool considerWeights,
     createMatrixAdjacency(dropIsolates, considerWeights, inverseWeights, symmetrize);
     if (progressCanceled())
     {
-        progressFinish();
         return;
     }
 
@@ -263,7 +262,6 @@ void Graph::centralityEigenvector(const bool &considerWeights,
     if (progressCanceled())
     {
         delete[] EVC;
-        progressFinish();
         return;
     }
 

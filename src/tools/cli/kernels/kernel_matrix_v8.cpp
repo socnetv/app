@@ -375,7 +375,7 @@ int runKernelMatrixV8(const CliConfig &cfg,
     matrices["reachability"] = dumpMatrixJson(g.matrixReachability(), fullGrid);
 
     const int walksN = g.vertices();
-    g.graphWalksMatrixCreate(walksN, /*length=*/2, /*updateProgress=*/false,
+    g.graphWalksMatrixCreate(walksN, /*length=*/2,
                              /*dropIsolates=*/false, /*considerWeights=*/false,
                              /*inverseWeights=*/false, /*symmetrize=*/false);
     QJsonObject walks = dumpMatrixJson(g.matrixWalks(), fullGrid);
@@ -384,7 +384,7 @@ int runKernelMatrixV8(const CliConfig &cfg,
 
     if (includeTotalWalks)
     {
-        g.graphWalksMatrixCreate(walksN, /*length=*/0, false, false, false, false, false);
+        g.graphWalksMatrixCreate(walksN, /*length=*/0, false, false, false, false);
         matrices["total_walks"] = dumpMatrixJson(g.matrixTotalWalks(), fullGrid);
     }
 

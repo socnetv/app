@@ -36,7 +36,7 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
              << "symmetrize" << symmetrize;
     qreal m_weight = RAND_MAX;
     int i = 0, j = 0;
-    int N = vertices(dropIsolates, false, true), progressCounter = 0;
+    int N = vertices(dropIsolates, false, true);
     VList::const_iterator it, jt;
 
     qCDebug(lcGraphMatrices) << "Graph::createMatrixAdjacency() -resizing AM to" << N;
@@ -44,17 +44,14 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
 
     QString pMsg = tr("Creating Adjacency Matrix. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
         qCDebug(lcGraphMatrices) << "Graph::createMatrixAdjacency() - i" << i << "name" << (*it)->number();
 
-        progressUpdate(++progressCounter);
         if (progressCanceled())
         {
-            progressFinish();
             return;
         }
         if (!(*it)->isEnabled() || ((*it)->isIsolated() && dropIsolates))
@@ -131,8 +128,6 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
     }
 
     calculatedAdjacencyMatrix = true;
-
-    progressFinish();
 }
 
 /**

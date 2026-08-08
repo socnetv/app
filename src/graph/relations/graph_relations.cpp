@@ -395,7 +395,6 @@ void Graph::relationAddCocitation()
     createMatrixAdjacency();
     if (progressCanceled())
     {
-        progressFinish();
         return;
     }
 

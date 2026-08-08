@@ -1148,7 +1148,6 @@ public:
 
     void graphWalksMatrixCreate(const int &N = 0,
                                 const int &length = 0,
-                                const bool &updateProgress = false,
                                 const bool &dropIsolates = false,
                                 const bool &considerWeights = false,
                                 const bool &inverseWeights = false,

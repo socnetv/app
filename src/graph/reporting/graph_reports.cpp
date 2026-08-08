@@ -3550,7 +3550,7 @@ void Graph::writeMatrixWalks(const QString &fn,
     int N = vertices();
 
     progressStatus(tr("Computing Walks..."));
-    graphWalksMatrixCreate(N, length, true);
+    graphWalksMatrixCreate(N, length);
     if (progressCanceled())
     {
         file.close();
@@ -4797,7 +4797,6 @@ bool Graph::writeMatrixDissimilarities(const QString fileName,
     if (progressCanceled())
     {
         file.close();
-        progressFinish();
         return false;
     }
 
@@ -4942,7 +4941,6 @@ bool Graph::writeMatrixSimilarityMatching(const QString fileName,
         if (progressCanceled())
         {
             file.close();
-            progressFinish();
             return false;
         }        
         createMatrixSimilarityMatching(AM, SCM, measureInt,
@@ -5116,7 +5114,6 @@ bool Graph::writeMatrixSimilarityPearson(const QString fileName,
         if (progressCanceled())
         {
             file.close();
-            progressFinish();
             return false;
         }        
         createMatrixSimilarityPearson(AM, PCC, varLocation, diagonal);
