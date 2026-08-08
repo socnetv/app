@@ -288,21 +288,35 @@ just a Phase 2 concern. Fixed centrally: `runGraphOperationAsync()` now calls
 per method (7 methods, needs its own design pass, not mechanical deletion).** `prestigeDegree`,
 `prestigeProximity`, `prestigePageRank`, `centralityInformation`, `centralityEigenvector`,
 `centralityDegree`, `centralityClosenessIR` are each reached from 3 places — their own `write*`
-report (wrapping varies by method), `verticesCreateSubgraph()` (always unwrapped), and
-`layoutByProminenceIndex()` (always wrapped) — so a per-method fix isn't enough; see Finding 1.
+report (wrapping varies by method), `vertexFindByIndexScore()` (via `slotEditNodeFind`), and
+`layoutByProminenceIndex()` — so a per-method fix isn't enough; see Finding 1.
+**Correction, 2026-08-08**: Finding 1 originally named the 3rd path as `verticesCreateSubgraph()`
+"always unwrapped" — wrong on re-verification. `verticesCreateSubgraph()` doesn't call any of
+these 7 primitives at all (it's a real, separate Group B item — creates clique/star/cycle/line
+subgraphs — just unrelated to Finding 1). The actual 3rd caller, `vertexFindByIndexScore()`
+(`graph_vertices.cpp:867`, via `MainWindow::slotEditNodeFind`), is **already wrapped**
+(`mainwindow.cpp:10117`). Re-confirmed via direct grep of every caller of all 7 primitives:
+each has exactly 3 callers — own report, `vertexFindByIndexScore` (wrapped), and
+`layoutByProminenceIndex` (wrapped, Group A done) — no 4th path found. So once each primitive's
+own report-writer is wrapped (Group B, batch 1), all 3 paths are wrapped and the primitive's own
+triad can be deleted immediately — no dependency on `verticesCreateSubgraph` after all.
 `createMatrixAdjacency` is its own, worse case (Finding 2). `writeMatrixWalks` has two `MainWindow`
 entry points with *different* wrapping for the same nested calls (Finding 5).
 
-**Group B — linear-only, migrate onto `runGraphOperationAsync` (21 methods, consistently
+**Group B — linear-only, migrate onto `runGraphOperationAsync` (23 methods, consistently
 unwrapped).** `writeReciprocity`, `writeCentralityDegree/ClosenessInfluenceRange`,
 `writePrestigeDegree/PageRank/Proximity`, `writeClusteringCoefficient`, `writeTriadCensus`,
 `writeCliqueCensus`, `writeClusteringHierarchical`, `writeMatrixAdjacency/AdjacencyPlot`,
-`verticesCreateSubgraph` (4 `MainWindow` entry points, all unwrapped),
+`writeMatrixDissimilarities` (via `slotAnalyzeStrEquivalenceDissimilaritiesTieProfile`,
+`mainwindow.cpp:14974` — confirmed unwrapped while re-scoping Finding 2, not in the original
+sweep), `verticesCreateSubgraph` (4 `MainWindow` entry points, all unwrapped),
 `randomNetErdosCreate/ScaleFreeCreate/SmallWorldCreate/RegularCreate/RingLatticeCreate/LatticeCreate`
 (the real dialog-driven slot only — `randomNetErdosCreate`'s other two "callers" are the
 `--interactive-script` `erdos` benchmark harness, which deliberately bypasses
 `runGraphOperationAsync` for timing precision and is out of scope here), `layoutRandom/
-RadialRandom/EgoRadial`. None of these go through `runGraphOperationAsync` today — called directly,
+RadialRandom/EgoRadial`, `slotAnalyzeWalksLength` (`mainwindow.cpp:14556` — the unwrapped half of
+Finding 5; its sibling `slotAnalyzeWalksTotal` is already wrapped). None of these go through
+`runGraphOperationAsync` today — called directly,
 synchronously, from `MainWindow` slots. The linear dialog is currently their *only* progress
 feedback, **and** they still block the GUI thread during computation — the same class of problem
 #254 found and `runGraphOperationAsync` was built to fix, just never applied to this list.
@@ -378,13 +392,34 @@ too, ruling out any connection to this cycle's dispatch changes.
 
 | # | Finding |
 |---|---|
-| 1 | `prestigeDegree/Proximity/PageRank`, `centralityInformation/Eigenvector/Degree/ClosenessIR` are each reached from 3 call paths (own report / `verticesCreateSubgraph` / `layoutByProminenceIndex`) with different wrapping per path — needs per-call-path handling, not a per-method flag. |
+| 1 | `prestigeDegree/Proximity/PageRank`, `centralityInformation/Eigenvector/Degree/ClosenessIR` are each reached from 3 call paths (own report / `vertexFindByIndexScore` / `layoutByProminenceIndex`) with different wrapping per path — needs per-call-path handling, not a per-method flag. **Corrected 2026-08-08**: the 3rd path is `vertexFindByIndexScore`, not `verticesCreateSubgraph` as originally written, and it's already wrapped — see correction note above the table. |
 | 2 | `createMatrixAdjacency` fans out to ~15 callers across 4 files (`graph_reports.cpp`, `graph_centrality.cpp`, `graph_relations.cpp`, `graph_reachability_walks.cpp`) with mixed wrapping and no `updateProgress`-style gate. Largest blast radius of any single method here — needs its own isolated pass. |
 | 3 | `writeMatrixSimilarityMatching` double-fires the linear dialog: `createMatrixSimilarityMatching`'s own `progressCreate()` (`graph_similarity_matrices.cpp:65`) fires, then its own `progressCreate(1, pMsg)` (`graph_reports.cpp:5083`) fires again — one click on "Compute Similarity Matrix" shows 1 busy dialog + 2 sequential linear dialogs. Real bug, not just redundancy. |
 | 4 | `Graph::vertexinfluenceRange()`/`vertexinfluenceDomain()` (`graph_reachability_walks.cpp:250,312`) have **zero callers anywhere in `src/`** — dead code, not merely nested-only. Confirm with user whether intentionally reserved before touching. |
 | 5 | `writeMatrixWalks` has two `MainWindow` entry points (`slotAnalyzeWalksLength` unwrapped, `slotAnalyzeWalksTotal` wrapped) reaching the same nested `graphWalksMatrixCreate()` progress calls — same method, different wrapping depending on which UI action triggered it. |
+| 6 | `Graph::writeReachabilityMatrixPlainText()` (`graph_reports.cpp:3698`) has **zero live callers** — only a stale doc-comment in `mainwindow.cpp:14667` references it by name, the actual call there goes through `writeMatrix(fn, MATRIX_REACHABILITY)` instead. Likely dead code, same shape as Finding 4. Confirm with user before touching. |
+| 7 | Found live while migrating batch 1 (2026-08-08): all 7 of Finding 1's report-writers (`writeCentralityDegree/ClosenessInfluenceRange/Information/Eigenvector`, `writePrestigeDegree/Proximity/PageRank`) have the **same double-fire shape as Finding 3** — their nested primitive (e.g. `centralityDegree()`) fires its own linear dialog, then the report-writer's own `progressCreate()` fires a second one sequentially. Once wrapped in `runGraphOperationAsync` (Group B), this becomes a visible bug on macOS, not just redundancy: a blank/stale `QProgressDialog` can linger on screen well after computation finishes (confirmed live) — two/three `ApplicationModal` dialogs stacking appears to confuse window-server repaint, not just a "flash too fast to render" cosmetic issue. Resolved by stripping the report-writer's own triad *and* the nested primitive's own triad together (see Finding 1's correction — all 3 call paths into each primitive are wrapped once Group B batch 1 lands, so this is safe immediately). |
 
-**Sequencing/phasing, agreed 2026-08-05:**
+**Re-scoped 2026-08-07: Phase 3 folded into Phase 4, not run separately.** Investigating
+Findings 1/2/5 to plan Phase 3 found the same shape in all three: the "extra" unprotected call
+path causing each finding is *itself* always a Group B item (`writeCentralityDegree`,
+`writeCentralityClosenessInfluenceRange`, `writePrestigeDegree/Proximity/PageRank`, or
+`slotAnalyzeWalksLength` — Finding 1's list corrected 2026-08-08, see above; `verticesCreateSubgraph`
+was never actually one of them). So the nested method's own
+`progressCreate()` triad (`centralityInformation`/`Eigenvector`/`Degree`/`ClosenessIR`,
+`prestigeDegree/Proximity/PageRank`, `createMatrixAdjacency`, `graphWalksMatrixCreate`) is
+currently load-bearing for that still-unwrapped caller — deleting it now, Phase-3-style, would
+remove that caller's only protection. There is no way to resolve Findings 1/2/5 independently of
+Group B; doing Phase 3 "first" as originally sequenced isn't actually possible. Decision (with
+user): drop Phase 3 as a separate pass. Migrate all of Group B (see updated list below, now 23
+methods — two more found while confirming this: `writeMatrixDissimilarities` via
+`slotAnalyzeStrEquivalenceDissimilaritiesTieProfile` was an uncaught unwrapped
+`createMatrixAdjacency` caller relevant to Finding 2, and `slotAnalyzeWalksLength` needed adding
+explicitly for Finding 5 — neither was in the original 21-method sweep), each individually
+golden/benchmark-verified, then a single final sweep deletes every now-safe nested triad
+(Findings 1, 2, 5 all resolve together) exactly like Phase 2's mechanical Group A deletion.
+
+**Sequencing/phasing, agreed 2026-08-05, re-agreed 2026-08-07:**
 
 1. **Group C first ✅ Done** (18 call sites total: 10 original filter slots + 3 P4-discovered + 4
    found live during implementation, listed above) — highest user-visible pain today (multi-minute
@@ -394,16 +429,20 @@ too, ruling out any connection to this cycle's dispatch changes.
 2. **Group A ✅ Done** — pure deletions, no dependency on anything, lowest risk. All 14 methods
    done, verified, see progress note above. Live-verified 2026-08-07,
    `run_golden_compares.sh`/`run_benchmarks.sh`/`run_golden_io_roundtrip.sh` clean.
-3. **Group A-tangled** (Findings 1, 2, 5) — each needs its own small design decision per call path,
-   not mechanical deletion. Do after the easy wins are banked.
-4. **Group B** — migrate one method at a time onto `runGraphOperationAsync`, golden/benchmark-verified
-   per site.
-5. **Side items**: fix Finding 3's double-fire bug; decide with user whether Finding 4's dead code
-   gets deleted; once Group B is done, the linear system
-   (`slotProgressBoxCreate`/`slotProgressBoxDestroy`/`signalProgressBox*`/`progressCreate`/
-   `progressUpdate`/`progressFinish`) has no remaining callers and can be deleted outright.
+3. ~~**Group A-tangled** (Findings 1, 2, 5)~~ — folded into Group B, see above. Not a separate
+   phase.
+4. **Group B** (now 23 methods incl. the 2 found while re-scoping) — migrate one method at a time
+   onto `runGraphOperationAsync`, golden/benchmark-verified per site. Once every call path into
+   Findings 1/2/5's nested methods is wrapped, one final sweep deletes their `progressCreate()`
+   triads, same mechanical pattern as Phase 2.
+5. **Side items**: fix Finding 3's double-fire bug (✅ done, fixed as a side effect of Phase 2);
+   decide with user whether Finding 4's and Finding 6's dead code gets deleted; once Group B is
+   done, the linear system (`slotProgressBoxCreate`/`slotProgressBoxDestroy`/`signalProgressBox*`/
+   `progressCreate`/`progressUpdate`/`progressFinish`) has no remaining callers and can be deleted
+   outright.
 
-Phase 1 (Group C) ✅ done, live-verified. Phases 2-5 not started.
+Phase 1 (Group C) ✅ done. Phase 2 (Group A) ✅ done. Phase 3 folded into Phase 4. Phase 4 (Group B,
+now including former-Phase-3 cleanup) not started.
 
 ### P4 — Parallelization audit (property 4)
 
