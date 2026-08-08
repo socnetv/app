@@ -133,6 +133,11 @@ A2.0/A3) before being called a real improvement.
 ## What Remains Open
 
 - **Findings 4 and 6**: decide with the user whether to delete the two confirmed-dead methods.
+  Once deleted, `Graph::progressCreate()`/`Update()`/`Finish()` have exactly one remaining caller
+  (`randomNetErdosCreate`'s deliberate benchmark-harness exception) — the linear dialog's
+  `MainWindow` infrastructure itself (`slotProgressBoxCreate`/`Destroy`) can't be deleted
+  regardless, since `DistanceEngine`'s progress sink is a separate, legitimate, permanent
+  consumer of it for long BFS operations.
 - **Finding 8**: decouple the busy dialog's Cancel button from Qt's built-in hide-on-cancel
   behavior.
 - **P4 implementation**: decide which parallelization candidates to act on, if any.
