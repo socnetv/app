@@ -367,8 +367,6 @@ void Graph::clear(const QString &reason)
     m_verticesIsolatedList.clear();
     m_vertexPairsNotConnected.clear();
     m_vertexPairsUnilaterallyConnected.clear();
-    influenceDomains.clear();
-    influenceRanges.clear();
     triadTypeFreqs.clear();
 
     // clear relations

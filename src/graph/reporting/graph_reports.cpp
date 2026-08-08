@@ -3643,38 +3643,6 @@ void Graph::writeMatrixWalks(const QString &fn,
 }
 
 /**
-    Writes the reachability matrix X^R of the graph to a file
-*/
-void Graph::writeReachabilityMatrixPlainText(const QString &fn, const bool &dropIsolates)
-{
-
-    qCDebug(lcReporting) << "Writing Reachability Matrix plain text to file:" << fn;
-
-    QFile file(fn);
-
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
-        progressStatus(tr("Error. Could not write to ") + fn);
-        return;
-    }
-
-    QTextStream outText(&file);
-
-    outText << "-Social Network Visualizer " << VERSION << "\n";
-    outText << tr("Network name: ") << getName() << "\n\n";
-    outText << tr("Reachability Matrix (XR)") << "\n";
-    outText << tr("Two nodes are reachable if there is a walk between them (their geodesic distance is non-zero).") << "\n";
-    outText << tr("If nodes i and j are reachable then XR(i,j)=1 otherwise XR(i,j)=0.") << "\n\n";
-
-    graphDistancesGeodesic(false, false, false, dropIsolates);
-
-    outText << XRM;
-
-    file.close();
-}
-
-/**
  * @brief Writes the clustering coefficients to a file
  * @param fileName
  * @param considerWeights

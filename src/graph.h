@@ -1157,13 +1157,6 @@ public:
                           const int &length = 0,
                           const bool &simpler = false);
 
-    QList<int> vertexinfluenceRange(int v1);
-
-    QList<int> vertexinfluenceDomain(int v2);
-
-    void writeReachabilityMatrixPlainText(const QString &fn,
-                                          const bool &dropIsolates = false);
-
     qreal numberOfTriples(int v1);
 
     /* CLIQUES, CLUSTERING, TRIADS */
@@ -1404,8 +1397,6 @@ private:
 
     QList<SelectedEdge> m_selectedEdges;
     QStack<GraphVisibilitySnapshot> m_visibilityHistory; // filter undo stack
-
-    QMultiHash<int, int> influenceRanges, influenceDomains;
 
     QMultiHash<int, int> m_vertexPairsNotConnected;
     QHash<int, int> m_vertexPairsUnilaterallyConnected;

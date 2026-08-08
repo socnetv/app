@@ -14800,7 +14800,7 @@ void MainWindow::slotAnalyzeWalksTotal()
 }
 
 /**
- *	Calls Graph:: writeReachabilityMatrixPlainText() to calculate and print
+ *	Calls Graph::writeMatrix(fn, MATRIX_REACHABILITY) to calculate and print
  *   the Reachability Matrix of the network.
  */
 void MainWindow::slotAnalyzeReachabilityMatrix()

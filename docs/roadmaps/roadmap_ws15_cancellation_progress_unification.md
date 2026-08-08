@@ -26,8 +26,8 @@ not something to paper over.
 ## Status
 
 🚧 In progress. P1 and P2 ✅ done. P3 (retire the linear dialog, close the dispatch gap): Groups
-A/B/C ✅ done (all ~38 methods wrapped/deduplicated); Findings 1, 2, 3, 5, 7 resolved; Findings 4,
-6, 8 open (see below). P4 (parallelization audit) ✅ done; implementation not started.
+A/B/C ✅ done (all ~38 methods wrapped/deduplicated); Findings 1-7 resolved; Finding 8 open (see
+below). P4 (parallelization audit) ✅ done; implementation not started.
 
 ## Context
 
@@ -91,9 +91,9 @@ Group A's own `progressCreate()` calls would have left some operations with no r
 | 1 ✅ | 7 centrality/prestige primitives each reachable from 3 call paths with inconsistent wrapping — resolved once all 3 paths (own report / `vertexFindByIndexScore` / `layoutByProminenceIndex`) were confirmed wrapped. |
 | 2 ✅ | `createMatrixAdjacency` fanned out to ~15 callers with mixed wrapping — resolved once Group B completed; own triad stripped. |
 | 3 ✅ | `writeMatrixSimilarityMatching` double-fired the linear dialog. Fixed alongside Group A. |
-| 4 | `Graph::vertexinfluenceRange()`/`vertexinfluenceDomain()` — zero callers anywhere in `src/`, dead code. Not deleted; needs user confirmation. |
+| 4 ✅ | `Graph::vertexinfluenceRange()`/`vertexinfluenceDomain()` had zero callers anywhere in `src/` — deleted, along with the `influenceRanges`/`influenceDomains` fields that existed only to back them. |
 | 5 ✅ | `writeMatrixWalks` had two entry points with different wrapping — resolved once `slotAnalyzeWalksLength` was migrated. |
-| 6 | `Graph::writeReachabilityMatrixPlainText()` — zero live callers (only a stale doc-comment). Not deleted; needs user confirmation. |
+| 6 ✅ | `Graph::writeReachabilityMatrixPlainText()` had zero live callers (only a stale doc-comment) — deleted; the doc-comment corrected to name the real call path (`writeMatrix(fn, MATRIX_REACHABILITY)`). |
 | 7 ✅ | Finding 1's 7 primitives also double-fired the linear dialog once wrapped (same shape as Finding 3) — visible as a stuck/blank dialog on macOS, not just redundancy. Fixed alongside Finding 1. |
 | 8 | Busy dialog hides itself on Cancel-click before the computation stops (Qt's `QProgressDialog` built-in Cancel button appears to bypass `setAutoClose`/`setAutoReset`). UX-confusion only, not a safety issue. Not fixed. |
 
@@ -132,8 +132,7 @@ A2.0/A3) before being called a real improvement.
 
 ## What Remains Open
 
-- **Findings 4 and 6**: decide with the user whether to delete the two confirmed-dead methods.
-  Once deleted, `Graph::progressCreate()`/`Update()`/`Finish()` have exactly one remaining caller
+- `Graph::progressCreate()`/`Update()`/`Finish()` now have exactly one remaining caller
   (`randomNetErdosCreate`'s deliberate benchmark-harness exception) — the linear dialog's
   `MainWindow` infrastructure itself (`slotProgressBoxCreate`/`Destroy`) can't be deleted
   regardless, since `DistanceEngine`'s progress sink is a separate, legitimate, permanent
