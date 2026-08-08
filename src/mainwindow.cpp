@@ -8982,28 +8982,36 @@ void MainWindow::slotNetworkViewSociomatrix()
              << appSettings["dataDir"]
              << "fn" << fn;
 
-    statusMessage(tr("Creating and writing adjacency matrix"));
+    // AVOID activeGraph->writeMatrix(fn,MATRIX_ADJACENCY), no preserving of node numbers
+    // when nodes are deleted.
+    runGraphOperationAsync(
+        [this, fn]() {
+            activeGraph->writeMatrixAdjacency(fn);
+        },
+        tr("Creating and writing adjacency matrix"),
+        [this, fn]() {
+            if (activeGraph->progressCanceled())
+            {
+                statusMessage(tr("Computation canceled."));
+                return;
+            }
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
 
-    activeGraph->writeMatrixAdjacency(fn);
-    // AVOID THIS, no preserving of node numbers when nodes are deleted.
-    //  activeGraph->writeMatrix(fn,MATRIX_ADJACENCY) ;
+                qCDebug(lcMainWindow) << "MW::slotNetworkViewSociomatrix() - "
+                            "calling QDesktopServices::openUrl for"
+                         << QUrl::fromLocalFile(fn);
 
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-
-        qCDebug(lcMainWindow) << "MW::slotNetworkViewSociomatrix() - "
-                    "calling QDesktopServices::openUrl for"
-                 << QUrl::fromLocalFile(fn);
-
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-    statusMessage(tr("Adjacency matrix saved as ") + QDir::toNativeSeparators(fn));
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Adjacency matrix saved as ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -9017,8 +9025,6 @@ void MainWindow::slotNetworkViewSociomatrixPlotText()
         return;
     }
     int N = activeNodes();
-
-    statusMessage(tr("Creating plot of adjacency matrix of %1 nodes.").arg(N));
 
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-plot-" + dateTime + ".html";
@@ -9050,20 +9056,29 @@ void MainWindow::slotNetworkViewSociomatrixPlotText()
         }
     }
 
-    activeGraph->writeMatrixAdjacencyPlot(fn, simpler);
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Visual form of adjacency matrix saved as ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, simpler]() {
+            activeGraph->writeMatrixAdjacencyPlot(fn, simpler);
+        },
+        tr("Creating plot of adjacency matrix of %1 nodes.").arg(N),
+        [this, fn]() {
+            if (activeGraph->progressCanceled())
+            {
+                statusMessage(tr("Computation canceled."));
+                return;
+            }
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Visual form of adjacency matrix saved as ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -14996,26 +15011,32 @@ void MainWindow::slotAnalyzeStrEquivalenceDissimilaritiesTieProfile(const QStrin
 
     askAboutEdgeWeights();
 
-    statusMessage(tr("Computing Tie Profile Dissimilarities. Please wait..."));
+    bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    auto success = std::make_shared<bool>(false);
 
-    if (!activeGraph->writeMatrixDissimilarities(fn, metric, varLocation, diagonal,
-                                                 optionsEdgeWeightConsiderAct->isChecked()))
-    {
-        return;
-    }
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Tie profile dissimilarities matrix saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, metric, varLocation, diagonal, considerWeights, success]() {
+            *success = activeGraph->writeMatrixDissimilarities(fn, metric, varLocation, diagonal,
+                                                                considerWeights);
+        },
+        tr("Computing Tie Profile Dissimilarities. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+            {
+                return;
+            }
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Tie profile dissimilarities matrix saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**

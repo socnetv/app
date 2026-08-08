@@ -6190,7 +6190,6 @@ void Graph::writeMatrixAdjacency(const QString fn,
 
     QString pMsg = tr("Writing Adjacency Matrix to file. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     outText << htmlHead;
 
@@ -6240,8 +6239,6 @@ void Graph::writeMatrixAdjacency(const QString fn,
     {
 
         rowCount++;
-
-        progressUpdate(rowCount);
 
         if (!(*it)->isEnabled())
             continue;
@@ -6293,8 +6290,6 @@ void Graph::writeMatrixAdjacency(const QString fn,
     outText << htmlEnd;
 
     file.close();
-
-    progressFinish();
 }
 
 /**
@@ -6328,10 +6323,8 @@ void Graph::writeMatrixAdjacencyPlot(const QString fn,
     int rowCount = 0;
     int N = vertices();
     qreal weight = 0;
-    int progressCounter = 0;
     QString pMsg = tr("Plotting Adjacency Matrix. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     if (!simpler)
     {
@@ -6373,8 +6366,6 @@ void Graph::writeMatrixAdjacencyPlot(const QString fn,
         for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
         {
 
-            progressUpdate(++progressCounter);
-
             if (!(*it)->isEnabled())
             {
                 continue;
@@ -6414,8 +6405,6 @@ void Graph::writeMatrixAdjacencyPlot(const QString fn,
         outText << "<p class=\"pre\">";
         for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
         {
-
-            progressUpdate(++progressCounter);
 
             if (!(*it)->isEnabled())
             {
@@ -6463,7 +6452,5 @@ void Graph::writeMatrixAdjacencyPlot(const QString fn,
     outText << htmlEnd;
 
     file.close();
-
-    progressFinish();
 }
 
