@@ -149,16 +149,12 @@ void Graph::layoutCircular(const double &x0, const double &y0,
     double i = 0;
     VList::const_iterator it;
     int N = vertices();
-    int progressCounter = 0;
 
     QString pMsg = tr("Applying circular layout. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-
-        progressUpdate(++progressCounter);
 
         if (!(*it)->isEnabled())
         {
@@ -182,8 +178,6 @@ void Graph::layoutCircular(const double &x0, const double &y0,
             emit addGuideCircle(x0, y0, newRadius);
         }
     }
-
-    progressFinish();
 
     setModStatus(ModStatus::VertexPositions);
 }

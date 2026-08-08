@@ -1280,7 +1280,6 @@ bool Graph::writeCentralityCloseness(const QString fileName,
     if (progressCanceled())
     {
         file.close();
-        progressFinish();
         progressStatus(tr("Computation canceled."));
         return false;
     }
@@ -1296,11 +1295,9 @@ bool Graph::writeCentralityCloseness(const QString fileName,
 
     int rowCount = 0;
     int N = vertices();
-    int progressCounter = 0;
 
     QString pMsg = tr("Writing Closeness Centrality scores to file. \nPlease wait ...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     outText << htmlHead;
 
@@ -1376,8 +1373,6 @@ bool Graph::writeCentralityCloseness(const QString fileName,
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-
-        progressUpdate(++progressCounter);
 
         rowCount++;
 
@@ -1533,8 +1528,6 @@ bool Graph::writeCentralityCloseness(const QString fileName,
     outText << htmlEnd;
 
     file.close();
-
-    progressFinish();
 
     return true;
 }
@@ -6006,7 +5999,6 @@ void Graph::writeMatrixHTMLTable(QTextStream &outText,
              << " dropIsolates " << dropIsolates;
 
     int rowCount = 0, i = 0, j = 0;
-    int N = vertices();
     qreal maxVal, minVal, element;
     bool hasRealNumbers = false;
 
@@ -6014,7 +6006,6 @@ void Graph::writeMatrixHTMLTable(QTextStream &outText,
 
     QString pMsg = tr("Writing matrix to file. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     M.findMinMaxValues(minVal, maxVal, hasRealNumbers);
 
@@ -6055,7 +6046,10 @@ void Graph::writeMatrixHTMLTable(QTextStream &outText,
 
         rowCount++;
 
-        progressUpdate(rowCount);
+        if (progressCanceled())
+        {
+            return;
+        }
 
         outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">";
 
@@ -6126,8 +6120,6 @@ void Graph::writeMatrixHTMLTable(QTextStream &outText,
                                            +" (usually denotes unconnected nodes, in distance matrix)"
                                      : QString::number(minVal))
             << "</p>";
-
-    progressFinish();
 }
 
 /**
