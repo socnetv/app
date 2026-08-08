@@ -15991,6 +15991,18 @@ void MainWindow::polishProgressDialog(QProgressDialog *dialog)
  * understanding that gap. graphicsWidget is included because add-node/add-edge via mouse
  * (mousePressEvent/mouseDoubleClickEvent) bypasses the menu/toolbar entirely.
  *
+ * menuBar()/toolBar's own setEnabled(false) only disables those container widgets - it blocks
+ * clicks but leaves each QAction's own isEnabled() (and therefore its keyboard shortcut, e.g.
+ * Ctrl+N) untouched, since actions aren't Qt children of the menus/toolbars they're added to.
+ * Root cause found live 2026-08-08: clicking Cancel on the busy dialog doesn't stop the
+ * still-running graphThread computation, but Ctrl+N straight afterwards could still fire and
+ * race it - a real, reproducible crash on both macOS and Linux. Fixed here by also disabling
+ * every QAction reachable from the menu bar/toolbar (recursively through submenus) while busy,
+ * and restoring only the ones this function itself disabled - not blanket re-enabling everything,
+ * since plenty of actions are legitimately disabled elsewhere for unrelated reasons (e.g. "no
+ * network loaded"). This alone closes the crash path even though the dialog itself still hides
+ * on Cancel before the computation actually stops (a separate, lower-severity UX follow-up).
+ *
  * @param busy true to disable (operation starting), false to re-enable (operation complete)
  */
 void MainWindow::setAppBusy(bool busy)
@@ -15998,6 +16010,35 @@ void MainWindow::setAppBusy(bool busy)
     menuBar()->setEnabled(!busy);
     toolBar->setEnabled(!busy);
     graphicsWidget->setEnabled(!busy);
+
+    if (busy)
+    {
+        std::function<void(const QList<QAction *> &)> disableActions =
+            [this, &disableActions](const QList<QAction *> &actions) {
+                for (QAction *action : actions)
+                {
+                    if (action->isEnabled())
+                    {
+                        action->setEnabled(false);
+                        m_actionsDisabledForBusy << action;
+                    }
+                    if (action->menu())
+                    {
+                        disableActions(action->menu()->actions());
+                    }
+                }
+            };
+        disableActions(menuBar()->actions());
+        disableActions(toolBar->actions());
+    }
+    else
+    {
+        for (QAction *action : m_actionsDisabledForBusy)
+        {
+            action->setEnabled(true);
+        }
+        m_actionsDisabledForBusy.clear();
+    }
 }
 
 /**

@@ -641,6 +641,14 @@ private:
 
     QStack<QProgressDialog *> progressDialogs;
 
+    // setAppBusy()'s own record of which actions it disabled, so it can restore exactly
+    // those on busy=false without clobbering actions legitimately disabled elsewhere for
+    // unrelated reasons (e.g. "no network loaded"). See WS15 P2 (roadmap_ws15_
+    // cancellation_progress_unification.md) - menuBar()/toolBar's own setEnabled(false)
+    // blocks clicks but doesn't disable each QAction's own shortcut, so Ctrl+N-style
+    // shortcuts could otherwise still fire and race a still-running background operation.
+    QList<QAction *> m_actionsDisabledForBusy;
+
     QPrinter *printer, *printerPDF;
 
     QNetworkAccessManager *networkManager;
