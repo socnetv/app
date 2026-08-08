@@ -471,7 +471,6 @@ void Graph::layoutForceDirectedKamadaKawai(const int maxIterations,
     if (D <= 0)
     {
         qCDebug(lcLayouts) << "KK layout: graph diameter is 0 (degenerate graph). Aborting.";
-        progressFinish();
         setModStatus(ModStatus::VertexPositions);
         return;
     }

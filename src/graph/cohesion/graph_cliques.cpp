@@ -211,7 +211,6 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X)
     // -----------------------------------------------------------------------
     QSet<int> NBS;
     QSet<int> Rnext, Pnext, Xnext;
-    int counter = 0;
 
     // We need a stable copy to iterate because P is mutated inside the loop
     // (v is moved from P to X after its recursive subtree is explored).
@@ -221,8 +220,6 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X)
 
     for (int v : candidateList)
     {
-        counter++;
-
         qCDebug(lcCohesion) << "Graph::graphCliques() - CURRENT v:" << v
                  << " P:" << P << " P.count=" << P.size()
                  << " R:" << R << " X:" << X;
@@ -257,7 +254,6 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X)
         // avoid flooding the event loop on deep recursions.
         if (csRecDepth == 1)
         {
-            progressUpdate(counter);
             progressStatus(tr("Finding cliques: Recursive backtracking for actor ") + QString::number(v));
             if (progressCanceled())
             {
