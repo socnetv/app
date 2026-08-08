@@ -233,14 +233,12 @@ bool Graph::randomNetScaleFreeCreate(const int &N,
     double radius = canvasMaxRadius();
     double rad = (2.0 * M_PI / N);
     double prob_j = 0, prob = 0;
-    int progressCounter = 0;
 
     vpos.reserve(N);
 
     QString pMsg = tr("Creating Scale-Free Random Network. \n"
                       "Please wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     // Phase 1: create the initial seed clique of m0 nodes
     qCDebug(lcGenerators) << "Graph::randomNetScaleFreeCreate() - creating seed clique of" << m0 << "nodes";
@@ -275,10 +273,8 @@ bool Graph::randomNetScaleFreeCreate(const int &N,
                            QString(), false);
             }
         }
-        progressUpdate(++progressCounter);
         if (progressCanceled())
         {
-            progressFinish();
             return false;
         }
     }
@@ -297,10 +293,8 @@ bool Graph::randomNetScaleFreeCreate(const int &N,
             QString::number(i + 1), initVertexLabelColor, initVertexLabelSize,
             QPoint(x, y), initVertexShape, initVertexIconPath, false);
 
-        progressUpdate(++progressCounter);
         if (progressCanceled())
         {
-            progressFinish();
             return false;
         }
 
@@ -361,7 +355,6 @@ bool Graph::randomNetScaleFreeCreate(const int &N,
 
     setModStatus(ModStatus::VertexEdgeCount);
 
-    progressFinish();
     emit signalLayoutFinished();
 
     return true;
@@ -406,12 +399,10 @@ bool Graph::randomNetSmallWorldCreate(const int &N, const int &degree,
     QString pMsg = tr("Creating Small-World Random Network. \n"
                       "Please wait ...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     qCDebug(lcGenerators) << "Rewiring starts...";
 
     int candidate = 0;
-    int progressCounter = 1;
 
     for (int i = 1; i < N; i++)
     {
@@ -442,17 +433,13 @@ bool Graph::randomNetSmallWorldCreate(const int &N, const int &degree,
             }
         }
 
-        progressUpdate(++progressCounter);
         if (progressCanceled())
         {
-            progressFinish();
             return false;
         }
     }
 
     relationCurrentRename(tr("small-world"), true);
-
-    progressFinish();
 
     setModStatus(ModStatus::VertexEdgeCount);
     emit signalLayoutFinished();
@@ -582,9 +569,6 @@ bool Graph::randomNetRegularCreate(const int &N,
         m_edges.append(secondEdgeVertices[0] + "->" + firstEdgeVertices[1]);
     }
 
-    // Now set progress max to actual edge count for accurate progress reporting
-    progressCreate(m_edges.size(), pMsg);
-
     // Draw the randomised edges
     for (int i = 0; i < m_edges.size(); ++i)
     {
@@ -599,18 +583,14 @@ bool Graph::randomNetRegularCreate(const int &N,
         progressCounter += progressFraction;
         if (fmod(progressCounter, 1.0) == 0)
         {
-            progressUpdate((int)progressCounter);
             if (progressCanceled())
             {
-                progressFinish();
                 return false;
             }
         }
     }
 
     relationCurrentRename(tr("d-regular"), true);
-
-    progressFinish();
 
     setModStatus(ModStatus::VertexEdgeCount);
     emit signalLayoutFinished();
@@ -633,7 +613,6 @@ bool Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
     qCDebug(lcGenerators) << "Creating ring lattice random network...";
     int x = 0;
     int y = 0;
-    int progressCounter = 0;
 
     double x0 = canvasWidth / 2.0;
     double y0 = canvasHeight / 2.0;
@@ -649,9 +628,6 @@ bool Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
     QString pMsg = tr("Creating ring-lattice network. \n"
                       "Please wait...");
     progressStatus(pMsg);
-
-    if (updateProgress)
-        progressCreate(N, pMsg);
 
     for (int i = 0; i < N; i++)
     {
@@ -675,22 +651,14 @@ bool Graph::randomNetRingLatticeCreate(const int &N, const int &degree,
                        EdgeType::Undirected, false, false,
                        QString(), false);
         }
-        if (updateProgress)
+        if (progressCanceled())
         {
-            progressUpdate(++progressCounter);
-            if (progressCanceled())
-            {
-                progressFinish();
-                return false;
-            }
+            return false;
         }
     }
 
     // Always rename the relation, regardless of updateProgress (fix: was inside updateProgress guard)
     relationCurrentRename(tr("ring-lattice"), true);
-
-    if (updateProgress)
-        progressFinish();
 
     setModStatus(ModStatus::VertexEdgeCount, updateProgress);
 
@@ -852,8 +820,6 @@ bool Graph::randomNetLatticeCreate(const int &N,
 
     progressFraction = (latticeEdges.size() > 0) ? 1.0 / (qreal)latticeEdges.size() : 1.0;
 
-    progressCreate(latticeEdges.size(), pMsg);
-
     for (int i = 0; i < latticeEdges.size(); ++i)
     {
         m_edge = latticeEdges.at(i).split("<->");
@@ -867,18 +833,14 @@ bool Graph::randomNetLatticeCreate(const int &N,
         progressCounter += progressFraction;
         if (fmod(progressCounter, 1.0) == 0)
         {
-            progressUpdate((int)progressCounter);
             if (progressCanceled())
             {
-                progressFinish();
                 return false;
             }
         }
     }
 
     relationCurrentRename(tr("lattice"), true);
-
-    progressFinish();
 
     setModStatus(ModStatus::VertexEdgeCount);
     emit signalLayoutFinished();

@@ -9203,39 +9203,46 @@ void MainWindow::slotNetworkRandomErdosRenyi(const int newNodes,
                                              const bool diag)
 {
     qCDebug(lcMainWindow) << "Request to create an Erdos-Renyi random network...";
-    statusMessage(tr("Creating new Erdos-Renyi random network. Please wait... "));
     appSettings["randomErdosEdgeProbability"] = QString::number(eprob);
 
-    if (!activeGraph->randomNetErdosCreate(newNodes, model, edges, eprob, mode, diag))
-    {
-        statusMessage(tr("Erdős–Rényi network creation cancelled or did not finish."));
-        return;
-    }
+    auto success = std::make_shared<bool>(false);
 
-    setWindowTitle("Untitled Erdos-Renyi random network");
-    double threshold = log(newNodes) / newNodes;
-    if ((eprob) > threshold)
-        slotHelpMessageToUser(
-            USER_MSG_INFO,
-            tr("Erdős–Rényi random network created."),
-            tr("Random network created. \n"
-               "A new random network has been created according to the Erdős–Rényi model."),
-            tr("On average, edges should be %1. This graph is almost surely connected because: \n"
-               "probability > ln(n) that is: %2 < %3")
-                .arg(QString::number(eprob * newNodes * (newNodes - 1)))
-                .arg(QString::number(eprob))
-                .arg(QString::number(threshold)));
-    else
-        slotHelpMessageToUser(
-            USER_MSG_INFO,
-            tr("Erdős–Rényi random network created."),
-            tr("Random network created. \n"
-               "A new random network has been created according to the Erdős–Rényi model."),
-            tr("On average, edges should be %1. This graph is almost surely not connected because: \n"
-               "probability < ln(n) that is: %2 < %3")
-                .arg(QString::number(eprob * newNodes * (newNodes - 1)))
-                .arg(QString::number(eprob))
-                .arg(QString::number(threshold)));
+    runGraphOperationAsync(
+        [this, newNodes, model, edges, eprob, mode, diag, success]() {
+            *success = activeGraph->randomNetErdosCreate(newNodes, model, edges, eprob, mode, diag);
+        },
+        tr("Creating new Erdos-Renyi random network. Please wait... "),
+        [this, newNodes, eprob, success]() {
+            if (!*success)
+            {
+                statusMessage(tr("Erdős–Rényi network creation cancelled or did not finish."));
+                return;
+            }
+            setWindowTitle("Untitled Erdos-Renyi random network");
+            double threshold = log(newNodes) / newNodes;
+            if ((eprob) > threshold)
+                slotHelpMessageToUser(
+                    USER_MSG_INFO,
+                    tr("Erdős–Rényi random network created."),
+                    tr("Random network created. \n"
+                       "A new random network has been created according to the Erdős–Rényi model."),
+                    tr("On average, edges should be %1. This graph is almost surely connected because: \n"
+                       "probability > ln(n) that is: %2 < %3")
+                        .arg(QString::number(eprob * newNodes * (newNodes - 1)))
+                        .arg(QString::number(eprob))
+                        .arg(QString::number(threshold)));
+            else
+                slotHelpMessageToUser(
+                    USER_MSG_INFO,
+                    tr("Erdős–Rényi random network created."),
+                    tr("Random network created. \n"
+                       "A new random network has been created according to the Erdős–Rényi model."),
+                    tr("On average, edges should be %1. This graph is almost surely not connected because: \n"
+                       "probability < ln(n) that is: %2 < %3")
+                        .arg(QString::number(eprob * newNodes * (newNodes - 1)))
+                        .arg(QString::number(eprob))
+                        .arg(QString::number(threshold)));
+        });
 }
 
 /**
@@ -9279,20 +9286,30 @@ void MainWindow::slotNetworkRandomScaleFree(const int &newNodes,
                                             const QString &mode)
 {
     qCDebug(lcMainWindow) << "Request to create a new scale-free random network...";
-    if (!activeGraph->randomNetScaleFreeCreate(newNodes, power, initialNodes,
-                                               edgesPerStep, zeroAppeal, mode))
-    {
-        statusMessage(tr("Scale-free network creation cancelled or did not finish."));
-        return;
-    }
-    setWindowTitle("Untitled scale-free network");
-    slotHelpMessageToUser(
-        USER_MSG_INFO,
-        tr("Scale-free random network created."),
-        tr("Random network created. \n"
-           "A new scale-free random network with %1 nodes has been created according to the Barabási–Albert model.")
-            .arg(newNodes),
-        tr("A scale-free network is a network whose degree distribution follows a power law."));
+
+    auto success = std::make_shared<bool>(false);
+
+    runGraphOperationAsync(
+        [this, newNodes, power, initialNodes, edgesPerStep, zeroAppeal, mode, success]() {
+            *success = activeGraph->randomNetScaleFreeCreate(newNodes, power, initialNodes,
+                                                              edgesPerStep, zeroAppeal, mode);
+        },
+        tr("Creating new scale-free random network. Please wait... "),
+        [this, newNodes, success]() {
+            if (!*success)
+            {
+                statusMessage(tr("Scale-free network creation cancelled or did not finish."));
+                return;
+            }
+            setWindowTitle("Untitled scale-free network");
+            slotHelpMessageToUser(
+                USER_MSG_INFO,
+                tr("Scale-free random network created."),
+                tr("Random network created. \n"
+                   "A new scale-free random network with %1 nodes has been created according to the Barabási–Albert model.")
+                    .arg(newNodes),
+                tr("A scale-free network is a network whose degree distribution follows a power law."));
+        });
 }
 
 /**
@@ -9335,19 +9352,29 @@ void MainWindow::slotNetworkRandomSmallWorld(const int &newNodes,
 {
     Q_UNUSED(diag);
     qCDebug(lcMainWindow) << "Request to create a new small-world random network...";
-    if (!activeGraph->randomNetSmallWorldCreate(newNodes, degree, beta, mode))
-    {
-        statusMessage(tr("Small-world network creation cancelled or did not finish."));
-        return;
-    }
-    setWindowTitle("Untitled small-world network");
-    slotHelpMessageToUser(
-        USER_MSG_INFO,
-        tr("Small-World random network created."),
-        tr("Random network created. \n"
-           "A new random network with %1 nodes has been created according to the Watts & Strogatz model.")
-            .arg(newNodes),
-        tr("A small-world network has short average path lengths and high clustering coefficient."));
+
+    auto success = std::make_shared<bool>(false);
+
+    runGraphOperationAsync(
+        [this, newNodes, degree, beta, mode, success]() {
+            *success = activeGraph->randomNetSmallWorldCreate(newNodes, degree, beta, mode);
+        },
+        tr("Creating new small-world random network. Please wait... "),
+        [this, newNodes, success]() {
+            if (!*success)
+            {
+                statusMessage(tr("Small-world network creation cancelled or did not finish."));
+                return;
+            }
+            setWindowTitle("Untitled small-world network");
+            slotHelpMessageToUser(
+                USER_MSG_INFO,
+                tr("Small-World random network created."),
+                tr("Random network created. \n"
+                   "A new random network with %1 nodes has been created according to the Watts & Strogatz model.")
+                    .arg(newNodes),
+                tr("A small-world network has short average path lengths and high clustering coefficient."));
+        });
 }
 
 /**
@@ -9385,20 +9412,30 @@ void MainWindow::slotNetworkRandomRegular(const int &newNodes, const int &degree
                                           const QString &mode, const bool &diag)
 {
     initApp();
-    if (!activeGraph->randomNetRegularCreate(newNodes, degree, mode, diag))
-    {
-        statusMessage(tr("d-regular network creation cancelled or did not finish."));
-        return;
-    }
-    setWindowTitle("Untitled d-regular network");
-    slotHelpMessageToUser(
-        USER_MSG_INFO,
-        tr("d-regular network created."),
-        tr("Random network created. \n"
-           "A new d-regular random network with %1 nodes has been created.")
-            .arg(newNodes),
-        tr("Each node has the same number <em>%1</em> of neighbours, aka the same degree d.")
-            .arg(degree));
+
+    auto success = std::make_shared<bool>(false);
+
+    runGraphOperationAsync(
+        [this, newNodes, degree, mode, diag, success]() {
+            *success = activeGraph->randomNetRegularCreate(newNodes, degree, mode, diag);
+        },
+        tr("Creating new d-regular random network. Please wait... "),
+        [this, newNodes, degree, success]() {
+            if (!*success)
+            {
+                statusMessage(tr("d-regular network creation cancelled or did not finish."));
+                return;
+            }
+            setWindowTitle("Untitled d-regular network");
+            slotHelpMessageToUser(
+                USER_MSG_INFO,
+                tr("d-regular network created."),
+                tr("Random network created. \n"
+                   "A new d-regular random network with %1 nodes has been created.")
+                    .arg(newNodes),
+                tr("Each node has the same number <em>%1</em> of neighbours, aka the same degree d.")
+                    .arg(degree));
+        });
 }
 
 void MainWindow::slotNetworkRandomGaussian()
@@ -9461,22 +9498,29 @@ void MainWindow::slotNetworkRandomRingLattice()
         return;
     }
 
-    if (!activeGraph->randomNetRingLatticeCreate(newNodes, degree, true))
-    {
-        return;
-    }
+    auto success = std::make_shared<bool>(false);
 
-    setWindowTitle("Untitled ring-lattice network");
+    runGraphOperationAsync(
+        [this, newNodes, degree, success]() {
+            *success = activeGraph->randomNetRingLatticeCreate(newNodes, degree, true);
+        },
+        tr("Creating new ring-lattice random network. Please wait... "),
+        [this, newNodes, success]() {
+            if (!*success)
+            {
+                return;
+            }
+            setWindowTitle("Untitled ring-lattice network");
+            slotHelpMessageToUser(
+                USER_MSG_INFO,
+                tr("Ring lattice random network created."),
+                tr("Random network created. \n"
+                   "A new ring-lattice random network with %1 nodes has been created.")
+                    .arg(newNodes),
+                tr("A ring lattice is a graph with N vertices each connected to d neighbors, d / 2 on each side.")
 
-    slotHelpMessageToUser(
-        USER_MSG_INFO,
-        tr("Ring lattice random network created."),
-        tr("Random network created. \n"
-           "A new ring-lattice random network with %1 nodes has been created.")
-            .arg(newNodes),
-        tr("A ring lattice is a graph with N vertices each connected to d neighbors, d / 2 on each side.")
-
-    );
+            );
+        });
 }
 
 /**
@@ -9517,20 +9561,30 @@ void MainWindow::slotNetworkRandomLattice(const int &newNodes,
 {
     qCDebug(lcMainWindow) << "Request to create a new lattice random network...";
     initApp();
-    if (!activeGraph->randomNetLatticeCreate(newNodes, length, dimension, nei, mode, circular))
-    {
-        statusMessage(tr("Lattice network creation cancelled or did not finish."));
-        return;
-    }
-    setWindowTitle("Untitled lattice network");
-    slotHelpMessageToUser(
-        USER_MSG_INFO,
-        tr("Lattice random network created."),
-        tr("Random network created. \n"
-           "A new lattice random network with %1 nodes has been created.")
-            .arg(newNodes),
-        tr("A lattice is a network whose drawing forms a regular tiling. "
-           "Lattices are also known as meshes or grids."));
+
+    auto success = std::make_shared<bool>(false);
+
+    runGraphOperationAsync(
+        [this, newNodes, length, dimension, nei, mode, circular, success]() {
+            *success = activeGraph->randomNetLatticeCreate(newNodes, length, dimension, nei, mode, circular);
+        },
+        tr("Creating new lattice random network. Please wait... "),
+        [this, newNodes, success]() {
+            if (!*success)
+            {
+                statusMessage(tr("Lattice network creation cancelled or did not finish."));
+                return;
+            }
+            setWindowTitle("Untitled lattice network");
+            slotHelpMessageToUser(
+                USER_MSG_INFO,
+                tr("Lattice random network created."),
+                tr("Random network created. \n"
+                   "A new lattice random network with %1 nodes has been created.")
+                    .arg(newNodes),
+                tr("A lattice is a network whose drawing forms a regular tiling. "
+                   "Lattices are also known as meshes or grids."));
+        });
 }
 
 /**
