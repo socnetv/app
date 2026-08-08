@@ -13671,22 +13671,31 @@ void MainWindow::slotAnalyzeReciprocity()
 
     askAboutEdgeWeights();
 
-    statusMessage(tr("Computing Reciprocity. Please wait..."));
+    bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
 
-    activeGraph->writeReciprocity(fn, optionsEdgeWeightConsiderAct->isChecked());
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Reciprocity report saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, considerWeights]() {
+            activeGraph->writeReciprocity(fn, considerWeights);
+        },
+        tr("Computing Reciprocity. Please wait..."),
+        [this, fn]() {
+            if (activeGraph->progressCanceled())
+            {
+                statusMessage(tr("Computation canceled."));
+                return;
+            }
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Reciprocity report saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -15150,33 +15159,36 @@ void MainWindow::slotAnalyzeCentralityDegree()
 
     askAboutEdgeWeights(false);
 
-    statusMessage(tr("Computing Degree Centralities. Please wait..."));
-
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-centrality-out-degree-" + dateTime + ".html";
 
-    if (!activeGraph->writeCentralityDegree(
-            fn,
-            optionsEdgeWeightConsiderAct->isChecked(),
-            editFilterNodesIsolatesAct->isChecked()))
-    {
-        return;
-    }
+    bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
+    auto success = std::make_shared<bool>(false);
 
-    statusMessage(tr("Opening Out-Degree Centralities report..."));
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Out-Degree Centralities report saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, considerWeights, dropIsolates, success]() {
+            *success = activeGraph->writeCentralityDegree(fn, considerWeights, dropIsolates);
+        },
+        tr("Computing Degree Centralities. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+            {
+                return;
+            }
+            statusMessage(tr("Opening Out-Degree Centralities report..."));
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Out-Degree Centralities report saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -15242,31 +15254,35 @@ void MainWindow::slotAnalyzeCentralityClosenessIR()
 
     askAboutEdgeWeights();
 
-    statusMessage(tr("Computing Influence Range Closeness Centralities. Please wait..."));
+    const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    const bool inverseWeightsFinal = inverseWeights;
+    const bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
+    auto success = std::make_shared<bool>(false);
 
-    if (!activeGraph->writeCentralityClosenessInfluenceRange(
-            fn,
-            optionsEdgeWeightConsiderAct->isChecked(),
-            inverseWeights,
-            editFilterNodesIsolatesAct->isChecked()))
-    {
-        return;
-    }
-
-    statusMessage(tr("Opening Influence Range Closeness Centralities report..."));
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Influence Range Closeness Centralities report saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, success]() {
+            *success = activeGraph->writeCentralityClosenessInfluenceRange(
+                fn, considerWeights, inverseWeightsFinal, dropIsolates);
+        },
+        tr("Computing Influence Range Closeness Centralities. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+            {
+                return;
+            }
+            statusMessage(tr("Opening Influence Range Closeness Centralities report..."));
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Influence Range Closeness Centralities report saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -15337,32 +15353,36 @@ void MainWindow::slotAnalyzePrestigeDegree()
 
     askAboutEdgeWeights(false);
 
-    statusMessage(tr("Computing Degree Prestige. Please wait..."));
-
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
     QString fn = appSettings["dataDir"] + "socnetv-report-prestige-degree-" + dateTime + ".html";
 
-    if (!activeGraph->writePrestigeDegree(fn,
-                                          optionsEdgeWeightConsiderAct->isChecked(),
-                                          editFilterNodesIsolatesAct->isChecked()))
-    {
-        return;
-    }
+    const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    const bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
+    auto success = std::make_shared<bool>(false);
 
-    statusMessage(tr("Opening Degree Prestige (in-degree) report..."));
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Degree Prestige (in-degree) report saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, considerWeights, dropIsolates, success]() {
+            *success = activeGraph->writePrestigeDegree(fn, considerWeights, dropIsolates);
+        },
+        tr("Computing Degree Prestige. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+            {
+                return;
+            }
+            statusMessage(tr("Opening Degree Prestige (in-degree) report..."));
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Degree Prestige (in-degree) report saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -15381,27 +15401,32 @@ void MainWindow::slotAnalyzePrestigePageRank()
 
     askAboutEdgeWeights();
 
-    statusMessage(tr("Computing PageRank Prestige. Please wait..."));
+    const bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
+    auto success = std::make_shared<bool>(false);
 
-    if (!activeGraph->writePrestigePageRank(fn, editFilterNodesIsolatesAct->isChecked()))
-    {
-        return;
-    }
-
-    statusMessage(tr("Opening PageRank Prestige report..."));
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("PageRank Prestige report saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, dropIsolates, success]() {
+            *success = activeGraph->writePrestigePageRank(fn, dropIsolates);
+        },
+        tr("Computing PageRank Prestige. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+            {
+                return;
+            }
+            statusMessage(tr("Opening PageRank Prestige report..."));
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("PageRank Prestige report saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -15421,28 +15446,32 @@ void MainWindow::slotAnalyzePrestigeProximity()
 
     askAboutEdgeWeights();
 
-    statusMessage(tr("Computing Proximity Prestige. Please wait..."));
+    const bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
+    auto success = std::make_shared<bool>(false);
 
-    if (!activeGraph->writePrestigeProximity(fn, true, false,
-                                             editFilterNodesIsolatesAct->isChecked()))
-    {
-        return;
-    }
-
-    statusMessage(tr("Opening Proximity Prestige report..."));
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Proximity Prestige report saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, dropIsolates, success]() {
+            *success = activeGraph->writePrestigeProximity(fn, true, false, dropIsolates);
+        },
+        tr("Computing Proximity Prestige. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+            {
+                return;
+            }
+            statusMessage(tr("Opening Proximity Prestige report..."));
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Proximity Prestige report saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**

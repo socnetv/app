@@ -35,7 +35,6 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
 
     int N = vertices(dropIsolates);
     int v2 = 0, v1 = 0;
-    int progressCounter = 0;
 
     VList::const_iterator it;
 
@@ -57,7 +56,6 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
 
     QString pMsg = tr("Computing Degree Prestige (in-Degree). \n Please wait ...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     qCDebug(lcCentrality) << "vertices"
              << N
@@ -66,11 +64,9 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
-        progressUpdate(++progressCounter);
         if (progressCanceled())
         {
             delete enabledInEdges;
-            progressFinish();
             return;
         }
         v1 = (*it)->number();
@@ -202,8 +198,6 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
 
     delete enabledInEdges;
     calculatedDP = true;
-
-    progressFinish();
 }
 
 /**
@@ -241,19 +235,14 @@ void Graph::prestigeProximity(const bool considerWeights,
     variancePP = 0;
     meanPP = 0;
 
-    int progressCounter = 0;
-
     QString pMsg = tr("Computing Proximity Prestige scores. \nPlease wait ...");
     progressStatus(pMsg);
-    progressCreate(V, pMsg);
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
-        progressUpdate(++progressCounter);
         if (progressCanceled())
         {
-            progressFinish();
             return;
         }
         PP = 0;
@@ -342,8 +331,6 @@ void Graph::prestigeProximity(const bool considerWeights,
              << " variancePP " << variancePP;
 
     calculatedPP = true;
-
-    progressFinish();
 }
 
 /**
@@ -393,7 +380,6 @@ void Graph::prestigePageRank(const bool &dropIsolates)
 
     QString pMsg = tr("Computing PageRank Prestige scores. \nPlease wait ...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
@@ -417,10 +403,8 @@ void Graph::prestigePageRank(const bool &dropIsolates)
         return;
     }
 
-    progressUpdate(N / 3);
     if (progressCanceled())
     {
-        progressFinish();
         return;
     }
     // begin iteration - continue until we reach our desired delta
@@ -541,10 +525,8 @@ void Graph::prestigePageRank(const bool &dropIsolates)
         iterations++;
     }
 
-    progressUpdate(2 * N / 3);
     if (progressCanceled())
     {
-        progressFinish();
         return;
     }
     if (N != 0)
@@ -590,9 +572,6 @@ void Graph::prestigePageRank(const bool &dropIsolates)
     qCDebug(lcCentrality) << "PRP' Variance: " << variancePRP;
 
     calculatedPRP = true;
-
-    progressUpdate(N);
-    progressFinish();
 
     return;
 }

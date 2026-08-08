@@ -50,7 +50,6 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
     m_graphReciprocityArc = graphReciprocity();
 
     int rowCount = 0;
-    int progressCounter = 0;
     int N = vertices();
     qreal tiesSym = 0;
     qreal tiesNonSym = 0;
@@ -61,7 +60,6 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
 
     QString pMsg = tr("Writing Reciprocity to file. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     outText << htmlHead;
 
@@ -173,8 +171,6 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
-        progressUpdate(++progressCounter);
-
         rowCount++;
         qCDebug(lcReporting) << "Graph::writeReciprocity outnon  - innon - rec"
                  << (*it)->outEdgesNonSym()
@@ -265,8 +261,6 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
     outText << htmlEnd;
 
     file.close();
-
-    progressFinish();
 }
 
 
@@ -489,7 +483,6 @@ bool Graph::writeCentralityInformation(const QString fileName,
     if (progressCanceled())
     {
         file.close();
-        progressFinish();
         progressStatus(tr("Computation canceled."));
         return false;
     }
@@ -751,7 +744,6 @@ bool Graph::writeCentralityEigenvector(const QString fileName,
     if (progressCanceled())
     {
         file.close();
-        progressFinish();
         progressStatus(tr("Computation canceled."));
         return false;
     }
@@ -1000,7 +992,6 @@ bool Graph::writeCentralityDegree(const QString fileName,
     if (progressCanceled())
     {
         file.close();
-        progressFinish();
         progressStatus(tr("Computation canceled."));
         return false;
     }
@@ -1019,7 +1010,6 @@ bool Graph::writeCentralityDegree(const QString fileName,
 
     int rowCount = 0;
     int N = vertices();
-    int progressCounter = 0;
     VList::const_iterator it;
 
     outText << htmlHead;
@@ -1028,7 +1018,6 @@ bool Graph::writeCentralityDegree(const QString fileName,
 
     QString pMsg = tr("Writing out-Degree Centralities. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     outText << "<h1>";
     outText << tr("DEGREE CENTRALITY (DC) REPORT");
@@ -1102,8 +1091,6 @@ bool Graph::writeCentralityDegree(const QString fileName,
     {
 
         rowCount++;
-
-        progressUpdate(++progressCounter);
 
         outText << Qt::fixed;
 
@@ -1254,8 +1241,6 @@ bool Graph::writeCentralityDegree(const QString fileName,
     outText << htmlEnd;
 
     file.close();
-
-    progressFinish();
 
     return true;
 }
@@ -1585,7 +1570,6 @@ bool Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
     if (progressCanceled())
     {
         file.close();
-        progressFinish();
         progressStatus(tr("Computation canceled."));
         return false;
     }
@@ -1602,12 +1586,10 @@ bool Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
 
     int rowCount = 0;
     int N = vertices();
-    int progressCounter = 0;
 
     QString pMsg = tr("Writing Influence Range Centrality scores. \n"
                       "Please wait");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     outText << htmlHead;
 
@@ -1676,8 +1658,6 @@ bool Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-
-        progressUpdate(++progressCounter);
 
         rowCount++;
 
@@ -1783,8 +1763,6 @@ bool Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
     outText << htmlEnd;
 
     file.close();
-
-    progressFinish();
 
     return true;
 }
@@ -2831,7 +2809,6 @@ bool Graph::writePrestigeDegree(const QString fileName,
     if (progressCanceled())
     {
         file.close();
-        progressFinish();
         progressStatus(tr("Computation canceled."));
         return false;
     }
@@ -2853,11 +2830,9 @@ bool Graph::writePrestigeDegree(const QString fileName,
     qreal maxIndexDP = N - 1.0;
 
     int rowCount = 0;
-    int progressCounter = 0;
 
     QString pMsg = tr("Writing Degree Prestige (in-Degree) scores to file. \nPlease wait ...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     outText << htmlHead;
 
@@ -2931,8 +2906,6 @@ bool Graph::writePrestigeDegree(const QString fileName,
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-
-        progressUpdate(++progressCounter);
 
         rowCount++;
 
@@ -3086,8 +3059,6 @@ bool Graph::writePrestigeDegree(const QString fileName,
 
     file.close();
 
-    progressFinish();
-
     return true;
 }
 
@@ -3123,7 +3094,6 @@ bool Graph::writePrestigeProximity(const QString fileName,
     if (progressCanceled())
     {
         file.close();
-        progressFinish();
         progressStatus(tr("Computation canceled."));
         return false;
     }
@@ -3142,11 +3112,9 @@ bool Graph::writePrestigeProximity(const QString fileName,
 
     int rowCount = 0;
     int N = vertices();
-    int progressCounter = 0;
 
     QString pMsg = tr("Writing Proximity Prestige scores to file. \nPlease wait ...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     outText << htmlHead;
 
@@ -3210,8 +3178,6 @@ bool Graph::writePrestigeProximity(const QString fileName,
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-
-        progressUpdate(++progressCounter);
 
         rowCount++;
 
@@ -3318,8 +3284,6 @@ bool Graph::writePrestigeProximity(const QString fileName,
 
     file.close();
 
-    progressFinish();
-
     return true;
 }
 
@@ -3350,7 +3314,6 @@ bool Graph::writePrestigePageRank(const QString fileName,
     if (progressCanceled())
     {
         file.close();
-        progressFinish();
         progressStatus(tr("Computation canceled."));
         return false;
     }
@@ -3369,11 +3332,9 @@ bool Graph::writePrestigePageRank(const QString fileName,
 
     int rowCount = 0;
     int N = vertices();
-    int progressCounter = 0;
 
     QString pMsg = tr("Writing PageRank scores to file. \nPlease wait ...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     outText.setRealNumberPrecision(m_reportsRealPrecision);
 
@@ -3450,8 +3411,6 @@ bool Graph::writePrestigePageRank(const QString fileName,
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-
-        progressUpdate(++progressCounter);
 
         rowCount++;
 
@@ -3561,8 +3520,6 @@ bool Graph::writePrestigePageRank(const QString fileName,
     outText << htmlEnd;
 
     file.close();
-
-    progressFinish();
 
     return true;
 }
