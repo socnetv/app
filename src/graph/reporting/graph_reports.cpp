@@ -3705,11 +3705,10 @@ bool Graph::writeClusteringCoefficient(const QString fileName,
 
     int rowCount = 0;
     int N = vertices();
-    int progressCounter = 0;
 
     VList::const_iterator it;
 
-    averageCLC = clusteringCoefficient(true);
+    averageCLC = clusteringCoefficient();
     if (progressCanceled())
     {
         file.close();
@@ -3718,7 +3717,6 @@ bool Graph::writeClusteringCoefficient(const QString fileName,
     }
     QString pMsg = tr("Writing Clustering Coefficients to file. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     outText.setRealNumberPrecision(m_reportsRealPrecision);
 
@@ -3791,11 +3789,9 @@ bool Graph::writeClusteringCoefficient(const QString fileName,
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
-        progressUpdate(++progressCounter);
         if (progressCanceled())
         {
             file.close();
-            progressFinish();
             progressStatus(tr("Computation canceled."));
             return false;
         }
@@ -3887,8 +3883,6 @@ bool Graph::writeClusteringCoefficient(const QString fileName,
 
     file.close();
 
-    progressFinish();
-
     return true;
 }
 
@@ -3933,7 +3927,6 @@ bool Graph::writeTriadCensus(const QString fileName,
 
     int rowCount = 0;
     int N = vertices();
-    int progressCounter = 0;
 
     QList<QString> triadTypes;
     triadTypes << "003";
@@ -3955,7 +3948,6 @@ bool Graph::writeTriadCensus(const QString fileName,
 
     QString pMsg = tr("Writing Triad Census to file. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(16, pMsg);
 
     outText << htmlHead;
 
@@ -4005,8 +3997,6 @@ bool Graph::writeTriadCensus(const QString fileName,
     for (int i = 0; i <= 15; i++)
     {
 
-        progressUpdate(++progressCounter);
-
         rowCount = i + 1;
         outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
                 << "<td>"
@@ -4032,8 +4022,6 @@ bool Graph::writeTriadCensus(const QString fileName,
     outText << htmlEnd;
 
     file.close();
-
-    progressFinish();
 
     return true;
 }
@@ -4079,7 +4067,6 @@ bool Graph::writeCliqueCensus(const QString &fileName,
 
     QString pMsg = tr("Computing Clique Census and writing it to a file. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(2 * N, pMsg);
 
     // compute clique census
     pMsg = tr("Computing Clique Census. Please wait..");
@@ -4093,7 +4080,6 @@ bool Graph::writeCliqueCensus(const QString &fileName,
     if (progressCanceled())
     {
         file.close();
-        progressFinish();
         progressStatus(tr("Computation canceled."));
         return false;
     }
@@ -4321,7 +4307,6 @@ bool Graph::writeCliqueCensus(const QString &fileName,
     {
         file.close();
         progressStatus("Error completing HCA analysis");
-        progressFinish();
         return false;
     }
 
@@ -4336,8 +4321,6 @@ bool Graph::writeCliqueCensus(const QString &fileName,
             << "</span>"
             << tr("Co-membership matrix")
             << "</p>";
-
-    progressUpdate(2 * N);
 
     outText << "<p>"
             << "<span class=\"info\">"
@@ -4359,8 +4342,6 @@ bool Graph::writeCliqueCensus(const QString &fileName,
     outText << htmlEnd;
 
     file.close();
-
-    progressFinish();
 
     return true;
 }
@@ -4470,7 +4451,6 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
 
     QString pMsg = tr("Writing Hierarchical Cluster Analysis to file. \nPlease wait... ");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     outText.setRealNumberPrecision(m_reportsRealPrecision);
     outText.reset();
@@ -4528,11 +4508,9 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
             << "</span>"
             << "</p>";
 
-    progressUpdate(N / 3);
     if (progressCanceled())
     {
         file.close();
-        progressFinish();
         progressStatus(tr("Computation canceled."));
         return false;
     }
@@ -4544,11 +4522,9 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
             << "</span>"
             << "</p>";
 
-    progressUpdate(2 * N / 3);
     if (progressCanceled())
     {
         file.close();
-        progressFinish();
         progressStatus(tr("Computation canceled."));
         return false;
     }
@@ -4568,9 +4544,6 @@ bool Graph::writeClusteringHierarchical(const QString &fileName,
 
     file.close();
     qCDebug(lcReporting) << "Graph::writeClusteringHierarchical() - finished";
-
-    progressUpdate(N);
-    progressFinish();
 
     return true;
 }

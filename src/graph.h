@@ -1188,7 +1188,7 @@ public:
 
     qreal clusteringCoefficientLocal(const int &v1);
 
-    qreal clusteringCoefficient(const bool updateProgress = false);
+    qreal clusteringCoefficient();
 
     bool graphTriadCensus();
 

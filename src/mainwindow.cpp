@@ -14736,26 +14736,30 @@ void MainWindow::slotAnalyzeClusteringCoefficient()
     QString fn = appSettings["dataDir"] + "socnetv-report-clustering-coefficient-" + dateTime + ".html";
 
     bool considerWeights = true;
+    auto success = std::make_shared<bool>(false);
 
-    statusMessage(tr("Computing Clustering Coefficients. Please wait..."));
-
-    if (!activeGraph->writeClusteringCoefficient(fn, considerWeights))
-    {
-        return;
-    }
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Clustering Coefficients saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, considerWeights, success]() {
+            *success = activeGraph->writeClusteringCoefficient(fn, considerWeights);
+        },
+        tr("Computing Clustering Coefficients. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+            {
+                return;
+            }
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Clustering Coefficients saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -14780,26 +14784,30 @@ void MainWindow::slotAnalyzeCommunitiesCliqueCensus()
     QString fn = appSettings["dataDir"] + "socnetv-report-clique-census-" + dateTime + ".html";
 
     bool considerWeights = true;
+    auto success = std::make_shared<bool>(false);
 
-    statusMessage(tr("Computing Clique Census. Please wait..."));
-
-    if (!activeGraph->writeCliqueCensus(fn, considerWeights))
-    {
-        return;
-    }
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Clique Census saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, considerWeights, success]() {
+            *success = activeGraph->writeCliqueCensus(fn, considerWeights);
+        },
+        tr("Computing Clique Census. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+            {
+                return;
+            }
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Clique Census saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -14818,26 +14826,30 @@ void MainWindow::slotAnalyzeCommunitiesTriadCensus()
     QString fn = appSettings["dataDir"] + "socnetv-report-triad-census-" + dateTime + ".html";
 
     bool considerWeights = true;
+    auto success = std::make_shared<bool>(false);
 
-    statusMessage(tr("Computing Triad Census. Please wait..."));
-
-    if (!activeGraph->writeTriadCensus(fn, considerWeights))
-    {
-        return;
-    }
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Triad Census saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, considerWeights, success]() {
+            *success = activeGraph->writeTriadCensus(fn, considerWeights);
+        },
+        tr("Computing Triad Census. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+            {
+                return;
+            }
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Triad Census saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**
@@ -15120,36 +15132,40 @@ void MainWindow::slotAnalyzeStrEquivalenceClusteringHierarchical(const QString &
     bool considerWeights = activeGraph->isWeighted();
     bool inverseWeights = false;
     bool dropIsolates = true;
+    auto success = std::make_shared<bool>(false);
 
-    statusMessage(tr("Computing Hierarchical Cluster Analysis. Please wait..."));
-
-    if (!activeGraph->writeClusteringHierarchical(fn,
-                                                  varLocation,
-                                                  matrix,
-                                                  metric,
-                                                  method,
-                                                  diagonal,
-                                                  diagram,
-                                                  considerWeights,
-                                                  inverseWeights,
-                                                  dropIsolates))
-    {
-
-        return;
-    }
-
-    if (appSettings["viewReportsInSystemBrowser"] == "true")
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-    }
-    else
-    {
-        TextEditor *ed = new TextEditor(fn, this, true);
-        ed->show();
-        m_textEditors << ed;
-    }
-
-    statusMessage(tr("Hierarchical Cluster Analysis saved as: ") + QDir::toNativeSeparators(fn));
+    runGraphOperationAsync(
+        [this, fn, varLocation, matrix, metric, method, diagonal, diagram,
+         considerWeights, inverseWeights, dropIsolates, success]() {
+            *success = activeGraph->writeClusteringHierarchical(fn,
+                                                                 varLocation,
+                                                                 matrix,
+                                                                 metric,
+                                                                 method,
+                                                                 diagonal,
+                                                                 diagram,
+                                                                 considerWeights,
+                                                                 inverseWeights,
+                                                                 dropIsolates);
+        },
+        tr("Computing Hierarchical Cluster Analysis. Please wait..."),
+        [this, fn, success]() {
+            if (!*success)
+            {
+                return;
+            }
+            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Hierarchical Cluster Analysis saved as: ") + QDir::toNativeSeparators(fn));
+        });
 }
 
 /**

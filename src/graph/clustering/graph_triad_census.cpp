@@ -27,9 +27,6 @@ bool Graph::graphTriadCensus()
     int mut = 0, asy = 0, nul = 0;
     int temp_mut = 0, temp_asy = 0, temp_nul = 0, counter_021 = 0;
     int ver1, ver2, ver3;
-    int N = vertices();
-    int progressCounter = 0;
-
     VList::const_iterator v1;
     VList::const_iterator v2;
     VList::const_iterator v3;
@@ -49,16 +46,13 @@ bool Graph::graphTriadCensus()
 
     QString pMsg = tr("Computing Triad Census. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     for (v1 = m_graph.cbegin(); v1 != m_graph.cend(); v1++)
     {
 
-        progressUpdate(++progressCounter);
         if (progressCanceled())
         {
             calculatedTriad = false;
-            progressFinish();
             return false;
         }
         for (v2 = (v1 + 1); v2 != m_graph.cend(); v2++)
@@ -130,8 +124,6 @@ bool Graph::graphTriadCensus()
     qCDebug(lcClustering) << " ****** 003 COUNTER: " << counter_021;
 
     calculatedTriad = true;
-
-    progressFinish();
 
     return true;
 }

@@ -173,15 +173,12 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
 
     QString pMsg = tr("Computing Hierarchical Clustering. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     while (clustersLeft > 1)
     {
 
-        progressUpdate(seq);
         if (progressCanceled())
         {
-            progressFinish();
             return false;
         }
 
@@ -379,8 +376,6 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
     m_clustersIndex.clear();
 
     qCDebug(lcClustering) << "m_clustersByName" << m_clustersByName;
-
-    progressFinish();
 
     return true;
 }

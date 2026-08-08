@@ -227,7 +227,7 @@ qreal Graph::clusteringCoefficientLocal(const int &v1)
  * @param updateProgress
  * @return
  */
-qreal Graph::clusteringCoefficient(const bool updateProgress)
+qreal Graph::clusteringCoefficient()
 {
     qCDebug(lcClustering) << "Graph::clusteringCoefficient()";
     averageCLC = 0;
@@ -239,25 +239,18 @@ qreal Graph::clusteringCoefficient(const bool updateProgress)
     qreal temp = 0;
     qreal x = 0;
     qreal N = vertices();
-    int progressCounter = 0;
     VList::const_iterator vertex;
 
     QString pMsg = tr("Computing Clustering Coefficient. \n"
                       "Please wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     for (vertex = m_graph.cbegin(); vertex != m_graph.cend(); ++vertex)
     {
 
-        if (updateProgress)
+        if (progressCanceled())
         {
-            progressUpdate(++progressCounter);
-            if (progressCanceled())
-            {
-                progressFinish();
-                return averageCLC;
-            }
+            return averageCLC;
         }
 
         temp = clusteringCoefficientLocal((*vertex)->number());
@@ -289,11 +282,6 @@ qreal Graph::clusteringCoefficient(const bool updateProgress)
     }
 
     varianceCLC /= N;
-
-    if (updateProgress)
-    {
-        progressFinish();
-    }
 
     return averageCLC;
 }

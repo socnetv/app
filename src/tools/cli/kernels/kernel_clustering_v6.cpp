@@ -442,7 +442,7 @@ namespace cli
         QElapsedTimer t;
         t.start();
 
-        const qreal averageCLC = g.clusteringCoefficient(false);
+        const qreal averageCLC = g.clusteringCoefficient();
 
         if (!g.graphTriadCensus())
         {
