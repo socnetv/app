@@ -4772,6 +4772,11 @@ bool Graph::writeMatrixDissimilarities(const QString fileName,
 
     int metric = graphMetricStrToType(metricStr);
     createMatrixDissimilarities(AM, DSM, metric, varLocation, diagonal, considerWeights);
+    if (progressCanceled())
+    {
+        file.close();
+        return false;
+    }
 
     progressStatus(tr("Writing tie profile dissimilarities to file: ") + fileName);
 
@@ -4921,6 +4926,11 @@ bool Graph::writeMatrixSimilarityMatching(const QString fileName,
                                        varLocation, diagonal, considerWeights);
     }
     else
+    {
+        file.close();
+        return false;
+    }
+    if (progressCanceled())
     {
         file.close();
         return false;
@@ -5094,10 +5104,15 @@ bool Graph::writeMatrixSimilarityPearson(const QString fileName,
             file.close();
             progressFinish();
             return false;
-        }        
+        }
         createMatrixSimilarityPearson(DM, PCC, varLocation, diagonal);
     }
     else
+    {
+        file.close();
+        return false;
+    }
+    if (progressCanceled())
     {
         file.close();
         return false;

@@ -187,18 +187,21 @@ public:
     Matrix& distancesMatrix(const int &metric,
                             const QString varLocation,
                             const bool &diagonal,
-                            const bool &considerWeights);
-    
+                            const bool &considerWeights,
+                            std::function<bool()> cancelCheck = nullptr);
+
     Matrix& similarityMatrix(Matrix &AM,
                                const int &measure,
                                const QString varLocation="Rows",
                                const bool &diagonal=false,
-                               const bool &considerWeights=true);
+                               const bool &considerWeights=true,
+                               std::function<bool()> cancelCheck = nullptr);
 
 
     Matrix& pearsonCorrelationCoefficients(Matrix &AM,
                                           const QString &varLocation="Rows",
-                                           const bool &diagonal=false);
+                                           const bool &diagonal=false,
+                                           std::function<bool()> cancelCheck = nullptr);
 
 
     friend QTextStream& operator <<  (QTextStream& os, Matrix& m);

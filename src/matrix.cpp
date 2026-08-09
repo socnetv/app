@@ -1376,7 +1376,8 @@ bool Matrix::solve(qreal b[])
 Matrix& Matrix::distancesMatrix(const int &metric,
                         const QString varLocation,
                         const bool &diagonal,
-                        const bool &considerWeights) {
+                        const bool &considerWeights,
+                        std::function<bool()> cancelCheck) {
     Q_UNUSED(considerWeights);
 
     Matrix *T = new Matrix(cols(), rows());
@@ -1402,6 +1403,9 @@ Matrix& Matrix::distancesMatrix(const int &metric,
         //this->printMatrixConsole();
 
         for (int i = 0 ; i < N ; i++ ) {
+            if (cancelCheck && cancelCheck()) {
+                return *T;
+            }
             sum = 0 ;
             for (int k = i ; k < N ; k++ ) {
                 distTemp = 0;
@@ -1509,6 +1513,9 @@ Matrix& Matrix::distancesMatrix(const int &metric,
         //printMatrixConsole(true);
 
         for (int i = 0 ; i < N ; i++ ) {
+            if (cancelCheck && cancelCheck()) {
+                return *T;
+            }
             sum = 0 ;
             for (int k = i ; k < N ; k++ ) {
                 distTemp = 0;
@@ -1628,6 +1635,9 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
 
         for (int i = 0 ; i < N ; i++ ) {
+            if (cancelCheck && cancelCheck()) {
+                return *T;
+            }
 
             for (int k = i ; k < N ; k++ ) {
 
@@ -1763,7 +1773,8 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
                                    const int &measure,
                                    const QString varLocation,
                                    const bool &diagonal,
-                                   const bool &considerWeights){
+                                   const bool &considerWeights,
+                                   std::function<bool()> cancelCheck){
 
     Q_UNUSED(considerWeights);
 
@@ -1790,6 +1801,9 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
         //AM.printMatrixConsole(true);
 
         for (int i = 0 ; i < N ; i++ ) {
+            if (cancelCheck && cancelCheck()) {
+                return *this;
+            }
             sum = 0 ;
             for (int k = i ; k < N ; k++ ) {
                 matches = 0;
@@ -1891,6 +1905,9 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
         //AM.printMatrixConsole(true);
 
         for (int i = 0 ; i < N ; i++ ) {
+            if (cancelCheck && cancelCheck()) {
+                return *this;
+            }
             sum = 0 ;
             for (int k = i ; k < N ; k++ ) {
                 matches = 0;
@@ -2003,6 +2020,10 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
 
 
         for (int i = 0 ; i < N ; i++ ) {
+
+            if (cancelCheck && cancelCheck()) {
+                return *this;
+            }
 
             for (int k = i ; k < N ; k++ ) {
 
@@ -2120,7 +2141,8 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
  */
 Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                                                const QString &varLocation,
-                                               const bool &diagonal){
+                                               const bool &diagonal,
+                                               std::function<bool()> cancelCheck){
     qCDebug(lcMatrix)<< "Matrix::pearsonCorrelationCoefficients() -"
             << "varLocation"<< varLocation;
 
@@ -2146,6 +2168,9 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
         //AM.printMatrixConsole(true);
 
         for (int i = 0 ; i < N ; i++ ) {
+            if (cancelCheck && cancelCheck()) {
+                return *this;
+            }
 
             for (int k = i ; k < N ; k++ ) {
 
@@ -2231,6 +2256,9 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
 
 
         for (int i = 0 ; i < N ; i++ ) {
+            if (cancelCheck && cancelCheck()) {
+                return *this;
+            }
 
             for (int k = i ; k < N ; k++ ) {
 
@@ -2318,6 +2346,9 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
 
 
         for (int i = 0 ; i < N ; i++ ) {  //a column
+            if (cancelCheck && cancelCheck()) {
+                return *this;
+            }
 
             for (int k = i ; k < N ; k++ ) {  // next column
 

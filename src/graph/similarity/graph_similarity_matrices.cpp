@@ -38,7 +38,8 @@ void Graph::createMatrixDissimilarities(Matrix &INPUT_MATRIX,
 {
     qCDebug(lcSimilarity) << "Graph::createMatrixDissimilarities() -metric" << metric;
 
-    DSM = INPUT_MATRIX.distancesMatrix(metric, varLocation, diagonal, considerWeights);
+    DSM = INPUT_MATRIX.distancesMatrix(metric, varLocation, diagonal, considerWeights,
+                                       [this] { return progressCanceled(); });
 
     // DSM.printMatrixConsole(true);
 }
@@ -61,7 +62,8 @@ void Graph::createMatrixSimilarityMatching(Matrix &AM,
 {
     qCDebug(lcSimilarity) << "Graph::createMatrixSimilarityMatching()";
 
-    SCM.similarityMatrix(AM, measure, varLocation, diagonal, considerWeights);
+    SCM.similarityMatrix(AM, measure, varLocation, diagonal, considerWeights,
+                         [this] { return progressCanceled(); });
 }
 
 /**
@@ -101,7 +103,8 @@ void Graph::createMatrixSimilarityPearson(Matrix &AM,
 {
     qCDebug(lcSimilarity) << "Graph::createMatrixSimilarityPearson()";
 
-    PCC.pearsonCorrelationCoefficients(AM, varLocation, diagonal);
+    PCC.pearsonCorrelationCoefficients(AM, varLocation, diagonal,
+                                       [this] { return progressCanceled(); });
 
     qCDebug(lcSimilarity) << "Graph::createMatrixSimilarityPearson() - matrix PCC";
     // PCC.printMatrixConsole(true);
