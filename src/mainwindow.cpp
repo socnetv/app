@@ -16180,6 +16180,19 @@ void MainWindow::runGraphOperationAsync(std::function<void()> operation,
     // WS15 P1 (roadmap_ws15_cancellation_progress_unification.md).
     connect(busyDialog, &QProgressDialog::canceled,
             activeGraph, &Graph::slotCancelComputation, Qt::DirectConnection);
+    // The Cancel button is wired by Qt itself to QProgressDialog::cancel(), which
+    // unconditionally hides the dialog before emitting canceled() - setAutoClose(false)/
+    // setAutoReset(false) above don't gate this path at all, only setValue() reaching
+    // maximum() does. Without this, the dialog disappears immediately even though the
+    // computation may keep running for a while (coarse cancelCheck granularity in some
+    // operations), letting the user believe it already stopped (WS15 Finding 8). Re-show it,
+    // relabeled and disabled, until the operation's own completion continuation below calls
+    // reset()/deleteLater() for real.
+    connect(busyDialog, &QProgressDialog::canceled, busyDialog, [busyDialog]() {
+        busyDialog->setLabelText(tr("Canceling - please wait for the operation to stop..."));
+        busyDialog->setEnabled(false);
+        busyDialog->show();
+    }, Qt::DirectConnection);
     busyDialog->show();
 
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
