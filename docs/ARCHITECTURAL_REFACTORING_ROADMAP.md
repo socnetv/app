@@ -29,7 +29,7 @@ Algorithm slices / engines
 └── matrices
 ```
 
-The `Graph` object is a façade and state coordinator — not a monolith. Algorithm logic lives in dedicated slices under `src/graph/`. A headless CLI regression harness (7 kernels) guards against silent regressions.
+The `Graph` object is a façade and state coordinator — not a monolith. Algorithm logic lives in dedicated slices under `src/graph/`. A headless CLI regression harness (8 kernels) guards against silent regressions.
 
 ---
 
@@ -41,6 +41,7 @@ The `Graph` object is a façade and state coordinator — not a monolith. Algori
 | WS2  | Graph façade                        | ✔ complete                    | [`roadmap_ws2_ui_graph_facade.md`](roadmaps/roadmap_ws2_ui_graph_facade.md) |
 | WS3  | Architecture & Performance          | ✔ complete (v3.6/v3.7)        | [`roadmap_ws3_architecture_performance.md`](roadmaps/roadmap_ws3_architecture_performance.md) |
 | WS4  | IO / Parser modernization           | ✔ complete                    | [`roadmap_ws4_io_parser_refactor.md`](roadmaps/roadmap_ws4_io_parser_refactor.md) |
+| WS5  | Matrices Modernization              | ✔ complete (v3.7)             | [`roadmap_ws5_matrices_modernization.md`](roadmaps/roadmap_ws5_matrices_modernization.md) |
 | WS9  | Graph exploration & data workflows  | ✔ shipped v3.5/v3.6           | [`roadmap_ws9_graph_exploration.md`](roadmaps/roadmap_ws9_graph_exploration.md) |
 | WS14 | Logging Cost & Release-Build Hygiene| ✔ complete (v3.7, #268)       | [`roadmap_ws14_logging_cost.md`](roadmaps/roadmap_ws14_logging_cost.md) |
 
@@ -62,14 +63,6 @@ Expand golden baselines, dataset coverage, and benchmarking. Supports all other 
 ## WS7 — MainWindow Decomposition (LATER)
 
 Break `MainWindow` into smaller, focused UI components. No UX changes — pure structural cleanup. Deferred until the UI stabilizes post-WS9.
-
----
-
-## WS5 — Matrices Modernization
-
-Roadmap: [`docs/roadmaps/roadmap_ws5_matrices_modernization.md`](roadmaps/roadmap_ws5_matrices_modernization.md)
-
-Isolate and modernize matrix operations as a self-contained subsystem.
 
 ---
 
@@ -153,28 +146,20 @@ fixing one property doesn't get mistaken for having fixed all four (as happened 
 
 # Priorities
 
-1. **WS15** — app responsiveness contract. P1 (cancellation delivery) and P2 (global busy guard,
-   closing a live crash) both done and live-verified. P3's Phase 1 (Group C — 18 unwrapped
-   graph-mutating call sites, incl. filters) done and live-verified; Phases 2-5 not started. P4's
-   audit (parallelization, across all long-running `Graph::` operations) done; implementation not
-   started.
-2. **WS5** — matrices. A1, A2.0, A2 (APSP storage migration), A3 (contiguous storage), A5
-   (cancellation-aware algebra kernels — plumbing done, delivery fix now WS15's), and A7 (golden
-   coverage, via WS6.7) all done, real measured speedups throughout. Only A4 and A6 remain, each
-   fully scoped and small (isolate construction call sites, cancel guards in `writeMatrix()`) —
-   prioritised to close out the workstream for 3.7.
-3. **WS6** — regression safety (ongoing support — continuously active underneath every other
+1. **WS15** — app responsiveness contract. P1-P3 done and live-verified; P4's parallelization audit
+   done, implementation not started; Finding 8 open.
+2. **WS6** — regression safety (ongoing support — continuously active underneath every other
    workstream, not "next in queue").
-4. **WS10** — GraphicsWidget canvas rendering & features. Phase 1 (#250), #260, and the
+3. **WS10** — GraphicsWidget canvas rendering & features. Phase 1 (#250), #260, and the
    rendering-perf regression kernel (WS6.6) all shipped; the rest of the Performance/Feature
    checklists remain scoped but not prioritised yet.
-5. **WS7** — MainWindow decomposition. Solid milestone roadmap (MW1–MW7) exists; zero code written
+4. **WS7** — MainWindow decomposition. Solid milestone roadmap (MW1–MW7) exists; zero code written
    yet.
-6. **WS8** — IO layer stabilization. Roadmap scoped; zero code written yet.
-7. **WS11** — algorithm additions. Just created; not prioritised yet, no code written.
-8. **WS12** — CLI scripting mode. Two steps shipped (#261, #262); further commands backlog, not
+5. **WS8** — IO layer stabilization. Roadmap scoped; zero code written yet.
+6. **WS11** — algorithm additions. Just created; not prioritised yet, no code written.
+7. **WS12** — CLI scripting mode. Two steps shipped (#261, #262); further commands backlog, not
    prioritised.
-9. **WS13** — undo/redo. Just created; not prioritised yet, no code written.
+8. **WS13** — undo/redo. Just created; not prioritised yet, no code written.
 
 ---
 
