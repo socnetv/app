@@ -325,11 +325,6 @@ void Graph::clear(const QString &reason)
         qCDebug(lcGraph) << "clearing SIGMA matrix";
         SIGMA.clear();
     }
-    if (sumM.size() > 0)
-    {
-        qCDebug(lcGraph) << "clearing sumM";
-        sumM.clear();
-    }
     if (invAM.size() > 0)
     {
         qCDebug(lcGraph) << "clearing invAM";

@@ -1410,7 +1410,7 @@ private:
     QMap<QString, V_int> m_clustersByName;
     QMap<int, V_str> m_clusterPairNamesPerSeq;
 
-    Matrix SIGMA, DM, sumM, invAM, AM, invM, WM;
+    Matrix SIGMA, DM, invAM, AM, invM, WM;
     Matrix XM, XSM, XRM, CLQM;
 
     // WS5 A2: relation-keyed flat-matrix APSP storage, replacing GraphVertex's per-vertex
