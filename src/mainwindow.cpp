@@ -16116,6 +16116,12 @@ void MainWindow::setAppBusy(bool busy)
     menuBar()->setEnabled(!busy);
     toolBar->setEnabled(!busy);
     graphicsWidget->setEnabled(!busy);
+    // leftPanel hosts the toolbox comboboxes (edit/analysis/visualization selects, e.g.
+    // toolBoxAnalysisStrEquivalenceSelect) - plain QComboBoxes, not QActions, so the
+    // menuBar/toolBar QAction sweep below never reaches them. Without this, a toolbox
+    // selection can re-trigger a runGraphOperationAsync operation while a prior one is
+    // still running on graphThread, racing on shared Graph:: matrix members (AM/SCM/etc.)
+    leftPanel->setEnabled(!busy);
 
     if (busy)
     {
