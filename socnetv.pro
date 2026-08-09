@@ -149,6 +149,8 @@ SOURCES += src/main.cpp \
     src/graph/centrality/graph_prestige.cpp \
     src/graph/prominence/graph_prominence_distribution.cpp \
     src/graph/matrices/graph_matrix_adjacency.cpp \
+    src/graph/matrices/graph_matrix_distances.cpp \
+    src/graph/matrices/graph_matrix_reachability.cpp \
     src/graph/generators/graph_random_networks.cpp \
     src/graph/crawler/graph_crawler.cpp \
     src/graph/layouts/graph_layouts_basic.cpp \
