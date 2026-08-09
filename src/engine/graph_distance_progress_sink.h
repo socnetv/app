@@ -1,6 +1,6 @@
 /**
  * @file graph_distance_progress_sink.h
- * @brief Declares the GraphDistanceProgressSink class that implements IDistanceProgressSink to receive progress updates from the DistanceEngine and forward them to the Graph for UI updates.
+ * @brief Declares the GraphDistanceProgressSink class, which forwards DistanceEngine's status messages and cancellation state to Graph.
  * @author Dimitris B. Kalamaras
  * @copyright
  *   Copyright (C) 2005-2025 by Dimitris B. Kalamaras.
@@ -25,9 +25,7 @@ public:
     explicit GraphDistanceProgressSink(Graph &g);
 
     void statusMessage(const QString &msg) override;
-    void progressCreate(int total, const QString &msg) override;
-    void progressUpdate(int value) override;
-    void progressKill() override;
+    void resetCancellation() override;
     bool progressCanceled() const override;
 
 private:

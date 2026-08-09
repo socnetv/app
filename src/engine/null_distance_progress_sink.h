@@ -21,8 +21,6 @@ class NullDistanceProgressSink final : public IDistanceProgressSink
 {
 public:
     void statusMessage(const QString &) override {}
-    void progressCreate(int, const QString &) override {}
-    void progressUpdate(int) override {}
-    void progressKill() override {}
+    void resetCancellation() override {}
     bool progressCanceled() const override { return false; }
 };

@@ -297,7 +297,6 @@ bool Graph::writeEccentricity(const QString fileName, const bool considerWeights
     if (progressCanceled())
     {
         file.close();
-        progressFinish();
         progressStatus(tr("Computation canceled."));
         return false;
     }
@@ -1791,7 +1790,6 @@ bool Graph::writeCentralityBetweenness(const QString fileName,
     if (progressCanceled())
     {
         file.close();
-        progressFinish();
         progressStatus(tr("Computation canceled."));
         return false;
     }
@@ -2071,7 +2069,6 @@ bool Graph::writeCentralityStress(const QString fileName,
     if (progressCanceled())
     {
         file.close();
-        progressFinish();
         progressStatus(tr("Computation canceled."));
         return false;
     }
@@ -2310,7 +2307,6 @@ bool Graph::writeCentralityEccentricity(const QString fileName,
     if (progressCanceled())
     {
         file.close();
-        progressFinish();
         progressStatus(tr("Computation canceled."));
         return false;
     }
@@ -2531,7 +2527,6 @@ bool Graph::writeCentralityPower(const QString fileName,
     if (progressCanceled())
     {
         file.close();
-        progressFinish();
         progressStatus(tr("Computation canceled."));
         return false;
     }
@@ -5102,7 +5097,6 @@ bool Graph::writeMatrixSimilarityPearson(const QString fileName,
         if (progressCanceled())
         {
             file.close();
-            progressFinish();
             return false;
         }
         createMatrixSimilarityPearson(DM, PCC, varLocation, diagonal);
@@ -5949,7 +5943,6 @@ bool Graph::writeMatrix(const QString &fn,
     outText << htmlEnd;
 
     file.close();
-    progressFinish();
     return true;
 }
 

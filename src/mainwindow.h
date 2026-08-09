@@ -27,7 +27,6 @@
 #include <QPrinter>
 #include <QMessageBox>
 #include <QScrollArea>
-#include <QStack>
 #include <QThread>
 #include <QNetworkReply>
 #include <functional>
@@ -595,10 +594,6 @@ public slots:
     void toolBoxLayoutByIndexApplyBtnPressed();
     void toolBoxLayoutForceDirectedApplyBtnPressed();
 
-
-    void slotProgressBoxCreate(const int &max=0, const QString &msg="Please wait...");
-    void slotProgressBoxDestroy(const int &max=0);
-
 protected:
     void resizeEvent(QResizeEvent * e);
     void closeEvent( QCloseEvent* ce );
@@ -638,8 +633,6 @@ private:
     QList<QTextCodec *> codecs;
 
     QList<TextEditor *> m_textEditors;
-
-    QStack<QProgressDialog *> progressDialogs;
 
     // setAppBusy()'s own record of which actions it disabled, so it can restore exactly
     // those on busy=false without clobbering actions legitimately disabled elsewhere for

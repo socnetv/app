@@ -73,32 +73,6 @@ void Graph::resetProgressCanceled()
     m_progressCanceled = false;
 }
 /**
- * @brief Emits a signal to create a progress box in the UI with the given maximum value and message.
- * @param max The maximum value for the progress box.
- * @param msg The message to be shown in the progress box.
- */
-void Graph::progressCreate(int max, const QString &msg)
-{
-    resetProgressCanceled();
-    emit signalProgressBoxCreate(max, msg);
-}
-/**
- * @brief Emits a signal to update the progress box in the UI with the given value.
- * @param value The current value to update the progress box with.
- */
-void Graph::progressUpdate(int value)
-{
-    emit signalProgressBoxUpdate(value);
-}
-/**
- * @brief Emits a signal to kill the progress box in the UI, indicating that the operation is complete.
- */
-void Graph::progressFinish()
-{
-    emit signalProgressBoxKill();
-}
-
-/**
  * @brief Returns true if the user has requested cancellation via the progress dialog.
  */
 bool Graph::progressCanceled() const

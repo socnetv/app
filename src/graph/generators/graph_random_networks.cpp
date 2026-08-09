@@ -66,14 +66,12 @@ bool Graph::randomNetErdosCreate(const int &N,
     vpos.reserve(N);
     randomizeThings();
 
-    int progressCounter = 0;
     int edgeCount = 0;
 
-    QString pMsg = tr("Creating Erdos-Renyi Random Network. \n"
-                      "Please wait...");
-
-    // Progress max: M edges for G(n,M), N nodes for G(n,p)
-    progressCreate((m != 0 ? m : N), pMsg);
+    // Not dispatched via runGraphOperationAsync's centralized reset when called from the
+    // --interactive-script erdos/erdos-m benchmark harness (kept unwrapped deliberately, for
+    // timing precision) - this is that path's only reset point.
+    resetProgressCanceled();
 
     // Create all nodes first
     for (int i = 0; i < N; i++)
@@ -117,10 +115,8 @@ bool Graph::randomNetErdosCreate(const int &N,
                 }
             }
 
-            progressUpdate(++progressCounter);
             if (progressCanceled())
             {
-                progressFinish();
                 return false;
             }
         }
@@ -154,7 +150,6 @@ bool Graph::randomNetErdosCreate(const int &N,
                            QString(), false);
             }
 
-            progressUpdate(++progressCounter);
             if (progressCanceled())
             {
                 cancelled = true;
@@ -165,15 +160,11 @@ bool Graph::randomNetErdosCreate(const int &N,
 
         if (cancelled)
         {
-            progressFinish();
             return false;
         }
     }
 
     relationCurrentRename(tr("erdos-renyi"), true);
-
-    progressUpdate((m != 0 ? m : N));
-    progressFinish();
 
     setModStatus(ModStatus::VertexEdgeCount);
     emit signalLayoutFinished();

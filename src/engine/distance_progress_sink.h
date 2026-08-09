@@ -1,6 +1,6 @@
 /**
  * @file distance_progress_sink.h
- * @brief Declares the IDistanceProgressSink interface for receiving progress updates during distance and centrality computations.
+ * @brief Declares the IDistanceProgressSink interface for status messages and cancellation during distance and centrality computations.
  * @author Dimitris B. Kalamaras
  * @copyright
  *   Copyright (C) 2005-2025 by Dimitris B. Kalamaras.
@@ -23,8 +23,6 @@ public:
     virtual ~IDistanceProgressSink() = default;
 
     virtual void statusMessage(const QString &msg) = 0;
-    virtual void progressCreate(int total, const QString &msg) = 0;
-    virtual void progressUpdate(int value) = 0;
-    virtual void progressKill() = 0;
+    virtual void resetCancellation() = 0;
     virtual bool progressCanceled() const = 0;
 };

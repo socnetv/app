@@ -119,13 +119,9 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
  * @brief Creates the matrix DM of geodesic distances between vertices.
  *
  * Phase 1: calls graphDistancesGeodesic() which runs the DistanceEngine.
- * The engine owns its own progress dialog — it creates it, updates it,
- * and destroys it before returning. The dialog stack is empty on return.
  *
- * Phase 2: fills the DM matrix from the cached per-vertex distances.
- * This is an O(N²) memory-write pass — fast enough to need no progress
- * dialog of its own. No progressUpdate or progressFinish is called here;
- * the caller owns the dialog lifecycle for any subsequent phase.
+ * Phase 2: fills the DM matrix from the cached per-vertex distances - an O(N²)
+ * memory-write pass.
  *
  * @param considerWeights If true, edge weights are used in distance computations.
  * @param inverseWeights  If true, edge weights are inverted before use.
@@ -139,7 +135,6 @@ bool Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
     qCDebug(lcDistances) << "Graph::graphMatrixDistanceGeodesicCreate()";
 
     // Phase 1: compute all geodesic distances via DistanceEngine.
-    // The engine owns its own progress dialog for this phase.
     graphDistancesGeodesic(false, considerWeights, inverseWeights, dropIsolates);
 
     if (progressCanceled())
@@ -160,9 +155,6 @@ bool Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
     DM.resize(N, N);
 
     // Phase 2: fill DM from cached per-vertex distances.
-    // No progressUpdate here — the DistanceEngine dialog is already destroyed
-    // by this point. The matrix-fill is O(N²) memory writes and needs no
-    // progress reporting of its own.
     progressStatus(tr("Creating geodesic distances matrix. \nPlease wait "));
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
@@ -196,6 +188,5 @@ bool Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
         i++;
     }
 
-    // No progressFinish() here — the caller owns the outer dialog lifecycle.
     return true;
 }

@@ -271,12 +271,6 @@ signals:
 
     void signalNetworkManagerRequest(const QUrl &currentUrl, const NetworkRequestType &type);
 
-    void signalProgressBoxCreate(const int max = 0, const QString msg = "Please wait");
-
-    void signalProgressBoxKill(const int max = 0);
-
-    void signalProgressBoxUpdate(const int &count = 0);
-
     void signalGraphSavedStatus(const int &status);
 
     void signalGraphModified(const bool &undirected,
@@ -1303,9 +1297,6 @@ public:
     // --------------------------------------------------------------------------
 protected:
     void progressStatus(const QString &msg);
-    void progressCreate(int max, const QString &msg);
-    void progressUpdate(int value);
-    void progressFinish();
 
     void runOnGuiThread(std::function<void()> fn);
 

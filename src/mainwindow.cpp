@@ -5285,12 +5285,6 @@ void MainWindow::initSignalSlots()
     connect(activeGraph, &Graph::signalRelationRenamedToMW,
             editRelationChangeCombo, &QComboBox::setCurrentText);
 
-    connect(activeGraph, &Graph::signalProgressBoxCreate,
-            this, &MainWindow::slotProgressBoxCreate);
-
-    connect(activeGraph, &Graph::signalProgressBoxKill,
-            this, &MainWindow::slotProgressBoxDestroy);
-
     connect(activeGraph, &Graph::signalPromininenceDistributionChartUpdate,
             this, &MainWindow::slotAnalyzeProminenceDistributionChartUpdate);
 
@@ -16016,58 +16010,6 @@ void MainWindow::slotAnalyzeProminenceDistributionChartUpdate(QAbstractSeries *s
 }
 
 /**
- * @brief Creates a Qt Progress Dialog.
- * If max = 0, then max becomes equal to active vertices.
- * Connects the dialog's Cancel button to Graph::slotCancelComputation()
- * so that the user can interrupt long-running computations.
- * @param max The maximum value for the progress bar (0 = use active vertex count)
- * @param msg The message to display in the dialog
- */
-void MainWindow::slotProgressBoxCreate(const int &max, const QString &msg)
-{
-    qCDebug(lcMainWindow) << "MW::slotProgressBoxCreate";
-    if (appSettings["showProgressBar"] == "true")
-    {
-        int duration = (max == 0) ? activeNodes() : max;
-        if (!progressDialogs.isEmpty())
-        {
-            // A dialog is already active — reuse it for the new sub-step
-            // instead of stacking a new one on top.
-            QProgressDialog *progressBox = progressDialogs.top();
-            progressBox->setLabelText(msg);
-            progressBox->setMaximum(duration);
-            progressBox->setValue(0);
-            // Push nullptr sentinel so slotProgressBoxDestroy knows
-            // this is a sub-step finish and should not destroy the real dialog.
-            progressDialogs.push(nullptr);
-            qCDebug(lcMainWindow) << "MW::slotProgressBoxCreate - reusing existing dialog for sub-step";
-            QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-            return;
-        }
-        QProgressDialog *progressBox = new QProgressDialog(msg,
-                                                           "Cancel",
-                                                           0,
-                                                           duration,
-                                                           this);
-        polishProgressDialog(progressBox);
-        progressBox->setWindowModality(Qt::ApplicationModal);
-        connect(activeGraph, &Graph::signalProgressBoxUpdate,
-                progressBox, &QProgressDialog::setValue);
-        // Qt::DirectConnection: runs slotCancelComputation() synchronously on this (GUI) thread at
-        // click-time, instead of queueing onto graphThread's event loop - which is exactly what's
-        // blocked for the whole duration of the computation this button is meant to interrupt. See
-        // WS15 P1 (roadmap_ws15_cancellation_progress_unification.md).
-        connect(progressBox, &QProgressDialog::canceled,
-                activeGraph, &Graph::slotCancelComputation, Qt::DirectConnection);
-        progressBox->setMinimumDuration(0);
-        progressBox->setAutoClose(true);
-        progressBox->setAutoReset(true);
-        progressDialogs.push(progressBox);
-    }
-    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-}
-
-/**
  * @brief Fixes known bugs in QProgressDialog class.
    i.e. Workaround for macOS-only Qt bug: QTBUG-65750, QTBUG-70357.
    QProgressDialog too small and too narrow to fit the text of its label
@@ -16216,12 +16158,12 @@ void MainWindow::runGraphOperationAsync(std::function<void()> operation,
                                         std::function<void()> onComplete)
 {
     // Must happen before the busy dialog exists (let alone is shown), not just before dispatch:
-    // resetProgressCanceled() was previously only ever called from Graph::progressCreate() (the
-    // linear dialog) or DistanceEngine's progress sink. Every operation wrapped here that has no
-    // such call anywhere in its chain (all of Group C, and Group A once its own progressCreate()
-    // calls are removed as redundant) would otherwise never reset the flag - so a single earlier
-    // cancel would silently no-op every subsequent wrapped operation's cancelCheck() forever
-    // after. See WS15 P3 Phase 2 (roadmap_ws15_cancellation_progress_unification.md).
+    // this is the one guaranteed reset point every wrapped operation goes through. Some chains
+    // also reset internally (DistanceEngine's progress sink; randomNetErdosCreate()'s own reset,
+    // kept for its --interactive-script benchmark path which bypasses this wrapper entirely) but
+    // most don't - without this central call, a single earlier cancel would silently no-op every
+    // subsequent wrapped operation's cancelCheck() forever after. See WS15 P3 Phase 2
+    // (roadmap_ws15_cancellation_progress_unification.md).
     activeGraph->resetProgressCanceled();
 
     statusMessage(waitMessage);
@@ -16232,8 +16174,10 @@ void MainWindow::runGraphOperationAsync(std::function<void()> operation,
     busyDialog->setAutoClose(false);
     busyDialog->setAutoReset(false);
     polishProgressDialog(busyDialog);
-    // Qt::DirectConnection - see the matching comment in slotProgressBoxCreate() above; same
-    // reasoning applies here (WS15 P1).
+    // Qt::DirectConnection: runs slotCancelComputation() synchronously on this (GUI) thread at
+    // click-time, instead of queueing onto graphThread's event loop - which is exactly what's
+    // blocked for the whole duration of the computation this button is meant to interrupt. See
+    // WS15 P1 (roadmap_ws15_cancellation_progress_unification.md).
     connect(busyDialog, &QProgressDialog::canceled,
             activeGraph, &Graph::slotCancelComputation, Qt::DirectConnection);
     busyDialog->show();
@@ -16248,39 +16192,14 @@ void MainWindow::runGraphOperationAsync(std::function<void()> operation,
             setAppBusy(false);
             // reset(), not close(): QProgressDialog::close() triggers its internal cancel()
             // path and emits canceled() -> Graph::slotCancelComputation() -> m_progressCanceled
-            // stays true until the next progressCreate() call, silently no-op'ing every
-            // operation after the first. Matches the teardown pattern already used by
-            // slotProgressBoxDestroy() for exactly this reason.
+            // stays true until the next resetProgressCanceled() call, silently no-op'ing every
+            // operation after the first.
             busyDialog->reset();
             busyDialog->deleteLater();
             if (onComplete)
                 onComplete();
         }, Qt::QueuedConnection);
     }, Qt::QueuedConnection);
-}
-
-/**
- * @brief Destroys the first in queue Progress dialog
- */
-void MainWindow::slotProgressBoxDestroy(const int &max)
-{
-    qCDebug(lcMainWindow) << "MainWindow::slotProgressBoxDestroy";
-    QApplication::restoreOverrideCursor();
-    if (appSettings["showProgressBar"] == "true" && max > -1)
-    {
-        if (!progressDialogs.isEmpty())
-        {
-            QProgressDialog *progressBox = progressDialogs.pop();
-            if (progressBox == nullptr)
-            {
-                // Sub-step sentinel — real dialog stays alive.
-                qCDebug(lcMainWindow) << "MW::slotProgressBoxDestroy - sub-step sentinel, skipping destroy";
-                return;
-            }
-            progressBox->reset();
-            progressBox->deleteLater();
-        }
-    }
 }
 
 /**

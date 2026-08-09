@@ -190,7 +190,6 @@ void DistanceEngine::compute(const bool computeCentralities,
         if (sink.progressCanceled())
         {
             qCDebug(lcEngine) << "DistanceEngine::compute() - canceled. Skipping finalize.";
-            sink.progressKill();
             return;
         }
         // ---- Finalization: connectivity scan + aggregation ----
@@ -204,8 +203,6 @@ void DistanceEngine::compute(const bool computeCentralities,
     graph.calculatedDistances = true;
 
     qCDebug(lcEngine) << "Graph::graphDistancesGeodesic()- FINISHED computing distances";
-
-    sink.progressKill();
 }
 
 void DistanceEngine::initRun(const bool computeCentralities,
@@ -224,7 +221,7 @@ void DistanceEngine::initRun(const bool computeCentralities,
     ds.pMsg = QObject::tr("Computing geodesic distances. \nPlease wait...");
 
     sink.statusMessage(ds.pMsg);
-    sink.progressCreate(ds.N, ds.pMsg);
+    sink.resetCancellation();
 
     graph.setSymmetricCached(graph.isSymmetric());
 
@@ -621,7 +618,6 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
 
         } // END if computeCentralities
 
-        sink.progressUpdate(nextSlot.loadRelaxed()); // queued signal — OK from worker thread
     }); // END QtConcurrent::blockingMap
 
     qCDebug(lcEngine) << "*********** MAIN LOOP (parallel SSSP): FINISHED. Starting reduction.";
