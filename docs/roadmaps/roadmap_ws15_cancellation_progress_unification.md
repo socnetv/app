@@ -25,16 +25,8 @@ not something to paper over.
 
 ## Status
 
-🚧 In progress. P1 and P2 ✅ done. P3 (retire the linear dialog, close the dispatch gap): Groups
-A/B/C ✅ done (all ~38 methods wrapped/deduplicated); Findings 1-7 resolved; Finding 8 open (see
-below). P4 (parallelization audit) ✅ done; implementation not started.
-
-## Context
-
-Split off from WS5 (A5's cancellation plumbing needed a working delivery mechanism) and WS7 (a
-progress-dialog-duplication finding), then organized around the 4-property contract once it became
-clear "dispatch," "cancellation," and "compute parallelism" were being treated as one bundled fix
-when they're orthogonal.
+🚧 In progress. P1-P3 ✅ done — linear progress-dialog system retired, exactly one progress dialog
+now exists app-wide. P4's audit done; implementation not started.
 
 ## P1 — Atomic flag + `Qt::DirectConnection` ✅ Done
 
@@ -49,53 +41,29 @@ parallel BFS deliberately skips cancellation in worker threads (performance-moti
 
 ## P2 — Global "graph busy" guard ✅ Done
 
-Fixed a live, reproducible use-after-free crash: a still-running `graphThread` computation racing
-`MainWindow::slotNetworkNew()`'s direct, undispatched `Graph::clear()`. `MainWindow::setAppBusy()`
-disables `menuBar()`/`toolBar()`/`graphicsWidget` for the duration of every `runGraphOperationAsync`
-call, and (since a later fix) every reachable `QAction` too — `menuBar()->setEnabled(false)` blocks
-clicks but doesn't touch each action's own `isEnabled()`, so `Ctrl+N` could still fire a shortcut
-mid-computation even with the widgets disabled. `setAppBusy()` now snapshots and restores only the
-actions it itself disabled, so state legitimately disabled elsewhere (e.g. no network loaded) isn't
-clobbered.
-
-Known residual gap: the busy dialog still hides itself on Cancel-click before the computation
-actually stops (Finding 8, below) — no longer a safety issue since the action-guard fix is
-independent of dialog visibility, but a real UX-confusion one.
+`MainWindow::setAppBusy()` disables `menuBar()`/`toolBar()`/`graphicsWidget`/`leftPanel` (the
+toolbox panel) and every reachable `QAction`, for the duration of every `runGraphOperationAsync`
+call — snapshotting and restoring only what it itself disabled, so state legitimately disabled
+elsewhere isn't clobbered. Covers container-level `setEnabled(false)`, individual `QAction`s
+(whose own `isEnabled()`, e.g. keyboard shortcuts, a container disable alone doesn't reach), and
+the toolbox's `QComboBox`es specifically (not `QAction`s, so outside that sweep otherwise — see
+`roadmap_ws5_matrices_modernization.md`'s A6 section).
 
 ## P3 — Retire the linear progress-dialog system ✅ Done
 
-Two progress-reporting systems coexisted in `MainWindow`: the legacy **linear** system
-(`Graph::progressCreate()`/`progressUpdate()`/`progressFinish()` → a numeric `QProgressDialog`)
-and the **indeterminate** busy dialog `runGraphOperationAsync()` already shows, backed by P2's
-guard. A full call-site audit sorted every `Graph::` operation into:
-
-- **Group A** (14 methods) — already fully wrapped; internal linear-dialog triads were pure
-  redundancy, deleted.
-- **Group B** (23 methods, 6 batches) — previously unwrapped, migrated onto
-  `runGraphOperationAsync`; nested triads stripped once every call path into them was confirmed
-  wrapped.
-- **Group C** (18 call sites) — had neither system at all (mostly filters); wrapped from scratch.
-- **Audit gap**: the original sweep mapped `progressCreate()` sites to their directly enclosing
-  function only, missing triads inside shared helpers. Found and fixed:
-  `writeMatrixHTMLTable()` (24 callers, had no `progressCanceled()` check at all — Cancel was a
-  silent no-op), `layoutCircular()`, `writeCentralityCloseness()`.
-
-`resetProgressCanceled()` is now also called centrally from `runGraphOperationAsync()` itself
-(previously only `progressCreate()` and `DistanceEngine`'s sink called it) — otherwise deleting
-Group A's own `progressCreate()` calls would have left some operations with no reset point at all.
-
-**Findings from the audit** (✅ = resolved):
-
-| # | Finding |
-|---|---|
-| 1 ✅ | 7 centrality/prestige primitives each reachable from 3 call paths with inconsistent wrapping — resolved once all 3 paths (own report / `vertexFindByIndexScore` / `layoutByProminenceIndex`) were confirmed wrapped. |
-| 2 ✅ | `createMatrixAdjacency` fanned out to ~15 callers with mixed wrapping — resolved once Group B completed; own triad stripped. |
-| 3 ✅ | `writeMatrixSimilarityMatching` double-fired the linear dialog. Fixed alongside Group A. |
-| 4 ✅ | `Graph::vertexinfluenceRange()`/`vertexinfluenceDomain()` had zero callers anywhere in `src/` — deleted, along with the `influenceRanges`/`influenceDomains` fields that existed only to back them. |
-| 5 ✅ | `writeMatrixWalks` had two entry points with different wrapping — resolved once `slotAnalyzeWalksLength` was migrated. |
-| 6 ✅ | `Graph::writeReachabilityMatrixPlainText()` had zero live callers (only a stale doc-comment) — deleted; the doc-comment corrected to name the real call path (`writeMatrix(fn, MATRIX_REACHABILITY)`). |
-| 7 ✅ | Finding 1's 7 primitives also double-fired the linear dialog once wrapped (same shape as Finding 3) — visible as a stuck/blank dialog on macOS, not just redundancy. Fixed alongside Finding 1. |
-| 8 | Busy dialog hides itself on Cancel-click before the computation stops (Qt's `QProgressDialog` built-in Cancel button appears to bypass `setAutoClose`/`setAutoReset`). UX-confusion only, not a safety issue. Not fixed. |
+Every `Graph::` operation reachable from the GUI now dispatches through `runGraphOperationAsync()`'s
+single indeterminate busy dialog. The legacy linear system (`Graph::progressCreate()`/
+`progressUpdate()`/`progressFinish()` → a separate numeric `QProgressDialog`) is fully retired,
+including `DistanceEngine`'s own nested dialog — `DistanceEngine::compute()` already self-closes
+its dialog internally, so removing dialog creation there left `resetCancellation()` (renamed from
+`progressCreate()`) as its only remaining job. `randomNetErdosCreate()`'s `--interactive-script
+erdos`/`erdos-m` benchmark path, the one caller that bypasses `runGraphOperationAsync`, calls
+`resetProgressCanceled()` directly instead, since it has no other reset point. Exactly one progress
+dialog exists in the app now, always — and it stays visible through Cancel: Qt's
+`QProgressDialog::cancel()`, wired to the built-in Cancel button, unconditionally hides the dialog
+before emitting `canceled()` (`setAutoClose`/`setAutoReset` don't gate that path), so a second
+`canceled()` connection re-shows it, relabels it "Canceling...", and disables it until the
+operation's own completion continuation tears it down for real.
 
 ## P4 — Parallelization audit ✅ Audit done, implementation not started
 
@@ -132,23 +100,15 @@ A2.0/A3) before being called a real improvement.
 
 ## What Remains Open
 
-- `Graph::progressCreate()`/`Update()`/`Finish()` now have exactly one remaining caller
-  (`randomNetErdosCreate`'s deliberate benchmark-harness exception) — the linear dialog's
-  `MainWindow` infrastructure itself (`slotProgressBoxCreate`/`Destroy`) can't be deleted
-  regardless, since `DistanceEngine`'s progress sink is a separate, legitimate, permanent
-  consumer of it for long BFS operations.
-- **Finding 8**: decouple the busy dialog's Cancel button from Qt's built-in hide-on-cancel
-  behavior.
 - **P4 implementation**: decide which parallelization candidates to act on, if any.
+
+While investigating P3's Cancel-button fix, tracing a distance-based analysis end to end also
+surfaced a reproducible crash in the `--interactive-script` command dispatcher (a script-ordering
+race, independent of anything above) — found, fixed, and documented in
+`roadmap_ws12_cli_scripting_mode.md`, not here.
 
 ## Work Rules
 
-- P1 is pure infrastructure (behavior-preserving when nothing is canceled) — golden/benchmarks
-  must show zero change.
-- P2 got explicit design sign-off before implementation, per the project's plan-before-code rule.
-- Group A deletions and Group B migrations were each independently golden/benchmark-verified and
-  live-verified, one call site (or small batch) at a time.
-- P4's audit was research first, implementation second.
 - No GitHub issue for any of this (unreleased 3.7-cycle behavior) — fix directly.
 - Once P4 lands (or is explicitly parked): add a changelog entry, update WS5's A5 section and
   WS7's status line to point here instead of duplicating content.
