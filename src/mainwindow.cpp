@@ -5685,7 +5685,9 @@ void MainWindow::initApp()
  *
  * One command per line: 'delay X' (wait X seconds) or 'new' (File > New). Commands run one at a
  * time via processNextInteractiveCommand(), each dispatched through the real Qt event loop so the
- * script behaves like an actual sequence of user actions rather than a tight synchronous loop.
+ * script behaves like an actual sequence of user actions rather than a tight synchronous loop -
+ * and each only advances to the next line once its own dispatched work has genuinely finished,
+ * not just been queued (see the dispatch-pattern note on processNextInteractiveCommand() itself).
  *
  * @param scriptPath
  */
@@ -5708,23 +5710,35 @@ void MainWindow::runInteractiveScript(const QString &scriptPath)
 /**
  * @brief Executes one line of the interactive script, then schedules the next. See #261.
  *
- * Two dispatch patterns recur throughout this function, since most of the work here must run on
- * activeGraph's own thread, not this one:
+ * Three dispatch shapes recur throughout this function. Whichever one a command uses, the rule is
+ * always the same: only advance to the next command (call `processNextInteractiveCommand()`, or
+ * queue it via `QTimer::singleShot`/`QMetaObject::invokeMethod`) once this command's own work has
+ * genuinely finished - never merely queued or triggered. Getting this wrong is a real,
+ * reproducible bug, not a style preference: it lets the next script command race this one's
+ * still-in-flight work, found via an out-of-bounds crash where an unwrapped 'quit' right after
+ * 'erdos' tore down Graph state while 'erdos' was still creating nodes.
  *
- * - **Single-step dispatch** (most commands): the work is handed over via
+ * - **No dispatch** (`new`, `render`, `bulk-node-size`, `bulk-edge-color`): the work is already a
+ *   direct, blocking call on this (GUI) thread, no cross-thread queuing involved - genuinely done
+ *   by the time the call returns, so advancing immediately afterward is correct as-is.
+ * - **Single-step dispatch** (`relation`, `erdos`, `erdos-m`, `save`, `add-node`, `add-edge`,
+ *   `add-relation`, `click-node`, `move`): the work is handed over via
  *   `QMetaObject::invokeMethod(activeGraph, lambda, Qt::QueuedConnection)` - "queue this lambda to
  *   run on activeGraph's thread, whenever that thread is free." `invokeMethod()` only *queues* the
- *   job and returns immediately - it does not wait for the lambda to finish. So any timing
- *   (`QElapsedTimer`) or `BENCH` logging has to happen *inside* that same lambda, at the point the
- *   work is genuinely done - never outside/after the `invokeMethod()` call itself, since nothing
- *   is finished yet at that point.
- * - **Two-step dispatch** (`distances`/`distances_bench`): used when the work can take many
- *   seconds and should show a progress dialog, via the `runGraphOperationAsync()` helper. It takes
- *   two separate lambdas - one that performs the (possibly slow) computation, one that runs only
- *   after that computation has fully completed, to report on it and advance the script. Because
- *   both lambdas need to see the same timer/result values, and a plain local variable would not
- *   survive between two separate lambdas, those values are wrapped in `std::shared_ptr` instead -
- *   each lambda holds its own copy of the pointer, all pointing at the same shared value.
+ *   job and returns immediately - it does not wait for the lambda to finish. `BENCH` logging AND
+ *   the call advancing to the next command (via a nested
+ *   `QMetaObject::invokeMethod(this, ..., Qt::QueuedConnection)` back to the GUI thread) must
+ *   therefore both happen *inside* that same lambda, at the point the work is genuinely done -
+ *   never outside/after the `invokeMethod()` call itself.
+ * - **Two-step dispatch** (`filter_ego`, `filter_isolates`, `symmetrize_strongties`,
+ *   `symmetrize_cocitation`, `unilateral`, `distances`, `distances_bench`): used when the work can
+ *   take many seconds and should show a progress dialog, via the `runGraphOperationAsync()`
+ *   helper. It takes two separate lambdas - one that performs the (possibly slow) computation, one
+ *   that runs only after that computation has fully completed, to report on it and advance the
+ *   script. Because both lambdas need to see the same timer/result values, and a plain local
+ *   variable would not survive between two separate lambdas, those values are wrapped in
+ *   `std::shared_ptr` instead - each lambda holds its own copy of the pointer, all pointing at the
+ *   same shared value.
  *
  * Every command logs one `"BENCH <command> ... elapsed_ms=<N>"` line via `qInfo()` (not
  * `qDebug()`/`qCDebug()`) on completion, so this keeps printing even when debug output is quiet by
@@ -5794,8 +5808,12 @@ void MainWindow::processNextInteractiveCommand()
             activeGraph->relationSet(relNum);
             qInfo() << "BENCH relation N=" << activeNodes() << "E=" << activeEdges()
                     << "elapsed_ms=" << timer.elapsed();
+            // Advance only after this queued lambda actually finishes on graphThread, not
+            // immediately after invokeMethod() returns - otherwise the next script command can
+            // race ahead while this one is still running (confirmed via a reproducible crash
+            // for erdos/erdos-m, the same "single-step dispatch" pattern as this command).
+            QMetaObject::invokeMethod(this, &MainWindow::processNextInteractiveCommand, Qt::QueuedConnection);
         }, Qt::QueuedConnection);
-        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
     }
     else if (line.startsWith("erdos "))
     {
@@ -5823,8 +5841,13 @@ void MainWindow::processNextInteractiveCommand()
             activeGraph->randomNetErdosCreate(n, "G(n,p)", 0, p, mode, false);
             qInfo() << "BENCH erdos N=" << activeNodes() << "E=" << activeEdges()
                     << "elapsed_ms=" << timer.elapsed();
+            // Advance only after this queued lambda actually finishes on graphThread, not
+            // immediately after invokeMethod() returns - otherwise the next script command
+            // (e.g. 'quit', or another 'erdos'/'erdos-m') can race ahead while this one is
+            // still running. Confirmed via a reproducible out-of-bounds QList crash: a script
+            // with no delay between 'erdos' and 'quit' tore down Graph state mid-loop.
+            QMetaObject::invokeMethod(this, &MainWindow::processNextInteractiveCommand, Qt::QueuedConnection);
         }, Qt::QueuedConnection);
-        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
     }
     else if (line.startsWith("erdos-m "))
     {
@@ -5853,21 +5876,29 @@ void MainWindow::processNextInteractiveCommand()
             activeGraph->randomNetErdosCreate(n, "G(n,M)", m, 0, mode, false);
             qInfo() << "BENCH erdos-m N=" << activeNodes() << "E=" << activeEdges()
                     << "elapsed_ms=" << timer.elapsed();
+            // Advance only after this queued lambda actually finishes on graphThread - see the
+            // matching comment on 'erdos' above for why (a reproducible crash otherwise).
+            QMetaObject::invokeMethod(this, &MainWindow::processNextInteractiveCommand, Qt::QueuedConnection);
         }, Qt::QueuedConnection);
-        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
     }
     else if (line == "unilateral")
     {
-        // Same QAction the toolbar/menu item triggers, so this exercises the exact same
-        // code path as a real user click, not a shortcut around it - including WS15 P3's
-        // runGraphOperationAsync wrap (slotEditFilterEdgesUnilateral() is no longer a
-        // direct blocking call as of that change).
-        QElapsedTimer timer;
-        timer.start();
-        editFilterEdgesUnilateralAct->trigger();
-        qInfo() << "BENCH unilateral N=" << activeNodes() << "E=" << activeEdges()
-                << "elapsed_ms=" << timer.elapsed();
-        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+        // Direct Graph::edgeFilterUnilateral() call via runGraphOperationAsync, matching
+        // slotEditFilterEdgesUnilateral()'s own dispatch - same convention as
+        // 'filter_isolates'/'symmetrize_strongties' below. Previously triggered the real
+        // QAction instead, then advanced immediately without waiting for the (already async,
+        // since WS15 P3) slot to actually finish - the same race class confirmed on 'erdos'.
+        const bool toggleTo = !editFilterEdgesUnilateralAct->isChecked();
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+        runGraphOperationAsync(
+            [this, toggleTo]() { activeGraph->edgeFilterUnilateral(toggleTo); },
+            tr("Filtering unilateral edges (script)..."),
+            [this, timer]() {
+                qInfo() << "BENCH unilateral N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
     }
     else if (line.startsWith("save "))
     {
@@ -5886,8 +5917,10 @@ void MainWindow::processNextInteractiveCommand()
             activeGraph->saveToFile(path, FileType::GRAPHML, true, true);
             qInfo() << "BENCH save N=" << activeNodes() << "E=" << activeEdges()
                     << "elapsed_ms=" << timer.elapsed();
+            // Advance only after this queued lambda actually finishes on graphThread - see the
+            // matching comment on 'erdos' above for why (a reproducible crash otherwise).
+            QMetaObject::invokeMethod(this, &MainWindow::processNextInteractiveCommand, Qt::QueuedConnection);
         }, Qt::QueuedConnection);
-        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
     }
     else if (line == "add-node")
     {
@@ -5897,8 +5930,10 @@ void MainWindow::processNextInteractiveCommand()
             activeGraph->vertexCreateAtPosRandom(false);
             qInfo() << "BENCH add-node N=" << activeNodes() << "E=" << activeEdges()
                     << "elapsed_ms=" << timer.elapsed();
+            // Advance only after this queued lambda actually finishes on graphThread - see the
+            // matching comment on 'erdos' above for why (a reproducible crash otherwise).
+            QMetaObject::invokeMethod(this, &MainWindow::processNextInteractiveCommand, Qt::QueuedConnection);
         }, Qt::QueuedConnection);
-        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
     }
     else if (line.startsWith("add-edge "))
     {
@@ -5920,8 +5955,10 @@ void MainWindow::processNextInteractiveCommand()
                                     true, false, QString(), true);
             qInfo() << "BENCH add-edge N=" << activeNodes() << "E=" << activeEdges()
                     << "elapsed_ms=" << timer.elapsed();
+            // Advance only after this queued lambda actually finishes on graphThread - see the
+            // matching comment on 'erdos' above for why (a reproducible crash otherwise).
+            QMetaObject::invokeMethod(this, &MainWindow::processNextInteractiveCommand, Qt::QueuedConnection);
         }, Qt::QueuedConnection);
-        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
     }
     else if (line.startsWith("add-relation "))
     {
@@ -5938,8 +5975,10 @@ void MainWindow::processNextInteractiveCommand()
             activeGraph->relationAdd(name, true);
             qInfo() << "BENCH add-relation N=" << activeNodes() << "E=" << activeEdges()
                     << "elapsed_ms=" << timer.elapsed();
+            // Advance only after this queued lambda actually finishes on graphThread - see the
+            // matching comment on 'erdos' above for why (a reproducible crash otherwise).
+            QMetaObject::invokeMethod(this, &MainWindow::processNextInteractiveCommand, Qt::QueuedConnection);
         }, Qt::QueuedConnection);
-        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
     }
     else if (line.startsWith("click-node "))
     {
@@ -5960,8 +5999,13 @@ void MainWindow::processNextInteractiveCommand()
             timer.start();
             activeGraph->vertexClickedSet(id, QPointF());
             qInfo() << "BENCH click-node id=" << id << "elapsed_ms=" << timer.elapsed();
+            // Advance only after this queued lambda actually finishes on graphThread - see the
+            // matching comment on 'erdos' above for why (a reproducible crash otherwise). Also
+            // makes 'filter_ego' below's own FIFO-ordering workaround belt-and-braces rather
+            // than load-bearing, since vertexClickedSet() is now guaranteed complete before the
+            // next command starts.
+            QMetaObject::invokeMethod(this, &MainWindow::processNextInteractiveCommand, Qt::QueuedConnection);
         }, Qt::QueuedConnection);
-        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
     }
     else if (line == "filter_ego")
     {
@@ -6202,8 +6246,10 @@ void MainWindow::processNextInteractiveCommand()
             activeGraph->vertexPosSet(node, x, y);
             qInfo() << "BENCH move N=" << activeNodes() << "E=" << activeEdges()
                     << "elapsed_ms=" << timer.elapsed();
+            // Advance only after this queued lambda actually finishes on graphThread - see the
+            // matching comment on 'erdos' above for why (a reproducible crash otherwise).
+            QMetaObject::invokeMethod(this, &MainWindow::processNextInteractiveCommand, Qt::QueuedConnection);
         }, Qt::QueuedConnection);
-        QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
     }
     else if (line == "quit")
     {

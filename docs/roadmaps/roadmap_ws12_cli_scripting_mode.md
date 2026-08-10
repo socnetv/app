@@ -20,18 +20,32 @@ this is headed.
   file & Choose Encoding" dialog.
 - `--interactive-script <path>` — runs a plain-text script after startup, one command per line.
   Implementation in `MainWindow::runInteractiveScript()`/`processNextInteractiveCommand()`
-  (`mainwindow.cpp`), which every command goes through the real Qt event loop and `graphThread`
-  dispatch to reach, same as an actual user action — not a direct call. Two dispatch shapes are
-  used, both documented in the Doxygen comment on `processNextInteractiveCommand()` itself:
-  - **Single-step**: `QMetaObject::invokeMethod(activeGraph, lambda, Qt::QueuedConnection)` queues
-    a lambda onto `activeGraph`'s own thread and returns immediately, without waiting for it to
-    finish — so timing/`BENCH` logging for these commands happens *inside* that lambda, at actual
-    completion, not around the `invokeMethod` call itself.
-  - **Two-step** (`distances`/`distances_bench`, anything long enough to want a progress dialog):
-    `runGraphOperationAsync(operation, waitMessage, onComplete)` — one lambda does the (possibly
-    slow) work, a second runs only once that's genuinely finished, to log `BENCH` and advance the
-    script. Both lambdas share timer/result state via `std::shared_ptr`, since a plain local
-    variable wouldn't survive between two separate lambdas.
+  (`mainwindow.cpp`). Three dispatch shapes recur, all documented in the Doxygen comment on
+  `processNextInteractiveCommand()` itself. Whichever shape a command uses, the rule is always the
+  same: only advance to the next command once this command's own work has genuinely finished,
+  never merely queued or triggered — getting this wrong is a real, reproducible bug, not a style
+  preference (see below).
+  - **No dispatch** (`new`, `render`, `bulk-node-size`, `bulk-edge-color`): a direct, blocking call
+    on the GUI thread, no cross-thread queuing — genuinely done by the time the call returns, so
+    advancing immediately afterward is correct as-is.
+  - **Single-step** (`relation`, `erdos`, `erdos-m`, `save`, `add-node`, `add-edge`,
+    `add-relation`, `click-node`, `move`): `QMetaObject::invokeMethod(activeGraph, lambda,
+    Qt::QueuedConnection)` queues a lambda onto `activeGraph`'s own thread and returns immediately,
+    without waiting for it to finish — so `BENCH` logging *and* the call advancing to the next
+    script command (via a nested `QMetaObject::invokeMethod(this, ..., Qt::QueuedConnection)` back
+    to the GUI thread) both happen *inside* that lambda, at actual completion, never around the
+    `invokeMethod` call itself. Advancing outside the lambda let the next script command (e.g.
+    `quit`, or another queued command) race ahead while the previous one's queued work was still
+    running, confirmed via an out-of-bounds crash when `quit` ran immediately after `erdos` with no
+    `delay` between them. Found and fixed across all 9 affected commands during the WS15
+    investigation that also produced Finding 8's fix — see
+    `roadmap_ws15_cancellation_progress_unification.md`.
+  - **Two-step** (`filter_ego`, `filter_isolates`, `symmetrize_strongties`,
+    `symmetrize_cocitation`, `unilateral`, `distances`, `distances_bench` — anything long enough to
+    want a progress dialog): `runGraphOperationAsync(operation, waitMessage, onComplete)` — one
+    lambda does the (possibly slow) work, a second runs only once that's genuinely finished, to log
+    `BENCH` and advance the script. Both lambdas share timer/result state via `std::shared_ptr`,
+    since a plain local variable wouldn't survive between two separate lambdas.
 
 ## Output format
 
@@ -49,10 +63,9 @@ command below, not just the ones originally added for benchmarking.
   ~= the requested delay — a cheap sanity check that scripted delays aren't drifting under load.
 - `new` — File → New.
 - `relation N` — switch to relation N.
-- `unilateral` — toggle unilateral edges. Triggers the real `editFilterEdgesUnilateralAct`
-  `QAction`, so it also exercises that action's own pre-existing direct-call blocking behavior
-  (`MainWindow::slotEditFilterEdgesUnilateral()` calls `Graph::edgeFilterUnilateral()`
-  synchronously across threads — a separate, not-yet-fixed issue, same family as #254).
+- `unilateral` — toggle unilateral edges. Calls `Graph::edgeFilterUnilateral()` directly via
+  `runGraphOperationAsync`, matching `slotEditFilterEdgesUnilateral()`'s own dispatch (two-step
+  pattern, see above) rather than triggering the real `QAction`.
 - `erdos N p directed|undirected` — generates an Erdős–Rényi `G(n,p)` network.
 - `save path` — saves the current network as GraphML.
 - `add-node` — adds a node at a random position.
@@ -96,11 +109,10 @@ Candidate commands, not yet scoped:
 - `cancel` — invoke `Graph::slotCancelComputation()` directly (same effect as clicking a
   `QProgressDialog`'s Cancel button, without needing one). Needs two prerequisites first, not just
   the command itself:
-  - **A non-blocking dispatch variant.** Every long-running command today
-    (`distances`/`distances_bench`, and any future `runGraphOperationAsync`-based command) only
-    advances the script *after* the operation completes — `processNextInteractiveCommand()` is
-    called from inside `onComplete`. So a script can never run `cancel` while a prior command is
-    still in flight; the next line isn't dispatched until the previous one is already done.
+  - **A non-blocking dispatch variant.** Every command today — both dispatch patterns above —
+    only advances the script *after* its own operation genuinely completes. So a script can never
+    run `cancel` while a prior command is still in flight; the next line isn't dispatched until
+    the previous one is already done.
   - **A way to trigger Information Centrality / Eigenvector Centrality from a script at all.**
     Neither `distances` nor `distances_bench` reaches `Matrix::inverse()`/`powerIteration()` — no
     existing command does.
