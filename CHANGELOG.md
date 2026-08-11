@@ -157,6 +157,26 @@ All notable changes to this project are documented in this file.
     Cell values beyond 1000 now render in scientific notation instead,
     which is honest about the precision actually available.
 
+  - **Canvas no longer silently falls back to slow software rendering**
+    (WS10): some installs had OpenGL disabled without the user ever
+    choosing that — an old default, or a long-forgotten toggle — making
+    large networks sluggish and unresponsive with no indication why.
+    OpenGL is now enabled automatically going forward; **Settings →
+    Canvas** still lets you turn it off if you need to. Generating an
+    extremely large random network (e.g. Erdős–Rényi with a very high
+    edge probability) could also crash the app from memory exhaustion —
+    this is now refused with a warning instead.
+
+  - **Statistics Panel now shows the correct edge count after filtering
+    nodes** (#270): the Edges count could be wrong while a node filter
+    (Focus on Node, Focus on Selection, and others) was active, and
+    stayed wrong after clearing the filter. Fixed.
+
+  - **"Focus on Node" now works on the first node** (#271): applying
+    Focus on Node (Ego Network) — or the matching radial-by-ego-network
+    layout — to the very first node in a network silently did nothing.
+    Fixed.
+
 ### Maintenance
 
   - `AUTHORS`: added Andreas as Debian package maintainer.
