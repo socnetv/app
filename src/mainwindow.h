@@ -135,6 +135,9 @@ public:
                                 const QString &waitMessage,
                                 std::function<void()> onComplete);
 
+    bool confirmGenerationSize(qint64 expectedEdges, const QString &generatorLabel,
+                               bool scripted);
+
     void initGraph();
     void terminateThreads(const QString &reason);
     void initView();

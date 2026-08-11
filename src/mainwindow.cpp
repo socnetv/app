@@ -595,6 +595,16 @@ QMap<QString, QString> MainWindow::initSettings(const int &debugLevel, const boo
                 appSettings["canvasIndexMethod"] = "NoIndex";
             appSettings["settingsMigration"] = "2";
         }
+
+        // Migration 3: force-enable OpenGL once for existing users with a stale "opengl = false"
+        // setting. setOptionsOpenGL() already no-ops safely if the Qt build has no OpenGL support,
+        // so this is safe even when OpenGL isn't actually available. Users can still turn it back
+        // off afterward; this only overrides the setting once.
+        if (appSettings.value("settingsMigration", "0").toInt() < 3)
+        {
+            appSettings["opengl"] = "true";
+            appSettings["settingsMigration"] = "3";
+        }
     }
 
     // Override progress bar setting if the user has requested it (through a command-line parameter)
@@ -5834,6 +5844,12 @@ void MainWindow::processNextInteractiveCommand()
             processNextInteractiveCommand();
             return;
         }
+        const qint64 expectedEdges = static_cast<qint64>(p * n * (n - 1));
+        if (!confirmGenerationSize(expectedEdges, tr("Erdős–Rényi network"), true))
+        {
+            processNextInteractiveCommand();
+            return;
+        }
         const QString mode = (directedness == "undirected") ? "graph" : "digraph";
         QMetaObject::invokeMethod(activeGraph, [this, n, p, mode]() {
             QElapsedTimer timer;
@@ -5866,6 +5882,11 @@ void MainWindow::processNextInteractiveCommand()
             || (directedness != "directed" && directedness != "undirected"))
         {
             qWarning() << "Malformed 'erdos-m' command, skipping:" << line;
+            processNextInteractiveCommand();
+            return;
+        }
+        if (!confirmGenerationSize(m, tr("Erdős–Rényi network"), true))
+        {
             processNextInteractiveCommand();
             return;
         }
@@ -9244,6 +9265,14 @@ void MainWindow::slotNetworkRandomErdosRenyi(const int newNodes,
 {
     qCDebug(lcMainWindow) << "Request to create an Erdos-Renyi random network...";
     appSettings["randomErdosEdgeProbability"] = QString::number(eprob);
+
+    const qint64 expectedEdges = (model == "G(n,p)")
+        ? static_cast<qint64>(eprob * newNodes * (newNodes - 1))
+        : static_cast<qint64>(edges);
+    if (!confirmGenerationSize(expectedEdges, tr("Erdős–Rényi network"), false))
+    {
+        return;
+    }
 
     auto success = std::make_shared<bool>(false);
 
@@ -16259,6 +16288,52 @@ void MainWindow::runGraphOperationAsync(std::function<void()> operation,
                 onComplete();
         }, Qt::QueuedConnection);
     }, Qt::QueuedConnection);
+}
+
+/**
+ * @brief Warns before network generation above a safety edge-count threshold.
+ *
+ * Generating tens of millions of edges can exhaust memory and crash the app before any
+ * progress dialog even appears - checked against the *expected* edge count up front, so
+ * nothing partially-built needs to be unwound if the user declines.
+ *
+ * @param expectedEdges  Estimated edge count the generator would produce.
+ * @param generatorLabel Human-readable generator name, used in the warning message.
+ * @param scripted       True when called from --interactive-script: there's no one to answer
+ *                        a modal prompt, so this refuses outright and logs instead, matching
+ *                        the malformed-command pattern used elsewhere in the dispatcher.
+ * @return true if generation should proceed (under the limit, or the user chose to proceed
+ *         anyway), false if it was refused/declined.
+ */
+bool MainWindow::confirmGenerationSize(qint64 expectedEdges, const QString &generatorLabel,
+                                       bool scripted)
+{
+    static constexpr qint64 kMaxSafeGeneratedEdges = 2000000;
+
+    if (expectedEdges <= kMaxSafeGeneratedEdges)
+    {
+        return true;
+    }
+
+    if (scripted)
+    {
+        qWarning() << "Refusing" << generatorLabel << "- expected edges" << expectedEdges
+                   << "exceeds the safety limit of" << kMaxSafeGeneratedEdges;
+        return false;
+    }
+
+    return slotHelpMessageToUser(
+               USER_MSG_QUESTION,
+               tr("Large network"),
+               tr("This %1 would create approximately %2 edges, "
+                  "which exceeds the safety limit of %3.")
+                   .arg(generatorLabel)
+                   .arg(expectedEdges)
+                   .arg(kMaxSafeGeneratedEdges),
+               tr("Generating a network this large has been observed to exhaust available "
+                  "memory and crash the application. Proceed anyway?"),
+               QMessageBox::Yes | QMessageBox::No, QMessageBox::No)
+           == QMessageBox::Yes;
 }
 
 /**
