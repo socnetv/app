@@ -677,13 +677,13 @@ int Graph::vertexAttributesImport(const QStringList &headers,
 
         int vn = -1;
         if (matchByLabel) {
-            const int idx = vertexExists(row.at(idColumn));
+            const int idx = vertexIndexIfExists(row.at(idColumn));
             if (idx != -1)
                 vn = m_graph[idx]->number();
         } else {
             bool ok = false;
             const int num = row.at(idColumn).toInt(&ok);
-            if (ok && vertexExists(num) != -1)
+            if (ok && vertexExists(num))
                 vn = num;
         }
 

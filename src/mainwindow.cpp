@@ -11537,7 +11537,7 @@ void MainWindow::slotEditEdgeAdd()
 
     qCDebug(lcMainWindow) << "sourceNode:" << sourceNode;
 
-    if (activeGraph->vertexExists(sourceNode) == -1)
+    if (!activeGraph->vertexExists(sourceNode))
     {
         qCDebug(lcMainWindow) << "Cannot find sourceNode" << sourceNode;
         slotHelpMessageToUser(USER_MSG_CRITICAL,
@@ -11554,7 +11554,7 @@ void MainWindow::slotEditEdgeAdd()
         statusMessage("Add edge target operation cancelled.");
         return;
     }
-    if (activeGraph->vertexExists(targetNode) == -1)
+    if (!activeGraph->vertexExists(targetNode))
     {
         qCDebug(lcMainWindow) << "Cannot find targetNode" << targetNode;
         slotHelpMessageToUser(USER_MSG_CRITICAL,

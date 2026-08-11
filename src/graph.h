@@ -579,9 +579,11 @@ public:
     
     bool vertexIsolated(const int &v1) const;
 
-    int vertexExists(const int &v1);
+    bool vertexExists(const int &v1);
+    int vertexIndexIfExists(const int &v1);
 
-    int vertexExists(const QString &label);
+    bool vertexExists(const QString &label);
+    int vertexIndexIfExists(const QString &label);
 
     bool vertexFindByNumber(const QStringList &numList);
 

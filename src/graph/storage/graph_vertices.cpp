@@ -694,14 +694,23 @@ bool Graph::isEmpty() const
 /**
  * @brief Checks if the given vertex exists in the graph.
  *
- * Returns the vpos or -1
+ * @param vertex number
+ * @return true if it exists
+ */
+bool Graph::vertexExists(const int &v1)
+{
+    return vertexIndexIfExists(v1) != -1;
+}
+
+/**
+ * @brief Returns the internal position of the given vertex in m_graph, if it exists.
  *
  * Complexity:  O(logN) for vpos retrieval
  *
  * @param vertex number
  * @return vertex pos or -1
  */
-int Graph::vertexExists(const int &v1)
+int Graph::vertexIndexIfExists(const int &v1)
 {
     if (vpos.contains(v1))
     {
@@ -719,16 +728,25 @@ int Graph::vertexExists(const int &v1)
 }
 
 /**
- * @brief Checks if there is a vertex with a specific label exists in the graph
+ * @brief Checks if there is a vertex with a specific label in the graph
  *
- * Returns the vpos or -1
+ * @param label
+ * @return true if it exists
+ */
+bool Graph::vertexExists(const QString &label)
+{
+    return vertexIndexIfExists(label) != -1;
+}
+
+/**
+ * @brief Returns the internal position of the vertex with the given label, if it exists.
  *
  * Complexity:  O(N)
  *
  * @param label
- * @return vpos or -1
+ * @return vertex pos or -1
  */
-int Graph::vertexExists(const QString &label)
+int Graph::vertexIndexIfExists(const QString &label)
 {
     qCDebug(lcStorage) << "Checking if vertex exists, with label:" << label.toUtf8();
     VList::const_iterator it;
@@ -764,7 +782,7 @@ bool Graph::vertexFindByNumber(const QStringList &numList)
         v = vStr.toInt(&intOk);
         if (intOk)
         {
-            if (vertexExists(v) != -1)
+            if (vertexExists(v))
             {
                 qCDebug(lcStorage) << "vertex number" << v
                          << "exists. Adding it to found list";
@@ -817,7 +835,7 @@ bool Graph::vertexFindByLabel(const QStringList &labelList)
     {
         vLabel = labelList.at(i);
 
-        if ((vFoundPos = vertexExists(vLabel)) != -1)
+        if ((vFoundPos = vertexIndexIfExists(vLabel)) != -1)
         {
             qCDebug(lcStorage) << "vertex with label" << vLabel
                      << "exists. Adding it to found list";
