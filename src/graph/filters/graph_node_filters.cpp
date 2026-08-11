@@ -195,7 +195,10 @@ void Graph::vertexFilterByCentrality(const float threshold,
             const int target = ed.key();
             const qreal weight = ed.value().second.first;
             const qreal reverseEdgeWeight = (*it)->hasEdgeFrom(target);
-            const bool preserveReverse = (reverseEdgeWeight != 0);
+            // A self-loop is trivially "its own reverse" (hasEdgeFrom(v) on itself matches
+            // its own out-edge), which would otherwise make the visibility-toggle code below
+            // delete-then-immediately-redraw it instead of leaving it hidden.
+            const bool preserveReverse = (v != target) && (reverseEdgeWeight != 0);
 
             const bool sourceEnabled = (*it)->isEnabled();
             const bool targetEnabled = vertexAtIndex(vertexIndexByNumber(target))->isEnabled();
@@ -350,7 +353,10 @@ void Graph::vertexFilterByEgoNetwork(const int v1, const int depth)
             const int target = ei.key();
             const qreal weight = ei.value().second.first;
             const qreal reverseWeight = (*vi)->hasEdgeFrom(target);
-            const bool preserveReverse = (reverseWeight != 0);
+            // See the matching comment in vertexFilterByCentrality(): a self-loop is
+            // trivially "its own reverse", which must not trigger the delete-then-redraw
+            // path meant for genuinely distinct reciprocated edges.
+            const bool preserveReverse = (source != target) && (reverseWeight != 0);
             const bool edgeShouldBeVisible =
                 visibleSet.contains(source) && visibleSet.contains(target);
 
@@ -474,7 +480,10 @@ void Graph::vertexFilterBySelection(const QList<int> &selectedVertices)
             const int target = ei.key();
             const qreal weight = ei.value().second.first;
             const qreal reverseWeight = (*vi)->hasEdgeFrom(target);
-            const bool preserveReverse = (reverseWeight != 0);
+            // See the matching comment in vertexFilterByCentrality(): a self-loop is
+            // trivially "its own reverse", which must not trigger the delete-then-redraw
+            // path meant for genuinely distinct reciprocated edges.
+            const bool preserveReverse = (source != target) && (reverseWeight != 0);
             const bool edgeShouldBeVisible =
                 visibleSet.contains(source) && visibleSet.contains(target);
 
@@ -599,7 +608,10 @@ void Graph::vertexFilterByAttribute(const FilterCondition &cond)
             const int target = ei.key();
             const qreal weight = ei.value().second.first;
             const qreal reverseWeight = (*vi)->hasEdgeFrom(target);
-            const bool preserveReverse = (reverseWeight != 0);
+            // See the matching comment in vertexFilterByCentrality(): a self-loop is
+            // trivially "its own reverse", which must not trigger the delete-then-redraw
+            // path meant for genuinely distinct reciprocated edges.
+            const bool preserveReverse = (source != target) && (reverseWeight != 0);
             const bool edgeShouldBeVisible =
                 visibleSet.contains(source) && visibleSet.contains(target);
 
@@ -688,7 +700,10 @@ void Graph::applyVisibilitySnapshot(const GraphVisibilitySnapshot &snap)
             const int target = ei.key();
             const qreal weight = ei.value().second.first;
             const qreal reverseWeight = (*vi)->hasEdgeFrom(target);
-            const bool preserveReverse = (reverseWeight != 0);
+            // See the matching comment in vertexFilterByCentrality(): a self-loop is
+            // trivially "its own reverse", which must not trigger the delete-then-redraw
+            // path meant for genuinely distinct reciprocated edges.
+            const bool preserveReverse = (source != target) && (reverseWeight != 0);
             const bool wasVisible =
                 snap.arcVisible.value(QPair<int, int>(source, target), true);
 

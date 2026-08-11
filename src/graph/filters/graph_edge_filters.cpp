@@ -103,8 +103,10 @@ void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold
                 // We should enable only edges with weight >= threshold
                 if (weight < m_threshold)
                 {
-                    // this outedge must be disabled - check reverse edge
-                    reverseEdgeWeight = (*it)->hasEdgeFrom(target);
+                    // this outedge must be disabled - check reverse edge (a self-loop is
+                    // trivially "its own reverse" via hasEdgeFrom, so exclude it - see the
+                    // matching comment in graph_node_filters.cpp)
+                    reverseEdgeWeight = (source != target) ? (*it)->hasEdgeFrom(target) : 0;
                     if (reverseEdgeWeight != 0 && reverseEdgeWeight >= m_threshold)
                     {
                         // reverse edge exists and doesn't match. It must be preserved.
@@ -131,8 +133,10 @@ void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold
                 // We should enable edges with weight <= the threshold
                 if (weight > m_threshold)
                 {
-                    // this outedge must be disabled - check reverse edge
-                    reverseEdgeWeight = (*it)->hasEdgeFrom(target);
+                    // this outedge must be disabled - check reverse edge (a self-loop is
+                    // trivially "its own reverse" via hasEdgeFrom, so exclude it - see the
+                    // matching comment in graph_node_filters.cpp)
+                    reverseEdgeWeight = (source != target) ? (*it)->hasEdgeFrom(target) : 0;
                     if (reverseEdgeWeight != 0 && reverseEdgeWeight <= m_threshold)
                     {
                         // reverse edge exists and doesn't match. It must be preserved.
@@ -186,7 +190,9 @@ void Graph::edgeFilterReset()
 
             const qreal weight = ed.value().second.first;
             const qreal reverseWeight = (*it)->hasEdgeFrom(ed.key());
-            const bool preserveReverse = (reverseWeight != 0);
+            // See the matching comment in graph_node_filters.cpp: a self-loop is trivially
+            // "its own reverse", which isn't a real distinct edge to preserve.
+            const bool preserveReverse = (source != ed.key()) && (reverseWeight != 0);
 
             ed.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true));
             edgeInboundStatusSet(ed.key(), source, true);
@@ -299,7 +305,9 @@ void Graph::edgeFilterByAttribute(const FilterCondition &cond)
             const int target = ei.key();
             const qreal weight = ei.value().second.first;
             const qreal reverseWeight = (*vi)->hasEdgeFrom(target);
-            const bool preserveReverse = (reverseWeight != 0);
+            // See the matching comment in graph_node_filters.cpp: a self-loop is trivially
+            // "its own reverse", which isn't a real distinct edge to preserve.
+            const bool preserveReverse = (source != target) && (reverseWeight != 0);
 
             const QHash<QString,QString> attrs = (*vi)->outEdgeCustomAttributes(target);
             const bool condMet = attrs.contains(cond.key) && cond.matches(attrs.value(cond.key));
