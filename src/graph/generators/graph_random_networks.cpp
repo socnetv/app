@@ -89,7 +89,10 @@ bool Graph::randomNetErdosCreate(const int &N,
 
     if (model == "G(n,p)")
     {
-        // Bernoulli trials: each pair (i,j) gets an edge with probability p
+        // Bernoulli trials: each pair (i,j) gets an edge with probability p.
+        // rand()%100 gives 100 equally-likely values 0..99; dividing by 100 gives
+        // {0.00, ..., 0.99}, of which exactly k are < k/100 - matching the requested
+        // probability at every quantization level (Fix #267).
         for (int i = 0; i < N; i++)
         {
             for (int j = 0; j < N; j++)
@@ -97,7 +100,7 @@ bool Graph::randomNetErdosCreate(const int &N,
                 if (!diag && i == j)
                     continue;
 
-                if ((rand() % 100 + 1) / 100.0 < p)
+                if ((rand() % 100) / 100.0 < p)
                 {
                     edgeCount++;
                     if (mode == "graph")
