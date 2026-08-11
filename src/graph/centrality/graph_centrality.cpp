@@ -119,13 +119,29 @@ void Graph::centralityInformation(const bool considerWeights,
     }
 
     progressStatus(tr("Computing inverse adjacency matrix. Please wait..."));
-    invM.inverse(WM, [this] { return progressCanceled(); });
+    const bool invertible = invM.inverse(WM, [this] { return progressCanceled(); });
 
-    progressStatus(tr("Computing IC scores. Please wait..."));
     if (progressCanceled())
     {
         return;
     }
+
+    // Fix #269: WM can be singular; without this check IC would be computed from invM
+    // left as all zeros, silently reporting wrong scores instead of "not defined".
+    if (!invertible)
+    {
+        qCDebug(lcCentrality) << "Graph::centralityInformation() - weight matrix is singular.";
+        progressStatus(tr("Information Centrality is not defined: the weight matrix is singular."));
+        for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+        {
+            (*it)->setIC(0);
+            (*it)->setSIC(0);
+        }
+        calculatedIC = true;
+        return;
+    }
+
+    progressStatus(tr("Computing IC scores. Please wait..."));
 
     traceC = 0;
     commonRowSum = 0;

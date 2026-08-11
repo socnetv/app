@@ -16,7 +16,7 @@
     "kernel": "matrix",
     "load_report": {
         "fileType_signal": 2,
-        "load_ms": 2,
+        "load_ms": 4,
         "load_msg": "",
         "net_name": "TinyPath_N3_E2.paj",
         "ok": true
@@ -48,23 +48,23 @@
             "cols": 3,
             "data": [
                 [
-                    "1e+20",
-                    "1",
-                    "-1e+20"
-                ],
-                [
-                    "1",
+                    "0",
                     "0",
                     "0"
                 ],
                 [
-                    "-1e+20",
                     "0",
-                    "1e+20"
+                    "0",
+                    "0"
+                ],
+                [
+                    "0",
+                    "0",
+                    "0"
                 ]
             ],
             "dump_mode": "full",
-            "invertible": true,
+            "invertible": false,
             "rows": 3
         },
         "clique_comembership": {

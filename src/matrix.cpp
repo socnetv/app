@@ -18,6 +18,11 @@
 
 #define TINY 1.0e-20
 
+// Fix #269: relative-tolerance threshold for ludcmp()'s pivot-magnitude singularity check.
+// The checked value is already scaled by its row's own maximum, so this is a dimensionless
+// relative test - not tied to the matrices' raw value range.
+#define RELATIVE_SINGULARITY_TOLERANCE 1.0e-12
+
 #include <cstdlib>		//allows the use of RAND_MAX macro
 #include <QDebug>
 #include <QLoggingCategory>
@@ -1141,9 +1146,19 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d, std::functio
         }
         indx[j]=imax;
         qCDebug(lcMatrix) << "Matrix::ludcmp() - indx[j]=imax=" <<  indx[j] +1;
-        if ( a[j][j] == 0 ) {
-            a[j][j] = TINY; // For some apps, on singular matrices, it is desirable to substitute TINY for zero.
-            qCDebug(lcMatrix) << "Matrix::ludcmp() - WARNING singular matrix set a[j][j]=TINY ";
+        // Fix #269: 'big' here is the chosen pivot's magnitude, already scaled by its row's
+        // own maximum (vv[j] = 1/rowMax) - a dimensionless, relative quantity, not a raw
+        // value. A singular (or numerically indistinguishable from singular) matrix drives
+        // this toward zero without necessarily hitting it exactly - relying only on an exact
+        // a[j][j]==0 check (as before) misses that case, silently substituting TINY and
+        // dividing by it later, which is exactly what produced the reported 1e+20 garbage
+        // inverse entries on a genuinely singular input. Checking the relative pivot
+        // magnitude here catches both the exact-zero and near-zero cases.
+        if ( big < RELATIVE_SINGULARITY_TOLERANCE ) {
+            qCDebug(lcMatrix) << "Matrix::ludcmp() - Singular matrix: pivot magnitude" << big
+                               << "at column" << j+1 << "below relative tolerance";
+            delete[] vv;
+            return false;
         }
 
         for (i=j+1;i<n;i++) {
@@ -1253,12 +1268,14 @@ void Matrix::lubksb(Matrix &a, const int &n, int indx[], qreal b[])
  * to - not a valid inverse). Defaults to nullptr (never cancels), so existing callers are
  * unaffected. Callers must check their own cancellation flag after calling this, not infer it from
  * the return value - ludcmp() returns false identically for "canceled" and "singular", and this
- * method has no way to tell those apart either (createMatrixAdjacencyInverse() and
- * centralityInformation() already do this correctly).
- * @return This matrix, now holding a's inverse (or unmodified/partial, if a is singular or
- * cancelCheck fired).
+ * method has no way to tell those apart either.
+ * @return true if a's inverse was fully computed into this matrix; false if a is singular
+ * (Fix #269: now a real relative-tolerance pivot check in ludcmp(), not a weak after-the-fact
+ * scan for nonzero entries) or cancelCheck fired, in which case this matrix is left
+ * unmodified/partial - callers must not treat its contents as valid without checking the
+ * return value first.
  */
-Matrix& Matrix::inverse(Matrix &a, std::function<bool()> cancelCheck)
+bool Matrix::inverse(Matrix &a, std::function<bool()> cancelCheck)
 {
     int i,j, n=a.rows();
     qreal d;
@@ -1272,18 +1289,24 @@ Matrix& Matrix::inverse(Matrix &a, std::function<bool()> cancelCheck)
 
     qCDebug(lcMatrix) << "Matrix::inverse() - inverting matrix a - size " << n;
     if (n==0) {
-        return (*this);
+        delete[] col;
+        delete[] indx;
+        return true;
     }
     if ( ! ludcmp(a,n,indx,d,cancelCheck) )
     { //  Decompose the matrix just once.
         qCDebug(lcMatrix) << "Matrix::inverse() - matrix a singular or canceled - RETURN";
-        return *this;
+        delete[] col;
+        delete[] indx;
+        return false;
     }
 
     qCDebug(lcMatrix) << "Matrix::inverse() - find inverse by columns";
+    bool completed = true;
     for ( j=0; j<n; j++) {    //    Find inverse by columns.
         if (cancelCheck && cancelCheck()) {
             qCDebug(lcMatrix) << "Matrix::inverse() - canceled at column" << j;
+            completed = false;
             break;
         }
 
@@ -1301,7 +1324,9 @@ Matrix& Matrix::inverse(Matrix &a, std::function<bool()> cancelCheck)
     }
         qCDebug(lcMatrix) << "Matrix::inverse() - finished!";
 
-    return *this;
+    delete[] col;
+    delete[] indx;
+    return completed;
 }
 
 

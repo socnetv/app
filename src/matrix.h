@@ -175,7 +175,7 @@ public:
 
     Matrix& inverseByGaussJordanElimination(Matrix &a);
 
-    Matrix& inverse(Matrix &a, std::function<bool()> cancelCheck = nullptr);
+    bool inverse(Matrix &a, std::function<bool()> cancelCheck = nullptr);
 
     bool solve(qreal b[]);
 

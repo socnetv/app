@@ -140,9 +140,6 @@ bool Graph::createMatrixAdjacencyInverse(const QString &method)
     qCDebug(lcGraphMatrices) << "Graph::createMatrixAdjacencyInverse() ";
 
     bool considerWeights = false;
-    int i = 0, j = 0;
-    bool isSingular = true;
-
     bool dropIsolates = true; // always drop isolates else AM will be singular
 
     int N = vertices(dropIsolates, false, true);
@@ -156,33 +153,40 @@ bool Graph::createMatrixAdjacencyInverse(const QString &method)
 
     if (method == "gauss")
     {
+        // Unreachable in the current codebase - every caller passes "lu" - kept for
+        // cross-checking only. inverseByGaussJordanElimination() has no singularity signal
+        // of its own, so this keeps the after-the-fact "any nonzero entry" scan Fix #269
+        // replaced on the "lu" path below.
         invAM.inverseByGaussJordanElimination(AM);
-    }
-    else
-    {
-        invAM.inverse(AM, [this] { return progressCanceled(); });
-        if (progressCanceled())
-        {
-            return false;
-        }
-    }
 
-    VList::const_iterator it, it1;
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-        if (!(*it)->isEnabled() || (*it)->isIsolated())
-            continue;
-        j = 0;
-        for (it1 = m_graph.cbegin(); it1 != m_graph.cend(); ++it1)
+        int i = 0, j = 0;
+        bool isSingular = true;
+        VList::const_iterator it, it1;
+        for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
         {
-            if (!(*it1)->isEnabled() || (*it1)->isIsolated())
+            if (!(*it)->isEnabled() || (*it)->isIsolated())
                 continue;
-            if (invAM.item(i, j) != 0)
-                isSingular = false;
-            j++;
+            j = 0;
+            for (it1 = m_graph.cbegin(); it1 != m_graph.cend(); ++it1)
+            {
+                if (!(*it1)->isEnabled() || (*it1)->isIsolated())
+                    continue;
+                if (invAM.item(i, j) != 0)
+                    isSingular = false;
+                j++;
+            }
+            i++;
         }
-        i++;
+        return !isSingular;
     }
 
-    return !isSingular;
+    // Fix #269: inverse() now reports genuine singularity via a real relative pivot-magnitude
+    // check in ludcmp(), instead of the weak "any nonzero entry in the result" heuristic above.
+    const bool invertible = invAM.inverse(AM, [this] { return progressCanceled(); });
+    if (progressCanceled())
+    {
+        return false;
+    }
+
+    return invertible;
 }
