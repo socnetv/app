@@ -177,6 +177,17 @@ All notable changes to this project are documented in this file.
     layout — to the very first node in a network silently did nothing.
     Fixed.
 
+  - **Erdős–Rényi generator now respects low edge probabilities** (#267):
+    generating a random network with edge probability 0.01 always
+    produced zero edges, regardless of node count. Fixed.
+
+  - **Singular matrices now correctly reported as non-invertible** (#269):
+    the Inverse Adjacency Matrix report could claim a mathematically
+    singular matrix was invertible, showing meaningless huge numbers
+    instead. Information Centrality had the same gap internally, silently
+    computing scores from an empty result instead of reporting that the
+    index isn't defined for that network. Both fixed.
+
 ### Maintenance
 
   - `AUTHORS`: added Andreas as Debian package maintainer.
