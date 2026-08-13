@@ -9,12 +9,44 @@ SocNetV as a live component.
 
 ## Status
 
-🚧 In progress. Eighteen commands shipped across #261/#262/WS14/WS6.6/this pass (see "Commands"
-below); every command now logs a uniform `BENCH` line on completion. Eventually most of SocNetV's
-functions should be reachable through interactive mode — see "Long-term direction" below for where
-this is headed.
+🚧 In progress. Eighteen commands shipped across #261/#262/WS14/WS6.6/this pass — see What WS12
+Delivered below; every command now logs a uniform `BENCH` line on completion. Eventually most of
+SocNetV's functions should be reachable through interactive mode — see Background for where this
+is headed.
 
-## CLI flags
+## Background
+
+### Long-term direction
+
+The end state: most of SocNetV's functionality reachable through interactive mode, and SocNetV
+running as a long-lived process continuously fed commands by a third-party program — e.g.
+`tail -f events.txt | socnetv --interactive-script -`, with SocNetV acting as a live visual
+monitor for an external process (event spreading, simulations, etc.), not just a one-shot script
+runner.
+
+**This is achievable, and the current architecture is most of the way there** — every command
+already dispatches through the real Qt event loop rather than a blocking loop, which is the part
+that would be hardest to retrofit later. What's actually missing:
+
+- **Streaming input.** `runInteractiveScript()` currently does `readAll().split('\n')` once at
+  startup and stops when the list is exhausted. A monitor mode needs the opposite: read what's
+  available now, then keep watching indefinitely instead of terminating. For a live-appended file,
+  `QFileSystemWatcher` + seeking to the last-read position covers it; for a pipe (the `tail -f |
+  socnetv` case), `QSocketNotifier` on stdin's file descriptor, triggering a read whenever data
+  arrives. `processNextInteractiveCommand()`'s "no more commands, stop" path becomes "no more
+  commands *right now*, go idle until woken" instead.
+- **A `-` path convention** for `--interactive-script` to mean "read from stdin," matching the
+  usual Unix convention, for the piped use case specifically.
+- **Bidirectional communication**, for the monitor use case specifically (not needed for
+  scripted testing). Every command shipped so far is one-way: SocNetV consumes and acts, nothing
+  reports state back. A real external monitor (e.g. "how many nodes are currently infected")
+  needs SocNetV to answer queries, not just receive commands — that's a materially different,
+  larger design question (a query/response command syntax, or a different transport entirely)
+  than continuous command consumption, and not scoped yet.
+
+## What WS12 Delivered
+
+### CLI flags
 
 - `--encoding <name>` — loads the startup file with a given text codec, bypassing the "Preview
   file & Choose Encoding" dialog.
@@ -47,7 +79,7 @@ this is headed.
     `BENCH` and advance the script. Both lambdas share timer/result state via `std::shared_ptr`,
     since a plain local variable wouldn't survive between two separate lambdas.
 
-## Output format
+### Output format
 
 Every command logs exactly one line on completion:
 ```
@@ -57,7 +89,7 @@ via `qInfo()` — deliberately not `qDebug()`/`qCDebug()`, so these lines keep p
 logging-category filter state (quiet-by-default, `-d` flags, etc.). This is uniform across every
 command below, not just the ones originally added for benchmarking.
 
-## Commands
+### Commands
 
 - `delay X` — wait X seconds before the next command. `elapsed_ms` in its `BENCH` line should read
   ~= the requested delay — a cheap sanity check that scripted delays aren't drifting under load.
@@ -93,11 +125,11 @@ command below, not just the ones originally added for benchmarking.
 - `bulk-edge-color <name>` — calls `slotEditEdgeColorAll(QColor(name))` directly (a valid color
   skips its modal `QColorDialog`).
 - `move <node> <x> <y>` — sets an absolute canvas position via `Graph::vertexPosSet()`. Graduated
-  from the backlog below for WS6.6.
+  from the backlog for WS6.6.
 - `quit` — ends the script and the app (`close()`, with the save-changes prompt bypassed since no
   one is present to answer it), so a scripted run doesn't need to be killed externally.
 
-## Backlog
+## What Remains Open
 
 Candidate commands, not yet scoped:
 - `run <computation>` — trigger an analysis/layout by name
@@ -109,44 +141,16 @@ Candidate commands, not yet scoped:
 - `cancel` — invoke `Graph::slotCancelComputation()` directly (same effect as clicking a
   `QProgressDialog`'s Cancel button, without needing one). Needs two prerequisites first, not just
   the command itself:
-  - **A non-blocking dispatch variant.** Every command today — both dispatch patterns above —
-    only advances the script *after* its own operation genuinely completes. So a script can never
-    run `cancel` while a prior command is still in flight; the next line isn't dispatched until
-    the previous one is already done.
+  - **A non-blocking dispatch variant.** Every command shipped so far — both dispatch patterns
+    above — only advances the script *after* its own operation genuinely completes. So a script
+    can never run `cancel` while a prior command is still in flight; the next line isn't
+    dispatched until the previous one is already done.
   - **A way to trigger Information Centrality / Eigenvector Centrality from a script at all.**
     Neither `distances` nor `distances_bench` reaches `Matrix::inverse()`/`powerIteration()` — no
     existing command does.
 
   Motivating use case: verifying WS5 A5's cancellation-aware algebra kernels actually interrupt a
   real in-progress computation, not just accept the parameter without exercising it.
-
-## Long-term direction
-
-The end state: most of SocNetV's functionality reachable through interactive mode, and SocNetV
-running as a long-lived process continuously fed commands by a third-party program — e.g.
-`tail -f events.txt | socnetv --interactive-script -`, with SocNetV acting as a live visual
-monitor for an external process (event spreading, simulations, etc.), not just a one-shot script
-runner.
-
-**This is achievable, and the current architecture is most of the way there** — every command
-already dispatches through the real Qt event loop rather than a blocking loop, which is the part
-that would be hardest to retrofit later. What's actually missing:
-
-- **Streaming input.** `runInteractiveScript()` currently does `readAll().split('\n')` once at
-  startup and stops when the list is exhausted. A monitor mode needs the opposite: read what's
-  available now, then keep watching indefinitely instead of terminating. For a live-appended file,
-  `QFileSystemWatcher` + seeking to the last-read position covers it; for a pipe (the `tail -f |
-  socnetv` case), `QSocketNotifier` on stdin's file descriptor, triggering a read whenever data
-  arrives. `processNextInteractiveCommand()`'s "no more commands, stop" path becomes "no more
-  commands *right now*, go idle until woken" instead.
-- **A `-` path convention** for `--interactive-script` to mean "read from stdin," matching the
-  usual Unix convention, for the piped use case specifically.
-- **Bidirectional communication**, for the monitor use case specifically (not needed for
-  scripted testing). Every command shipped so far is one-way: SocNetV consumes and acts, nothing
-  reports state back. A real external monitor (e.g. "how many nodes are currently infected")
-  needs SocNetV to answer queries, not just receive commands — that's a materially different,
-  larger design question (a query/response command syntax, or a different transport entirely)
-  than continuous command consumption, and not scoped yet.
 
 ## Work Rules
 
