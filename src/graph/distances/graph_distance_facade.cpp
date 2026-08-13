@@ -533,8 +533,8 @@ int Graph::graphWeaklyConnectedComponents()
 /**
  * @brief Counts strongly connected components using Tarjan's algorithm.
  *
- * Strong connectivity respects edge direction: two nodes are in the same strongly connected
- * component (SCC) only if each is reachable from the other via directed edges. This is a strictly
+ * Strong connectivity respects edge direction: two nodes are in the same Strongly Connected
+ * Component (SCC) only if each is reachable from the other via directed edges. This is a strictly
  * finer partition than weak connectivity (graphWeaklyConnectedComponents(), which treats every
  * edge as undirected) - a graph can be a single weak component while having many strong
  * components, e.g. a directed path a->b->c is one weak component but three strong components,
@@ -542,11 +542,11 @@ int Graph::graphWeaklyConnectedComponents()
  * effectively reciprocal), so this still returns the right answer, just via a slightly more
  * roundabout route than graphWeaklyConnectedComponents().
  *
- * Algorithm (Tarjan 1972): a single DFS assigns each vertex a discovery "index" (the order it was
- * first visited) and a "lowlink" - the smallest index reachable from that vertex by following zero
- * or more tree edges and then at most one edge back into an ancestor still on the DFS stack.
- * Vertices are pushed onto an explicit stack as they're discovered and popped once a whole SCC is
- * found. A vertex is the *root* of an SCC exactly when its lowlink equals its own index - meaning
+ * Algorithm (Tarjan 1972): a single Depth First Search (DFS) assigns each vertex a discovery "index"
+ * (the order it was first visited) and a "lowlink" - the smallest index reachable from that vertex
+ * by following zero or more tree edges and then at most one edge back into an ancestor still on the
+ * DFS stack. Vertices are pushed onto an explicit stack as they're discovered and popped once a SCC
+ * is found. A vertex is the *root* of an SCC exactly when its lowlink equals its own index - meaning
  * nothing below it on the DFS stack can reach back above it - and popping the stack down to and
  * including that root yields exactly the members of one SCC. This is O(V+E), a single DFS pass,
  * with no graph transpose needed - unlike Kosaraju's algorithm, which gets the same complexity but
