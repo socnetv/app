@@ -26,9 +26,11 @@ not something to paper over.
 ## Status
 
 🚧 In progress. P1-P3 ✅ done — linear progress-dialog system retired, exactly one progress dialog
-now exists app-wide. P4's audit done; implementation not started.
+now exists app-wide. P4's audit done; implementation not started. See What WS15 Delivered below.
 
-## P1 — Atomic flag + `Qt::DirectConnection` ✅ Done
+## What WS15 Delivered
+
+### P1 — Atomic flag + `Qt::DirectConnection` ✅ Done
 
 `Graph::m_progressCanceled` is now `std::atomic<bool>`; the Cancel button's `canceled()` signal
 uses `Qt::DirectConnection` instead of the default queued cross-thread connection, so it lands
@@ -39,7 +41,7 @@ own check is only reached after `ludcmp()` returns.
 Known residual gaps: `Matrix::solve()`'s own `ludcmp()` call isn't wired, and `DistanceEngine`'s
 parallel BFS deliberately skips cancellation in worker threads (performance-motivated).
 
-## P2 — Global "graph busy" guard ✅ Done
+### P2 — Global "graph busy" guard ✅ Done
 
 `MainWindow::setAppBusy()` disables `menuBar()`/`toolBar()`/`graphicsWidget`/`leftPanel` (the
 toolbox panel) and every reachable `QAction`, for the duration of every `runGraphOperationAsync`
@@ -49,7 +51,7 @@ elsewhere isn't clobbered. Covers container-level `setEnabled(false)`, individua
 the toolbox's `QComboBox`es specifically (not `QAction`s, so outside that sweep otherwise — see
 `roadmap_ws5_matrices_modernization.md`'s A6 section).
 
-## P3 — Retire the linear progress-dialog system ✅ Done
+### P3 — Retire the linear progress-dialog system ✅ Done
 
 Every `Graph::` operation reachable from the GUI now dispatches through `runGraphOperationAsync()`'s
 single indeterminate busy dialog. The legacy linear system (`Graph::progressCreate()`/
@@ -65,7 +67,7 @@ before emitting `canceled()` (`setAutoClose`/`setAutoReset` don't gate that path
 `canceled()` connection re-shows it, relabels it "Canceling...", and disables it until the
 operation's own completion continuation tears it down for real.
 
-## P4 — Parallelization audit ✅ Audit done, implementation not started
+### P4 — Parallelization audit ✅ Audit done, implementation not started
 
 Audited every long-running operation in `src/graph/`'s algorithm slices against all four contract
 properties, judging property 4 by real algorithm structure (independent per-source/per-node work
