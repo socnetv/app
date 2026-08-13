@@ -35,9 +35,21 @@ below by which existing slice directory each would live in.
   permutation approaches. Four distinct methods bundled in one issue — likely worth splitting into
   separate issues once one is actually scoped, since they're independent algorithms with different
   complexity profiles (clique-family enumeration is combinatorially expensive at scale).
-- **#7 — Network connectivity metric.** Node connectivity between an actor pair — the minimum
-  number of nodes whose removal disconnects them (classic Menger's-theorem-adjacent robustness
-  measure). Distinct from the existing edge-based cohesion measures.
+- **#7 — Network connectivity metric.** Local vertex connectivity κ(s,t) between an actor pair —
+  the minimum number of other nodes whose removal disconnects them — via Menger's theorem: κ(s,t)
+  equals the max number of internally vertex-disjoint s→t paths, computed as a max-flow problem on
+  a vertex-split network (split each vertex into in/out nodes joined by a capacity-1 edge, so a
+  unit of flow through a vertex "costs" one removal). Also covers global vertex connectivity
+  κ(G) = min over all non-adjacent pairs of κ(s,t), with a cheap upper bound from the minimum
+  vertex degree (Whitney's inequality) to prune most pairs before running max-flow on them. For
+  directed networks, asks the user weak vs. strong (see #272) and applies that choice to both the
+  local and global computation. Distinct from the existing edge-based cohesion measures.
+- **#272 — Connectedness only checks weak connectivity for directed networks.** Not a new
+  algorithm — a bug-fix/polish pass on the existing "Connectedness" feature, tracked here because
+  it produces `Graph::graphStronglyConnectedComponents()` (Tarjan's SCC), which #7's "strong" mode
+  depends on. Also fixes a dead `connectivityMenu` menu member, a result message pointing at a
+  menu path that doesn't exist, and a missing help-text entry for "Connectedness" in the Cohesion
+  toolbox dropdown.
 
 ## Clustering — `src/graph/clustering/`
 
