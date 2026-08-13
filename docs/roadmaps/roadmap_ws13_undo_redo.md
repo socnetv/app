@@ -1,12 +1,20 @@
 # Undo/Redo (WS13)
 
+## Goal
+
+Give users a real undo/redo mechanism for graph-mutating operations (#31), extending the existing
+filter/visibility snapshot pattern (shipped via WS9, see Background) to structural mutations and
+attribute edits.
+
 ## Status
 
 Just created (2026-07-30), not started. Scoped at a high level only — detailed technical design
-(per-mutation-type state capture, stack architecture) has not been done yet. See "Open questions"
+(per-mutation-type state capture, stack architecture) has not been done yet. See What Remains Open
 below for what's still unresolved.
 
-## Origin
+## Background
+
+### Origin
 
 #31 is a long-standing user request: *"My main frustration, as a beginner, is that I can't find an
 undo button; when I make large-scale mistakes, I find myself having to start all over."* No technical
@@ -22,7 +30,7 @@ anything WS3 was building. Spun out to its own workstream rather than folded bac
 first") or into WS9 (marked complete/shipped; reopening it to add a substantial new feature was the
 wrong container — same reasoning that led to spinning up WS11/WS12 as their own workstreams earlier).
 
-## Existing precedent: filter/visibility undo (already shipped, via WS9)
+### Existing precedent: filter/visibility undo (already shipped, via WS9)
 
 `m_visibilityHistory` (`QStack<GraphVisibilitySnapshot>`, declared in `graph.h`, implemented in
 `src/graph/filters/graph_node_filters.cpp`) is a real, working, shipped undo mechanism:
@@ -36,7 +44,14 @@ Covers today: centrality filter, ego network filter, selection filter, edge weig
 filter, and the query builder (#221). This is real evidence that undo is achievable against `Graph`'s
 existing (unrestructured) mutation API — the starting point for WS13, not a pattern to invent fresh.
 
-## What's not covered today — the actual gap #31 is about
+## What WS13 Delivered
+
+Nothing yet. See "Existing precedent" above — that's WS9-shipped prior art WS13 will extend, not
+WS13's own delivered work.
+
+## What Remains Open
+
+### What's not covered today — the actual gap #31 is about
 
 - **Structural mutations**: `vertexCreate`/`vertexRemove`, `edgeCreate`/`edgeRemove`, relation
   add/remove. Unlike a visibility toggle, reversing these requires capturing real state before the
@@ -45,7 +60,7 @@ existing (unrestructured) mutation API — the starting point for WS13, not a pa
 - **Bulk edits** (WS9 Feature 3 Phase 5) explicitly bypass any undo mechanism today — noted as a
   known gap in `roadmap_ws9_graph_exploration.md` at the time it shipped.
 
-## Open questions — not yet scoped
+### Open questions — not yet scoped
 
 - Does the snapshot-stack pattern extend cleanly to structural mutations, or does per-mutation
   state-capture cost (copying full vertex/edge state) make it impractical for bulk operations (large
