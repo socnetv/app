@@ -29,7 +29,8 @@ field data from a file in a supported format (GraphML, GraphViz, EdgeList, GML, 
 
 ## 2. Features
 
-- Standard graph-theoretic and network cohesion metrics: density, diameter, geodesics, connectedness (with weakly connected component count), eccentricity, clustering coefficient, walks, reciprocity, and more.
+- Standard graph-theoretic and network cohesion metrics: density, diameter, geodesics, connectedness (weak or strong component count, for directed networks), eccentricity, clustering coefficient, walks, reciprocity, and more.
+- Vertex connectivity: the minimum number of nodes that must be removed to disconnect two chosen actors (Node Connectivity), or to disconnect the network at its weakest point (Graph Connectivity) — a measure of robustness to node removal.
 - Matrix routines: Adjacency, Laplacian, Degree, Cocitation, and more.
 - Advanced centrality and prestige indices: eigenvector, closeness, betweenness, information, power centrality, PageRank prestige, and more.
 - Community detection algorithms: triad census, clique census, and more.
@@ -238,6 +239,13 @@ Options:
   -d, --debug <level>  Print debug messages to stdout/console. Available
                        verbosity <level>s: 'none', 'min' or 'full'. Default:
                        'min'.
+  --encoding <name>    Load the startup file with this text encoding (e.g.
+                       'UTF-8'), bypassing the encoding preview dialog.
+  --interactive-script <path>
+                       Run a plain-text script after startup, one command
+                       per line, driving the real GUI/event loop — useful
+                       for scripted demos, profiling, or regression testing
+                       without manual clicking.
 
 Arguments:
   file                 Network file to load on startup. You can load a network
@@ -256,7 +264,11 @@ to start SocNetV and immediately load network file named 'net.graphml' (in curre
 
 ### Headless CLI (socnetv_cli)
 
-Starting with version 3.3, SocNetV also ships a headless command-line tool, `socnetv_cli`, for batch network analysis without a graphical interface. It supports multiple analysis kernels (distances, reachability, walks, prominence centralities) and produces deterministic JSON output suitable for scripting and regression testing.
+Starting with version 3.3, SocNetV also ships a headless command-line tool, `socnetv_cli`, for batch network analysis without a graphical interface. It supports multiple analysis kernels (distances, reachability, walks, prominence centralities, connectivity, and more) and produces deterministic JSON output suitable for scripting and regression testing.
+
+This is a separate binary from the `--interactive-script` option above: `socnetv_cli` runs analysis
+kernels headlessly with no GUI at all, while `--interactive-script` drives the real, full `socnetv`
+GUI application through a scripted sequence of actions.
 
 ```bash
 socnetv_cli --help
