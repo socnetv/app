@@ -4369,6 +4369,16 @@ void MainWindow::initPanels()
            "pair of nodes. For directed networks, asks whether to check weak connectivity "
            "(ignoring edge direction) or strong connectivity (respecting it).</p>"
 
+           "<p><em>Node Connectivity:</em></p>"
+           "<p>The minimum number of nodes that must be removed to disconnect two chosen actors. "
+           "For directed networks, asks whether to respect edge direction (strong) or ignore it "
+           "(weak).</p>"
+
+           "<p><em>Graph Connectivity:</em></p>"
+           "<p>The network's overall vertex connectivity: the fewest nodes that would need to be "
+           "removed to disconnect it at its weakest point. Same weak/strong choice as Node "
+           "Connectivity for directed networks.</p>"
+
            "<p><em>Reachability:</em></p>"
            "<p>Creates a matrix where an element (i,j) = 1 only if the actors i and j are reachable.</p>"
 
@@ -4396,7 +4406,9 @@ void MainWindow::initPanels()
                         << "Walks of given length"
                         << "Total Walks"
                         << "Reachability Matrix"
-                        << "Clustering Coefficient";
+                        << "Clustering Coefficient"
+                        << "Node Connectivity"
+                        << "Graph Connectivity";
     toolBoxAnalysisCohesionSelect->addItems(graphPropertiesList);
     toolBoxAnalysisCohesionSelect->setMinimumWidth(120);
 
@@ -6787,6 +6799,12 @@ void MainWindow::toolBoxAnalysisCohesionSelectChanged(const int &selectedIndex)
         break;
     case 14:
         slotAnalyzeClusteringCoefficient();
+        break;
+    case 15:
+        slotAnalyzeNodeConnectivity();
+        break;
+    case 16:
+        slotAnalyzeConnectivity();
         break;
     };
 
