@@ -102,6 +102,7 @@ Graph::Graph(const int &reserveVerticesSize, const int &reserveEdgesPerVertexSiz
     m_graphIsConnected = true; // empty/null graph is considered connected
     m_graphIsSymmetric = true;
     m_graphWeaklyConnectedComponents = 0;
+    m_graphStronglyConnectedComponents = 0;
     m_vertexComponentId.clear();
 
     m_graphDensity = -1;
@@ -397,6 +398,7 @@ void Graph::clear(const QString &reason)
     m_graphIsConnected = true; // empty/null graph is considered connected.
     m_graphIsSymmetric = true;
     m_graphWeaklyConnectedComponents = 0;
+    m_graphStronglyConnectedComponents = 0;
     m_vertexComponentId.clear();
 
     m_graphDensity = -1;

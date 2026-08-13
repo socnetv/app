@@ -16,9 +16,11 @@
 #include "graph.h"
 #include <QDebug>
 #include <QFile>
+#include <QList>
 #include <QMap>
 #include <QQueue>
 #include <QTextStream>
+#include <algorithm> // std::min
 #include <cstdlib>  // RAND_MAX
 
 // PUBLIC DISTANCE API FACADE
@@ -526,6 +528,148 @@ int Graph::graphWeaklyConnectedComponents()
     m_graphWeaklyConnectedComponents = componentId;
     qCDebug(lcDistances) << "Graph::graphWeaklyConnectedComponents() -" << componentId << "component(s)";
     return m_graphWeaklyConnectedComponents;
+}
+
+/**
+ * @brief Counts strongly connected components using Tarjan's algorithm.
+ *
+ * Strong connectivity respects edge direction: two nodes are in the same strongly connected
+ * component (SCC) only if each is reachable from the other via directed edges. This is a strictly
+ * finer partition than weak connectivity (graphWeaklyConnectedComponents(), which treats every
+ * edge as undirected) - a graph can be a single weak component while having many strong
+ * components, e.g. a directed path a->b->c is one weak component but three strong components,
+ * since c cannot reach a. For an undirected graph the two notions coincide (every edge is
+ * effectively reciprocal), so this still returns the right answer, just via a slightly more
+ * roundabout route than graphWeaklyConnectedComponents().
+ *
+ * Algorithm (Tarjan 1972): a single DFS assigns each vertex a discovery "index" (the order it was
+ * first visited) and a "lowlink" - the smallest index reachable from that vertex by following zero
+ * or more tree edges and then at most one edge back into an ancestor still on the DFS stack.
+ * Vertices are pushed onto an explicit stack as they're discovered and popped once a whole SCC is
+ * found. A vertex is the *root* of an SCC exactly when its lowlink equals its own index - meaning
+ * nothing below it on the DFS stack can reach back above it - and popping the stack down to and
+ * including that root yields exactly the members of one SCC. This is O(V+E), a single DFS pass,
+ * with no graph transpose needed - unlike Kosaraju's algorithm, which gets the same complexity but
+ * needs two passes over a transposed graph. Tarjan's is the better fit here since SocNetV already
+ * has cheap out-edge iteration and no existing transpose-graph structure to reuse.
+ *
+ * Implemented as an explicit-stack simulation of the textbook recursive DFS, not recursion itself:
+ * SocNetV networks can have a directed path of a few thousand nodes (a plausible worst case for a
+ * citation or hierarchy network), which would recurse that deep and risk overflowing the real call
+ * stack. Each simulated stack frame remembers which out-edge it was in the middle of examining
+ * (Frame::cursor), which is exactly the resumption point a real call stack would give for free
+ * after a simulated recursive call "returns" (its frame is popped).
+ *
+ * m_vertexComponentId (weak-component IDs, used by the colorize-by-component layout action) is
+ * NOT touched here; strong components are not currently exposed per-vertex, only as a count.
+ *
+ * @return Number of strongly connected components.
+ */
+int Graph::graphStronglyConnectedComponents()
+{
+    if (m_graphStronglyConnectedComponents > 0) {
+        qCDebug(lcDistances) << "Graph::graphStronglyConnectedComponents() - cached:" << m_graphStronglyConnectedComponents;
+        return m_graphStronglyConnectedComponents;
+    }
+
+    qCDebug(lcDistances) << "Graph::graphStronglyConnectedComponents() - computing";
+
+    const int currentRelation = relationCurrent();
+
+    struct Frame {
+        int v = 0;
+        QList<int> neighbors;
+        int cursor = 0;
+    };
+
+    auto outNeighborsOf = [this, currentRelation](int v) {
+        QList<int> neighbors;
+        const int vi = vertexIndexByNumber(v);
+        const GraphVertex *gv = vertexAtIndex(vi);
+        for (auto eit = gv->outEdges().cbegin(); eit != gv->outEdges().cend(); ++eit) {
+            if (eit.value().first != currentRelation) continue;
+            if (!eit.value().second.second) continue;
+            neighbors.append(eit.key());
+        }
+        return neighbors;
+    };
+
+    QHash<int, int> index, lowlink;
+    QHash<int, bool> onStack;
+    QList<int> tarjanStack;
+    int nextIndex = 0;
+    int componentCount = 0;
+
+    for (auto it = verticesBegin(); it != verticesEnd(); ++it) {
+        const int start = (*it)->number();
+        if (!(*it)->isEnabled() || index.contains(start))
+            continue;
+
+        QList<Frame> callStack;
+        {
+            Frame f;
+            f.v = start;
+            f.neighbors = outNeighborsOf(start);
+            index[start] = nextIndex;
+            lowlink[start] = nextIndex;
+            ++nextIndex;
+            tarjanStack.append(start);
+            onStack[start] = true;
+            callStack.append(f);
+        }
+
+        while (!callStack.isEmpty()) {
+            const int top = callStack.size() - 1;
+
+            if (callStack[top].cursor < callStack[top].neighbors.size()) {
+                const int w = callStack[top].neighbors[callStack[top].cursor];
+                ++callStack[top].cursor;
+
+                if (!index.contains(w)) {
+                    // Tree edge: simulate a recursive call by pushing a new frame. Note we don't
+                    // touch callStack[top] again after this append - QList::append() may
+                    // reallocate the backing array, which would invalidate any reference taken
+                    // before the call, so every access below is by fresh index, never by
+                    // reference held across a mutation.
+                    Frame nf;
+                    nf.v = w;
+                    nf.neighbors = outNeighborsOf(w);
+                    index[w] = nextIndex;
+                    lowlink[w] = nextIndex;
+                    ++nextIndex;
+                    tarjanStack.append(w);
+                    onStack[w] = true;
+                    callStack.append(nf);
+                } else if (onStack.value(w, false)) {
+                    // Back/cross edge into a vertex still on the stack: it's part of the same
+                    // SCC-in-progress, so it can lower this vertex's lowlink.
+                    lowlink[callStack[top].v] = std::min(lowlink[callStack[top].v], index[w]);
+                }
+            } else {
+                // All of this vertex's out-edges are examined - "return" from the simulated call.
+                const int v = callStack[top].v;
+                if (lowlink[v] == index[v]) {
+                    // v is an SCC root: everything above it on the Tarjan stack, plus v itself,
+                    // is exactly one strongly connected component.
+                    ++componentCount;
+                    int w;
+                    do {
+                        w = tarjanStack.takeLast();
+                        onStack[w] = false;
+                    } while (w != v);
+                }
+                callStack.removeLast();
+                if (!callStack.isEmpty()) {
+                    const int parentTop = callStack.size() - 1;
+                    lowlink[callStack[parentTop].v] = std::min(lowlink[callStack[parentTop].v], lowlink[v]);
+                }
+            }
+        }
+    }
+
+    m_graphStronglyConnectedComponents = componentCount;
+    qCDebug(lcDistances) << "Graph::graphStronglyConnectedComponents() -" << componentCount << "component(s)";
+    return m_graphStronglyConnectedComponents;
 }
 
 /**

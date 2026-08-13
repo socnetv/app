@@ -14689,29 +14689,68 @@ void MainWindow::slotAnalyzeConnectedness()
     }
     else
     {
-        int components = activeGraph->graphWeaklyConnectedComponents();
-        // We use weak connectivity throughout: a graph is "connected" iff it has
-        // exactly 1 weakly connected component. For directed graphs this is weaker
-        // than strong connectivity (which requires all-pairs directed reachability),
-        // but it answers the practical question "how many disconnected islands are
-        // there?" consistently for both directed and undirected networks.
-        bool isConnected = (components == 1);
+        // Directed graphs have two distinct notions of connectivity (weak: ignores edge
+        // direction; strong: requires all-pairs directed reachability) - ask which one to
+        // check rather than silently picking one. Undirected graphs have no such ambiguity:
+        // the two notions coincide, so there's nothing to ask.
+        bool useStrong = false;
+        if (activeGraph->isDirected())
+        {
+            bool ok = false;
+            const QStringList connectivityTypes = {
+                tr("Weak (ignores edge direction)"),
+                tr("Strong (respects edge direction)")
+            };
+            const QString choice = QInputDialog::getItem(
+                this,
+                tr("Connectedness"),
+                tr("This is a directed network. Which kind of connectivity do you want to check?\n\n"
+                   "Weak: treats every edge as bidirectional. Answers \"how many disconnected "
+                   "islands are there?\"\n\n"
+                   "Strong: respects edge direction. Every node must be able to reach, and be "
+                   "reached from, every other node."),
+                connectivityTypes, 0, false, &ok);
+
+            if (!ok)
+            {
+                statusMessage(tr("Connectedness check cancelled."));
+                return;
+            }
+            useStrong = (connectivityTypes.indexOf(choice) == 1);
+        }
+
+        const int components = useStrong
+            ? activeGraph->graphStronglyConnectedComponents()
+            : activeGraph->graphWeaklyConnectedComponents();
+        const bool isConnected = (components == 1);
 
         qCDebug(lcMainWindow) << "MW::slotAnalyzeConnectedness result connected:" << isConnected
-                 << "components:" << components;
+                 << "components:" << components << "strong:" << useStrong;
 
         const QString compStr = QString::number(components);
         if (isConnected)
         {
             if (activeGraph->isDirected())
             {
-                slotHelpMessageToUser(
-                    USER_MSG_INFO,
-                    tr("This directed network is weakly connected (1 component)."),
-                    tr("This directed network is weakly connected."),
-                    tr("All nodes belong to a single weakly connected component. "
-                       "Note: weak connectivity ignores edge direction. "
-                       "Use Analyze > Distances > Connectedness to check strong connectivity."));
+                if (useStrong)
+                {
+                    slotHelpMessageToUser(
+                        USER_MSG_INFO,
+                        tr("This directed network is strongly connected (1 component)."),
+                        tr("This directed network is strongly connected."),
+                        tr("Every node can reach, and be reached from, every other node "
+                           "via directed paths."));
+                }
+                else
+                {
+                    slotHelpMessageToUser(
+                        USER_MSG_INFO,
+                        tr("This directed network is weakly connected (1 component)."),
+                        tr("This directed network is weakly connected."),
+                        tr("All nodes belong to a single weakly connected component. "
+                           "Weak connectivity ignores edge direction - run Connectedness again "
+                           "and choose Strong to check directed reachability."));
+                }
             }
             else
             {
@@ -14727,15 +14766,29 @@ void MainWindow::slotAnalyzeConnectedness()
         {
             if (activeGraph->isDirected())
             {
-                slotHelpMessageToUser(
-                    USER_MSG_INFO,
-                    tr("This directed network is disconnected (%1 components).").arg(compStr),
-                    tr("This directed network is disconnected."),
-                    tr("There are %1 disconnected components. "
-                       "Some node pairs are unreachable from each other. "
-                       "Use Layout > Node Color by Connected Component "
-                       "to visualize the components.")
-                        .arg(compStr));
+                if (useStrong)
+                {
+                    slotHelpMessageToUser(
+                        USER_MSG_INFO,
+                        tr("This directed network is not strongly connected (%1 components).").arg(compStr),
+                        tr("This directed network is not strongly connected."),
+                        tr("There are %1 strongly connected components. "
+                           "Some node pairs cannot reach each other via directed paths.")
+                            .arg(compStr));
+                }
+                else
+                {
+                    slotHelpMessageToUser(
+                        USER_MSG_INFO,
+                        tr("This directed network is disconnected (%1 components).").arg(compStr),
+                        tr("This directed network is disconnected."),
+                        tr("There are %1 disconnected components. "
+                           "Some node pairs are unreachable from each other, even ignoring "
+                           "edge direction. "
+                           "Use Layout > Node Color by Connected Component "
+                           "to visualize the components.")
+                            .arg(compStr));
+                }
             }
             else
             {

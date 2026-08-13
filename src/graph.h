@@ -838,6 +838,10 @@ public:
 
     int graphWeaklyConnectedComponentsCached() const;
 
+    int graphStronglyConnectedComponents();
+
+    int graphStronglyConnectedComponentsCached() const;
+
     const QHash<int,int> &vertexComponentId() const { return m_vertexComponentId; }
 
     // WS6.7: read-only-by-convention accessors for kernel_matrix_v8's golden coverage.
@@ -1510,6 +1514,7 @@ private:
     std::atomic<bool> m_progressCanceled;
     bool m_graphIsDirected, m_graphIsSymmetric, m_graphIsWeighted, m_graphIsConnected;
     int m_graphWeaklyConnectedComponents;
+    int m_graphStronglyConnectedComponents;
     QHash<int,int> m_vertexComponentId;
 
     int csRecDepth;

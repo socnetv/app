@@ -84,6 +84,7 @@ void Graph::resetDistanceCentralityCacheFlags()
     calculatedDistances = false;
     calculatedCentralities = false;
     m_graphWeaklyConnectedComponents = 0;
+    m_graphStronglyConnectedComponents = 0;
     m_vertexComponentId.clear();
 }
 
@@ -93,6 +94,7 @@ bool Graph::symmetricCached() const { return m_graphIsSymmetric; }
 void Graph::setConnectedCached(bool v) { m_graphIsConnected = v; }
 
 int Graph::graphWeaklyConnectedComponentsCached() const { return m_graphWeaklyConnectedComponents; }
+int Graph::graphStronglyConnectedComponentsCached() const { return m_graphStronglyConnectedComponents; }
 void Graph::setDiameterCached(int v) { m_graphDiameter = v; }
 
 void Graph::resetDistanceAggregates()
