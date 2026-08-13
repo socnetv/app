@@ -1,12 +1,42 @@
 # IO Layer Stabilization Roadmap (WS8)
 
+## Goal
+
+Consolidate per-format IO dispatch — parsing, export, file-dialog filters, and single-relation
+warnings — behind a single `FormatHandler` registry, replacing four hand-maintained switch
+statements that currently must be kept in sync by hand (see Background: the GML/TWOMODE export
+gap is exactly the kind of drift that produces silently). One handler per format, registered once:
+
+```cpp
+struct FormatHandler {
+    FileType type;
+    QString displayName;                    // "Pajek", "GraphViz DOT", ...
+    QString fileDialogFilter;                // "Pajek (*.net *.paj *.pajek)"
+    bool supportsExport;
+    bool singleRelationOnly;                 // drives the mainwindow.cpp:12162 warning
+    std::function<bool(const QByteArray&, const ParseConfig&, IGraphParseSink*)> parse;
+    std::function<bool(Graph*, const QString&)> exportTo;  // nullptr if !supportsExport
+};
+```
+
+A single `QList<FormatHandler>` (or `QHash<FileType, FormatHandler>`) becomes the one source of
+truth: `Parser::load()`'s switch becomes a lookup + uniform call; `Graph::saveToFile()`'s switch
+becomes the same; the two `mainwindow.cpp` switches become lookups into the same table's
+`displayName`/`fileDialogFilter`/`singleRelationOnly` fields.
+
+**Non-goals (matching WS4's own constraints):** no parsing behavior changes, no numeric/semantic
+output changes — this is purely consolidating *dispatch*, not touching what any format parser does
+internally. Golden regression parity required throughout, same as every other workstream.
+
 ## Status
 
-**Design drafted, not yet started.** Previously three aspirational bullet points in
+📋 Design drafted, not yet started. Previously three aspirational bullet points in
 `ARCHITECTURAL_REFACTORING_ROADMAP.md` with no dedicated file — fleshed out here after confirming
 via direct code reading that the scope is real and distinct from WS4 (not a duplicate/leftover).
 
-## Relationship to WS4
+## Background
+
+### Relationship to WS4
 
 WS4 (`roadmap_ws4_io_parser_refactor.md`, complete) achieved:
 - A shared mutation contract (`IGraphParseSink`) — parsing mutations flow through one interface.
@@ -16,7 +46,7 @@ WS4 (`roadmap_ws4_io_parser_refactor.md`, complete) achieved:
 WS4 never touched **dispatch** — how the app decides *which* format-specific function to call, and
 where each format's metadata (display name, file extensions, capabilities) lives. That's WS8.
 
-## Current Reality — four places hand-maintain the same per-format knowledge
+### Current Reality — four places hand-maintain the same per-format knowledge
 
 Confirmed by direct reading, not assumption:
 
@@ -41,32 +71,13 @@ Every one of these four locations must be updated by hand whenever a format is a
 gains/loses a capability (e.g. export support, multi-relation support). Nothing enforces they stay
 in sync — the GML/TWOMODE export gap above is exactly the kind of drift this produces silently.
 
-## Target Direction
+## What WS8 Delivered
 
-A `FormatHandler` per format, registered once, replacing all four scattered switches:
+Nothing shipped yet.
 
-```cpp
-struct FormatHandler {
-    FileType type;
-    QString displayName;                    // "Pajek", "GraphViz DOT", ...
-    QString fileDialogFilter;                // "Pajek (*.net *.paj *.pajek)"
-    bool supportsExport;
-    bool singleRelationOnly;                 // drives the mainwindow.cpp:12162 warning
-    std::function<bool(const QByteArray&, const ParseConfig&, IGraphParseSink*)> parse;
-    std::function<bool(Graph*, const QString&)> exportTo;  // nullptr if !supportsExport
-};
-```
+## What Remains Open
 
-A single `QList<FormatHandler>` (or `QHash<FileType, FormatHandler>`) registered at startup becomes
-the one source of truth. `Parser::load()`'s switch becomes a lookup + uniform call; `Graph::saveToFile()`'s
-switch becomes the same; the two `mainwindow.cpp` switches become lookups into the same table's
-`displayName`/`fileDialogFilter`/`singleRelationOnly` fields.
-
-**Non-goals (matching WS4's own constraints):** no parsing behavior changes, no numeric/semantic
-output changes — this is purely consolidating *dispatch*, not touching what any format parser does
-internally. Golden regression parity required throughout, same as every other workstream.
-
-## Milestones
+### Milestones
 
 - **W8.1 — Inventory and uniform signature.** Catalog the exact current signature of every
   `parseAs*` function; design the single uniform signature (likely
@@ -75,7 +86,7 @@ internally. Golden regression parity required throughout, same as every other wo
   above can be resolved as part of this step, not left as-is). Adjust each `parseAs*` function to
   match. No dispatch changes yet — completion criteria: build passes, golden regression unchanged.
 
-- **W8.2 — Introduce `FormatHandler` struct and registry.** Add the struct above and a
+- **W8.2 — Introduce `FormatHandler` struct and registry.** Add the struct above (see Goal) and a
   `QList<FormatHandler>` populated with all 9 import formats + 7 export formats, built from the
   actual current per-format metadata (extensions, display names, capability flags) gathered in
   W8.1. Registry exists but nothing consumes it yet. Completion criteria: build passes.
@@ -99,7 +110,7 @@ internally. Golden regression parity required throughout, same as every other wo
   import-only, rather than leaving it as an undocumented gap only discoverable by reading two
   switches side by side.
 
-## Related, but distinct — #8 Enhance GML format support
+### Related, but distinct — #8 Enhance GML format support
 
 Not a dispatch-consolidation item like W8.1–W8.6 above — this is parsing-*depth* work on the GML
 format specifically. The current GML parser supports a minimal command set (`graph`, `comment`,
