@@ -24,6 +24,7 @@ Each algorithm family owns a dedicated schema version.
 | clustering    | v6     | `src/tools/baselines/clustering/` |
 | connectivity  | v7     | `src/tools/baselines/connectivity/` |
 | matrix        | v8     | `src/tools/baselines/matrix/` |
+| vertex_connectivity | v9 | `src/tools/baselines/vertex_connectivity/` |
 
 Schemas are never modified retroactively.
 
@@ -107,9 +108,11 @@ Example: `Krackhardt_Kite_N10__CLUST__V6__FT2__W0_IW1_DI0.json`
 <DATASET>__CONN__V7__FT<filetype>.json
 ```
 
-No weight/centrality flags — connectivity is topology-only.
+No weight/centrality flags — connectivity is topology-only. Add `__STRONG` for
+`--connectivity-type strong` on directed graphs (default `weak` gets no suffix).
 
-Example: `TinyDisconnected_Undir_N6_E4__CONN__V7__FT2.json`
+Example: `TinyDisconnected_Undir_N6_E4__CONN__V7__FT2.json`,
+`TinyArc_Dir_N2_E1__CONN__V7__FT2__STRONG.json`
 
 ---
 
@@ -119,9 +122,24 @@ Example: `TinyDisconnected_Undir_N6_E4__CONN__V7__FT2.json`
 <DATASET>__MATRIX__V8__FT<filetype>__W<0|1>_IW<0|1>_DI<0|1>.json
 ```
 
-Note: `C` is not encoded — matrix always computes every category.
+Note: `C` is not encoded — matrix requires `-c 0` (rejects centralities outright).
 
 Example: `TinyPath_N3_E2__MATRIX__V8__FT2__W0_IW1_DI0.json`
+
+---
+
+## Vertex Connectivity Kernel (schema v9)
+
+```
+<DATASET>__VCONN__V9__FT<filetype>__<mode suffix>.json
+```
+
+No weight/centrality flags — topology-only. Mode suffix is `global` (optionally `_weak`/`_strong`
+on directed graphs) or `local_<source>_<target>` (optionally `_adjacent` when the pair has no
+finite cut).
+
+Example: `TinyPath_N3_E2__VCONN__V9__FT2__local_1_3.json`,
+`TinyWeaklyConn_Dir_N3_E2__VCONN__V9__FT2__global_strong.json`
 
 ---
 
@@ -200,7 +218,7 @@ If any case reports a mismatch:
 
 ```bash
 ./build/socnetv-cli --kernel connectivity \
-  -i <dataset> -f <filetype> \
+  -i <dataset> -f <filetype> [--connectivity-type weak|strong] \
   --dump-json src/tools/baselines/connectivity/<NAME>.json
 ```
 
@@ -211,6 +229,15 @@ If any case reports a mismatch:
   -i <dataset> -f <filetype> \
   -c 0 -w <0|1> -x <0|1> -k <0|1> \
   --dump-json src/tools/baselines/matrix/<NAME>.json
+```
+
+## Vertex Connectivity (v9)
+
+```bash
+./build/socnetv-cli --kernel vertex_connectivity \
+  -i <dataset> -f <filetype> \
+  --conn-mode local|global [--conn-source S --conn-target T] [--connectivity-type weak|strong] \
+  --dump-json src/tools/baselines/vertex_connectivity/<NAME>.json
 ```
 
 ---
@@ -279,14 +306,18 @@ Cliques: counts by size, max_clique_size, total_cliques
 
 ## Connectivity Kernel (v7)
 
-Graph-level: component_count, connected (bool), type ("weak" for directed / "connected" for undirected)
+Graph-level: component_count, connected (bool), type ("connected" for undirected, "weak" or
+"strong" for directed per `--connectivity-type`, default `weak`)
 
-Per-node: component_id (1-based integer)
+Per-node: component_id (1-based integer) — **weak mode only**; strong mode reports a count, not
+per-vertex membership (`Graph::graphStronglyConnectedComponents()` doesn't track it)
 
 Connectivity semantics:
 
-* Undirected: standard BFS — connected if 1 component
-* Directed: BFS treating all arcs as undirected (weak connectivity) — connected if 1 weak component
+* Undirected: standard BFS — connected if 1 component; `--connectivity-type` has no effect
+* Directed, weak (default): BFS treating all arcs as undirected — connected if 1 weak component
+* Directed, strong: Tarjan's SCC algorithm, respecting arc direction — connected if 1 strong
+  component
 
 ---
 
@@ -303,6 +334,17 @@ few dozen nodes (WS5 A2.0 measured ~461 MB for one `Matrix` at N=7,343).
 Exists specifically because every other kernel only ever checks downstream results (centrality
 scores, distance values, clique counts), never a `Matrix`'s actual contents — see
 `roadmap_ws6_testing_ci_regression.md`'s WS6.7 section for the full design rationale.
+
+---
+
+## Vertex Connectivity Kernel (v9)
+
+Local kappa(s,t) (`--conn-mode local`) or global kappa(G) (`--conn-mode global`, the default) via
+Menger's theorem / vertex-split max-flow — see #7 and `roadmap_ws11_algorithm_additions.md`.
+
+Local mode: `source`, `target`, `status` (`"ok"` with a `value`, `"adjacent"` — no finite cut
+exists, or `"invalid"` — bad source/target). Global mode: `value` = kappa(G), 0 meaning already
+disconnected. Same weak/strong split as the Connectivity Kernel above, via `--connectivity-type`.
 
 ---
 
@@ -329,6 +371,7 @@ scores, distance values, clique counts), never a `Matrix`'s actual contents — 
 | clustering v6 | `src/tools/baselines/clustering/` |
 | connectivity v7 | `src/tools/baselines/connectivity/` |
 | matrix v8     | `src/tools/baselines/matrix/` |
+| vertex_connectivity v9 | `src/tools/baselines/vertex_connectivity/` |
 
 ---
 
