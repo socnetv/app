@@ -453,6 +453,8 @@ public slots:
     void slotAnalyzeWalksTotal();
     void slotAnalyzeReachabilityMatrix();
     void slotAnalyzeConnectedness();
+    void slotAnalyzeNodeConnectivity();
+    void slotAnalyzeConnectivity();
 
     void slotAnalyzeCentralityDegree();
     void slotAnalyzeCentralityCloseness();
@@ -778,6 +780,7 @@ private:
     QAction *analyzeGraphDiameterAct, *analyzeGraphEccentricityAct;
     QAction *analyzeStrEquivalenceTieProfileDissimilaritiesAct;
     QAction *analyzeGraphWalksAct,*analyzeGraphWalksTotalAct, *analyzeMatrixReachabilityAct, *analyzeGraphConnectednessAct;
+    QAction *analyzeNodeConnectivityAct, *analyzeConnectivityAct;
     QAction *analyzeCommunitiesCliquesAct, *clusteringCoefAct, *analyzeCommunitiesTriadCensusAct;
     QAction *analyzeMatrixAdjTransposeAct, *analyzeMatrixAdjInvertAct;
     QAction *analyzeMatrixAdjCocitationAct;

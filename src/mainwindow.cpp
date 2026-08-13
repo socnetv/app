@@ -2941,6 +2941,31 @@ void MainWindow::initActions()
                                                   "at least one node is isolate."));
     connect(analyzeGraphConnectednessAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeConnectedness()));
 
+    analyzeNodeConnectivityAct = new QAction(QIcon(":/images/distance.png"), tr("Node Connectivity"), this);
+    analyzeNodeConnectivityAct->setStatusTip(
+        tr("Compute the minimum number of nodes that must be removed to disconnect two nodes."));
+    analyzeNodeConnectivityAct->setWhatsThis(
+        tr("Node Connectivity\n\n"
+           "The local vertex connectivity of two nodes s and t is the minimum number "
+           "of other nodes that must be removed to disconnect t from s.\n"
+           "If s and t are directly connected by an edge, no such removal exists, "
+           "since the edge itself always keeps them connected.\n"
+           "For directed networks, asks whether to respect edge direction (strong) "
+           "or ignore it (weak)."));
+    connect(analyzeNodeConnectivityAct, &QAction::triggered, this, &MainWindow::slotAnalyzeNodeConnectivity);
+
+    analyzeConnectivityAct = new QAction(QIcon(":/images/avdistance.png"), tr("Graph Connectivity"), this);
+    analyzeConnectivityAct->setStatusTip(
+        tr("Compute the network's overall vertex connectivity."));
+    analyzeConnectivityAct->setWhatsThis(
+        tr("Graph Connectivity\n\n"
+           "The vertex connectivity of the whole network is the minimum, over every pair "
+           "of nodes, of their local vertex connectivity - i.e. the fewest nodes that "
+           "would need to be removed to disconnect the network at its weakest point.\n"
+           "For directed networks, asks whether to respect edge direction (strong) "
+           "or ignore it (weak)."));
+    connect(analyzeConnectivityAct, &QAction::triggered, this, &MainWindow::slotAnalyzeConnectivity);
+
     analyzeGraphWalksAct = new QAction(QIcon(":/images/walk.png"), tr("Walks of a given length"), this);
     analyzeGraphWalksAct->setShortcut(
         QKeySequence(Qt::CTRL | Qt::Key_G, Qt::CTRL | Qt::Key_W));
@@ -3786,6 +3811,8 @@ void MainWindow::initMenuBar()
     cohesionMenu->addAction(analyzeGraphDiameterAct);
     cohesionMenu->addSeparator();
     cohesionMenu->addAction(analyzeGraphConnectednessAct);
+    cohesionMenu->addAction(analyzeNodeConnectivityAct);
+    cohesionMenu->addAction(analyzeConnectivityAct);
     cohesionMenu->addSeparator();
     cohesionMenu->addAction(analyzeGraphWalksAct);
     cohesionMenu->addAction(analyzeGraphWalksTotalAct);
@@ -14809,6 +14836,202 @@ void MainWindow::slotAnalyzeConnectedness()
             }
         }
     }
+}
+
+/**
+ * @brief Handles requests to compute the local vertex connectivity between two user-specified
+ * nodes: the minimum number of other nodes that must be removed to disconnect them.
+ */
+void MainWindow::slotAnalyzeNodeConnectivity()
+{
+    if (!activeNodes() || !activeEdges())
+    {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    bool ok1 = false, ok2 = false;
+    const int min = activeGraph->vertexNumberMin();
+    const int max = activeGraph->vertexNumberMax();
+
+    const int sourceNum = QInputDialog::getInt(
+        this,
+        tr("Node Connectivity"),
+        tr("Select source node (%1..%2):")
+            .arg(QString::number(min))
+            .arg(QString::number(max)),
+        min, min, max, 1, &ok1);
+
+    if (!ok1)
+    {
+        statusMessage(tr("Node connectivity calculation cancelled."));
+        return;
+    }
+
+    const int targetNum = QInputDialog::getInt(
+        this,
+        tr("Node Connectivity"),
+        tr("Select target node (%1..%2):")
+            .arg(QString::number(min), QString::number(max)),
+        min, min, max, 1, &ok2);
+
+    if (!ok2)
+    {
+        statusMessage(tr("Node connectivity calculation cancelled."));
+        return;
+    }
+
+    bool respectDirection = false;
+    if (activeGraph->isDirected())
+    {
+        bool ok = false;
+        const QStringList connectivityTypes = {
+            tr("Weak (ignores edge direction)"),
+            tr("Strong (respects edge direction)")
+        };
+        const QString choice = QInputDialog::getItem(
+            this,
+            tr("Node Connectivity"),
+            tr("This is a directed network. Which kind of connectivity do you want to check?\n\n"
+               "Weak: treats every edge as bidirectional.\n\n"
+               "Strong: respects edge direction - counts nodes needed to block directed paths "
+               "from the source to the target."),
+            connectivityTypes, 0, false, &ok);
+
+        if (!ok)
+        {
+            statusMessage(tr("Node connectivity calculation cancelled."));
+            return;
+        }
+        respectDirection = (connectivityTypes.indexOf(choice) == 1);
+    }
+
+    qCDebug(lcMainWindow) << "Computing node connectivity:" << sourceNum << "->" << targetNum
+                          << "respectDirection:" << respectDirection;
+
+    auto result = std::make_shared<Graph::NodeConnectivityResult>();
+
+    runGraphOperationAsync(
+        [this, sourceNum, targetNum, respectDirection, result]() {
+            *result = activeGraph->graphNodeConnectivity(sourceNum, targetNum, respectDirection);
+        },
+        tr("Computing node connectivity. Please wait..."),
+        [this, sourceNum, targetNum, result]() {
+            switch (result->status)
+            {
+            case Graph::NodeConnectivityStatus::Adjacent:
+                slotHelpMessageToUser(
+                    USER_MSG_INFO,
+                    tr("Nodes %1 and %2 are directly connected.").arg(sourceNum).arg(targetNum),
+                    tr("Nodes %1 and %2 are directly connected.").arg(sourceNum).arg(targetNum),
+                    tr("Node connectivity is not defined for directly connected nodes: "
+                       "the edge between them means no removal of other nodes can ever "
+                       "separate them."));
+                break;
+            case Graph::NodeConnectivityStatus::Ok:
+                if (result->value > 0)
+                {
+                    slotHelpMessageToUser(
+                        USER_MSG_INFO,
+                        tr("Node Connectivity: %1").arg(result->value),
+                        tr("Node Connectivity: %1").arg(result->value),
+                        tr("At least %1 other node(s) must be removed to disconnect "
+                           "%2 from %3.")
+                            .arg(result->value)
+                            .arg(targetNum)
+                            .arg(sourceNum));
+                }
+                else
+                {
+                    slotHelpMessageToUser(
+                        USER_MSG_INFO,
+                        tr("Node Connectivity: %1").arg(QString("\xE2\x88\x9E")),
+                        tr("Nodes %1 and %2 are already disconnected.").arg(sourceNum).arg(targetNum),
+                        tr("%1 cannot reach %2 at all, so no node removal is needed.")
+                            .arg(sourceNum)
+                            .arg(targetNum));
+                }
+                break;
+            case Graph::NodeConnectivityStatus::Invalid:
+            default:
+                slotHelpMessageToUser(
+                    USER_MSG_CRITICAL,
+                    tr("Invalid node connectivity request."),
+                    tr("Invalid node connectivity request."),
+                    tr("Source and target must be two distinct, existing nodes."));
+                break;
+            }
+        });
+}
+
+/**
+ * @brief Handles requests to compute the network's overall vertex connectivity: the minimum,
+ * over every pair of nodes, of their local vertex connectivity.
+ */
+void MainWindow::slotAnalyzeConnectivity()
+{
+    const int N = activeGraph->vertices();
+    if (N < 2)
+    {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    bool respectDirection = false;
+    if (activeGraph->isDirected())
+    {
+        bool ok = false;
+        const QStringList connectivityTypes = {
+            tr("Weak (ignores edge direction)"),
+            tr("Strong (respects edge direction)")
+        };
+        const QString choice = QInputDialog::getItem(
+            this,
+            tr("Graph Connectivity"),
+            tr("This is a directed network. Which kind of connectivity do you want to check?\n\n"
+               "Weak: treats every edge as bidirectional.\n\n"
+               "Strong: respects edge direction."),
+            connectivityTypes, 0, false, &ok);
+
+        if (!ok)
+        {
+            statusMessage(tr("Graph connectivity calculation cancelled."));
+            return;
+        }
+        respectDirection = (connectivityTypes.indexOf(choice) == 1);
+    }
+
+    qCDebug(lcMainWindow) << "Computing graph connectivity, respectDirection:" << respectDirection;
+
+    auto kappa = std::make_shared<int>(0);
+
+    runGraphOperationAsync(
+        [this, respectDirection, kappa]() {
+            *kappa = activeGraph->graphConnectivity(respectDirection);
+        },
+        tr("Computing graph connectivity. Please wait..."),
+        [this, kappa]() {
+            if (*kappa > 0)
+            {
+                slotHelpMessageToUser(
+                    USER_MSG_INFO,
+                    tr("Graph Connectivity: %1").arg(*kappa),
+                    tr("Graph Connectivity: %1").arg(*kappa),
+                    tr("At least %1 node(s) must be removed to disconnect some pair "
+                       "of nodes in this network - its worst-case robustness to "
+                       "node removal.")
+                        .arg(*kappa));
+            }
+            else
+            {
+                slotHelpMessageToUser(
+                    USER_MSG_INFO,
+                    tr("Graph Connectivity: 0"),
+                    tr("This network is already disconnected."),
+                    tr("Some pair of nodes is already unreachable, so no node removal "
+                       "is needed to disconnect the network further."));
+            }
+        });
 }
 
 /**
