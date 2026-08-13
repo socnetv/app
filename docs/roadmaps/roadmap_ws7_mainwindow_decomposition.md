@@ -18,11 +18,11 @@ own evidence and completion criteria the same way WS3/WS5 findings did — none 
 ## Status
 
 📋 Scoped (MW1–MW7 milestone plan exists), not started. One related finding (progress-dialog
-duplication + unwrapped GUI-blocking operations) moved to WS15 — see below.
+duplication + unwrapped GUI-blocking operations) moved to WS15 — see Background below.
 
----
+## Background
 
-## Motivation
+### Motivation
 
 After WS2, `Graph` is a clean façade. The UI side has not yet received the same treatment.
 Confirmed by direct reading:
@@ -41,9 +41,7 @@ Confirmed by direct reading:
 This makes it hard to test UI behavior, hard to reason about responsibilities, and expensive to
 change any single feature.
 
----
-
-## Non-Goals
+### Non-Goals
 
 * No behavior changes.
 * No visual/UX changes.
@@ -51,9 +49,7 @@ change any single feature.
 * No new features.
 * No dependency on WS3, WS4, or WS5 completion (WS7 is structurally independent).
 
----
-
-## Prerequisites
+### Prerequisites
 
 * WS2 complete (Graph façade stable). ✅
 * CLI headless baseline exists (WS4/P2), to anchor regression during UI changes.
@@ -61,9 +57,7 @@ change any single feature.
   so WS7 is unblocked in principle. Priority ranking (see `ARCHITECTURAL_REFACTORING_ROADMAP.md`)
   is a separate question from whether it's blocked.
 
----
-
-## Guiding Principles
+### Guiding Principles
 
 * Decompose by **responsibility**, not by line count.
 * Each extracted sub-controller or panel must compile independently.
@@ -71,9 +65,7 @@ change any single feature.
 * Golden + benchmark comparisons must pass after each milestone.
 * MainWindow remains the single owner of the `Graph` instance throughout WS7.
 
----
-
-## Target Shape (End State)
+### Target Shape (End State)
 
 ```
 MainWindow  (thin coordinator, ~2000 lines)
@@ -92,28 +84,45 @@ MainWindow  (thin coordinator, ~2000 lines)
 
 MainWindow wires these together but does not own their internal logic.
 
----
+### Related Finding: Progress-Dialog Duplication & Unwrapped GUI-Blocking Operations
 
-## Milestones
+Found while scoping WS5 A5 (cancellation-aware algebra kernels) — a behavioral finding, not a pure
+structural extraction, and it turned out to be tangled up with a broader cancellation/threading
+problem bigger than either WS5 or WS7's own scope. **Moved to
+[`roadmap_ws15_cancellation_progress_unification.md`](roadmap_ws15_cancellation_progress_unification.md)
+(P3)** — the full call-site survey (Group A double-dialog sites, Group B unwrapped/GUI-blocking
+sites) lives there now, alongside the cancellation-delivery fix and crash-bug fix it shares root
+cause with.
 
----
+### Sequencing Note
 
-### MW1 — Audit and Categorize MainWindow Slots (done as part of this design pass)
+WS7 is independent of WS3, WS4, and WS5. Its stated prerequisite (UI stabilized post-WS9) is now
+satisfied — WS9 shipped. It remains unstarted only because of relative priority, not a blocker;
+see `ARCHITECTURAL_REFACTORING_ROADMAP.md`'s Priorities list. MW1's remaining per-slot
+categorization can begin any time.
 
-The counts in Motivation above (~235 slots, 359 status-bar calls, 304 settings accesses, 20 dialog
-classes, 14 canvas connects, menu/toolbar line counts) are MW1's inventory output. Full
-per-slot responsibility-bucket categorization (Graph-state reaction / UI-state reaction / dialog
-launcher / settings apply / canvas interaction / analysis display) is the remaining work before
-MW2 starts — the counts above scope *how much* of each category exists; assigning every individual
-slot to its bucket is the actual MW1 deliverable, not yet done.
+## What WS7 Delivered
+
+Nothing shipped yet. MW1's slot-count inventory below (the six bullets under Motivation) is
+preliminary scope-sizing only, not the full per-slot responsibility-bucket categorization MW1
+itself requires — see What Remains Open.
+
+## What Remains Open
+
+### MW1 — Audit and Categorize MainWindow Slots (partially done as part of this design pass)
+
+The counts in Background/Motivation above (~235 slots, 359 status-bar calls, 304 settings
+accesses, 20 dialog classes, 14 canvas connects, menu/toolbar line counts) are MW1's inventory
+output. Full per-slot responsibility-bucket categorization (Graph-state reaction / UI-state
+reaction / dialog launcher / settings apply / canvas interaction / analysis display) is the
+remaining work before MW2 starts — the counts above scope *how much* of each category exists;
+assigning every individual slot to its bucket is the actual MW1 deliverable, not yet done.
 
 Definition of Done:
 
 * A documented slot inventory exists (comment block in `mainwindow.h` or a separate doc), covering
   every one of the ~235 `slotXxx` methods.
 * No code changes. Build passes.
-
----
 
 ### MW2 — Extract StatusBarController
 
@@ -131,8 +140,6 @@ Definition of Done:
 * MainWindow no longer calls `statusBar()` directly except in initialization.
 * Golden + benchmarks pass. No behavior change.
 
----
-
 ### MW3 — Extract AppMenuController
 
 **Objective:** separate menu construction from business logic. Concrete scope: `initMenuBar()`
@@ -148,8 +155,6 @@ Definition of Done:
 
 * Menu construction code no longer lives in `MainWindow::initMenuBar()`/`initToolBar()`.
 * Actions remain triggerable; no UX change. Golden + benchmarks pass.
-
----
 
 ### MW4 — Extract DialogManager
 
@@ -173,8 +178,6 @@ Definition of Done:
 * No `new Dialog*` calls remain directly in MainWindow slot bodies.
 * All 20 dialogs still open and function correctly. Golden + benchmarks pass.
 
----
-
 ### MW5 — Extract AppSettingsController
 
 **Objective:** isolate settings persistence and apply logic. Concrete scope: `appSettings =
@@ -193,8 +196,6 @@ Definition of Done:
 * No direct `appSettings[...]` accesses remain in MainWindow outside the controller.
 * Settings dialog still functions correctly. Golden + benchmarks pass.
 
----
-
 ### MW6 — Extract CanvasPanel
 
 **Objective:** encapsulate canvas interactions. Concrete scope: 14 `connect(graphicsWidget, ...)`
@@ -210,8 +211,6 @@ Definition of Done:
 
 * None of the 14 `connect(graphicsWidget, ...)` sites remain directly in MainWindow.
 * Canvas interactions unchanged. Golden + benchmarks pass.
-
----
 
 ### MW7 — Reduce MainWindow to Coordinator
 
@@ -230,18 +229,6 @@ Definition of Done:
 * `mainwindow.h` / `mainwindow.cpp` reflect coordinator role clearly.
 * Responsibility boundaries documented.
 
----
-
-## Regression Discipline
-
-For every milestone:
-
-* Golden metric comparisons must pass (algorithms are not touched, but load flow must stay intact).
-* Performance benchmarks must remain within tolerance.
-* Manual smoke test: load a dataset, run a centrality, open a dialog, export a report.
-
----
-
 ## Work Rules
 
 * Sub-controllers must not access `Graph` internals directly — only via the façade API.
@@ -249,24 +236,6 @@ For every milestone:
 * Sub-controllers must not own the `Graph` instance.
 * New files live under `src/ui/controllers/` and `src/ui/panels/`.
 * No new signals/slots added to `Graph` during WS7.
-
----
-
-## Related Finding: Progress-Dialog Duplication & Unwrapped GUI-Blocking Operations
-
-Found while scoping WS5 A5 (cancellation-aware algebra kernels) — a behavioral finding, not a pure
-structural extraction, and it turned out to be tangled up with a broader cancellation/threading
-problem bigger than either WS5 or WS7's own scope. **Moved to
-[`roadmap_ws15_cancellation_progress_unification.md`](roadmap_ws15_cancellation_progress_unification.md)
-(P3)** — the full call-site survey (Group A double-dialog sites, Group B unwrapped/GUI-blocking
-sites) lives there now, alongside the cancellation-delivery fix and crash-bug fix it shares root
-cause with.
-
----
-
-## Sequencing Note
-
-WS7 is independent of WS3, WS4, and WS5. Its stated prerequisite (UI stabilized post-WS9) is now
-satisfied — WS9 shipped. It remains unstarted only because of relative priority, not a blocker;
-see `ARCHITECTURAL_REFACTORING_ROADMAP.md`'s Priorities list. MW1's remaining per-slot
-categorization can begin any time.
+* For every milestone: golden metric comparisons must pass (algorithms are not touched, but load
+  flow must stay intact); performance benchmarks must remain within tolerance; manual smoke test —
+  load a dataset, run a centrality, open a dialog, export a report.
