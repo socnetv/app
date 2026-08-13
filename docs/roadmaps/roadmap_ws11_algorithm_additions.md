@@ -1,40 +1,27 @@
 # Algorithm Additions (WS11)
 
+## Goal
+
+Implement algorithm-family feature requests that don't fit any existing workstream: WS5 (Matrices
+Modernization) is explicitly scoped to matrix *storage/performance*, not new algorithms; WS9
+(Graph Exploration) is a completed workstream. WS11 is pure numerical/graph-theory implementation
+on top of already-stable infrastructure, not architecture.
+
 ## Status
 
-**Just created — not started.** Collects a set of longstanding "implement algorithm X" feature
-requests that don't fit any existing workstream: WS5 (Matrices Modernization) is explicitly scoped
-to matrix *storage/performance*, not new algorithms; WS9 (Graph Exploration) is a completed
-workstream. This is a different kind of work from either — pure numerical/graph-theory
-implementation on top of already-stable infrastructure, not architecture.
+**Started.** Two items shipped so far — see What WS11 Delivered. Everything else in this doc
+(Katz, Bonacich Power, cohesive subgroups, more clustering algorithms, structural equivalence) is
+still untouched.
 
-## Scope
+## Background
 
-New analysis algorithms requested against the existing `src/graph/` algorithm-slice architecture
-(see `CLAUDE.md`'s "Strict boundary inside `src/graph/`" — QtCore only, no UI construction in the
-slice itself; rendering/reporting lives in `src/graph/ui/` and `src/graph/reporting/`). Grouped
-below by which existing slice directory each would live in.
+New analysis algorithms requested against the existing `src/graph/` algorithm-slice architecture —
+algorithm slices stay QtCore only, no UI construction in the slice itself; rendering/reporting
+lives in `src/graph/ui/` and `src/graph/reporting/`. Grouped below by which existing slice
+directory each would live in.
 
-## Centrality — `src/graph/centrality/`
+## What WS11 Delivered
 
-- **#10 — Katz Centrality.** Walk-based centrality with an attenuation factor `α` penalizing longer
-  paths (`α^d` per path of length `d`). Needs a convergence/validity check on `α` relative to the
-  adjacency matrix's largest eigenvalue.
-- **#39 — Bonacich Power Centrality** `BPC(α, β)`. Not to be confused with the already-implemented
-  Power Centrality (PC, a generalized degree measure by Gil and Schmidt) — different measure,
-  same-sounding name; worth a clearly distinct label in the UI to avoid confusion.
-- **#134 — Alternate Centrality Measures Meta-List.** Not a single algorithm — a running collection
-  of centrality-measure ideas (cross-references #10, #39, #108, and external references like
-  `centiserve`/`netrankr`/`CINNA`). Treat as a backlog-within-a-backlog: triage individual measures
-  out of it into their own issues as they're actually prioritized, rather than implementing "the
-  meta-list" as one deliverable.
-
-## Cohesion — `src/graph/cohesion/`
-
-- **#3 — Cohesive subgroups identification.** n-cliques, n-clans/n-clubs, k-plexes, matrix
-  permutation approaches. Four distinct methods bundled in one issue — likely worth splitting into
-  separate issues once one is actually scoped, since they're independent algorithms with different
-  complexity profiles (clique-family enumeration is combinatorially expensive at scale).
 - **#7 — Network connectivity metric.** Local vertex connectivity κ(s,t) between an actor pair —
   the minimum number of other nodes whose removal disconnects them — via Menger's theorem: κ(s,t)
   equals the max number of internally vertex-disjoint s→t paths, computed as a max-flow problem on
@@ -50,6 +37,32 @@ below by which existing slice directory each would live in.
   depends on. Also fixes a dead `connectivityMenu` menu member, a result message pointing at a
   menu path that doesn't exist, and a missing help-text entry for "Connectedness" in the Cohesion
   toolbox dropdown.
+
+Three follow-on visualizations surfaced by this work are noted below under What Remains Open
+(Cohesion), not yet filed or scoped.
+
+## What Remains Open
+
+### Centrality — `src/graph/centrality/`
+
+- **#10 — Katz Centrality.** Walk-based centrality with an attenuation factor `α` penalizing longer
+  paths (`α^d` per path of length `d`). Needs a convergence/validity check on `α` relative to the
+  adjacency matrix's largest eigenvalue.
+- **#39 — Bonacich Power Centrality** `BPC(α, β)`. Not to be confused with the already-implemented
+  Power Centrality (PC, a generalized degree measure by Gil and Schmidt) — different measure,
+  same-sounding name; worth a clearly distinct label in the UI to avoid confusion.
+- **#134 — Alternate Centrality Measures Meta-List.** Not a single algorithm — a running collection
+  of centrality-measure ideas (cross-references #10, #39, #108, and external references like
+  `centiserve`/`netrankr`/`CINNA`). Treat as a backlog-within-a-backlog: triage individual measures
+  out of it into their own issues as they're actually prioritized, rather than implementing "the
+  meta-list" as one deliverable.
+
+### Cohesion — `src/graph/cohesion/`
+
+- **#3 — Cohesive subgroups identification.** n-cliques, n-clans/n-clubs, k-plexes, matrix
+  permutation approaches. Four distinct methods bundled in one issue — likely worth splitting into
+  separate issues once one is actually scoped, since they're independent algorithms with different
+  complexity profiles (clique-family enumeration is combinatorially expensive at scale).
 - **(not yet filed) Color nodes by strongly connected component.** Extends the existing weak-only
   "Layout → Node Color by Connected Component" action to offer strong too. Tarjan's algorithm
   (`graphStronglyConnectedComponents()`) already computes per-vertex SCC membership as a side
@@ -71,7 +84,7 @@ below by which existing slice directory each would live in.
   separating the same pair, and the algorithm will deterministically return one of them, not
   necessarily "the" canonical one a human would pick.
 
-## Clustering — `src/graph/clustering/`
+### Clustering — `src/graph/clustering/`
 
 - **#5 — More clustering/community-detection algorithms**: Girvan-Newman, Clauset-Newman-Moore,
   Wakita-Tsurumi. SocNetV currently only has HCA (Hierarchical Clustering Analysis). **Cross-reference:**
@@ -80,7 +93,7 @@ below by which existing slice directory each would live in.
   rather than the analysis-output angle — worth scoping together rather than landing two independent
   community-detection implementations.
 
-## Similarity / Structural Equivalence — `src/graph/similarity/`
+### Similarity / Structural Equivalence — `src/graph/similarity/`
 
 - **#181 — Structural equivalence analysis**: Multidimensional Scaling (MDS), blockmodelling,
   CONCOR (convergent correlations). Standard SNA structural-equivalence toolkit; SocNetV currently
