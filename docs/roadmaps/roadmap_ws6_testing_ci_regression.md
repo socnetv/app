@@ -293,20 +293,36 @@ Examples of high-value additions:
 - random network generators (deterministic via fixed seeds)
 - layout / visualization computations runnable headlessly (compute-only; no QtWidgets/QtCharts)
 - additional analysis workflows that users typically trigger from UI
-- **kernel_connectivity_v7** ✔ — weakly connected component count + per-node component IDs (#85):
+- **kernel_connectivity_v7** ✔ — weak/strong connected component count + per-node component IDs (#85, #272):
   - `Graph::graphWeaklyConnectedComponents()` — BFS treating all edges as undirected (weak connectivity); caches count in `m_graphWeaklyConnectedComponents` and per-node IDs in `m_vertexComponentId`. Cache invalidated with `resetDistanceCentralityCacheFlags()`.
-  - Three baselines committed: `TinyDisconnected_Undir_N6_E4` (3 components), `TinyDisconnected_Dir_N5_E3` (2 weak components), `TinyPath_N3_E2` (1 component / connected).
+  - `Graph::graphStronglyConnectedComponents()` (#272) — Tarjan's SCC algorithm (single DFS pass,
+    no graph transpose needed), respecting edge direction; caches count in
+    `m_graphStronglyConnectedComponents`, same invalidation sites as the weak variant. Reports a
+    count only, not per-vertex SCC membership (`m_vertexComponentId` stays weak-only — see the
+    function's own doc comment in `graph_distance_facade.cpp`).
+  - CLI: `--kernel connectivity --connectivity-type weak|strong` (default `weak`; ignored on
+    undirected graphs, where the two notions coincide).
+  - Six baselines committed: `TinyDisconnected_Undir_N6_E4` (3 components), `TinyDisconnected_Dir_N5_E3`
+    (2 weak / 5 strong components), `TinyPath_N3_E2` (1 component / connected), plus `__STRONG`
+    variants for `TinyDisconnected_Dir_N5_E3`, `TinyArc_Dir_N2_E1` (1 weak / 2 strong), and
+    `TinyWeaklyConn_Dir_N3_E2` (1 weak / 3 strong).
   - **Connectivity semantics table** (what the kernel computes and what the UI reports):
 
-    | Graph type | Topology | Components | `connected` | UI message |
-    |---|---|---|---|---|
-    | Undirected | All nodes reachable | 1 | true | "connected (1 component)" |
-    | Undirected | N isolated islands | >1 | false | "disconnected (N components)" |
-    | Directed | Every pair has a directed path | 1 | true | "weakly connected (1 component)" |
-    | Directed | A→B only (not B→A) | 1 | true | "weakly connected (1 component)" — one island, not strongly connected |
-    | Directed | Two separate islands | >1 | false | "disconnected (N weakly connected components)" |
+    | Graph type | Topology | Mode | Components | `connected` | UI message |
+    |---|---|---|---|---|---|
+    | Undirected | All nodes reachable | n/a | 1 | true | "connected (1 component)" |
+    | Undirected | N isolated islands | n/a | >1 | false | "disconnected (N components)" |
+    | Directed | Every pair has a directed path | weak | 1 | true | "weakly connected (1 component)" |
+    | Directed | Every pair has a directed path | strong | 1 | true | "strongly connected (1 component)" |
+    | Directed | A→B only (not B→A) | weak | 1 | true | "weakly connected (1 component)" — one island |
+    | Directed | A→B only (not B→A) | strong | 2 | false | "not strongly connected (2 components)" |
+    | Directed | Two separate islands | weak | >1 | false | "disconnected (N weakly connected components)" |
 
-    **Design rationale:** `connected = (components == 1)` uses weak connectivity throughout. For directed graphs this is weaker than strong connectivity (all-pairs directed reachability), but it answers the practical "how many islands?" question consistently for both directed and undirected networks. Strong connectivity remains available via `isConnected()` / SSSP.
+    **Design rationale:** the GUI's Connectedness action (`slotAnalyzeConnectedness()`) asks the
+    user weak vs. strong for any directed graph, rather than silently picking one — see #272. The
+    old approach of treating `isConnected()`/SSSP as the de facto strong-connectivity source of
+    truth is gone; `graphStronglyConnectedComponents()` is now the single, explicit, dedicated
+    method for that question.
 
 - **kernel_attribute_import_v7** — CSV/JSON attribute import + export roundtrip (#227, #232):
   - Use `src/data/TinyDir_N2_E1_Attributes.graphml` as the seed graph (2 nodes, 1 edge; heterogeneous custom attrs `Age`/`Party` using `d1000+` keys — also covers #208 regression)

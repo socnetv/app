@@ -148,10 +148,11 @@ run_case_clustering() {
 run_case_connectivity() {
   local input="$1"
   local ftype="$2"
+  local flags=("${@:3:${#}-3}")
   local baseline="${!#}"
 
   echo "==> $(basename "$baseline")"
-  if ! "$CLI" --kernel connectivity -i "$input" -f "$ftype" --compare-json "$baseline"; then
+  if ! "$CLI" --kernel connectivity -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
   fi
@@ -384,6 +385,27 @@ run_case_connectivity \
   "${DATA}/TinyIsolated_Undir_N3_E0.paj" \
   2 \
   "${BASE_CONN}/TinyIsolated_Undir_N3_E0__CONN__V7__FT2.json"
+
+# Strong connectivity (--connectivity-type strong) - only meaningfully distinct from weak on
+# directed graphs, so only the datasets above that actually parse as directed get a strong-mode
+# baseline too (TinyIsolated_Dir_N2_E0 has zero edges and parses as undirected, so it's skipped).
+run_case_connectivity \
+  "${DATA}/TinyDisconnected_Dir_N5_E3.paj" \
+  2 \
+  --connectivity-type strong \
+  "${BASE_CONN}/TinyDisconnected_Dir_N5_E3__CONN__V7__FT2__STRONG.json"
+
+run_case_connectivity \
+  "${DATA}/TinyArc_Dir_N2_E1.paj" \
+  2 \
+  --connectivity-type strong \
+  "${BASE_CONN}/TinyArc_Dir_N2_E1__CONN__V7__FT2__STRONG.json"
+
+run_case_connectivity \
+  "${DATA}/TinyWeaklyConn_Dir_N3_E2.paj" \
+  2 \
+  --connectivity-type strong \
+  "${BASE_CONN}/TinyWeaklyConn_Dir_N3_E2__CONN__V7__FT2__STRONG.json"
 
 # MATRIX (schema v8) - see WS6.7 in roadmap_ws6_testing_ci_regression.md.
 # Note: Benchmark_BA_Directed_N500_m3 is dumped in summary mode (row/col sums, trace,

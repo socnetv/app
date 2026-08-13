@@ -60,6 +60,10 @@ int main(int argc, char *argv[])
                                    "Walks length K for walks_matrix (K>=1).",
                                    "K", "0");
 
+    QCommandLineOption connTypeOpt(QStringList() << "connectivity-type",
+                                   "Connectivity type for --kernel connectivity on directed graphs: weak|strong.",
+                                   "type", "weak");
+
     cli.addOption(verboseOpt);
     cli.addOption(strictOpt);
     cli.addOption(fileOpt);
@@ -76,6 +80,7 @@ int main(int argc, char *argv[])
     cli.addOption(benchOpt);
     cli.addOption(kernelOpt);
     cli.addOption(walksLenOpt);
+    cli.addOption(connTypeOpt);
 
     cli.process(app);
 
@@ -123,6 +128,7 @@ int main(int argc, char *argv[])
 
     cfg.kernel = cli.value(kernelOpt).trimmed().toLower();
     const int walksLength = cli.value(walksLenOpt).toInt();
+    cfg.connectivityType = cli.value(connTypeOpt).trimmed().toLower();
 
     if (cfg.inputPath.isEmpty())
     {

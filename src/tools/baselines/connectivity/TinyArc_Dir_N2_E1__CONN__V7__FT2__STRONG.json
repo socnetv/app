@@ -1,0 +1,40 @@
+{
+    "connectivity": {
+        "component_count": 2,
+        "connected": false,
+        "type": "strong"
+    },
+    "counts": {
+        "links_sna": 1,
+        "nodes": 2,
+        "ties_graph": 1
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "TinyArc_Dir_N2_E1.paj",
+        "path": "src/data/TinyArc_Dir_N2_E1.paj"
+    },
+    "graph": {
+        "directed": true,
+        "weighted": false
+    },
+    "kernel": "connectivity",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 0,
+        "load_msg": "",
+        "net_name": "TinyArc_Dir_N2_E1.paj",
+        "ok": true
+    },
+    "per_node": [
+        {
+            "id": 1,
+            "label": "A"
+        },
+        {
+            "id": 2,
+            "label": "B"
+        }
+    ],
+    "schema_version": 7
+}

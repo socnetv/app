@@ -29,6 +29,8 @@ namespace cli
         int benchRuns = 0; // 0 = off
         QString kernel;    // "distance", etc.
         bool strict = false; // if true, timing regressions fail (exit non-zero)
+
+        QString connectivityType = "weak"; // "weak"|"strong", for --kernel connectivity on directed graphs
     };
 
     // ---------------- printing ----------------
