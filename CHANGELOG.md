@@ -53,6 +53,15 @@ All notable changes to this project are documented in this file.
     script. All dispatched through the same real event-loop/`graphThread`
     path a user action would take, not called directly.
 
+  - **Node and Graph Connectivity** (#7): two new analyses under **Analyze →
+    Cohesion**. **Node Connectivity** computes the minimum number of nodes
+    that must be removed to disconnect two chosen actors. **Graph
+    Connectivity** computes the same for the whole network — the fewest
+    nodes that would need to be removed to disconnect it at its weakest
+    point. For directed networks, both ask whether to respect edge
+    direction (strong) or ignore it (weak), matching the same choice now
+    offered by Connectedness.
+
 ### Bug Fixes
 
   - **HCA uses BFS on unweighted networks** (#193): the Hierarchical Clustering
@@ -187,6 +196,17 @@ All notable changes to this project are documented in this file.
     instead. Information Centrality had the same gap internally, silently
     computing scores from an empty result instead of reporting that the
     index isn't defined for that network. Both fixed.
+
+  - **Self-loop edges no longer reappear after node/edge filtering**:
+    filtering a network (Focus on Node, Focus on Selection, Filter Edges
+    by Weight, and others) could leave a node's self-loop visible even
+    after that node was hidden, showing an orphaned edge with no visible
+    endpoints. Fixed.
+
+  - **Connectedness now asks weak vs. strong for directed networks**
+    (#272): checking whether a directed network is connected only ever
+    checked weak connectivity (ignoring edge direction), with no way to
+    check strong connectivity from the UI. Now asks which one to check.
 
 ### Maintenance
 
