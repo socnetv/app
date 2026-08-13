@@ -6,6 +6,15 @@ All notable changes to this project are documented in this file.
 
 ### New Features
 
+  - **Node and Graph Connectivity** (#7): two new analyses under **Analyze →
+    Cohesion**. **Node Connectivity** computes the minimum number of nodes
+    that must be removed to disconnect two chosen actors. **Graph
+    Connectivity** computes the same for the whole network — the fewest
+    nodes that would need to be removed to disconnect it at its weakest
+    point. For directed networks, both ask whether to respect edge
+    direction (strong) or ignore it (weak), matching the same choice now
+    offered by Connectedness.
+
   - **Geodesic distance distribution report** (#89): new **Analyze → Cohesion →
     Geodesic Distribution** action (also in the Control Panel combo) writes an
     HTML table of pair-count vs. integer distance bucket across all node pairs.
@@ -53,14 +62,23 @@ All notable changes to this project are documented in this file.
     script. All dispatched through the same real event-loop/`graphThread`
     path a user action would take, not called directly.
 
-  - **Node and Graph Connectivity** (#7): two new analyses under **Analyze →
-    Cohesion**. **Node Connectivity** computes the minimum number of nodes
-    that must be removed to disconnect two chosen actors. **Graph
-    Connectivity** computes the same for the whole network — the fewest
-    nodes that would need to be removed to disconnect it at its weakest
-    point. For directed networks, both ask whether to respect edge
-    direction (strong) or ignore it (weak), matching the same choice now
-    offered by Connectedness.
+### Improvements
+
+  - **Canvas rendering internals: correctness and performance pass** (#250): an eight-commit
+    cleanup of `GraphicsWidget` (`ab3edf38`, `74a1ae12`, `b000f1af`, `05cbfeea`, `8e114711`,
+    `f7da5f5e`, `b630aaee`, `51e239b5`). Performance: single-probe hash lookups replace double
+    lookups across a dozen node/edge property setters; scene-selection queries merged into one
+    pass instead of two independent re-queries per rubber-band drag; a per-resize full-scene scan
+    for layout guides replaced with a maintained list; the edge lookup key — previously a
+    freshly-allocated string built on every edge operation — replaced with an allocation-free
+    packed integer; two hardcoded `reserve()` calls that pre-sized hash buckets for 500,000 edges
+    / 10,000 nodes regardless of actual network size, removed. Correctness fixes found along the
+    way: a double-free / undefined-behaviour bug in guide-item cleanup; a dangling-pointer
+    double-free introduced by the guide-list change above; Select All using viewport pixels
+    instead of scene coordinates; the rotation slider double-applying its transform on every
+    click; and the canvas's hot-path debug logging not actually respecting the Debug Messages
+    toggle. Closed out with a full Doxygen documentation pass and two dead-code removals
+    (`hasNode()`, `setNodeSizeAll()`). All golden regression baselines pass unchanged throughout.
 
 ### Bug Fixes
 
@@ -216,60 +234,6 @@ All notable changes to this project are documented in this file.
     (`TinyAdj_Dir_N3_E4_clucof.adj`) used a delimiter inconsistent with
     every other Adjacency test file, causing a parse error. Reformatted to
     match convention. Test data only, not user-facing.
-  - **Canvas rendering internals: correctness and performance pass**
-    (#250, part 1): fixed a double-free / undefined behaviour in guide-item
-    cleanup (a deferred delete followed by an immediate delete of the same
-    object), replaced double hash lookups with single-probe lookups across a
-    dozen node and edge property setters, and switched two hot methods to
-    take their arguments by const reference instead of by value.
-    Behaviour-preserving — all golden regression baselines pass unchanged.
-    First installment of a wider canvas-rendering performance and
-    documentation overhaul tracked in #250.
-  - **Canvas rendering internals: correctness and performance pass**
-    (#250, part 2): merged redundant scene-selection queries into a single
-    pass; replaced a per-resize full-scene scan for layout guides with a
-    maintained list (fixing a resulting dangling-pointer double-free along
-    the way); fixed a coordinate-space bug in Select All that used viewport
-    pixels instead of scene coordinates; reused cached selection state
-    instead of re-querying the scene on every node-drag release; and moved
-    the canvas's hot-path debug logging behind the existing Debug Messages
-    toggle, which previously didn't actually silence it. All golden
-    regression baselines pass unchanged.
-  - **Canvas rendering internals: correctness and performance pass**
-    (#250, part 3): removed `GraphicsWidget::hasNode()`, a dead method with
-    no callers anywhere in the codebase. No behaviour change — nothing
-    invoked it. All golden regression baselines pass unchanged.
-  - **Canvas rendering internals: correctness and performance pass**
-    (#250, part 4): removed two hardcoded `reserve()` calls that
-    pre-allocated hash bucket capacity for 500,000 edges and 10,000 nodes
-    on every canvas widget, regardless of actual network size. `QHash`
-    grows amortized O(1) without pre-reservation, so this only removes
-    wasted memory on the common small/medium-network case. All golden
-    regression baselines pass unchanged.
-  - **Canvas rendering internals: correctness and performance pass**
-    (#250, part 5): stopped the rotation slider and canvas rotation from
-    double-applying the transform on every click of the rotate left/right
-    buttons (harmless but wasteful — now applied once). All golden
-    regression baselines pass unchanged.
-  - **Canvas rendering internals: correctness and performance pass**
-    (#250, part 6): replaced the canvas's edge lookup key — previously a
-    freshly-allocated string built on every edge operation — with a packed
-    integer that carries the same information without any heap allocation
-    or character-by-character hashing. No behaviour change. All golden
-    regression baselines pass unchanged.
-  - **Canvas rendering internals: correctness and performance pass**
-    (#250, part 7): a final audit of the whole canvas cleanup found one
-    method, `removeNode()`, that had slipped through the earlier passes —
-    it still probed its lookup table twice and logged unconditionally.
-    Fixed to match the rest of the file. All golden regression baselines
-    pass unchanged.
-  - **Canvas rendering internals: correctness and performance pass**
-    (#250, part 8 — final): closed out the canvas cleanup with a full
-    documentation pass (every method and signal now carries an accurate
-    description, including a misplaced doc comment fixed along the way)
-    and a last dead-code sweep, which found and removed one more unused
-    method. This closes out the #250 GraphicsWidget overhaul. All golden
-    regression baselines pass unchanged.
   - **`GraphVertex` is no longer a `QObject`, edge-visibility updates now
     batched** (WS3): every node in a loaded network was a `QObject`
     solely to relay one internal signal — dropped in favour of a plain
