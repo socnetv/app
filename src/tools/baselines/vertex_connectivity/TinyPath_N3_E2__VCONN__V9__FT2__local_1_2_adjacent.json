@@ -1,0 +1,32 @@
+{
+    "connectivity_type": "undirected",
+    "counts": {
+        "links_sna": 4,
+        "nodes": 3,
+        "ties_graph": 2
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "TinyPath_N3_E2.paj",
+        "path": "src/data/TinyPath_N3_E2.paj"
+    },
+    "graph": {
+        "directed": false,
+        "weighted": false
+    },
+    "kernel": "vertex_connectivity",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 0,
+        "load_msg": "",
+        "net_name": "TinyPath_N3_E2.paj",
+        "ok": true
+    },
+    "local": {
+        "source": 1,
+        "status": "adjacent",
+        "target": 2
+    },
+    "mode": "local",
+    "schema_version": 9
+}

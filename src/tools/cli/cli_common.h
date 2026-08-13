@@ -31,6 +31,10 @@ namespace cli
         bool strict = false; // if true, timing regressions fail (exit non-zero)
 
         QString connectivityType = "weak"; // "weak"|"strong", for --kernel connectivity on directed graphs
+
+        QString connMode = "global"; // "local"|"global", for --kernel vertex_connectivity
+        int connSource = -1;         // required for connMode == "local"
+        int connTarget = -1;         // required for connMode == "local"
     };
 
     // ---------------- printing ----------------

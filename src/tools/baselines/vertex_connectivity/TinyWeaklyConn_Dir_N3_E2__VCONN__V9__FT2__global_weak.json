@@ -1,0 +1,30 @@
+{
+    "connectivity_type": "weak",
+    "counts": {
+        "links_sna": 2,
+        "nodes": 3,
+        "ties_graph": 2
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "TinyWeaklyConn_Dir_N3_E2.paj",
+        "path": "src/data/TinyWeaklyConn_Dir_N3_E2.paj"
+    },
+    "global": {
+        "value": 1
+    },
+    "graph": {
+        "directed": true,
+        "weighted": false
+    },
+    "kernel": "vertex_connectivity",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 0,
+        "load_msg": "",
+        "net_name": "TinyWeaklyConn_Dir_N3_E2.paj",
+        "ok": true
+    },
+    "mode": "global",
+    "schema_version": 9
+}

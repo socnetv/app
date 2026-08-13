@@ -38,6 +38,7 @@ kernel_io_roundtrip_v5.cpp
 kernel_clustering_v6.cpp
 kernel_connectivity_v7.cpp
 kernel_matrix_v8.cpp
+kernel_vertex_connectivity_v9.cpp
 
 ```
 
@@ -323,6 +324,32 @@ Examples of high-value additions:
     old approach of treating `isConnected()`/SSSP as the de facto strong-connectivity source of
     truth is gone; `graphStronglyConnectedComponents()` is now the single, explicit, dedicated
     method for that question.
+
+- **kernel_vertex_connectivity_v9** ✔ — local and global vertex connectivity via Menger's theorem
+  (#7, WS11):
+  - `Graph::graphNodeConnectivity(source, target, respectDirection)` — local kappa(s,t), via
+    vertex-split max-flow (Edmonds-Karp). Returns a `NodeConnectivityResult{status, value}`, not a
+    plain int: `Adjacent` (s,t directly connected — no finite cut exists) and `Invalid`
+    (nonexistent/equal vertices) are distinct outcomes from `Ok` on purpose, precisely to avoid
+    repeating #271's class of bug (a sentinel int silently misused as a bool/count).
+  - `Graph::graphConnectivity(respectDirection)` — global kappa(G), the naive pairwise-minimum
+    over all non-adjacent pairs, pruned by the minimum-degree bound (Whitney's inequality) and an
+    early exit at 0. Deliberately not the smarter O(n) algorithm (Even 1975) - see the function's
+    own doc comment for why.
+  - CLI: `--kernel vertex_connectivity --conn-mode local|global [--conn-source S --conn-target T]
+    --connectivity-type weak|strong`.
+  - Seven baselines committed, deliberately Tiny*/toy datasets only (global mode is O(n^2) local-
+    connectivity computations in the worst case - not something to run against the 500-node
+    `Benchmark_*` datasets used elsewhere in this file): `TinyPath_N3_E2` global (kappa=1) and
+    local, both a non-adjacent pair (1,3 → ok/1) and an adjacent one (1,2 → `Adjacent`, no value);
+    `TinyDisconnected_Undir_N6_E4` global (kappa=0); `TinyWeaklyConn_Dir_N3_E2` global in both weak
+    (kappa=1) and strong (kappa=0, not strongly connected) mode; `TinyComplete_Undir_N4_E6` (new
+    dataset, K4) global (kappa=3=n-1, confirming the complete-graph case needs no special code path
+    - see the function's doc comment).
+  - Also verified against two independent, non-baseline checks: the Petersen graph
+    (`src/data/Petersen_Graph.paj`) returns kappa(G)=3, the textbook value for that well-known
+    3-regular, 3-connected graph; and live in the GUI (Analyze > Cohesion > Node/Graph
+    Connectivity), which reproduces the same CLI-verified numbers end-to-end.
 
 - **kernel_attribute_import_v7** — CSV/JSON attribute import + export roundtrip (#227, #232):
   - Use `src/data/TinyDir_N2_E1_Attributes.graphml` as the seed graph (2 nodes, 1 edge; heterogeneous custom attrs `Age`/`Party` using `d1000+` keys — also covers #208 regression)

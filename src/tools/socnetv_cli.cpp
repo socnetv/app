@@ -22,6 +22,7 @@
 #include "tools/cli/kernels/kernel_io_roundtrip_v5.h"
 #include "tools/cli/kernels/kernel_clustering_v6.h"
 #include "tools/cli/kernels/kernel_connectivity_v7.h"
+#include "tools/cli/kernels/kernel_vertex_connectivity_v9.h"
 #include "tools/cli/kernels/kernel_matrix_v8.h"
 
 int main(int argc, char *argv[])
@@ -53,7 +54,7 @@ int main(int argc, char *argv[])
                                 "N", "0");
 
     QCommandLineOption kernelOpt(QStringList() << "kernel",
-                                 "Kernel: distance|reachability|walks_matrix|prominence|io_roundtrip|clustering|connectivity|matrix",
+                                 "Kernel: distance|reachability|walks_matrix|prominence|io_roundtrip|clustering|connectivity|matrix|vertex_connectivity",
                                  "name", "distance");
 
     QCommandLineOption walksLenOpt(QStringList() << "walks-length",
@@ -63,6 +64,16 @@ int main(int argc, char *argv[])
     QCommandLineOption connTypeOpt(QStringList() << "connectivity-type",
                                    "Connectivity type for --kernel connectivity on directed graphs: weak|strong.",
                                    "type", "weak");
+
+    QCommandLineOption connModeOpt(QStringList() << "conn-mode",
+                                   "Mode for --kernel vertex_connectivity: local|global.",
+                                   "mode", "global");
+    QCommandLineOption connSourceOpt(QStringList() << "conn-source",
+                                     "Source node number for --kernel vertex_connectivity --conn-mode local.",
+                                     "int", "-1");
+    QCommandLineOption connTargetOpt(QStringList() << "conn-target",
+                                     "Target node number for --kernel vertex_connectivity --conn-mode local.",
+                                     "int", "-1");
 
     cli.addOption(verboseOpt);
     cli.addOption(strictOpt);
@@ -81,6 +92,9 @@ int main(int argc, char *argv[])
     cli.addOption(kernelOpt);
     cli.addOption(walksLenOpt);
     cli.addOption(connTypeOpt);
+    cli.addOption(connModeOpt);
+    cli.addOption(connSourceOpt);
+    cli.addOption(connTargetOpt);
 
     cli.process(app);
 
@@ -129,6 +143,9 @@ int main(int argc, char *argv[])
     cfg.kernel = cli.value(kernelOpt).trimmed().toLower();
     const int walksLength = cli.value(walksLenOpt).toInt();
     cfg.connectivityType = cli.value(connTypeOpt).trimmed().toLower();
+    cfg.connMode = cli.value(connModeOpt).trimmed().toLower();
+    cfg.connSource = cli.value(connSourceOpt).toInt();
+    cfg.connTarget = cli.value(connTargetOpt).toInt();
 
     if (cfg.inputPath.isEmpty())
     {
@@ -202,6 +219,9 @@ int main(int argc, char *argv[])
 
     if (cfg.kernel == "matrix")
         return cli::runKernelMatrixV8(cfg, load, g);
+
+    if (cfg.kernel == "vertex_connectivity")
+        return cli::runKernelVertexConnectivityV9(cfg, load, g);
 
     QTextStream(stderr) << "ERROR: unsupported --kernel: " << cfg.kernel << "\n";
     return 2;

@@ -17,9 +17,11 @@
 #                       (export skipped for formats without exporter;
 #                        baseline locks in the skipped outcome too)
 #   v6  clustering    — clustering coefficient + triad census + clique census
-#   v7  connectivity  — weakly connected components count + per-node component IDs
+#   v7  connectivity  — weakly/strongly connected components count + per-node component IDs
 #   v8  matrix        — raw contents of every Matrix-producing operation (adjacency,
 #                        inverse, distances, similarity, reachability, walks, cliques)
+#   v9  vertex_connectivity — local (Menger's theorem/max-flow) or global (pairwise-minimum)
+#                        vertex connectivity
 #
 # Baselines:
 #   src/tools/baselines/distance/     (v1)
@@ -30,6 +32,7 @@
 #   src/tools/baselines/clustering/   (v6)
 #   src/tools/baselines/connectivity/ (v7)
 #   src/tools/baselines/matrix/       (v8)
+#   src/tools/baselines/vertex_connectivity/ (v9)
 #
 # To add a new case:
 #   1. Run socnetv-cli --kernel <k> ... --dump-json <baseline.json>
@@ -69,6 +72,7 @@ BASE_IO="${ROOT_DIR}/src/tools/baselines/io_roundtrip"
 BASE_CLUST="${ROOT_DIR}/src/tools/baselines/clustering"
 BASE_CONN="${ROOT_DIR}/src/tools/baselines/connectivity"
 BASE_MATRIX="${ROOT_DIR}/src/tools/baselines/matrix"
+BASE_VCONN="${ROOT_DIR}/src/tools/baselines/vertex_connectivity"
 DATA="${ROOT_DIR}/src/data"
 
 if [[ ! -x "$CLI" ]]; then
@@ -165,6 +169,19 @@ run_case_matrix() {
 
   echo "==> $(basename "$baseline")"
   if ! "$CLI" --kernel matrix -i "$input" -f "$ftype" -c 0 --compare-json "$baseline"; then
+    echo "[FAIL] $(basename "$baseline")"
+    FAILS=$((FAILS+1))
+  fi
+}
+
+run_case_vertex_connectivity() {
+  local input="$1"
+  local ftype="$2"
+  local flags=("${@:3:${#}-3}")
+  local baseline="${!#}"
+
+  echo "==> $(basename "$baseline")"
+  if ! "$CLI" --kernel vertex_connectivity -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
   fi
@@ -425,6 +442,52 @@ run_case_matrix \
   "${DATA}/Benchmark_BA_Directed_N500_m3.paj" \
   2 \
   "${BASE_MATRIX}/Benchmark_BA_Directed_N500_m3__MATRIX__V8__FT2__W0_IW1_DI0.json"
+
+# VERTEX CONNECTIVITY (schema v9) - deliberately Tiny*/toy datasets only. The global mode's
+# pairwise-minimum algorithm is O(n^2) local-connectivity computations in the worst case (see
+# Graph::graphConnectivity()'s doc comment) - fine for a handful of nodes, not for the
+# Benchmark_*/500-node datasets used elsewhere in this file.
+run_case_vertex_connectivity \
+  "${DATA}/TinyPath_N3_E2.paj" \
+  2 \
+  --conn-mode global \
+  "${BASE_VCONN}/TinyPath_N3_E2__VCONN__V9__FT2__global.json"
+
+run_case_vertex_connectivity \
+  "${DATA}/TinyPath_N3_E2.paj" \
+  2 \
+  --conn-mode local --conn-source 1 --conn-target 3 \
+  "${BASE_VCONN}/TinyPath_N3_E2__VCONN__V9__FT2__local_1_3.json"
+
+run_case_vertex_connectivity \
+  "${DATA}/TinyPath_N3_E2.paj" \
+  2 \
+  --conn-mode local --conn-source 1 --conn-target 2 \
+  "${BASE_VCONN}/TinyPath_N3_E2__VCONN__V9__FT2__local_1_2_adjacent.json"
+
+run_case_vertex_connectivity \
+  "${DATA}/TinyDisconnected_Undir_N6_E4.paj" \
+  2 \
+  --conn-mode global \
+  "${BASE_VCONN}/TinyDisconnected_Undir_N6_E4__VCONN__V9__FT2__global.json"
+
+run_case_vertex_connectivity \
+  "${DATA}/TinyWeaklyConn_Dir_N3_E2.paj" \
+  2 \
+  --conn-mode global --connectivity-type weak \
+  "${BASE_VCONN}/TinyWeaklyConn_Dir_N3_E2__VCONN__V9__FT2__global_weak.json"
+
+run_case_vertex_connectivity \
+  "${DATA}/TinyWeaklyConn_Dir_N3_E2.paj" \
+  2 \
+  --conn-mode global --connectivity-type strong \
+  "${BASE_VCONN}/TinyWeaklyConn_Dir_N3_E2__VCONN__V9__FT2__global_strong.json"
+
+run_case_vertex_connectivity \
+  "${DATA}/TinyComplete_Undir_N4_E6.paj" \
+  2 \
+  --conn-mode global \
+  "${BASE_VCONN}/TinyComplete_Undir_N4_E6__VCONN__V9__FT2__global.json"
 
 echo
 if [[ "$FAILS" -eq 0 ]]; then
