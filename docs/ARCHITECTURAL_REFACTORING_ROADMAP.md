@@ -29,7 +29,7 @@ Algorithm slices / engines
 └── matrices
 ```
 
-The `Graph` object is a façade and state coordinator — not a monolith. Algorithm logic lives in dedicated slices under `src/graph/`. A headless CLI regression harness (8 kernels) guards against silent regressions.
+The `Graph` object is a façade and state coordinator — not a monolith. Algorithm logic lives in dedicated slices under `src/graph/`. A headless CLI regression harness (9 kernels) guards against silent regressions.
 
 ---
 
@@ -56,13 +56,16 @@ active focus right now.
 
 Roadmap: [`docs/roadmaps/roadmap_ws6_testing_ci_regression.md`](roadmaps/roadmap_ws6_testing_ci_regression.md)
 
-Expand golden baselines, dataset coverage, and benchmarking. Supports all other workstreams.
+Expand golden baselines, dataset coverage, and benchmarking, supporting every other workstream.
 
 ---
 
-## WS7 — MainWindow Decomposition (LATER)
+## WS7 — MainWindow Decomposition
 
-Break `MainWindow` into smaller, focused UI components. No UX changes — pure structural cleanup. Deferred until the UI stabilizes post-WS9.
+Roadmap: [`docs/roadmaps/roadmap_ws7_mainwindow_decomposition.md`](roadmaps/roadmap_ws7_mainwindow_decomposition.md)
+
+Break `MainWindow` into smaller, focused UI components (no UX changes). Unblocked (WS9 shipped);
+not started only because of relative priority.
 
 ---
 
@@ -70,10 +73,8 @@ Break `MainWindow` into smaller, focused UI components. No UX changes — pure s
 
 Roadmap: [`docs/roadmaps/roadmap_ws8_io_layer_stabilization.md`](roadmaps/roadmap_ws8_io_layer_stabilization.md)
 
-Consolidate per-format dispatch — confirmed distinct from WS4 (which addressed the mutation
-contract and translation-unit separation, not dispatch): four separate switch statements across
-`parser.cpp`, `graph_io.cpp`, and `mainwindow.cpp` currently hand-maintain the same per-format
-metadata in sync, with no enforcement — a `FormatHandler` registry replaces all four.
+Consolidate per-format IO dispatch behind a single `FormatHandler` registry, replacing
+hand-maintained per-format switch statements.
 
 ---
 
@@ -81,14 +82,7 @@ metadata in sync, with no enforcement — a `FormatHandler` registry replaces al
 
 Roadmap: [`docs/roadmaps/roadmap_ws10_graphicswidget_overhaul.md`](roadmaps/roadmap_ws10_graphicswidget_overhaul.md)
 
-Ongoing GraphicsWidget work, separate from WS3. Phase 1 (GraphicsWidget
-Performance and Code Quality Overhaul, #250) shipped: correctness fixes, hot-path allocation/scan
-reductions, structural changes, full documentation pass. The canvas-clear performance issue (#260)
-is also shipped. Future work covers both a Performance Checklist (rendering-cost reduction,
-node-selection hot path, bulk-operation batching, a rendering-performance regression kernel) and a
-Feature Checklist (new canvas-drawing capabilities, e.g. #22) — scope widened beyond pure
-performance since both live in the same class and the same `QGraphicsScene`/`QGraphicsView`
-machinery.
+Ongoing GraphicsWidget canvas rendering and feature work, separate from WS3.
 
 ---
 
@@ -96,11 +90,8 @@ machinery.
 
 Roadmap: [`docs/roadmaps/roadmap_ws11_algorithm_additions.md`](roadmaps/roadmap_ws11_algorithm_additions.md)
 
-New analysis algorithms requested against the existing, stable `src/graph/` algorithm-slice
-architecture — centrality (Katz, Bonacich Power), cohesion (cohesive subgroups, connectivity),
-clustering (community detection beyond HCA), structural equivalence (MDS, blockmodelling, CONCOR).
-Pure numerical/graph-theory implementation, not architecture — distinct from WS5 (matrix
-storage/performance) and from the completed WS9. Just created, not started.
+New analysis algorithms against the existing `src/graph/` slice architecture — centrality,
+cohesion, clustering, structural equivalence.
 
 ---
 
@@ -108,13 +99,8 @@ storage/performance) and from the completed WS9. Just created, not started.
 
 Roadmap: [`docs/roadmaps/roadmap_ws12_cli_scripting_mode.md`](roadmaps/roadmap_ws12_cli_scripting_mode.md)
 
-Drive SocNetV from the command line without manual clicking, for reproducible profiling and testing
-of GUI-triggered flows the headless `socnetv-cli` tool can't reach. First step shipped (#261:
-`--encoding`, `--interactive-script` with `delay`/`new` commands) — was the tool that made it
-possible to root-cause #260. Seven more commands shipped (#262: `relation`, `unilateral`, `erdos`,
-`save`, `add-node`, `add-edge`, `add-relation`), built specifically to stress-test WS3's
-edge-visibility batching change end-to-end. `distances`/`distances centralities` added during WS14
-to get real GUI-side before/after timing evidence instead of assuming the CLI number transfers.
+Drive SocNetV from the command line without manual clicking — scripted demos, automation, and
+reproducible profiling/testing of GUI flows `socnetv-cli` can't reach.
 
 ---
 
@@ -122,11 +108,8 @@ to get real GUI-side before/after timing evidence instead of assuming the CLI nu
 
 Roadmap: [`docs/roadmaps/roadmap_ws13_undo_redo.md`](roadmaps/roadmap_ws13_undo_redo.md)
 
-General undo/redo for graph-mutating operations (#31), extending the `GraphVisibilitySnapshot`
-pattern already shipped for filter/visibility undo (WS9) to structural mutations and attribute
-edits. Previously mis-tracked as a WS3 dependency ("needs a stable domain model first") — that
-dependency was checked and found fictional. Just created, not started; open design questions listed
-in the roadmap.
+General undo/redo for graph-mutating operations, extending WS9's `GraphVisibilitySnapshot` pattern
+to structural mutations and attribute edits.
 
 ---
 
@@ -134,20 +117,16 @@ in the roadmap.
 
 Roadmap: [`docs/roadmaps/roadmap_ws15_cancellation_progress_unification.md`](roadmaps/roadmap_ws15_cancellation_progress_unification.md)
 
-Split off from WS5 (A5's cancellation plumbing turned out to be inert in practice — a threading/
-signal-delivery bug, not a `Matrix` bug) and WS7 (the progress-dialog-duplication finding, which
-shares the same root cause), then reorganized (2026-08-05) around an explicit 4-property
-"responsiveness contract" — non-blocking dispatch, working cancellation, busy-guard coverage, and
-internal parallelization where the algorithm allows it — checked independently per operation, so
-fixing one property doesn't get mistaken for having fixed all four (as happened with #52's
-"comprehensive" cancel fix in v3.4, which silently regressed under `runGraphOperationAsync`).
+App responsiveness contract — non-blocking dispatch, working cancellation, busy-guard coverage, and
+internal parallelization — checked independently per operation, so fixing one property can't be
+mistaken for having fixed all four.
 
 ---
 
 # Priorities
 
 1. **WS15** — app responsiveness contract. P1-P3 done and live-verified; P4's parallelization audit
-   done, implementation not started; Finding 8 open.
+   done, implementation not started.
 2. **WS6** — regression safety (ongoing support — continuously active underneath every other
    workstream, not "next in queue").
 3. **WS10** — GraphicsWidget canvas rendering & features. Phase 1 (#250), #260, and the
@@ -156,9 +135,10 @@ fixing one property doesn't get mistaken for having fixed all four (as happened 
 4. **WS7** — MainWindow decomposition. Solid milestone roadmap (MW1–MW7) exists; zero code written
    yet.
 5. **WS8** — IO layer stabilization. Roadmap scoped; zero code written yet.
-6. **WS11** — algorithm additions. Just created; not prioritised yet, no code written.
-7. **WS12** — CLI scripting mode. Two steps shipped (#261, #262); further commands backlog, not
-   prioritised.
+6. **WS11** — algorithm additions. Started: #7 and #272 shipped; rest of the backlog not
+   prioritised yet.
+7. **WS12** — CLI scripting mode. Eighteen commands shipped across several passes since #261/#262;
+   further commands added on demand, not prioritised as a standing backlog.
 8. **WS13** — undo/redo. Just created; not prioritised yet, no code written.
 
 ---
