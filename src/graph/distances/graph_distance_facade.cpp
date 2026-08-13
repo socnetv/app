@@ -577,9 +577,11 @@ int Graph::graphStronglyConnectedComponents()
     const int currentRelation = relationCurrent();
 
     struct Frame {
-        int v = 0;
-        QList<int> neighbors;
-        int cursor = 0;
+        int v = 0;             // vertex this frame represents (a simulated "call" to visit v)
+        QList<int> neighbors;  // v's out-neighbors, computed once when the frame is pushed
+        int cursor = 0;        // index into neighbors examined so far - the explicit-stack
+                                // stand-in for the resumption point a real call stack would
+                                // remember automatically when a nested recursive call returns
     };
 
     auto outNeighborsOf = [this, currentRelation](int v) {
@@ -594,6 +596,16 @@ int Graph::graphStronglyConnectedComponents()
         return neighbors;
     };
 
+    // Two distinct "stacks" are in play here, easy to conflate:
+    //  - callStack (declared per-root below): the explicit simulation of the recursive DFS call
+    //    stack itself. One Frame per vertex currently in progress along the current root-to-here
+    //    DFS path; pushing a frame simulates a recursive call, popping one simulates that call
+    //    returning. Only ever holds vertices on the *current* DFS path from this loop's root.
+    //  - tarjanStack: Tarjan's own algorithm-level bookkeeping stack (unrelated to the call
+    //    stack), holding every vertex visited so far that hasn't yet been assigned to a finished
+    //    SCC. A vertex is pushed here once, on first discovery, and popped only when the SCC it
+    //    belongs to is finalized (see the SCC-root branch below) - it can outlive several
+    //    callStack frames being pushed and popped above it.
     QHash<int, int> index, lowlink;
     QHash<int, bool> onStack;
     QList<int> tarjanStack;
@@ -618,6 +630,14 @@ int Graph::graphStronglyConnectedComponents()
             callStack.append(f);
         }
 
+        // Standard iterative-DFS-via-explicit-stack shape: look at the frame on top of
+        // callStack. If it still has an unexamined out-neighbor, examine the next one - this is
+        // the body of the recursive version's "for each neighbor w of v" loop - and either
+        // descend (push a new frame, simulating a recursive call on an undiscovered w) or update
+        // this frame's lowlink (w was already discovered and is still on tarjanStack, i.e. a
+        // back/cross edge). Once every neighbor of the top frame has been examined, "return":
+        // pop it and propagate its finished lowlink up into its caller's, exactly as a real
+        // return value would.
         while (!callStack.isEmpty()) {
             const int top = callStack.size() - 1;
 
