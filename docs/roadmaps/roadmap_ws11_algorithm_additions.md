@@ -50,6 +50,26 @@ below by which existing slice directory each would live in.
   depends on. Also fixes a dead `connectivityMenu` menu member, a result message pointing at a
   menu path that doesn't exist, and a missing help-text entry for "Connectedness" in the Cohesion
   toolbox dropdown.
+- **(not yet filed) Color nodes by strongly connected component.** Extends the existing weak-only
+  "Layout → Node Color by Connected Component" action to offer strong too. Tarjan's algorithm
+  (`graphStronglyConnectedComponents()`) already computes per-vertex SCC membership as a side
+  effect of finding the components — it's just discarded today (only the count is kept; see the
+  function's own doc comment in `graph_distance_facade.cpp`). Needs an
+  `m_vertexStrongComponentId` cache mirroring the existing weak one, plus UI wiring.
+- **(not yet filed) Articulation points (cut vertices).** Nodes whose individual removal
+  disconnects the graph — the classic, most intuitive answer to "which single nodes are critical
+  for connectivity." Standard DFS/low-link algorithm, a close cousin of Tarjan's SCC (same
+  underlying technique as bridge-finding) but a distinct computation — doesn't need vertex
+  connectivity or max-flow at all, runs once over the whole graph. Not built yet.
+- **(not yet filed) Minimum vertex cut for the weakest pair.** `graphConnectivity()` already runs
+  max-flow internally to compute κ(G) — the actual separating node set is recoverable via standard
+  max-flow/min-cut extraction (a BFS over the residual graph once the flow saturates), not a
+  guess. Needs `graphConnectivity()` to remember which pair achieved the minimum (currently only
+  the value is tracked), then re-run local flow for that pair with cut extraction. **Caveat, worth
+  surfacing to the user in the UI**: minimum vertex cuts aren't always unique — a symmetric graph
+  (e.g. the Petersen graph) can have several different node sets of the same minimum size
+  separating the same pair, and the algorithm will deterministically return one of them, not
+  necessarily "the" canonical one a human would pick.
 
 ## Clustering — `src/graph/clustering/`
 
