@@ -689,7 +689,7 @@ private:
     QMenu *importSubMenu, *exportSubMenu, *editMenu, *analysisMenu, *helpMenu;
     QMenu *optionsMenu, *colorOptionsMenu, *edgeOptionsMenu, *nodeOptionsMenu;
     QMenu *editNodeMenu, *editEdgeMenu, *centrlMenu,  *viewOptionsMenu, *layoutMenu;
-    QMenu *cohesionMenu, *strEquivalenceMenu, *communitiesMenu, *connectivityMenu;
+    QMenu *cohesionMenu, *strEquivalenceMenu, *communitiesMenu;
     QMenu *matrixMenu;
     QMenu *networkMenu, *randomNetworkMenu, *filterMenu, *subgraphMenu, *recentFilesSubMenu;
     QMenu *randomLayoutMenu, *layoutRadialProminenceMenu, *layoutLevelProminenceMenu;

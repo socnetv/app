@@ -4337,6 +4337,11 @@ void MainWindow::initPanels()
            "<p><em>Eccentricity:</em></p>"
            "<p>The Eccentricity of each node is how far, at most, is from every other actor in the network.</p>"
 
+           "<p><em>Connectedness:</em></p>"
+           "<p>Checks whether the network is connected, i.e. whether a path exists between every "
+           "pair of nodes. For directed networks, asks whether to check weak connectivity "
+           "(ignoring edge direction) or strong connectivity (respecting it).</p>"
+
            "<p><em>Reachability:</em></p>"
            "<p>Creates a matrix where an element (i,j) = 1 only if the actors i and j are reachable.</p>"
 
