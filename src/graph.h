@@ -844,6 +844,27 @@ public:
 
     const QHash<int,int> &vertexComponentId() const { return m_vertexComponentId; }
 
+    // --------------------------------------------------------------------------
+    // FACADE API (SUPPORTED): Vertex connectivity (Menger's theorem via max-flow, #7).
+    // --------------------------------------------------------------------------
+    enum class NodeConnectivityStatus
+    {
+        Ok,       // value holds the local vertex connectivity (>=0; 0 means unreachable)
+        Adjacent, // source and target are directly connected by an edge - no finite vertex
+                  // cut exists (Menger's theorem requires non-adjacency); value is meaningless
+        Invalid   // source/target don't exist, or source == target
+    };
+
+    struct NodeConnectivityResult
+    {
+        NodeConnectivityStatus status = NodeConnectivityStatus::Invalid;
+        int value = 0;
+    };
+
+    NodeConnectivityResult graphNodeConnectivity(int source, int target, bool respectDirection);
+
+    int graphConnectivity(bool respectDirection);
+
     // WS6.7: read-only-by-convention accessors for kernel_matrix_v8's golden coverage.
     // Non-const because Matrix::item()/rows()/cols() are themselves non-const throughout.
     Matrix &matrixAdjacency() { return AM; }
