@@ -1,115 +1,54 @@
 # Testing / CI / Regression Roadmap (WS6)
 
 ## Goal
+
 Prevent silent regressions during modernization.
 
 ## Status
 
 🚧 Ongoing, supporting workstream (no fixed end state — continuously active underneath every other
-workstream). The original schema/golden-baseline/comparison-mode goals (see Current State below)
-are all live; CI integration (WS6.5) is explicitly last and not started. WS6.1–WS6.4 in progress;
-WS6.6 (canvas rendering-perf kernel) done; WS6.7 (matrix operation golden coverage,
-`kernel_matrix_v8`) done — WS5's A3 is unblocked.
+workstream). CI integration (WS6.5) is explicitly last and not started.
 
-## Current State (Post-WS1/WS2/WS4)
+## Background
 
-The regression harness is now a first-class part of the modernization effort.
+Both GUI and CLI load graphs through the same IO mutation pipeline introduced in WS4
+(`Parser` → `IGraphParseSink` → `Graph`), via `tools/headless_graph_loader.h`, which blocks on
+`Graph::signalGraphLoaded` (falling back to `Parser::finished`). This is what makes CLI kernel
+output valid regression evidence for GUI-triggered behavior, rather than a separate code path
+being tested in isolation.
 
-### CLI façade + kernels
+`socnetv-cli` itself is a thin façade (argument parsing + dispatch only) over kernel translation
+units under `src/tools/cli/kernels/`. The full kernel list, CLI flags, and JSON schemas live in
+[`docs/SOCNETV_CLI_REGRESSION_TOOL.md`](../SOCNETV_CLI_REGRESSION_TOOL.md) — not duplicated here.
 
-`socnetv-cli` is a thin façade (argument parsing + dispatch only).  
-All deterministic logic lives in kernel translation units under:
+> **Before committing any change described in this file:** run
+> `./scripts/run_golden_compares.sh`. All golden JSON baselines must still pass.
 
-```
+---
 
-src/tools/cli/kernels/
+## What WS6 Delivered
 
-```
-
-Current kernels:
-
-```
-
-kernel_distance_v1.cpp
-kernel_reachability_v2.cpp
-kernel_walks_v3.cpp
-kernel_prominence_v4.cpp
-kernel_io_roundtrip_v5.cpp
-kernel_clustering_v6.cpp
-kernel_connectivity_v7.cpp
-kernel_matrix_v8.cpp
-kernel_vertex_connectivity_v9.cpp
-
-```
-
-The CLI supports:
-
-- deterministic metric printing (`cli::printKV`)
-- JSON dump mode (`--dump-json`)
-- JSON compare mode (`--compare-json`)
-- benchmarks (distance kernel via `--bench`)
-- an IO roundtrip kernel (`--kernel io_roundtrip`)
-- strict mode for timing guardrails (`--strict`, used by benchmarking scripts)
-
-### Headless loading is unified and deterministic
-
-Both GUI and CLI use the same IO mutation pipeline introduced in WS4:
-
-```
-
-Parser
-↓
-IGraphParseSink
-↓
-Graph
-
-```
-
-The CLI loads graphs through:
-
-```
-
-tools/headless_graph_loader.h
-
-```
-
-This loader blocks on:
-
-- Preferred: `Graph::signalGraphLoaded`
-- Fallback: `Parser::finished`
-
-### Regression scripts (currently active)
+### Regression scripts
 
 The test harness is primarily exercised via scripts:
 
 ```
-
 scripts/run_golden_compares.sh
 scripts/run_benchmarks.sh
 scripts/run_golden_io_roundtrip.sh
 scripts/run_io_roundtrip_shipped_datasets.sh
-
 ```
 
 Key properties:
 
 - Golden comparisons enforce deterministic algorithm outputs and IO stability.
 - Benchmarks enforce performance guardrails against per-platform baselines.
-- IO roundtrip baselines are committed in-repo under:
+- IO roundtrip baselines are committed in-repo under `src/tools/baselines/io_roundtrip/`.
 
-```
-
-src/tools/baselines/io_roundtrip/
-
-```
-
----
-
-## Milestones
-
-WS6 should prioritize expanding **headless feature coverage** and making the harness easier to run
-locally. CI integration is explicitly a later step. Done items are listed first, for a quick
-"what's already shipped" scan; the rest follow in rough priority order.
+Perf baselines (`scripts/perf_baselines/<platform>/perf_expected.env`) are re-recorded from a clean
+`v3.6` tag checkout, not arbitrary `develop` HEAD — a stale pre-M1-speedup baseline once made every
+benchmark misleadingly report "30-70% faster than baseline" regardless of what was actually being
+tested. All three platform sets (macOS arm64/M5, Linux x86_64) are current as of this writing.
 
 ### WS6.6 — Canvas rendering performance kernel (#240) ✅ Done (v3.7)
 
@@ -243,11 +182,10 @@ reason. A future canvas kernel should assert on actual `GraphicsWidget` *state* 
 operation sequence (which edges/nodes end up visible, positioned where expected, etc.), not just
 timing — same offscreen-rendering constraint as this kernel, but a state-comparison kernel rather
 than a timing-threshold one. Could plausibly share this kernel's harness scaffolding, or be a
-sibling kernel (`kernel_render_state_v9`-shaped) — not scoped in detail yet.
+sibling kernel (`kernel_render_state_v9`-shaped) — not scoped in detail yet. **This gap is tracked
+as open work below, under WS6.1.**
 
----
-
-### WS6.7 — Matrix operation golden coverage (`kernel_matrix_v8`) — ✅ Done (v3.7)
+### WS6.7 — Matrix operation golden coverage (`kernel_matrix_v8`) ✅ Done (v3.7)
 
 `Matrix`-producing operations had no direct golden coverage before this — every existing kernel
 only ever checked downstream results (centrality scores, distance values, clique counts), so a
@@ -281,7 +219,67 @@ matrix baselines went red, plus several pre-existing kernels that also read `Mat
 indirectly (distance, prominence, reachability, walks). Reverted; suite is clean again. WS5's A3
 now has the safety net it was waiting on.
 
+### `kernel_connectivity_v7` — weak/strong connected components (#85, #272) ✅ Done
+
+- `Graph::graphWeaklyConnectedComponents()` — BFS treating all edges as undirected (weak connectivity); caches count in `m_graphWeaklyConnectedComponents` and per-node IDs in `m_vertexComponentId`. Cache invalidated with `resetDistanceCentralityCacheFlags()`.
+- `Graph::graphStronglyConnectedComponents()` (#272) — Tarjan's SCC algorithm (single DFS pass,
+  no graph transpose needed), respecting edge direction; caches count in
+  `m_graphStronglyConnectedComponents`, same invalidation sites as the weak variant. Reports a
+  count only, not per-vertex SCC membership (`m_vertexComponentId` stays weak-only — see the
+  function's own doc comment in `graph_distance_facade.cpp`).
+- CLI: `--kernel connectivity --connectivity-type weak|strong` (default `weak`; ignored on
+  undirected graphs, where the two notions coincide).
+- Six baselines committed: `TinyDisconnected_Undir_N6_E4` (3 components), `TinyDisconnected_Dir_N5_E3`
+  (2 weak / 5 strong components), `TinyPath_N3_E2` (1 component / connected), plus `__STRONG`
+  variants for `TinyDisconnected_Dir_N5_E3`, `TinyArc_Dir_N2_E1` (1 weak / 2 strong), and
+  `TinyWeaklyConn_Dir_N3_E2` (1 weak / 3 strong).
+- **Connectivity semantics table** (what the kernel computes and what the UI reports):
+
+  | Graph type | Topology | Mode | Components | `connected` | UI message |
+  |---|---|---|---|---|---|
+  | Undirected | All nodes reachable | n/a | 1 | true | "connected (1 component)" |
+  | Undirected | N isolated islands | n/a | >1 | false | "disconnected (N components)" |
+  | Directed | Every pair has a directed path | weak | 1 | true | "weakly connected (1 component)" |
+  | Directed | Every pair has a directed path | strong | 1 | true | "strongly connected (1 component)" |
+  | Directed | A→B only (not B→A) | weak | 1 | true | "weakly connected (1 component)" — one island |
+  | Directed | A→B only (not B→A) | strong | 2 | false | "not strongly connected (2 components)" |
+  | Directed | Two separate islands | weak | >1 | false | "disconnected (N weakly connected components)" |
+
+  **Design rationale:** the GUI's Connectedness action (`slotAnalyzeConnectedness()`) asks the
+  user weak vs. strong for any directed graph, rather than silently picking one — see #272. The
+  old approach of treating `isConnected()`/SSSP as the de facto strong-connectivity source of
+  truth is gone; `graphStronglyConnectedComponents()` is now the single, explicit, dedicated
+  method for that question.
+
+### `kernel_vertex_connectivity_v9` — local/global vertex connectivity (#7, WS11) ✅ Done
+
+- `Graph::graphNodeConnectivity(source, target, respectDirection)` — local kappa(s,t), via
+  vertex-split max-flow (Edmonds-Karp). Returns a `NodeConnectivityResult{status, value}`, not a
+  plain int: `Adjacent` (s,t directly connected — no finite cut exists) and `Invalid`
+  (nonexistent/equal vertices) are distinct outcomes from `Ok` on purpose, precisely to avoid
+  repeating #271's class of bug (a sentinel int silently misused as a bool/count).
+- `Graph::graphConnectivity(respectDirection)` — global kappa(G), the naive pairwise-minimum
+  over all non-adjacent pairs, pruned by the minimum-degree bound (Whitney's inequality) and an
+  early exit at 0. Deliberately not the smarter O(n) algorithm (Even 1975) - see the function's
+  own doc comment for why.
+- CLI: `--kernel vertex_connectivity --conn-mode local|global [--conn-source S --conn-target T]
+  --connectivity-type weak|strong`.
+- Seven baselines committed, deliberately Tiny*/toy datasets only (global mode is O(n^2) local-
+  connectivity computations in the worst case - not something to run against the 500-node
+  `Benchmark_*` datasets used elsewhere in this file): `TinyPath_N3_E2` global (kappa=1) and
+  local, both a non-adjacent pair (1,3 → ok/1) and an adjacent one (1,2 → `Adjacent`, no value);
+  `TinyDisconnected_Undir_N6_E4` global (kappa=0); `TinyWeaklyConn_Dir_N3_E2` global in both weak
+  (kappa=1) and strong (kappa=0, not strongly connected) mode; `TinyComplete_Undir_N4_E6` (new
+  dataset, K4) global (kappa=3=n-1, confirming the complete-graph case needs no special code path
+  - see the function's doc comment).
+- Also verified against two independent, non-baseline checks: the Petersen graph
+  (`src/data/Petersen_Graph.paj`) returns kappa(G)=3, the textbook value for that well-known
+  3-regular, 3-connected graph; and live in the GUI (Analyze > Cohesion > Node/Graph
+  Connectivity), which reproduces the same CLI-verified numbers end-to-end.
+
 ---
+
+## What Remains Open
 
 ### WS6.1 — Expand CLI kernel coverage (UI-adjacent functionality, headless)
 
@@ -294,64 +292,11 @@ Examples of high-value additions:
 - random network generators (deterministic via fixed seeds)
 - layout / visualization computations runnable headlessly (compute-only; no QtWidgets/QtCharts)
 - additional analysis workflows that users typically trigger from UI
-- **kernel_connectivity_v7** ✔ — weak/strong connected component count + per-node component IDs (#85, #272):
-  - `Graph::graphWeaklyConnectedComponents()` — BFS treating all edges as undirected (weak connectivity); caches count in `m_graphWeaklyConnectedComponents` and per-node IDs in `m_vertexComponentId`. Cache invalidated with `resetDistanceCentralityCacheFlags()`.
-  - `Graph::graphStronglyConnectedComponents()` (#272) — Tarjan's SCC algorithm (single DFS pass,
-    no graph transpose needed), respecting edge direction; caches count in
-    `m_graphStronglyConnectedComponents`, same invalidation sites as the weak variant. Reports a
-    count only, not per-vertex SCC membership (`m_vertexComponentId` stays weak-only — see the
-    function's own doc comment in `graph_distance_facade.cpp`).
-  - CLI: `--kernel connectivity --connectivity-type weak|strong` (default `weak`; ignored on
-    undirected graphs, where the two notions coincide).
-  - Six baselines committed: `TinyDisconnected_Undir_N6_E4` (3 components), `TinyDisconnected_Dir_N5_E3`
-    (2 weak / 5 strong components), `TinyPath_N3_E2` (1 component / connected), plus `__STRONG`
-    variants for `TinyDisconnected_Dir_N5_E3`, `TinyArc_Dir_N2_E1` (1 weak / 2 strong), and
-    `TinyWeaklyConn_Dir_N3_E2` (1 weak / 3 strong).
-  - **Connectivity semantics table** (what the kernel computes and what the UI reports):
-
-    | Graph type | Topology | Mode | Components | `connected` | UI message |
-    |---|---|---|---|---|---|
-    | Undirected | All nodes reachable | n/a | 1 | true | "connected (1 component)" |
-    | Undirected | N isolated islands | n/a | >1 | false | "disconnected (N components)" |
-    | Directed | Every pair has a directed path | weak | 1 | true | "weakly connected (1 component)" |
-    | Directed | Every pair has a directed path | strong | 1 | true | "strongly connected (1 component)" |
-    | Directed | A→B only (not B→A) | weak | 1 | true | "weakly connected (1 component)" — one island |
-    | Directed | A→B only (not B→A) | strong | 2 | false | "not strongly connected (2 components)" |
-    | Directed | Two separate islands | weak | >1 | false | "disconnected (N weakly connected components)" |
-
-    **Design rationale:** the GUI's Connectedness action (`slotAnalyzeConnectedness()`) asks the
-    user weak vs. strong for any directed graph, rather than silently picking one — see #272. The
-    old approach of treating `isConnected()`/SSSP as the de facto strong-connectivity source of
-    truth is gone; `graphStronglyConnectedComponents()` is now the single, explicit, dedicated
-    method for that question.
-
-- **kernel_vertex_connectivity_v9** ✔ — local and global vertex connectivity via Menger's theorem
-  (#7, WS11):
-  - `Graph::graphNodeConnectivity(source, target, respectDirection)` — local kappa(s,t), via
-    vertex-split max-flow (Edmonds-Karp). Returns a `NodeConnectivityResult{status, value}`, not a
-    plain int: `Adjacent` (s,t directly connected — no finite cut exists) and `Invalid`
-    (nonexistent/equal vertices) are distinct outcomes from `Ok` on purpose, precisely to avoid
-    repeating #271's class of bug (a sentinel int silently misused as a bool/count).
-  - `Graph::graphConnectivity(respectDirection)` — global kappa(G), the naive pairwise-minimum
-    over all non-adjacent pairs, pruned by the minimum-degree bound (Whitney's inequality) and an
-    early exit at 0. Deliberately not the smarter O(n) algorithm (Even 1975) - see the function's
-    own doc comment for why.
-  - CLI: `--kernel vertex_connectivity --conn-mode local|global [--conn-source S --conn-target T]
-    --connectivity-type weak|strong`.
-  - Seven baselines committed, deliberately Tiny*/toy datasets only (global mode is O(n^2) local-
-    connectivity computations in the worst case - not something to run against the 500-node
-    `Benchmark_*` datasets used elsewhere in this file): `TinyPath_N3_E2` global (kappa=1) and
-    local, both a non-adjacent pair (1,3 → ok/1) and an adjacent one (1,2 → `Adjacent`, no value);
-    `TinyDisconnected_Undir_N6_E4` global (kappa=0); `TinyWeaklyConn_Dir_N3_E2` global in both weak
-    (kappa=1) and strong (kappa=0, not strongly connected) mode; `TinyComplete_Undir_N4_E6` (new
-    dataset, K4) global (kappa=3=n-1, confirming the complete-graph case needs no special code path
-    - see the function's doc comment).
-  - Also verified against two independent, non-baseline checks: the Petersen graph
-    (`src/data/Petersen_Graph.paj`) returns kappa(G)=3, the textbook value for that well-known
-    3-regular, 3-connected graph; and live in the GUI (Analyze > Cohesion > Node/Graph
-    Connectivity), which reproduces the same CLI-verified numbers end-to-end.
-
-- **kernel_attribute_import_v7** — CSV/JSON attribute import + export roundtrip (#227, #232):
+- a canvas *correctness* (not just performance) kernel — see WS6.6's "Not done in this pass" note
+  above: no automated check exists today that `GraphicsWidget` state (visible/hidden edges, node
+  positions) after a fixed operation sequence matches expectations, only manual
+  `--interactive-script` testing. Could share WS6.6's harness scaffolding or be a sibling kernel.
+- **kernel_attribute_import_v7** (not yet built) — CSV/JSON attribute import + export roundtrip (#227, #232):
   - Use `src/data/TinyDir_N2_E1_Attributes.graphml` as the seed graph (2 nodes, 1 edge; heterogeneous custom attrs `Age`/`Party` using `d1000+` keys — also covers #208 regression)
   - Export nodes and edges to CSV and JSON via `TableExport`
   - Mutate specific attribute values in the exported files
@@ -369,9 +314,7 @@ Rules:
 
 Outcome:
 
-More of the application’s “user-facing” features become regression-testable without the UI.
-
----
+More of the application's "user-facing" features become regression-testable without the UI.
 
 ### WS6.4 — Tighten determinism, measurement stability, and reporting
 
@@ -470,8 +413,6 @@ spread at `geom.net` scale (7343 nodes) to confirm the new margin holds where WS
 Reproduce: run the same `--dump-json` invocation N times and hash the output with `_ms` fields
 stripped.
 
----
-
 ### WS6.2 — Systematically expand datasets and coverage
 
 Goal:
@@ -490,8 +431,6 @@ Rules:
 
 - add datasets incrementally
 - baseline additions must be reviewed (do not bulk-regenerate)
-
----
 
 ### WS6.3 — Refactor the golden harness scripts for modularity
 
@@ -525,8 +464,6 @@ Outcome:
 
 Faster local workflows and easier diagnosis when one suite fails.
 
----
-
 ### WS6.5 — CI integration (LAST)
 
 Goal:
@@ -540,28 +477,19 @@ CI must not become the primary place where developers discover breakage.
 CI should run a carefully chosen subset by default:
 
 - build (Release preferred)
-- a “fast” golden subset
-- optionally a “fast” benchmark subset
+- a "fast" golden subset
+- optionally a "fast" benchmark subset
 
 Heavier suites can run nightly or on-demand.
 
----
+### Open findings
 
-## Work Rules
-
-- Keep outputs stable (version schemas when changing format).
-- Baseline regeneration should be treated as exceptional.
-- Any "FAIL" in benchmarks must be investigated; if it is noise, prefer mitigation via more stable measurement rather than loosening thresholds by default.
-- WS6 work should remain incremental: small changes, deterministic evidence, and consistent scripts.
-
-## Open Findings
-
-### `run_benchmarks.sh` reports `BUILD_TYPE=Debug` even against a Release binary
+#### `run_benchmarks.sh` reports `BUILD_TYPE=Debug` even against a Release binary
 
 Script-reporting detail, not a functional bug, but it can confuse future contributors reading
 benchmark output. Good tiny WS6 task whenever there's a lull.
 
-### Continuous release page shows a stale "published" date (#255 follow-up)
+#### Continuous release page shows a stale "published" date (#255 follow-up)
 
 `build-ci.yml`'s "Update continuous release description" step (`ubuntu-latest` job) `PATCH`es
 the existing `continuous` release's body on every `[ci]` run, but never touches its
@@ -574,60 +502,11 @@ to run once, before any of the parallel upload steps, to avoid a race. Separatel
 script computes `commitMessage` (the commit's subject line) but never uses it in the description
 text — worth including once this is revisited.
 
-## Resolved Findings
+---
 
-### Shipped-dataset roundtrip script fails on a custom-delimiter fixture (#256) ✅ Fixed
+## Work Rules
 
-`run_io_roundtrip_shipped_datasets.sh` globs every file under `src/data` and loads each one via
-the CLI using its default delimiter (`" "`, set in `socnetv_cli.cpp`'s `delimOpt`), with no
-per-file override table. `src/data/TinyAdj_Dir_N3_E4_clucof.adj` used `|` as its column delimiter
-— likely added alongside the directed clustering-coefficient fix (#58, `81e82a46`) to exercise the
-GUI's Import-dialog custom-delimiter option — so it failed under the script's blanket
-space-delimiter assumption. This went unnoticed because the script isn't part of the required
-regression gate (see the three scripts listed under "Regression discipline" in
-`README_DEVELOPER_NOTES.md`) or CI.
-
-**Fixed (`802b0097`)** by reformatting the fixture file itself to plain space
-delimiters, matching every other `.adj` file in `src/data/` — simpler than either of the two
-alternatives originally considered here (a per-file delimiter override table, or promoting the
-script into CI), since the nonstandard delimiter wasn't actually load-bearing for what the fixture
-tests (directed clustering coefficient). Promoting this script into the required gate / CI is still
-open, now unblocked.
-
-### Perf benchmark baselines predated the M1 DistanceEngine speedup — ✅ Fixed on all three sets
-
-All three committed baselines predated M1's DistanceEngine parallelization
-(`7900809e`/`11da8ef4`, the same day v3.6 shipped) by months:
-`scripts/perf_baselines/macos-arm64/perf_expected.env` (`ada8e613`),
-`scripts/perf_baselines/macos-m5/perf_expected.env` (`5661b7eb`), and
-`scripts/perf_baselines/linux-x86_64/perf_expected.env` (`013c05ce`). `run_benchmarks.sh`
-still ran and reported "OK" against these stale baselines, but the "beats baseline by 30–70%"
-results on the DistanceEngine-heavy benchmarks (EIES48, BA500, DIST_GRAPHML) weren't drift or
-noise — they were exactly M1's real 2.7×–8.3× speedup being measured against a pre-M1 floor. A
-regression eating into half of M1's gain would still have silently passed as "faster than
-baseline." Found when a benchmark run was (wrongly) cited as regression evidence for a small WS3
-M2 change; the actual evidence for that change was architectural (equivalent lookup complexity),
-not the benchmark comparison, which prompted checking why the margins looked so large.
-
-**`macos-arm64` and `macos-m5` fixed (`9679782f`)**, both from this machine: checked out the `v3.6`
-tag directly (a clean release point, not just "whatever HEAD happens to be today"), built, and ran
-`run_benchmarks.sh --record` there — `macos-arm64` via the script's own `uname`-based
-auto-detection (which can only ever resolve to `macos-arm64` on any Apple Silicon Mac, M1 through
-M5 — `uname -m` doesn't report chip generation), `macos-m5` via an explicit
-`BENCH_BASELINE_SET=macos-m5 BENCH_RECORD_ALLOW_OVERRIDE=1` override for this specific chip.
-Verified against current `develop`: every benchmark on both sets now lands within 1–5% of its
-baseline (not 30–70% "faster"), confirming no regression from the WS3/WS10 work landed since v3.6,
-and that future comparisons on this machine are meaningful again.
-
-**`linux-x86_64` fixed (`b9a88096`)**, from a 12-core Ryzen Linux x86_64 box: same method — a
-temporary `git worktree` checked out at the `v3.6` tag (kept `develop` untouched), built with
-`-DBUILD_CLI=ON` against Qt 6.8.3 (`/home/dimitris/Qt/6.8.3/gcc_64`), then
-`run_benchmarks.sh --record` there. `auto_baseline_set` resolved to `linux-x86_64` on its own
-(`uname` → `Linux`/`x86_64`), matching the existing baseline dir, so no `BENCH_BASELINE_SET`
-override was needed this time. Recorded numbers dropped far more than the 2.7×–8.3× seen on
-macOS (e.g. `DIST_GRAPHML` ~10×) — on top of the M1 speedup, the stale baseline was almost
-certainly recorded on a slower/different Linux box than this one, so part of the delta is just
-"first recording on this machine," not solely M1's contribution. Verified against current
-`develop`: every benchmark lands within 0–9% of the new baseline (not 30–70% "faster"),
-confirming no regression from the WS3/WS10 work landed since v3.6, and that future comparisons on
-this machine are meaningful again.
+- Keep outputs stable (version schemas when changing format).
+- Baseline regeneration should be treated as exceptional.
+- Any "FAIL" in benchmarks must be investigated; if it is noise, prefer mitigation via more stable measurement rather than loosening thresholds by default.
+- WS6 work should remain incremental: small changes, deterministic evidence, and consistent scripts.
