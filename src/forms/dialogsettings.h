@@ -43,6 +43,7 @@ public slots:
     void getReportsRealNumberPrecision(const int &precision);
     void getReportsLabelsLength(const int &length);
     void getReportsChartType(const int &type);
+    void getReportsOutputFormat(const int &format);
 
     void getCanvasBgColor();
     void getCanvasBgImage();
@@ -82,6 +83,7 @@ signals:
     void setReportsRealNumberPrecision(const int &precision);
     void setReportsLabelLength(const int &length);
     void setReportsChartType(const int &type);
+    void setReportsOutputFormat(const int &format);
 
     void setCustomStylesheet(const bool &toggle);
 

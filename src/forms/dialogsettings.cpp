@@ -91,6 +91,12 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
     qCDebug(lcForms) << "reportsChartTypeSelect"
              << ui->reportsChartTypeSelect->currentText();
 
+    QStringList outputFormatsList;
+    outputFormatsList << "HTML" << "CSV";
+    ui->reportsOutputFormatSelect->addItems(outputFormatsList);
+    ui->reportsOutputFormatSelect->setCurrentIndex(
+                (appSettings["initReportsOutputFormat"].toInt() == ReportFormat::Csv) ? 1 : 0);
+
 
     //debugging
     ui->printDebugChkBox->setChecked(
@@ -394,6 +400,9 @@ DialogSettings::DialogSettings(QMap<QString, QString> &appSettings,
     connect(ui->reportsChartTypeSelect, SIGNAL ( currentIndexChanged (const int &)),
           this, SLOT(getReportsChartType(const int &)) );
 
+    connect(ui->reportsOutputFormatSelect, SIGNAL ( currentIndexChanged (const int &)),
+          this, SLOT(getReportsOutputFormat(const int &)) );
+
 
     connect (ui->printLogoChkBox, &QCheckBox::stateChanged,
              this, &DialogSettings::setPrintLogo);
@@ -600,6 +609,16 @@ void DialogSettings::getReportsChartType(const int &type){
         m_appSettings["initReportsChartType"] = QString::number(type-1);
         emit setReportsChartType(type-1);
     //}
+}
+
+
+/**
+ * @brief Gets the report output format (HTML or CSV)
+ */
+void DialogSettings::getReportsOutputFormat(const int &format){
+    qCDebug(lcForms) << "DialogSettings::getReportsOutputFormat() - format: " << format;
+    m_appSettings["initReportsOutputFormat"] = QString::number(format);
+    emit setReportsOutputFormat(format);
 }
 
 
