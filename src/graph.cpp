@@ -135,6 +135,7 @@ Graph::Graph(const int &reserveVerticesSize, const int &reserveEdgesPerVertexSiz
     m_reportsRealPrecision = 6;
     m_reportsLabelLength = 8;
     m_reportsChartType = ChartType::Spline;
+    m_reportsOutputFormat = ReportFormat::Html;
 
     m_vertexClicked = 0;
     m_clickedEdge.source = 0;

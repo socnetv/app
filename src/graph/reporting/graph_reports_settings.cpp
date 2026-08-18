@@ -71,3 +71,13 @@ void Graph::setReportsChartType(const int &type)
         m_reportsChartType = ChartType::Bars;
     }
 }
+
+/**
+ * @brief Sets the output format (HTML or CSV) new reports are written in
+ * @param format
+ */
+void Graph::setReportsOutputFormat(const int &format)
+{
+    qCDebug(lcReporting) << "Graph::setReportsOutputFormat() - format:" << format;
+    m_reportsOutputFormat = (format == ReportFormat::Csv) ? ReportFormat::Csv : ReportFormat::Html;
+}

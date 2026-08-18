@@ -144,6 +144,17 @@ enum ChartType
 };
 
 /**
+ * @enum ReportFormat
+ * @brief Output format for analysis reports: a full HTML document (default), or a lean,
+ *        table-only CSV file (no prose/summary-stats/chart — those have no CSV equivalent).
+ */
+enum ReportFormat
+{
+    Html = 0,
+    Csv = 1
+};
+
+/**
  * @enum NetworkRequestType
  * @brief Identifies the purpose of an outgoing network request.
  */

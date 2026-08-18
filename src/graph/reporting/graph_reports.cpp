@@ -3521,9 +3521,10 @@ bool Graph::writePrestigePageRank(const QString fileName,
  * @param length
  * @param simpler
  */
-void Graph::writeMatrixWalks(const QString &fn,
+bool Graph::writeMatrixWalks(const QString &fn,
                              const int &length,
-                             const bool &simpler)
+                             const bool &simpler,
+                             const int &format)
 {
 
     qCDebug(lcReporting) << "I will write walks of length:" << length
@@ -3539,7 +3540,7 @@ void Graph::writeMatrixWalks(const QString &fn,
     {
         qCDebug(lcReporting) << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fn);
-        return;
+        return false;
     }
 
     int N = vertices();
@@ -3550,9 +3551,16 @@ void Graph::writeMatrixWalks(const QString &fn,
     {
         file.close();
         progressStatus(tr("Computation canceled."));
-        return;
+        return false;
     }
     QTextStream outText(&file);
+
+    if (format == ReportFormat::Csv)
+    {
+        writeMatrixCSVTable(outText, (length > 0) ? XM : XSM, true);
+        file.close();
+        return true;
+    }
 
     outText << htmlHead;
 
@@ -3635,6 +3643,7 @@ void Graph::writeMatrixWalks(const QString &fn,
     outText << htmlEnd;
 
     file.close();
+    return true;
 }
 
 /**
@@ -4733,7 +4742,8 @@ bool Graph::writeMatrixDissimilarities(const QString fileName,
                                        const QString &metricStr,
                                        const QString &varLocation,
                                        const bool &diagonal,
-                                       const bool &considerWeights)
+                                       const bool &considerWeights,
+                                       const int &format)
 {
 
     qCDebug(lcReporting) << "Graph::writeMatrixDissimilarities()"
@@ -4774,6 +4784,14 @@ bool Graph::writeMatrixDissimilarities(const QString fileName,
     }
 
     progressStatus(tr("Writing tie profile dissimilarities to file: ") + fileName);
+
+    if (format == ReportFormat::Csv)
+    {
+        outText.setRealNumberPrecision(m_reportsRealPrecision);
+        writeMatrixCSVTable(outText, DSM, true);
+        file.close();
+        return true;
+    }
 
     outText.setRealNumberPrecision(m_reportsRealPrecision);
 
@@ -4877,7 +4895,8 @@ bool Graph::writeMatrixSimilarityMatching(const QString fileName,
                                           const QString &matrix,
                                           const QString &varLocation,
                                           const bool &diagonal,
-                                          const bool &considerWeights)
+                                          const bool &considerWeights,
+                                          const int &format)
 {
 
     qCDebug(lcReporting) << "Writing similarity matrix to file:" << fileName;
@@ -4933,6 +4952,14 @@ bool Graph::writeMatrixSimilarityMatching(const QString fileName,
 
     QString pMsg = tr("Writing Similarity coefficients to file. \nPlease wait...");
     progressStatus(pMsg);
+
+    if (format == ReportFormat::Csv)
+    {
+        outText.setRealNumberPrecision(m_reportsRealPrecision);
+        writeMatrixCSVTable(outText, SCM, true);
+        file.close();
+        return true;
+    }
 
     outText.setRealNumberPrecision(m_reportsRealPrecision);
 
@@ -5058,7 +5085,8 @@ bool Graph::writeMatrixSimilarityPearson(const QString fileName,
                                          const bool considerWeights,
                                          const QString &matrix,
                                          const QString &varLocation,
-                                         const bool &diagonal)
+                                         const bool &diagonal,
+                                         const int &format)
 {
 
     qCDebug(lcReporting) << "Writing Pearson Correlation coefficients to file:" << fileName;
@@ -5113,6 +5141,14 @@ bool Graph::writeMatrixSimilarityPearson(const QString fileName,
     }
 
     progressStatus(tr("Writing Pearson coefficients to file: ") + fileName);
+
+    if (format == ReportFormat::Csv)
+    {
+        outText.setRealNumberPrecision(m_reportsRealPrecision);
+        writeMatrixCSVTable(outText, PCC, true);
+        file.close();
+        return true;
+    }
 
     outText.setRealNumberPrecision(m_reportsRealPrecision);
 
@@ -5551,7 +5587,8 @@ bool Graph::writeMatrix(const QString &fn,
                         const bool &inverseWeights,
                         const bool &dropIsolates,
                         const QString &varLocation,
-                        const bool &simpler)
+                        const bool &simpler,
+                        const int &format)
 {
 
     qCDebug(lcReporting) << "Writing specified matrix:" << matrix << "to file:" << fn << " -- dropIsolates:" << dropIsolates;
@@ -5692,6 +5729,77 @@ bool Graph::writeMatrix(const QString &fn,
     }
 
     QTextStream outText(&file);
+
+    if (format == ReportFormat::Csv)
+    {
+        // Lean CSV branch: same Matrix& reference and printInfinity flag per case as the HTML
+        // branch below, just no htmlHead/title/description/footer prose - a CSV consumer has no
+        // use for it. Kept as its own self-contained switch (rather than interleaved with the
+        // HTML switches below) so the existing HTML path stays completely untouched.
+        switch (matrix)
+        {
+        case MATRIX_ADJACENCY:
+            writeMatrixCSVTable(outText, AM, false);
+            break;
+        case MATRIX_LAPLACIAN:
+            writeMatrixCSVTable(outText, AM.laplacianMatrix(), false);
+            break;
+        case MATRIX_DEGREE:
+            writeMatrixCSVTable(outText, AM.degreeMatrix(), false);
+            break;
+        case MATRIX_DISTANCES:
+            writeMatrixCSVTable(outText, DM, true);
+            break;
+        case MATRIX_GEODESICS:
+            writeMatrixCSVTable(outText, SIGMA, true);
+            break;
+        case MATRIX_ADJACENCY_INVERSE:
+            if (inverseResult)
+            {
+                writeMatrixCSVTable(outText, invAM, true);
+            }
+            break;
+        case MATRIX_REACHABILITY:
+            writeMatrixCSVTable(outText, XRM, true);
+            break;
+        case MATRIX_ADJACENCY_TRANSPOSE:
+            writeMatrixCSVTable(outText, AM.transpose(), true);
+            break;
+        case MATRIX_COCITATION:
+            writeMatrixCSVTable(outText, AM.cocitationMatrix(), true);
+            break;
+        case MATRIX_DISTANCES_EUCLIDEAN:
+            writeMatrixCSVTable(outText,
+                                AM.distancesMatrix(METRIC_EUCLIDEAN_DISTANCE, varLocation, false, true),
+                                false);
+            break;
+        case MATRIX_DISTANCES_HAMMING:
+            writeMatrixCSVTable(outText,
+                                AM.distancesMatrix(METRIC_HAMMING_DISTANCE, varLocation, false, true),
+                                false);
+            break;
+        case MATRIX_DISTANCES_JACCARD:
+            writeMatrixCSVTable(outText,
+                                AM.distancesMatrix(METRIC_JACCARD_INDEX, "Rows", false, true),
+                                false);
+            break;
+        case MATRIX_DISTANCES_MANHATTAN:
+            writeMatrixCSVTable(outText,
+                                AM.distancesMatrix(METRIC_MANHATTAN_DISTANCE, varLocation, false, true),
+                                false);
+            break;
+        case MATRIX_DISTANCES_CHEBYSHEV:
+            writeMatrixCSVTable(outText,
+                                AM.distancesMatrix(METRIC_CHEBYSHEV_MAXIMUM, varLocation, false, true),
+                                false);
+            break;
+        default:
+            break;
+        }
+
+        file.close();
+        return true;
+    }
 
     outText << htmlHead;
 
@@ -6096,6 +6204,102 @@ void Graph::writeMatrixHTMLTable(QTextStream &outText,
 }
 
 /**
+ * @brief Writes the matrix M as a comma-separated table to the specified text stream outText.
+ *
+ * CSV sibling of writeMatrixHTMLTable() (same vertex filtering, same RAND_MAX/large-magnitude/
+ * precision value-formatting rules), but lean: header row of vertex numbers, one data row per
+ * vertex, no markup, no min/max summary paragraph - a CSV consumer (spreadsheet app) has no use
+ * for prose. Row/column headers are always plain vertex numbers, never labels, so no CSV
+ * quoting/escaping is needed here (unlike the per-node score tables planned for centrality/
+ * prestige reports, where free-text labels will need it).
+ *
+ * @param outText
+ * @param M
+ * @param printInfinity
+ * @param dropIsolates
+ */
+void Graph::writeMatrixCSVTable(QTextStream &outText,
+                                Matrix &M,
+                                const bool &printInfinity,
+                                const bool &dropIsolates)
+{
+    qCDebug(lcReporting) << "Graph::writeMatrixCSVTable() -"
+             << " dropIsolates " << dropIsolates;
+
+    int i = 0, j = 0;
+    qreal maxVal, minVal, element;
+    bool hasRealNumbers = false;
+
+    VList::const_iterator it, jt;
+
+    QString pMsg = tr("Writing matrix to file. \nPlease wait...");
+    progressStatus(pMsg);
+
+    M.findMinMaxValues(minVal, maxVal, hasRealNumbers);
+    Q_UNUSED(maxVal);
+    Q_UNUSED(minVal);
+
+    // Header row: blank corner cell, then one column per enabled (non-isolate, if dropIsolates)
+    // vertex number.
+    QStringList headerRow;
+    headerRow << "";
+    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    {
+        if (!(*it)->isEnabled() || (dropIsolates && (*it)->isIsolated()))
+        {
+            continue;
+        }
+        headerRow << QString::number((*it)->number());
+    }
+    outText << headerRow.join(",") << "\n";
+
+    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    {
+        if (!(*it)->isEnabled() || (dropIsolates && (*it)->isIsolated()))
+        {
+            continue;
+        }
+
+        if (progressCanceled())
+        {
+            return;
+        }
+
+        QStringList row;
+        row << QString::number((*it)->number());
+
+        for (jt = m_graph.cbegin(); jt != m_graph.cend(); ++jt)
+        {
+            if (!(*jt)->isEnabled() || (dropIsolates && (*jt)->isIsolated()))
+            {
+                continue;
+            }
+
+            element = M.item(i, j);
+
+            if ((element == RAND_MAX) && printInfinity)
+            {
+                row << infinity;
+            }
+            else if (qAbs(element) > 1000.0)
+            {
+                // Same #266 rationale as writeMatrixHTMLTable(): past qreal's ~15-17 significant
+                // digits of real precision, scientific notation is honest, fixed notation isn't.
+                row << QString::number(element, 'e', 3);
+            }
+            else
+            {
+                row << QString::number(element, 'f', hasRealNumbers ? 3 : 0);
+            }
+            j++;
+        }
+        outText << row.join(",") << "\n";
+        i++;
+        j = 0;
+    }
+}
+
+/**
     Exports the adjacency matrix to a given textstream
 */
 void Graph::writeMatrixAdjacencyTo(QTextStream &os,
@@ -6127,8 +6331,9 @@ void Graph::writeMatrixAdjacencyTo(QTextStream &os,
 /**
     Writes the adjacency matrix of G to a specified file fn
 */
-void Graph::writeMatrixAdjacency(const QString fn,
-                                 const bool &markDiag)
+bool Graph::writeMatrixAdjacency(const QString fn,
+                                 const bool &markDiag,
+                                 const int &format)
 {
 
     qCDebug(lcReporting) << "Writing adjacency matrix to file:" << fn;
@@ -6141,7 +6346,7 @@ void Graph::writeMatrixAdjacency(const QString fn,
     {
         qCDebug(lcReporting) << "Could not open (for writing) file:" << fn;
         progressStatus(tr("Error. Could not write to ") + fn);
-        return;
+        return false;
     }
 
     QTextStream outText(&file);
@@ -6155,6 +6360,44 @@ void Graph::writeMatrixAdjacency(const QString fn,
 
     QString pMsg = tr("Writing Adjacency Matrix to file. \nPlease wait...");
     progressStatus(pMsg);
+
+    if (format == ReportFormat::Csv)
+    {
+        // Doesn't reuse writeMatrixCSVTable() - this function (unlike writeMatrix(fn,
+        // MATRIX_ADJACENCY)) deliberately computes each cell live via edgeExists() rather than
+        // from a pre-built Matrix, to preserve real node numbers after deletions (see this
+        // function's own doc comment). Same double-loop shape as the HTML branch below, just
+        // comma-delimited.
+        QStringList headerRow;
+        headerRow << "";
+        for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+        {
+            if (!(*it)->isEnabled())
+                continue;
+            headerRow << QString::number((*it)->number());
+        }
+        outText << headerRow.join(",") << "\n";
+
+        for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+        {
+            if (!(*it)->isEnabled())
+                continue;
+
+            QStringList row;
+            row << QString::number((*it)->number());
+            for (it1 = m_graph.cbegin(); it1 != m_graph.cend(); ++it1)
+            {
+                if (!(*it1)->isEnabled())
+                    continue;
+                weight = edgeExists((*it)->number(), (*it1)->number());
+                row << QString::number(weight != 0 ? weight : 0);
+            }
+            outText << row.join(",") << "\n";
+        }
+
+        file.close();
+        return true;
+    }
 
     outText << htmlHead;
 
@@ -6255,6 +6498,7 @@ void Graph::writeMatrixAdjacency(const QString fn,
     outText << htmlEnd;
 
     file.close();
+    return true;
 }
 
 /**

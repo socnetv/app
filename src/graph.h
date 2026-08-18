@@ -906,6 +906,7 @@ public:
     void setReportsRealNumberPrecision(const int &precision);
     void setReportsLabelLength(const int &length);
     void setReportsChartType(const int &type);
+    void setReportsOutputFormat(const int &format);
 
     void writeDataSetToFile(const QString dir, const QString);
 
@@ -921,7 +922,8 @@ public:
                      const bool &inverseWeights = false,
                      const bool &dropIsolates = false,
                      const QString &varLocation = "Rows",
-                     const bool &simpler = false);
+                     const bool &simpler = false,
+                     const int &format = ReportFormat::Html);
 
     void writeMatrixHTMLTable(QTextStream &outText, Matrix &M,
                               const bool &markDiag = true,
@@ -929,8 +931,13 @@ public:
                               const bool &printInfinity = true,
                               const bool &dropIsolates = false);
 
-    void writeMatrixAdjacency(const QString fileName,
-                              const bool &markDiag = true);
+    void writeMatrixCSVTable(QTextStream &outText, Matrix &M,
+                             const bool &printInfinity = true,
+                             const bool &dropIsolates = false);
+
+    bool writeMatrixAdjacency(const QString fileName,
+                              const bool &markDiag = true,
+                              const int &format = ReportFormat::Html);
 
     void writeMatrixAdjacencyPlot(const QString fileName,
                                   const bool &simpler = false);
@@ -939,20 +946,23 @@ public:
                                     const QString &metricStr,
                                     const QString &varLocation,
                                     const bool &diagonal,
-                                    const bool &considerWeights);
+                                    const bool &considerWeights,
+                                    const int &format = ReportFormat::Html);
 
     bool writeMatrixSimilarityMatching(const QString fileName,
                                        const QString &measure = "Simple",
                                        const QString &matrix = "adjacency",
                                        const QString &varLocation = "rows",
                                        const bool &diagonal = false,
-                                       const bool &considerWeights = true);
+                                       const bool &considerWeights = true,
+                                       const int &format = ReportFormat::Html);
 
     bool writeMatrixSimilarityPearson(const QString fileName,
                                       const bool considerWeights,
                                       const QString &matrix = "adjacency",
                                       const QString &varLocation = "rows",
-                                      const bool &diagonal = false);
+                                      const bool &diagonal = false,
+                                      const int &format = ReportFormat::Html);
 
     bool writeEccentricity(const QString fileName,
                            const bool considerWeights = false,
@@ -1174,9 +1184,10 @@ public:
                                 const bool &inverseWeights = false,
                                 const bool &symmetrize = false);
 
-    void writeMatrixWalks(const QString &fn,
+    bool writeMatrixWalks(const QString &fn,
                           const int &length = 0,
-                          const bool &simpler = false);
+                          const bool &simpler = false,
+                          const int &format = ReportFormat::Html);
 
     qreal numberOfTriples(int v1);
 
@@ -1447,6 +1458,7 @@ private:
     int m_reportsRealPrecision;
     int m_reportsLabelLength;
     ChartType m_reportsChartType;
+    ReportFormat m_reportsOutputFormat;
 
     int m_fieldWidth, m_curRelation, m_fileFormat, m_vertexClicked;
 
