@@ -528,6 +528,7 @@ QMap<QString, QString> MainWindow::initSettings(const int &debugLevel, const boo
     appSettings["initReportsRealNumberPrecision"] = "6";
     appSettings["initReportsLabelsLength"] = "16";
     appSettings["initReportsChartType"] = "0";
+    appSettings["initReportsOutputFormat"] = "0";
 
     appSettings["saveZeroWeightEdges"] = "false";
 
@@ -763,6 +764,9 @@ void MainWindow::slotOpenSettingsDialog()
 
     connect(m_settingsDialog, &DialogSettings::setReportsChartType,
             activeGraph, &Graph::setReportsChartType);
+
+    connect(m_settingsDialog, &DialogSettings::setReportsOutputFormat,
+            activeGraph, &Graph::setReportsOutputFormat);
 
     connect(m_settingsDialog, &DialogSettings::setDebugMsgs,
             this, &MainWindow::slotOptionsDebugMessages);
@@ -5616,6 +5620,7 @@ void MainWindow::initApp()
 
     activeGraph->setReportsLabelLength(appSettings["initReportsLabelsLength"].toInt());
     activeGraph->setReportsChartType(appSettings["initReportsChartType"].toInt());
+    activeGraph->setReportsOutputFormat(appSettings["initReportsOutputFormat"].toInt());
 
     emit signalSetReportsDataDir(appSettings["dataDir"]);
 
@@ -6175,27 +6180,33 @@ void MainWindow::processNextInteractiveCommand()
     }
     else if (line == "distances" || line.startsWith("distances "))
     {
-        // distances [weights] [inverse] [dropisolates] - mirrors the real Cohesion > Distances
-        // Matrix menu action (slotAnalyzeMatrixDistances()) exactly: same computation
+        // distances [weights] [inverse] [dropisolates] [csv] - mirrors the real Cohesion >
+        // Distances Matrix menu action (slotAnalyzeMatrixDistances()) exactly: same computation
         // (writeMatrix() -> graphMatrixDistanceGeodesicCreate()), same runGraphOperationAsync()
         // dispatch, same output file - just without opening a TextEditor afterward (no one
         // present to view it in a script). Also skips askAboutEdgeWeights()'s modal prompt
-        // entirely - the tokens below already answer what it would ask.
+        // entirely - the tokens below already answer what it would ask. WS16 (#113): the 'csv'
+        // token selects ReportFormat::Csv explicitly, rather than reading the persisted Settings
+        // preference - a script has no Settings dialog to reflect, and an explicit token matches
+        // the shape of every other boolean token here.
         const QStringList tokens = line.mid(9).trimmed().split(' ', Qt::SkipEmptyParts);
         const bool considerWeights = tokens.contains("weights");
         const bool inverseWeights = tokens.contains("inverse");
         const bool dropIsolates = tokens.contains("dropisolates");
+        const int reportFormat = tokens.contains("csv") ? ReportFormat::Csv : ReportFormat::Html;
 
         const QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-        const QString fn = appSettings["dataDir"] + "socnetv-report-matrix-geodesic-distances-" + dateTime + ".html";
+        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+        const QString fn = appSettings["dataDir"] + "socnetv-report-matrix-geodesic-distances-" + dateTime + ext;
         auto success = std::make_shared<bool>(false);
         auto timer = std::make_shared<QElapsedTimer>();
         timer->start();
 
         runGraphOperationAsync(
-            [this, fn, considerWeights, inverseWeights, dropIsolates, success]() {
+            [this, fn, considerWeights, inverseWeights, dropIsolates, reportFormat, success]() {
                 *success = activeGraph->writeMatrix(fn, MATRIX_DISTANCES,
-                                                    considerWeights, inverseWeights, dropIsolates);
+                                                    considerWeights, inverseWeights, dropIsolates,
+                                                    "Rows", false, reportFormat);
             },
             tr("Computing geodesic distances. Please wait..."),
             [this, considerWeights, inverseWeights, dropIsolates, success, timer]() {
@@ -9110,7 +9121,12 @@ void MainWindow::slotNetworkTextEditor()
  *  It uses a different method for writing the matrix to a file.
  *  While slotNetworkExportSM uses << operator of Matrix class
  *  (via adjacencyMatrix of Graph class), this is using directly the
- *  writeMatrixAdjacency method of Graph class
+ *  writeMatrixAdjacency method of Graph class.
+ *
+ *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
+ *  CSV output always opens via the system's default handler (QDesktopServices::openUrl),
+ *  regardless of the "view reports in system browser" setting - the internal TextEditor's
+ *  plain-text mode isn't a useful CSV view.
  */
 void MainWindow::slotNetworkViewSociomatrix()
 {
@@ -9120,8 +9136,10 @@ void MainWindow::slotNetworkViewSociomatrix()
         return;
     }
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-" + dateTime + ext;
 
     qCDebug(lcMainWindow) << "MW::slotNetworkViewSociomatrix() - dataDir"
              << appSettings["dataDir"]
@@ -9129,18 +9147,19 @@ void MainWindow::slotNetworkViewSociomatrix()
 
     // AVOID activeGraph->writeMatrix(fn,MATRIX_ADJACENCY), no preserving of node numbers
     // when nodes are deleted.
+    auto success = std::make_shared<bool>(false);
     runGraphOperationAsync(
-        [this, fn]() {
-            activeGraph->writeMatrixAdjacency(fn);
+        [this, fn, reportFormat, success]() {
+            *success = activeGraph->writeMatrixAdjacency(fn, true, reportFormat);
         },
         tr("Creating and writing adjacency matrix"),
-        [this, fn]() {
-            if (activeGraph->progressCanceled())
+        [this, fn, reportFormat, success]() {
+            if (!*success)
             {
-                statusMessage(tr("Computation canceled."));
+                statusMessage(tr("Computation canceled, or could not write to file."));
                 return;
             }
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
 
                 qCDebug(lcMainWindow) << "MW::slotNetworkViewSociomatrix() - "
@@ -14007,6 +14026,8 @@ void MainWindow::slotAnalyzeSymmetryCheck()
 
 /**
  * @brief Writes the adjacency matrix inverse
+ *
+ * Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzeMatrixAdjacencyInverse()
 {
@@ -14016,23 +14037,25 @@ void MainWindow::slotAnalyzeMatrixAdjacencyInverse()
         return;
     }
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-inverse-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-inverse-" + dateTime + ext;
 
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, success]() {
-            *success = activeGraph->writeMatrix(fn, MATRIX_ADJACENCY_INVERSE);
+        [this, fn, reportFormat, success]() {
+            *success = activeGraph->writeMatrix(fn, MATRIX_ADJACENCY_INVERSE, true, false, false, "Rows", false, reportFormat);
         },
         tr("Inverting adjacency matrix. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
             {
                 statusMessage(tr("Computation canceled."));
                 return;
             }
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -14048,6 +14071,8 @@ void MainWindow::slotAnalyzeMatrixAdjacencyInverse()
 
 /**
  * @brief Writes the transpose adjacency matrix
+ *
+ * Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzeMatrixAdjacencyTranspose()
 {
@@ -14057,23 +14082,25 @@ void MainWindow::slotAnalyzeMatrixAdjacencyTranspose()
         return;
     }
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-transpose-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-adjacency-transpose-" + dateTime + ext;
 
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, success]() {
-            *success = activeGraph->writeMatrix(fn, MATRIX_ADJACENCY_TRANSPOSE);
+        [this, fn, reportFormat, success]() {
+            *success = activeGraph->writeMatrix(fn, MATRIX_ADJACENCY_TRANSPOSE, true, false, false, "Rows", false, reportFormat);
         },
         tr("Transposing adjacency matrix. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
             {
                 statusMessage(tr("Computation canceled."));
                 return;
             }
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -14089,6 +14116,8 @@ void MainWindow::slotAnalyzeMatrixAdjacencyTranspose()
 
 /**
  * @brief Writes the cocitation matrix
+ *
+ * Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzeMatrixAdjacencyCocitation()
 {
@@ -14098,23 +14127,25 @@ void MainWindow::slotAnalyzeMatrixAdjacencyCocitation()
         return;
     }
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-cocitation-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-cocitation-" + dateTime + ext;
 
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, success]() {
-            *success = activeGraph->writeMatrix(fn, MATRIX_COCITATION);
+        [this, fn, reportFormat, success]() {
+            *success = activeGraph->writeMatrix(fn, MATRIX_COCITATION, true, false, false, "Rows", false, reportFormat);
         },
         tr("Computing Cocitation matrix. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
             {
                 statusMessage(tr("Computation canceled."));
                 return;
             }
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -14130,6 +14161,8 @@ void MainWindow::slotAnalyzeMatrixAdjacencyCocitation()
 
 /**
  * @brief Writes the degree matrix of the graph
+ *
+ * Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzeMatrixDegree()
 {
@@ -14139,23 +14172,25 @@ void MainWindow::slotAnalyzeMatrixDegree()
         return;
     }
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-degree-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-degree-" + dateTime + ext;
 
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, success]() {
-            *success = activeGraph->writeMatrix(fn, MATRIX_DEGREE);
+        [this, fn, reportFormat, success]() {
+            *success = activeGraph->writeMatrix(fn, MATRIX_DEGREE, true, false, false, "Rows", false, reportFormat);
         },
         tr("Computing Degree matrix. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
             {
                 statusMessage(tr("Computation canceled."));
                 return;
             }
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -14171,6 +14206,8 @@ void MainWindow::slotAnalyzeMatrixDegree()
 
 /**
  * @brief Writes the Laplacian matrix of the graph
+ *
+ * Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzeMatrixLaplacian()
 {
@@ -14182,23 +14219,25 @@ void MainWindow::slotAnalyzeMatrixLaplacian()
 
     qCDebug(lcMainWindow) << "MW:slotAnalyzeMatrixLaplacian()";
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-laplacian-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-laplacian-" + dateTime + ext;
 
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, success]() {
-            *success = activeGraph->writeMatrix(fn, MATRIX_LAPLACIAN);
+        [this, fn, reportFormat, success]() {
+            *success = activeGraph->writeMatrix(fn, MATRIX_LAPLACIAN, true, false, false, "Rows", false, reportFormat);
         },
         tr("Computing Laplacian matrix. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
             {
                 statusMessage(tr("Computation canceled."));
                 return;
             }
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -14425,6 +14464,8 @@ void MainWindow::slotAnalyzeDistance()
 
 /**
  * @brief Invokes calculation of the matrix of geodesic distances for the loaded network, then displays it.
+ *
+ * Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzeMatrixDistances()
 {
@@ -14435,8 +14476,10 @@ void MainWindow::slotAnalyzeMatrixDistances()
         return;
     }
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-geodesic-distances-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-geodesic-distances-" + dateTime + ext;
 
     askAboutEdgeWeights();
 
@@ -14446,18 +14489,19 @@ void MainWindow::slotAnalyzeMatrixDistances()
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, success]() {
+        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat, success]() {
             *success = activeGraph->writeMatrix(fn, MATRIX_DISTANCES,
-                                                considerWeights, inverseWeightsFinal, dropIsolates);
+                                                considerWeights, inverseWeightsFinal, dropIsolates,
+                                                "Rows", false, reportFormat);
         },
         tr("Computing geodesic distances. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
             {
                 statusMessage(tr("Computation canceled."));
                 return;
             }
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -14474,6 +14518,8 @@ void MainWindow::slotAnalyzeMatrixDistances()
 /**
  * @brief Invokes calculation of the geodedics matrix (the number of shortest paths
  * between each pair of nodes in the loaded network), then displays it.
+ *
+ * Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzeMatrixGeodesics()
 {
@@ -14485,8 +14531,10 @@ void MainWindow::slotAnalyzeMatrixGeodesics()
         return;
     }
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-geodesics-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-geodesics-" + dateTime + ext;
 
     askAboutEdgeWeights();
 
@@ -14496,18 +14544,19 @@ void MainWindow::slotAnalyzeMatrixGeodesics()
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, success]() {
+        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat, success]() {
             *success = activeGraph->writeMatrix(fn, MATRIX_GEODESICS,
-                                                considerWeights, inverseWeightsFinal, dropIsolates);
+                                                considerWeights, inverseWeightsFinal, dropIsolates,
+                                                "Rows", false, reportFormat);
         },
         tr("Computing geodesics (number of shortest paths) for each pair. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
             {
                 statusMessage(tr("Computation canceled."));
                 return;
             }
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -15088,6 +15137,8 @@ void MainWindow::slotAnalyzeConnectivity()
 
 /**
  *	Calculate and print the number of walks of a given length , between each pair of nodes.
+ *
+ *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzeWalksLength()
 {
@@ -15109,21 +15160,24 @@ void MainWindow::slotAnalyzeWalksLength()
         return;
     }
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-walks-length-" + QString::number(length) + "-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-walks-length-" + QString::number(length) + "-" + dateTime + ext;
 
+    auto success = std::make_shared<bool>(false);
     runGraphOperationAsync(
-        [this, fn, length]() {
-            activeGraph->writeMatrixWalks(fn, length);
+        [this, fn, length, reportFormat, success]() {
+            *success = activeGraph->writeMatrixWalks(fn, length, false, reportFormat);
         },
         tr("Computing walks of length %1. Please wait...").arg(length),
-        [this, fn, length]() {
-            if (activeGraph->progressCanceled())
+        [this, fn, length, reportFormat, success]() {
+            if (!*success)
             {
-                statusMessage(tr("Computation canceled."));
+                statusMessage(tr("Computation canceled, or could not write to file."));
                 return;
             }
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -15139,6 +15193,8 @@ void MainWindow::slotAnalyzeWalksLength()
 
 /**
  * @brief Calculate and print the total number of walks of any length, between each pair of nodes.
+ *
+ *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzeWalksTotal()
 {
@@ -15173,21 +15229,24 @@ void MainWindow::slotAnalyzeWalksTotal()
         }
     }
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-walks-total-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-walks-total-" + dateTime + ext;
 
+    auto success = std::make_shared<bool>(false);
     runGraphOperationAsync(
-        [this, fn]() {
-            activeGraph->writeMatrixWalks(fn);
+        [this, fn, reportFormat, success]() {
+            *success = activeGraph->writeMatrixWalks(fn, 0, false, reportFormat);
         },
         tr("Computing total walks matrix. Please wait..."),
-        [this, fn]() {
-            if (activeGraph->progressCanceled())
+        [this, fn, reportFormat, success]() {
+            if (!*success)
             {
-                statusMessage(tr("Computation canceled."));
+                statusMessage(tr("Computation canceled, or could not write to file."));
                 return;
             }
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -15204,6 +15263,8 @@ void MainWindow::slotAnalyzeWalksTotal()
 /**
  *	Calls Graph::writeMatrix(fn, MATRIX_REACHABILITY) to calculate and print
  *   the Reachability Matrix of the network.
+ *
+ * Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzeReachabilityMatrix()
 {
@@ -15213,23 +15274,25 @@ void MainWindow::slotAnalyzeReachabilityMatrix()
         return;
     }
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-reachability-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-matrix-reachability-" + dateTime + ext;
 
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, success]() {
-            *success = activeGraph->writeMatrix(fn, MATRIX_REACHABILITY);
+        [this, fn, reportFormat, success]() {
+            *success = activeGraph->writeMatrix(fn, MATRIX_REACHABILITY, true, false, false, "Rows", false, reportFormat);
         },
         tr("Computing reachability matrix. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
             {
                 statusMessage(tr("Computation canceled."));
                 return;
             }
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -15400,6 +15463,7 @@ void MainWindow::slotAnalyzeStrEquivalenceSimilarityMeasureDialog()
  * @brief Calls Graph::writeMatrixSimilarityMatching() to write a
  * similarity matrix according to given measure into a file, and displays it.
  *
+ * Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzeStrEquivalenceSimilarityByMeasure(const QString &matrix,
                                                               const QString &varLocation,
@@ -15412,6 +15476,8 @@ void MainWindow::slotAnalyzeStrEquivalenceSimilarityByMeasure(const QString &mat
         return;
     }
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
     QString metric;
     if (measure.contains("Simple", Qt::CaseInsensitive))
@@ -15433,21 +15499,21 @@ void MainWindow::slotAnalyzeStrEquivalenceSimilarityByMeasure(const QString &mat
     else if (measure.contains("Chebyshev", Qt::CaseInsensitive))
         metric = "chebyshev";
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-equivalence-similarity-" + metric + "-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-equivalence-similarity-" + metric + "-" + dateTime + ext;
 
     bool considerWeights = true;
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, measure, matrix, varLocation, diagonal, considerWeights, success]() {
+        [this, fn, measure, matrix, varLocation, diagonal, considerWeights, reportFormat, success]() {
             *success = activeGraph->writeMatrixSimilarityMatching(
-                fn, measure, matrix, varLocation, diagonal, considerWeights);
+                fn, measure, matrix, varLocation, diagonal, considerWeights, reportFormat);
         },
         tr("Computing Similarity Matrix. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
                 return;
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -15482,6 +15548,8 @@ void MainWindow::slotAnalyzeStrEquivalenceDissimilaritiesDialog()
  * @param metric
  * @param varLocation
  * @param diagonal
+ *
+ * Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzeStrEquivalenceDissimilaritiesTieProfile(const QString &metric,
                                                                     const QString &varLocation,
@@ -15494,6 +15562,8 @@ void MainWindow::slotAnalyzeStrEquivalenceDissimilaritiesTieProfile(const QStrin
         return;
     }
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
     QString metricStr;
     if (metric.contains("Simple", Qt::CaseInsensitive))
@@ -15515,7 +15585,7 @@ void MainWindow::slotAnalyzeStrEquivalenceDissimilaritiesTieProfile(const QStrin
     else if (metric.contains("Chebyshev", Qt::CaseInsensitive))
         metricStr = "chebyshev";
 
-    QString fn = appSettings["dataDir"] + "socnetv-report-equivalence-dissimilarities-" + metricStr + "-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-equivalence-dissimilarities-" + metricStr + "-" + dateTime + ext;
 
     askAboutEdgeWeights();
 
@@ -15523,17 +15593,17 @@ void MainWindow::slotAnalyzeStrEquivalenceDissimilaritiesTieProfile(const QStrin
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, metric, varLocation, diagonal, considerWeights, success]() {
+        [this, fn, metric, varLocation, diagonal, considerWeights, reportFormat, success]() {
             *success = activeGraph->writeMatrixDissimilarities(fn, metric, varLocation, diagonal,
-                                                                considerWeights);
+                                                                considerWeights, reportFormat);
         },
         tr("Computing Tie Profile Dissimilarities. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
             {
                 return;
             }
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -15570,6 +15640,7 @@ void MainWindow::slotAnalyzeStrEquivalencePearsonDialog()
  * @brief Calls Graph::writeMatrixSimilarityPearson() to write Pearson
  * Correlation Coefficients into a file, and displays it.
  *
+ * Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzeStrEquivalencePearson(const QString &matrix,
                                                   const QString &varLocation,
@@ -15581,22 +15652,24 @@ void MainWindow::slotAnalyzeStrEquivalencePearson(const QString &matrix,
         return;
     }
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-equivalence-pearson-coefficients-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-equivalence-pearson-coefficients-" + dateTime + ext;
 
     bool considerWeights = true;
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, considerWeights, matrix, varLocation, diagonal, success]() {
+        [this, fn, considerWeights, matrix, varLocation, diagonal, reportFormat, success]() {
             *success = activeGraph->writeMatrixSimilarityPearson(
-                fn, considerWeights, matrix, varLocation, diagonal);
+                fn, considerWeights, matrix, varLocation, diagonal, reportFormat);
         },
         tr("Computing Pearson Correlation Coefficients. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
                 return;
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
