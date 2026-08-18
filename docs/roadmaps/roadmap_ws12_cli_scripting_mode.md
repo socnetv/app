@@ -9,7 +9,7 @@ SocNetV as a live component.
 
 ## Status
 
-🚧 In progress. Eighteen commands shipped across #261/#262/WS14/WS6.6/this pass — see What WS12
+🚧 In progress. Nineteen commands shipped across #261/#262/WS14/WS6.6/WS16 — see What WS12
 Delivered below; every command now logs a uniform `BENCH` line on completion. Eventually most of
 SocNetV's functions should be reachable through interactive mode — see Background for where this
 is headed.
@@ -117,6 +117,11 @@ command below, not just the ones originally added for benchmarking.
   of `distances`: same dispatch and computation, no disk write. `centralities` has no real-menu
   equivalent (the GUI computes each centrality index via ~9 separate menu actions, not one combined
   action), so it lives here rather than on `distances`.
+- `report-centrality-degree [weights] [dropisolates]` — mirrors the real Analyze → Centrality →
+  Degree menu action (`slotAnalyzeCentralityDegree()`) exactly, same `distances`-style pattern.
+  Added for WS16 (#113, CSV report export) as the first centrality/prestige report ever exercised
+  headlessly — none of the other 11 `writeCentrality*`/`writePrestige*` functions have a script
+  command yet.
 - `render` — forces a synchronous `graphicsWidget->viewport()->repaint()` (unlike `update()`,
   which only schedules one). Added for WS6.6's canvas rendering-perf kernel
   (`roadmap_ws6_testing_ci_regression.md`).

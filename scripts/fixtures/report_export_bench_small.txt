@@ -1,0 +1,5 @@
+erdos-m 500 2500 undirected
+delay 1
+distances weights
+report-centrality-degree weights
+quit

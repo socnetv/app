@@ -123,6 +123,16 @@ mistaken for having fixed all four.
 
 ---
 
+## WS16 — Report CSV Export
+
+Roadmap: [`docs/roadmaps/roadmap_ws16_report_csv_export.md`](roadmaps/roadmap_ws16_report_csv_export.md)
+
+Let analysis reports (#113) be exported as CSV, not just HTML, staged from the matrix-family
+reports (cheap, already share one renderer) to centrality/prestige reports (harder, needs a new
+shared renderer) to the remaining long tail.
+
+---
+
 # Priorities
 
 1. **WS15** — app responsiveness contract. P1-P3 done and live-verified; P4's parallelization audit
@@ -137,9 +147,10 @@ mistaken for having fixed all four.
 5. **WS8** — IO layer stabilization. Roadmap scoped; zero code written yet.
 6. **WS11** — algorithm additions. Started: #7 and #272 shipped; rest of the backlog not
    prioritised yet.
-7. **WS12** — CLI scripting mode. Eighteen commands shipped across several passes since #261/#262;
+7. **WS12** — CLI scripting mode. Nineteen commands shipped across several passes since #261/#262;
    further commands added on demand, not prioritised as a standing backlog.
 8. **WS13** — undo/redo. Just created; not prioritised yet, no code written.
+9. **WS16** — report CSV export. Step 0 (baseline benchmarking) done; Steps 1-3 not started.
 
 ---
 

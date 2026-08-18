@@ -5785,7 +5785,8 @@ void MainWindow::runInteractiveScript(const QString &scriptPath)
  *   therefore both happen *inside* that same lambda, at the point the work is genuinely done -
  *   never outside/after the `invokeMethod()` call itself.
  * - **Two-step dispatch** (`filter_ego`, `filter_isolates`, `symmetrize_strongties`,
- *   `symmetrize_cocitation`, `unilateral`, `distances`, `distances_bench`): used when the work can
+ *   `symmetrize_cocitation`, `unilateral`, `distances`, `distances_bench`,
+ *   `report-centrality-degree`): used when the work can
  *   take many seconds and should show a progress dialog, via the `runGraphOperationAsync()`
  *   helper. It takes two separate lambdas - one that performs the (possibly slow) computation, one
  *   that runs only after that computation has fully completed, to report on it and advance the
@@ -6233,6 +6234,39 @@ void MainWindow::processNextInteractiveCommand()
                 qInfo() << "BENCH distances_bench weights=" << considerWeights
                         << "inverse=" << inverseWeights << "dropisolates=" << dropIsolates
                         << "centralities=" << computeCentralities
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "report-centrality-degree" || line.startsWith("report-centrality-degree "))
+    {
+        // report-centrality-degree [weights] [dropisolates] - WS16 (#113) baseline: mirrors the
+        // real Analyze > Centrality > Degree menu action (slotAnalyzeCentralityDegree()) exactly,
+        // same as 'distances' mirrors slotAnalyzeMatrixDistances() above. This is the first
+        // centrality/prestige report ever exercised headlessly - none of the other 11
+        // writeCentrality*/writePrestige* functions have a script command yet. Also skips
+        // askAboutEdgeWeights()'s modal prompt entirely - the tokens below already answer what it
+        // would ask.
+        const QStringList tokens = line.mid(24).trimmed().split(' ', Qt::SkipEmptyParts);
+        const bool considerWeights = tokens.contains("weights");
+        const bool dropIsolates = tokens.contains("dropisolates");
+
+        const QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+        const QString fn = appSettings["dataDir"] + "socnetv-report-centrality-out-degree-" + dateTime + ".html";
+        auto success = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, fn, considerWeights, dropIsolates, success]() {
+                *success = activeGraph->writeCentralityDegree(fn, considerWeights, dropIsolates);
+            },
+            tr("Computing Degree Centralities. Please wait..."),
+            [this, considerWeights, dropIsolates, success, timer]() {
+                qInfo() << "BENCH report-centrality-degree weights=" << considerWeights
+                        << "dropisolates=" << dropIsolates
+                        << "success=" << *success
                         << "N=" << activeNodes() << "E=" << activeEdges()
                         << "elapsed_ms=" << timer->elapsed();
                 QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
