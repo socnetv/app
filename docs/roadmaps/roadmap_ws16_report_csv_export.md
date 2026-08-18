@@ -9,8 +9,8 @@ spreadsheet.
 
 ## Status
 
-📋 Scoped, Step 0 (baseline benchmarking) done. Steps 1-3 (matrix-family CSV, centrality/prestige
-CSV + dedup, long tail) not started.
+🚧 In progress. Steps 0-1 done (baseline benchmarking, matrix-family CSV export). Steps 2-3
+(centrality/prestige CSV + dedup, long tail) not started.
 
 ## Background
 
@@ -89,13 +89,53 @@ step itself — the two are not separated in this measurement. Later steps shoul
 end-to-end numbers to stay essentially flat (compute unchanged) rather than looking for a large
 drop; the CSV path's own timing (once it exists) is the more informative comparison.
 
+### Step 1 — Matrix-family CSV export
+
+- New `Graph::writeMatrixCSVTable()` (`graph_reports.cpp`), sibling to `writeMatrixHTMLTable()` —
+  same value-formatting rules (RAND_MAX sentinel, #266 large-magnitude scientific notation,
+  precision), comma-delimited, vertex-number header row, no escaping needed.
+- New `ReportFormat { Html, Csv }` enum (`global.h`), threaded as a parameter through
+  `writeMatrix()`, `writeMatrixWalks()`, `writeMatrixDissimilarities()`,
+  `writeMatrixSimilarityMatching()`, `writeMatrixSimilarityPearson()`, and `writeMatrixAdjacency()`
+  — compute phase untouched in every case, CSV branch is self-contained and returns early.
+  `writeMatrixAdjacency()` doesn't reuse `writeMatrixCSVTable()` (it computes cells live via
+  `edgeExists()`, not from a pre-built `Matrix`, to preserve node numbers after deletions) — has
+  its own small comma-delimited loop instead.
+- New Settings control: `reportsGroupBox` in `DialogSettings` gained a 4th row ("Output format",
+  HTML/CSV combo), wired via the same `DialogSettings` signal → `MainWindow` connect →
+  `Graph::setReportsOutputFormat()` pattern as the 3 existing Reports settings.
+  `appSettings["initReportsOutputFormat"]` persists it (default `"0"` = HTML).
+- **Bug found and fixed along the way**: `writeMatrixAdjacency()` and `writeMatrixWalks()` both
+  returned `void`, unlike every other writer in this family. Their 3 `MainWindow` call sites
+  (`slotNetworkViewSociomatrix`, `slotAnalyzeWalksLength`, `slotAnalyzeWalksTotal`) gated the
+  "open the report" step on `activeGraph->progressCanceled()` alone — which only reflects the user
+  clicking Cancel, not a file-open failure. A silently failed write (bad path, permissions, disk
+  full) was reported to the user as "saved" even though nothing was written. Both functions now
+  return `bool`; all 3 call sites check the real success flag.
+- All 14 `MainWindow` call sites updated: pick `.html`/`.csv` extension from the setting, pass
+  `format` through, CSV always opens via `QDesktopServices::openUrl()`. The `distances`
+  interactive-script command gained a `csv` token (explicit, not settings-read, since a script has
+  no Settings dialog) so it can't silently diverge from the real menu action.
+
+**Verification**: `./scripts/run_golden_compares.sh` clean (Phase A/compute untouched everywhere).
+Manual content check: `distances weights csv` on an 8-node network produced a correct
+comma-delimited, symmetric distance matrix with a 0 diagonal, matching the HTML sibling's values
+exactly. Live GUI check of the new Settings control caught and fixed a real bug (see below) before
+it shipped. Benchmark re-run (`run_report_export_bench.sh`) confirmed the HTML path is unchanged
+within normal run-to-run noise (small: 1166→1243ms, 776→767ms; large: 27092→27481ms,
+776→767ms — all within the ~5-10% variance already present run-to-run). A single-run CSV-vs-HTML
+`distances` comparison on the large fixture (28991ms CSV vs. 24495ms HTML) isn't a real signal
+either way — both fall inside that same variance band, and this benchmark measures APSP compute
+time (identical in both branches), not report-writing cost specifically; isolating the write-only
+cost would need a different measurement, not attempted here.
+
+**Settings UI bug found and fixed during manual verification**: the `.ui` file defined the new
+combo box's two items (`HTML`, `CSV`) *and* the constructor called `addItems()` with the same two
+strings — the combo showed four duplicate entries at runtime. Fixed by removing the static `.ui`
+items, matching the existing `reportsChartTypeSelect` pattern (items added purely in code).
+
 ## What Remains Open
 
-- **Step 1 — Matrix-family CSV export.** New `Graph::writeMatrixCSVTable()` sibling to
-  `writeMatrixHTMLTable()`; thread a `ReportFormat` parameter through `writeMatrix()` and its 4
-  sibling writers plus `writeMatrixAdjacency()`; new Settings control
-  (`Graph::m_reportsOutputFormat`/`setReportsOutputFormat()`); update ~15 `MainWindow` call sites
-  and the `distances` interactive-command duplicate.
 - **Step 2 — Centrality/Prestige CSV export + dedup.** New shared per-node score-table renderer
   pair (`writeScoreTableHTML()`/`writeScoreTableCSV()`) replacing the 12x copy-pasted table
   scaffold; new `TableExport::toCSV(headers, rows, path)` overload for label escaping; retrofit
