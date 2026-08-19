@@ -5791,7 +5791,11 @@ void MainWindow::runInteractiveScript(const QString &scriptPath)
  *   never outside/after the `invokeMethod()` call itself.
  * - **Two-step dispatch** (`filter_ego`, `filter_isolates`, `symmetrize_strongties`,
  *   `symmetrize_cocitation`, `unilateral`, `distances`, `distances_bench`,
- *   `report-centrality-degree`): used when the work can
+ *   `report-centrality-degree`, `report-centrality-closeness`, `report-centrality-closeness-ir`,
+ *   `report-centrality-betweenness`, `report-centrality-stress`, `report-centrality-eccentricity`,
+ *   `report-centrality-power`, `report-centrality-information`, `report-centrality-eigenvector`,
+ *   `report-prestige-degree`, `report-prestige-proximity`, `report-prestige-pagerank`): used when
+ *   the work can
  *   take many seconds and should show a progress dialog, via the `runGraphOperationAsync()`
  *   helper. It takes two separate lambdas - one that performs the (possibly slow) computation, one
  *   that runs only after that computation has fully completed, to report on it and advance the
@@ -6252,31 +6256,378 @@ void MainWindow::processNextInteractiveCommand()
     }
     else if (line == "report-centrality-degree" || line.startsWith("report-centrality-degree "))
     {
-        // report-centrality-degree [weights] [dropisolates] - WS16 (#113) baseline: mirrors the
-        // real Analyze > Centrality > Degree menu action (slotAnalyzeCentralityDegree()) exactly,
-        // same as 'distances' mirrors slotAnalyzeMatrixDistances() above. This is the first
-        // centrality/prestige report ever exercised headlessly - none of the other 11
+        // report-centrality-degree [weights] [dropisolates] [csv] - WS16 (#113) baseline: mirrors
+        // the real Analyze > Centrality > Degree menu action (slotAnalyzeCentralityDegree())
+        // exactly, same as 'distances' mirrors slotAnalyzeMatrixDistances() above. This is the
+        // first centrality/prestige report ever exercised headlessly - none of the other 11
         // writeCentrality*/writePrestige* functions have a script command yet. Also skips
         // askAboutEdgeWeights()'s modal prompt entirely - the tokens below already answer what it
-        // would ask.
+        // would ask. The 'csv' token selects ReportFormat::Csv explicitly (Step 2), matching
+        // 'distances'' handling.
         const QStringList tokens = line.mid(24).trimmed().split(' ', Qt::SkipEmptyParts);
         const bool considerWeights = tokens.contains("weights");
         const bool dropIsolates = tokens.contains("dropisolates");
+        const int reportFormat = tokens.contains("csv") ? ReportFormat::Csv : ReportFormat::Html;
 
         const QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-        const QString fn = appSettings["dataDir"] + "socnetv-report-centrality-out-degree-" + dateTime + ".html";
+        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+        const QString fn = appSettings["dataDir"] + "socnetv-report-centrality-out-degree-" + dateTime + ext;
         auto success = std::make_shared<bool>(false);
         auto timer = std::make_shared<QElapsedTimer>();
         timer->start();
 
         runGraphOperationAsync(
-            [this, fn, considerWeights, dropIsolates, success]() {
-                *success = activeGraph->writeCentralityDegree(fn, considerWeights, dropIsolates);
+            [this, fn, considerWeights, dropIsolates, reportFormat, success]() {
+                *success = activeGraph->writeCentralityDegree(fn, considerWeights, dropIsolates, reportFormat);
             },
             tr("Computing Degree Centralities. Please wait..."),
             [this, considerWeights, dropIsolates, success, timer]() {
                 qInfo() << "BENCH report-centrality-degree weights=" << considerWeights
                         << "dropisolates=" << dropIsolates
+                        << "success=" << *success
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "report-centrality-closeness" || line.startsWith("report-centrality-closeness "))
+    {
+        // report-centrality-closeness [weights] [inverse] [dropisolates] [csv] - WS16 Step 2:
+        // mirrors slotAnalyzeCentralityCloseness() exactly, same shape as report-centrality-degree.
+        const QStringList tokens = line.mid(27).trimmed().split(' ', Qt::SkipEmptyParts);
+        const bool considerWeights = tokens.contains("weights");
+        const bool inverseWeights = tokens.contains("inverse");
+        const bool dropIsolates = tokens.contains("dropisolates");
+        const int reportFormat = tokens.contains("csv") ? ReportFormat::Csv : ReportFormat::Html;
+
+        const QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+        const QString fn = appSettings["dataDir"] + "socnetv-report-centrality-closeness-" + dateTime + ext;
+        auto success = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, fn, considerWeights, inverseWeights, dropIsolates, reportFormat, success]() {
+                *success = activeGraph->writeCentralityCloseness(
+                    fn, considerWeights, inverseWeights, dropIsolates, reportFormat);
+            },
+            tr("Computing Closeness Centralities. Please wait..."),
+            [this, considerWeights, inverseWeights, dropIsolates, success, timer]() {
+                qInfo() << "BENCH report-centrality-closeness weights=" << considerWeights
+                        << "inverse=" << inverseWeights << "dropisolates=" << dropIsolates
+                        << "success=" << *success
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "report-centrality-closeness-ir" || line.startsWith("report-centrality-closeness-ir "))
+    {
+        // report-centrality-closeness-ir [weights] [inverse] [dropisolates] [csv] - WS16 Step 2:
+        // mirrors slotAnalyzeCentralityClosenessIR() exactly.
+        const QStringList tokens = line.mid(30).trimmed().split(' ', Qt::SkipEmptyParts);
+        const bool considerWeights = tokens.contains("weights");
+        const bool inverseWeights = tokens.contains("inverse");
+        const bool dropIsolates = tokens.contains("dropisolates");
+        const int reportFormat = tokens.contains("csv") ? ReportFormat::Csv : ReportFormat::Html;
+
+        const QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+        const QString fn = appSettings["dataDir"] + "socnetv-report-centrality-closeness-influence-range-" + dateTime + ext;
+        auto success = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, fn, considerWeights, inverseWeights, dropIsolates, reportFormat, success]() {
+                *success = activeGraph->writeCentralityClosenessInfluenceRange(
+                    fn, considerWeights, inverseWeights, dropIsolates, reportFormat);
+            },
+            tr("Computing Influence Range Closeness Centralities. Please wait..."),
+            [this, considerWeights, inverseWeights, dropIsolates, success, timer]() {
+                qInfo() << "BENCH report-centrality-closeness-ir weights=" << considerWeights
+                        << "inverse=" << inverseWeights << "dropisolates=" << dropIsolates
+                        << "success=" << *success
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "report-centrality-betweenness" || line.startsWith("report-centrality-betweenness "))
+    {
+        // report-centrality-betweenness [weights] [inverse] [dropisolates] [csv] - WS16 Step 2:
+        // mirrors slotAnalyzeCentralityBetweenness() exactly.
+        const QStringList tokens = line.mid(29).trimmed().split(' ', Qt::SkipEmptyParts);
+        const bool considerWeights = tokens.contains("weights");
+        const bool inverseWeights = tokens.contains("inverse");
+        const bool dropIsolates = tokens.contains("dropisolates");
+        const int reportFormat = tokens.contains("csv") ? ReportFormat::Csv : ReportFormat::Html;
+
+        const QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+        const QString fn = appSettings["dataDir"] + "socnetv-report-centrality-betweenness-" + dateTime + ext;
+        auto success = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, fn, considerWeights, inverseWeights, dropIsolates, reportFormat, success]() {
+                *success = activeGraph->writeCentralityBetweenness(
+                    fn, considerWeights, inverseWeights, dropIsolates, reportFormat);
+            },
+            tr("Computing Betweenness Centralities. Please wait..."),
+            [this, considerWeights, inverseWeights, dropIsolates, success, timer]() {
+                qInfo() << "BENCH report-centrality-betweenness weights=" << considerWeights
+                        << "inverse=" << inverseWeights << "dropisolates=" << dropIsolates
+                        << "success=" << *success
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "report-centrality-stress" || line.startsWith("report-centrality-stress "))
+    {
+        // report-centrality-stress [weights] [inverse] [dropisolates] [csv] - WS16 Step 2:
+        // mirrors slotAnalyzeCentralityStress() exactly.
+        const QStringList tokens = line.mid(24).trimmed().split(' ', Qt::SkipEmptyParts);
+        const bool considerWeights = tokens.contains("weights");
+        const bool inverseWeights = tokens.contains("inverse");
+        const bool dropIsolates = tokens.contains("dropisolates");
+        const int reportFormat = tokens.contains("csv") ? ReportFormat::Csv : ReportFormat::Html;
+
+        const QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+        const QString fn = appSettings["dataDir"] + "socnetv-report-centrality-stress-" + dateTime + ext;
+        auto success = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, fn, considerWeights, inverseWeights, dropIsolates, reportFormat, success]() {
+                *success = activeGraph->writeCentralityStress(
+                    fn, considerWeights, inverseWeights, dropIsolates, reportFormat);
+            },
+            tr("Computing Stress Centralities. Please wait..."),
+            [this, considerWeights, inverseWeights, dropIsolates, success, timer]() {
+                qInfo() << "BENCH report-centrality-stress weights=" << considerWeights
+                        << "inverse=" << inverseWeights << "dropisolates=" << dropIsolates
+                        << "success=" << *success
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "report-centrality-eccentricity" || line.startsWith("report-centrality-eccentricity "))
+    {
+        // report-centrality-eccentricity [weights] [inverse] [dropisolates] [csv] - WS16 Step 2:
+        // mirrors slotAnalyzeCentralityEccentricity() exactly.
+        const QStringList tokens = line.mid(30).trimmed().split(' ', Qt::SkipEmptyParts);
+        const bool considerWeights = tokens.contains("weights");
+        const bool inverseWeights = tokens.contains("inverse");
+        const bool dropIsolates = tokens.contains("dropisolates");
+        const int reportFormat = tokens.contains("csv") ? ReportFormat::Csv : ReportFormat::Html;
+
+        const QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+        const QString fn = appSettings["dataDir"] + "socnetv-report-centrality-eccentricity-" + dateTime + ext;
+        auto success = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, fn, considerWeights, inverseWeights, dropIsolates, reportFormat, success]() {
+                *success = activeGraph->writeCentralityEccentricity(
+                    fn, considerWeights, inverseWeights, dropIsolates, reportFormat);
+            },
+            tr("Computing Eccentricity Centralities. Please wait..."),
+            [this, considerWeights, inverseWeights, dropIsolates, success, timer]() {
+                qInfo() << "BENCH report-centrality-eccentricity weights=" << considerWeights
+                        << "inverse=" << inverseWeights << "dropisolates=" << dropIsolates
+                        << "success=" << *success
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "report-centrality-power" || line.startsWith("report-centrality-power "))
+    {
+        // report-centrality-power [weights] [inverse] [dropisolates] [csv] - WS16 Step 2:
+        // mirrors slotAnalyzeCentralityPower() exactly.
+        const QStringList tokens = line.mid(23).trimmed().split(' ', Qt::SkipEmptyParts);
+        const bool considerWeights = tokens.contains("weights");
+        const bool inverseWeights = tokens.contains("inverse");
+        const bool dropIsolates = tokens.contains("dropisolates");
+        const int reportFormat = tokens.contains("csv") ? ReportFormat::Csv : ReportFormat::Html;
+
+        const QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+        const QString fn = appSettings["dataDir"] + "socnetv-report-centrality-power-Gil-Schmidt-" + dateTime + ext;
+        auto success = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, fn, considerWeights, inverseWeights, dropIsolates, reportFormat, success]() {
+                *success = activeGraph->writeCentralityPower(
+                    fn, considerWeights, inverseWeights, dropIsolates, reportFormat);
+            },
+            tr("Computing Power Centralities. Please wait..."),
+            [this, considerWeights, inverseWeights, dropIsolates, success, timer]() {
+                qInfo() << "BENCH report-centrality-power weights=" << considerWeights
+                        << "inverse=" << inverseWeights << "dropisolates=" << dropIsolates
+                        << "success=" << *success
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "report-centrality-information" || line.startsWith("report-centrality-information "))
+    {
+        // report-centrality-information [weights] [inverse] [csv] - WS16 Step 2: mirrors
+        // slotAnalyzeCentralityInformation() exactly (no dropIsolates - Information Centrality
+        // doesn't take one; it always excludes isolates internally).
+        const QStringList tokens = line.mid(29).trimmed().split(' ', Qt::SkipEmptyParts);
+        const bool considerWeights = tokens.contains("weights");
+        const bool inverseWeights = tokens.contains("inverse");
+        const int reportFormat = tokens.contains("csv") ? ReportFormat::Csv : ReportFormat::Html;
+
+        const QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+        const QString fn = appSettings["dataDir"] + "socnetv-report-centrality-information-" + dateTime + ext;
+        auto success = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, fn, considerWeights, inverseWeights, reportFormat, success]() {
+                *success = activeGraph->writeCentralityInformation(
+                    fn, considerWeights, inverseWeights, reportFormat);
+            },
+            tr("Computing Information Centralities. Please wait..."),
+            [this, considerWeights, inverseWeights, success, timer]() {
+                qInfo() << "BENCH report-centrality-information weights=" << considerWeights
+                        << "inverse=" << inverseWeights
+                        << "success=" << *success
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "report-centrality-eigenvector" || line.startsWith("report-centrality-eigenvector "))
+    {
+        // report-centrality-eigenvector [weights] [inverse] [csv] - WS16 Step 2: mirrors
+        // slotAnalyzeCentralityEigenvector() exactly (dropIsolates is fixed false there, so no
+        // token for it here either).
+        const QStringList tokens = line.mid(29).trimmed().split(' ', Qt::SkipEmptyParts);
+        const bool considerWeights = tokens.contains("weights");
+        const bool inverseWeights = tokens.contains("inverse");
+        const bool dropIsolates = false;
+        const int reportFormat = tokens.contains("csv") ? ReportFormat::Csv : ReportFormat::Html;
+
+        const QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+        const QString fn = appSettings["dataDir"] + "socnetv-report-centrality-eigenvector-" + dateTime + ext;
+        auto success = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, fn, considerWeights, inverseWeights, dropIsolates, reportFormat, success]() {
+                *success = activeGraph->writeCentralityEigenvector(
+                    fn, considerWeights, inverseWeights, dropIsolates, reportFormat);
+            },
+            tr("Computing Eigenvector Centralities. Please wait..."),
+            [this, considerWeights, inverseWeights, success, timer]() {
+                qInfo() << "BENCH report-centrality-eigenvector weights=" << considerWeights
+                        << "inverse=" << inverseWeights
+                        << "success=" << *success
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "report-prestige-degree" || line.startsWith("report-prestige-degree "))
+    {
+        // report-prestige-degree [weights] [dropisolates] [csv] - WS16 Step 2: mirrors
+        // slotAnalyzePrestigeDegree() exactly.
+        const QStringList tokens = line.mid(22).trimmed().split(' ', Qt::SkipEmptyParts);
+        const bool considerWeights = tokens.contains("weights");
+        const bool dropIsolates = tokens.contains("dropisolates");
+        const int reportFormat = tokens.contains("csv") ? ReportFormat::Csv : ReportFormat::Html;
+
+        const QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+        const QString fn = appSettings["dataDir"] + "socnetv-report-prestige-degree-" + dateTime + ext;
+        auto success = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, fn, considerWeights, dropIsolates, reportFormat, success]() {
+                *success = activeGraph->writePrestigeDegree(fn, considerWeights, dropIsolates, reportFormat);
+            },
+            tr("Computing Degree Prestige. Please wait..."),
+            [this, considerWeights, dropIsolates, success, timer]() {
+                qInfo() << "BENCH report-prestige-degree weights=" << considerWeights
+                        << "dropisolates=" << dropIsolates
+                        << "success=" << *success
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "report-prestige-proximity" || line.startsWith("report-prestige-proximity "))
+    {
+        // report-prestige-proximity [dropisolates] [csv] - WS16 Step 2: mirrors
+        // slotAnalyzePrestigeProximity() exactly (considerWeights/inverseWeights are fixed
+        // true/false there, so no tokens for them here either).
+        const QStringList tokens = line.mid(25).trimmed().split(' ', Qt::SkipEmptyParts);
+        const bool dropIsolates = tokens.contains("dropisolates");
+        const int reportFormat = tokens.contains("csv") ? ReportFormat::Csv : ReportFormat::Html;
+
+        const QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+        const QString fn = appSettings["dataDir"] + "socnetv-report-prestige-proximity-" + dateTime + ext;
+        auto success = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, fn, dropIsolates, reportFormat, success]() {
+                *success = activeGraph->writePrestigeProximity(fn, true, false, dropIsolates, reportFormat);
+            },
+            tr("Computing Proximity Prestige. Please wait..."),
+            [this, dropIsolates, success, timer]() {
+                qInfo() << "BENCH report-prestige-proximity dropisolates=" << dropIsolates
+                        << "success=" << *success
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "report-prestige-pagerank" || line.startsWith("report-prestige-pagerank "))
+    {
+        // report-prestige-pagerank [dropisolates] [csv] - WS16 Step 2: mirrors
+        // slotAnalyzePrestigePageRank() exactly.
+        const QStringList tokens = line.mid(24).trimmed().split(' ', Qt::SkipEmptyParts);
+        const bool dropIsolates = tokens.contains("dropisolates");
+        const int reportFormat = tokens.contains("csv") ? ReportFormat::Csv : ReportFormat::Html;
+
+        const QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+        const QString fn = appSettings["dataDir"] + "socnetv-report-prestige-pagerank-" + dateTime + ext;
+        auto success = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, fn, dropIsolates, reportFormat, success]() {
+                *success = activeGraph->writePrestigePageRank(fn, dropIsolates, reportFormat);
+            },
+            tr("Computing PageRank Prestige. Please wait..."),
+            [this, dropIsolates, success, timer]() {
+                qInfo() << "BENCH report-prestige-pagerank dropisolates=" << dropIsolates
                         << "success=" << *success
                         << "N=" << activeNodes() << "E=" << activeEdges()
                         << "elapsed_ms=" << timer->elapsed();
@@ -15772,6 +16123,8 @@ void MainWindow::slotAnalyzeStrEquivalenceClusteringHierarchical(const QString &
 
 /**
  *	Writes Out-Degree Centralities into a file, then displays it.
+ *
+ *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzeCentralityDegree()
 {
@@ -15783,25 +16136,27 @@ void MainWindow::slotAnalyzeCentralityDegree()
 
     askAboutEdgeWeights(false);
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-out-degree-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-out-degree-" + dateTime + ext;
 
     bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
     bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, considerWeights, dropIsolates, success]() {
-            *success = activeGraph->writeCentralityDegree(fn, considerWeights, dropIsolates);
+        [this, fn, considerWeights, dropIsolates, reportFormat, success]() {
+            *success = activeGraph->writeCentralityDegree(fn, considerWeights, dropIsolates, reportFormat);
         },
         tr("Computing Degree Centralities. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
             {
                 return;
             }
             statusMessage(tr("Opening Out-Degree Centralities report..."));
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -15817,6 +16172,8 @@ void MainWindow::slotAnalyzeCentralityDegree()
 
 /**
  *	Writes Closeness Centralities into a file, then displays it.
+ *
+ *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzeCentralityCloseness()
 {
@@ -15828,8 +16185,10 @@ void MainWindow::slotAnalyzeCentralityCloseness()
     }
     askAboutEdgeWeights();
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-closeness-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-closeness-" + dateTime + ext;
 
     const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
     const bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
@@ -15837,16 +16196,16 @@ void MainWindow::slotAnalyzeCentralityCloseness()
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, success]() {
+        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat, success]() {
             *success = activeGraph->writeCentralityCloseness(
-                fn, considerWeights, inverseWeightsFinal, dropIsolates);
+                fn, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat);
         },
         tr("Computing Closeness Centralities. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
                 return;
             statusMessage(tr("Opening Closeness Centralities report..."));
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -15864,6 +16223,8 @@ void MainWindow::slotAnalyzeCentralityCloseness()
  * @brief MainWindow::slotAnalyzeCentralityClosenessIR
  *	Writes Centrality Closeness (based on Influence Range) indices into a file,
  *   then displays it.
+ *
+ *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzeCentralityClosenessIR()
 {
@@ -15873,8 +16234,10 @@ void MainWindow::slotAnalyzeCentralityClosenessIR()
         return;
     }
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-closeness-influence-range-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-closeness-influence-range-" + dateTime + ext;
 
     askAboutEdgeWeights();
 
@@ -15884,18 +16247,18 @@ void MainWindow::slotAnalyzeCentralityClosenessIR()
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, success]() {
+        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat, success]() {
             *success = activeGraph->writeCentralityClosenessInfluenceRange(
-                fn, considerWeights, inverseWeightsFinal, dropIsolates);
+                fn, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat);
         },
         tr("Computing Influence Range Closeness Centralities. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
             {
                 return;
             }
             statusMessage(tr("Opening Influence Range Closeness Centralities report..."));
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -15912,6 +16275,9 @@ void MainWindow::slotAnalyzeCentralityClosenessIR()
 /**
  *	Writes Betweenness Centralities into a file, then displays it.
  */
+/**
+ *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
+ */
 void MainWindow::slotAnalyzeCentralityBetweenness()
 {
     if (!activeNodes())
@@ -15920,8 +16286,10 @@ void MainWindow::slotAnalyzeCentralityBetweenness()
         return;
     }
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-betweenness-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-betweenness-" + dateTime + ext;
 
     askAboutEdgeWeights();
 
@@ -15931,16 +16299,16 @@ void MainWindow::slotAnalyzeCentralityBetweenness()
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, success]() {
+        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat, success]() {
             *success = activeGraph->writeCentralityBetweenness(
-                fn, considerWeights, inverseWeightsFinal, dropIsolates);
+                fn, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat);
         },
         tr("Computing Betweenness Centralities. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
                 return;
             statusMessage(tr("Opening Betweenness Centralities report..."));
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -15956,6 +16324,8 @@ void MainWindow::slotAnalyzeCentralityBetweenness()
 
 /**
  *	Writes Degree Prestige indices (In-Degree Centralities) into a file, then displays it.
+ *
+ *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzePrestigeDegree()
 {
@@ -15977,25 +16347,27 @@ void MainWindow::slotAnalyzePrestigeDegree()
 
     askAboutEdgeWeights(false);
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-prestige-degree-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-prestige-degree-" + dateTime + ext;
 
     const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
     const bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, considerWeights, dropIsolates, success]() {
-            *success = activeGraph->writePrestigeDegree(fn, considerWeights, dropIsolates);
+        [this, fn, considerWeights, dropIsolates, reportFormat, success]() {
+            *success = activeGraph->writePrestigeDegree(fn, considerWeights, dropIsolates, reportFormat);
         },
         tr("Computing Degree Prestige. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
             {
                 return;
             }
             statusMessage(tr("Opening Degree Prestige (in-degree) report..."));
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -16011,6 +16383,8 @@ void MainWindow::slotAnalyzePrestigeDegree()
 
 /**
  *	Writes PageRank Prestige indices into a file, then displays it.
+ *
+ *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzePrestigePageRank()
 {
@@ -16020,8 +16394,10 @@ void MainWindow::slotAnalyzePrestigePageRank()
         return;
     }
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-prestige-pagerank-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-prestige-pagerank-" + dateTime + ext;
 
     askAboutEdgeWeights();
 
@@ -16029,17 +16405,17 @@ void MainWindow::slotAnalyzePrestigePageRank()
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, dropIsolates, success]() {
-            *success = activeGraph->writePrestigePageRank(fn, dropIsolates);
+        [this, fn, dropIsolates, reportFormat, success]() {
+            *success = activeGraph->writePrestigePageRank(fn, dropIsolates, reportFormat);
         },
         tr("Computing PageRank Prestige. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
             {
                 return;
             }
             statusMessage(tr("Opening PageRank Prestige report..."));
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -16056,6 +16432,8 @@ void MainWindow::slotAnalyzePrestigePageRank()
 /**
  * @brief MainWindow::slotAnalyzePrestigeProximity
  * Writes Proximity Prestige indices into a file, then displays them.
+ *
+ *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzePrestigeProximity()
 {
@@ -16065,8 +16443,10 @@ void MainWindow::slotAnalyzePrestigeProximity()
         return;
     }
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-prestige-proximity-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-prestige-proximity-" + dateTime + ext;
 
     askAboutEdgeWeights();
 
@@ -16074,17 +16454,17 @@ void MainWindow::slotAnalyzePrestigeProximity()
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, dropIsolates, success]() {
-            *success = activeGraph->writePrestigeProximity(fn, true, false, dropIsolates);
+        [this, fn, dropIsolates, reportFormat, success]() {
+            *success = activeGraph->writePrestigeProximity(fn, true, false, dropIsolates, reportFormat);
         },
         tr("Computing Proximity Prestige. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
             {
                 return;
             }
             statusMessage(tr("Opening Proximity Prestige report..."));
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -16101,6 +16481,8 @@ void MainWindow::slotAnalyzePrestigeProximity()
 /**
  * @brief MainWindow::slotAnalyzeCentralityInformation
  * Writes Informational Centralities into a file, then displays it.
+ *
+ *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzeCentralityInformation()
 {
@@ -16153,8 +16535,10 @@ void MainWindow::slotAnalyzeCentralityInformation()
         }
     }
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-information-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-information-" + dateTime + ext;
 
     askAboutEdgeWeights();
 
@@ -16163,16 +16547,16 @@ void MainWindow::slotAnalyzeCentralityInformation()
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, considerWeights, inverseWeightsFinal, success]() {
+        [this, fn, considerWeights, inverseWeightsFinal, reportFormat, success]() {
             *success = activeGraph->writeCentralityInformation(
-                fn, considerWeights, inverseWeightsFinal);
+                fn, considerWeights, inverseWeightsFinal, reportFormat);
         },
         tr("Computing Information Centralities. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
                 return;
             statusMessage(tr("Opening Information Centralities report..."));
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -16188,6 +16572,8 @@ void MainWindow::slotAnalyzeCentralityInformation()
 
 /**
  * @brief Writes Eigenvector Centralities into a file, then displays it.
+ *
+ *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzeCentralityEigenvector()
 {
@@ -16197,8 +16583,10 @@ void MainWindow::slotAnalyzeCentralityEigenvector()
         return;
     }
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-eigenvector-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-eigenvector-" + dateTime + ext;
 
     askAboutEdgeWeights();
 
@@ -16208,16 +16596,16 @@ void MainWindow::slotAnalyzeCentralityEigenvector()
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, success]() {
+        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat, success]() {
             *success = activeGraph->writeCentralityEigenvector(
-                fn, considerWeights, inverseWeightsFinal, dropIsolates);
+                fn, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat);
         },
         tr("Computing Eigenvector Centralities. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
                 return;
             statusMessage(tr("Opening Eigenvector Centralities report..."));
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -16234,6 +16622,8 @@ void MainWindow::slotAnalyzeCentralityEigenvector()
 /**
  * @brief MainWindow::slotAnalyzeCentralityStress
  * Writes Stress Centralities into a file, then displays it.
+ *
+ *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzeCentralityStress()
 {
@@ -16243,8 +16633,10 @@ void MainWindow::slotAnalyzeCentralityStress()
         return;
     }
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-stress-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-stress-" + dateTime + ext;
 
     askAboutEdgeWeights();
 
@@ -16254,16 +16646,16 @@ void MainWindow::slotAnalyzeCentralityStress()
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, success]() {
+        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat, success]() {
             *success = activeGraph->writeCentralityStress(
-                fn, considerWeights, inverseWeightsFinal, dropIsolates);
+                fn, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat);
         },
         tr("Computing Stress Centralities. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
                 return;
             statusMessage(tr("Opening Stress Centralities report..."));
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -16280,6 +16672,8 @@ void MainWindow::slotAnalyzeCentralityStress()
 /**
  * @brief MainWindow::slotAnalyzeCentralityPower
  * Writes Gil-Schmidt Power Centralities into a file, then displays it.
+ *
+ *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzeCentralityPower()
 {
@@ -16289,8 +16683,10 @@ void MainWindow::slotAnalyzeCentralityPower()
         return;
     }
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-power-Gil-Schmidt-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-power-Gil-Schmidt-" + dateTime + ext;
 
     askAboutEdgeWeights();
 
@@ -16300,16 +16696,16 @@ void MainWindow::slotAnalyzeCentralityPower()
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, success]() {
+        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat, success]() {
             *success = activeGraph->writeCentralityPower(
-                fn, considerWeights, inverseWeightsFinal, dropIsolates);
+                fn, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat);
         },
         tr("Computing Power Centralities. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
                 return;
             statusMessage(tr("Opening Gil-Schmidt Power Centralities report..."));
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -16326,6 +16722,8 @@ void MainWindow::slotAnalyzeCentralityPower()
 /**
  * @brief MainWindow::slotAnalyzeCentralityEccentricity
  * Writes Eccentricity Centralities into a file, then displays it.
+ *
+ *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzeCentralityEccentricity()
 {
@@ -16335,8 +16733,10 @@ void MainWindow::slotAnalyzeCentralityEccentricity()
         return;
     }
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-eccentricity-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-eccentricity-" + dateTime + ext;
 
     askAboutEdgeWeights();
 
@@ -16346,16 +16746,16 @@ void MainWindow::slotAnalyzeCentralityEccentricity()
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, success]() {
+        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat, success]() {
             *success = activeGraph->writeCentralityEccentricity(
-                fn, considerWeights, inverseWeightsFinal, dropIsolates);
+                fn, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat);
         },
         tr("Computing Eccentricity Centralities. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
                 return;
             statusMessage(tr("Opening Closeness Centralities report..."));
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
