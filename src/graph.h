@@ -913,8 +913,9 @@ public:
     void writeMatrixAdjacencyTo(QTextStream &os,
                                 const bool &saveEdgeWeights = true);
 
-    void writeReciprocity(const QString fileName,
-                          const bool considerWeights = false);
+    bool writeReciprocity(const QString fileName,
+                          const bool considerWeights = false,
+                          const int &format = ReportFormat::Html);
 
     bool writeMatrix(const QString &fileName,
                      const int &matrix = MATRIX_ADJACENCY,
@@ -967,26 +968,33 @@ public:
     bool writeEccentricity(const QString fileName,
                            const bool considerWeights = false,
                            const bool inverseWeights = false,
-                           const bool dropIsolates = false);
+                           const bool dropIsolates = false,
+                           const int &format = ReportFormat::Html);
 
     //   friend QTextStream& operator <<  (QTextStream& os, Graph& m);
 
-    // Shared per-node score-table renderer for the centrality/prestige report family
-    // (WS16 Step 2). "Node" and "Label" columns are fixed; dataColumnHeaders supplies
-    // the rest, in order. rowValues returns that row's already-computed scores, in the
-    // same order as dataColumnHeaders. isBlanked (optional; null means "never blank",
-    // matching writeCentralityEigenvector's existing behaviour) decides whether a row's
-    // data columns are replaced with a placeholder - e.g. dropped isolates - preserving
-    // each report's current isolate-handling exactly rather than unifying it.
+    // Shared per-node score-table renderer for the centrality/prestige and (WS16 Step 3)
+    // Reciprocity/Clustering Coefficient/Eccentricity report families. "Node" and "Label"
+    // columns are fixed; dataColumnHeaders supplies the rest, in order. rowValues returns
+    // that row's already-computed scores, in the same order as dataColumnHeaders - a value
+    // equal to RAND_MAX renders as the infinity glyph, matching writeMatrixHTMLTable/
+    // writeMatrixCSVTable's existing sentinel convention. isBlanked (optional; null means
+    // "never blank", matching writeCentralityEigenvector's existing behaviour) decides
+    // whether a row's data columns are replaced with a placeholder - e.g. dropped isolates -
+    // preserving each report's current isolate-handling exactly rather than unifying it.
+    // isSkipped (optional) omits the row entirely - distinct from isBlanked - matching
+    // writeEccentricity()'s existing "don't print disabled nodes at all" behaviour.
     void writeScoreTableHTML(QTextStream &outText,
                              const QStringList &dataColumnHeaders,
                              const std::function<QVector<qreal>(GraphVertex *)> &rowValues,
-                             const std::function<bool(GraphVertex *)> &isBlanked = nullptr);
+                             const std::function<bool(GraphVertex *)> &isBlanked = nullptr,
+                             const std::function<bool(GraphVertex *)> &isSkipped = nullptr);
 
     void writeScoreTableCSV(QTextStream &outText,
                             const QStringList &dataColumnHeaders,
                             const std::function<QVector<qreal>(GraphVertex *)> &rowValues,
-                            const std::function<bool(GraphVertex *)> &isBlanked = nullptr);
+                            const std::function<bool(GraphVertex *)> &isBlanked = nullptr,
+                            const std::function<bool(GraphVertex *)> &isSkipped = nullptr);
 
     bool writeCentralityDegree(const QString,
                                const bool weights,
@@ -1052,6 +1060,8 @@ public:
     bool writePrestigePageRank(const QString, const bool Isolates = false,
                                const int &format = ReportFormat::Html);
 
+    // HTML-only, permanently (WS16 Step 3): produces an equivalence matrix plus a dendrogram,
+    // neither of which is a single flat table.
     bool writeClusteringHierarchical(const QString &fileName,
                                      const QString &varLocation,
                                      const QString &matrix = "Adjacency",
@@ -1067,12 +1077,18 @@ public:
                                                     const int N,
                                                     const bool &dendrogram = false);
 
+    // HTML-only, permanently (WS16 Step 3): writeCliqueCensus() combines 4 heterogeneous
+    // sub-tables (clique list, actor-by-clique matrix, actor-by-actor co-membership matrix,
+    // and a full hierarchical-clustering dendrogram sub-report) that don't reduce to one
+    // flat CSV table.
     bool writeCliqueCensus(const QString &fileName,
                            const bool considerWeights);
 
-    bool writeClusteringCoefficient(const QString, const bool);
+    bool writeClusteringCoefficient(const QString, const bool,
+                                    const int &format = ReportFormat::Html);
 
-    bool writeTriadCensus(const QString, const bool);
+    bool writeTriadCensus(const QString, const bool,
+                          const int &format = ReportFormat::Html);
 
     /* DISTANCES, CENTRALITIES & PROMINENCE MEASURES */
 

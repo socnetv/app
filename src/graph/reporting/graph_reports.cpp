@@ -29,7 +29,7 @@
  * @param fileName
  * @param considerWeights
  */
-void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
+bool Graph::writeReciprocity(const QString fileName, const bool considerWeights, const int &format)
 {
     qCDebug(lcReporting) << "Writing reciprocity report to file:" << fileName;
 
@@ -43,21 +43,48 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
     {
         qCDebug(lcReporting) << "Could not open file for writing. Abort.";
         progressStatus(tr("Error. Could not write to ") + fileName);
-        return;
+        return false;
     }
 
     QTextStream outText(&file);
 
     m_graphReciprocityArc = graphReciprocity();
 
-    int rowCount = 0;
     int N = vertices();
-    qreal tiesSym = 0;
-    qreal tiesNonSym = 0;
-    qreal tiesOutNonSym = 0;
-    qreal tiesInNonSym = 0;
-    qreal tiesOutNonSymTotalOut = 0;
-    qreal tiesInNonSymTotalIn = 0;
+
+    // Shared by both the CSV and HTML branches below - single source of truth for the per-actor
+    // ratios (previously duplicated separately in each branch).
+    //
+    // Bug fix: tiesSym used to divide by (outEdgesCount() + inEdgesCount()) with no zero-guard,
+    // unlike every other ratio here. A node with zero total ties (in the directed sense - no
+    // inbound or outbound edges at all) hit 0/0, producing a literal "nan" in both the HTML and
+    // CSV output. Guarded the same way as the other four ratios: no ties means 0, not NaN.
+    auto rowValues = [](GraphVertex *v) -> QVector<qreal> {
+        const qreal totalTies = v->outEdgesCount() + v->inEdgesCount();
+        const qreal tiesSym = (totalTies != 0) ? (qreal)v->outEdgesReciprocated() / totalTies : 0;
+        const qreal tiesNonSym = (totalTies != 0) ? 1 - tiesSym : 0;
+        const qreal tiesOutNonSym = (v->outEdgesNonSym() || v->inEdgesNonSym())
+            ? (qreal)v->outEdgesNonSym() / (qreal)(v->outEdgesNonSym() + v->inEdgesNonSym())
+            : 0;
+        const qreal tiesInNonSym = (v->outEdgesNonSym() || v->inEdgesNonSym())
+            ? (qreal)v->inEdgesNonSym() / (qreal)(v->outEdgesNonSym() + v->inEdgesNonSym())
+            : 0;
+        const qreal tiesOutNonSymTotalOut = (v->outEdgesCount() != 0)
+            ? (qreal)v->outEdgesNonSym() / (qreal)v->outEdgesCount() : 0;
+        const qreal tiesInNonSymTotalIn = (v->inEdgesCount() != 0)
+            ? (qreal)v->inEdgesNonSym() / (qreal)v->inEdgesCount() : 0;
+        return {tiesSym, tiesNonSym, tiesOutNonSym, tiesInNonSym,
+                tiesOutNonSymTotalOut, tiesInNonSymTotalIn};
+    };
+    const QStringList dataColumnHeaders = {"Symmetric", "nonSymmetric", "nsym out/nsym",
+                                           "nsym in/nsym", "nsym out/out", "nsym in/in"};
+
+    if (format == ReportFormat::Csv)
+    {
+        writeScoreTableCSV(outText, dataColumnHeaders, rowValues);
+        file.close();
+        return true;
+    }
 
     QString pMsg = tr("Writing Reciprocity to file. \nPlease wait...");
     progressStatus(pMsg);
@@ -136,85 +163,7 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
             << "</span>"
             << "</p>";
 
-    outText << "<table class=\"stripes sortable\">";
-
-    outText << "<thead>"
-            << "<tr>"
-            << "<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;asc6 = 1; asc7 = 1;asc8 = 1;\">"
-            << tr("Actor")
-            << "</th>"
-            << "<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;asc6 = 1; asc7 = 1;asc8 = 1;\">"
-            << tr("Label")
-            << "</th>"
-            << "<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;asc6 = 1; asc7 = 1;asc8 = 1;\">"
-            << tr("Symmetric")
-            << "</th>"
-            << "<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4*= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;asc6 = 1; asc7 = 1;asc8 = 1;\">"
-            << tr("nonSymmetric")
-            << "</th>"
-            << "<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5*= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;asc6 = 1; asc7 = 1;asc8 = 1;\">"
-            << tr("nsym out/nsym")
-            << "</th>"
-            << "<th id=\"col6\" onclick=\"tableSort(results, 5, asc6); asc6*= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;asc5 = 1; asc7 = 1;asc8 = 1;\">"
-            << tr("nsym in/nsym")
-            << "</th>"
-            << "<th id=\"col7\" onclick=\"tableSort(results, 6, asc7); asc7*= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;asc5 = 1; asc6 = 1;asc8 = 1;\">"
-            << tr("nsym out/out")
-            << "</th>"
-            << "<th id=\"col8\" onclick=\"tableSort(results, 7, asc8); asc8*= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;asc5 = 1; asc6 = 1;asc7 = 1;\">"
-            << tr("nsym in/in")
-            << "</th>"
-            << "</tr>"
-            << "</thead>"
-            << "<tbody  id=\"results\">";
-
-    VList::const_iterator it;
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-
-        rowCount++;
-        qCDebug(lcReporting) << "Graph::writeReciprocity outnon  - innon - rec"
-                 << (*it)->outEdgesNonSym()
-                 << (*it)->inEdgesNonSym()
-                 << (*it)->outEdgesReciprocated();
-
-        // Symmetric: Total number of reciprocated ties involving this actor divided by the number of ties to and from her.
-        tiesSym = (qreal)(*it)->outEdgesReciprocated() / (qreal)((*it)->outEdgesCount() + (*it)->inEdgesCount());
-        // non Symmetric: One minus symmetric
-        tiesNonSym = 1 - tiesSym;
-        // nonSym Out/NonSym. Proportion of non-symmetric outgoing ties to the total non-symmetric ties.
-        tiesOutNonSym = ((*it)->outEdgesNonSym() || (*it)->inEdgesNonSym()) ? (qreal)(*it)->outEdgesNonSym() / (qreal)((*it)->outEdgesNonSym() + (*it)->inEdgesNonSym()) : 0;
-        // nonSym In/NonSym. Proportion of non-symmetric incoming ties to the total non-symmetric ties.
-        tiesInNonSym = ((*it)->outEdgesNonSym() || (*it)->inEdgesNonSym()) ? (qreal)(*it)->inEdgesNonSym() / (qreal)((*it)->outEdgesNonSym() + (*it)->inEdgesNonSym()) : 0;
-        // nonSym Out/Out. Proportion of non-symmetric outgoing ties to the total outgoing ties.
-        tiesOutNonSymTotalOut = ((*it)->outEdgesCount() != 0) ? (qreal)(*it)->outEdgesNonSym() / (qreal)(*it)->outEdgesCount() : 0;
-        // nonSym In/In. Proportion of non-symmetric incoming ties to the total incoming ties.
-        tiesInNonSymTotalIn = ((*it)->inEdgesCount() != 0) ? (qreal)(*it)->inEdgesNonSym() / (qreal)(*it)->inEdgesCount() : 0;
-
-        outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                << "<td>"
-                << (*it)->number()
-                << "</td><td>"
-                << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                << "</td><td>"
-                << tiesSym
-                //<< ((eccentr == 0) ? "\xE2\x88\x9E" : QString::number(eccentr) )
-                << "</td><td>"
-                << tiesNonSym
-                //<< ((eccentr == 0) ? "\xE2\x88\x9E" : QString::number(eccentr) )
-                << "</td><td>"
-                << tiesOutNonSym
-                << "</td><td>"
-                << tiesInNonSym
-                << "</td><td>"
-                << tiesOutNonSymTotalOut
-                << "</td><td>"
-                << tiesInNonSymTotalIn
-                << "</td>"
-                << "</tr>";
-    }
-
-    outText << "</tbody></table>";
+    writeScoreTableHTML(outText, dataColumnHeaders, rowValues);
 
     outText << "<p class=\"description\">";
     outText << "<span class=\"info\">"
@@ -262,6 +211,8 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
     outText << htmlEnd;
 
     file.close();
+
+    return true;
 }
 
 
@@ -273,7 +224,8 @@ void Graph::writeReciprocity(const QString fileName, const bool considerWeights)
  * @param dropIsolates
  */
 bool Graph::writeEccentricity(const QString fileName, const bool considerWeights,
-                              const bool inverseWeights, const bool dropIsolates)
+                              const bool inverseWeights, const bool dropIsolates,
+                              const int &format)
 {
 
     qCDebug(lcReporting) << "Writing Eccentricity report to file:" << fileName;
@@ -301,9 +253,23 @@ bool Graph::writeEccentricity(const QString fileName, const bool considerWeights
         progressStatus(tr("Computation canceled."));
         return false;
     }
-    int rowCount = 0;
+
+    if (format == ReportFormat::Csv)
+    {
+        writeScoreTableCSV(outText, {"e"},
+                           [](GraphVertex *v) -> QVector<qreal> {
+                               const qreal e = v->eccentricity();
+                               return {(e == 0) ? (qreal)RAND_MAX : e};
+                           },
+                           nullptr,
+                           [](GraphVertex *v) {
+                               return !v->isEnabled();
+                           });
+        file.close();
+        return true;
+    }
+
     int N = vertices();
-    qreal eccentr = 0;
 
     QString pMsg = tr("Writing Eccentricity scores to file. \nPlease wait...");
     progressStatus(pMsg);
@@ -344,52 +310,15 @@ bool Graph::writeEccentricity(const QString fileName, const bool considerWeights
             << tr("1 &le; e &le; \xE2\x88\x9E")
             << "</p>";
 
-    outText << "<table class=\"stripes sortable\">";
-
-    outText << "<thead>"
-            << "<tr>"
-            << "<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;\">"
-            << tr("Actor")
-            << "</th>"
-            << "<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;\">"
-            << tr("Label")
-            << "</th>"
-            << "<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc2 = 1; asc1 = 1;asc4 = 1;\">"
-            << tr("e")
-            << "</th>"
-            << "</tr>"
-            << "</thead>"
-            << "<tbody  id=\"results\">";
-
-    VList::const_iterator it;
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-
-        rowCount++;
-        eccentr = (*it)->eccentricity();
-        qCDebug(lcReporting) << "Graph::writeEccentricity() - actor "
-                 << (*it)->number()
-                 << "eccentricity"
-                 << eccentr;
-
-        if (!(*it)->isEnabled())
-        {
-            qCDebug(lcReporting) << "Graph::writeEccentricity() - actor disabled. SKIP.";
-            continue; // do not print disabled nodes
-        }
-
-        outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                << "<td>"
-                << (*it)->number()
-                << "</td><td>"
-                << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                << "</td><td>"
-                << ((eccentr == 0 || eccentr == RAND_MAX) ? "\xE2\x88\x9E" : QString::number(eccentr))
-                << "</td>"
-                << "</tr>";
-    }
-
-    outText << "</tbody></table>";
+    writeScoreTableHTML(outText, {"e"},
+                        [](GraphVertex *v) -> QVector<qreal> {
+                            const qreal e = v->eccentricity();
+                            return {(e == 0) ? (qreal)RAND_MAX : e};
+                        },
+                        nullptr,
+                        [](GraphVertex *v) {
+                            return !v->isEnabled();
+                        });
 
     if (minEccentricity == maxEccentricity)
     {
@@ -455,12 +384,14 @@ bool Graph::writeEccentricity(const QString fileName, const bool considerWeights
 
 /**
  * @brief Renders a per-node score table as a sortable HTML <table>, shared by every
- *        centrality/prestige report writer (WS16 Step 2). "Node" and "Label" are
- *        always the first two columns; @p dataColumnHeaders supplies the rest, in
- *        order, and @p rowValues must return that many values per row, in the same
- *        order. @p isBlanked (optional) lets each report keep its own existing
- *        isolate-handling: rows for which it returns true get "--" placeholders
- *        instead of @p rowValues's output.
+ *        centrality/prestige report writer (WS16 Step 2) plus Reciprocity/Clustering
+ *        Coefficient/Eccentricity (WS16 Step 3). "Node" and "Label" are always the
+ *        first two columns; @p dataColumnHeaders supplies the rest, in order, and
+ *        @p rowValues must return that many values per row, in the same order - a
+ *        value equal to RAND_MAX renders as the infinity glyph, matching
+ *        writeMatrixHTMLTable()'s sentinel convention. @p isBlanked (optional) lets
+ *        each report keep its own existing isolate-handling: rows for which it
+ *        returns true get "--" placeholders instead of @p rowValues's output.
  * @param outText
  * @param dataColumnHeaders
  * @param rowValues
@@ -469,7 +400,8 @@ bool Graph::writeEccentricity(const QString fileName, const bool considerWeights
 void Graph::writeScoreTableHTML(QTextStream &outText,
                                 const QStringList &dataColumnHeaders,
                                 const std::function<QVector<qreal>(GraphVertex *)> &rowValues,
-                                const std::function<bool(GraphVertex *)> &isBlanked)
+                                const std::function<bool(GraphVertex *)> &isBlanked,
+                                const std::function<bool(GraphVertex *)> &isSkipped)
 {
     const int dataCols = dataColumnHeaders.size();
     const int totalCols = dataCols + 2;
@@ -494,8 +426,12 @@ void Graph::writeScoreTableHTML(QTextStream &outText,
     VList::const_iterator it;
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-        rowCount++;
         GraphVertex *v = *it;
+
+        if (isSkipped && isSkipped(v))
+            continue;
+
+        rowCount++;
 
         outText << Qt::fixed;
 
@@ -513,7 +449,14 @@ void Graph::writeScoreTableHTML(QTextStream &outText,
         {
             const QVector<qreal> values = rowValues(v);
             for (int c = 0; c < dataCols; ++c)
-                outText << "<td>" << values.at(c) << "</td>";
+            {
+                outText << "<td>";
+                if (values.at(c) == RAND_MAX)
+                    outText << infinity;
+                else
+                    outText << values.at(c);
+                outText << "</td>";
+            }
         }
 
         outText << "</tr>";
@@ -524,18 +467,21 @@ void Graph::writeScoreTableHTML(QTextStream &outText,
 
 /**
  * @brief CSV sibling of writeScoreTableHTML() - same column shape and semantics,
- *        comma-delimited, no HTML markup. Reuses TableExport::csvQuote() for the
- *        Label column, the only free-text field (Node numbers and scores are always
- *        numeric, so they never need escaping).
+ *        comma-delimited, no HTML markup, same RAND_MAX-as-infinity convention.
+ *        Reuses TableExport::csvQuote() for the Label column, the only free-text
+ *        field (Node numbers and scores are always numeric, so they never need
+ *        escaping).
  * @param outText
  * @param dataColumnHeaders
  * @param rowValues
  * @param isBlanked
+ * @param isSkipped
  */
 void Graph::writeScoreTableCSV(QTextStream &outText,
                                const QStringList &dataColumnHeaders,
                                const std::function<QVector<qreal>(GraphVertex *)> &rowValues,
-                               const std::function<bool(GraphVertex *)> &isBlanked)
+                               const std::function<bool(GraphVertex *)> &isBlanked,
+                               const std::function<bool(GraphVertex *)> &isSkipped)
 {
     QStringList header;
     header << tr("Node") << tr("Label") << dataColumnHeaders;
@@ -545,6 +491,9 @@ void Graph::writeScoreTableCSV(QTextStream &outText,
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
         GraphVertex *v = *it;
+
+        if (isSkipped && isSkipped(v))
+            continue;
 
         QStringList row;
         row << QString::number(v->number())
@@ -559,7 +508,7 @@ void Graph::writeScoreTableCSV(QTextStream &outText,
         {
             const QVector<qreal> values = rowValues(v);
             for (const qreal &val : values)
-                row << QString::number(val, 'f', m_reportsRealPrecision);
+                row << ((val == RAND_MAX) ? infinity : QString::number(val, 'f', m_reportsRealPrecision));
         }
 
         outText << row.join(",") << "\n";
@@ -3246,7 +3195,8 @@ bool Graph::writeMatrixWalks(const QString &fn,
  * @param considerWeights
  */
 bool Graph::writeClusteringCoefficient(const QString fileName,
-                                       const bool considerWeights)
+                                       const bool considerWeights,
+                                       const int &format)
 {
 
     QElapsedTimer computationTimer;
@@ -3262,10 +3212,7 @@ bool Graph::writeClusteringCoefficient(const QString fileName,
     }
     QTextStream outText(&file);
 
-    int rowCount = 0;
     int N = vertices();
-
-    VList::const_iterator it;
 
     averageCLC = clusteringCoefficient();
     if (progressCanceled())
@@ -3274,6 +3221,17 @@ bool Graph::writeClusteringCoefficient(const QString fileName,
         progressStatus(tr("Computation canceled."));
         return false;
     }
+
+    if (format == ReportFormat::Csv)
+    {
+        writeScoreTableCSV(outText, {"CLC", "CLC'", "%CLC'"},
+                           [this](GraphVertex *v) -> QVector<qreal> {
+                               return {v->CLC(), v->CLC() / maxCLC, 100 * v->CLC() / maxCLC};
+                           });
+        file.close();
+        return true;
+    }
+
     QString pMsg = tr("Writing Clustering Coefficients to file. \nPlease wait...");
     progressStatus(pMsg);
 
@@ -3322,59 +3280,10 @@ bool Graph::writeClusteringCoefficient(const QString fileName,
             << tr("0 &le; CLC' &le; 1 ")
             << "</p>";
 
-    outText << "<table class=\"stripes sortable\">";
-
-    outText << "<thead>"
-            << "<tr>"
-            << "<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("Node")
-            << "</th>"
-            << "<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("Label")
-            << "</th>"
-            << "<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("CLC")
-            << "</th>"
-            << "<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
-            << tr("CLC'")
-            << "</th>"
-            << "<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
-            << tr("%CLC'")
-            << "</th>"
-            << "</tr>"
-            << "</thead>"
-            << "<tbody id=\"results\">";
-
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-
-        if (progressCanceled())
-        {
-            file.close();
-            progressStatus(tr("Computation canceled."));
-            return false;
-        }
-
-        rowCount++;
-
-        outText << Qt::fixed;
-
-        outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                << "<td>"
-                << (*it)->number()
-                << "</td><td>"
-                << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                << "</td><td>"
-                << (*it)->CLC()
-                << "</td><td>"
-                << (*it)->CLC() / maxCLC
-                << "</td><td>"
-                << 100 * (*it)->CLC() / maxCLC
-                << "</td>"
-                << "</tr>";
-    }
-
-    outText << "</tbody></table>";
+    writeScoreTableHTML(outText, {"CLC", "CLC'", "%CLC'"},
+                        [this](GraphVertex *v) -> QVector<qreal> {
+                            return {v->CLC(), v->CLC() / maxCLC, 100 * v->CLC() / maxCLC};
+                        });
 
     if (minCLC == maxCLC)
     {
@@ -3447,7 +3356,8 @@ bool Graph::writeClusteringCoefficient(const QString fileName,
 
 // Writes the triad census to a file
 bool Graph::writeTriadCensus(const QString fileName,
-                             const bool considerWeights)
+                             const bool considerWeights,
+                             const int &format)
 {
 
     qCDebug(lcReporting) << "Graph::writeTriadCensus()";
@@ -3504,6 +3414,20 @@ bool Graph::writeTriadCensus(const QString fileName,
     triadTypes << "120C";
     triadTypes << "210";
     triadTypes << "300";
+
+    if (format == ReportFormat::Csv)
+    {
+        // Small fixed-shape table (16 triad types x Census count) - not per-node, so this
+        // doesn't go through writeScoreTableCSV(). Type strings are fixed known values with
+        // no commas/quotes, so no escaping is needed.
+        outText << tr("Type") << "," << tr("Census") << "\n";
+        for (int i = 0; i <= 15; i++)
+        {
+            outText << triadTypes[i] << "," << triadTypeFreqs[i] << "\n";
+        }
+        file.close();
+        return true;
+    }
 
     QString pMsg = tr("Writing Triad Census to file. \nPlease wait...");
     progressStatus(pMsg);
