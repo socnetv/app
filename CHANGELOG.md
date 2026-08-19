@@ -62,6 +62,16 @@ All notable changes to this project are documented in this file.
     script. All dispatched through the same real event-loop/`graphThread`
     path a user action would take, not called directly.
 
+  - **Twelve more interactive-script commands** (#113):
+    `report-centrality-degree` / `-closeness` / `-closeness-ir` /
+    `-betweenness` / `-stress` / `-eccentricity` / `-power` / `-information`
+    / `-eigenvector`, plus `report-prestige-degree` / `-proximity` /
+    `-pagerank` — each mirrors its real Analyze menu action exactly, with
+    `[weights] [inverse] [dropisolates] [csv]`-style tokens where
+    applicable — giving every centrality/prestige report writer a headless
+    benchmark path for the first time. The existing `distances` command also
+    gained a `[csv]` token, matching the new Output format setting below.
+
   - **Export analysis reports as CSV** (#113): new **Settings → Reports →
     Output format** option (HTML/CSV) covers the matrix-family reports —
     Adjacency, Distances, Geodesics, Reachability, Laplacian, Degree,
