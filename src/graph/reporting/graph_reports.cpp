@@ -15,6 +15,7 @@
  */
 
 #include "graph.h"
+#include "graph/io/table_export.h"
 
 #include <QFile>
 #include <QTextStream>
@@ -453,6 +454,119 @@ bool Graph::writeEccentricity(const QString fileName, const bool considerWeights
 }
 
 /**
+ * @brief Renders a per-node score table as a sortable HTML <table>, shared by every
+ *        centrality/prestige report writer (WS16 Step 2). "Node" and "Label" are
+ *        always the first two columns; @p dataColumnHeaders supplies the rest, in
+ *        order, and @p rowValues must return that many values per row, in the same
+ *        order. @p isBlanked (optional) lets each report keep its own existing
+ *        isolate-handling: rows for which it returns true get "--" placeholders
+ *        instead of @p rowValues's output.
+ * @param outText
+ * @param dataColumnHeaders
+ * @param rowValues
+ * @param isBlanked
+ */
+void Graph::writeScoreTableHTML(QTextStream &outText,
+                                const QStringList &dataColumnHeaders,
+                                const std::function<QVector<qreal>(GraphVertex *)> &rowValues,
+                                const std::function<bool(GraphVertex *)> &isBlanked)
+{
+    const int dataCols = dataColumnHeaders.size();
+    const int totalCols = dataCols + 2;
+
+    outText << "<table class=\"stripes sortable\">";
+
+    outText << "<thead>" << "<tr>";
+    for (int c = 0; c < totalCols; ++c)
+    {
+        outText << "<th id=\"col" << (c + 1) << "\" onclick=\"tableSort(results, " << c << ", asc" << (c + 1) << "); ";
+        for (int r = 0; r < totalCols; ++r)
+        {
+            outText << "asc" << (r + 1) << (r == c ? " *= -1; " : " = 1;");
+        }
+        outText << "\">"
+                << (c == 0 ? tr("Node") : c == 1 ? tr("Label") : dataColumnHeaders.at(c - 2))
+                << "</th>";
+    }
+    outText << "</tr>" << "</thead>" << "<tbody id=\"results\">";
+
+    int rowCount = 0;
+    VList::const_iterator it;
+    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    {
+        rowCount++;
+        GraphVertex *v = *it;
+
+        outText << Qt::fixed;
+
+        outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
+                << "<td>" << v->number() << "</td><td>"
+                << ((!(v->label().simplified()).isEmpty()) ? v->label().simplified().left(m_reportsLabelLength) : "-")
+                << "</td>";
+
+        if (isBlanked && isBlanked(v))
+        {
+            for (int c = 0; c < dataCols; ++c)
+                outText << "<td>--</td>";
+        }
+        else
+        {
+            const QVector<qreal> values = rowValues(v);
+            for (int c = 0; c < dataCols; ++c)
+                outText << "<td>" << values.at(c) << "</td>";
+        }
+
+        outText << "</tr>";
+    }
+
+    outText << "</tbody></table>";
+}
+
+/**
+ * @brief CSV sibling of writeScoreTableHTML() - same column shape and semantics,
+ *        comma-delimited, no HTML markup. Reuses TableExport::csvQuote() for the
+ *        Label column, the only free-text field (Node numbers and scores are always
+ *        numeric, so they never need escaping).
+ * @param outText
+ * @param dataColumnHeaders
+ * @param rowValues
+ * @param isBlanked
+ */
+void Graph::writeScoreTableCSV(QTextStream &outText,
+                               const QStringList &dataColumnHeaders,
+                               const std::function<QVector<qreal>(GraphVertex *)> &rowValues,
+                               const std::function<bool(GraphVertex *)> &isBlanked)
+{
+    QStringList header;
+    header << tr("Node") << tr("Label") << dataColumnHeaders;
+    outText << header.join(",") << "\n";
+
+    VList::const_iterator it;
+    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    {
+        GraphVertex *v = *it;
+
+        QStringList row;
+        row << QString::number(v->number())
+            << TableExport::csvQuote(v->label().simplified());
+
+        if (isBlanked && isBlanked(v))
+        {
+            for (int c = 0; c < dataColumnHeaders.size(); ++c)
+                row << QString();
+        }
+        else
+        {
+            const QVector<qreal> values = rowValues(v);
+            for (const qreal &val : values)
+                row << QString::number(val, 'f', m_reportsRealPrecision);
+        }
+
+        outText << row.join(",") << "\n";
+    }
+}
+
+/**
  * @brief Writes the information centralities to file
  * @param fileName
  * @param considerWeights
@@ -460,7 +574,8 @@ bool Graph::writeEccentricity(const QString fileName, const bool considerWeights
  */
 bool Graph::writeCentralityInformation(const QString fileName,
                                        const bool considerWeights,
-                                       const bool inverseWeights)
+                                       const bool inverseWeights,
+                                       const int &format)
 {
 
     qCDebug(lcReporting) << "Writing Information Centrality report to file:" << fileName;
@@ -485,6 +600,20 @@ bool Graph::writeCentralityInformation(const QString fileName,
         progressStatus(tr("Computation canceled."));
         return false;
     }
+
+    if (format == ReportFormat::Csv)
+    {
+        writeScoreTableCSV(outText, {"IC", "IC'", "%IC"},
+                           [](GraphVertex *v) -> QVector<qreal> {
+                               return {v->IC(), v->SIC(), 100 * v->SIC()};
+                           },
+                           [](GraphVertex *v) {
+                               return v->isIsolated();
+                           });
+        file.close();
+        return true;
+    }
+
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -496,11 +625,8 @@ bool Graph::writeCentralityInformation(const QString fileName,
 
     prominenceDistribution(IndexType::IC, m_reportsChartType, distImageFileName);
 
-    VList::const_iterator it;
-
     bool dropIsolates = true; // by default IC needs to exclude isolates
 
-    int rowCount = 0;
     int N = vertices(dropIsolates, false, true);
 
     QString pMsg = tr("Writing Information Centralities to file. \nPlease wait...");
@@ -552,72 +678,13 @@ bool Graph::writeCentralityInformation(const QString fileName,
             << tr("0 &le; IC' &le; 1")
             << "</p>";
 
-    outText << "<table class=\"stripes sortable\">";
-
-    outText << "<thead>"
-            << "<tr>"
-            << "<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("Node")
-            << "</th>"
-            << "<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("Label")
-            << "</th>"
-            << "<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("IC")
-            << "</th>"
-            << "<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
-            << tr("IC'")
-            << "</th>"
-            << "<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
-            << tr("%IC")
-            << "</th>"
-            << "</tr>"
-            << "</thead>"
-            << "<tbody id=\"results\">";
-
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-
-        rowCount++;
-
-        outText << Qt::fixed;
-
-        if ((*it)->isIsolated())
-        {
-            outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                    << "<td>"
-                    << (*it)->number()
-                    << "</td><td>"
-                    << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                    << "</td><td>"
-                    << "--"
-                    << "</td><td>"
-                    << "--"
-                    << "</td><td>"
-                    << "--"
-                    << "</td>"
-                    << "</tr>";
-        }
-        else
-        {
-
-            outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                    << "<td>"
-                    << (*it)->number()
-                    << "</td><td>"
-                    << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                    << "</td><td>"
-                    << (*it)->IC()
-                    << "</td><td>"
-                    << (*it)->SIC()
-                    << "</td><td>"
-                    << (100 * ((*it)->SIC()))
-                    << "</td>"
-                    << "</tr>";
-        }
-    }
-
-    outText << "</tbody></table>";
+    writeScoreTableHTML(outText, {"IC", "IC'", "%IC"},
+                        [](GraphVertex *v) -> QVector<qreal> {
+                            return {v->IC(), v->SIC(), 100 * v->SIC()};
+                        },
+                        [](GraphVertex *v) {
+                            return v->isIsolated();
+                        });
 
     if (minIC == maxIC)
     {
@@ -722,7 +789,8 @@ bool Graph::writeCentralityInformation(const QString fileName,
 bool Graph::writeCentralityEigenvector(const QString fileName,
                                        const bool &considerWeights,
                                        const bool &inverseWeights,
-                                       const bool &dropIsolates)
+                                       const bool &dropIsolates,
+                                       const int &format)
 {
 
     qCDebug(lcReporting) << "Writing Eigenvector Centrality report to file:" << fileName;
@@ -746,6 +814,20 @@ bool Graph::writeCentralityEigenvector(const QString fileName,
         progressStatus(tr("Computation canceled."));
         return false;
     }
+
+    if (format == ReportFormat::Csv)
+    {
+        // No isolate-blanking here, matching this report's existing HTML behaviour -
+        // unlike its siblings, Eigenvector never blanked isolate rows even though it
+        // takes a dropIsolates parameter.
+        writeScoreTableCSV(outText, {"EVC", "EVC'", "EVC''", "%EVC'"},
+                           [this](GraphVertex *v) -> QVector<qreal> {
+                               return {v->EVC(), v->SEVC(), v->EVC() / (sumEVC ? sumEVC : 1), 100 * v->SEVC()};
+                           });
+        file.close();
+        return true;
+    }
+
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -757,9 +839,6 @@ bool Graph::writeCentralityEigenvector(const QString fileName,
 
     prominenceDistribution(IndexType::EVC, m_reportsChartType, distImageFileName);
 
-    VList::const_iterator it;
-
-    int rowCount = 0;
     int N = vertices();
 
     QString pMsg = tr("Writing Eigenvector Centrality scores to file. \nPlease wait...");
@@ -816,57 +895,10 @@ bool Graph::writeCentralityEigenvector(const QString fileName,
             << tr("0 &le; EVC' &le; 1")
             << "</p>";
 
-    outText << "<table class=\"stripes sortable\">";
-
-    outText << "<thead>"
-            << "<tr>"
-            << "<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;asc6 = 1;\">"
-            << tr("Node")
-            << "</th>"
-            << "<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;asc6 = 1;\">"
-            << tr("Label")
-            << "</th>"
-            << "<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;asc6 = 1;\">"
-            << tr("EVC")
-            << "</th>"
-            << "<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;asc6 = 1;\">"
-            << tr("EVC'")
-            << "</th>"
-            << "<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;asc6 = 1;\">"
-            << tr("EVC''")
-            << "</th>"
-            << "<th id=\"col6\" onclick=\"tableSort(results, 5, asc6); asc6 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("%EVC'")
-            << "</th>"
-            << "</tr>"
-            << "</thead>"
-            << "<tbody id=\"results\">";
-
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-
-        rowCount++;
-
-        outText << Qt::fixed;
-
-        outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                << "<td>"
-                << (*it)->number()
-                << "</td><td>"
-                << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                << "</td><td>"
-                << (*it)->EVC()
-                << "</td><td>"
-                << (*it)->SEVC()
-                << "</td><td>"
-                << (*it)->EVC() / (sumEVC ? sumEVC : 1)
-                << "</td><td>"
-                << (100 * ((*it)->SEVC()))
-                << "</td>"
-                << "</tr>";
-    }
-
-    outText << "</tbody></table>";
+    writeScoreTableHTML(outText, {"EVC", "EVC'", "EVC''", "%EVC'"},
+                        [this](GraphVertex *v) -> QVector<qreal> {
+                            return {v->EVC(), v->SEVC(), v->EVC() / (sumEVC ? sumEVC : 1), 100 * v->SEVC()};
+                        });
 
     if (minEVC == maxEVC)
     {
@@ -968,7 +1000,8 @@ bool Graph::writeCentralityEigenvector(const QString fileName,
  */
 bool Graph::writeCentralityDegree(const QString fileName,
                                   const bool considerWeights,
-                                  const bool dropIsolates)
+                                  const bool dropIsolates,
+                                  const int &format)
 {
 
     qCDebug(lcReporting) << "Writing Degree Centrality report to file:" << fileName
@@ -994,6 +1027,20 @@ bool Graph::writeCentralityDegree(const QString fileName,
         progressStatus(tr("Computation canceled."));
         return false;
     }
+
+    if (format == ReportFormat::Csv)
+    {
+        writeScoreTableCSV(outText, {"DC", "DC'", "%DC'"},
+                           [](GraphVertex *v) -> QVector<qreal> {
+                               return {v->DC(), v->SDC(), 100 * v->SDC()};
+                           },
+                           [dropIsolates](GraphVertex *v) {
+                               return dropIsolates && v->isIsolated();
+                           });
+        file.close();
+        return true;
+    }
+
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -1007,9 +1054,7 @@ bool Graph::writeCentralityDegree(const QString fileName,
 
     qreal maxIndexDC = vertices(dropIsolates) - 1.0;
 
-    int rowCount = 0;
     int N = vertices();
-    VList::const_iterator it;
 
     outText << htmlHead;
 
@@ -1063,71 +1108,13 @@ bool Graph::writeCentralityDegree(const QString fileName,
             << tr("0 &le; DC' &le; 1")
             << "</p>";
 
-    outText << "<table class=\"stripes sortable\">";
-
-    outText << "<thead>"
-            << "<tr>"
-            << "<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("Node")
-            << "</th>"
-            << "<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("Label")
-            << "</th>"
-            << "<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("DC")
-            << "</th>"
-            << "<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
-            << tr("DC'")
-            << "</th>"
-            << "<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
-            << tr("%DC'")
-            << "</th>"
-            << "</tr>"
-            << "</thead>"
-            << "<tbody id=\"results\">";
-
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-
-        rowCount++;
-
-        outText << Qt::fixed;
-
-        if (dropIsolates && (*it)->isIsolated())
-        {
-            outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                    << "<td>"
-                    << (*it)->number()
-                    << "</td><td>"
-                    << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                    << "</td><td>"
-                    << "--"
-                    << "</td><td>"
-                    << "--"
-                    << "</td><td>"
-                    << "--"
-                    << "</td>"
-                    << "</tr>";
-        }
-        else
-        {
-            outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                    << "<td>"
-                    << (*it)->number()
-                    << "</td><td>"
-                    << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                    << "</td><td>"
-                    << (*it)->DC()
-                    << "</td><td>"
-                    << (*it)->SDC()
-                    << "</td><td>"
-                    << (100 * ((*it)->SDC()))
-                    << "</td>"
-                    << "</tr>";
-        }
-    }
-
-    outText << "</tbody></table>";
+    writeScoreTableHTML(outText, {"DC", "DC'", "%DC'"},
+                        [](GraphVertex *v) -> QVector<qreal> {
+                            return {v->DC(), v->SDC(), 100 * v->SDC()};
+                        },
+                        [dropIsolates](GraphVertex *v) {
+                            return dropIsolates && v->isIsolated();
+                        });
 
     if (minSDC == maxSDC)
     {
@@ -1254,7 +1241,8 @@ bool Graph::writeCentralityDegree(const QString fileName,
 bool Graph::writeCentralityCloseness(const QString fileName,
                                      const bool considerWeights,
                                      const bool inverseWeights,
-                                     const bool dropIsolates)
+                                     const bool dropIsolates,
+                                     const int &format)
 {
 
     QElapsedTimer computationTimer;
@@ -1282,6 +1270,20 @@ bool Graph::writeCentralityCloseness(const QString fileName,
         progressStatus(tr("Computation canceled."));
         return false;
     }
+
+    if (format == ReportFormat::Csv)
+    {
+        writeScoreTableCSV(outText, {"CC", "CC'", "%CC'"},
+                           [](GraphVertex *v) -> QVector<qreal> {
+                               return {v->CC(), v->SCC(), 100 * v->SCC()};
+                           },
+                           [dropIsolates](GraphVertex *v) {
+                               return dropIsolates && v->isIsolated();
+                           });
+        file.close();
+        return true;
+    }
+
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -1292,7 +1294,6 @@ bool Graph::writeCentralityCloseness(const QString fileName,
 
     prominenceDistribution(IndexType::CC, m_reportsChartType, distImageFileName);
 
-    int rowCount = 0;
     int N = vertices();
 
     QString pMsg = tr("Writing Closeness Centrality scores to file. \nPlease wait ...");
@@ -1345,73 +1346,13 @@ bool Graph::writeCentralityCloseness(const QString fileName,
             << tr("0 &le; CC' &le; 1  (CC'=1 when a node is the center of a star graph)")
             << "</p>";
 
-    outText << "<table class=\"stripes sortable\">";
-
-    outText << "<thead>"
-            << "<tr>"
-            << "<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("Node")
-            << "</th>"
-            << "<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("Label")
-            << "</th>"
-            << "<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("CC")
-            << "</th>"
-            << "<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
-            << tr("CC'")
-            << "</th>"
-            << "<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
-            << tr("%CC'")
-            << "</th>"
-            << "</tr>"
-            << "</thead>"
-            << "<tbody id=\"results\">";
-
-    VList::const_iterator it;
-
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-
-        rowCount++;
-
-        outText << Qt::fixed;
-
-        if (dropIsolates && (*it)->isIsolated())
-        {
-            outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                    << "<td>"
-                    << (*it)->number()
-                    << "</td><td>"
-                    << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                    << "</td><td>"
-                    << "--"
-                    << "</td><td>"
-                    << "--"
-                    << "</td><td>"
-                    << "--"
-                    << "</td>"
-                    << "</tr>";
-        }
-        else
-        {
-            outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                    << "<td>"
-                    << (*it)->number()
-                    << "</td><td>"
-                    << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                    << "</td><td>"
-                    << (*it)->CC()
-                    << "</td><td>"
-                    << (*it)->SCC()
-                    << "</td><td>"
-                    << (100 * ((*it)->SCC()))
-                    << "</td>"
-                    << "</tr>";
-        }
-    }
-
-    outText << "</tbody></table>";
+    writeScoreTableHTML(outText, {"CC", "CC'", "%CC'"},
+                        [](GraphVertex *v) -> QVector<qreal> {
+                            return {v->CC(), v->SCC(), 100 * v->SCC()};
+                        },
+                        [dropIsolates](GraphVertex *v) {
+                            return dropIsolates && v->isIsolated();
+                        });
 
     if (minSCC == maxSCC)
     {
@@ -1541,7 +1482,8 @@ bool Graph::writeCentralityCloseness(const QString fileName,
 bool Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
                                                    const bool considerWeights,
                                                    const bool inverseWeights,
-                                                   const bool dropIsolates)
+                                                   const bool dropIsolates,
+                                                   const int &format)
 {
 
     qCDebug(lcReporting) << "Writing IR Closeness Centrality report to file:" << fileName;
@@ -1565,6 +1507,20 @@ bool Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
         progressStatus(tr("Computation canceled."));
         return false;
     }
+
+    if (format == ReportFormat::Csv)
+    {
+        writeScoreTableCSV(outText, {"IRCC", "%IRCC'"},
+                           [](GraphVertex *v) -> QVector<qreal> {
+                               return {v->IRCC(), 100 * v->SIRCC()};
+                           },
+                           [dropIsolates](GraphVertex *v) {
+                               return dropIsolates && v->isIsolated();
+                           });
+        file.close();
+        return true;
+    }
+
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -1576,7 +1532,6 @@ bool Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
 
     prominenceDistribution(IndexType::IRCC, m_reportsChartType, distImageFileName);
 
-    int rowCount = 0;
     int N = vertices();
 
     QString pMsg = tr("Writing Influence Range Centrality scores. \n"
@@ -1626,66 +1581,13 @@ bool Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
             << tr("0 &le; IRCC &le; 1  (IRCC is a ratio)")
             << "</p>";
 
-    outText << "<table class=\"stripes sortable\">";
-
-    outText << "<thead>"
-            << "<tr>"
-            << "<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("Node")
-            << "</th>"
-            << "<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("Label")
-            << "</th>"
-            << "<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("IRCC")
-            << "</th>"
-            << "<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
-            << tr("%IRCC'")
-            << "</th>"
-            << "</tr>"
-            << "</thead>"
-            << "<tbody id=\"results\">";
-
-    VList::const_iterator it;
-
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-
-        rowCount++;
-
-        outText << Qt::fixed;
-
-        if (dropIsolates && (*it)->isIsolated())
-        {
-            outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                    << "<td>"
-                    << (*it)->number()
-                    << "</td><td>"
-                    << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                    << "</td><td>"
-                    << "--"
-                    << "</td><td>"
-                    << "--"
-                    << "</td>"
-                    << "</tr>";
-        }
-        else
-        {
-            outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                    << "<td>"
-                    << (*it)->number()
-                    << "</td><td>"
-                    << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                    << "</td><td>"
-                    << (*it)->IRCC()
-                    << "</td><td>"
-                    << (100 * ((*it)->SIRCC()))
-                    << "</td>"
-                    << "</tr>";
-        }
-    }
-
-    outText << "</tbody></table>";
+    writeScoreTableHTML(outText, {"IRCC", "%IRCC'"},
+                        [](GraphVertex *v) -> QVector<qreal> {
+                            return {v->IRCC(), 100 * v->SIRCC()};
+                        },
+                        [dropIsolates](GraphVertex *v) {
+                            return dropIsolates && v->isIsolated();
+                        });
 
     if (minIRCC == maxIRCC)
     {
@@ -1769,7 +1671,8 @@ bool Graph::writeCentralityClosenessInfluenceRange(const QString fileName,
 bool Graph::writeCentralityBetweenness(const QString fileName,
                                        const bool considerWeights,
                                        const bool inverseWeights,
-                                       const bool dropIsolates)
+                                       const bool dropIsolates,
+                                       const int &format)
 {
 
     qCDebug(lcReporting) << "Writing Betweenness Centrality report to file:" << fileName;
@@ -1793,6 +1696,20 @@ bool Graph::writeCentralityBetweenness(const QString fileName,
         progressStatus(tr("Computation canceled."));
         return false;
     }
+
+    if (format == ReportFormat::Csv)
+    {
+        writeScoreTableCSV(outText, {"BC", "BC'", "%BC'"},
+                           [](GraphVertex *v) -> QVector<qreal> {
+                               return {v->BC(), v->SBC(), 100 * v->SBC()};
+                           },
+                           [dropIsolates](GraphVertex *v) {
+                               return dropIsolates && v->isIsolated();
+                           });
+        file.close();
+        return true;
+    }
+
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -1804,7 +1721,6 @@ bool Graph::writeCentralityBetweenness(const QString fileName,
 
     prominenceDistribution(IndexType::BC, m_reportsChartType, distImageFileName);
 
-    int rowCount = 0;
     int N = vertices();
 
     QString pMsg = tr("Writing Betweenness Centrality scores to file. \nPlease wait...");
@@ -1855,72 +1771,13 @@ bool Graph::writeCentralityBetweenness(const QString fileName,
             << tr("0 &le; BC' &le; 1  (BC'=1 when the node falls on all geodesics)")
             << "</p>";
 
-    outText << "<table class=\"stripes sortable\">";
-
-    outText << "<thead>"
-            << "<tr>"
-            << "<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("Node")
-            << "</th>"
-            << "<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("Label")
-            << "</th>"
-            << "<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("BC")
-            << "</th>"
-            << "<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
-            << tr("BC'")
-            << "</th>"
-            << "<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
-            << tr("%BC'")
-            << "</th>"
-            << "</tr>"
-            << "</thead>"
-            << "<tbody id=\"results\">";
-
-    VList::const_iterator it;
-
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-        rowCount++;
-
-        outText << Qt::fixed;
-
-        if (dropIsolates && (*it)->isIsolated())
-        {
-            outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                    << "<td>"
-                    << (*it)->number()
-                    << "</td><td>"
-                    << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                    << "</td><td>"
-                    << "--"
-                    << "</td><td>"
-                    << "--"
-                    << "</td><td>"
-                    << "--"
-                    << "</td>"
-                    << "</tr>";
-        }
-        else
-        {
-            outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                    << "<td>"
-                    << (*it)->number()
-                    << "</td><td>"
-                    << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                    << "</td><td>"
-                    << (*it)->BC()
-                    << "</td><td>"
-                    << (*it)->SBC()
-                    << "</td><td>"
-                    << (100 * ((*it)->SBC()))
-                    << "</td>"
-                    << "</tr>";
-        }
-    }
-
-    outText << "</tbody></table>";
+    writeScoreTableHTML(outText, {"BC", "BC'", "%BC'"},
+                        [](GraphVertex *v) -> QVector<qreal> {
+                            return {v->BC(), v->SBC(), 100 * v->SBC()};
+                        },
+                        [dropIsolates](GraphVertex *v) {
+                            return dropIsolates && v->isIsolated();
+                        });
 
     if (minSBC == maxSBC)
     {
@@ -2048,7 +1905,8 @@ bool Graph::writeCentralityBetweenness(const QString fileName,
 bool Graph::writeCentralityStress(const QString fileName,
                                   const bool considerWeights,
                                   const bool inverseWeights,
-                                  const bool dropIsolates)
+                                  const bool dropIsolates,
+                                  const int &format)
 {
 
     qCDebug(lcReporting) << "Writing Stress Centrality report to file:" << fileName;
@@ -2072,6 +1930,20 @@ bool Graph::writeCentralityStress(const QString fileName,
         progressStatus(tr("Computation canceled."));
         return false;
     }
+
+    if (format == ReportFormat::Csv)
+    {
+        writeScoreTableCSV(outText, {"SC", "SC'", "%SC'"},
+                           [](GraphVertex *v) -> QVector<qreal> {
+                               return {v->SC(), v->SSC(), 100 * v->SSC()};
+                           },
+                           [dropIsolates](GraphVertex *v) {
+                               return dropIsolates && v->isIsolated();
+                           });
+        file.close();
+        return true;
+    }
+
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -2083,9 +1955,6 @@ bool Graph::writeCentralityStress(const QString fileName,
 
     prominenceDistribution(IndexType::SC, m_reportsChartType, distImageFileName);
 
-    VList::const_iterator it;
-
-    int rowCount = 0;
     int N = vertices();
 
     QString pMsg = tr("Writing Stress Centralities. \nPlease wait...");
@@ -2132,71 +2001,13 @@ bool Graph::writeCentralityStress(const QString fileName,
             << tr("0 &le; SC' &le; 1  (SC'=1 when the node falls on all geodesics)")
             << "</p>";
 
-    outText << "<table class=\"stripes sortable\">";
-
-    outText << "<thead>"
-            << "<tr>"
-            << "<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("Node")
-            << "</th>"
-            << "<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("Label")
-            << "</th>"
-            << "<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("SC")
-            << "</th>"
-            << "<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
-            << tr("SC'")
-            << "</th>"
-            << "<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
-            << tr("%SC'")
-            << "</th>"
-            << "</tr>"
-            << "</thead>"
-            << "<tbody id=\"results\">";
-
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-
-        rowCount++;
-
-        outText << Qt::fixed;
-
-        if (dropIsolates && (*it)->isIsolated())
-        {
-            outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                    << "<td>"
-                    << (*it)->number()
-                    << "</td><td>"
-                    << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                    << "</td><td>"
-                    << "--"
-                    << "</td><td>"
-                    << "--"
-                    << "</td><td>"
-                    << "--"
-                    << "</td>"
-                    << "</tr>";
-        }
-        else
-        {
-            outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                    << "<td>"
-                    << (*it)->number()
-                    << "</td><td>"
-                    << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                    << "</td><td>"
-                    << (*it)->SC()
-                    << "</td><td>"
-                    << (*it)->SSC()
-                    << "</td><td>"
-                    << (100 * ((*it)->SSC()))
-                    << "</td>"
-                    << "</tr>";
-        }
-    }
-
-    outText << "</tbody></table>";
+    writeScoreTableHTML(outText, {"SC", "SC'", "%SC'"},
+                        [](GraphVertex *v) -> QVector<qreal> {
+                            return {v->SC(), v->SSC(), 100 * v->SSC()};
+                        },
+                        [dropIsolates](GraphVertex *v) {
+                            return dropIsolates && v->isIsolated();
+                        });
 
     if (minSSC == maxSSC)
     {
@@ -2286,7 +2097,8 @@ bool Graph::writeCentralityStress(const QString fileName,
 bool Graph::writeCentralityEccentricity(const QString fileName,
                                         const bool considerWeights,
                                         const bool inverseWeights,
-                                        const bool dropIsolates)
+                                        const bool dropIsolates,
+                                        const int &format)
 {
 
     qCDebug(lcReporting) << "Writing Eccentricity Centrality report to file:" << fileName;
@@ -2310,6 +2122,20 @@ bool Graph::writeCentralityEccentricity(const QString fileName,
         progressStatus(tr("Computation canceled."));
         return false;
     }
+
+    if (format == ReportFormat::Csv)
+    {
+        writeScoreTableCSV(outText, {"EC=EC'", "%EC'"},
+                           [](GraphVertex *v) -> QVector<qreal> {
+                               return {v->EC(), 100 * v->SEC()};
+                           },
+                           [dropIsolates](GraphVertex *v) {
+                               return dropIsolates && v->isIsolated();
+                           });
+        file.close();
+        return true;
+    }
+
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -2321,9 +2147,6 @@ bool Graph::writeCentralityEccentricity(const QString fileName,
 
     prominenceDistribution(IndexType::EC, m_reportsChartType, distImageFileName);
 
-    VList::const_iterator it;
-
-    int rowCount = 0;
     int N = vertices();
 
     QString pMsg = tr("Writing Eccentricity Centralities to file. \nPlease wait...");
@@ -2365,64 +2188,13 @@ bool Graph::writeCentralityEccentricity(const QString fileName,
             << tr(" (EC=1 when the actor has ties to all other nodes)")
             << "</p>";
 
-    outText << "<table class=\"stripes sortable\">";
-
-    outText << "<thead>"
-            << "<tr>"
-            << "<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("Node")
-            << "</th>"
-            << "<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("Label")
-            << "</th>"
-            << "<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("EC=EC'")
-            << "</th>"
-            << "<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
-            << tr("%EC'")
-            << "</th>"
-            << "</tr>"
-            << "</thead>"
-            << "<tbody id=\"results\">";
-
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-
-        rowCount++;
-
-        outText << Qt::fixed;
-
-        if (dropIsolates && (*it)->isIsolated())
-        {
-            outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                    << "<td>"
-                    << (*it)->number()
-                    << "</td><td>"
-                    << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                    << "</td><td>"
-                    << "--"
-                    << "</td><td>"
-                    << "--"
-                    << "</td>"
-                    << "</tr>";
-        }
-        else
-        {
-            outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                    << "<td>"
-                    << (*it)->number()
-                    << "</td><td>"
-                    << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                    << "</td><td>"
-                    << (*it)->EC()
-                    << "</td><td>"
-                    << (100 * ((*it)->SEC()))
-                    << "</td>"
-                    << "</tr>";
-        }
-    }
-
-    outText << "</tbody></table>";
+    writeScoreTableHTML(outText, {"EC=EC'", "%EC'"},
+                        [](GraphVertex *v) -> QVector<qreal> {
+                            return {v->EC(), 100 * v->SEC()};
+                        },
+                        [dropIsolates](GraphVertex *v) {
+                            return dropIsolates && v->isIsolated();
+                        });
 
     if (minEC == maxEC)
     {
@@ -2506,7 +2278,8 @@ bool Graph::writeCentralityEccentricity(const QString fileName,
 bool Graph::writeCentralityPower(const QString fileName,
                                  const bool considerWeights,
                                  const bool inverseWeights,
-                                 const bool dropIsolates)
+                                 const bool dropIsolates,
+                                 const int &format)
 {
 
     qCDebug(lcReporting) << "Writing Power Centrality report to file:" << fileName;
@@ -2530,6 +2303,20 @@ bool Graph::writeCentralityPower(const QString fileName,
         progressStatus(tr("Computation canceled."));
         return false;
     }
+
+    if (format == ReportFormat::Csv)
+    {
+        writeScoreTableCSV(outText, {"PC", "PC'", "%PC'"},
+                           [](GraphVertex *v) -> QVector<qreal> {
+                               return {v->PC(), v->SPC(), 100 * v->SPC()};
+                           },
+                           [dropIsolates](GraphVertex *v) {
+                               return dropIsolates && v->isIsolated();
+                           });
+        file.close();
+        return true;
+    }
+
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -2540,9 +2327,6 @@ bool Graph::writeCentralityPower(const QString fileName,
 
     prominenceDistribution(IndexType::PC, m_reportsChartType, distImageFileName);
 
-    VList::const_iterator it;
-
-    int rowCount = 0;
     int N = vertices();
 
     QString pMsg = tr("Writing Gil-Schmidt Power Centralities to file. \nPlease wait...");
@@ -2590,71 +2374,13 @@ bool Graph::writeCentralityPower(const QString fileName,
             << tr("0 &le; PC' &le; 1  (PC'=1 when the node is connected to all (star).)")
             << "</p>";
 
-    outText << "<table class=\"stripes sortable\">";
-
-    outText << "<thead>"
-            << "<tr>"
-            << "<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("Node")
-            << "</th>"
-            << "<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("Label")
-            << "</th>"
-            << "<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("PC")
-            << "</th>"
-            << "<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
-            << tr("PC'")
-            << "</th>"
-            << "<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
-            << tr("%PC'")
-            << "</th>"
-            << "</tr>"
-            << "</thead>"
-            << "<tbody id=\"results\">";
-
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-
-        rowCount++;
-
-        outText << Qt::fixed;
-
-        if (dropIsolates && (*it)->isIsolated())
-        {
-            outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                    << "<td>"
-                    << (*it)->number()
-                    << "</td><td>"
-                    << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                    << "</td><td>"
-                    << "--"
-                    << "</td><td>"
-                    << "--"
-                    << "</td><td>"
-                    << "--"
-                    << "</td>"
-                    << "</tr>";
-        }
-        else
-        {
-            outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                    << "<td>"
-                    << (*it)->number()
-                    << "</td><td>"
-                    << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                    << "</td><td>"
-                    << (*it)->PC()
-                    << "</td><td>"
-                    << (*it)->SPC()
-                    << "</td><td>"
-                    << (100 * ((*it)->SPC()))
-                    << "</td>"
-                    << "</tr>";
-        }
-    }
-
-    outText << "</tbody></table>";
+    writeScoreTableHTML(outText, {"PC", "PC'", "%PC'"},
+                        [](GraphVertex *v) -> QVector<qreal> {
+                            return {v->PC(), v->SPC(), 100 * v->SPC()};
+                        },
+                        [dropIsolates](GraphVertex *v) {
+                            return dropIsolates && v->isIsolated();
+                        });
 
     if (minSPC == maxSPC)
     {
@@ -2776,7 +2502,8 @@ bool Graph::writeCentralityPower(const QString fileName,
  */
 bool Graph::writePrestigeDegree(const QString fileName,
                                 const bool considerWeights,
-                                const bool dropIsolates)
+                                const bool dropIsolates,
+                                const int &format)
 {
 
     qCDebug(lcReporting) << "Writing Degree Prestige report to file:" << fileName;
@@ -2800,6 +2527,20 @@ bool Graph::writePrestigeDegree(const QString fileName,
         progressStatus(tr("Computation canceled."));
         return false;
     }
+
+    if (format == ReportFormat::Csv)
+    {
+        writeScoreTableCSV(outText, {"DP", "DP'", "%DP'"},
+                           [](GraphVertex *v) -> QVector<qreal> {
+                               return {v->DP(), v->SDP(), 100 * v->SDP()};
+                           },
+                           [dropIsolates](GraphVertex *v) {
+                               return dropIsolates && v->isIsolated();
+                           });
+        file.close();
+        return true;
+    }
+
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -2811,13 +2552,9 @@ bool Graph::writePrestigeDegree(const QString fileName,
 
     prominenceDistribution(IndexType::DP, m_reportsChartType, distImageFileName);
 
-    VList::const_iterator it;
-
     int N = vertices();
 
     qreal maxIndexDP = N - 1.0;
-
-    int rowCount = 0;
 
     QString pMsg = tr("Writing Degree Prestige (in-Degree) scores to file. \nPlease wait ...");
     progressStatus(pMsg);
@@ -2869,71 +2606,13 @@ bool Graph::writePrestigeDegree(const QString fileName,
             << tr("0 &le; DP' &le; 1")
             << "</p>";
 
-    outText << "<table class=\"stripes sortable\">";
-
-    outText << "<thead>"
-            << "<tr>"
-            << "<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("Node")
-            << "</th>"
-            << "<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("Label")
-            << "</th>"
-            << "<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("DP")
-            << "</th>"
-            << "<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
-            << tr("DP'")
-            << "</th>"
-            << "<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
-            << tr("%DP'")
-            << "</th>"
-            << "</tr>"
-            << "</thead>"
-            << "<tbody id=\"results\">";
-
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-
-        rowCount++;
-
-        outText << Qt::fixed;
-
-        if (dropIsolates && (*it)->isIsolated())
-        {
-            outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                    << "<td>"
-                    << (*it)->number()
-                    << "</td><td>"
-                    << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                    << "</td><td>"
-                    << "--"
-                    << "</td><td>"
-                    << "--"
-                    << "</td><td>"
-                    << "--"
-                    << "</td>"
-                    << "</tr>";
-        }
-        else
-        {
-            outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                    << "<td>"
-                    << (*it)->number()
-                    << "</td><td>"
-                    << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                    << "</td><td>"
-                    << (*it)->DP()
-                    << "</td><td>"
-                    << (*it)->SDP()
-                    << "</td><td>"
-                    << (100 * ((*it)->SDP()))
-                    << "</td>"
-                    << "</tr>";
-        }
-    }
-
-    outText << "</tbody></table>";
+    writeScoreTableHTML(outText, {"DP", "DP'", "%DP'"},
+                        [](GraphVertex *v) -> QVector<qreal> {
+                            return {v->DP(), v->SDP(), 100 * v->SDP()};
+                        },
+                        [dropIsolates](GraphVertex *v) {
+                            return dropIsolates && v->isIsolated();
+                        });
 
     if (minSDP == maxSDP)
     {
@@ -3061,7 +2740,8 @@ bool Graph::writePrestigeDegree(const QString fileName,
 bool Graph::writePrestigeProximity(const QString fileName,
                                    const bool considerWeights,
                                    const bool inverseWeights,
-                                   const bool dropIsolates)
+                                   const bool dropIsolates,
+                                   const int &format)
 {
 
     qCDebug(lcReporting) << "Writing Proximity Prestige report to file:" << fileName;
@@ -3085,6 +2765,20 @@ bool Graph::writePrestigeProximity(const QString fileName,
         progressStatus(tr("Computation canceled."));
         return false;
     }
+
+    if (format == ReportFormat::Csv)
+    {
+        writeScoreTableCSV(outText, {"PP=PP'", "%PP"},
+                           [](GraphVertex *v) -> QVector<qreal> {
+                               return {v->PP(), 100 * v->SPP()};
+                           },
+                           [dropIsolates](GraphVertex *v) {
+                               return dropIsolates && v->isIsolated();
+                           });
+        file.close();
+        return true;
+    }
+
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -3096,9 +2790,6 @@ bool Graph::writePrestigeProximity(const QString fileName,
 
     prominenceDistribution(IndexType::PP, m_reportsChartType, distImageFileName);
 
-    VList::const_iterator it;
-
-    int rowCount = 0;
     int N = vertices();
 
     QString pMsg = tr("Writing Proximity Prestige scores to file. \nPlease wait ...");
@@ -3144,64 +2835,13 @@ bool Graph::writePrestigeProximity(const QString fileName,
             << tr("0 &le; PP &le; 1 (PP is a ratio)")
             << "</p>";
 
-    outText << "<table class=\"stripes sortable\">";
-
-    outText << "<thead>"
-            << "<tr>"
-            << "<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("Node")
-            << "</th>"
-            << "<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("Label")
-            << "</th>"
-            << "<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("PP=PP'")
-            << "</th>"
-            << "<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
-            << tr("%PP")
-            << "</th>"
-            << "</tr>"
-            << "</thead>"
-            << "<tbody id=\"results\">";
-
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-
-        rowCount++;
-
-        outText << Qt::fixed;
-
-        if (dropIsolates && (*it)->isIsolated())
-        {
-            outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                    << "<td>"
-                    << (*it)->number()
-                    << "</td><td>"
-                    << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                    << "</td><td>"
-                    << "--"
-                    << "</td><td>"
-                    << "--"
-                    << "</td>"
-                    << "</tr>";
-        }
-        else
-        {
-            outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                    << "<td>"
-                    << (*it)->number()
-                    << "</td><td>"
-                    << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                    << "</td><td>"
-                    << (*it)->PP()
-                    << "</td><td>"
-                    << (100 * ((*it)->SPP()))
-                    << "</td>"
-                    << "</tr>";
-        }
-    }
-
-    outText << "</tbody></table>";
+    writeScoreTableHTML(outText, {"PP=PP'", "%PP"},
+                        [](GraphVertex *v) -> QVector<qreal> {
+                            return {v->PP(), 100 * v->SPP()};
+                        },
+                        [dropIsolates](GraphVertex *v) {
+                            return dropIsolates && v->isIsolated();
+                        });
 
     if (minPP == maxPP)
     {
@@ -3281,7 +2921,8 @@ bool Graph::writePrestigeProximity(const QString fileName,
  * @param dropIsolates
  */
 bool Graph::writePrestigePageRank(const QString fileName,
-                                  const bool dropIsolates)
+                                  const bool dropIsolates,
+                                  const int &format)
 {
 
     qCDebug(lcReporting) << "Writing PageRank Prestige report to file:" << fileName;
@@ -3305,6 +2946,20 @@ bool Graph::writePrestigePageRank(const QString fileName,
         progressStatus(tr("Computation canceled."));
         return false;
     }
+
+    if (format == ReportFormat::Csv)
+    {
+        writeScoreTableCSV(outText, {"PRP", "PRP'", "%PRP'"},
+                           [](GraphVertex *v) -> QVector<qreal> {
+                               return {v->PRP(), v->SPRP(), 100 * v->SPRP()};
+                           },
+                           [dropIsolates](GraphVertex *v) {
+                               return dropIsolates && v->isIsolated();
+                           });
+        file.close();
+        return true;
+    }
+
     QString distImageFileName;
 
     if (m_reportsChartType != ChartType::None)
@@ -3316,9 +2971,6 @@ bool Graph::writePrestigePageRank(const QString fileName,
 
     prominenceDistribution(IndexType::PRP, m_reportsChartType, distImageFileName);
 
-    VList::const_iterator it;
-
-    int rowCount = 0;
     int N = vertices();
 
     QString pMsg = tr("Writing PageRank scores to file. \nPlease wait ...");
@@ -3374,71 +3026,13 @@ bool Graph::writePrestigePageRank(const QString fileName,
             << tr("0 &le; PRP' &le; 1")
             << "</p>";
 
-    outText << "<table class=\"stripes sortable\">";
-
-    outText << "<thead>"
-            << "<tr>"
-            << "<th id=\"col1\" onclick=\"tableSort(results, 0, asc1); asc1 *= -1; asc2 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("Node")
-            << "</th>"
-            << "<th id=\"col2\" onclick=\"tableSort(results, 1, asc2); asc2 *= -1; asc1 = 1; asc3 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("Label")
-            << "</th>"
-            << "<th id=\"col3\" onclick=\"tableSort(results, 2, asc3); asc3 *= -1; asc1 = 1; asc2 = 1;asc4 = 1;asc5 = 1;\">"
-            << tr("PRP")
-            << "</th>"
-            << "<th id=\"col4\" onclick=\"tableSort(results, 3, asc4); asc4 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc5 = 1;\">"
-            << tr("PRP'")
-            << "</th>"
-            << "<th id=\"col5\" onclick=\"tableSort(results, 4, asc5); asc5 *= -1; asc1 = 1; asc2 = 1;asc3 = 1;asc4 = 1;\">"
-            << tr("%PRP'")
-            << "</th>"
-            << "</tr>"
-            << "</thead>"
-            << "<tbody id=\"results\">";
-
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-
-        rowCount++;
-
-        outText << Qt::fixed;
-
-        if (dropIsolates && (*it)->isIsolated())
-        {
-            outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                    << "<td>"
-                    << (*it)->number()
-                    << "</td><td>"
-                    << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                    << "</td><td>"
-                    << "--"
-                    << "</td><td>"
-                    << "--"
-                    << "</td><td>"
-                    << "--"
-                    << "</td>"
-                    << "</tr>";
-        }
-        else
-        {
-            outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
-                    << "<td>"
-                    << (*it)->number()
-                    << "</td><td>"
-                    << ((!((*it)->label().simplified()).isEmpty()) ? (*it)->label().simplified().left(m_reportsLabelLength) : "-")
-                    << "</td><td>"
-                    << (*it)->PRP()
-                    << "</td><td>"
-                    << (*it)->SPRP()
-                    << "</td><td>"
-                    << (100 * ((*it)->SPRP()))
-                    << "</td>"
-                    << "</tr>";
-        }
-    }
-
-    outText << "</tbody></table>";
+    writeScoreTableHTML(outText, {"PRP", "PRP'", "%PRP'"},
+                        [](GraphVertex *v) -> QVector<qreal> {
+                            return {v->PRP(), v->SPRP(), 100 * v->SPRP()};
+                        },
+                        [dropIsolates](GraphVertex *v) {
+                            return dropIsolates && v->isIsolated();
+                        });
 
     if (minPRP == maxPRP)
     {

@@ -28,6 +28,17 @@ class QString;
 namespace TableExport {
 
 /**
+ * @brief Returns a CSV-safe quoted field: wraps @p value in double-quotes if it
+ *        contains a comma, double-quote, or newline; embedded double-quotes are
+ *        escaped as "".
+ *
+ * Exposed so other CSV writers outside this module (e.g. Graph's report writers,
+ * which build rows from data that never passes through a QAbstractItemModel) can
+ * reuse the same escaping rules instead of reimplementing them.
+ */
+QString csvQuote(const QString &value);
+
+/**
  * @brief Writes @p model to an RFC 4180 CSV file at @p filePath.
  *
  * The first row is the column headers from headerData(). Each subsequent row

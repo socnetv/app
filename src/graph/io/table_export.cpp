@@ -22,9 +22,7 @@
 
 namespace TableExport {
 
-// Returns a CSV-safe quoted field: wraps in "" if the value contains a
-// comma, double-quote, or newline; escapes embedded double-quotes as "".
-static QString csvQuote(const QString &value)
+QString csvQuote(const QString &value)
 {
     if (!value.contains(QLatin1Char(','))
         && !value.contains(QLatin1Char('"'))

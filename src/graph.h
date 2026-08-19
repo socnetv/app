@@ -971,57 +971,86 @@ public:
 
     //   friend QTextStream& operator <<  (QTextStream& os, Graph& m);
 
+    // Shared per-node score-table renderer for the centrality/prestige report family
+    // (WS16 Step 2). "Node" and "Label" columns are fixed; dataColumnHeaders supplies
+    // the rest, in order. rowValues returns that row's already-computed scores, in the
+    // same order as dataColumnHeaders. isBlanked (optional; null means "never blank",
+    // matching writeCentralityEigenvector's existing behaviour) decides whether a row's
+    // data columns are replaced with a placeholder - e.g. dropped isolates - preserving
+    // each report's current isolate-handling exactly rather than unifying it.
+    void writeScoreTableHTML(QTextStream &outText,
+                             const QStringList &dataColumnHeaders,
+                             const std::function<QVector<qreal>(GraphVertex *)> &rowValues,
+                             const std::function<bool(GraphVertex *)> &isBlanked = nullptr);
+
+    void writeScoreTableCSV(QTextStream &outText,
+                            const QStringList &dataColumnHeaders,
+                            const std::function<QVector<qreal>(GraphVertex *)> &rowValues,
+                            const std::function<bool(GraphVertex *)> &isBlanked = nullptr);
+
     bool writeCentralityDegree(const QString,
                                const bool weights,
-                               const bool dropIsolates);
+                               const bool dropIsolates,
+                               const int &format = ReportFormat::Html);
 
     bool writeCentralityCloseness(const QString,
                                   const bool weights,
                                   const bool inverseWeights,
-                                  const bool dropIsolates);
+                                  const bool dropIsolates,
+                                  const int &format = ReportFormat::Html);
 
     bool writeCentralityClosenessInfluenceRange(const QString,
                                                 const bool weights,
                                                 const bool inverseWeights,
-                                                const bool dropIsolates);
+                                                const bool dropIsolates,
+                                                const int &format = ReportFormat::Html);
 
     bool writeCentralityBetweenness(const QString,
                                     const bool weights,
                                     const bool inverseWeights,
-                                    const bool dropIsolates);
+                                    const bool dropIsolates,
+                                    const int &format = ReportFormat::Html);
 
     bool writeCentralityPower(const QString,
                               const bool weigths,
                               const bool inverseWeights,
-                              const bool dropIsolates);
+                              const bool dropIsolates,
+                              const int &format = ReportFormat::Html);
 
     bool writeCentralityStress(const QString,
                                const bool weigths,
                                const bool inverseWeights,
-                               const bool dropIsolates);
+                               const bool dropIsolates,
+                               const int &format = ReportFormat::Html);
 
     bool writeCentralityEccentricity(const QString,
                                      const bool weigths,
                                      const bool inverseWeights,
-                                     const bool dropIsolates);
+                                     const bool dropIsolates,
+                                     const int &format = ReportFormat::Html);
 
     bool writeCentralityInformation(const QString,
                                     const bool weigths,
-                                    const bool inverseWeights);
+                                    const bool inverseWeights,
+                                    const int &format = ReportFormat::Html);
 
     bool writeCentralityEigenvector(const QString,
                                     const bool &weigths = true,
                                     const bool &inverseWeights = false,
-                                    const bool &dropIsolates = false);
+                                    const bool &dropIsolates = false,
+                                    const int &format = ReportFormat::Html);
 
     bool writePrestigeDegree(const QString, const bool weights,
-                             const bool dropIsolates);
+                             const bool dropIsolates,
+                             const int &format = ReportFormat::Html);
 
     bool writePrestigeProximity(const QString, const bool weights,
                                 const bool inverseWeights,
-                                const bool dropIsolates);
+                                const bool dropIsolates,
+                                const int &format = ReportFormat::Html);
 
-    bool writePrestigePageRank(const QString, const bool Isolates = false);
+    bool writePrestigePageRank(const QString, const bool Isolates = false,
+                               const int &format = ReportFormat::Html);
 
     bool writeClusteringHierarchical(const QString &fileName,
                                      const QString &varLocation,
