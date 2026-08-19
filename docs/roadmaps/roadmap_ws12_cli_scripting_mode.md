@@ -9,7 +9,7 @@ SocNetV as a live component.
 
 ## Status
 
-🚧 In progress. Thirty commands shipped across #261/#262/WS14/WS6.6/WS16 — see What WS12
+🚧 In progress. Thirty-four commands shipped across #261/#262/WS14/WS6.6/WS16 — see What WS12
 Delivered below; every command now logs a uniform `BENCH` line on completion. Eventually most of
 SocNetV's functions should be reachable through interactive mode — see Background for where this
 is headed.
@@ -138,6 +138,11 @@ command below, not just the ones originally added for benchmarking.
   `dropisolates` token (the underlying functions don't take one, or - Eigenvector - never blank
   isolate rows regardless); `report-prestige-proximity` and `report-prestige-pagerank` have no
   `weights`/`inverse` tokens (fixed in the real menu action too).
+- `report-reciprocity [weights] [csv]`, `report-eccentricity [weights] [inverse] [dropisolates]
+  [csv]`, `report-clustering-coefficient [csv]`, `report-triad-census [csv]` — added for WS16 Step
+  3 (the long-tail reports), same mirroring pattern as the commands above.
+  `report-clustering-coefficient` and `report-triad-census` have no `weights` token (both fixed
+  `considerWeights = true` in their real menu action).
 - `render` — forces a synchronous `graphicsWidget->viewport()->repaint()` (unlike `update()`,
   which only schedules one). Added for WS6.6's canvas rendering-perf kernel
   (`roadmap_ws6_testing_ci_regression.md`).
@@ -166,12 +171,21 @@ Candidate commands, not yet scoped:
     above — only advances the script *after* its own operation genuinely completes. So a script
     can never run `cancel` while a prior command is still in flight; the next line isn't
     dispatched until the previous one is already done.
-  - **A way to trigger Information Centrality / Eigenvector Centrality from a script at all.**
-    Neither `distances` nor `distances_bench` reaches `Matrix::inverse()`/`powerIteration()` — no
-    existing command does.
+  Both `report-centrality-information` and `report-centrality-eigenvector` (added in WS16 Step 2)
+  now reach `Matrix::inverse()`/`powerIteration()` respectively, so that prerequisite is met; the
+  non-blocking dispatch variant is still needed.
 
   Motivating use case: verifying WS5 A5's cancellation-aware algebra kernels actually interrupt a
   real in-progress computation, not just accept the parameter without exercising it.
+
+### Known issues
+
+- **`scripts/run_report_export_bench.sh`'s large fixture hangs on its second invocation** within
+  the same script run (found during WS16 Step 3) — never returns, no error, killed after 3+
+  minutes when it happened. A single standalone `--interactive-script` run of the same fixture
+  always completes cleanly; the issue only shows up when the GUI binary is launched repeatedly in
+  a tight loop. Not diagnosed further — plausibly a resource or state issue with repeated offscreen
+  launches rather than anything in a specific command's own logic.
 
 ## Work Rules
 

@@ -62,31 +62,36 @@ All notable changes to this project are documented in this file.
     script. All dispatched through the same real event-loop/`graphThread`
     path a user action would take, not called directly.
 
-  - **Twelve more interactive-script commands** (#113):
+  - **Sixteen more interactive-script commands** (#113):
     `report-centrality-degree` / `-closeness` / `-closeness-ir` /
     `-betweenness` / `-stress` / `-eccentricity` / `-power` / `-information`
-    / `-eigenvector`, plus `report-prestige-degree` / `-proximity` /
-    `-pagerank` — each mirrors its real Analyze menu action exactly, with
-    `[weights] [inverse] [dropisolates] [csv]`-style tokens where
-    applicable — giving every centrality/prestige report writer a headless
-    benchmark path for the first time. The existing `distances` command also
-    gained a `[csv]` token, matching the new Output format setting below.
+    / `-eigenvector`, `report-prestige-degree` / `-proximity` /
+    `-pagerank`, and `report-reciprocity` / `-eccentricity` /
+    `-clustering-coefficient` / `-triad-census` — each mirrors its real
+    Analyze menu action exactly, with `[weights] [inverse] [dropisolates]
+    [csv]`-style tokens where applicable — giving every one of these report
+    writers a headless benchmark path for the first time. The existing
+    `distances` command also gained a `[csv]` token, matching the new
+    Output format setting below.
 
   - **Export analysis reports as CSV** (#113): new **Settings → Reports →
     Output format** option (HTML/CSV) covers the matrix-family reports —
     Adjacency, Distances, Geodesics, Reachability, Laplacian, Degree,
     Cocitation, Transpose, Adjacency Inverse, Walks, and the Structural
-    Equivalence Similarity/Pearson/Dissimilarities reports — and now also
-    every Centrality/Prestige report: Degree, Closeness, Closeness
-    (Influence Range), Betweenness, Stress, Eccentricity, Power,
-    Information, and Eigenvector centrality, plus Degree, Proximity, and
-    PageRank prestige. CSV files are a lean, table-only alternative to the
-    full HTML report (no prose, summary stats, or charts) and always open
-    in the system's default handler (e.g. a spreadsheet app) instead of
-    the built-in report viewer. A handful of narrative/single-value
-    reports (Reciprocity, Connectedness, Node/Graph Connectivity, Clique
-    Census, Triad Census, Clustering Coefficient, Hierarchical Clustering)
-    still write HTML only, for now — tracked as ongoing work.
+    Equivalence Similarity/Pearson/Dissimilarities reports — every
+    Centrality/Prestige report: Degree, Closeness, Closeness (Influence
+    Range), Betweenness, Stress, Eccentricity, Power, Information, and
+    Eigenvector centrality, plus Degree, Proximity, and PageRank prestige —
+    and Reciprocity, the standalone Eccentricity report, Clustering
+    Coefficient, and Triad Census. CSV files are a lean, table-only
+    alternative to the full HTML report (no prose, summary stats, or
+    charts) and always open in the system's default handler (e.g. a
+    spreadsheet app) instead of the built-in report viewer. Clique Census
+    and Hierarchical Clustering write HTML only, permanently — both
+    combine several heterogeneous sub-tables (co-membership matrices, a
+    dendrogram) that don't reduce to one flat CSV table. Connectedness and
+    Node/Graph Connectivity were never file reports to begin with — both
+    show their result in a dialog, not a report.
 
 ### Improvements
 
@@ -251,6 +256,14 @@ All notable changes to this project are documented in this file.
     (#272): checking whether a directed network is connected only ever
     checked weak connectivity (ignoring edge direction), with no way to
     check strong connectivity from the UI. Now asks which one to check.
+
+  - **Reciprocity report no longer shows "nan" for actors with no ties**
+    (found during #113): the per-actor Symmetric/nonSymmetric columns
+    divided by an actor's total tie count with no zero-guard, unlike every
+    other ratio in the same report. An actor with zero inbound and
+    outbound edges hit a 0/0 division, showing the literal text "nan" in
+    both columns. Now reports 0 for actors with no ties, matching how the
+    report already handled every other degenerate case.
 
 ### Maintenance
 

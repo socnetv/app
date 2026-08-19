@@ -9,8 +9,10 @@ spreadsheet.
 
 ## Status
 
-🚧 In progress. Steps 0-2 done (baseline benchmarking, matrix-family CSV export,
-centrality/prestige CSV + dedup). Step 3 (long tail) not started.
+✅ Complete. All 4 steps done: baseline benchmarking, matrix-family CSV export,
+centrality/prestige CSV + dedup, and the Step 3 long tail (Reciprocity, standalone
+Eccentricity, Clustering Coefficient, Triad Census). Clique Census and Hierarchical
+Clustering are HTML-only permanently, by design (see Step 3 below) — not a gap.
 
 ## Background
 
@@ -226,21 +228,116 @@ Settings → Output format → CSV, ran Degree Centrality from the real `Analyze
 correctly in the system's default spreadsheet app with a clean table; switched back to HTML, ran
 Closeness Centrality → opened correctly in the built-in report viewer.
 
+### Step 3 — Long tail
+
+Investigation first, same as Step 2: `writeReciprocity()`, `writeEccentricity()` (the standalone
+report — distinct from Eccentricity *Centrality*, done in Step 2), `writeClusteringCoefficient()`,
+and `writeTriadCensus()` were read in full before deciding anything, plus a check of Connectedness
+and Node/Graph Connectivity's actual call sites.
+
+- **Connectedness and Node/Graph Connectivity turned out not to be file reports at all** —
+  `slotAnalyzeConnectedness()`/`slotAnalyzeNodeConnectivity()` show their result via
+  `QMessageBox`/`QInputDialog`, never calling any `Graph::write*()` function. Nothing to do here;
+  the original plan's "likely stay HTML-only" guess was half right but the real answer is "N/A,
+  not a report."
+- **Reciprocity** fits the Step 2 shared renderer exactly (6 data columns, no isolate-blanking) —
+  reused `writeScoreTableHTML()`/`writeScoreTableCSV()` as-is, no renderer changes needed.
+- **Clustering Coefficient** also fits directly (3 data columns). Its HTML loop had a
+  `progressCanceled()` check on every row, unlike every Step 2 report (which check once before the
+  loop) — dropped to match the established convention, trading fine-grained cancellation on very
+  large N for consistency; the pre-loop check is retained.
+- **Eccentricity** (standalone) needed two genuine renderer extensions, since it doesn't fit the
+  "plain qreal, always-present row" shape the renderer assumed:
+  - Its value can be the infinity glyph (∞), not a number, for disconnected nodes. Rather than a
+    one-off, `writeScoreTableHTML()`/`writeScoreTableCSV()` gained a general RAND_MAX-as-infinity
+    convention matching `writeMatrixHTMLTable()`/`writeMatrixCSVTable()`'s existing sentinel, so
+    any future report needing this doesn't need its own workaround.
+  - It skips disabled vertices entirely (`continue`, row never appears) rather than blanking them
+    — different from every Step 2 report's isolate-*blanking*. Added a second optional predicate,
+    `isSkipped`, distinct from `isBlanked`, so this exact behavior carries over instead of being
+    silently changed to blanking (which would make disabled nodes visible with placeholder cells
+    where before they didn't appear at all).
+  - Minor, deliberate side effect: Reciprocity and Eccentricity's "Actor" column header is now
+    "Node" (the shared renderer's fixed label), matching every other score table. Purely
+    cosmetic — same data, same meaning — not called out separately at the time but worth recording
+    here since it's a visible (if trivial) output change.
+- **Triad Census** is a small *fixed-shape* table (16 known triad types × census count), not
+  per-node — doesn't go through the shared renderer at all. A direct 2-column CSV write (`Type`,
+  `Census`) suffices; no escaping needed since triad-type labels are fixed known strings.
+- **Clique Census** and **Hierarchical Clustering** confirmed as HTML-only, permanently, exactly as
+  scoped originally: Clique Census combines 4 heterogeneous sub-tables (clique list, actor×clique
+  matrix, actor×actor co-membership matrix, and a full HCA dendrogram sub-report) that don't reduce
+  to one flat CSV; Hierarchical Clustering produces an equivalence matrix plus a dendrogram, same
+  reasoning. Documented as comments at both declarations in `graph.h` so the reasoning survives
+  independent of this doc.
+
+**Bug found and fixed along the way**: `writeReciprocity()` had two separate problems, both fixed
+in the same pass since fixing the second required touching the exact code the first lives in:
+- Like `writeMatrixAdjacency()`/`writeMatrixWalks()` in Step 1, it returned `void` and silently
+  swallowed file-open failures; its `MainWindow` call site checked only
+  `activeGraph->progressCanceled()`, which doesn't reflect a failed write. Converted to `bool`,
+  call site now checks the real success flag.
+- The per-actor "Symmetric" ratio divided by an actor's total tie count with **no zero-guard**,
+  unlike every other ratio in the same function. An actor with zero inbound and outbound edges hit
+  `0/0`, producing the literal text `nan` in both HTML and CSV output — confirmed present in the
+  original HTML report too (not something the CSV refactor introduced), by generating a fresh HTML
+  report from the pre-fix code against the same test network. Guarded the same way as the other
+  four ratios: no ties means 0, not NaN.
+
+All 4 `MainWindow` call sites (Reciprocity, Eccentricity, Clustering Coefficient, Triad Census)
+retrofitted with the Step 1/2 extension-picking and viewer-branching pattern. 4 new
+interactive-script commands added (`report-reciprocity`, `report-eccentricity`,
+`report-clustering-coefficient`, `report-triad-census`), each mirroring its real menu action.
+
+**Baseline numbers** (macOS arm64, Debug build, offscreen, HTML):
+
+| Report | small (N=500, E=2500), median of 3 | large (N=2000, E=40000), single run |
+|---|---|---|
+| Reciprocity | 23 ms | 241 ms |
+| Eccentricity (standalone) | 37 ms | 227 ms |
+| Clustering Coefficient | 19 ms | 543 ms |
+| Triad Census | 9164 ms | not run (see below) |
+
+The large fixture's numbers are a **single run, not a median** — see the benchmark-harness finding
+below. `distances` and all 12 Step 2 reports were re-measured in the same pass and stayed within
+normal run-to-run variance of their Step 2 baseline (e.g. `distances` 28768→27057 ms single-run,
+Degree Centrality 803→877 ms), consistent with "no computational change" for those paths.
+
+**Triad Census is O(n³)** (enumerates every triple of vertices) and was excluded from the large
+fixture (N=2000) after a single run took over 12 minutes and was still running when interrupted —
+genuinely expensive at that scale, not a bug. It stays in the small fixture (N=500, ~9s) where it's
+still a meaningful measurement. `scripts/run_report_export_bench.sh`'s shared `COMMANDS` list now
+tolerates a command being absent from one fixture's output (skips it rather than failing), since
+the two fixtures no longer run an identical command set.
+
+**Benchmark-harness finding (not fixed here — out of WS16's scope)**: running
+`scripts/run_report_export_bench.sh` end-to-end, the large-fixture `--interactive-script` process
+**hangs** (not crashes — no error, never returns) on its second invocation in the same script run;
+a single standalone run always completes cleanly. Root cause not diagnosed — plausibly a resource
+or state issue with launching the offscreen GUI repeatedly in a tight loop rather than anything
+specific to Step 3's changes, since the fixtures/harness are WS12 territory, not WS16's. Worth a
+closer look if this benchmark script becomes something run regularly.
+
+**Verification**: `./scripts/run_golden_compares.sh` clean throughout. Content spot-checks via
+`--interactive-script` on a fresh directed test network: Reciprocity CSV/HTML matched exactly
+(post-fix, no `nan` anywhere); Eccentricity CSV/HTML both showed `∞` for all 10 nodes, confirmed
+correct (not a bug) by checking the network genuinely isn't strongly connected — matrix-identical
+between formats; Clustering Coefficient and Triad Census CSVs matched their HTML output.
+
+## Known Gaps
+
+- **Clique Census and Hierarchical Clustering are HTML-only, permanently** — both combine several
+  heterogeneous sub-tables (co-membership matrices, a dendrogram) that don't reduce to one flat CSV
+  table. Documented as comments at their `graph.h` declarations.
+- **Connectedness and Node/Graph Connectivity have no CSV form** because they were never file
+  reports — both show their result via a dialog, not an `Analyze` report.
+- **`scripts/run_report_export_bench.sh`'s large fixture hangs on its second invocation** within
+  the same script run — tracked in
+  [`roadmap_ws12_cli_scripting_mode.md`](roadmap_ws12_cli_scripting_mode.md)'s Known Issues, since
+  it's the shared `--interactive-script` harness (WS12), not anything specific to this workstream.
+- **Triad Census's benchmark only runs at the small fixture's scale (N=500)** — it's O(n³); a
+  single run at the large fixture's N=2000 was still running after 12+ minutes when interrupted.
+
 ## What Remains Open
 
-- **Step 3 — Long tail.** Reciprocity, `writeEccentricity()` (the standalone Eccentricity report -
-  distinct from Eccentricity *Centrality*, done in Step 2), Connectedness, Node/Graph Connectivity,
-  Clique Census, Triad Census, Clustering Coefficient, Hierarchical Clustering — case-by-case now
-  that Steps 1-2's two renderer patterns exist; some map onto the score-table pattern, some need
-  their own small fixed-shape CSV, some (Connectedness, κ values) likely stay HTML-only permanently.
-
-## Work Rules
-
-- `./scripts/run_golden_compares.sh` after every step (no computational change expected — confirm,
-  don't assume, since C++ code is touched).
-- `scripts/run_report_export_bench.sh` before and after each step, compared against the most
-  recent baseline table above (Step 0's for the matrix family, Step 2's for centrality/prestige).
-- Manual GUI smoke test each step: run affected reports in both HTML/CSV mode, confirm file
-  contents and that the correct viewer opens.
-- CSV escaping goes through `TableExport`, never reimplemented independently in
-  `graph_reports.cpp`.
+Nothing scoped under WS16.

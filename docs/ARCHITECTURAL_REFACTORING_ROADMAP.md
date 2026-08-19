@@ -44,6 +44,7 @@ The `Graph` object is a façade and state coordinator — not a monolith. Algori
 | WS5  | Matrices Modernization              | ✔ complete (v3.7)             | [`roadmap_ws5_matrices_modernization.md`](roadmaps/roadmap_ws5_matrices_modernization.md) |
 | WS9  | Graph exploration & data workflows  | ✔ shipped v3.5/v3.6           | [`roadmap_ws9_graph_exploration.md`](roadmaps/roadmap_ws9_graph_exploration.md) |
 | WS14 | Logging Cost & Release-Build Hygiene| ✔ complete (v3.7, #268)       | [`roadmap_ws14_logging_cost.md`](roadmaps/roadmap_ws14_logging_cost.md) |
+| WS16 | Report CSV Export                   | ✔ complete (v3.7, #113)       | [`roadmap_ws16_report_csv_export.md`](roadmaps/roadmap_ws16_report_csv_export.md) |
 
 ---
 
@@ -123,16 +124,6 @@ mistaken for having fixed all four.
 
 ---
 
-## WS16 — Report CSV Export
-
-Roadmap: [`docs/roadmaps/roadmap_ws16_report_csv_export.md`](roadmaps/roadmap_ws16_report_csv_export.md)
-
-Let analysis reports (#113) be exported as CSV, not just HTML, staged from the matrix-family
-reports (cheap, already share one renderer) to centrality/prestige reports (harder, needs a new
-shared renderer) to the remaining long tail.
-
----
-
 # Priorities
 
 1. **WS15** — app responsiveness contract. P1-P3 done and live-verified; P4's parallelization audit
@@ -147,11 +138,9 @@ shared renderer) to the remaining long tail.
 5. **WS8** — IO layer stabilization. Roadmap scoped; zero code written yet.
 6. **WS11** — algorithm additions. Started: #7 and #272 shipped; rest of the backlog not
    prioritised yet.
-7. **WS12** — CLI scripting mode. Nineteen commands shipped across several passes since #261/#262;
+7. **WS12** — CLI scripting mode. Thirty commands shipped across several passes since #261/#262;
    further commands added on demand, not prioritised as a standing backlog.
 8. **WS13** — undo/redo. Just created; not prioritised yet, no code written.
-9. **WS16** — report CSV export. Steps 0-2 done (baseline benchmarking, matrix-family CSV,
-   centrality/prestige CSV + dedup); Step 3 (long tail) not started.
 
 ---
 
