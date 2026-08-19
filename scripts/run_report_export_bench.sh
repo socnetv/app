@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# run_report_export_bench.sh — WS16 (#113, CSV report export) Step 0 baseline
+# run_report_export_bench.sh — WS16 (#113, CSV report export) baseline/regression tool
 #
 # Rough before/after measurement tool for Graph::write*() report-writer functions
 # (src/graph/reporting/graph_reports.cpp), driven headlessly via --interactive-script (WS12),
 # since socnetv-cli's kernels never call these functions (they only ever emit JSON) - this is
 # the only headless path that can reach a report writer end-to-end (compute + file I/O).
+#
+# Covers the matrix-family 'distances' command (Step 1) plus all 12 centrality/prestige
+# report commands (Step 2) - see the fixtures for the exact list.
 #
 # Deliberately NOT a CI-threshold-gated regression kernel like run_render_perf_bench.sh's
 # EXP_*_MAX_MS baselines - this exists to capture a rough "before" number ahead of the WS16
@@ -31,6 +34,24 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FIXTURES=(
   "$ROOT_DIR/scripts/fixtures/report_export_bench_small.txt"
   "$ROOT_DIR/scripts/fixtures/report_export_bench_large.txt"
+)
+
+# Every report command the fixtures exercise, in the order they appear there. Kept as one list
+# so adding a new report command to a fixture only requires adding its name here too.
+COMMANDS=(
+  distances
+  report-centrality-degree
+  report-centrality-closeness
+  report-centrality-closeness-ir
+  report-centrality-betweenness
+  report-centrality-stress
+  report-centrality-eccentricity
+  report-centrality-power
+  report-centrality-information
+  report-centrality-eigenvector
+  report-prestige-degree
+  report-prestige-proximity
+  report-prestige-pagerank
 )
 
 # shellcheck source=/dev/null
@@ -67,13 +88,18 @@ median_of() {
 
 echo "INFO: SOCNETV_GUI=$SOCNETV_GUI RUNS=$RUNS" >&2
 
+BENCH_PATTERN="$(IFS='|'; echo "${COMMANDS[*]}")"
+
 for FIXTURE in "${FIXTURES[@]}"; do
   FIXTURE_NAME="$(basename "$FIXTURE" .txt)"
-  declare -a DISTANCES_VALUES=() CENTRALITY_VALUES=()
+
+  # One values-array per command, named VALUES_<index> to stay in lockstep with COMMANDS - bash
+  # has no associative-array-of-arrays, so this is the simplest portable equivalent.
+  for i in "${!COMMANDS[@]}"; do declare -a "VALUES_${i}=()"; done
 
   for (( run = 1; run <= RUNS; run++ )); do
     RAW_OUTPUT="$(QT_QPA_PLATFORM=offscreen "$SOCNETV_GUI" --interactive-script "$FIXTURE" 2>&1)"
-    BENCH_LINES="$(echo "$RAW_OUTPUT" | grep -E "^BENCH (distances|report-centrality-degree) " || true)"
+    BENCH_LINES="$(echo "$RAW_OUTPUT" | grep -E "^BENCH (${BENCH_PATTERN}) " || true)"
 
     if [[ -z "$BENCH_LINES" ]]; then
       echo "ERROR: no BENCH lines produced on run ${run}/${RUNS} for ${FIXTURE_NAME}. Full output:" >&2
@@ -84,24 +110,25 @@ for FIXTURE in "${FIXTURES[@]}"; do
     echo "--- ${FIXTURE_NAME} run ${run}/${RUNS} ---" >&2
     echo "$BENCH_LINES" >&2
 
-    # qInfo()'s stream operator inserts a space after "elapsed_ms=" between the two << operands.
-    DISTANCES_MS="$(echo "$BENCH_LINES" | grep "^BENCH distances " | sed -nE 's/.*elapsed_ms= *(-?[0-9]+).*/\1/p')"
-    CENTRALITY_MS="$(echo "$BENCH_LINES" | grep "^BENCH report-centrality-degree " | sed -nE 's/.*elapsed_ms= *(-?[0-9]+).*/\1/p')"
-
-    if [[ -z "$DISTANCES_MS" || -z "$CENTRALITY_MS" ]]; then
-      echo "ERROR: missing expected BENCH line(s) on run ${run}/${RUNS} for ${FIXTURE_NAME}." >&2
-      exit 1
-    fi
-
-    DISTANCES_VALUES+=("$DISTANCES_MS")
-    CENTRALITY_VALUES+=("$CENTRALITY_MS")
+    for i in "${!COMMANDS[@]}"; do
+      CMD="${COMMANDS[$i]}"
+      # qInfo()'s stream operator inserts a space after "elapsed_ms=" between the two << operands.
+      MS="$(echo "$BENCH_LINES" | grep "^BENCH ${CMD} " | sed -nE 's/.*elapsed_ms= *(-?[0-9]+).*/\1/p')"
+      if [[ -z "$MS" ]]; then
+        echo "ERROR: missing expected BENCH line for '${CMD}' on run ${run}/${RUNS} for ${FIXTURE_NAME}." >&2
+        exit 1
+      fi
+      declare -n VALUES_REF="VALUES_${i}"
+      VALUES_REF+=("$MS")
+    done
   done
 
-  DISTANCES_MEDIAN="$(median_of "${DISTANCES_VALUES[@]}")"
-  CENTRALITY_MEDIAN="$(median_of "${CENTRALITY_VALUES[@]}")"
+  for i in "${!COMMANDS[@]}"; do
+    CMD="${COMMANDS[$i]}"
+    declare -n VALUES_REF="VALUES_${i}"
+    MEDIAN="$(median_of "${VALUES_REF[@]}")"
+    echo "MEDIAN ${FIXTURE_NAME} ${CMD} (HTML)=${MEDIAN}ms (of ${RUNS} runs)"
+  done
 
-  echo "MEDIAN ${FIXTURE_NAME} distances (writeMatrix, HTML)=${DISTANCES_MEDIAN}ms (of ${RUNS} runs)"
-  echo "MEDIAN ${FIXTURE_NAME} report-centrality-degree (writeCentralityDegree, HTML)=${CENTRALITY_MEDIAN}ms (of ${RUNS} runs)"
-
-  unset DISTANCES_VALUES CENTRALITY_VALUES
+  for i in "${!COMMANDS[@]}"; do unset "VALUES_${i}"; done
 done
