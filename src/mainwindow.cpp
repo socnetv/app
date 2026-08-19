@@ -6634,6 +6634,121 @@ void MainWindow::processNextInteractiveCommand()
                 QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
             });
     }
+    else if (line == "report-reciprocity" || line.startsWith("report-reciprocity "))
+    {
+        // report-reciprocity [weights] [csv] - WS16 Step 3: mirrors slotAnalyzeReciprocity()
+        // exactly.
+        const QStringList tokens = line.mid(18).trimmed().split(' ', Qt::SkipEmptyParts);
+        const bool considerWeights = tokens.contains("weights");
+        const int reportFormat = tokens.contains("csv") ? ReportFormat::Csv : ReportFormat::Html;
+
+        const QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+        const QString fn = appSettings["dataDir"] + "socnetv-report-reciprocity-" + dateTime + ext;
+        auto success = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, fn, considerWeights, reportFormat, success]() {
+                *success = activeGraph->writeReciprocity(fn, considerWeights, reportFormat);
+            },
+            tr("Computing Reciprocity. Please wait..."),
+            [this, considerWeights, success, timer]() {
+                qInfo() << "BENCH report-reciprocity weights=" << considerWeights
+                        << "success=" << *success
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "report-eccentricity" || line.startsWith("report-eccentricity "))
+    {
+        // report-eccentricity [weights] [inverse] [dropisolates] [csv] - WS16 Step 3: mirrors
+        // slotAnalyzeEccentricity() exactly.
+        const QStringList tokens = line.mid(19).trimmed().split(' ', Qt::SkipEmptyParts);
+        const bool considerWeights = tokens.contains("weights");
+        const bool inverseWeights = tokens.contains("inverse");
+        const bool dropIsolates = tokens.contains("dropisolates");
+        const int reportFormat = tokens.contains("csv") ? ReportFormat::Csv : ReportFormat::Html;
+
+        const QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+        const QString fn = appSettings["dataDir"] + "socnetv-report-eccentricity-" + dateTime + ext;
+        auto success = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, fn, considerWeights, inverseWeights, dropIsolates, reportFormat, success]() {
+                *success = activeGraph->writeEccentricity(
+                    fn, considerWeights, inverseWeights, dropIsolates, reportFormat);
+            },
+            tr("Computing Eccentricity. Please wait..."),
+            [this, considerWeights, inverseWeights, dropIsolates, success, timer]() {
+                qInfo() << "BENCH report-eccentricity weights=" << considerWeights
+                        << "inverse=" << inverseWeights << "dropisolates=" << dropIsolates
+                        << "success=" << *success
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "report-clustering-coefficient" || line.startsWith("report-clustering-coefficient "))
+    {
+        // report-clustering-coefficient [csv] - WS16 Step 3: mirrors
+        // slotAnalyzeClusteringCoefficient() exactly (considerWeights is fixed true there, so
+        // no token for it here either).
+        const QStringList tokens = line.mid(29).trimmed().split(' ', Qt::SkipEmptyParts);
+        const int reportFormat = tokens.contains("csv") ? ReportFormat::Csv : ReportFormat::Html;
+
+        const QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+        const QString fn = appSettings["dataDir"] + "socnetv-report-clustering-coefficient-" + dateTime + ext;
+        auto success = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, fn, reportFormat, success]() {
+                *success = activeGraph->writeClusteringCoefficient(fn, true, reportFormat);
+            },
+            tr("Computing Clustering Coefficients. Please wait..."),
+            [this, success, timer]() {
+                qInfo() << "BENCH report-clustering-coefficient"
+                        << "success=" << *success
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "report-triad-census" || line.startsWith("report-triad-census "))
+    {
+        // report-triad-census [csv] - WS16 Step 3: mirrors slotAnalyzeCommunitiesTriadCensus()
+        // exactly (considerWeights is fixed true there, so no token for it here either).
+        const QStringList tokens = line.mid(19).trimmed().split(' ', Qt::SkipEmptyParts);
+        const int reportFormat = tokens.contains("csv") ? ReportFormat::Csv : ReportFormat::Html;
+
+        const QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+        const QString fn = appSettings["dataDir"] + "socnetv-report-triad-census-" + dateTime + ext;
+        auto success = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, fn, reportFormat, success]() {
+                *success = activeGraph->writeTriadCensus(fn, true, reportFormat);
+            },
+            tr("Computing Triad Census. Please wait..."),
+            [this, success, timer]() {
+                qInfo() << "BENCH report-triad-census"
+                        << "success=" << *success
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
     else if (line == "render")
     {
         // WS10/WS6.6 render-perf benchmarking aid: forces a synchronous repaint (unlike
@@ -14306,6 +14421,9 @@ int MainWindow::activeNodes()
 /**
  *	Displays the arc and dyad reciprocity of the network
  */
+/**
+ *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
+ */
 void MainWindow::slotAnalyzeReciprocity()
 {
 
@@ -14314,25 +14432,28 @@ void MainWindow::slotAnalyzeReciprocity()
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-reciprocity-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-reciprocity-" + dateTime + ext;
 
     askAboutEdgeWeights();
 
     bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, considerWeights]() {
-            activeGraph->writeReciprocity(fn, considerWeights);
+        [this, fn, considerWeights, reportFormat, success]() {
+            *success = activeGraph->writeReciprocity(fn, considerWeights, reportFormat);
         },
         tr("Computing Reciprocity. Please wait..."),
-        [this, fn]() {
-            if (activeGraph->progressCanceled())
+        [this, fn, reportFormat, success]() {
+            if (!*success)
             {
-                statusMessage(tr("Computation canceled."));
+                statusMessage(tr("Computation canceled, or could not write to file."));
                 return;
             }
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -15103,6 +15224,8 @@ void MainWindow::slotAnalyzeGeodesicDistribution()
 
 /**
  *	Writes Eccentricity indices into a file, then displays it.
+ *
+ *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzeEccentricity()
 {
@@ -15111,8 +15234,10 @@ void MainWindow::slotAnalyzeEccentricity()
         slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
         return;
     }
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-eccentricity-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-eccentricity-" + dateTime + ext;
 
     askAboutEdgeWeights();
 
@@ -15122,15 +15247,15 @@ void MainWindow::slotAnalyzeEccentricity()
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, success]() {
+        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat, success]() {
             *success = activeGraph->writeEccentricity(
-                fn, considerWeights, inverseWeightsFinal, dropIsolates);
+                fn, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat);
         },
         tr("Computing Eccentricity. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
                 return;
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -15660,6 +15785,8 @@ void MainWindow::slotAnalyzeReachabilityMatrix()
 /**
  * @brief Calls Graph::writeClusteringCoefficient() to write Clustering Coefficients
  * into a file, and displays it.
+ *
+ * Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzeClusteringCoefficient()
 {
@@ -15669,23 +15796,25 @@ void MainWindow::slotAnalyzeClusteringCoefficient()
         return;
     }
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-clustering-coefficient-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-clustering-coefficient-" + dateTime + ext;
 
     bool considerWeights = true;
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, considerWeights, success]() {
-            *success = activeGraph->writeClusteringCoefficient(fn, considerWeights);
+        [this, fn, considerWeights, reportFormat, success]() {
+            *success = activeGraph->writeClusteringCoefficient(fn, considerWeights, reportFormat);
         },
         tr("Computing Clustering Coefficients. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
             {
                 return;
             }
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
@@ -15749,6 +15878,8 @@ void MainWindow::slotAnalyzeCommunitiesCliqueCensus()
 
 /**
  *	Calls Graph to compute and write a triad census into a file, then displays it.
+ *
+ *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  */
 void MainWindow::slotAnalyzeCommunitiesTriadCensus()
 {
@@ -15759,23 +15890,25 @@ void MainWindow::slotAnalyzeCommunitiesTriadCensus()
         return;
     }
 
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
     QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-    QString fn = appSettings["dataDir"] + "socnetv-report-triad-census-" + dateTime + ".html";
+    QString fn = appSettings["dataDir"] + "socnetv-report-triad-census-" + dateTime + ext;
 
     bool considerWeights = true;
     auto success = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, fn, considerWeights, success]() {
-            *success = activeGraph->writeTriadCensus(fn, considerWeights);
+        [this, fn, considerWeights, reportFormat, success]() {
+            *success = activeGraph->writeTriadCensus(fn, considerWeights, reportFormat);
         },
         tr("Computing Triad Census. Please wait..."),
-        [this, fn, success]() {
+        [this, fn, reportFormat, success]() {
             if (!*success)
             {
                 return;
             }
-            if (appSettings["viewReportsInSystemBrowser"] == "true")
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
             {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
             }
