@@ -62,6 +62,17 @@ All notable changes to this project are documented in this file.
     script. All dispatched through the same real event-loop/`graphThread`
     path a user action would take, not called directly.
 
+  - **Export matrix reports as CSV** (#113): new **Settings → Reports →
+    Output format** option (HTML/CSV) covers the matrix-family reports —
+    Adjacency, Distances, Geodesics, Reachability, Laplacian, Degree,
+    Cocitation, Transpose, Adjacency Inverse, Walks, and the Structural
+    Equivalence Similarity/Pearson/Dissimilarities reports. CSV files are
+    a lean, table-only alternative to the full HTML report (no prose,
+    summary stats, or charts) and always open in the system's default
+    handler (e.g. a spreadsheet app) instead of the built-in report
+    viewer. Centrality/Prestige and other report families still write
+    HTML only, for now — tracked as ongoing work.
+
 ### Improvements
 
   - **Canvas rendering internals: correctness and performance pass** (#250): an eight-commit
