@@ -17221,7 +17221,18 @@ void MainWindow::runGraphOperationAsync(std::function<void()> operation,
             // path and emits canceled() -> Graph::slotCancelComputation() -> m_progressCanceled
             // stays true until the next resetProgressCanceled() call, silently no-op'ing every
             // operation after the first.
+            //
+            // reset() alone does NOT hide the dialog here: per QProgressDialog's docs, reset()
+            // only hides it when autoClose is true, and setAutoClose(false) is set above (see
+            // the cancel-button re-show workaround, WS15 Finding 8). Without an explicit hide(),
+            // the dialog stayed mapped on screen - invisible-in-Qt's-model but still on-screen -
+            // until deleteLater()'s deferred deletion eventually ran. For onComplete callbacks
+            // that open their own modal QMessageBox synchronously (e.g. Node/Graph Connectivity's
+            // result dialog), that deferred deletion doesn't happen until the new modal's nested
+            // event loop is dismissed, so the progress dialog visibly lingered behind it the
+            // whole time.
             busyDialog->reset();
+            busyDialog->hide();
             busyDialog->deleteLater();
             if (onComplete)
                 onComplete();

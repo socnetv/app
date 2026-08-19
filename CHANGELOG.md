@@ -265,6 +265,13 @@ All notable changes to this project are documented in this file.
     both columns. Now reports 0 for actors with no ties, matching how the
     report already handled every other degenerate case.
 
+  - **Progress dialog no longer lingers behind Node/Graph Connectivity's
+    result dialog**: the busy dialog shown while computing was reset but
+    never actually hidden (`reset()` only hides when `autoClose` is true,
+    which this dialog deliberately disables), so it stayed visibly on
+    screen behind the result dialog until that was dismissed. Now
+    explicitly hidden before the result dialog opens.
+
 ### Maintenance
 
   - `AUTHORS`: added Andreas as Debian package maintainer.
