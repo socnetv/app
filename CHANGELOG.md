@@ -62,16 +62,21 @@ All notable changes to this project are documented in this file.
     script. All dispatched through the same real event-loop/`graphThread`
     path a user action would take, not called directly.
 
-  - **Export matrix reports as CSV** (#113): new **Settings → Reports →
+  - **Export analysis reports as CSV** (#113): new **Settings → Reports →
     Output format** option (HTML/CSV) covers the matrix-family reports —
     Adjacency, Distances, Geodesics, Reachability, Laplacian, Degree,
     Cocitation, Transpose, Adjacency Inverse, Walks, and the Structural
-    Equivalence Similarity/Pearson/Dissimilarities reports. CSV files are
-    a lean, table-only alternative to the full HTML report (no prose,
-    summary stats, or charts) and always open in the system's default
-    handler (e.g. a spreadsheet app) instead of the built-in report
-    viewer. Centrality/Prestige and other report families still write
-    HTML only, for now — tracked as ongoing work.
+    Equivalence Similarity/Pearson/Dissimilarities reports — and now also
+    every Centrality/Prestige report: Degree, Closeness, Closeness
+    (Influence Range), Betweenness, Stress, Eccentricity, Power,
+    Information, and Eigenvector centrality, plus Degree, Proximity, and
+    PageRank prestige. CSV files are a lean, table-only alternative to the
+    full HTML report (no prose, summary stats, or charts) and always open
+    in the system's default handler (e.g. a spreadsheet app) instead of
+    the built-in report viewer. A handful of narrative/single-value
+    reports (Reciprocity, Connectedness, Node/Graph Connectivity, Clique
+    Census, Triad Census, Clustering Coefficient, Hierarchical Clustering)
+    still write HTML only, for now — tracked as ongoing work.
 
 ### Improvements
 

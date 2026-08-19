@@ -9,8 +9,8 @@ spreadsheet.
 
 ## Status
 
-🚧 In progress. Steps 0-1 done (baseline benchmarking, matrix-family CSV export). Steps 2-3
-(centrality/prestige CSV + dedup, long tail) not started.
+🚧 In progress. Steps 0-2 done (baseline benchmarking, matrix-family CSV export,
+centrality/prestige CSV + dedup). Step 3 (long tail) not started.
 
 ## Background
 
@@ -134,23 +134,112 @@ combo box's two items (`HTML`, `CSV`) *and* the constructor called `addItems()` 
 strings — the combo showed four duplicate entries at runtime. Fixed by removing the static `.ui`
 items, matching the existing `reportsChartTypeSelect` pattern (items added purely in code).
 
+### Step 2 — Centrality/Prestige CSV export + dedup
+
+Cataloguing all 12 functions' HTML table blocks before designing anything (rather than trusting
+Step 1's "5-column" description at face value) surfaced that the table shape isn't uniform:
+
+- **3-data-column family** (raw / standardized / %standardized): Degree, Closeness, Betweenness,
+  Stress, Power, Degree Prestige, PageRank Prestige, Information Centrality — 8 functions.
+- **2-data-column family** (raw only, since raw == standardized for these; %raw): Closeness
+  Influence Range, Eccentricity Centrality, Proximity Prestige — 3 functions.
+- **4-data-column family**: Eigenvector Centrality alone (raw / scaled / standardized /
+  %standardized).
+
+Isolate-row-blanking (the HTML `--` placeholder / CSV empty-cell behaviour) also wasn't uniform:
+10 of the 12 use `dropIsolates && isIsolated()`, Information Centrality uses a bare `isIsolated()`
+(it has no `dropIsolates` parameter), and Eigenvector Centrality never blanks isolate rows at all
+despite taking a `dropIsolates` parameter. Each report's existing behaviour was preserved exactly
+via a per-call predicate rather than silently unified.
+
+**New shared renderer pair** (`Graph::writeScoreTableHTML()` / `writeScoreTableCSV()`,
+`graph_reports.cpp`, ahead of `writeCentralityInformation()`): "Node"/"Label" are fixed leading
+columns; a `QStringList` of data-column headers and a `std::function<QVector<qreal>(GraphVertex*)>`
+row-value callback supply the rest, so all three column-shapes are handled by the same function
+without a fixed-arity assumption. An optional `std::function<bool(GraphVertex*)>` isolate predicate
+(default `nullptr`, matching Eigenvector's "never blank" behaviour) lets each of the 12 call sites
+reproduce its own existing rule. The HTML renderer generates its `tableSort()` `onclick` JS from
+the real column count — a side effect of this is that it also fixes a small pre-existing dead-code
+bug: the three 4-column tables (Influence Range Closeness, Eccentricity, Proximity Prestige) had
+copy-pasted `onclick` handlers that reset a nonexistent `asc5` JS variable; the generated version
+only emits `asc1..ascN` for the columns that actually exist.
+
+**Deviation from the original Step 2 plan**: rather than adding a
+`TableExport::toCSV(headers, rows, path)` overload that opens its own file, `writeScoreTableCSV()`
+follows Step 1's actual `writeMatrixCSVTable()` precedent instead — it writes directly into the
+same already-open `QTextStream`/`QFile` the HTML path uses (self-contained CSV branch, returns
+early, one file-open per report). `TableExport`'s private `csvQuote()` helper was promoted to a
+public `TableExport::csvQuote()` function and is called on the Label column only — the one
+free-text field in these reports; node numbers and scores are always numeric and never need
+escaping.
+
+All 12 `Graph::write*()` signatures gained a trailing `const int &format = ReportFormat::Html`
+parameter (matching Step 1's pattern); all 12 `MainWindow::slotAnalyze*` call sites were retrofitted
+identically to Step 1's 14 matrix-family sites (extension picked from the Settings preference, CSV
+always opens via `QDesktopServices::openUrl()`). The interactive-script `report-centrality-degree`
+command gained a `csv` token (matching `distances`'), and 11 new sibling commands were added -
+`report-centrality-closeness[-ir]`, `report-centrality-betweenness`, `report-centrality-stress`,
+`report-centrality-eccentricity`, `report-centrality-power`, `report-centrality-information`,
+`report-centrality-eigenvector`, `report-prestige-degree`, `report-prestige-proximity`,
+`report-prestige-pagerank` - each mirroring its real menu action exactly, giving every
+centrality/prestige writer a first-ever headless benchmark path.
+
+`scripts/run_report_export_bench.sh` and both fixtures were generalized from the hardcoded
+`distances`/`report-centrality-degree` pair to loop over all 13 commands (an array of command
+names replaces the old 1:1 hand-written variable pairs), so one run now benchmarks every report
+writer this workstream touches.
+
+**Baseline numbers** (median of 3 runs, macOS arm64, Debug build, offscreen; all HTML, since this
+run's purpose is confirming the existing HTML path is unaffected):
+
+| Report | small (N=500, E=2500) | large (N=2000, E=40000) |
+|---|---|---|
+| `distances` (writeMatrix) | 1190 ms | 28768 ms |
+| Degree Centrality | 110 ms | 803 ms |
+| Closeness Centrality | 336 ms | 9281 ms |
+| Closeness (Influence Range) | 103 ms | 762 ms |
+| Betweenness Centrality | 81 ms | 302 ms |
+| Stress Centrality | 83 ms | 299 ms |
+| Eccentricity Centrality | 81 ms | 301 ms |
+| Power Centrality | 81 ms | 291 ms |
+| Information Centrality | 1029 ms | 42545 ms |
+| Eigenvector Centrality | 535 ms | 10599 ms |
+| Degree Prestige | 82 ms | 298 ms |
+| Proximity Prestige | 101 ms | 695 ms |
+| PageRank Prestige | 93 ms | 295 ms |
+
+`distances` and Degree Centrality are within ~2-6% of the Step 0 baseline (1166→1190 ms,
+27092→28768 ms; 106→110 ms, 776→803 ms) - inside the previously-established run-to-run noise band,
+confirming the shared-renderer extraction added no measurable overhead. The other 11 numbers are
+first-ever measurements (no prior baseline existed), now recorded here as the reference point for
+any future change to these writers.
+
+**Verification**: `./scripts/run_golden_compares.sh` clean. Content spot-checks via
+`--interactive-script`: Degree Centrality CSV matched its HTML sibling's values exactly (including
+the `DC'` = `DC / sumDC` valued-network standardization, not `DC / (N-1)`); Eigenvector CSV showed
+all 4 data columns; Influence Range Closeness CSV showed exactly 2; a sparse network with isolates
+confirmed `dropisolates csv` renders **empty cells** for blanked rows (not `--` - CSV consumers
+read a blank field as null/absent, `--` would corrupt a numeric column type on import). Fresh HTML
+regeneration confirmed the `tableSort` dead-code fix (4-column tables now emit only `asc1..asc4`).
+Live GUI smoke test (user-performed, since headless testing can't reach the Settings dialog):
+Settings → Output format → CSV, ran Degree Centrality from the real `Analyze` menu → opened
+correctly in the system's default spreadsheet app with a clean table; switched back to HTML, ran
+Closeness Centrality → opened correctly in the built-in report viewer.
+
 ## What Remains Open
 
-- **Step 2 — Centrality/Prestige CSV export + dedup.** New shared per-node score-table renderer
-  pair (`writeScoreTableHTML()`/`writeScoreTableCSV()`) replacing the 12x copy-pasted table
-  scaffold; new `TableExport::toCSV(headers, rows, path)` overload for label escaping; retrofit
-  12 `MainWindow` call sites; benchmark commands for the remaining 11 writers.
-- **Step 3 — Long tail.** Reciprocity, Eccentricity, Connectedness, Node/Graph Connectivity,
-  Clique Census, Triad Census, Clustering Coefficient, Hierarchical Clustering — case-by-case once
-  Steps 1-2's two renderer patterns exist; some map onto the score-table pattern, some need their
-  own small fixed-shape CSV, some (Connectedness, κ values) likely stay HTML-only permanently.
+- **Step 3 — Long tail.** Reciprocity, `writeEccentricity()` (the standalone Eccentricity report -
+  distinct from Eccentricity *Centrality*, done in Step 2), Connectedness, Node/Graph Connectivity,
+  Clique Census, Triad Census, Clustering Coefficient, Hierarchical Clustering — case-by-case now
+  that Steps 1-2's two renderer patterns exist; some map onto the score-table pattern, some need
+  their own small fixed-shape CSV, some (Connectedness, κ values) likely stay HTML-only permanently.
 
 ## Work Rules
 
 - `./scripts/run_golden_compares.sh` after every step (no computational change expected — confirm,
   don't assume, since C++ code is touched).
-- `scripts/run_report_export_bench.sh` before and after each step, compared against the Step 0
-  baseline above.
+- `scripts/run_report_export_bench.sh` before and after each step, compared against the most
+  recent baseline table above (Step 0's for the matrix family, Step 2's for centrality/prestige).
 - Manual GUI smoke test each step: run affected reports in both HTML/CSV mode, confirm file
   contents and that the correct viewer opens.
 - CSV escaping goes through `TableExport`, never reimplemented independently in

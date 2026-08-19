@@ -150,8 +150,8 @@ shared renderer) to the remaining long tail.
 7. **WS12** — CLI scripting mode. Nineteen commands shipped across several passes since #261/#262;
    further commands added on demand, not prioritised as a standing backlog.
 8. **WS13** — undo/redo. Just created; not prioritised yet, no code written.
-9. **WS16** — report CSV export. Steps 0-1 done (baseline benchmarking, matrix-family CSV);
-   Steps 2-3 not started.
+9. **WS16** — report CSV export. Steps 0-2 done (baseline benchmarking, matrix-family CSV,
+   centrality/prestige CSV + dedup); Step 3 (long tail) not started.
 
 ---
 

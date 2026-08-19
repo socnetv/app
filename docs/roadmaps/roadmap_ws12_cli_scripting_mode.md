@@ -9,7 +9,7 @@ SocNetV as a live component.
 
 ## Status
 
-🚧 In progress. Nineteen commands shipped across #261/#262/WS14/WS6.6/WS16 — see What WS12
+🚧 In progress. Thirty commands shipped across #261/#262/WS14/WS6.6/WS16 — see What WS12
 Delivered below; every command now logs a uniform `BENCH` line on completion. Eventually most of
 SocNetV's functions should be reachable through interactive mode — see Background for where this
 is headed.
@@ -103,25 +103,41 @@ command below, not just the ones originally added for benchmarking.
 - `add-node` — adds a node at a random position.
 - `add-edge source target [weight]` — adds a directed edge (default weight 1).
 - `add-relation name` — adds a new relation and switches to it.
-- `distances [weights] [inverse] [dropisolates]` — mirrors the real Cohesion → Distances Matrix
-  menu action (`slotAnalyzeMatrixDistances()`) exactly: same computation (`writeMatrix()` →
+- `distances [weights] [inverse] [dropisolates] [csv]` — mirrors the real Cohesion → Distances
+  Matrix menu action (`slotAnalyzeMatrixDistances()`) exactly: same computation (`writeMatrix()` →
   `graphMatrixDistanceGeodesicCreate()`), same `runGraphOperationAsync()` dispatch, same output
   file — just without opening a `TextEditor` afterward, and without `askAboutEdgeWeights()`'s modal
   prompt (the tokens answer what it would ask). Trailing tokens are order-independent; presence of
-  a token means true, absence means false. Previously called `graphDistancesGeodesic()` directly
-  and crashed on some networks (`DistanceEngine::initRun` → `Graph::isSymmetric` → `edgeExists` →
-  `GraphVertex::hasEdgeTo`, invalid `QMultiHash` access) — the real menu action, computing via
-  `writeMatrix()`, did not crash on the same network, so this command now goes through that path
-  instead.
+  a token means true, absence means false. `csv` selects `ReportFormat::Csv` explicitly (WS16,
+  #113) rather than reading the persisted Settings preference — a script has no Settings dialog to
+  reflect. Previously called `graphDistancesGeodesic()` directly and crashed on some networks
+  (`DistanceEngine::initRun` → `Graph::isSymmetric` → `edgeExists` → `GraphVertex::hasEdgeTo`,
+  invalid `QMultiHash` access) — the real menu action, computing via `writeMatrix()`, did not crash
+  on the same network, so this command now goes through that path instead.
 - `distances_bench [weights] [inverse] [dropisolates] [centralities]` — benchmarking-only sibling
   of `distances`: same dispatch and computation, no disk write. `centralities` has no real-menu
   equivalent (the GUI computes each centrality index via ~9 separate menu actions, not one combined
   action), so it lives here rather than on `distances`.
-- `report-centrality-degree [weights] [dropisolates]` — mirrors the real Analyze → Centrality →
-  Degree menu action (`slotAnalyzeCentralityDegree()`) exactly, same `distances`-style pattern.
-  Added for WS16 (#113, CSV report export) as the first centrality/prestige report ever exercised
-  headlessly — none of the other 11 `writeCentrality*`/`writePrestige*` functions have a script
-  command yet.
+- `report-centrality-degree [weights] [dropisolates] [csv]`,
+  `report-centrality-closeness [weights] [inverse] [dropisolates] [csv]`,
+  `report-centrality-closeness-ir [weights] [inverse] [dropisolates] [csv]`,
+  `report-centrality-betweenness [weights] [inverse] [dropisolates] [csv]`,
+  `report-centrality-stress [weights] [inverse] [dropisolates] [csv]`,
+  `report-centrality-eccentricity [weights] [inverse] [dropisolates] [csv]`,
+  `report-centrality-power [weights] [inverse] [dropisolates] [csv]`,
+  `report-centrality-information [weights] [inverse] [csv]`,
+  `report-centrality-eigenvector [weights] [inverse] [csv]`,
+  `report-prestige-degree [weights] [dropisolates] [csv]`,
+  `report-prestige-proximity [dropisolates] [csv]`,
+  `report-prestige-pagerank [dropisolates] [csv]` — each mirrors its real `Analyze` menu action
+  exactly (`slotAnalyzeCentralityDegree()`, `slotAnalyzeCentralityCloseness()`, etc.), same
+  `distances`-style pattern and `csv` token. `report-centrality-degree` was added for WS16 (#113,
+  CSV report export) Step 0 as the first centrality/prestige report ever exercised headlessly; the
+  other 11 followed in Step 2, once every `writeCentrality*`/`writePrestige*` function gained CSV
+  support. `report-centrality-information` and `report-centrality-eigenvector` have no
+  `dropisolates` token (the underlying functions don't take one, or - Eigenvector - never blank
+  isolate rows regardless); `report-prestige-proximity` and `report-prestige-pagerank` have no
+  `weights`/`inverse` tokens (fixed in the real menu action too).
 - `render` — forces a synchronous `graphicsWidget->viewport()->repaint()` (unlike `update()`,
   which only schedules one). Added for WS6.6's canvas rendering-perf kernel
   (`roadmap_ws6_testing_ci_regression.md`).
