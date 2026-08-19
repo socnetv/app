@@ -8,8 +8,9 @@ set -euo pipefail
 # since socnetv-cli's kernels never call these functions (they only ever emit JSON) - this is
 # the only headless path that can reach a report writer end-to-end (compute + file I/O).
 #
-# Covers the matrix-family 'distances' command (Step 1) plus all 12 centrality/prestige
-# report commands (Step 2) - see the fixtures for the exact list.
+# Covers the matrix-family 'distances' command (Step 1), all 12 centrality/prestige report
+# commands (Step 2), and the Step 3 long tail (Reciprocity, standalone Eccentricity, Clustering
+# Coefficient, Triad Census) - see the fixtures for the exact list.
 #
 # Deliberately NOT a CI-threshold-gated regression kernel like run_render_perf_bench.sh's
 # EXP_*_MAX_MS baselines - this exists to capture a rough "before" number ahead of the WS16
@@ -52,6 +53,10 @@ COMMANDS=(
   report-prestige-degree
   report-prestige-proximity
   report-prestige-pagerank
+  report-reciprocity
+  report-eccentricity
+  report-clustering-coefficient
+  report-triad-census
 )
 
 # shellcheck source=/dev/null
@@ -115,8 +120,10 @@ for FIXTURE in "${FIXTURES[@]}"; do
       # qInfo()'s stream operator inserts a space after "elapsed_ms=" between the two << operands.
       MS="$(echo "$BENCH_LINES" | grep "^BENCH ${CMD} " | sed -nE 's/.*elapsed_ms= *(-?[0-9]+).*/\1/p')"
       if [[ -z "$MS" ]]; then
-        echo "ERROR: missing expected BENCH line for '${CMD}' on run ${run}/${RUNS} for ${FIXTURE_NAME}." >&2
-        exit 1
+        # Not every fixture runs every command (e.g. report-triad-census is O(n^3) and only
+        # in the small fixture - impractically slow at the large fixture's N=2000) - skip
+        # rather than fail, so one shared COMMANDS list still works across divergent fixtures.
+        continue
       fi
       declare -n VALUES_REF="VALUES_${i}"
       VALUES_REF+=("$MS")
@@ -126,6 +133,9 @@ for FIXTURE in "${FIXTURES[@]}"; do
   for i in "${!COMMANDS[@]}"; do
     CMD="${COMMANDS[$i]}"
     declare -n VALUES_REF="VALUES_${i}"
+    if [[ ${#VALUES_REF[@]} -eq 0 ]]; then
+      continue
+    fi
     MEDIAN="$(median_of "${VALUES_REF[@]}")"
     echo "MEDIAN ${FIXTURE_NAME} ${CMD} (HTML)=${MEDIAN}ms (of ${RUNS} runs)"
   done

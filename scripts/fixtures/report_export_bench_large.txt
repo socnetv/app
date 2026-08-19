@@ -13,4 +13,7 @@ report-centrality-eigenvector weights
 report-prestige-degree weights
 report-prestige-proximity
 report-prestige-pagerank
+report-reciprocity weights
+report-eccentricity weights
+report-clustering-coefficient
 quit
