@@ -103,9 +103,15 @@ categorization can begin any time.
 
 ## What WS7 Delivered
 
-Nothing shipped yet. MW1's slot-count inventory below (the six bullets under Motivation) is
-preliminary scope-sizing only, not the full per-slot responsibility-bucket categorization MW1
-itself requires — see What Remains Open.
+MW0 (mechanical split, F2-style — see below) in progress. First slice: `closeEvent`/
+`terminateThreads`/`resizeEvent` moved to `src/mainwindow/lifecycle/mainwindow_lifecycle.cpp`.
+Surfaced two pre-existing, real close-time crashes (dangling-pointer dereferences of
+`graphicsWidget`/`scene` and of `editNodePropertiesAct`/`editNodeRemoveAct` in `closeEvent`,
+root-caused via `lldb`/AddressSanitizer) — fixed as part of landing this slice.
+
+MW1's slot-count inventory below (the six bullets under Motivation) is preliminary scope-sizing
+only, not the full per-slot responsibility-bucket categorization MW1 itself requires — see What
+Remains Open.
 
 ## What Remains Open
 

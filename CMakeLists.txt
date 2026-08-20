@@ -150,6 +150,11 @@ set(GRAPH_SOURCES
 )
 
 
+set(MAINWINDOW_SOURCES
+    src/mainwindow.cpp
+    src/mainwindow/lifecycle/mainwindow_lifecycle.cpp
+)
+
 set(PARSER_SOURCES
     src/parser.cpp
     src/parser/parser_common.cpp 
@@ -207,11 +212,11 @@ set (FORMS
 )
 
 set(SOURCES
-    src/main.cpp 
-    src/mainwindow.cpp 
+    src/main.cpp
     src/texteditor.cpp
     ${ENGINE_SOURCES}
     ${GRAPH_SOURCES}
+    ${MAINWINDOW_SOURCES}
     ${PARSER_SOURCES}
     src/graphvertex.cpp
     src/matrix.cpp 

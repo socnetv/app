@@ -29,6 +29,7 @@
 #include <QScrollArea>
 #include <QThread>
 #include <QNetworkReply>
+#include <QLoggingCategory>
 #include <functional>
 
 // Allows to use QT_CHARTS namespace directives (see below)
@@ -36,6 +37,11 @@
 
 #include "global.h"
 #include "graph/filters/filter_condition.h"
+
+// WS7 MW0: declared here since mainwindow.h is included by every src/mainwindow/<domain>/ slice
+// .cpp, defined once in mainwindow.cpp. One blanket category (unlike Graph's per-domain split in
+// graph.h) - MainWindow's slots are UI wiring, not independently-toggled algorithm domains.
+Q_DECLARE_LOGGING_CATEGORY(lcMainWindow)
 
 QT_BEGIN_NAMESPACE
 class QGraphicsScene;
