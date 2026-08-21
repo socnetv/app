@@ -168,6 +168,14 @@ set(MAINWINDOW_SOURCES
     src/mainwindow/edit/mainwindow_edit_selection.cpp
     src/mainwindow/edit/mainwindow_edit_relation.cpp
     src/mainwindow/edit/mainwindow_edit_filters.cpp
+    src/mainwindow/analyze/mainwindow_analyze_centrality.cpp
+    src/mainwindow/analyze/mainwindow_analyze_distance.cpp
+    src/mainwindow/analyze/mainwindow_analyze_matrices.cpp
+    src/mainwindow/analyze/mainwindow_analyze_cohesion.cpp
+    src/mainwindow/analyze/mainwindow_analyze_clustering.cpp
+    src/mainwindow/analyze/mainwindow_analyze_similarity.cpp
+    src/mainwindow/analyze/mainwindow_analyze_prominence.cpp
+    src/mainwindow/analyze/mainwindow_analyze_shared.cpp
 )
 
 set(PARSER_SOURCES
