@@ -119,6 +119,11 @@ HEADERS += src/mainwindow.h \
 SOURCES += src/main.cpp \
     src/mainwindow.cpp \
     src/mainwindow/lifecycle/mainwindow_lifecycle.cpp \
+    src/mainwindow/init/mainwindow_init_settings.cpp \
+    src/mainwindow/init/mainwindow_init_actions.cpp \
+    src/mainwindow/init/mainwindow_init_menu.cpp \
+    src/mainwindow/init/mainwindow_init_panels.cpp \
+    src/mainwindow/init/mainwindow_init_app.cpp \
     src/texteditor.cpp \
     src/engine/graph_distance_progress_sink.cpp \
     src/engine/distance_engine.cpp \

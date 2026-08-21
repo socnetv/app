@@ -153,6 +153,11 @@ set(GRAPH_SOURCES
 set(MAINWINDOW_SOURCES
     src/mainwindow.cpp
     src/mainwindow/lifecycle/mainwindow_lifecycle.cpp
+    src/mainwindow/init/mainwindow_init_settings.cpp
+    src/mainwindow/init/mainwindow_init_actions.cpp
+    src/mainwindow/init/mainwindow_init_menu.cpp
+    src/mainwindow/init/mainwindow_init_panels.cpp
+    src/mainwindow/init/mainwindow_init_app.cpp
 )
 
 set(PARSER_SOURCES
