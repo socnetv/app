@@ -163,6 +163,11 @@ set(MAINWINDOW_SOURCES
     src/mainwindow/network/mainwindow_network_random.cpp
     src/mainwindow/network/mainwindow_network_web.cpp
     src/mainwindow/network/mainwindow_network_view.cpp
+    src/mainwindow/edit/mainwindow_edit_node.cpp
+    src/mainwindow/edit/mainwindow_edit_edge.cpp
+    src/mainwindow/edit/mainwindow_edit_selection.cpp
+    src/mainwindow/edit/mainwindow_edit_relation.cpp
+    src/mainwindow/edit/mainwindow_edit_filters.cpp
 )
 
 set(PARSER_SOURCES
