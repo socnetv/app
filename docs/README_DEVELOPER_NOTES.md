@@ -506,6 +506,60 @@ following the existing pattern — never plain `qDebug()`.
 
 ---
 
+# AddressSanitizer (ASan) Debug Builds
+
+For chasing crashes/dangling-pointer bugs that don't show up in the golden/benchmark suite (those
+exercise algorithm correctness, not memory safety) - a separate ASan-instrumented build catches
+use-after-free, double-free, and heap-buffer-overflow bugs with an exact allocation/free stack
+trace, rather than a bare crash address. Found and root-caused three real, previously-undetected
+bugs this way during WS7 MW0 (dangling `graphicsWidget`/`scene` pointers and a `printerPDF`
+double-free, all in `MainWindow::closeEvent` - see `roadmap_ws7_mainwindow_decomposition.md`).
+
+**Build** (separate directory - keep it alongside the normal `build/`, never mix flags into it):
+
+```bash
+cmake -S . -B build-asan \
+  -DCMAKE_PREFIX_PATH=/path/to/Qt/6.x/macos/lib/cmake \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer -g" \
+  -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address"
+cmake --build build-asan -j$(nproc)
+```
+
+**Run headlessly** (fastest iteration loop - combine with `--interactive-script`, see
+`roadmap_ws12_cli_scripting_mode.md`, to drive a specific scenario deterministically):
+
+```bash
+ASAN_OPTIONS="detect_leaks=0:abort_on_error=1:halt_on_error=1" \
+QT_QPA_PLATFORM=offscreen \
+./build-asan/SocNetV.app/Contents/MacOS/SocNetV --interactive-script my_repro.txt
+```
+
+`detect_leaks=0` matters on this codebase specifically: `MainWindow` is heap-allocated in
+`main.cpp` and never explicitly deleted (the process just exits after `app.exec()` returns), so a
+plain leak-check run reports the entire object graph as "leaked" noise on every single run -
+real UAF/double-free/overflow bugs are what this build is for, not that.
+
+**Run the real GUI** (needed for anything that only reproduces through actual window-manager
+interaction, e.g. close/quit teardown ordering):
+
+```bash
+QT_QPA_PLATFORM=cocoa ASAN_OPTIONS=abort_on_error=1 ./build-asan/SocNetV.app/Contents/MacOS/SocNetV
+```
+
+**Reading a report**: `AddressSanitizer: heap-use-after-free`/`double-free` reports include both
+the current (bad) access site and the original `freed by thread T0 here:`/`previously allocated by
+thread T0 here:` stack traces with exact file:line - go straight to those two allocation sites, no
+guessing needed. A `SEGV`/`DEADLYSIGNAL` report (no alloc/free trace) means the bad pointer wasn't
+allocated through ASan's own tracked allocator at the time of the crash - for a live-register-level
+root cause in that case, attach `lldb` directly (disable ASan's own signal handler first so `lldb`
+gets the raw fault: `ASAN_OPTIONS=handle_segv=0:handle_sigbus=0:allow_user_segv_handler=1`), then
+`bt`/`register read`/`disassemble --frame`/`memory read` at the fault to identify the actual
+receiver object and compare its address against candidate objects captured via breakpoints earlier
+in the same run.
+
+---
+
 # Development Workflow
 
 ## Build
