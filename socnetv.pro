@@ -187,6 +187,7 @@ SOURCES += src/main.cpp \
     src/graph/layouts/graph_layouts_force.cpp \
     src/graph/reachability/graph_reachability_walks.cpp \
     src/graph/cohesion/graph_cliques.cpp \
+    src/graph/cohesion/graph_connectivity.cpp \
     src/graph/clustering/graph_triad_census.cpp \
     src/graph/clustering/graph_clustering_coefficients.cpp \
     src/graph/clustering/graph_clustering_hierarchical.cpp \
