@@ -186,6 +186,13 @@ QString GraphicsNode::color() {
 void GraphicsNode::setSize(const int &size){
     prepareGeometryChange();
     m_size=size;
+    if (isSelected()) {
+        // Keep the deselect-restore cache in sync (see itemChange()'s ItemSelectedHasChanged
+        // handling below): an explicit size change while the node is still selected - e.g. via
+        // Node Properties or Data Table editing - must update it too, or the new size is
+        // silently discarded on the next click elsewhere (#273).
+        m_size_orig = size;
+    }
     for (GraphicsEdge *edge: inEdgeList) {
         edge->setTargetNodeSize(size);
     }

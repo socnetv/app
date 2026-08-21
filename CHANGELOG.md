@@ -285,6 +285,12 @@ All notable changes to this project are documented in this file.
     were doing (the app's own object lifetime already made them
     redundant), so they're simply no longer deleted at those points.
 
+  - **Node size reverted after editing a selected node** (#273): changing
+    a node's size via Node Properties or Edit Selection in Data Table
+    applied the new size, but it snapped back to the old one as soon as
+    the node was deselected. The canvas item's deselect-restore cache
+    wasn't updated by an external size change made while still selected.
+
 ### Maintenance
 
   - `AUTHORS`: added Andreas as Debian package maintainer.
