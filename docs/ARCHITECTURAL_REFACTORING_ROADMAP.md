@@ -45,6 +45,7 @@ The `Graph` object is a façade and state coordinator — not a monolith. Algori
 | WS9  | Graph exploration & data workflows  | ✔ shipped v3.5/v3.6           | [`roadmap_ws9_graph_exploration.md`](roadmaps/roadmap_ws9_graph_exploration.md) |
 | WS14 | Logging Cost & Release-Build Hygiene| ✔ complete (v3.7, #268)       | [`roadmap_ws14_logging_cost.md`](roadmaps/roadmap_ws14_logging_cost.md) |
 | WS16 | Report CSV Export                   | ✔ complete (v3.7, #113)       | [`roadmap_ws16_report_csv_export.md`](roadmaps/roadmap_ws16_report_csv_export.md) |
+| WS7  | MainWindow Decomposition (MW0)      | ✔ complete (v3.7, #257)       | [`roadmap_ws7_mainwindow_decomposition.md`](roadmaps/roadmap_ws7_mainwindow_decomposition.md) |
 
 ---
 
@@ -58,15 +59,6 @@ active focus right now.
 Roadmap: [`docs/roadmaps/roadmap_ws6_testing_ci_regression.md`](roadmaps/roadmap_ws6_testing_ci_regression.md)
 
 Expand golden baselines, dataset coverage, and benchmarking, supporting every other workstream.
-
----
-
-## WS7 — MainWindow Decomposition
-
-Roadmap: [`docs/roadmaps/roadmap_ws7_mainwindow_decomposition.md`](roadmaps/roadmap_ws7_mainwindow_decomposition.md)
-
-Break `MainWindow` into smaller, focused UI components (no UX changes). Unblocked (WS9 shipped);
-not started only because of relative priority.
 
 ---
 
@@ -133,14 +125,12 @@ mistaken for having fixed all four.
 3. **WS10** — GraphicsWidget canvas rendering & features. Phase 1 (#250), #260, and the
    rendering-perf regression kernel (WS6.6) all shipped; the rest of the Performance/Feature
    checklists remain scoped but not prioritised yet.
-4. **WS7** — MainWindow decomposition. Solid milestone roadmap (MW1–MW7) exists; zero code written
-   yet.
-5. **WS8** — IO layer stabilization. Roadmap scoped; zero code written yet.
-6. **WS11** — algorithm additions. Started: #7 and #272 shipped; rest of the backlog not
+4. **WS8** — IO layer stabilization. Roadmap scoped; zero code written yet.
+5. **WS11** — algorithm additions. Started: #7 and #272 shipped; rest of the backlog not
    prioritised yet.
-7. **WS12** — CLI scripting mode. Thirty commands shipped across several passes since #261/#262;
-   further commands added on demand, not prioritised as a standing backlog.
-8. **WS13** — undo/redo. Just created; not prioritised yet, no code written.
+6. **WS12** — CLI scripting mode. Thirty-four commands shipped across several passes since
+   #261/#262; further commands added on demand, not prioritised as a standing backlog.
+7. **WS13** — undo/redo. Just created; not prioritised yet, no code written.
 
 ---
 
