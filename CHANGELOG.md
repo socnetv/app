@@ -272,6 +272,19 @@ All notable changes to this project are documented in this file.
     screen behind the result dialog until that was dismissed. Now
     explicitly hidden before the result dialog opens.
 
+  - **Fixed rare crashes on app quit** (found during WS7, #257): closing
+    the app could crash depending on what you'd done in the session.
+    `closeEvent()` explicitly deleted the canvas widget and its scene
+    mid-handler, while Qt's own window-close teardown continues
+    delivering events to them immediately afterward - a dangling-pointer
+    crash confirmed via `lldb`/AddressSanitizer. A related crash deleted
+    two node-editing actions while still attached to a live toolbar.
+    Separately, exporting to PDF at least once in a session left a
+    dangling internal pointer that `closeEvent()` then double-freed on
+    quit. All three predate this release; none needed the deletes they
+    were doing (the app's own object lifetime already made them
+    redundant), so they're simply no longer deleted at those points.
+
 ### Maintenance
 
   - `AUTHORS`: added Andreas as Debian package maintainer.
@@ -352,6 +365,13 @@ All notable changes to this project are documented in this file.
     check the cancel flag once per outer-loop iteration (per matrix column
     for the inverse, per power-iteration step) and stop early instead of
     running to completion. All golden regression baselines pass unchanged.
+  - **`MainWindow` split from one 18,540-line `.cpp` into 28 files under
+    `src/mainwindow/`** (WS7 MW0, #257): mechanical, behavior-preserving
+    split by responsibility (network I/O, editing, analysis, layout,
+    options, help, CLI scripting, async dispatch), mirroring WS2's earlier
+    split of `graph.cpp`. `MainWindow` remains one class; `mainwindow.h` is
+    unchanged. `mainwindow.cpp` itself is now 588 lines (constructor and
+    destructor only).
 
 ## [3.6] – May 26, 2026
 
