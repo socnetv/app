@@ -142,6 +142,12 @@ SOURCES += src/main.cpp \
     src/mainwindow/analyze/mainwindow_analyze_similarity.cpp \
     src/mainwindow/analyze/mainwindow_analyze_prominence.cpp \
     src/mainwindow/analyze/mainwindow_analyze_shared.cpp \
+    src/mainwindow/dispatch/mainwindow_dispatch.cpp \
+    src/mainwindow/scripting/mainwindow_interactive_script.cpp \
+    src/mainwindow/layout/mainwindow_layout.cpp \
+    src/mainwindow/options/mainwindow_options.cpp \
+    src/mainwindow/help/mainwindow_help.cpp \
+    src/mainwindow/edit/mainwindow_edit_shared.cpp \
     src/texteditor.cpp \
     src/engine/graph_distance_progress_sink.cpp \
     src/engine/distance_engine.cpp \

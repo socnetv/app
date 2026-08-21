@@ -176,6 +176,12 @@ set(MAINWINDOW_SOURCES
     src/mainwindow/analyze/mainwindow_analyze_similarity.cpp
     src/mainwindow/analyze/mainwindow_analyze_prominence.cpp
     src/mainwindow/analyze/mainwindow_analyze_shared.cpp
+    src/mainwindow/dispatch/mainwindow_dispatch.cpp
+    src/mainwindow/scripting/mainwindow_interactive_script.cpp
+    src/mainwindow/layout/mainwindow_layout.cpp
+    src/mainwindow/options/mainwindow_options.cpp
+    src/mainwindow/help/mainwindow_help.cpp
+    src/mainwindow/edit/mainwindow_edit_shared.cpp
 )
 
 set(PARSER_SOURCES
