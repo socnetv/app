@@ -124,6 +124,11 @@ SOURCES += src/main.cpp \
     src/mainwindow/init/mainwindow_init_menu.cpp \
     src/mainwindow/init/mainwindow_init_panels.cpp \
     src/mainwindow/init/mainwindow_init_app.cpp \
+    src/mainwindow/network/mainwindow_network_file.cpp \
+    src/mainwindow/network/mainwindow_network_import_export.cpp \
+    src/mainwindow/network/mainwindow_network_random.cpp \
+    src/mainwindow/network/mainwindow_network_web.cpp \
+    src/mainwindow/network/mainwindow_network_view.cpp \
     src/texteditor.cpp \
     src/engine/graph_distance_progress_sink.cpp \
     src/engine/distance_engine.cpp \
