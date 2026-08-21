@@ -39,7 +39,7 @@ jobs:
           echo "🐧 This job is now running on a ${{ runner.os }} server"
 
       - name: 📂 Check out repository ${{ github.repository }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0  # Need full history to verify tags and create source archives
 
@@ -63,7 +63,7 @@ jobs:
           echo "✅ Tag commit is on master. Proceeding."
 
       - name: 🏷️ Create GitHub Release if it doesn't exist
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const tagName = context.ref.replace('refs/tags/', '');
@@ -137,7 +137,7 @@ jobs:
           echo "🧱 This job is now running on a ${{ runner.os }} server"
 
       - name: 📂 Check out repository ${{ github.repository }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 

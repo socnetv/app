@@ -29,7 +29,7 @@ jobs:
       contents: write
     if: contains(github.event.head_commit.message, '[ci]') || contains(github.event.head_commit.message, '[gha]')
     steps:
-      - uses: actions/checkout@v4 # Checkout the repository to access the code and use gh CLI
+      - uses: actions/checkout@v7 # Checkout the repository to access the code and use gh CLI
       - name: 🗑️ Delete old continuous assets
         run: |
           ASSETS=$(gh release view continuous --json assets -q '.assets[].name')
@@ -83,7 +83,7 @@ jobs:
           echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
           echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
       - name: 📂 Check out repository ${{ github.repository }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: 💡 List files cloned from the ${{ github.repository }}
         run: |
           ls ${{ github.workspace }}
@@ -105,7 +105,7 @@ jobs:
       - name: Determined build version ${{ env.VERSION }}
         run: echo "VERSION is set to ${{ env.VERSION }}"
       - name: Check Rate Limit
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         id: get_ratelimit
         with:
           script: |
@@ -115,7 +115,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Use script to get continuous release Upload URL
         id: get_release
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const { data: releases } = await github.rest.repos.listReleases({
@@ -726,7 +726,7 @@ jobs:
       #
       - if: matrix.os == 'ubuntu-latest' && matrix.qt-version == '6.9.3'
         name: 🔄 Update continuous release description
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const commitSha = context.sha;
