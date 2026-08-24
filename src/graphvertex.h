@@ -258,6 +258,16 @@ public:
     qreal EVC() { return m_EVC;}		/* Returns vertex Degree Centrality*/
     qreal SEVC() { return m_SEVC;}		/* Returns standard vertex Degree Centrality*/
 
+    void setKC (const qreal &c){ m_KC=c;}		/* Sets vertex Katz Centrality */
+    void setSKC (const qreal &c ) { m_SKC=c;}	/* Sets standard vertex Katz Centrality */
+    qreal KC() { return m_KC;}		/* Returns vertex Katz Centrality */
+    qreal SKC() { return m_SKC;}		/* Returns standard vertex Katz Centrality */
+
+    void setBPC (const qreal &c){ m_BPC=c;}		/* Sets vertex Bonacich Power Centrality */
+    void setSBPC (const qreal &c ) { m_SBPC=c;}	/* Sets standard vertex Bonacich Power Centrality */
+    qreal BPC() { return m_BPC;}		/* Returns vertex Bonacich Power Centrality */
+    qreal SBPC() { return m_SBPC;}		/* Returns standard vertex Bonacich Power Centrality */
+
 
     int cliques (const int &ofSize);
 
@@ -283,6 +293,7 @@ private:
     qreal m_DC, m_SDC, m_DP, m_SDP, m_CC, m_SCC, m_BC, m_SBC, m_IRCC, m_SIRCC, m_SC, m_SSC;
     qreal m_PC, m_SPC, m_SIC, m_IC, m_SPRC, m_PRC;
     qreal m_PP, m_SPP, m_EVC, m_SEVC;
+    qreal m_KC, m_SKC, m_BPC, m_SBPC;
     qreal m_distanceSum;
 
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape, m_iconPath;

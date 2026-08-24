@@ -128,7 +128,9 @@ enum IndexType
     DP = 10,  ///< Degree Prestige
     PRP = 11, ///< PageRank Prestige
     PP = 12,  ///< Proximity Prestige
-    CLC = 13  ///< Clustering Coefficient (Watts-Strogatz)
+    CLC = 13, ///< Clustering Coefficient (Watts-Strogatz)
+    KATZ = 14, ///< Katz Centrality
+    BPC = 15   ///< Bonacich Power Centrality - distinct from PC (Gil-Schmidt Power Centrality)
 };
 
 /**
