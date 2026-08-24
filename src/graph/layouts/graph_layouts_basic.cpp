@@ -280,7 +280,7 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
     }
     else if (prominenceIndex == IndexType::EVC)
     {
-        centralityEigenvector(considerWeights, dropIsolates);
+        centralityEigenvector(considerWeights, inverseWeights, dropIsolates);
     }
     else if (prominenceIndex == IndexType::DP)
     {

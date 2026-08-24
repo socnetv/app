@@ -291,6 +291,14 @@ All notable changes to this project are documented in this file.
     the node was deselected. The canvas item's deselect-restore cache
     wasn't updated by an external size change made while still selected.
 
+  - **Layout by Eigenvector Centrality ignored "drop isolates"** (found
+    during WS11): `layoutByProminenceIndex()` called `centralityEigenvector()`
+    with one argument missing, so the "inverse weights" slot silently
+    received the "drop isolates" value instead, and isolates were always
+    kept regardless of the setting. Affects **Layout → Radial/Level/Node
+    Size/Node Color by Prominence → Eigenvector Centrality** specifically;
+    every other prominence index in the same menus was unaffected.
+
 ### Maintenance
 
   - `AUTHORS`: added Andreas as Debian package maintainer.
