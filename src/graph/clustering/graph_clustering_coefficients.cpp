@@ -19,6 +19,11 @@
 /**
  * @brief Returns the local clustering coefficient (CLUCOF) of vertex v1.
  *
+ * Plain language: not a measure of how prominent an actor is, but of how tightly-knit its
+ * neighborhood is - do this actor's friends also know each other, or is the actor the only
+ * thing connecting a set of strangers? A score near 1 means the neighborhood is a tight
+ * clique; near 0 means the actor bridges otherwise-unconnected people.
+ *
  * For undirected (symmetric) graphs, uses the Watts–Strogatz formula:
  *
  *   C_i = 2 * |{e_jk : v_j, v_k ∈ N_i, e_jk ∈ E}| / ( k_i * (k_i - 1) )

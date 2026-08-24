@@ -20,6 +20,18 @@
  * @brief Computes the Information centrality of each vertex - diagonal included
  *  Note that there is no known generalization of Stephenson & Zelen's theory
  *  for information centrality to directional data
+ *
+ * Plain language: most centrality measures only look at the single shortest path between
+ * two actors. Information centrality gives an actor credit for *every* path connecting it
+ * to others, not just the best one - shorter, less roundabout paths count for more - so an
+ * actor sitting on many decent alternative routes can score as centrally as one sitting on
+ * the single best route.
+ *
+ * Math: build matrix B where B_ii = 1 + (sum of i's edge weights) and B_ij = 1 - w_ij for
+ * i != j, then invert it to get C = B^-1. Information centrality is
+ * IC(i) = 1 / [ C_ii + (tr(C) - 2*R) / n ], where tr(C) is the trace of C and R is the sum
+ * of any one row of C (interchangeable by construction of B).
+ *
  * @param considerWeights
  * @param inverseWeights
  */
@@ -224,6 +236,18 @@ void Graph::centralityInformation(const bool considerWeights,
 
 /**
  * @brief Computes Eigenvector centrality
+ *
+ * Plain language: not just how many connections you have, but how important your
+ * connections are - being tied to a few highly-connected people can outscore being tied to
+ * many poorly-connected ones. It is a "popularity feeds back on itself" measure: your score
+ * depends on your neighbors' scores, which depend on their neighbors' scores, and so on
+ * until the whole network settles into one stable ranking.
+ *
+ * Math: the eigenvector centrality vector x is the dominant eigenvector of the adjacency
+ * matrix A, i.e. the vector solving A*x = lambda_max*x for the largest eigenvalue lambda_max.
+ * Computed here via power iteration (Matrix::powerIteration()): start from any vector,
+ * repeatedly multiply by A and rescale to unit length - it converges to that eigenvector.
+ *
  * @param considerWeights
  * @param inverseWeights
  */
@@ -363,6 +387,15 @@ void Graph::centralityEigenvector(const bool &considerWeights,
 
 /**
  * @brief Calculates the degree (outDegree) centrality of each vertex - diagonal included
+ *
+ * Plain language: the simplest centrality there is - how many direct connections (ties)
+ * does this actor have? More connections means more prominence, full stop; no attention is
+ * paid to who those connections are or how the rest of the network is shaped.
+ *
+ * Math: DC(i) = number of edges incident to i (or the sum of their weights, if weights are
+ * considered). Standardized SDC(i) = DC(i) / (N-1), the fraction of all other actors i is
+ * directly tied to.
+ *
  * @param considerWeights
  * @param dropIsolates
  */
@@ -516,6 +549,17 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
  * For each node v, this index calculates the fraction of nodes in its influence
  * range and divides it by the average distance of those nodes from v,
  * ignoring nodes that are not reachable from it.
+ *
+ * Plain language: how efficiently can an actor reach the part of the network it *can*
+ * reach? Plain closeness centrality breaks down on a disconnected network, since "distance
+ * to everyone" is undefined once some actors are unreachable. IRCC sidesteps that by only
+ * ever averaging distances to actors that are actually reachable, so it stays meaningful
+ * even when the network is split into several disconnected pieces.
+ *
+ * Math: for actor i, let J_i be the set of nodes reachable from i (its influence range).
+ * IRCC(i) = [ |J_i| / (N-1) ] / [ (sum of d(i,j) for j in J_i) / |J_i| ] - the fraction of
+ * the network i can reach, divided by the average distance to that reachable set.
+ *
  * @param considerWeights
  * @param inverseWeights
  * @param dropIsolates

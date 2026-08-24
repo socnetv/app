@@ -19,6 +19,16 @@
 /**
  * @brief Computes the Degree Prestige (in-degree) of each vertex - diagonal included
  *	Also the mean value and the variance of the in-degrees.
+ *
+ * Plain language: prestige measures flip centrality's question around - instead of "how many
+ * ties does this actor have," they ask "how many ties point *at* this actor." Degree prestige
+ * is the simplest version: how many others chose to connect to this actor, ignoring how many
+ * connections the actor made outward. Meaningless on an undirected graph, where in- and
+ * out-ties are the same thing.
+ *
+ * Math: DP(i) = number of inbound edges to i (or their summed weights, if weights are
+ * considered). Standardized SDP(i) = DP(i) / (N-1).
+ *
  * @param weights
  * @param dropIsolates
  */
@@ -203,6 +213,16 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
 /**
  * @brief Computes Proximity Prestige of each vertex
  * Also the mean value and the variance of it..
+ *
+ * Plain language: how close everyone else who can reach this actor actually is, on average -
+ * prestige's answer to closeness centrality. It rewards being easy to reach *and* being
+ * reachable by a large share of the network, so an actor reachable by only a couple of very
+ * close others still scores lower than one reachable, at moderate distance, by almost
+ * everyone.
+ *
+ * Math: for actor i, let I_i be the set of actors that can reach i (its influence domain).
+ * PP(i) = [ |I_i| / (V-1) ] / [ (sum of d(j,i) for j in I_i) / |I_i| ] - the fraction of the
+ * network that can reach i, divided by their average distance to i.
  */
 void Graph::prestigeProximity(const bool considerWeights,
                               const bool inverseWeights,
@@ -335,6 +355,17 @@ void Graph::prestigeProximity(const bool considerWeights,
 
 /**
  * @brief Calculates the PageRank Prestige of each vertex
+ *
+ * Plain language: the same idea Google originally used to rank web pages - an actor is
+ * prestigious if prestigious actors point to it. Unlike plain degree prestige (which treats
+ * every inbound tie equally), a link from someone with few outbound ties and high prestige
+ * counts for much more than one of a hundred outbound ties from someone unremarkable, and
+ * that prestige keeps circulating until every score stabilizes.
+ *
+ * Math: iteratively, PRP(i) = (1-d)/N + d * Sum_j( PRP(j) / outLinks(j) ) for every j linking
+ * to i, where d is the damping factor (0.85, matching Google's original choice) and N is the
+ * number of actors. Repeated until scores stop changing by more than a small delta.
+ *
  * @param dropIsolates
  */
 void Graph::prestigePageRank(const bool &dropIsolates)

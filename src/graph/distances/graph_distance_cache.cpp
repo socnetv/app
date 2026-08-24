@@ -33,10 +33,30 @@
  * * The InfluenceRange and InfluenceDomain of each node.
  * * The centralities for every u in V (if centralities=true):
  *   - Betweenness: BC(u) = Sum ( sigma(i,j,u)/sigma(i,j) ) for every s,t in V
+ *     Plain language: how often u sits "in between" on the shortest routes connecting
+ *     other pairs of actors - a broker/gatekeeper measure. High betweenness means removing
+ *     u would disrupt many people's shortest path to each other.
  *   - Stress: SC(u) = Sum ( sigma(i,j) ) for every s,t in V
+ *     Plain language: like betweenness, but simply counts how many shortest paths pass
+ *     through u, without dividing by how many alternative shortest paths existed for that
+ *     pair - so it also rewards actors on many paths even when those paths weren't a pair's
+ *     *only* shortest route.
  *   - Eccentricity: EC(u) =  1/maxDistance(u,t)  for some t in V
+ *     Plain language: a worst-case reachability measure - how far away is u's single most
+ *     distant counterpart? High eccentricity centrality means even u's "hardest to reach"
+ *     other actor is nearby.
  *   - Closeness: CC(u) =  1 / Sum( d(u,t) )  for every  t in V
- *   - Power:
+ *     Plain language: how close u is, on average, to everyone else - a low total distance
+ *     to others gives a high closeness score. Only meaningful on a fully connected graph,
+ *     since an unreachable actor has undefined distance (see IRCC, centralityClosenessIR(),
+ *     for the disconnected-graph-friendly variant).
+ *   - Power (Gil-Schmidt): PC(s) = [1/(N-1)] * Sum_i( nthOrder[i] / i ), where nthOrder[i] is
+ *     the number of nodes at distance i from s (computed in DistanceEngine::compute()).
+ *     Plain language: a generalized degree measure that gives (shrinking) credit for nodes
+ *     several steps away too, not just direct neighbors - similar in spirit to eigenvector
+ *     centrality, but computed directly from how many nodes sit at each distance rather than
+ *     via eigen-decomposition. Not to be confused with Bonacich's differently-named "Power
+ *     Centrality" measure.
  * @param centralities
  * @param considerWeights
  * @param inverseWeights
