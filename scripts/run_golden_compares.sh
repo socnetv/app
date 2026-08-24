@@ -321,6 +321,35 @@ run_case_prominence \
   -w 1 -x 0 -k 0 \
   "${BASE_PROM}/TinyWeightedIsolate_Undir_N4_E2__PROM__V4__FT2__W1_IW0_DI0.json"
 
+# Katz Centrality (WS11, #10) - each value independently cross-checked against a hand-derived
+# reference computation (Gauss-Jordan elimination of (I - alpha*A^T) in plain Python) before
+# being dumped, not just accepted as "whatever the code produced."
+run_case_prominence \
+  "${DATA}/TinyPath_N3_E2.paj" \
+  2 \
+  -w 0 -x 1 -k 0 --katz-alpha 0.2 \
+  "${BASE_PROM}/TinyPath_N3_E2__PROM__V4__FT2__W0_IW1_DI0_KA0.2.json"
+
+run_case_prominence \
+  "${DATA}/TinyDirChain_N3.paj" \
+  2 \
+  -w 0 -x 1 -k 0 --katz-alpha 0.5 \
+  "${BASE_PROM}/TinyDirChain_N3__PROM__V4__FT2__W0_IW1_DI0_KA0.5.json"
+
+# alpha=0.8 exceeds this graph's 1/lambda_max (~0.707) - locks in the boundary-rejection path
+# (all-zero KC/SKC), not just the happy path.
+run_case_prominence \
+  "${DATA}/TinyPath_N3_E2.paj" \
+  2 \
+  -w 0 -x 1 -k 0 --katz-alpha 0.8 \
+  "${BASE_PROM}/TinyPath_N3_E2__PROM__V4__FT2__W0_IW1_DI0_KA0.8_reject.json"
+
+run_case_prominence \
+  "${DATA}/Krackhardt_Kite_N10.paj" \
+  2 \
+  -w 0 -x 1 -k 0 --katz-alpha 0.1 \
+  "${BASE_PROM}/Krackhardt_Kite_N10__PROM__V4__FT2__W0_IW1_DI0_KA0.1.json"
+
 # IO ROUNDTRIP (schema v5)
 run_case_io "${DATA}/TinyAdj_Undir_N3.adj" 3 -d " " -l 0 "${BASE_IO}/TinyAdj_Undir_N3__FT3.json"
 run_case_io "${DATA}/TinyAdj_Weighted_Dir_N3.adj" 3 -d " " -l 0 "${BASE_IO}/TinyAdj_Weighted_Dir_N3__FT3.json"

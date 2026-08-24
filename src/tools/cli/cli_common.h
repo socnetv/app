@@ -35,6 +35,8 @@ namespace cli
         QString connMode = "global"; // "local"|"global", for --kernel vertex_connectivity
         int connSource = -1;         // required for connMode == "local"
         int connTarget = -1;         // required for connMode == "local"
+
+        qreal katzAlpha = -1; // >= 0 enables Katz Centrality for --kernel prominence
     };
 
     // ---------------- printing ----------------

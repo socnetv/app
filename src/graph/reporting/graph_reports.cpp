@@ -942,6 +942,194 @@ bool Graph::writeCentralityEigenvector(const QString fileName,
 }
 
 /**
+ * @brief Writes the Katz Centrality report to a file, then displays it.
+ * @param fileName
+ * @param alpha
+ * @param considerWeights
+ * @param inverseWeights
+ * @param dropIsolates
+ * @param format
+ */
+bool Graph::writeCentralityKatz(const QString fileName,
+                                const qreal &alpha,
+                                const bool &considerWeights,
+                                const bool &inverseWeights,
+                                const bool &dropIsolates,
+                                const int &format)
+{
+
+    qCDebug(lcReporting) << "Writing Katz Centrality report to file:" << fileName;
+
+    QElapsedTimer computationTimer;
+    computationTimer.start();
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
+        progressStatus(tr("Error. Could not write to ") + fileName);
+        return false;
+    }
+    QTextStream outText(&file);
+
+    centralityKatz(alpha, considerWeights, inverseWeights, dropIsolates);
+    if (progressCanceled())
+    {
+        file.close();
+        progressStatus(tr("Computation canceled."));
+        return false;
+    }
+
+    if (format == ReportFormat::Csv)
+    {
+        writeScoreTableCSV(outText, {"KC", "KC'", "KC''", "%KC'"},
+                           [this](GraphVertex *v) -> QVector<qreal> {
+                               return {v->KC(), v->SKC(), v->KC() / (sumKC ? sumKC : 1), 100 * v->SKC()};
+                           });
+        file.close();
+        return true;
+    }
+
+    QString distImageFileName;
+
+    if (m_reportsChartType != ChartType::None)
+    {
+
+        distImageFileName = QFileInfo(fileName).canonicalPath() +
+                            QDir::separator() + QFileInfo(fileName).completeBaseName() + ".png";
+    }
+
+    prominenceDistribution(IndexType::KATZ, m_reportsChartType, distImageFileName);
+
+    int N = vertices();
+
+    QString pMsg = tr("Writing Katz Centrality scores to file. \nPlease wait...");
+    progressStatus(pMsg);
+
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
+
+    outText << htmlHead;
+
+    outText << "<h1>";
+    outText << tr("KATZ CENTRALITY (KC)");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            << "</span>"
+            << getName()
+            << "<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            << "</span>"
+            << N
+            << "<br />"
+            << "<span class=\"info\">"
+            << tr("Alpha: ")
+            << "</span>"
+            << alpha
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("Katz Centrality gives each actor credit for indirect connections, not just "
+                  "direct ones, discounted the further away they are: a direct tie counts full "
+                  "price, a 2-hop tie counts alpha times as much, a 3-hop tie counts "
+                  "alpha<sup>2</sup> times as much, and so on. <br />"
+                  "Proposed by Katz (1953), it generalizes Degree Centrality by counting "
+                  "walks of every length, not just length 1.")
+            << "<br />"
+            << tr("KC' is the scaled KC (KC divided by max KC).")
+            << "<br />"
+            << tr("KC'' is the standardized index (KC divided by the sum of all KCs).")
+            << "<br />"
+            << "</p>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("KC' range: ")
+            << "</span>"
+            << tr("0 &le; KC' &le; 1")
+            << "</p>";
+
+    writeScoreTableHTML(outText, {"KC", "KC'", "KC''", "%KC'"},
+                        [this](GraphVertex *v) -> QVector<qreal> {
+                            return {v->KC(), v->SKC(), v->KC() / (sumKC ? sumKC : 1), 100 * v->SKC()};
+                        });
+
+    if (minKC == maxKC)
+    {
+        outText << "<p>"
+                << tr("All nodes have the same KC score.")
+                << "</p>";
+    }
+    else
+    {
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("Max KC = ")
+                << "</span>"
+                << maxKC << " (node " << maxNodeKC << ")"
+                << "<br />"
+                << "<span class=\"info\">"
+                << tr("Min KC = ")
+                << "</span>"
+                << minKC << " (node " << minNodeKC << ")"
+                << "<br />"
+                << "<span class=\"info\">"
+                << tr("KC classes = ")
+                << "</span>"
+                << classesKC
+                << "</p>";
+    }
+
+    outText << "<p>";
+    outText << "<span class=\"info\">"
+            << tr("KC Sum = ")
+            << "</span>"
+            << sumKC
+            << "<br/>"
+            << "<span class=\"info\">"
+            << tr("KC Mean = ")
+            << "</span>"
+            << meanKC
+            << "<br/>"
+            << "<span class=\"info\">"
+            << tr("KC Variance = ")
+            << "</span>"
+            << varianceKC
+            << "<br/>";
+    outText << "</p>";
+
+    if (m_reportsChartType != ChartType::None)
+    {
+        outText << "<h2>";
+        outText << tr("KC' DISTRIBUTION")
+                << "</h2>";
+        outText << "<p>";
+        outText << "<img style=\"width:100%;\" src=\""
+                << distImageFileName
+                << "\" />";
+    }
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Katz Centrality report, <br />");
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+                   .arg(VERSION)
+                   .arg(actualDateTime.currentDateTime().toString(QString("ddd, dd.MMM.yyyy hh:mm:ss")));
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg(computationTimer.elapsed());
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+    file.close();
+
+    return true;
+}
+
+/**
  * @brief Writes the Degree Centrality to a file
  * @param fileName
  * @param considerWeights

@@ -176,6 +176,7 @@ SOURCES += src/main.cpp \
     src/graph/distances/graph_distance_facade.cpp \
     src/graph/distances/graph_distance_cache.cpp \
     src/graph/centrality/graph_centrality.cpp \
+    src/graph/centrality/graph_centrality_katz.cpp \
     src/graph/centrality/graph_prestige.cpp \
     src/graph/prominence/graph_prominence_distribution.cpp \
     src/graph/matrices/graph_matrix_adjacency.cpp \

@@ -75,6 +75,12 @@ int main(int argc, char *argv[])
                                      "Target node number for --kernel vertex_connectivity --conn-mode local.",
                                      "int", "-1");
 
+    QCommandLineOption katzAlphaOpt(QStringList() << "katz-alpha",
+                                    "Attenuation factor alpha for --kernel prominence's Katz Centrality "
+                                    "(must satisfy |alpha| < 1/lambda_max or the report will be all-zero). "
+                                    "Omit to skip Katz Centrality entirely.",
+                                    "alpha", "-1");
+
     cli.addOption(verboseOpt);
     cli.addOption(strictOpt);
     cli.addOption(fileOpt);
@@ -95,6 +101,7 @@ int main(int argc, char *argv[])
     cli.addOption(connModeOpt);
     cli.addOption(connSourceOpt);
     cli.addOption(connTargetOpt);
+    cli.addOption(katzAlphaOpt);
 
     cli.process(app);
 
@@ -146,6 +153,7 @@ int main(int argc, char *argv[])
     cfg.connMode = cli.value(connModeOpt).trimmed().toLower();
     cfg.connSource = cli.value(connSourceOpt).toInt();
     cfg.connTarget = cli.value(connTargetOpt).toInt();
+    cfg.katzAlpha = cli.value(katzAlphaOpt).toDouble();
 
     if (cfg.inputPath.isEmpty())
     {

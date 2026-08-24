@@ -269,6 +269,12 @@ void Graph::prominenceDistribution(const int &index,
         discreteClasses = discreteCLCs;
         break;
     }
+    case IndexType::KATZ:
+    {
+        seriesName = ("Katz");
+        discreteClasses = discreteKCs;
+        break;
+    }
     }
 
     qCDebug(lcProminence) << "calling the relevant prominence distribution computation method...";

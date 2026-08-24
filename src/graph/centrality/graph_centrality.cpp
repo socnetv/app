@@ -826,6 +826,8 @@ bool Graph::isCentralityIndexComputed(const IndexType index) const
         return calculatedIC;
     case IndexType::EVC:
         return calculatedEVC;
+    case IndexType::KATZ:
+        return calculatedKC;
     case IndexType::DP:
         return calculatedDP;
     case IndexType::PRP:

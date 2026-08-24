@@ -27,7 +27,7 @@ namespace cli
     // Per-node builder
     // ------------------------------
 
-    static QJsonArray buildPerNodeArrayV4(Graph &g)
+    static QJsonArray buildPerNodeArrayV4(Graph &g, bool katzEnabled)
     {
         QJsonArray arr;
 
@@ -41,6 +41,13 @@ namespace cli
             QJsonObject o;
             o["id"] = v;
             o["label"] = gv->label();
+
+            // ---- Katz (optional - only computed/valid when katzEnabled) ----
+            if (katzEnabled)
+            {
+                o["KC"] = d2s(gv->KC());
+                o["SKC"] = d2s(gv->SKC());
+            }
 
             // ---- Centrality ----
             o["DC"] = d2s(gv->DC());
@@ -108,10 +115,15 @@ namespace cli
         dataset["filetype"] = fileFormat;
         root["dataset"] = dataset;
 
+        const bool katzEnabled = (cfg.katzAlpha >= 0);
+
         QJsonObject run;
         run["considerWeights"] = cfg.considerWeights;
         run["inverseWeights"] = cfg.inverseWeights;
         run["dropIsolates"] = cfg.dropIsolates;
+        run["katzEnabled"] = katzEnabled;
+        if (katzEnabled)
+            run["katzAlpha"] = d2s(cfg.katzAlpha);
         root["run"] = run;
 
         const int ties_graph = load.tiesGraph; // canonical, already correct
@@ -134,7 +146,7 @@ namespace cli
         metrics["density"] = d2s(g.graphDensity());
         root["metrics"] = metrics;
 
-        root["per_node"] = buildPerNodeArrayV4(g);
+        root["per_node"] = buildPerNodeArrayV4(g, katzEnabled);
 
         QJsonObject loadReport;
         loadReport["ok"] = load.ok;
@@ -153,7 +165,7 @@ namespace cli
 
     // ---- schema v4 compare ----
 
-    static bool cmpPerNodeArrayV4(const QJsonArray &eArr, const QJsonArray &aArr, QTextStream &err)
+    static bool cmpPerNodeArrayV4(const QJsonArray &eArr, const QJsonArray &aArr, bool katzEnabled, QTextStream &err)
     {
         if (eArr.size() != aArr.size())
         {
@@ -261,7 +273,14 @@ namespace cli
                 "PRP", "SPRP",
                 "eccentricity"};
 
-            for (const QString &f : numFields)
+            // KC/SKC are only populated (on both sides) when this run enabled Katz Centrality -
+            // see the "katzEnabled" run-config check in compareGoldenV4() below, which catches an
+            // enabled/disabled mismatch between baseline and current run before we get here.
+            QStringList allFields = numFields;
+            if (katzEnabled)
+                allFields << "KC" << "SKC";
+
+            for (const QString &f : allFields)
                 cmpNodeFieldNumStrTol(e, a, f, eid, TOL);
 
             // Sentinel flag must be exact
@@ -295,6 +314,8 @@ namespace cli
         ok &= cmpBool(eRun, aRun, "considerWeights", err);
         ok &= cmpBool(eRun, aRun, "inverseWeights", err);
         ok &= cmpBool(eRun, aRun, "dropIsolates", err);
+        ok &= cmpBool(eRun, aRun, "katzEnabled", err);
+        const bool katzEnabled = aRun.value("katzEnabled").toBool();
 
         const QJsonObject eCounts = expected.value("counts").toObject();
         const QJsonObject aCounts = actual.value("counts").toObject();
@@ -310,7 +331,7 @@ namespace cli
         // Per-node (always present in v4)
         const QJsonArray ePN = expected.value("per_node").toArray();
         const QJsonArray aPN = actual.value("per_node").toArray();
-        ok &= cmpPerNodeArrayV4(ePN, aPN, err);
+        ok &= cmpPerNodeArrayV4(ePN, aPN, katzEnabled, err);
 
         if (!ok)
             return 1;
@@ -348,6 +369,10 @@ namespace cli
             g.centralityClosenessIR(cfg.considerWeights,
                                     cfg.inverseWeights,
                                     cfg.dropIsolates);
+
+            if (cfg.katzAlpha >= 0)
+                g.centralityKatz(cfg.katzAlpha, cfg.considerWeights,
+                                 cfg.inverseWeights, cfg.dropIsolates);
 
             // 3. Prestige
             g.prestigeDegree(cfg.considerWeights, cfg.dropIsolates);

@@ -1048,6 +1048,13 @@ public:
                                     const bool &dropIsolates = false,
                                     const int &format = ReportFormat::Html);
 
+    bool writeCentralityKatz(const QString,
+                             const qreal &alpha,
+                             const bool &weigths = false,
+                             const bool &inverseWeights = false,
+                             const bool &dropIsolates = false,
+                             const int &format = ReportFormat::Html);
+
     bool writePrestigeDegree(const QString, const bool weights,
                              const bool dropIsolates,
                              const int &format = ReportFormat::Html);
@@ -1203,6 +1210,11 @@ public:
     void centralityEigenvector(const bool &considerWeights = false,
                                const bool &inverseWeights = false,
                                const bool &dropIsolates = false);
+
+    void centralityKatz(const qreal &alpha,
+                        const bool &considerWeights = false,
+                        const bool &inverseWeights = false,
+                        const bool &dropIsolates = false);
 
     void centralityClosenessIR(const bool considerWeights = false,
                                const bool inverseWeights = false,
@@ -1497,7 +1509,7 @@ private:
     H_StrToInt discreteDPs, discreteSDCs, discreteCCs, discreteBCs, discreteSCs;
     H_StrToInt discreteIRCCs, discreteECs, discreteEccentricities;
     H_StrToInt discretePCs, discreteICs, discretePRPs, discretePPs, discreteEVCs;
-    H_StrToInt discreteCLCs;
+    H_StrToInt discreteCLCs, discreteKCs;
 
     QString m_reportsDataDir;
     int m_reportsRealPrecision;
@@ -1519,6 +1531,7 @@ private:
     qreal meanSPC, varianceSPC;
     qreal meanIC, varianceIC;
     qreal meanEVC, varianceEVC;
+    qreal meanKC, varianceKC;
     qreal meanSDP, varianceSDP;
     qreal meanPP, variancePP;
     qreal meanPRP, variancePRP;
@@ -1533,6 +1546,11 @@ private:
     qreal minEC, maxEC, nomEC, denomEC, sumEC, groupEC, maxIndexEC;
     qreal minIC, maxIC, nomIC, denomIC, sumIC, maxIndexIC;
     qreal minEVC, maxEVC, nomEVC, denomEVC, sumEVC, sumSEVC, groupEVC;
+    qreal minKC, maxKC, sumKC;
+    qreal m_lastKatzAlpha = -1; ///< Cache of the last alpha used to compute Katz Centrality,
+                                ///< read by layoutByProminenceIndex() (WS11, #10) since the
+                                ///< generic layout-by-prominence dispatch has no parameter slot.
+                                ///< -1 means "never computed this session".
     qreal minPRP, maxPRP, nomPRC, denomPRC, sumPC, t_sumPRP, sumPRP;
     qreal minPP, maxPP, nomPP, denomPP, sumPP, groupPP;
 
@@ -1552,6 +1570,7 @@ private:
     int classesPP, maxNodePP, minNodePP;
     int classesCLC;
     int classesEVC, maxNodeEVC, minNodeEVC;
+    int classesKC, maxNodeKC, minNodeKC;
     /** General & initialisation variables */
 
     int m_graphModStatus;
@@ -1581,6 +1600,7 @@ private:
     bool calculatedAdjacencyMatrix, calculatedDistances, calculatedCentralities;
     bool calculatedIsolates;
     bool calculatedEVC;
+    bool calculatedKC;
     bool calculatedDP, calculatedDC, calculatedPP;
     bool calculatedIRCC, calculatedIC, calculatedPRP;
     bool calculatedTriad;
