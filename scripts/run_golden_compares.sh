@@ -299,7 +299,28 @@ run_case_prominence \
   -w 0 -x 1 -k 0 \
   "${BASE_PROM}/Sampson_Monks_N18__PROM__V4__FT2__W0_IW1_DI0.json"
 
-  
+# Weighted + isolate coverage (previously missing - see kernel_prominence_v4.cpp's
+# centralityInformation()/centralityEigenvector() arg-shift fix, which this combination
+# would have caught: considerWeights=1 with an isolate present, varying inverseWeights and
+# dropIsolates independently).
+run_case_prominence \
+  "${DATA}/TinyWeightedIsolate_Undir_N4_E2.paj" \
+  2 \
+  -w 1 -x 1 -k 0 \
+  "${BASE_PROM}/TinyWeightedIsolate_Undir_N4_E2__PROM__V4__FT2__W1_IW1_DI0.json"
+
+run_case_prominence \
+  "${DATA}/TinyWeightedIsolate_Undir_N4_E2.paj" \
+  2 \
+  -w 1 -x 1 -k 1 \
+  "${BASE_PROM}/TinyWeightedIsolate_Undir_N4_E2__PROM__V4__FT2__W1_IW1_DI1.json"
+
+run_case_prominence \
+  "${DATA}/TinyWeightedIsolate_Undir_N4_E2.paj" \
+  2 \
+  -w 1 -x 0 -k 0 \
+  "${BASE_PROM}/TinyWeightedIsolate_Undir_N4_E2__PROM__V4__FT2__W1_IW0_DI0.json"
+
 # IO ROUNDTRIP (schema v5)
 run_case_io "${DATA}/TinyAdj_Undir_N3.adj" 3 -d " " -l 0 "${BASE_IO}/TinyAdj_Undir_N3__FT3.json"
 run_case_io "${DATA}/TinyAdj_Weighted_Dir_N3.adj" 3 -d " " -l 0 "${BASE_IO}/TinyAdj_Weighted_Dir_N3__FT3.json"
