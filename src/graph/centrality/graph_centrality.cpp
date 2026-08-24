@@ -336,10 +336,15 @@ void Graph::centralityEigenvector(const bool &considerWeights,
         return;
     }
 
+    qreal lambdaMax = 0;
     AM.powerIteration(EVC, sumEVC, maxEVC, maxNodeEVC,
                       minEVC, minNodeEVC,
                       0.0000001, 500,
-                      [this] { return progressCanceled(); });
+                      [this] { return progressCanceled(); },
+                      &lambdaMax);
+
+    qCDebug(lcCentrality) << "Graph::centralityEigenvector() - dominant eigenvalue (lambdaMax) ="
+             << lambdaMax;
 
     if (progressCanceled())
     {

@@ -780,7 +780,8 @@ void Matrix::powerIteration (
         int &xmini,
         const qreal eps,
         const int &maxIter,
-        std::function<bool()> cancelCheck) {
+        std::function<bool()> cancelCheck,
+        qreal *lambdaMax) {
 
     qCDebug(lcMatrix) << "Matrix::powerIteration() - maxIter"
              << maxIter
@@ -868,6 +869,11 @@ void Matrix::powerIteration (
             break;
 
     } while ( distance > eps);
+
+    // norm is ||Ax|| from the final iteration, with x already unit-length from the previous
+    // one - at convergence this approximates the dominant eigenvalue (lambda_max).
+    if (lambdaMax)
+        *lambdaMax = norm;
 
      delete [] tmp;
 }
