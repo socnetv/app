@@ -282,7 +282,7 @@ Matrix& Matrix::subtractFromI ()  {
             if (i==j)
                 setItem(i,j, 1.0 - item(i,j));
             else
-                setItem(i,j, item(i,j));
+                setItem(i,j, -item(i,j));
         }
     return *this;
 }
