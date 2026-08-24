@@ -21,11 +21,21 @@
  *  Note that there is no known generalization of Stephenson & Zelen's theory
  *  for information centrality to directional data
  *
- * Plain language: most centrality measures only look at the single shortest path between
- * two actors. Information centrality gives an actor credit for *every* path connecting it
- * to others, not just the best one - shorter, less roundabout paths count for more - so an
+ * Meaning: most centrality measures only look at the single shortest path between two
+ * actors. Information centrality gives an actor credit for *every* path connecting it to
+ * others, not just the best one - shorter, less roundabout paths count for more - so an
  * actor sitting on many decent alternative routes can score as centrally as one sitting on
  * the single best route.
+ *
+ * When to use: when redundancy of connection matters more than the single fastest route -
+ * e.g. assessing how robust an actor's information access is to a single link failing, or
+ * comparing actors whose "one best path" scores (closeness, betweenness) look similar but
+ * whose actual web of alternative routes differs a lot.
+ *
+ * Compare to: Closeness Centrality (CC) also scores actors by distance to others, but only via
+ * the single shortest path; Betweenness (BC) counts how often an actor sits on shortest paths
+ * between others. Information Centrality is the only one of the three that uses every
+ * connecting path, not just the shortest one.
  *
  * Math: build matrix B where B_ii = 1 + (sum of i's edge weights) and B_ij = 1 - w_ij for
  * i != j, then invert it to get C = B^-1. Information centrality is
@@ -237,11 +247,24 @@ void Graph::centralityInformation(const bool considerWeights,
 /**
  * @brief Computes Eigenvector centrality
  *
- * Plain language: not just how many connections you have, but how important your
- * connections are - being tied to a few highly-connected people can outscore being tied to
- * many poorly-connected ones. It is a "popularity feeds back on itself" measure: your score
+ * Meaning: not just how many connections you have, but how important your connections are -
+ * being tied to a few highly-connected people can outscore being tied to many
+ * poorly-connected ones. It is a "popularity feeds back on itself" measure: your score
  * depends on your neighbors' scores, which depend on their neighbors' scores, and so on
  * until the whole network settles into one stable ranking.
+ *
+ * When to use: ranking actors by prestige/influence rather than raw activity - e.g. finding
+ * the truly influential accounts in a social network (as opposed to merely the most active
+ * ones), or citation-network-style "important papers cited by other important papers"
+ * reasoning. Needs a connected (or largely connected) graph to produce a meaningful ranking.
+ *
+ * Compare to: Katz Centrality (WS11, #10) and Bonacich Power Centrality (WS11, #39) - both
+ * planned, not yet implemented - generalize this same "connections to well-connected others
+ * matter" idea by summing actual walks with a distance-based decay factor instead of finding
+ * the dominant eigenvector directly, which makes the decay directly tunable by the user rather
+ * than fixed by the network's own structure. Power Centrality (PC, Gil-Schmidt, see
+ * graphDistancesGeodesic()) is a different, older, similarly-named but unrelated measure
+ * computed straight from vertex degrees rather than via eigen-decomposition.
  *
  * Math: the eigenvector centrality vector x is the dominant eigenvector of the adjacency
  * matrix A, i.e. the vector solving A*x = lambda_max*x for the largest eigenvalue lambda_max.
@@ -393,9 +416,18 @@ void Graph::centralityEigenvector(const bool &considerWeights,
 /**
  * @brief Calculates the degree (outDegree) centrality of each vertex - diagonal included
  *
- * Plain language: the simplest centrality there is - how many direct connections (ties)
- * does this actor have? More connections means more prominence, full stop; no attention is
- * paid to who those connections are or how the rest of the network is shaped.
+ * Meaning: the simplest centrality there is - how many direct connections (ties) does this
+ * actor have? More connections means more prominence, full stop; no attention is paid to who
+ * those connections are or how the rest of the network is shaped.
+ *
+ * When to use: a fast first-pass screen for "who's active/popular" on any graph, directed or
+ * not, connected or not - cheap to compute and easy to explain to a non-technical audience.
+ * Weak at finding brokers or long-range influence; pair with betweenness or eigenvector
+ * centrality when those matter.
+ *
+ * Compare to: Degree Prestige (DP, see prestigeDegree()) is this same idea restricted to
+ * inbound ties only - meaningful on directed graphs, where "connections this actor made" and
+ * "connections this actor received" can differ a lot.
  *
  * Math: DC(i) = number of edges incident to i (or the sum of their weights, if weights are
  * considered). Standardized SDC(i) = DC(i) / (N-1), the fraction of all other actors i is
@@ -555,11 +587,20 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
  * range and divides it by the average distance of those nodes from v,
  * ignoring nodes that are not reachable from it.
  *
- * Plain language: how efficiently can an actor reach the part of the network it *can*
- * reach? Plain closeness centrality breaks down on a disconnected network, since "distance
- * to everyone" is undefined once some actors are unreachable. IRCC sidesteps that by only
- * ever averaging distances to actors that are actually reachable, so it stays meaningful
- * even when the network is split into several disconnected pieces.
+ * Meaning: how efficiently can an actor reach the part of the network it *can* reach? Plain
+ * closeness centrality breaks down on a disconnected network, since "distance to everyone" is
+ * undefined once some actors are unreachable. IRCC sidesteps that by only ever averaging
+ * distances to actors that are actually reachable, so it stays meaningful even when the
+ * network is split into several disconnected pieces.
+ *
+ * When to use: any time the network might not be fully connected - social media crawls,
+ * partial datasets, or naturally fragmented networks (e.g. isolated friend clusters) - where
+ * plain Closeness Centrality (CC) would otherwise be undefined or require dropping actors.
+ *
+ * Compare to: Closeness Centrality (CC, see graphDistancesGeodesic()) is the classic version
+ * this generalizes - use CC directly once the graph is known to be fully connected. Proximity
+ * Prestige (PP, see prestigeProximity()) is prestige's directed-graph counterpart of this same
+ * idea (distance *from* others, rather than *to* them).
  *
  * Math: for actor i, let J_i be the set of nodes reachable from i (its influence range).
  * IRCC(i) = [ |J_i| / (N-1) ] / [ (sum of d(i,j) for j in J_i) / |J_i| ] - the fraction of

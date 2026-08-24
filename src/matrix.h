@@ -154,20 +154,6 @@ public:
             qreal x[],
             int n);
 
-    /**
-     * @brief Finds the dominant eigenvector of this matrix by repeated multiplication.
-     *
-     * Plain language: start from any vector x, repeatedly multiply by the matrix and rescale
-     * back to unit length - the vector converges to the eigenvector for the matrix's largest
-     * eigenvalue (lambda_max), which is exactly the vector eigenvector centrality reports.
-     *
-     * @param x In: initial vector. Out: the converged (unit-length) dominant eigenvector.
-     * @param lambdaMax Optional out param: the largest eigenvalue itself, read off from the
-     *        pre-normalization vector length on the final iteration (‖Ax‖ ≈ lambda_max once x
-     *        has converged to unit length). Callers that only need the eigenvector (e.g.
-     *        centralityEigenvector()) can leave this nullptr; callers that need to validate a
-     *        convergence bound like Katz's alpha < 1/lambda_max need it.
-     */
     void powerIteration (
             qreal x[] ,
             qreal &xsum,

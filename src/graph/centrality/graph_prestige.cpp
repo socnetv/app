@@ -20,11 +20,18 @@
  * @brief Computes the Degree Prestige (in-degree) of each vertex - diagonal included
  *	Also the mean value and the variance of the in-degrees.
  *
- * Plain language: prestige measures flip centrality's question around - instead of "how many
- * ties does this actor have," they ask "how many ties point *at* this actor." Degree prestige
- * is the simplest version: how many others chose to connect to this actor, ignoring how many
+ * Meaning: prestige measures flip centrality's question around - instead of "how many ties
+ * does this actor have," they ask "how many ties point *at* this actor." Degree prestige is
+ * the simplest version: how many others chose to connect to this actor, ignoring how many
  * connections the actor made outward. Meaningless on an undirected graph, where in- and
  * out-ties are the same thing.
+ *
+ * When to use: directed networks where "being chosen by others" is the thing worth measuring
+ * - citation counts, follower counts, nomination/endorsement data - and a quick raw count is
+ * enough (see PageRank Prestige below when the *quality* of who's choosing you also matters).
+ *
+ * Compare to: Degree Centrality (DC, see centralityDegree()) is this same raw-count idea for
+ * outbound ties (or all ties, on an undirected graph).
  *
  * Math: DP(i) = number of inbound edges to i (or their summed weights, if weights are
  * considered). Standardized SDP(i) = DP(i) / (N-1).
@@ -214,11 +221,19 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
  * @brief Computes Proximity Prestige of each vertex
  * Also the mean value and the variance of it..
  *
- * Plain language: how close everyone else who can reach this actor actually is, on average -
+ * Meaning: how close everyone else who can reach this actor actually is, on average -
  * prestige's answer to closeness centrality. It rewards being easy to reach *and* being
  * reachable by a large share of the network, so an actor reachable by only a couple of very
  * close others still scores lower than one reachable, at moderate distance, by almost
  * everyone.
+ *
+ * When to use: directed networks where you want a refined "how sought-after is this actor"
+ * score that accounts for distance, not just a raw inbound-tie count (see Degree Prestige for
+ * the simpler version).
+ *
+ * Compare to: Influence Range Closeness Centrality (IRCC, see centralityClosenessIR()) is this
+ * same idea from the centrality side (distance *to* others) rather than prestige's (distance
+ * *from* others), and likewise works on disconnected graphs.
  *
  * Math: for actor i, let I_i be the set of actors that can reach i (its influence domain).
  * PP(i) = [ |I_i| / (V-1) ] / [ (sum of d(j,i) for j in I_i) / |I_i| ] - the fraction of the
@@ -356,11 +371,21 @@ void Graph::prestigeProximity(const bool considerWeights,
 /**
  * @brief Calculates the PageRank Prestige of each vertex
  *
- * Plain language: the same idea Google originally used to rank web pages - an actor is
- * prestigious if prestigious actors point to it. Unlike plain degree prestige (which treats
- * every inbound tie equally), a link from someone with few outbound ties and high prestige
- * counts for much more than one of a hundred outbound ties from someone unremarkable, and
- * that prestige keeps circulating until every score stabilizes.
+ * Meaning: the same idea Google originally used to rank web pages - an actor is prestigious
+ * if prestigious actors point to it. Unlike plain degree prestige (which treats every inbound
+ * tie equally), a link from someone with few outbound ties and high prestige counts for much
+ * more than one of a hundred outbound ties from someone unremarkable, and that prestige keeps
+ * circulating until every score stabilizes.
+ *
+ * When to use: directed networks where endorsement quality matters, not just quantity - web
+ * links, citation networks, recommendation/referral graphs - anywhere "an endorsement from
+ * someone important should count for more."
+ *
+ * Compare to: Degree Prestige (DP) counts inbound ties equally; PageRank weighs each one by
+ * the endorser's own prestige divided by their out-degree. Eigenvector Centrality (EVC, see
+ * centralityEigenvector()) is the closest centrality-side analogue - both are "importance
+ * feeds back on itself" measures - but EVC is built for undirected/symmetric graphs while
+ * PageRank is built for directed graphs with an explicit damping factor.
  *
  * Math: iteratively, PRP(i) = (1-d)/N + d * Sum_j( PRP(j) / outLinks(j) ) for every j linking
  * to i, where d is the damping factor (0.85, matching Google's original choice) and N is the

@@ -506,6 +506,24 @@ following the existing pattern — never plain `qDebug()`.
 
 ---
 
+# Doc-Comment Convention
+
+Doxygen `@brief`/`@param`/algorithm-explanation comments live on the **`.cpp` definition**, not
+the `.h` declaration. Headers (`graph.h`, `matrix.h`, ...) stay bare signature lists — this is
+consistent across the whole `Graph`/`Matrix` API surface, not an accident of one file. Rationale:
+keeps headers skimmable, and keeps the explanation physically next to the logic it describes, so a
+change to an algorithm and its doc comment land in the same diff instead of drifting apart across
+two files.
+
+Where a measure's explanation is more than "what does this parameter mean" — every
+centrality/prestige function's doc comment follows a fixed shape, in order: **Meaning** (what the
+measure actually captures, in plain words), **When to use** (the concrete research situation it
+fits), **Compare to** (the other measure(s) it's most easily confused with, and how it differs —
+skip this section only if there's genuinely no close neighbor), then **Math** (the formula). See
+`src/graph/centrality/graph_centrality.cpp` for the reference examples.
+
+---
+
 # AddressSanitizer (ASan) Debug Builds
 
 For chasing crashes/dangling-pointer bugs that don't show up in the golden/benchmark suite (those

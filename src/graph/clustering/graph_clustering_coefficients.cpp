@@ -19,10 +19,16 @@
 /**
  * @brief Returns the local clustering coefficient (CLUCOF) of vertex v1.
  *
- * Plain language: not a measure of how prominent an actor is, but of how tightly-knit its
+ * Meaning: not a measure of how prominent an actor is, but of how tightly-knit its
  * neighborhood is - do this actor's friends also know each other, or is the actor the only
  * thing connecting a set of strangers? A score near 1 means the neighborhood is a tight
  * clique; near 0 means the actor bridges otherwise-unconnected people.
+ *
+ * When to use: studying local cohesion and "small world" structure - identifying tightly-knit
+ * cliques, triadic closure, or (as the actor-level building block of the graph-wide average)
+ * assessing how clustered a network is overall. Not a prominence/ranking measure like the
+ * centrality and prestige indices above - a high-CLC actor isn't necessarily important, just
+ * embedded in a dense neighborhood.
  *
  * For undirected (symmetric) graphs, uses the Watts–Strogatz formula:
  *

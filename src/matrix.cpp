@@ -748,6 +748,11 @@ qreal Matrix::distanceEuclidean(
  * corresponding to the largest positive eigenvalue.
  * In the process, it also computes min and max values.
  * Used by Eigenvector Centrality (EVC).
+ *
+ * Meaning: start from any vector x, repeatedly multiply by the matrix and rescale back to
+ * unit length - the vector converges to the eigenvector for the matrix's largest eigenvalue
+ * (lambda_max), which is exactly the vector eigenvector centrality reports.
+ *
  * We use C arrays instead of std::vectors or anything else,
  * as we know from start the size (n) of vectors x and tmp
  * This approach is faster than using std::vector when n > 1000
@@ -770,6 +775,11 @@ qreal Matrix::distanceEuclidean(
  * @param cancelCheck Optional callback checked once per iteration; if it returns true, the
  * loop stops early (x/xsum/xmax/xmin reflect the last completed iteration, not a full result).
  * Defaults to nullptr (never cancels), so existing callers are unaffected.
+ * @param lambdaMax Optional out param: the largest eigenvalue itself, read off from the
+ * pre-normalization vector length on the final iteration (norm(Ax) ~= lambda_max once x has
+ * converged to unit length). Callers that only need the eigenvector (e.g.
+ * centralityEigenvector()) can leave this nullptr; callers that need to validate a convergence
+ * bound like Katz's alpha < 1/lambda_max need it.
  */
 void Matrix::powerIteration (
         qreal x[],
