@@ -343,8 +343,8 @@ namespace cli
 
             // 2. Standalone centralities
             g.centralityDegree(cfg.considerWeights, cfg.dropIsolates);
-            g.centralityInformation(cfg.considerWeights, cfg.dropIsolates);
-            g.centralityEigenvector(cfg.considerWeights, cfg.dropIsolates);
+            g.centralityInformation(cfg.considerWeights, cfg.inverseWeights);
+            g.centralityEigenvector(cfg.considerWeights, cfg.inverseWeights, cfg.dropIsolates);
             g.centralityClosenessIR(cfg.considerWeights,
                                     cfg.inverseWeights,
                                     cfg.dropIsolates);
