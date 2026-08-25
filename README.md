@@ -32,7 +32,7 @@ field data from a file in a supported format (GraphML, GraphViz, EdgeList, GML, 
 - Standard graph-theoretic and network cohesion metrics: density, diameter, geodesics, connectedness (weak or strong component count, for directed networks), eccentricity, clustering coefficient, walks, reciprocity, and more.
 - Vertex connectivity: the minimum number of nodes that must be removed to disconnect two chosen actors (Node Connectivity), or to disconnect the network at its weakest point (Graph Connectivity) — a measure of robustness to node removal.
 - Matrix routines: Adjacency, Laplacian, Degree, Cocitation, and more.
-- Advanced centrality and prestige indices: eigenvector, closeness, betweenness, information, power centrality, PageRank prestige, and more.
+- Advanced centrality and prestige indices: eigenvector, closeness, betweenness, information, power, Katz, Bonacich power centrality, PageRank prestige, and more.
 - Community detection algorithms: triad census, clique census, and more.
 - Structural equivalence analysis using hierarchical clustering, actor similarities, and Pearson coefficients.
 - Multiple layout algorithms: prominence-based (circular, nodal sizes by centrality), force-directed (Kamada-Kawai, Fruchterman-Reingold), and ego-centered radial layout. Node colors can also be assigned by connected component, making disconnected sub-networks immediately visible.

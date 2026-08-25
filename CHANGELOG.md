@@ -23,6 +23,23 @@ All notable changes to this project are documented in this file.
     for ordinary numbers, applied to matrices):
     $ C_{Katz} = \left( (I - \alpha A^T)^{-1} - I \right) \cdot \mathbf{1} $.
 
+  - **Bonacich Power Centrality** (#39): new **Analyze → Centrality →
+    Bonacich Power Centrality (BPC)** measure, with the same full parity as
+    Katz — HTML/CSV report, all 4 Layout → By Prominence Index variants,
+    Filter Nodes by Centrality, Find Node by index score, and the
+    prominence distribution chart. Like Katz Centrality, it gives each
+    actor credit for indirect connections discounted by distance, but adds
+    a second parameter beta that can be **negative** — in which case being
+    tied to well-connected others can *hurt* rather than help a node's
+    score (e.g. a buyer connected to powerful sellers has less bargaining
+    power the more powerful those sellers are), and per-node scores can
+    come out negative, unlike every other measure in the app. alpha is a
+    free overall scale factor with no convergence bound; only beta must
+    satisfy $ |\beta| < 1/\lambda_{max} $. Distinct from the existing
+    Gil-Schmidt "Power Centrality (PC)". Computed via
+    $ b = \alpha (I - \beta R)^{-1} R \cdot \mathbf{1} $, where
+    $ R = A^T $ (same directional convention as Katz).
+
   - **Node and Graph Connectivity** (#7): two new analyses under **Analyze →
     Cohesion**. **Node Connectivity** computes the minimum number of nodes
     that must be removed to disconnect two chosen actors. **Graph
