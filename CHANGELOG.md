@@ -6,6 +6,23 @@ All notable changes to this project are documented in this file.
 
 ### New Features
 
+  - **Katz Centrality** (#10): new **Analyze → Centrality → Katz Centrality
+    (KC)** measure, with full parity to the app's other prominence indices —
+    HTML/CSV report, all 4 Layout → By Prominence Index variants, Filter
+    Nodes by Centrality, Find Node by index score, and the prominence
+    distribution chart. Katz gives each actor credit for indirect
+    connections, discounted the further away they are by a user-supplied
+    attenuation factor alpha (a direct tie counts full price, a 2-hop tie
+    counts alpha times as much, and so on) — useful when raw Eigenvector
+    Centrality collapses to zero on directed or disconnected networks. The
+    dialog asks for alpha; the computation rejects and explains itself if
+    alpha is too large to converge (must be smaller than 1 / the network's
+    largest eigenvalue). Computed in closed form via the matrix identity
+    $ I + \alpha A + \alpha^2 A^2 + \dots = (I - \alpha A)^{-1} $ (valid for
+    $ |\alpha| < 1/\lambda_{max} $, the same geometric-series identity used
+    for ordinary numbers, applied to matrices):
+    $ C_{Katz} = \left( (I - \alpha A^T)^{-1} - I \right) \cdot \mathbf{1} $.
+
   - **Node and Graph Connectivity** (#7): two new analyses under **Analyze →
     Cohesion**. **Node Connectivity** computes the minimum number of nodes
     that must be removed to disconnect two chosen actors. **Graph

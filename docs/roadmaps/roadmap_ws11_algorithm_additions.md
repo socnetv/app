@@ -9,8 +9,8 @@ on top of already-stable infrastructure, not architecture.
 
 ## Status
 
-**Started.** Two items shipped so far — see What WS11 Delivered. Everything else in this doc
-(Katz, Bonacich Power, cohesive subgroups, more clustering algorithms, structural equivalence) is
+**Started.** Three items shipped so far — see What WS11 Delivered. Everything else in this doc
+(Bonacich Power, cohesive subgroups, more clustering algorithms, structural equivalence) is
 still untouched.
 
 ## Background
@@ -41,63 +41,44 @@ directory each would live in.
 Three follow-on visualizations surfaced by this work are noted below under What Remains Open
 (Cohesion), not yet filed or scoped.
 
+- **#10 — Katz Centrality.** New **Analyze → Centrality → Katz Centrality (KC)**, with full parity
+  to the app's other 12 prominence indices: HTML/CSV report, all 4 Layout → By Prominence Index
+  variants, Filter Nodes by Centrality, Find Node by index score, prominence distribution chart,
+  and a `--katz-alpha` CLI flag under the existing `prominence` kernel with golden baselines in
+  `src/tools/baselines/prominence/` (undirected/directed happy paths, an α-boundary rejection case,
+  and Krackhardt Kite for non-trivial size). New `src/graph/centrality/graph_centrality_katz.cpp`
+  (`Graph::centralityKatz(alpha, considerWeights, inverseWeights, dropIsolates)`), `IndexType::KATZ`,
+  `GraphVertex::KC()/SKC()`, and `src/forms/dialogcentralitykatz.{h,cpp,ui}` (asks for `α`; no live
+  `1/λ_max` bound shown, since that would require a synchronous `Graph` call from the GUI thread —
+  relies on `centralityKatz()`'s post-hoc rejection instead). Since the shared layout-by-prominence
+  dispatch has no parameter slot, the 4 layout variants reuse the `α` cached from the last Analyze
+  run (`Graph::m_lastKatzAlpha`), with a `QMessageBox` telling the user to run Analyze first if Katz
+  hasn't been computed yet this session. Landed `Matrix::powerIteration()`'s `λ_max` output param
+  (reused by `centralityEigenvector()` too) as a shared prerequisite. Found and fixed two
+  independent pre-existing arg-shift bugs (`centralityInformation`/`centralityEigenvector` missing
+  `inverseWeights`) opportunistically while wiring this in, in the CLI kernel and in
+  `layoutByProminenceIndex()` respectively — both noted in `CHANGELOG.md`.
+
 ## What Remains Open
 
 ### Centrality — `src/graph/centrality/`
 
-- **#10 — Katz Centrality** and **#39 — Bonacich Power Centrality** share almost all their
-  computational machinery, so scope and (later) implement them together even though they land as
-  separate issues/commits per the Work Rules below.
-
-  - **Math.** Katz: `C_Katz = ((I - αAᵀ)⁻¹ - I) · 1`. Bonacich `BPC(α, β)`:
-    `b = α(I - βR)⁻¹ · R · 1` (R = adjacency, possibly weighted). Katz is the special case that
-    drops the `β`-weighted feedback term — same `(I - xM)⁻¹` shape, different scalar and no `- I`
-    term. Both require the scalar parameter (`α` for Katz; `β` for Bonacich — the one multiplying
-    the matrix, not the leading scale factor) to satisfy `|x| < 1/λ_max(A)`, where `λ_max` is the
-    adjacency matrix's largest-magnitude eigenvalue (Perron-Frobenius), or the inversion is
-    singular/non-convergent.
-  - **Existing infrastructure this reuses, unmodified:**
-    - `Matrix::inverse(Matrix &a, cancelCheck)` (`src/matrix.h:178`, LU-decomposition-based) —
-      covers the `(I - xM)⁻¹` step directly, no new inversion code needed.
-    - `Matrix::transpose()` (`src/matrix.h:169`) — for Katz's `Aᵀ`.
-    - `createMatrixAdjacency(...)` (already used by `centralityEigenvector()`,
-      `graph/centrality/graph_centrality.cpp:275`) — same weighted/inverse-weights/symmetrize
-      options apply here.
-  - **One gap to close first:** `Matrix::powerIteration()` (`src/matrix.cpp:774`) — already used by
-    `centralityEigenvector()` to get the dominant eigenvector — normalizes by the Euclidean norm of
-    `Ax` each iteration but never returns that norm to the caller. At convergence that pre-normalization
-    norm *is* `λ_max` (since `‖Ax‖ ≈ λ_max‖x‖` and `‖x‖` is kept at 1), so the fix is a one-line
-    addition: add an output `qreal &lambdaMax` param capturing `norm` on the final iteration,
-    threading it back through `centralityEigenvector()`'s existing call (harmless there — it just
-    gains a value it currently discards). This is what supplies the `α`/`β` validity bound for both
-    new measures, and is a legitimate small addition to an *existing* function rather than new
-    surface area — worth landing as its own small commit before either centrality lands.
-  - **UI parameter input is new territory for centrality dialogs**: every existing
-    `slotAnalyzeCentrality*` (`src/mainwindow/analyze/mainwindow_analyze_centrality.cpp`) takes only
-    the shared weights/isolates checkboxes — none prompt for a numeric parameter. Katz needs one
-    (`α`), Bonacich needs two (`α, β`). `src/forms/` already has the right precedent to copy —
-    small `.ui` + thin `QDialog` subclass emitting a `userChoices(...)` signal, e.g.
-    `dialogranderdosrenyi.h/.cpp/.ui` for the shape, plus a live error/validity check
-    (`checkErrors()` slot) — here the check is exactly the `|x| < 1/λ_max` bound above, reported to
-    the user, not silently clamped. New: `dialogcentralitykatz.{h,cpp,ui}` and
-    `dialogcentralitybonacich.{h,cpp,ui}`.
-  - **New `IndexType` entries** (`src/global.h:117`, currently `DC..CLC = 1..13`): `KATZ = 14`,
-    `BPC = 15`.
-  - **File layout**: new `src/graph/centrality/graph_centrality_katz.cpp` and
-    `graph_centrality_bonacich.cpp` (small, self-contained; not folded into the existing
-    ~700-line `graph_centrality.cpp`) — each following `centralityEigenvector()`'s existing
-    shape: build adjacency via `createMatrixAdjacency`, run the shared eigenvalue-bound check,
-    invert, project, write per-vertex results (`GraphVertex` needs new getter/setter pairs
-    mirroring `setEVC`/`setSEVC`, e.g. `setKC`/`setSKC`).
-  - **CLI/regression**: exposed under the existing `prominence` kernel family (where EVC/PC/IC
-    already live) with new golden baselines in `src/tools/baselines/prominence/`; small hand-built
-    fixtures (a directed star, a simple cycle) are more useful here than the full Padgett dataset,
-    since the interesting behavior to pin down is the `α`/`β` boundary-condition rejection, not
-    large-graph numerics.
-  - Naming: label Bonacich's result "Bonacich Power Centrality (BPC)" distinctly from the
-    already-shipped "Power Centrality (PC)" (Gil-Schmidt, generalized degree) in every UI string
-    and report header — same-sounding names, unrelated measures, and PC is older/already known to
-    users.
+- **#39 — Bonacich Power Centrality.** Same `(I - xM)⁻¹` shape as Katz (`BPC(α, β) =
+  α(I - βR)⁻¹ · R · 1`, R = adjacency, possibly weighted), minus the `- I` term and with a second
+  parameter `β` (the one multiplying the matrix) that — unlike Katz's `α` — is allowed to be
+  negative, flipping whether being connected to well-connected others helps or hurts; `β` must
+  still satisfy `|β| < 1/λ_max(A)`. Scoped as its own follow-up series after Katz landed and was
+  verified working, reusing Katz's now-proven pattern rather than developing both blind in
+  parallel: `graph_centrality_bonacich.cpp`, `writeCentralityBonacich`,
+  `dialogcentralitybonacich.{h,cpp,ui}` (two spin boxes, `β`'s not clamped to positive),
+  `slotAnalyzeCentralityBonacich()`, `IndexType::BPC = 15`, `GraphVertex::BPC()/SBPC()`,
+  `m_lastBonacichAlpha`/`m_lastBonacichBeta` cache, same 4-layout-variant + filter + chart + CLI
+  wiring Katz just got. **Naming collision to guard against**: `getProminenceIndexByName()` matches
+  menu-action text by substring, and `"Power Centr"` (used for the existing Gil-Schmidt `PC`) would
+  also match inside "**Bonacich Power** Centrality" — the `BPC` branch must check for `"Bonacich"`
+  first. Label it "Bonacich Power Centrality (BPC)" distinctly from "Power Centrality (PC)" in every
+  UI string and report header — same-sounding names, unrelated measures, and PC is older/already
+  known to users.
 - **#134 — Alternate Centrality Measures Meta-List.** Not a single algorithm — a running collection
   of centrality-measure ideas (cross-references #10, #39, #108, and external references like
   `centiserve`/`netrankr`/`CINNA`). Treat as a backlog-within-a-backlog: triage individual measures
