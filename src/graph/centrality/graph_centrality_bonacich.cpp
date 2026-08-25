@@ -54,9 +54,9 @@ void Graph::centralityBonacich(const qreal &alpha,
                                const bool &inverseWeights,
                                const bool &dropIsolates)
 {
-    if (calculatedBPC)
+    if (calculatedBPC && m_lastBonacichAlpha == alpha && m_lastBonacichBeta == beta)
     {
-        qCDebug(lcCentrality) << "Graph not changed - BPC already computed. Return.";
+        qCDebug(lcCentrality) << "Graph not changed and alpha/beta unchanged - BPC already computed. Return.";
         return;
     }
 

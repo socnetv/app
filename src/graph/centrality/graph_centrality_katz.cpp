@@ -57,9 +57,9 @@ void Graph::centralityKatz(const qreal &alpha,
                            const bool &inverseWeights,
                            const bool &dropIsolates)
 {
-    if (calculatedKC)
+    if (calculatedKC && m_lastKatzAlpha == alpha)
     {
-        qCDebug(lcCentrality) << "Graph not changed - KC already computed. Return.";
+        qCDebug(lcCentrality) << "Graph not changed and alpha unchanged - KC already computed. Return.";
         return;
     }
 
