@@ -9,9 +9,8 @@ on top of already-stable infrastructure, not architecture.
 
 ## Status
 
-**Started.** Three items shipped so far — see What WS11 Delivered. Everything else in this doc
-(Bonacich Power, cohesive subgroups, more clustering algorithms, structural equivalence) is
-still untouched.
+**Started.** Four items shipped so far — see What WS11 Delivered. Everything else in this doc
+(cohesive subgroups, more clustering algorithms, structural equivalence) is still untouched.
 
 ## Background
 
@@ -59,26 +58,36 @@ Three follow-on visualizations surfaced by this work are noted below under What 
   `inverseWeights`) opportunistically while wiring this in, in the CLI kernel and in
   `layoutByProminenceIndex()` respectively — both noted in `CHANGELOG.md`.
 
+- **#39 — Bonacich Power Centrality.** New **Analyze → Centrality → Bonacich Power Centrality
+  (BPC)**, reusing Katz's now-proven pattern with the same full parity. Same `(I - xM)⁻¹` shape as
+  Katz (`b = α(I - βR)⁻¹ · R · 1`, `R = Aᵀ`, same directional convention as Katz), minus the `- I`
+  term and with a second parameter `β` that — unlike Katz's `α` — is allowed to be **negative**,
+  flipping whether being connected to well-connected others helps or hurts (per-node scores can
+  come out negative, unlike every other measure in the app); only `β` must satisfy
+  `|β| < 1/λ_max(A)`, `α` is a free outer scale factor with no bound. New
+  `src/graph/centrality/graph_centrality_bonacich.cpp`
+  (`Graph::centralityBonacich(alpha, beta, considerWeights, inverseWeights, dropIsolates)`, reusing
+  `Matrix::productByVector()` for the extra `R·1` step Katz's own formula didn't need),
+  `IndexType::BPC`, `GraphVertex::BPC()/SBPC()`, `src/forms/dialogcentralitybonacich.{h,cpp,ui}`
+  (two spin boxes, `β` not clamped to positive), `m_lastBonacichAlpha`/`m_lastBonacichBeta` cache
+  for the layout-by-prominence path (mirrors `m_lastKatzAlpha` exactly). 5 new golden baselines
+  under `src/tools/baselines/prominence/`, including one deliberately exercising the negative-`β`
+  sign-flip on `TinyPath_N3_E2` (node 2 gains sharply while both endpoints go negative) — every
+  value hand-verified via independent Gauss-Jordan elimination, same discipline as Katz.
+  Guarded the `getProminenceIndexByName()` naming collision flagged during scoping: the new
+  `"Bonacich"` check had to go **before** the existing `"Power Centr"` check (confirmed live in
+  code — that branch would otherwise shadow it, matching the existing Gil-Schmidt `PC`).
+  Also renumbered `IndexType` (`KATZ = 10, BPC = 11`, then `DP/PRP/PP/CLC = 12..15`, previously
+  `KATZ/BPC = 14/15` at the very end): the Analyze menu already grouped Katz with the other
+  centrality measures, but the Prominence dropdown and Layout-by-Index combo are built from
+  `prominenceIndexList`, whose order is positionally tied to this enum, so Katz was visually
+  landing after the Prestige entries there — inconsistent with the menu. No enum value is
+  persisted anywhere, so this was safe to renumber mid-series.
+
 ## What Remains Open
 
 ### Centrality — `src/graph/centrality/`
 
-- **#39 — Bonacich Power Centrality.** Same `(I - xM)⁻¹` shape as Katz (`BPC(α, β) =
-  α(I - βR)⁻¹ · R · 1`, R = adjacency, possibly weighted), minus the `- I` term and with a second
-  parameter `β` (the one multiplying the matrix) that — unlike Katz's `α` — is allowed to be
-  negative, flipping whether being connected to well-connected others helps or hurts; `β` must
-  still satisfy `|β| < 1/λ_max(A)`. Scoped as its own follow-up series after Katz landed and was
-  verified working, reusing Katz's now-proven pattern rather than developing both blind in
-  parallel: `graph_centrality_bonacich.cpp`, `writeCentralityBonacich`,
-  `dialogcentralitybonacich.{h,cpp,ui}` (two spin boxes, `β`'s not clamped to positive),
-  `slotAnalyzeCentralityBonacich()`, `IndexType::BPC = 15`, `GraphVertex::BPC()/SBPC()`,
-  `m_lastBonacichAlpha`/`m_lastBonacichBeta` cache, same 4-layout-variant + filter + chart + CLI
-  wiring Katz just got. **Naming collision to guard against**: `getProminenceIndexByName()` matches
-  menu-action text by substring, and `"Power Centr"` (used for the existing Gil-Schmidt `PC`) would
-  also match inside "**Bonacich Power** Centrality" — the `BPC` branch must check for `"Bonacich"`
-  first. Label it "Bonacich Power Centrality (BPC)" distinctly from "Power Centrality (PC)" in every
-  UI string and report header — same-sounding names, unrelated measures, and PC is older/already
-  known to users.
 - **#134 — Alternate Centrality Measures Meta-List.** Not a single algorithm — a running collection
   of centrality-measure ideas (cross-references #10, #39, #108, and external references like
   `centiserve`/`netrankr`/`CINNA`). Treat as a backlog-within-a-backlog: triage individual measures
