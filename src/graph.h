@@ -1055,6 +1055,14 @@ public:
                              const bool &dropIsolates = false,
                              const int &format = ReportFormat::Html);
 
+    bool writeCentralityBonacich(const QString,
+                                 const qreal &alpha,
+                                 const qreal &beta,
+                                 const bool &weigths = false,
+                                 const bool &inverseWeights = false,
+                                 const bool &dropIsolates = false,
+                                 const int &format = ReportFormat::Html);
+
     bool writePrestigeDegree(const QString, const bool weights,
                              const bool dropIsolates,
                              const int &format = ReportFormat::Html);
@@ -1215,6 +1223,12 @@ public:
                         const bool &considerWeights = false,
                         const bool &inverseWeights = false,
                         const bool &dropIsolates = false);
+
+    void centralityBonacich(const qreal &alpha,
+                            const qreal &beta,
+                            const bool &considerWeights = false,
+                            const bool &inverseWeights = false,
+                            const bool &dropIsolates = false);
 
     void centralityClosenessIR(const bool considerWeights = false,
                                const bool inverseWeights = false,
@@ -1509,7 +1523,7 @@ private:
     H_StrToInt discreteDPs, discreteSDCs, discreteCCs, discreteBCs, discreteSCs;
     H_StrToInt discreteIRCCs, discreteECs, discreteEccentricities;
     H_StrToInt discretePCs, discreteICs, discretePRPs, discretePPs, discreteEVCs;
-    H_StrToInt discreteCLCs, discreteKCs;
+    H_StrToInt discreteCLCs, discreteKCs, discreteBPCs;
 
     QString m_reportsDataDir;
     int m_reportsRealPrecision;
@@ -1532,6 +1546,7 @@ private:
     qreal meanIC, varianceIC;
     qreal meanEVC, varianceEVC;
     qreal meanKC, varianceKC;
+    qreal meanBPC, varianceBPC;
     qreal meanSDP, varianceSDP;
     qreal meanPP, variancePP;
     qreal meanPRP, variancePRP;
@@ -1551,6 +1566,12 @@ private:
                                 ///< read by layoutByProminenceIndex() (WS11, #10) since the
                                 ///< generic layout-by-prominence dispatch has no parameter slot.
                                 ///< -1 means "never computed this session".
+    qreal minBPC, maxBPC, sumBPC;
+    qreal m_lastBonacichAlpha = -1; ///< Same caching purpose as m_lastKatzAlpha (WS11, #39);
+                                    ///< -1 means "never computed this session". Alpha is kept
+                                    ///< positive-only by the dialog so this sentinel is safe -
+                                    ///< beta (which can be negative) has no sentinel role.
+    qreal m_lastBonacichBeta = 0;
     qreal minPRP, maxPRP, nomPRC, denomPRC, sumPC, t_sumPRP, sumPRP;
     qreal minPP, maxPP, nomPP, denomPP, sumPP, groupPP;
 
@@ -1571,6 +1592,7 @@ private:
     int classesCLC;
     int classesEVC, maxNodeEVC, minNodeEVC;
     int classesKC, maxNodeKC, minNodeKC;
+    int classesBPC, maxNodeBPC, minNodeBPC;
     /** General & initialisation variables */
 
     int m_graphModStatus;
@@ -1601,6 +1623,7 @@ private:
     bool calculatedIsolates;
     bool calculatedEVC;
     bool calculatedKC;
+    bool calculatedBPC;
     bool calculatedDP, calculatedDC, calculatedPP;
     bool calculatedIRCC, calculatedIC, calculatedPRP;
     bool calculatedTriad;

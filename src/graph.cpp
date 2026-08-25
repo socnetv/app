@@ -125,6 +125,7 @@ Graph::Graph(const int &reserveVerticesSize, const int &reserveEdgesPerVertexSiz
     calculatedIC = false;
     calculatedEVC = false;
     calculatedKC = false;
+    calculatedBPC = false;
     calculatedCentralities = false;
     calculatedIRCC = false;
     calculatedPP = false;
@@ -430,6 +431,7 @@ void Graph::clear(const QString &reason)
     calculatedIC = false;
     calculatedEVC = false;
     calculatedKC = false;
+    calculatedBPC = false;
     calculatedIRCC = false;
     calculatedPP = false;
     calculatedPRP = false;
