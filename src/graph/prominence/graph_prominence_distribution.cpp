@@ -156,6 +156,10 @@ int Graph::getProminenceIndexByName(const QString &prominenceIndexName)
     {
         return IndexType::CLC;
     }
+    else if (prominenceIndexName.contains("Katz Centr"))
+    {
+        return IndexType::KATZ;
+    }
     else
         return 0;
 }

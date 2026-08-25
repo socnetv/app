@@ -943,6 +943,17 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
         clusteringCoefficient();
         break;
     }
+    case IndexType::KATZ:
+    {
+        if (m_lastKatzAlpha < 0)
+        {
+            progressStatus(tr("Please compute Katz Centrality first "
+                              "(Analyze > Centrality > Katz Centrality), then try again."));
+            return false;
+        }
+        centralityKatz(m_lastKatzAlpha, considerWeights, inverseWeights, dropIsolates);
+        break;
+    }
     default:
         graphDistancesGeodesic(true, considerWeights,
                                inverseWeights, dropIsolates);
@@ -1082,6 +1093,11 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
             case IndexType::CLC:
             {
                 score = (*it)->CLC();
+                break;
+            }
+            case IndexType::KATZ:
+            {
+                score = (*it)->SKC();
                 break;
             }
             }

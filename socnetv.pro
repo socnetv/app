@@ -53,7 +53,8 @@ FORMS += src/forms/dialogfilteredgesbyweight.ui \
     src/forms/dialogfilterbyattribute.ui \
     src/forms/dialogexportpdf.ui \
     src/forms/dialogexportimage.ui \
-    src/forms/dialogbulkedit.ui
+    src/forms/dialogbulkedit.ui \
+    src/forms/dialogcentralitykatz.ui
 
 HEADERS += src/mainwindow.h \
     src/texteditor.h \
@@ -114,6 +115,7 @@ HEADERS += src/mainwindow.h \
     src/forms/dialogexportimage.h \
     src/forms/dialogsysteminfo.h \
     src/forms/dialogbulkedit.h \
+    src/forms/dialogcentralitykatz.h \
     src/global.h
 
 SOURCES += src/main.cpp \
@@ -245,7 +247,8 @@ SOURCES += src/main.cpp \
     src/forms/dialogexportpdf.cpp \
     src/forms/dialogexportimage.cpp \
     src/forms/dialogsysteminfo.cpp \
-    src/forms/dialogbulkedit.cpp
+    src/forms/dialogbulkedit.cpp \
+    src/forms/dialogcentralitykatz.cpp
 
 
 RESOURCES = src/images.qrc \

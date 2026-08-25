@@ -157,6 +157,9 @@ void Graph::vertexFilterByCentrality(const float threshold,
         case IndexType::CLC:
             score = (*it)->CLC();
             break;
+        case IndexType::KATZ:
+            score = (*it)->KC();
+            break;
         default:
             score = (*it)->DC();
             break;

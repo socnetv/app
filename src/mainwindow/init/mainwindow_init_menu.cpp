@@ -293,6 +293,7 @@ void MainWindow::initMenuBar()
     centrlMenu->addAction(cPowerAct);
     centrlMenu->addAction(cInformationAct);
     centrlMenu->addAction(cEigenvectorAct);
+    centrlMenu->addAction(cKatzAct);
     centrlMenu->addSeparator();
     centrlMenu->addAction(cInDegreeAct);
     centrlMenu->addAction(cPageRankAct);
@@ -348,6 +349,7 @@ void MainWindow::initMenuBar()
     layoutRadialProminenceMenu->addAction(layoutRadialProminence_DP_Act);
     layoutRadialProminenceMenu->addAction(layoutRadialProminence_PRP_Act);
     layoutRadialProminenceMenu->addAction(layoutRadialProminence_PP_Act);
+    layoutRadialProminenceMenu->addAction(layoutRadialProminence_KATZ_Act);
 
     layoutMenu->addSeparator();
 
@@ -366,6 +368,7 @@ void MainWindow::initMenuBar()
     layoutLevelProminenceMenu->addAction(layoutLevelProminence_DP_Act);
     layoutLevelProminenceMenu->addAction(layoutLevelProminence_PRP_Act);
     layoutLevelProminenceMenu->addAction(layoutLevelProminence_PP_Act);
+    layoutLevelProminenceMenu->addAction(layoutLevelProminence_KATZ_Act);
 
     layoutMenu->addSeparator();
 
@@ -384,6 +387,7 @@ void MainWindow::initMenuBar()
     layoutNodeSizeProminenceMenu->addAction(layoutNodeSizeProminence_DP_Act);
     layoutNodeSizeProminenceMenu->addAction(layoutNodeSizeProminence_PRP_Act);
     layoutNodeSizeProminenceMenu->addAction(layoutNodeSizeProminence_PP_Act);
+    layoutNodeSizeProminenceMenu->addAction(layoutNodeSizeProminence_KATZ_Act);
 
     layoutMenu->addSeparator();
 
@@ -403,6 +407,7 @@ void MainWindow::initMenuBar()
     layoutNodeColorProminenceMenu->addAction(layoutNodeColorProminence_PRP_Act);
     layoutNodeColorProminenceMenu->addAction(layoutNodeColorProminence_PP_Act);
     layoutNodeColorProminenceMenu->addAction(layoutNodeColorProminence_CLC_Act);
+    layoutNodeColorProminenceMenu->addAction(layoutNodeColorProminence_KATZ_Act);
 
     layoutMenu->addSeparator();
     layoutMenu->addAction(layoutNodeColorByComponentAct);

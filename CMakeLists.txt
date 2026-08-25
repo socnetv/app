@@ -236,8 +236,9 @@ set (FORMS
     src/forms/dialogfilterbyattribute.ui
     src/forms/dialogbulkedit.ui
     src/forms/dialogedgedichotomization.ui
-    src/forms/dialogexportpdf.ui 
+    src/forms/dialogexportpdf.ui
     src/forms/dialogexportimage.ui
+    src/forms/dialogcentralitykatz.ui
     # Other UI files
 )
 
@@ -288,8 +289,9 @@ set(SOURCES
     src/forms/dialograndlattice.cpp 
     src/forms/dialognodefind.cpp 
     src/forms/dialogexportpdf.cpp 
-    src/forms/dialogexportimage.cpp 
+    src/forms/dialogexportimage.cpp
     src/forms/dialogsysteminfo.cpp
+    src/forms/dialogcentralitykatz.cpp
     # Add remaining source files here
 )
 

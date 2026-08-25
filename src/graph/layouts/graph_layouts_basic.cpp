@@ -298,6 +298,16 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
     {
         clusteringCoefficient();
     }
+    else if (prominenceIndex == IndexType::KATZ)
+    {
+        if (m_lastKatzAlpha < 0)
+        {
+            progressStatus(tr("Please compute Katz Centrality first "
+                              "(Analyze > Centrality > Katz Centrality), then try this layout again."));
+            return;
+        }
+        centralityKatz(m_lastKatzAlpha, considerWeights, inverseWeights, dropIsolates);
+    }
     else
     {
         graphDistancesGeodesic(true, considerWeights,
@@ -431,6 +441,13 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
         {
             C = (*it)->CLC();
             stdC = (*it)->CLC();
+            maxC = 1;
+            break;
+        }
+        case IndexType::KATZ:
+        {
+            C = (*it)->KC();
+            stdC = (*it)->SKC();
             maxC = 1;
             break;
         }

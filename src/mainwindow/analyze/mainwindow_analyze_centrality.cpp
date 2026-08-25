@@ -23,6 +23,7 @@
 #include "forms/dialogsimilaritymatches.h"
 #include "forms/dialogdissimilarities.h"
 #include "forms/dialogclusteringhierarchical.h"
+#include "forms/dialogcentralitykatz.h"
 
 #include <QtWidgets>
 #include <QtCharts>
@@ -620,6 +621,71 @@ void MainWindow::slotAnalyzeCentralityPower()
             }
             statusMessage(tr("Gil-Schmidt Power Centralities report saved as: ") + QDir::toNativeSeparators(fn));
         });
+}
+
+/**
+ * @brief MainWindow::slotAnalyzeCentralityKatz
+ * Prompts for the attenuation factor alpha, then writes Katz Centralities into a file
+ * and displays it.
+ *
+ *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
+ *
+ *  alpha is not validated here (see docs/README_DEVELOPER_NOTES.md's "Dispatching Long-Running
+ *  Graph Operations" - a synchronous pre-check would call into Graph, which lives on
+ *  graphThread, directly from this GUI-thread slot). Graph::centralityKatz() validates it
+ *  against the |alpha| < 1/lambda_max convergence bound once the async operation actually
+ *  runs, and reports rejection via the status bar - same as Information Centrality's existing
+ *  singular-matrix handling.
+ */
+void MainWindow::slotAnalyzeCentralityKatz()
+{
+    if (!activeNodes())
+    {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    DialogCentralityKatz dlg(this);
+
+    connect(&dlg, &DialogCentralityKatz::userChoices,
+            this, [this](const qreal alpha) {
+        const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+        QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+        QString fn = appSettings["dataDir"] + "socnetv-report-centrality-katz-" + dateTime + ext;
+
+        askAboutEdgeWeights();
+
+        const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+        const bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
+        const bool inverseWeightsFinal = inverseWeights;
+        auto success = std::make_shared<bool>(false);
+
+        runGraphOperationAsync(
+            [this, fn, alpha, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat, success]() {
+                *success = activeGraph->writeCentralityKatz(
+                    fn, alpha, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat);
+            },
+            tr("Computing Katz Centralities. Please wait..."),
+            [this, fn, reportFormat, success]() {
+                if (!*success)
+                    return;
+                statusMessage(tr("Opening Katz Centralities report..."));
+                if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
+                {
+                    QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+                }
+                else
+                {
+                    TextEditor *ed = new TextEditor(fn, this, true);
+                    ed->show();
+                    m_textEditors << ed;
+                }
+                statusMessage(tr("Katz Centralities report saved as: ") + QDir::toNativeSeparators(fn));
+            });
+    });
+
+    dlg.exec();
 }
 
 /**

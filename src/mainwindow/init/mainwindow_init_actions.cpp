@@ -1099,6 +1099,21 @@ void MainWindow::initActions()
     connect(layoutRadialProminence_EVC_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutRadialByProminenceIndex()));
 
+    layoutRadialProminence_KATZ_Act = new QAction(tr("Katz Centrality"), this);
+    layoutRadialProminence_KATZ_Act->setEnabled(true);
+    layoutRadialProminence_KATZ_Act->setStatusTip(
+        tr("Place all nodes on concentric circles of radius inversely "
+           "proportional to their Katz Centrality."));
+    layoutRadialProminence_KATZ_Act->setWhatsThis(
+        tr("Katz Centrality (KC) Radial Layout\n\n"
+           "Repositions all nodes on concentric circles of radius "
+           "inversely proportional to their Katz Centrality score. "
+           "Nodes of higher KC are closer to the centre. "
+           "Requires Katz Centrality to have been computed first "
+           "(Analyze > Centrality > Katz Centrality)."));
+    connect(layoutRadialProminence_KATZ_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutRadialByProminenceIndex()));
+
     layoutRadialProminence_DP_Act = new QAction(tr("Degree Prestige"), this);
     layoutRadialProminence_DP_Act->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_R, Qt::CTRL | Qt::Key_I));
     layoutRadialProminence_DP_Act->setStatusTip(
@@ -1264,6 +1279,22 @@ void MainWindow::initActions()
            "proportional to their Eigenvector Centrality score. "
            "Nodes having higher EVC are closer to the top."));
     connect(layoutLevelProminence_EVC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutLevelByProminenceIndex()));
+
+    layoutLevelProminence_KATZ_Act = new QAction(tr("Katz Centrality"), this);
+    layoutLevelProminence_KATZ_Act->setEnabled(true);
+    layoutLevelProminence_KATZ_Act->setStatusTip(
+        tr(
+            "Place nodes on horizontal levels of height "
+            "proportional to their Katz Centrality."));
+    layoutLevelProminence_KATZ_Act->setWhatsThis(
+        tr("Katz Centrality (KC) Levels Layout\n\n"
+           "Repositions all nodes on horizontal levels of height "
+           "proportional to their Katz Centrality score. "
+           "Nodes having higher KC are closer to the top. "
+           "Requires Katz Centrality to have been computed first "
+           "(Analyze > Centrality > Katz Centrality)."));
+    connect(layoutLevelProminence_KATZ_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutLevelByProminenceIndex()));
 
     layoutLevelProminence_DP_Act = new QAction(tr("Degree Prestige"), this);
@@ -1433,6 +1464,21 @@ void MainWindow::initActions()
     connect(layoutNodeSizeProminence_EVC_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutNodeSizeByProminenceIndex()));
 
+    layoutNodeSizeProminence_KATZ_Act = new QAction(tr("Katz Centrality"), this);
+    layoutNodeSizeProminence_KATZ_Act->setEnabled(true);
+    layoutNodeSizeProminence_KATZ_Act->setStatusTip(
+        tr("Resize all nodes to be "
+           "proportional to their Katz Centrality."));
+    layoutNodeSizeProminence_KATZ_Act->setWhatsThis(
+        tr("Katz Centrality (KC) Node Size Layout\n\n"
+           "Changes the size of all nodes to be "
+           "proportional to their Katz Centrality score. "
+           "Nodes having higher KC will appear bigger. "
+           "Requires Katz Centrality to have been computed first "
+           "(Analyze > Centrality > Katz Centrality)."));
+    connect(layoutNodeSizeProminence_KATZ_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutNodeSizeByProminenceIndex()));
+
     layoutNodeSizeProminence_DP_Act = new QAction(tr("Degree Prestige"), this);
     layoutNodeSizeProminence_DP_Act->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_S, Qt::CTRL | Qt::Key_I));
     layoutNodeSizeProminence_DP_Act->setStatusTip(
@@ -1597,6 +1643,21 @@ void MainWindow::initActions()
            "reflect their Eigenvector Centrality score. "
            "Nodes having higher EVC will have warmer color (i.e. red)."));
     connect(layoutNodeColorProminence_EVC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutNodeColorByProminenceIndex()));
+
+    layoutNodeColorProminence_KATZ_Act = new QAction(tr("Katz Centrality"), this);
+    layoutNodeColorProminence_KATZ_Act->setEnabled(true);
+    layoutNodeColorProminence_KATZ_Act->setStatusTip(
+        tr("Change the color of all nodes to "
+           "reflect their Katz Centrality."));
+    layoutNodeColorProminence_KATZ_Act->setWhatsThis(
+        tr("Katz Centrality (KC) Node Color Layout\n\n"
+           "Changes the color of all nodes to "
+           "reflect their Katz Centrality score. "
+           "Nodes having higher KC will have warmer color (i.e. red). "
+           "Requires Katz Centrality to have been computed first "
+           "(Analyze > Centrality > Katz Centrality)."));
+    connect(layoutNodeColorProminence_KATZ_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutNodeColorByProminenceIndex()));
 
     layoutNodeColorProminence_DP_Act = new QAction(tr("Degree Prestige"), this);
@@ -2277,6 +2338,18 @@ void MainWindow::initActions()
            "Thus, a node may be important, in terms of its EC, because it "
            "has lots of ties or it has fewer ties to important other nodes."));
     connect(cEigenvectorAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityEigenvector()));
+
+    cKatzAct = new QAction(tr("Katz Centrality (KC)"), this);
+    cKatzAct->setEnabled(true);
+    cKatzAct->setStatusTip(tr("Compute Katz Centrality indices"));
+    cKatzAct->setWhatsThis(
+        tr("Katz Centrality (KC)\n\n"
+           "Computes the Katz centrality of each node: credit for indirect "
+           "connections, not just direct ones, discounted the further away "
+           "they are by an attenuation factor alpha that you choose. "
+           "Proposed by Katz (1953), it generalizes Degree Centrality by "
+           "counting walks of every length, not just length 1."));
+    connect(cKatzAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityKatz()));
 
     cInDegreeAct = new QAction(tr("Degree Prestige (DP)"), this);
     cInDegreeAct->setStatusTip(tr("Compute Degree Prestige (InDegree) indices "));

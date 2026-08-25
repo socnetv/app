@@ -76,6 +76,9 @@ void MainWindow::toolBoxAnalysisProminenceSelectChanged(const int &selectedIndex
     case 12:
         slotAnalyzePrestigeProximity();
         break;
+    case 13:
+        slotAnalyzeCentralityKatz();
+        break;
     };
 
     qCDebug(lcMainWindow) << "Calling initComboBoxes() ";

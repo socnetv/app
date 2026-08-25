@@ -426,7 +426,13 @@ void MainWindow::initPanels()
                         << "Degree Prestige"
                         << "PageRank Prestige"
                         << "Proximity Prestige"
-                        << "Clustering Coefficient";
+                        << "Clustering Coefficient"
+                        << "Katz Centrality";
+    // Katz Centrality must stay appended LAST: toolBoxLayoutByIndexSelect's currentIndex
+    // syncing (mainwindow_layout.cpp's setCurrentIndex(indexType + 1) calls) and
+    // vertexFindByIndexScore()/vertexFilterByCentrality() all assume this list's order
+    // matches IndexType's enum values exactly, starting at DC=1 - inserting anywhere but
+    // the end would silently misalign every index after the insertion point.
 
     // Clustering Coefficient is excluded here: toolBoxAnalysisProminenceSelectChanged()
     // has no case for it (the Cohesion dropdown already offers it, via the same

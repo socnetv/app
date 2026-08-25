@@ -319,6 +319,18 @@ void MainWindow::slotLayoutRadialByProminenceIndex(QString prominenceIndexName =
 
     qCDebug(lcMainWindow) << "indexType" << indexType;
 
+    if (indexType == IndexType::KATZ && !activeGraph->isCentralityIndexComputed(IndexType::KATZ))
+    {
+        QMessageBox::information(
+            this, tr("Katz Centrality not computed yet"),
+            tr("Katz Centrality needs an attenuation factor (alpha) that only "
+               "Analyze > Centrality > Katz Centrality asks for - this Layout menu "
+               "has no way to prompt for it.\n\n"
+               "Please compute Katz Centrality from the Analyze menu first, "
+               "then try this layout again."));
+        return;
+    }
+
     toolBoxLayoutByIndexSelect->blockSignals(true);
     toolBoxLayoutByIndexSelect->setCurrentIndex(indexType + 1);
     toolBoxLayoutByIndexSelect->blockSignals(false);
@@ -428,6 +440,18 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString prominenceIndexName = 
     indexType = activeGraph->getProminenceIndexByName(prominenceIndexName);
 
     qCDebug(lcMainWindow) << "indexType" << indexType;
+
+    if (indexType == IndexType::KATZ && !activeGraph->isCentralityIndexComputed(IndexType::KATZ))
+    {
+        QMessageBox::information(
+            this, tr("Katz Centrality not computed yet"),
+            tr("Katz Centrality needs an attenuation factor (alpha) that only "
+               "Analyze > Centrality > Katz Centrality asks for - this Layout menu "
+               "has no way to prompt for it.\n\n"
+               "Please compute Katz Centrality from the Analyze menu first, "
+               "then try this layout again."));
+        return;
+    }
 
     toolBoxLayoutByIndexSelect->blockSignals(true);
     toolBoxLayoutByIndexSelect->setCurrentIndex(indexType + 1);
@@ -539,6 +563,18 @@ void MainWindow::slotLayoutNodeSizeByProminenceIndex(QString prominenceIndexName
 
     qCDebug(lcMainWindow) << "indexType" << indexType;
 
+    if (indexType == IndexType::KATZ && !activeGraph->isCentralityIndexComputed(IndexType::KATZ))
+    {
+        QMessageBox::information(
+            this, tr("Katz Centrality not computed yet"),
+            tr("Katz Centrality needs an attenuation factor (alpha) that only "
+               "Analyze > Centrality > Katz Centrality asks for - this Layout menu "
+               "has no way to prompt for it.\n\n"
+               "Please compute Katz Centrality from the Analyze menu first, "
+               "then try this layout again."));
+        return;
+    }
+
     toolBoxLayoutByIndexSelect->blockSignals(true);
     toolBoxLayoutByIndexSelect->setCurrentIndex(indexType + 1);
     toolBoxLayoutByIndexSelect->blockSignals(false);
@@ -646,6 +682,18 @@ void MainWindow::slotLayoutNodeColorByProminenceIndex(QString prominenceIndexNam
     indexType = activeGraph->getProminenceIndexByName(prominenceIndexName);
 
     qCDebug(lcMainWindow) << "indexType" << indexType;
+
+    if (indexType == IndexType::KATZ && !activeGraph->isCentralityIndexComputed(IndexType::KATZ))
+    {
+        QMessageBox::information(
+            this, tr("Katz Centrality not computed yet"),
+            tr("Katz Centrality needs an attenuation factor (alpha) that only "
+               "Analyze > Centrality > Katz Centrality asks for - this Layout menu "
+               "has no way to prompt for it.\n\n"
+               "Please compute Katz Centrality from the Analyze menu first, "
+               "then try this layout again."));
+        return;
+    }
 
     toolBoxLayoutByIndexSelect->blockSignals(true);
     toolBoxLayoutByIndexSelect->setCurrentIndex(indexType + 1);
