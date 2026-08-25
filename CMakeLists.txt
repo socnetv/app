@@ -240,6 +240,7 @@ set (FORMS
     src/forms/dialogexportpdf.ui
     src/forms/dialogexportimage.ui
     src/forms/dialogcentralitykatz.ui
+    src/forms/dialogcentralitybonacich.ui
     # Other UI files
 )
 
@@ -293,6 +294,7 @@ set(SOURCES
     src/forms/dialogexportimage.cpp
     src/forms/dialogsysteminfo.cpp
     src/forms/dialogcentralitykatz.cpp
+    src/forms/dialogcentralitybonacich.cpp
     # Add remaining source files here
 )
 

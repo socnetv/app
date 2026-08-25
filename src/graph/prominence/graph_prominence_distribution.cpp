@@ -128,6 +128,10 @@ int Graph::getProminenceIndexByName(const QString &prominenceIndexName)
     {
         return IndexType::EC;
     }
+    else if (prominenceIndexName.contains("Bonacich"))
+    {
+        return IndexType::BPC;
+    }
     else if (prominenceIndexName.contains("Power Centr"))
     {
         return IndexType::PC;
@@ -277,6 +281,12 @@ void Graph::prominenceDistribution(const int &index,
     {
         seriesName = ("Katz");
         discreteClasses = discreteKCs;
+        break;
+    }
+    case IndexType::BPC:
+    {
+        seriesName = ("Bonacich Power");
+        discreteClasses = discreteBPCs;
         break;
     }
     }

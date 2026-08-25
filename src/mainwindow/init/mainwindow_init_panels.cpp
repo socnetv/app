@@ -423,16 +423,19 @@ void MainWindow::initPanels()
                         << "Power Centrality"
                         << "Information Centrality"
                         << "Eigenvector Centrality"
+                        << "Katz Centrality"
+                        << "Bonacich Power Centrality"
                         << "Degree Prestige"
                         << "PageRank Prestige"
                         << "Proximity Prestige"
-                        << "Clustering Coefficient"
-                        << "Katz Centrality";
-    // Katz Centrality must stay appended LAST: toolBoxLayoutByIndexSelect's currentIndex
-    // syncing (mainwindow_layout.cpp's setCurrentIndex(indexType + 1) calls) and
-    // vertexFindByIndexScore()/vertexFilterByCentrality() all assume this list's order
-    // matches IndexType's enum values exactly, starting at DC=1 - inserting anywhere but
-    // the end would silently misalign every index after the insertion point.
+                        << "Clustering Coefficient";
+    // This list's order must match IndexType's enum values exactly, starting at DC=1:
+    // toolBoxLayoutByIndexSelect's currentIndex syncing (mainwindow_layout.cpp's
+    // setCurrentIndex(indexType + 1) calls) and vertexFindByIndexScore()/
+    // vertexFilterByCentrality() all rely on prominenceIndexList[i] == IndexType(i+1).
+    // Appending a new measure anywhere but matching its IndexType's own position would
+    // silently misalign every entry after it - keep this list and the IndexType enum
+    // (src/global.h) in lockstep whenever either one changes.
 
     // Clustering Coefficient is excluded here: toolBoxAnalysisProminenceSelectChanged()
     // has no case for it (the Cohesion dropdown already offers it, via the same

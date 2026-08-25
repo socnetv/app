@@ -68,16 +68,19 @@ void MainWindow::toolBoxAnalysisProminenceSelectChanged(const int &selectedIndex
         slotAnalyzeCentralityEigenvector();
         break;
     case 10:
-        slotAnalyzePrestigeDegree();
+        slotAnalyzeCentralityKatz();
         break;
     case 11:
-        slotAnalyzePrestigePageRank();
+        slotAnalyzeCentralityBonacich();
         break;
     case 12:
-        slotAnalyzePrestigeProximity();
+        slotAnalyzePrestigeDegree();
         break;
     case 13:
-        slotAnalyzeCentralityKatz();
+        slotAnalyzePrestigePageRank();
+        break;
+    case 14:
+        slotAnalyzePrestigeProximity();
         break;
     };
 

@@ -331,6 +331,18 @@ void MainWindow::slotLayoutRadialByProminenceIndex(QString prominenceIndexName =
         return;
     }
 
+    if (indexType == IndexType::BPC && !activeGraph->isCentralityIndexComputed(IndexType::BPC))
+    {
+        QMessageBox::information(
+            this, tr("Bonacich Power Centrality not computed yet"),
+            tr("Bonacich Power Centrality needs parameters (alpha, beta) that only "
+               "Analyze > Centrality > Bonacich Power Centrality asks for - this Layout "
+               "menu has no way to prompt for them.\n\n"
+               "Please compute Bonacich Power Centrality from the Analyze menu first, "
+               "then try this layout again."));
+        return;
+    }
+
     toolBoxLayoutByIndexSelect->blockSignals(true);
     toolBoxLayoutByIndexSelect->setCurrentIndex(indexType + 1);
     toolBoxLayoutByIndexSelect->blockSignals(false);
@@ -449,6 +461,18 @@ void MainWindow::slotLayoutLevelByProminenceIndex(QString prominenceIndexName = 
                "Analyze > Centrality > Katz Centrality asks for - this Layout menu "
                "has no way to prompt for it.\n\n"
                "Please compute Katz Centrality from the Analyze menu first, "
+               "then try this layout again."));
+        return;
+    }
+
+    if (indexType == IndexType::BPC && !activeGraph->isCentralityIndexComputed(IndexType::BPC))
+    {
+        QMessageBox::information(
+            this, tr("Bonacich Power Centrality not computed yet"),
+            tr("Bonacich Power Centrality needs parameters (alpha, beta) that only "
+               "Analyze > Centrality > Bonacich Power Centrality asks for - this Layout "
+               "menu has no way to prompt for them.\n\n"
+               "Please compute Bonacich Power Centrality from the Analyze menu first, "
                "then try this layout again."));
         return;
     }
@@ -575,6 +599,18 @@ void MainWindow::slotLayoutNodeSizeByProminenceIndex(QString prominenceIndexName
         return;
     }
 
+    if (indexType == IndexType::BPC && !activeGraph->isCentralityIndexComputed(IndexType::BPC))
+    {
+        QMessageBox::information(
+            this, tr("Bonacich Power Centrality not computed yet"),
+            tr("Bonacich Power Centrality needs parameters (alpha, beta) that only "
+               "Analyze > Centrality > Bonacich Power Centrality asks for - this Layout "
+               "menu has no way to prompt for them.\n\n"
+               "Please compute Bonacich Power Centrality from the Analyze menu first, "
+               "then try this layout again."));
+        return;
+    }
+
     toolBoxLayoutByIndexSelect->blockSignals(true);
     toolBoxLayoutByIndexSelect->setCurrentIndex(indexType + 1);
     toolBoxLayoutByIndexSelect->blockSignals(false);
@@ -691,6 +727,18 @@ void MainWindow::slotLayoutNodeColorByProminenceIndex(QString prominenceIndexNam
                "Analyze > Centrality > Katz Centrality asks for - this Layout menu "
                "has no way to prompt for it.\n\n"
                "Please compute Katz Centrality from the Analyze menu first, "
+               "then try this layout again."));
+        return;
+    }
+
+    if (indexType == IndexType::BPC && !activeGraph->isCentralityIndexComputed(IndexType::BPC))
+    {
+        QMessageBox::information(
+            this, tr("Bonacich Power Centrality not computed yet"),
+            tr("Bonacich Power Centrality needs parameters (alpha, beta) that only "
+               "Analyze > Centrality > Bonacich Power Centrality asks for - this Layout "
+               "menu has no way to prompt for them.\n\n"
+               "Please compute Bonacich Power Centrality from the Analyze menu first, "
                "then try this layout again."));
         return;
     }

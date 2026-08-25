@@ -1114,6 +1114,21 @@ void MainWindow::initActions()
     connect(layoutRadialProminence_KATZ_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutRadialByProminenceIndex()));
 
+    layoutRadialProminence_BPC_Act = new QAction(tr("Bonacich Power Centrality"), this);
+    layoutRadialProminence_BPC_Act->setEnabled(true);
+    layoutRadialProminence_BPC_Act->setStatusTip(
+        tr("Place all nodes on concentric circles of radius inversely "
+           "proportional to their Bonacich Power Centrality."));
+    layoutRadialProminence_BPC_Act->setWhatsThis(
+        tr("Bonacich Power Centrality (BPC) Radial Layout\n\n"
+           "Repositions all nodes on concentric circles of radius "
+           "inversely proportional to their Bonacich Power Centrality score. "
+           "Nodes of higher BPC are closer to the centre. "
+           "Requires Bonacich Power Centrality to have been computed first "
+           "(Analyze > Centrality > Bonacich Power Centrality)."));
+    connect(layoutRadialProminence_BPC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutRadialByProminenceIndex()));
+
     layoutRadialProminence_DP_Act = new QAction(tr("Degree Prestige"), this);
     layoutRadialProminence_DP_Act->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_R, Qt::CTRL | Qt::Key_I));
     layoutRadialProminence_DP_Act->setStatusTip(
@@ -1295,6 +1310,22 @@ void MainWindow::initActions()
            "Requires Katz Centrality to have been computed first "
            "(Analyze > Centrality > Katz Centrality)."));
     connect(layoutLevelProminence_KATZ_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutLevelByProminenceIndex()));
+
+    layoutLevelProminence_BPC_Act = new QAction(tr("Bonacich Power Centrality"), this);
+    layoutLevelProminence_BPC_Act->setEnabled(true);
+    layoutLevelProminence_BPC_Act->setStatusTip(
+        tr(
+            "Place nodes on horizontal levels of height "
+            "proportional to their Bonacich Power Centrality."));
+    layoutLevelProminence_BPC_Act->setWhatsThis(
+        tr("Bonacich Power Centrality (BPC) Levels Layout\n\n"
+           "Repositions all nodes on horizontal levels of height "
+           "proportional to their Bonacich Power Centrality score. "
+           "Nodes having higher BPC are closer to the top. "
+           "Requires Bonacich Power Centrality to have been computed first "
+           "(Analyze > Centrality > Bonacich Power Centrality)."));
+    connect(layoutLevelProminence_BPC_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutLevelByProminenceIndex()));
 
     layoutLevelProminence_DP_Act = new QAction(tr("Degree Prestige"), this);
@@ -1479,6 +1510,21 @@ void MainWindow::initActions()
     connect(layoutNodeSizeProminence_KATZ_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutNodeSizeByProminenceIndex()));
 
+    layoutNodeSizeProminence_BPC_Act = new QAction(tr("Bonacich Power Centrality"), this);
+    layoutNodeSizeProminence_BPC_Act->setEnabled(true);
+    layoutNodeSizeProminence_BPC_Act->setStatusTip(
+        tr("Resize all nodes to be "
+           "proportional to their Bonacich Power Centrality."));
+    layoutNodeSizeProminence_BPC_Act->setWhatsThis(
+        tr("Bonacich Power Centrality (BPC) Node Size Layout\n\n"
+           "Changes the size of all nodes to be "
+           "proportional to their Bonacich Power Centrality score. "
+           "Nodes having higher BPC will appear bigger. "
+           "Requires Bonacich Power Centrality to have been computed first "
+           "(Analyze > Centrality > Bonacich Power Centrality)."));
+    connect(layoutNodeSizeProminence_BPC_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutNodeSizeByProminenceIndex()));
+
     layoutNodeSizeProminence_DP_Act = new QAction(tr("Degree Prestige"), this);
     layoutNodeSizeProminence_DP_Act->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_L, Qt::CTRL | Qt::Key_S, Qt::CTRL | Qt::Key_I));
     layoutNodeSizeProminence_DP_Act->setStatusTip(
@@ -1658,6 +1704,21 @@ void MainWindow::initActions()
            "Requires Katz Centrality to have been computed first "
            "(Analyze > Centrality > Katz Centrality)."));
     connect(layoutNodeColorProminence_KATZ_Act, SIGNAL(triggered()),
+            this, SLOT(slotLayoutNodeColorByProminenceIndex()));
+
+    layoutNodeColorProminence_BPC_Act = new QAction(tr("Bonacich Power Centrality"), this);
+    layoutNodeColorProminence_BPC_Act->setEnabled(true);
+    layoutNodeColorProminence_BPC_Act->setStatusTip(
+        tr("Change the color of all nodes to "
+           "reflect their Bonacich Power Centrality."));
+    layoutNodeColorProminence_BPC_Act->setWhatsThis(
+        tr("Bonacich Power Centrality (BPC) Node Color Layout\n\n"
+           "Changes the color of all nodes to "
+           "reflect their Bonacich Power Centrality score. "
+           "Nodes having higher BPC will have warmer color (i.e. red). "
+           "Requires Bonacich Power Centrality to have been computed first "
+           "(Analyze > Centrality > Bonacich Power Centrality)."));
+    connect(layoutNodeColorProminence_BPC_Act, SIGNAL(triggered()),
             this, SLOT(slotLayoutNodeColorByProminenceIndex()));
 
     layoutNodeColorProminence_DP_Act = new QAction(tr("Degree Prestige"), this);
@@ -2350,6 +2411,20 @@ void MainWindow::initActions()
            "Proposed by Katz (1953), it generalizes Degree Centrality by "
            "counting walks of every length, not just length 1."));
     connect(cKatzAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityKatz()));
+
+    cBonacichAct = new QAction(tr("Bonacich Power Centrality (BPC)"), this);
+    cBonacichAct->setEnabled(true);
+    cBonacichAct->setStatusTip(tr("Compute Bonacich Power Centrality indices"));
+    cBonacichAct->setWhatsThis(
+        tr("Bonacich Power Centrality (BPC)\n\n"
+           "Like Katz Centrality, computes credit for indirect connections "
+           "discounted the further away they are - but with a second "
+           "parameter beta that you choose, which can be negative. With "
+           "negative beta, being tied to well-connected others can hurt "
+           "rather than help a node's score, and scores can come out "
+           "negative - unlike every other measure in this app. Not to be "
+           "confused with the existing Power Centrality (PC)."));
+    connect(cBonacichAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityBonacich()));
 
     cInDegreeAct = new QAction(tr("Degree Prestige (DP)"), this);
     cInDegreeAct->setStatusTip(tr("Compute Degree Prestige (InDegree) indices "));

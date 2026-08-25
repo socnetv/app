@@ -954,6 +954,19 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
         centralityKatz(m_lastKatzAlpha, considerWeights, inverseWeights, dropIsolates);
         break;
     }
+    case IndexType::BPC:
+    {
+        if (m_lastBonacichAlpha < 0)
+        {
+            progressStatus(tr("Please compute Bonacich Power Centrality first "
+                              "(Analyze > Centrality > Bonacich Power Centrality), then try "
+                              "again."));
+            return false;
+        }
+        centralityBonacich(m_lastBonacichAlpha, m_lastBonacichBeta, considerWeights,
+                           inverseWeights, dropIsolates);
+        break;
+    }
     default:
         graphDistancesGeodesic(true, considerWeights,
                                inverseWeights, dropIsolates);
@@ -1098,6 +1111,11 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
             case IndexType::KATZ:
             {
                 score = (*it)->SKC();
+                break;
+            }
+            case IndexType::BPC:
+            {
+                score = (*it)->SBPC();
                 break;
             }
             }

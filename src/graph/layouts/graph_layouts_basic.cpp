@@ -308,6 +308,18 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
         }
         centralityKatz(m_lastKatzAlpha, considerWeights, inverseWeights, dropIsolates);
     }
+    else if (prominenceIndex == IndexType::BPC)
+    {
+        if (m_lastBonacichAlpha < 0)
+        {
+            progressStatus(tr("Please compute Bonacich Power Centrality first "
+                              "(Analyze > Centrality > Bonacich Power Centrality), then try "
+                              "this layout again."));
+            return;
+        }
+        centralityBonacich(m_lastBonacichAlpha, m_lastBonacichBeta, considerWeights,
+                           inverseWeights, dropIsolates);
+    }
     else
     {
         graphDistancesGeodesic(true, considerWeights,
@@ -448,6 +460,13 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
         {
             C = (*it)->KC();
             stdC = (*it)->SKC();
+            maxC = 1;
+            break;
+        }
+        case IndexType::BPC:
+        {
+            C = (*it)->BPC();
+            stdC = (*it)->SBPC();
             maxC = 1;
             break;
         }

@@ -24,6 +24,7 @@
 #include "forms/dialogdissimilarities.h"
 #include "forms/dialogclusteringhierarchical.h"
 #include "forms/dialogcentralitykatz.h"
+#include "forms/dialogcentralitybonacich.h"
 
 #include <QtWidgets>
 #include <QtCharts>
@@ -682,6 +683,70 @@ void MainWindow::slotAnalyzeCentralityKatz()
                     m_textEditors << ed;
                 }
                 statusMessage(tr("Katz Centralities report saved as: ") + QDir::toNativeSeparators(fn));
+            });
+    });
+
+    dlg.exec();
+}
+
+/**
+ * @brief MainWindow::slotAnalyzeCentralityBonacich
+ * Prompts for the parameters alpha and beta, then writes Bonacich Power Centralities into a
+ * file and displays it.
+ *
+ *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
+ *
+ *  beta is not validated here (see docs/README_DEVELOPER_NOTES.md's "Dispatching Long-Running
+ *  Graph Operations" - a synchronous pre-check would call into Graph, which lives on
+ *  graphThread, directly from this GUI-thread slot). Graph::centralityBonacich() validates it
+ *  against the |beta| < 1/lambda_max convergence bound once the async operation actually runs,
+ *  and reports rejection via the status bar - same as Katz Centrality's existing handling.
+ */
+void MainWindow::slotAnalyzeCentralityBonacich()
+{
+    if (!activeNodes())
+    {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    DialogCentralityBonacich dlg(this);
+
+    connect(&dlg, &DialogCentralityBonacich::userChoices,
+            this, [this](const qreal alpha, const qreal beta) {
+        const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+        QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+        QString fn = appSettings["dataDir"] + "socnetv-report-centrality-bonacich-" + dateTime + ext;
+
+        askAboutEdgeWeights();
+
+        const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+        const bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
+        const bool inverseWeightsFinal = inverseWeights;
+        auto success = std::make_shared<bool>(false);
+
+        runGraphOperationAsync(
+            [this, fn, alpha, beta, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat, success]() {
+                *success = activeGraph->writeCentralityBonacich(
+                    fn, alpha, beta, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat);
+            },
+            tr("Computing Bonacich Power Centralities. Please wait..."),
+            [this, fn, reportFormat, success]() {
+                if (!*success)
+                    return;
+                statusMessage(tr("Opening Bonacich Power Centralities report..."));
+                if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
+                {
+                    QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+                }
+                else
+                {
+                    TextEditor *ed = new TextEditor(fn, this, true);
+                    ed->show();
+                    m_textEditors << ed;
+                }
+                statusMessage(tr("Bonacich Power Centralities report saved as: ") + QDir::toNativeSeparators(fn));
             });
     });
 
