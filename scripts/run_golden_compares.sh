@@ -350,6 +350,44 @@ run_case_prominence \
   -w 0 -x 1 -k 0 --katz-alpha 0.1 \
   "${BASE_PROM}/Krackhardt_Kite_N10__PROM__V4__FT2__W0_IW1_DI0_KA0.1.json"
 
+# Bonacich Power Centrality (WS11, #39) - each value independently cross-checked against a
+# hand-derived reference computation (Gauss-Jordan elimination of (I - beta*A^T) in plain Python)
+# before being dumped, same discipline as Katz above.
+run_case_prominence \
+  "${DATA}/TinyPath_N3_E2.paj" \
+  2 \
+  -w 0 -x 1 -k 0 --bonacich-alpha 1 --bonacich-beta 0.5 \
+  "${BASE_PROM}/TinyPath_N3_E2__PROM__V4__FT2__W0_IW1_DI0_BA1_BB0.5.json"
+
+run_case_prominence \
+  "${DATA}/TinyDirChain_N3.paj" \
+  2 \
+  -w 0 -x 1 -k 0 --bonacich-alpha 1 --bonacich-beta -0.5 \
+  "${BASE_PROM}/TinyDirChain_N3__PROM__V4__FT2__W0_IW1_DI0_BA1_BB-0.5.json"
+
+# beta=0.75 exceeds this graph's 1/lambda_max (~0.707) - locks in the boundary-rejection path
+# (all-zero BPC/SBPC), not just the happy path.
+run_case_prominence \
+  "${DATA}/TinyPath_N3_E2.paj" \
+  2 \
+  -w 0 -x 1 -k 0 --bonacich-alpha 1 --bonacich-beta 0.75 \
+  "${BASE_PROM}/TinyPath_N3_E2__PROM__V4__FT2__W0_IW1_DI0_BA1_BB0.75_reject.json"
+
+# beta=-0.6 (negative, within bound) deliberately exercises Bonacich's signature sign-flip
+# behavior: node 2 (tied to both endpoints) gains a large positive score while both endpoints
+# come out NEGATIVE - hand-verified via the same Gauss-Jordan cross-check.
+run_case_prominence \
+  "${DATA}/TinyPath_N3_E2.paj" \
+  2 \
+  -w 0 -x 1 -k 0 --bonacich-alpha 1 --bonacich-beta -0.6 \
+  "${BASE_PROM}/TinyPath_N3_E2__PROM__V4__FT2__W0_IW1_DI0_BA1_BB-0.6_negflip.json"
+
+run_case_prominence \
+  "${DATA}/Krackhardt_Kite_N10.paj" \
+  2 \
+  -w 0 -x 1 -k 0 --bonacich-alpha 1 --bonacich-beta 0.1 \
+  "${BASE_PROM}/Krackhardt_Kite_N10__PROM__V4__FT2__W0_IW1_DI0_BA1_BB0.1.json"
+
 # IO ROUNDTRIP (schema v5)
 run_case_io "${DATA}/TinyAdj_Undir_N3.adj" 3 -d " " -l 0 "${BASE_IO}/TinyAdj_Undir_N3__FT3.json"
 run_case_io "${DATA}/TinyAdj_Weighted_Dir_N3.adj" 3 -d " " -l 0 "${BASE_IO}/TinyAdj_Weighted_Dir_N3__FT3.json"

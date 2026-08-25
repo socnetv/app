@@ -81,6 +81,18 @@ int main(int argc, char *argv[])
                                     "Omit to skip Katz Centrality entirely.",
                                     "alpha", "-1");
 
+    QCommandLineOption bonacichAlphaOpt(QStringList() << "bonacich-alpha",
+                                        "Overall scale factor alpha for --kernel prominence's Bonacich "
+                                        "Power Centrality. Requires --bonacich-beta too. Omit to skip "
+                                        "Bonacich Power Centrality entirely.",
+                                        "alpha", "-1");
+
+    QCommandLineOption bonacichBetaOpt(QStringList() << "bonacich-beta",
+                                       "Attenuation factor beta for --kernel prominence's Bonacich Power "
+                                       "Centrality (must satisfy |beta| < 1/lambda_max or the report will "
+                                       "be all-zero). May be negative.",
+                                       "beta", "0");
+
     cli.addOption(verboseOpt);
     cli.addOption(strictOpt);
     cli.addOption(fileOpt);
@@ -102,6 +114,8 @@ int main(int argc, char *argv[])
     cli.addOption(connSourceOpt);
     cli.addOption(connTargetOpt);
     cli.addOption(katzAlphaOpt);
+    cli.addOption(bonacichAlphaOpt);
+    cli.addOption(bonacichBetaOpt);
 
     cli.process(app);
 
@@ -154,6 +168,8 @@ int main(int argc, char *argv[])
     cfg.connSource = cli.value(connSourceOpt).toInt();
     cfg.connTarget = cli.value(connTargetOpt).toInt();
     cfg.katzAlpha = cli.value(katzAlphaOpt).toDouble();
+    cfg.bonacichAlpha = cli.value(bonacichAlphaOpt).toDouble();
+    cfg.bonacichBeta = cli.value(bonacichBetaOpt).toDouble();
 
     if (cfg.inputPath.isEmpty())
     {

@@ -1129,6 +1129,205 @@ bool Graph::writeCentralityKatz(const QString fileName,
     return true;
 }
 
+bool Graph::writeCentralityBonacich(const QString fileName,
+                                    const qreal &alpha,
+                                    const qreal &beta,
+                                    const bool &considerWeights,
+                                    const bool &inverseWeights,
+                                    const bool &dropIsolates,
+                                    const int &format)
+{
+
+    qCDebug(lcReporting) << "Writing Bonacich Power Centrality report to file:" << fileName;
+
+    QElapsedTimer computationTimer;
+    computationTimer.start();
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
+        progressStatus(tr("Error. Could not write to ") + fileName);
+        return false;
+    }
+    QTextStream outText(&file);
+
+    centralityBonacich(alpha, beta, considerWeights, inverseWeights, dropIsolates);
+    if (progressCanceled())
+    {
+        file.close();
+        progressStatus(tr("Computation canceled."));
+        return false;
+    }
+
+    if (format == ReportFormat::Csv)
+    {
+        writeScoreTableCSV(outText, {"BPC", "BPC'", "BPC''", "%BPC'"},
+                           [this](GraphVertex *v) -> QVector<qreal> {
+                               return {v->BPC(), v->SBPC(), v->BPC() / (sumBPC ? sumBPC : 1), 100 * v->SBPC()};
+                           });
+        file.close();
+        return true;
+    }
+
+    QString distImageFileName;
+
+    if (m_reportsChartType != ChartType::None)
+    {
+
+        distImageFileName = QFileInfo(fileName).canonicalPath() +
+                            QDir::separator() + QFileInfo(fileName).completeBaseName() + ".png";
+    }
+
+    prominenceDistribution(IndexType::BPC, m_reportsChartType, distImageFileName);
+
+    int N = vertices();
+
+    QString pMsg = tr("Writing Bonacich Power Centrality scores to file. \nPlease wait...");
+    progressStatus(pMsg);
+
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
+
+    outText << htmlHead;
+
+    outText << "<h1>";
+    outText << tr("BONACICH POWER CENTRALITY (BPC)");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            << "</span>"
+            << getName()
+            << "<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            << "</span>"
+            << N
+            << "<br />"
+            << "<span class=\"info\">"
+            << tr("Alpha: ")
+            << "</span>"
+            << alpha
+            << "<br />"
+            << "<span class=\"info\">"
+            << tr("Beta: ")
+            << "</span>"
+            << beta
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("Bonacich Power Centrality is like Katz Centrality - credit for indirect "
+                  "connections, discounted the further away they are - but beta can be "
+                  "negative, in which case being tied to well-connected others "
+                  "<i>hurts</i> rather than helps a node's score (e.g. a buyer connected to "
+                  "powerful sellers has less bargaining power the more powerful those sellers "
+                  "are). alpha is a free overall scale factor that does not change the ranking, "
+                  "only the numbers' size.")
+            << "<br />"
+            << tr("BPC' is the scaled BPC (BPC divided by max BPC).")
+            << "<br />"
+            << tr("BPC'' is the standardized index (BPC divided by the sum of all BPCs).")
+            << "<br />"
+            << "</p>";
+
+    if (beta < 0)
+    {
+        outText << "<p>"
+                << "<span class=\"info\">"
+                << tr("Note: ")
+                << "</span>"
+                << tr("beta is negative, so BPC scores may be negative and BPC' is not "
+                      "guaranteed to fall within [0, 1].")
+                << "</p>";
+    }
+    else
+    {
+        outText << "<p>"
+                << "<span class=\"info\">"
+                << tr("BPC' range: ")
+                << "</span>"
+                << tr("0 &le; BPC' &le; 1")
+                << "</p>";
+    }
+
+    writeScoreTableHTML(outText, {"BPC", "BPC'", "BPC''", "%BPC'"},
+                        [this](GraphVertex *v) -> QVector<qreal> {
+                            return {v->BPC(), v->SBPC(), v->BPC() / (sumBPC ? sumBPC : 1), 100 * v->SBPC()};
+                        });
+
+    if (minBPC == maxBPC)
+    {
+        outText << "<p>"
+                << tr("All nodes have the same BPC score.")
+                << "</p>";
+    }
+    else
+    {
+        outText << "<p>";
+        outText << "<span class=\"info\">"
+                << tr("Max BPC = ")
+                << "</span>"
+                << maxBPC << " (node " << maxNodeBPC << ")"
+                << "<br />"
+                << "<span class=\"info\">"
+                << tr("Min BPC = ")
+                << "</span>"
+                << minBPC << " (node " << minNodeBPC << ")"
+                << "<br />"
+                << "<span class=\"info\">"
+                << tr("BPC classes = ")
+                << "</span>"
+                << classesBPC
+                << "</p>";
+    }
+
+    outText << "<p>";
+    outText << "<span class=\"info\">"
+            << tr("BPC Sum = ")
+            << "</span>"
+            << sumBPC
+            << "<br/>"
+            << "<span class=\"info\">"
+            << tr("BPC Mean = ")
+            << "</span>"
+            << meanBPC
+            << "<br/>"
+            << "<span class=\"info\">"
+            << tr("BPC Variance = ")
+            << "</span>"
+            << varianceBPC
+            << "<br/>";
+    outText << "</p>";
+
+    if (m_reportsChartType != ChartType::None)
+    {
+        outText << "<h2>";
+        outText << tr("BPC' DISTRIBUTION")
+                << "</h2>";
+        outText << "<p>";
+        outText << "<img style=\"width:100%;\" src=\""
+                << distImageFileName
+                << "\" />";
+    }
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Bonacich Power Centrality report, <br />");
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+                   .arg(VERSION)
+                   .arg(actualDateTime.currentDateTime().toString(QString("ddd, dd.MMM.yyyy hh:mm:ss")));
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg(computationTimer.elapsed());
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+    file.close();
+
+    return true;
+}
+
 /**
  * @brief Writes the Degree Centrality to a file
  * @param fileName

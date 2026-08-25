@@ -27,7 +27,7 @@ namespace cli
     // Per-node builder
     // ------------------------------
 
-    static QJsonArray buildPerNodeArrayV4(Graph &g, bool katzEnabled)
+    static QJsonArray buildPerNodeArrayV4(Graph &g, bool katzEnabled, bool bonacichEnabled)
     {
         QJsonArray arr;
 
@@ -47,6 +47,13 @@ namespace cli
             {
                 o["KC"] = d2s(gv->KC());
                 o["SKC"] = d2s(gv->SKC());
+            }
+
+            // ---- Bonacich (optional - only computed/valid when bonacichEnabled) ----
+            if (bonacichEnabled)
+            {
+                o["BPC"] = d2s(gv->BPC());
+                o["SBPC"] = d2s(gv->SBPC());
             }
 
             // ---- Centrality ----
@@ -116,6 +123,7 @@ namespace cli
         root["dataset"] = dataset;
 
         const bool katzEnabled = (cfg.katzAlpha >= 0);
+        const bool bonacichEnabled = (cfg.bonacichAlpha >= 0);
 
         QJsonObject run;
         run["considerWeights"] = cfg.considerWeights;
@@ -124,6 +132,12 @@ namespace cli
         run["katzEnabled"] = katzEnabled;
         if (katzEnabled)
             run["katzAlpha"] = d2s(cfg.katzAlpha);
+        run["bonacichEnabled"] = bonacichEnabled;
+        if (bonacichEnabled)
+        {
+            run["bonacichAlpha"] = d2s(cfg.bonacichAlpha);
+            run["bonacichBeta"] = d2s(cfg.bonacichBeta);
+        }
         root["run"] = run;
 
         const int ties_graph = load.tiesGraph; // canonical, already correct
@@ -146,7 +160,7 @@ namespace cli
         metrics["density"] = d2s(g.graphDensity());
         root["metrics"] = metrics;
 
-        root["per_node"] = buildPerNodeArrayV4(g, katzEnabled);
+        root["per_node"] = buildPerNodeArrayV4(g, katzEnabled, bonacichEnabled);
 
         QJsonObject loadReport;
         loadReport["ok"] = load.ok;
@@ -165,7 +179,7 @@ namespace cli
 
     // ---- schema v4 compare ----
 
-    static bool cmpPerNodeArrayV4(const QJsonArray &eArr, const QJsonArray &aArr, bool katzEnabled, QTextStream &err)
+    static bool cmpPerNodeArrayV4(const QJsonArray &eArr, const QJsonArray &aArr, bool katzEnabled, bool bonacichEnabled, QTextStream &err)
     {
         if (eArr.size() != aArr.size())
         {
@@ -273,12 +287,15 @@ namespace cli
                 "PRP", "SPRP",
                 "eccentricity"};
 
-            // KC/SKC are only populated (on both sides) when this run enabled Katz Centrality -
-            // see the "katzEnabled" run-config check in compareGoldenV4() below, which catches an
-            // enabled/disabled mismatch between baseline and current run before we get here.
+            // KC/SKC and BPC/SBPC are only populated (on both sides) when this run enabled the
+            // corresponding measure - see the "katzEnabled"/"bonacichEnabled" run-config checks
+            // in compareGoldenV4() below, which catch an enabled/disabled mismatch between
+            // baseline and current run before we get here.
             QStringList allFields = numFields;
             if (katzEnabled)
                 allFields << "KC" << "SKC";
+            if (bonacichEnabled)
+                allFields << "BPC" << "SBPC";
 
             for (const QString &f : allFields)
                 cmpNodeFieldNumStrTol(e, a, f, eid, TOL);
@@ -316,6 +333,8 @@ namespace cli
         ok &= cmpBool(eRun, aRun, "dropIsolates", err);
         ok &= cmpBool(eRun, aRun, "katzEnabled", err);
         const bool katzEnabled = aRun.value("katzEnabled").toBool();
+        ok &= cmpBool(eRun, aRun, "bonacichEnabled", err);
+        const bool bonacichEnabled = aRun.value("bonacichEnabled").toBool();
 
         const QJsonObject eCounts = expected.value("counts").toObject();
         const QJsonObject aCounts = actual.value("counts").toObject();
@@ -331,7 +350,7 @@ namespace cli
         // Per-node (always present in v4)
         const QJsonArray ePN = expected.value("per_node").toArray();
         const QJsonArray aPN = actual.value("per_node").toArray();
-        ok &= cmpPerNodeArrayV4(ePN, aPN, katzEnabled, err);
+        ok &= cmpPerNodeArrayV4(ePN, aPN, katzEnabled, bonacichEnabled, err);
 
         if (!ok)
             return 1;
@@ -373,6 +392,10 @@ namespace cli
             if (cfg.katzAlpha >= 0)
                 g.centralityKatz(cfg.katzAlpha, cfg.considerWeights,
                                  cfg.inverseWeights, cfg.dropIsolates);
+
+            if (cfg.bonacichAlpha >= 0)
+                g.centralityBonacich(cfg.bonacichAlpha, cfg.bonacichBeta, cfg.considerWeights,
+                                     cfg.inverseWeights, cfg.dropIsolates);
 
             // 3. Prestige
             g.prestigeDegree(cfg.considerWeights, cfg.dropIsolates);

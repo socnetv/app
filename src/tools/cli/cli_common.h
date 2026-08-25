@@ -37,6 +37,9 @@ namespace cli
         int connTarget = -1;         // required for connMode == "local"
 
         qreal katzAlpha = -1; // >= 0 enables Katz Centrality for --kernel prominence
+
+        qreal bonacichAlpha = -1; // >= 0 enables Bonacich Power Centrality for --kernel prominence
+        qreal bonacichBeta = 0;
     };
 
     // ---------------- printing ----------------
