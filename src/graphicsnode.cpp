@@ -477,8 +477,13 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
     case ItemSelectedHasChanged:{
         if (value.toBool()) {
             setZValue(ZValueNodeHighlighted);
-            m_size_orig = m_size;
+            int origSize = m_size;
             setSize(m_size * 2 - 1);
+            // setSize() just overwrote m_size_orig with the enlarged size (since
+            // isSelected() is already true here) - restore the real original so
+            // deselect doesn't restore into the enlarged size and compound on
+            // every select/deselect cycle.
+            m_size_orig = origSize;
             m_col_orig = m_col;
             setColor(m_col.darker(120));
 
