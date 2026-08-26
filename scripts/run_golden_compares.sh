@@ -321,6 +321,29 @@ run_case_prominence \
   -w 1 -x 0 -k 0 \
   "${BASE_PROM}/TinyWeightedIsolate_Undir_N4_E2__PROM__V4__FT2__W1_IW0_DI0.json"
 
+# Katz/Bonacich on binary vs. real (non-unit) weights, both raw and inverted (WS11, #10/#39) -
+# closes a verification gap: every other Katz/Bonacich baseline above only ever exercised binary
+# adjacency (considerWeights=0), never real edge weights or the inverseWeights transformation.
+# All three computed independently via Gauss-Jordan elimination in plain Python against the same
+# A-B(2.5)-C(1.5) weighted path (isolate D dropped) before being dumped.
+run_case_prominence \
+  "${DATA}/TinyWeightedIsolate_Undir_N4_E2.paj" \
+  2 \
+  -w 0 -x 1 -k 1 --katz-alpha 0.2 --bonacich-alpha 1 --bonacich-beta 0.3 \
+  "${BASE_PROM}/TinyWeightedIsolate_Undir_N4_E2__PROM__V4__FT2__W0_IW1_DI1_KA0.2_BA1_BB0.3.json"
+
+run_case_prominence \
+  "${DATA}/TinyWeightedIsolate_Undir_N4_E2.paj" \
+  2 \
+  -w 1 -x 0 -k 1 --katz-alpha 0.171499 --bonacich-alpha 1 --bonacich-beta 0.171499 \
+  "${BASE_PROM}/TinyWeightedIsolate_Undir_N4_E2__PROM__V4__FT2__W1_IW0_DI1_KA0.171499_BA1_BB0.171499.json"
+
+run_case_prominence \
+  "${DATA}/TinyWeightedIsolate_Undir_N4_E2.paj" \
+  2 \
+  -w 1 -x 1 -k 1 --katz-alpha 0.2 --bonacich-alpha 1 --bonacich-beta 0.3 \
+  "${BASE_PROM}/TinyWeightedIsolate_Undir_N4_E2__PROM__V4__FT2__W1_IW1_DI1_KA0.2_BA1_BB0.3.json"
+
 # Katz Centrality (WS11, #10) - each value independently cross-checked against a hand-derived
 # reference computation (Gauss-Jordan elimination of (I - alpha*A^T) in plain Python) before
 # being dumped, not just accepted as "whatever the code produced."
