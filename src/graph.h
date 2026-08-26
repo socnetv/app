@@ -1219,6 +1219,10 @@ public:
                                const bool &inverseWeights = false,
                                const bool &dropIsolates = false);
 
+    qreal estimateSpectralRadius(const bool &considerWeights = false,
+                                 const bool &inverseWeights = false,
+                                 const bool &dropIsolates = false);
+
     void centralityKatz(const qreal &alpha,
                         const bool &considerWeights = false,
                         const bool &inverseWeights = false,

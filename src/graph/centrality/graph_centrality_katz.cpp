@@ -32,10 +32,10 @@
  *
  * Compare to: Eigenvector Centrality (EVC, see centralityEigenvector()) generalizes the same
  * "connections to well-connected others matter" idea via eigen-decomposition instead of an
- * explicit decay parameter. Bonacich Power Centrality (WS11, #39, planned) extends this same
- * formula with a second parameter beta that can be negative, flipping whether being connected
- * to well-connected others helps or hurts. Not to be confused with Power Centrality (PC,
- * Gil-Schmidt, see graphDistancesGeodesic()), a same-sounding but unrelated measure.
+ * explicit decay parameter. Bonacich Power Centrality (see centralityBonacich()) extends this
+ * same formula with a second parameter beta that can be negative, flipping whether being
+ * connected to well-connected others helps or hurts. Not to be confused with Power Centrality
+ * (PC, Gil-Schmidt, see graphDistancesGeodesic()), a same-sounding but unrelated measure.
  *
  * Math: C_Katz(i) = sum_{k=1}^inf sum_j alpha^k (A^k)_ji, i.e. the discounted count of walks
  * of every length arriving at i, since (A^k)_ij is the number of length-k walks between i and
@@ -44,8 +44,8 @@
  * geometric-series identity used for ordinary numbers, applied to matrices):
  * C_Katz = ((I - alpha*A^T)^-1 - I) * 1 (the transpose only matters for directed graphs; for
  * undirected graphs A = A^T). alpha must satisfy |alpha| < 1/lambda_max(A), where lambda_max is
- * the adjacency matrix's dominant eigenvalue (found via Matrix::powerIteration()), or the
- * underlying geometric series does not converge and the inversion is singular/meaningless.
+ * the adjacency matrix's dominant eigenvalue (see estimateSpectralRadius()), or the underlying
+ * geometric series does not converge and the inversion is singular/meaningless.
  *
  * @param alpha
  * @param considerWeights
@@ -79,7 +79,6 @@ void Graph::centralityKatz(const qreal &alpha,
 
     VList::const_iterator it;
 
-    const bool symmetrize = false;
     const int N = vertices(dropIsolates);
 
     if (N == 0)
@@ -93,27 +92,9 @@ void Graph::centralityKatz(const qreal &alpha,
         return;
     }
 
-    createMatrixAdjacency(dropIsolates, considerWeights, inverseWeights, symmetrize);
-    if (progressCanceled())
-    {
-        return;
-    }
-
-    // Find lambda_max (AM's dominant eigenvalue) to validate alpha against the
-    // |alpha| < 1/lambda_max convergence bound - see Matrix::powerIteration()'s doc comment.
-    qreal *seed = new (nothrow) qreal[N];
-    Q_CHECK_PTR(seed);
-    for (int k = 0; k < N; k++)
-        seed[k] = 1;
-    qreal dummySum = 0, dummyMax = 0, dummyMin = RAND_MAX;
-    int dummyMaxI = 0, dummyMinI = 0;
-    qreal lambdaMax = 0;
-    AM.powerIteration(seed, dummySum, dummyMax, dummyMaxI, dummyMin, dummyMinI,
-                      0.0000001, 500,
-                      [this] { return progressCanceled(); },
-                      &lambdaMax);
-    delete[] seed;
-
+    // estimateSpectralRadius() builds AM (via createMatrixAdjacency) as a side effect - it stays
+    // populated for the transpose step below, no need to build it again here.
+    const qreal lambdaMax = estimateSpectralRadius(considerWeights, inverseWeights, dropIsolates);
     if (progressCanceled())
     {
         return;

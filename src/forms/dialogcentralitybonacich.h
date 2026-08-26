@@ -28,6 +28,13 @@ public:
                                       const qreal alpha = 1.0,
                                       const qreal beta = 0.1);
 
+    // Call before exec(). bound > 0 clamps the beta spinbox to +-(bound * 0.999) (the
+    // convergence condition is a strict "<", not "<=") and shows the actual number in the hint
+    // label. bound == 0 means the network has no such bound (e.g. nilpotent/DAG-like) - the
+    // spinbox keeps its default generous range and the hint label says so. alpha is never
+    // bounded - it's a free outer scale factor.
+    void setBetaBound(qreal bound);
+
 public slots:
     void getUserChoices();
 

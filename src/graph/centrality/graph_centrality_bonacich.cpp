@@ -77,7 +77,6 @@ void Graph::centralityBonacich(const qreal &alpha,
 
     VList::const_iterator it;
 
-    const bool symmetrize = false;
     const int N = vertices(dropIsolates);
 
     if (N == 0)
@@ -91,28 +90,10 @@ void Graph::centralityBonacich(const qreal &alpha,
         return;
     }
 
-    createMatrixAdjacency(dropIsolates, considerWeights, inverseWeights, symmetrize);
-    if (progressCanceled())
-    {
-        return;
-    }
-
-    // Find lambda_max (AM's dominant eigenvalue) to validate beta against the
-    // |beta| < 1/lambda_max convergence bound - see Matrix::powerIteration()'s doc comment.
-    // Unlike Katz, alpha here is a free outer scale factor and has no such bound.
-    qreal *seed = new (nothrow) qreal[N];
-    Q_CHECK_PTR(seed);
-    for (int k = 0; k < N; k++)
-        seed[k] = 1;
-    qreal dummySum = 0, dummyMax = 0, dummyMin = RAND_MAX;
-    int dummyMaxI = 0, dummyMinI = 0;
-    qreal lambdaMax = 0;
-    AM.powerIteration(seed, dummySum, dummyMax, dummyMaxI, dummyMin, dummyMinI,
-                      0.0000001, 500,
-                      [this] { return progressCanceled(); },
-                      &lambdaMax);
-    delete[] seed;
-
+    // estimateSpectralRadius() builds AM (via createMatrixAdjacency) as a side effect - it stays
+    // populated for the transpose step below, no need to build it again here. Unlike Katz, alpha
+    // here is a free outer scale factor and has no convergence bound of its own.
+    const qreal lambdaMax = estimateSpectralRadius(considerWeights, inverseWeights, dropIsolates);
     if (progressCanceled())
     {
         return;

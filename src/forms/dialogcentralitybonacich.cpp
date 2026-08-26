@@ -33,6 +33,34 @@ DialogCentralityBonacich::DialogCentralityBonacich(QWidget *parent, const qreal 
     ui.alphaDoubleSpinBox->setFocus();
 }
 
+void DialogCentralityBonacich::setBetaBound(qreal bound)
+{
+    if (bound > 0)
+    {
+        const qreal maxBeta = bound * 0.999;
+        ui.betaDoubleSpinBox->setMinimum(-maxBeta);
+        ui.betaDoubleSpinBox->setMaximum(maxBeta);
+        if (ui.betaDoubleSpinBox->value() > maxBeta)
+        {
+            ui.betaDoubleSpinBox->setValue(maxBeta);
+        }
+        else if (ui.betaDoubleSpinBox->value() < -maxBeta)
+        {
+            ui.betaDoubleSpinBox->setValue(-maxBeta);
+        }
+        ui.hintLabel->setText(
+            tr("Beta must be smaller in absolute value than %1 (1 / this network's largest "
+               "eigenvalue) - the spinbox above already enforces this. With negative beta, "
+               "scores can come out negative - that is expected, not an error.").arg(bound));
+    }
+    else
+    {
+        ui.hintLabel->setText(
+            tr("This network has no such bound on beta - any value converges. With negative "
+               "beta, scores can come out negative - that is expected, not an error."));
+    }
+}
+
 void DialogCentralityBonacich::getUserChoices()
 {
     const qreal alpha = ui.alphaDoubleSpinBox->value();

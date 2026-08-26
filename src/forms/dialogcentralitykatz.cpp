@@ -31,6 +31,27 @@ DialogCentralityKatz::DialogCentralityKatz(QWidget *parent, const qreal alpha) :
     ui.alphaDoubleSpinBox->setFocus();
 }
 
+void DialogCentralityKatz::setAlphaBound(qreal bound)
+{
+    if (bound > 0)
+    {
+        const qreal maxAlpha = bound * 0.999;
+        ui.alphaDoubleSpinBox->setMaximum(maxAlpha);
+        if (ui.alphaDoubleSpinBox->value() > maxAlpha)
+        {
+            ui.alphaDoubleSpinBox->setValue(maxAlpha);
+        }
+        ui.hintLabel->setText(
+            tr("Must be smaller than %1 (1 / this network's largest eigenvalue) - "
+               "the spinbox above already enforces this.").arg(bound));
+    }
+    else
+    {
+        ui.hintLabel->setText(
+            tr("This network has no such bound - any alpha value converges."));
+    }
+}
+
 void DialogCentralityKatz::getUserChoices()
 {
     const qreal alpha = ui.alphaDoubleSpinBox->value();

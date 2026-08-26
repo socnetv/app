@@ -245,6 +245,75 @@ void Graph::centralityInformation(const bool considerWeights,
 }
 
 /**
+ * @brief Estimates the adjacency matrix's spectral radius (dominant eigenvalue magnitude).
+ *
+ * Meaning: how "amplifying" the network's connectivity structure is - the factor by which a
+ * signal spreading through the network grows per step, in the worst case. Used to validate the
+ * convergence bound for measures built on a geometric series of the adjacency matrix (Katz
+ * Centrality, Bonacich Power Centrality): their attenuation parameter must satisfy
+ * |x| < 1/lambda_max, or the underlying series - and the matrix inversion computing it in closed
+ * form - does not converge.
+ *
+ * When to use: before running Katz or Bonacich, to know (or show the user) the actual valid
+ * range for alpha/beta on this specific network, rather than a generic guess - dense/large
+ * networks can have a lambda_max well into double digits, making the valid range far smaller
+ * than it would be for a sparse one.
+ *
+ * Compare to: centralityEigenvector() also power-iterates the adjacency matrix to find its
+ * dominant eigenvector, and computes this same lambda_max as a side effect - this method exists
+ * separately because callers here (Katz, Bonacich, and their dialogs) only need the eigenvalue,
+ * not the ranking eigenvector itself.
+ *
+ * Math: via power iteration (Matrix::powerIteration()), starting from a unit seed vector -
+ * ||Ax|| approximates lambda_max once the iteration converges (Perron-Frobenius: for a
+ * non-negative matrix like an adjacency matrix, this is exact for a connected network).
+ *
+ * @param considerWeights
+ * @param inverseWeights
+ * @param dropIsolates
+ * @return the estimated spectral radius, or 0 if the network is empty or the computation was
+ *         canceled. 0 conventionally means "no bound - any value converges" to callers.
+ */
+qreal Graph::estimateSpectralRadius(const bool &considerWeights,
+                                    const bool &inverseWeights,
+                                    const bool &dropIsolates)
+{
+    const bool symmetrize = false;
+    const int N = vertices(dropIsolates);
+
+    if (N == 0)
+    {
+        return 0;
+    }
+
+    createMatrixAdjacency(dropIsolates, considerWeights, inverseWeights, symmetrize);
+    if (progressCanceled())
+    {
+        return 0;
+    }
+
+    qreal *seed = new (nothrow) qreal[N];
+    Q_CHECK_PTR(seed);
+    for (int k = 0; k < N; k++)
+        seed[k] = 1;
+    qreal dummySum = 0, dummyMax = 0, dummyMin = RAND_MAX;
+    int dummyMaxI = 0, dummyMinI = 0;
+    qreal lambdaMax = 0;
+    AM.powerIteration(seed, dummySum, dummyMax, dummyMaxI, dummyMin, dummyMinI,
+                      0.0000001, 500,
+                      [this] { return progressCanceled(); },
+                      &lambdaMax);
+    delete[] seed;
+
+    if (progressCanceled())
+    {
+        return 0;
+    }
+
+    return lambdaMax;
+}
+
+/**
  * @brief Computes Eigenvector centrality
  *
  * Meaning: not just how many connections you have, but how important your connections are -
@@ -258,13 +327,13 @@ void Graph::centralityInformation(const bool considerWeights,
  * ones), or citation-network-style "important papers cited by other important papers"
  * reasoning. Needs a connected (or largely connected) graph to produce a meaningful ranking.
  *
- * Compare to: Katz Centrality (WS11, #10) and Bonacich Power Centrality (WS11, #39) - both
- * planned, not yet implemented - generalize this same "connections to well-connected others
- * matter" idea by summing actual walks with a distance-based decay factor instead of finding
- * the dominant eigenvector directly, which makes the decay directly tunable by the user rather
- * than fixed by the network's own structure. Power Centrality (PC, Gil-Schmidt, see
- * graphDistancesGeodesic()) is a different, older, similarly-named but unrelated measure
- * computed straight from vertex degrees rather than via eigen-decomposition.
+ * Compare to: Katz Centrality (see centralityKatz()) and Bonacich Power Centrality (see
+ * centralityBonacich()) generalize this same "connections to well-connected others matter" idea
+ * by summing actual walks with a distance-based decay factor instead of finding the dominant
+ * eigenvector directly, which makes the decay directly tunable by the user rather than fixed by
+ * the network's own structure. Power Centrality (PC, Gil-Schmidt, see graphDistancesGeodesic())
+ * is a different, older, similarly-named but unrelated measure computed straight from vertex
+ * degrees rather than via eigen-decomposition.
  *
  * Math: the eigenvector centrality vector x is the dominant eigenvector of the adjacency
  * matrix A, i.e. the vector solving A*x = lambda_max*x for the largest eigenvalue lambda_max.

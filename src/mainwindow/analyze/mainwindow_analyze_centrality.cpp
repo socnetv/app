@@ -626,17 +626,19 @@ void MainWindow::slotAnalyzeCentralityPower()
 
 /**
  * @brief MainWindow::slotAnalyzeCentralityKatz
- * Prompts for the attenuation factor alpha, then writes Katz Centralities into a file
- * and displays it.
+ * Estimates the network's largest eigenvalue first, then prompts for the attenuation factor
+ * alpha (dialog shows/enforces the real convergence bound), then writes Katz Centralities into
+ * a file and displays it.
  *
  *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  *
- *  alpha is not validated here (see docs/README_DEVELOPER_NOTES.md's "Dispatching Long-Running
- *  Graph Operations" - a synchronous pre-check would call into Graph, which lives on
- *  graphThread, directly from this GUI-thread slot). Graph::centralityKatz() validates it
- *  against the |alpha| < 1/lambda_max convergence bound once the async operation actually
- *  runs, and reports rejection via the status bar - same as Information Centrality's existing
- *  singular-matrix handling.
+ *  The eigenvalue estimate is itself a Graph call, so it goes through the same
+ *  runGraphOperationAsync() dispatch as the real computation (see
+ *  docs/README_DEVELOPER_NOTES.md's "Dispatching Long-Running Graph Operations") - the dialog is
+ *  only constructed in that operation's completion callback, once the bound is known. A
+ *  QMessageBox guard right before the real computation is a belt-and-suspenders backstop for the
+ *  spinbox clamp (e.g. exact-boundary floating-point edge cases); Graph::centralityKatz() would
+ *  otherwise still catch it too.
  */
 void MainWindow::slotAnalyzeCentralityKatz()
 {
@@ -646,61 +648,87 @@ void MainWindow::slotAnalyzeCentralityKatz()
         return;
     }
 
-    DialogCentralityKatz dlg(this);
+    askAboutEdgeWeights();
 
-    connect(&dlg, &DialogCentralityKatz::userChoices,
-            this, [this](const qreal alpha) {
-        const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
-        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
-        QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-        QString fn = appSettings["dataDir"] + "socnetv-report-centrality-katz-" + dateTime + ext;
+    const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    const bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
+    const bool inverseWeightsFinal = inverseWeights;
 
-        askAboutEdgeWeights();
+    auto lambdaMax = std::make_shared<qreal>(0);
 
-        const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
-        const bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
-        const bool inverseWeightsFinal = inverseWeights;
-        auto success = std::make_shared<bool>(false);
+    runGraphOperationAsync(
+        [this, considerWeights, inverseWeightsFinal, dropIsolates, lambdaMax]() {
+            *lambdaMax = activeGraph->estimateSpectralRadius(
+                considerWeights, inverseWeightsFinal, dropIsolates);
+        },
+        tr("Estimating the network's largest eigenvalue..."),
+        [this, considerWeights, inverseWeightsFinal, dropIsolates, lambdaMax]() {
+            if (activeGraph->progressCanceled())
+                return;
 
-        runGraphOperationAsync(
-            [this, fn, alpha, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat, success]() {
-                *success = activeGraph->writeCentralityKatz(
-                    fn, alpha, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat);
-            },
-            tr("Computing Katz Centralities. Please wait..."),
-            [this, fn, reportFormat, success]() {
-                if (!*success)
+            const qreal bound = (*lambdaMax > 0) ? (1.0 / *lambdaMax) : 0.0;
+
+            DialogCentralityKatz dlg(this);
+            dlg.setAlphaBound(bound);
+
+            connect(&dlg, &DialogCentralityKatz::userChoices,
+                    this, [this, considerWeights, inverseWeightsFinal, dropIsolates, bound](const qreal alpha) {
+                if (bound > 0 && qAbs(alpha) >= bound)
+                {
+                    QMessageBox::warning(
+                        this, tr("Alpha too large"),
+                        tr("Alpha must be smaller than %1 (1 / this network's largest "
+                           "eigenvalue), or Katz Centrality does not converge. "
+                           "Please choose a smaller value.").arg(bound));
                     return;
-                statusMessage(tr("Opening Katz Centralities report..."));
-                if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
-                {
-                    QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
                 }
-                else
-                {
-                    TextEditor *ed = new TextEditor(fn, this, true);
-                    ed->show();
-                    m_textEditors << ed;
-                }
-                statusMessage(tr("Katz Centralities report saved as: ") + QDir::toNativeSeparators(fn));
-            });
-    });
 
-    dlg.exec();
+                const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+                const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+                QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+                QString fn = appSettings["dataDir"] + "socnetv-report-centrality-katz-" + dateTime + ext;
+
+                auto success = std::make_shared<bool>(false);
+
+                runGraphOperationAsync(
+                    [this, fn, alpha, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat, success]() {
+                        *success = activeGraph->writeCentralityKatz(
+                            fn, alpha, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat);
+                    },
+                    tr("Computing Katz Centralities. Please wait..."),
+                    [this, fn, reportFormat, success]() {
+                        if (!*success)
+                            return;
+                        statusMessage(tr("Opening Katz Centralities report..."));
+                        if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
+                        {
+                            QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+                        }
+                        else
+                        {
+                            TextEditor *ed = new TextEditor(fn, this, true);
+                            ed->show();
+                            m_textEditors << ed;
+                        }
+                        statusMessage(tr("Katz Centralities report saved as: ") + QDir::toNativeSeparators(fn));
+                    });
+            });
+
+            dlg.exec();
+        });
 }
 
 /**
  * @brief MainWindow::slotAnalyzeCentralityBonacich
- * Prompts for the parameters alpha and beta, then writes Bonacich Power Centralities into a
- * file and displays it.
+ * Estimates the network's largest eigenvalue first, then prompts for the parameters alpha and
+ * beta (dialog shows/enforces the real convergence bound on beta), then writes Bonacich Power
+ * Centralities into a file and displays it.
  *
  *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
  *
- *  beta is not validated here (see docs/README_DEVELOPER_NOTES.md's "Dispatching Long-Running
- *  Graph Operations" - a synchronous pre-check would call into Graph, which lives on
- *  graphThread, directly from this GUI-thread slot). Graph::centralityBonacich() validates it
- *  against the |beta| < 1/lambda_max convergence bound once the async operation actually runs,
- *  and reports rejection via the status bar - same as Katz Centrality's existing handling.
+ *  Same async-sequencing rationale as slotAnalyzeCentralityKatz(): the eigenvalue estimate is
+ *  itself a Graph call, so it goes through runGraphOperationAsync() too, and the dialog is only
+ *  constructed once that bound is known.
  */
 void MainWindow::slotAnalyzeCentralityBonacich()
 {
@@ -710,47 +738,74 @@ void MainWindow::slotAnalyzeCentralityBonacich()
         return;
     }
 
-    DialogCentralityBonacich dlg(this);
+    askAboutEdgeWeights();
 
-    connect(&dlg, &DialogCentralityBonacich::userChoices,
-            this, [this](const qreal alpha, const qreal beta) {
-        const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
-        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
-        QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
-        QString fn = appSettings["dataDir"] + "socnetv-report-centrality-bonacich-" + dateTime + ext;
+    const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    const bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
+    const bool inverseWeightsFinal = inverseWeights;
 
-        askAboutEdgeWeights();
+    auto lambdaMax = std::make_shared<qreal>(0);
 
-        const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
-        const bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
-        const bool inverseWeightsFinal = inverseWeights;
-        auto success = std::make_shared<bool>(false);
+    runGraphOperationAsync(
+        [this, considerWeights, inverseWeightsFinal, dropIsolates, lambdaMax]() {
+            *lambdaMax = activeGraph->estimateSpectralRadius(
+                considerWeights, inverseWeightsFinal, dropIsolates);
+        },
+        tr("Estimating the network's largest eigenvalue..."),
+        [this, considerWeights, inverseWeightsFinal, dropIsolates, lambdaMax]() {
+            if (activeGraph->progressCanceled())
+                return;
 
-        runGraphOperationAsync(
-            [this, fn, alpha, beta, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat, success]() {
-                *success = activeGraph->writeCentralityBonacich(
-                    fn, alpha, beta, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat);
-            },
-            tr("Computing Bonacich Power Centralities. Please wait..."),
-            [this, fn, reportFormat, success]() {
-                if (!*success)
+            const qreal bound = (*lambdaMax > 0) ? (1.0 / *lambdaMax) : 0.0;
+
+            DialogCentralityBonacich dlg(this);
+            dlg.setBetaBound(bound);
+
+            connect(&dlg, &DialogCentralityBonacich::userChoices,
+                    this, [this, considerWeights, inverseWeightsFinal, dropIsolates, bound](const qreal alpha, const qreal beta) {
+                if (bound > 0 && qAbs(beta) >= bound)
+                {
+                    QMessageBox::warning(
+                        this, tr("Beta too large"),
+                        tr("Beta must be smaller in absolute value than %1 (1 / this network's "
+                           "largest eigenvalue), or Bonacich Power Centrality does not converge. "
+                           "Please choose a smaller value.").arg(bound));
                     return;
-                statusMessage(tr("Opening Bonacich Power Centralities report..."));
-                if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
-                {
-                    QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
                 }
-                else
-                {
-                    TextEditor *ed = new TextEditor(fn, this, true);
-                    ed->show();
-                    m_textEditors << ed;
-                }
-                statusMessage(tr("Bonacich Power Centralities report saved as: ") + QDir::toNativeSeparators(fn));
-            });
-    });
 
-    dlg.exec();
+                const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+                const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+                QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+                QString fn = appSettings["dataDir"] + "socnetv-report-centrality-bonacich-" + dateTime + ext;
+
+                auto success = std::make_shared<bool>(false);
+
+                runGraphOperationAsync(
+                    [this, fn, alpha, beta, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat, success]() {
+                        *success = activeGraph->writeCentralityBonacich(
+                            fn, alpha, beta, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat);
+                    },
+                    tr("Computing Bonacich Power Centralities. Please wait..."),
+                    [this, fn, reportFormat, success]() {
+                        if (!*success)
+                            return;
+                        statusMessage(tr("Opening Bonacich Power Centralities report..."));
+                        if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
+                        {
+                            QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+                        }
+                        else
+                        {
+                            TextEditor *ed = new TextEditor(fn, this, true);
+                            ed->show();
+                            m_textEditors << ed;
+                        }
+                        statusMessage(tr("Bonacich Power Centralities report saved as: ") + QDir::toNativeSeparators(fn));
+                    });
+            });
+
+            dlg.exec();
+        });
 }
 
 /**

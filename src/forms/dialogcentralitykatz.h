@@ -26,6 +26,12 @@ class DialogCentralityKatz : public QDialog
 public:
     explicit DialogCentralityKatz(QWidget *parent = Q_NULLPTR, const qreal alpha = 0.1);
 
+    // Call before exec(). bound > 0 clamps the spinbox to +-(bound * 0.999) (the convergence
+    // condition is a strict "<", not "<=") and shows the actual number in the hint label.
+    // bound == 0 means the network has no such bound (e.g. nilpotent/DAG-like) - the spinbox
+    // keeps its default generous range and the hint label says so.
+    void setAlphaBound(qreal bound);
+
 public slots:
     void getUserChoices();
 
