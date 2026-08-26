@@ -33,6 +33,9 @@
  * Compare to: Degree Centrality (DC, see centralityDegree()) is this same raw-count idea for
  * outbound ties (or all ties, on an undirected graph).
  *
+ * Weights: no inversion choice here (considerWeights only) - when considered, weights are
+ * summed directly, so a stronger inbound tie always adds more.
+ *
  * Math: DP(i) = number of inbound edges to i (or their summed weights, if weights are
  * considered). Standardized SDP(i) = DP(i) / (N-1).
  *
@@ -235,6 +238,9 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
  * same idea from the centrality side (distance *to* others) rather than prestige's (distance
  * *from* others), and likewise works on disconnected graphs.
  *
+ * Weights: shortest-path-based, same as CC/IRCC - if a weight represents value/strength, invert
+ * it so a strong tie behaves like a short/cheap path.
+ *
  * Math: for actor i, let I_i be the set of actors that can reach i (its influence domain).
  * PP(i) = [ |I_i| / (V-1) ] / [ (sum of d(j,i) for j in I_i) / |I_i| ] - the fraction of the
  * network that can reach i, divided by their average distance to i.
@@ -386,6 +392,10 @@ void Graph::prestigeProximity(const bool considerWeights,
  * centralityEigenvector()) is the closest centrality-side analogue - both are "importance
  * feeds back on itself" measures - but EVC is built for undirected/symmetric graphs while
  * PageRank is built for directed graphs with an explicit damping factor.
+ *
+ * Weights: no considerWeights/inverseWeights choice at all - every inbound link always counts
+ * as weight 1, normalized by the endorser's out-degree (see Math below), regardless of any
+ * edge weight set on the graph.
  *
  * Math: iteratively, PRP(i) = (1-d)/N + d * Sum_j( PRP(j) / outLinks(j) ) for every j linking
  * to i, where d is the damping factor (0.85, matching Google's original choice) and N is the

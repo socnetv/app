@@ -29,6 +29,10 @@
  * (bargaining power, exchange networks) rather than always being a good thing - Katz Centrality
  * and Eigenvector Centrality both assume more indirect connections is always better.
  *
+ * Weights: like Katz and Eigenvector Centrality, this is walk-counting, not shortest-path
+ * routing - don't invert a strength-type weight (it would make your strongest ties contribute
+ * the least); only invert if the weight genuinely represents a cost.
+ *
  * Compare to: Katz Centrality (KC, see centralityKatz()) is the same walk-counting idea with a
  * single always-positive decay parameter; Bonacich generalizes it with a second, possibly
  * negative parameter beta and a free scale factor alpha. Not to be confused with Power

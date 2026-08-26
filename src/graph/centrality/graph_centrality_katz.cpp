@@ -30,6 +30,11 @@
  * settles on isn't the one you want, or the graph is disconnected/sparse enough that
  * eigenvector centrality's power iteration doesn't produce a useful ranking.
  *
+ * Weights: like Eigenvector Centrality, this is walk-counting, not shortest-path routing - the
+ * adjacency matrix entry is used directly as tie strength. Don't invert a strength-type weight
+ * (that would make your strongest ties contribute the least to every walk); only invert if the
+ * weight genuinely represents a cost.
+ *
  * Compare to: Eigenvector Centrality (EVC, see centralityEigenvector()) generalizes the same
  * "connections to well-connected others matter" idea via eigen-decomposition instead of an
  * explicit decay parameter. Bonacich Power Centrality (see centralityBonacich()) extends this

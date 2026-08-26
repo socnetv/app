@@ -518,8 +518,13 @@ two files.
 Where a measure's explanation is more than "what does this parameter mean" — every
 centrality/prestige function's doc comment follows a fixed shape, in order: **Meaning** (what the
 measure actually captures, in plain words), **When to use** (the concrete research situation it
-fits), **Compare to** (the other measure(s) it's most easily confused with, and how it differs —
-skip this section only if there's genuinely no close neighbor), then **Math** (the formula). See
+fits), **Weights** (optional — only for measures that take `considerWeights`/`inverseWeights`:
+whether this measure is shortest-path-based, where inverting a strength-type weight is correct
+(a strong tie should act like a short/cheap path), or walk/matrix-based, where inverting is wrong
+(it would make the strongest ties count least) — see `graph_distance_cache.cpp`'s BC/SC/EC/CC/PC
+block and `graph_centrality_katz.cpp` for one example of each), **Compare to** (the other
+measure(s) it's most easily confused with, and how it differs — skip this section only if there's
+genuinely no close neighbor), then **Math** (the formula). See
 `src/graph/centrality/graph_centrality.cpp` for the reference examples.
 
 ---

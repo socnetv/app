@@ -39,6 +39,9 @@
  *     When to use: finding brokers, bottlenecks, or single points of failure in a
  *     communication/supply network - who, if removed, would fragment the network's shortest
  *     routes the most.
+ *     Weights: shortest-path-based - if a weight represents value/strength (interaction
+ *     frequency, trust), invert it (a strong tie should behave like a short/cheap path) so
+ *     routing favors the strongest ties, not the weakest.
  *     Compare to: Stress (SC) below counts the same "sits on a shortest path" event without
  *     dividing by how many alternative shortest paths existed - use BC when you want "share of
  *     control" over each pair's routing, SC when you want raw path traffic.
@@ -49,12 +52,15 @@
  *     route.
  *     When to use: estimating raw path/traffic load through a node (e.g. network routing,
  *     load-bearing infrastructure) rather than its exclusive control over routing.
+ *     Weights: same shortest-path reasoning as BC above - invert a strength-type weight so
+ *     strong ties route like short paths.
  *   - Eccentricity: EC(u) =  1/maxDistance(u,t)  for some t in V
  *     Meaning: a worst-case reachability measure - how far away is u's single most distant
  *     counterpart? High eccentricity centrality means even u's "hardest to reach" other actor
  *     is nearby.
  *     When to use: worst-case reasoning - e.g. picking a broadcast/facility location that
  *     minimizes the longest anyone has to wait to be reached, rather than the average case.
+ *     Weights: same shortest-path reasoning as BC/SC above - invert a strength-type weight.
  *     Compare to: Closeness (CC) below is this same distance-based idea using the *average*
  *     distance instead of the worst case.
  *   - Closeness: CC(u) =  1 / Sum( d(u,t) )  for every  t in V
@@ -63,6 +69,8 @@
  *     unreachable actor has undefined distance.
  *     When to use: identifying actors who can spread something (information, disease, an
  *     influence campaign) to the whole network fastest, on a graph known to be connected.
+ *     Weights: same shortest-path reasoning as BC/SC/EC above - invert a strength-type weight
+ *     so a strong tie behaves like a short/cheap path.
  *     Compare to: Influence Range Closeness Centrality (IRCC, see centralityClosenessIR())
  *     is this same idea adapted to work on disconnected graphs too.
  *   - Power (Gil-Schmidt): PC(s) = [1/(N-1)] * Sum_i( nthOrder[i] / i ), where nthOrder[i] is
@@ -73,10 +81,12 @@
  *     eigen-decomposition.
  *     When to use: a cheaper, degree-based alternative to Eigenvector Centrality (EVC) for
  *     rewarding both direct and indirect reach, when a full eigen-decomposition isn't needed.
+ *     Weights: same shortest-path reasoning as BC/SC/EC/CC above (nthOrder is computed from
+ *     DistanceEngine's shortest-path distances) - invert a strength-type weight.
  *     Compare to: Eigenvector Centrality (EVC, see centralityEigenvector()) captures a related
  *     "reach plus indirect reach" idea via eigen-decomposition instead. Not to be confused with
- *     Bonacich's differently-named, unrelated "Power Centrality" measure (BPC, WS11 #39,
- *     planned).
+ *     Bonacich's differently-named, unrelated "Power Centrality" measure (BPC, see
+ *     centralityBonacich()).
  * @param centralities
  * @param considerWeights
  * @param inverseWeights

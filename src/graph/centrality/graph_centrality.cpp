@@ -37,6 +37,11 @@
  * between others. Information Centrality is the only one of the three that uses every
  * connecting path, not just the shortest one.
  *
+ * Weights: unlike CC/BC/SC/EC/PC/IRCC, this is not shortest-path routing - the raw weight
+ * feeds directly into the B matrix (B_ij = 1 - w_ij), where a *larger* raw weight already
+ * pulls two actors closer together. Don't invert a strength-type weight here (that would
+ * weaken your strongest ties); only invert if the weight genuinely represents a cost.
+ *
  * Math: build matrix B where B_ii = 1 + (sum of i's edge weights) and B_ij = 1 - w_ij for
  * i != j, then invert it to get C = B^-1. Information centrality is
  * IC(i) = 1 / [ C_ii + (tr(C) - 2*R) / n ], where tr(C) is the trace of C and R is the sum
@@ -327,6 +332,10 @@ qreal Graph::estimateSpectralRadius(const bool &considerWeights,
  * ones), or citation-network-style "important papers cited by other important papers"
  * reasoning. Needs a connected (or largely connected) graph to produce a meaningful ranking.
  *
+ * Weights: not shortest-path routing - the adjacency matrix entry is used directly as "how
+ * much this tie contributes." Don't invert a strength-type weight (that would make your
+ * strongest ties count least); only invert if the weight genuinely represents a cost.
+ *
  * Compare to: Katz Centrality (see centralityKatz()) and Bonacich Power Centrality (see
  * centralityBonacich()) generalize this same "connections to well-connected others matter" idea
  * by summing actual walks with a distance-based decay factor instead of finding the dominant
@@ -498,6 +507,9 @@ void Graph::centralityEigenvector(const bool &considerWeights,
  * inbound ties only - meaningful on directed graphs, where "connections this actor made" and
  * "connections this actor received" can differ a lot.
  *
+ * Weights: no inversion choice here (considerWeights only) - when considered, weights are
+ * summed directly, so a stronger tie always adds more, regardless of what the weight means.
+ *
  * Math: DC(i) = number of edges incident to i (or the sum of their weights, if weights are
  * considered). Standardized SDC(i) = DC(i) / (N-1), the fraction of all other actors i is
  * directly tied to.
@@ -665,6 +677,9 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
  * When to use: any time the network might not be fully connected - social media crawls,
  * partial datasets, or naturally fragmented networks (e.g. isolated friend clusters) - where
  * plain Closeness Centrality (CC) would otherwise be undefined or require dropping actors.
+ *
+ * Weights: shortest-path-based, same as CC - if a weight represents value/strength, invert it
+ * so a strong tie behaves like a short/cheap path.
  *
  * Compare to: Closeness Centrality (CC, see graphDistancesGeodesic()) is the classic version
  * this generalizes - use CC directly once the graph is known to be fully connected. Proximity

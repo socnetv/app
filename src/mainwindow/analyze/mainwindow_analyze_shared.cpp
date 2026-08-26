@@ -100,9 +100,13 @@ void MainWindow::askAboutEdgeWeights(const bool userTriggered)
                 tr("If the edge weights denote cost or real distances (i.e. miles between cities), "
                    "press No, since the distance between two nodes should be the quickest "
                    "or cheaper one. \n\n"
-                   "If the weights denote value or strength (i.e. votes or interaction), "
-                   "press Yes to inverse the weights, since the distance between two "
-                   "nodes should be the most valuable one."),
+                   "If the weights denote value or strength (i.e. votes or interaction): for "
+                   "distance-based measures (Closeness, Betweenness, Stress, Eccentricity, "
+                   "IR Closeness, Power Centrality), press Yes, so a strong tie acts like a "
+                   "short path. For measures based on counting walks instead of shortest paths "
+                   "(Eigenvector, Katz, Bonacich, PageRank Prestige), press No instead, so a "
+                   "strong tie keeps contributing more rather than less. "
+                   "See the manual's Edge Weights section for the full explanation."),
                 QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes)
 
         )
