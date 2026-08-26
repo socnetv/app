@@ -411,6 +411,25 @@ run_case_prominence \
   -w 0 -x 1 -k 0 --bonacich-alpha 1 --bonacich-beta 0.1 \
   "${BASE_PROM}/Krackhardt_Kite_N10__PROM__V4__FT2__W0_IW1_DI0_BA1_BB0.1.json"
 
+# Directed acyclic (nilpotent) + weighted, alpha/beta=1 (WS11, #10/#39) - locks in the
+# Matrix::powerIteration() fix for lambdaMax on nilpotent matrices (any directed graph with no
+# cycles - a DAG/tree/chain): the true lambda_max is exactly 0 there (no convergence bound, any
+# value works), but a pre-existing divide-by-zero safety substitution was incorrectly reported
+# as lambdaMax=1 instead, causing Katz/Bonacich to wrongly reject alpha/beta >= 1 on such graphs.
+# alpha=beta=1 here would have been (incorrectly) rejected before the fix. Both raw and inverted
+# weights independently verified via Gauss-Jordan elimination in plain Python.
+run_case_prominence \
+  "${DATA}/TinyDirWeighted_N3.paj" \
+  2 \
+  -w 1 -x 0 -k 0 --katz-alpha 1 --bonacich-alpha 1 --bonacich-beta 1 \
+  "${BASE_PROM}/TinyDirWeighted_N3__PROM__V4__FT2__W1_IW0_DI0_KA1_BA1_BB1.json"
+
+run_case_prominence \
+  "${DATA}/TinyDirWeighted_N3.paj" \
+  2 \
+  -w 1 -x 1 -k 0 --katz-alpha 1 --bonacich-alpha 1 --bonacich-beta 1 \
+  "${BASE_PROM}/TinyDirWeighted_N3__PROM__V4__FT2__W1_IW1_DI0_KA1_BA1_BB1.json"
+
 # IO ROUNDTRIP (schema v5)
 run_case_io "${DATA}/TinyAdj_Undir_N3.adj" 3 -d " " -l 0 "${BASE_IO}/TinyAdj_Undir_N3__FT3.json"
 run_case_io "${DATA}/TinyAdj_Weighted_Dir_N3.adj" 3 -d " " -l 0 "${BASE_IO}/TinyAdj_Weighted_Dir_N3__FT3.json"

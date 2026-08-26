@@ -777,9 +777,13 @@ qreal Matrix::distanceEuclidean(
  * Defaults to nullptr (never cancels), so existing callers are unaffected.
  * @param lambdaMax Optional out param: the largest eigenvalue itself, read off from the
  * pre-normalization vector length on the final iteration (norm(Ax) ~= lambda_max once x has
- * converged to unit length). Callers that only need the eigenvector (e.g.
- * centralityEigenvector()) can leave this nullptr; callers that need to validate a convergence
- * bound like Katz's alpha < 1/lambda_max need it.
+ * converged to unit length). Correctly reports exactly 0 for a nilpotent matrix (any directed
+ * acyclic graph - no cycles at all), meaning "no convergence bound, any value works" - this is
+ * the genuine mathematical answer, not a numerical-error placeholder (a symmetric/undirected
+ * adjacency matrix can never be nilpotent unless it's the zero matrix, so this only ever arises
+ * for directed graphs). Callers that only need the eigenvector (e.g. centralityEigenvector())
+ * can leave this nullptr; callers that need to validate a convergence bound like Katz's
+ * alpha < 1/lambda_max need it.
  */
 void Matrix::powerIteration (
         qreal x[],
@@ -799,7 +803,7 @@ void Matrix::powerIteration (
             << x;
 
     int n = rows();
-    qreal norm = 0, distance=0;
+    qreal norm = 0, trueNorm = 0, distance=0;
 
     qreal *tmp;
     tmp=new (nothrow) qreal [n];
@@ -826,12 +830,15 @@ void Matrix::powerIteration (
 
         // calculate the euclidean length of the resulting vector
         // which will be the denominator in the vector normalization
-        norm = distanceEuclidean(tmp, n);
+        norm = trueNorm = distanceEuclidean(tmp, n);
 
         qCDebug(lcMatrix) << "Matrix::powerIteration() - norm" << norm;
 
-        // norm should never be zero, but in case there is
-        // numerical error, we set it to 1
+        // norm legitimately reaches exactly zero for a nilpotent matrix (any directed graph
+        // with no cycles at all - a DAG/tree/chain: Ax eventually collapses to the zero vector,
+        // which is the mathematically correct outcome, not a numerical error). Substitute a
+        // safe divisor for the normalization step below, but keep trueNorm (0 in that case) as
+        // the value reported to lambdaMax - see this method's doc comment.
         if (!norm) {
             qCDebug(lcMatrix) << "### Matrix::powerIteration() - norm = 0 !!!";
             norm = 1;
@@ -880,10 +887,13 @@ void Matrix::powerIteration (
 
     } while ( distance > eps);
 
-    // norm is ||Ax|| from the final iteration, with x already unit-length from the previous
-    // one - at convergence this approximates the dominant eigenvalue (lambda_max).
+    // trueNorm is ||Ax|| from the final iteration, with x already unit-length from the
+    // previous one - at convergence this approximates the dominant eigenvalue (lambda_max).
+    // Deliberately trueNorm, not norm: norm may hold the divide-by-zero-safe substitute (1)
+    // rather than the real value on a nilpotent matrix, where the true answer is exactly 0
+    // (any directed acyclic graph - see the comment above).
     if (lambdaMax)
-        *lambdaMax = norm;
+        *lambdaMax = trueNorm;
 
      delete [] tmp;
 }
