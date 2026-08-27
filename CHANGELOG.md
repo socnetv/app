@@ -291,6 +291,21 @@ All notable changes to this project are documented in this file.
     checked weak connectivity (ignoring edge direction), with no way to
     check strong connectivity from the UI. Now asks which one to check.
 
+  - **Memory corruption when computing multiple prominence indices with
+    isolated nodes present** (#274, found during pre-3.7-release
+    cross-platform baseline verification): `Graph::vertices()` cached its
+    vertex count without accounting for which drop-isolates/count-all
+    flags produced it, so a measure that always drops isolates (e.g.
+    Information Centrality) could leave a stale, smaller count that a
+    later measure asked to keep isolates (e.g. Eigenvector Centrality)
+    would then inherit - undersizing a working array relative to the real
+    adjacency matrix. Silent on macOS; a hard crash on Linux. Fixed by
+    keying the cache on those flags. Also fixed: several `GraphVertex`
+    score fields (Power/Information/PageRank-Prestige/Proximity-Prestige/
+    Eigenvector/Katz/Bonacich centrality and their standardized variants)
+    were never zero-initialized, so an isolated node skipped by its own
+    measure's isolate handling could report leftover garbage instead of 0.
+
   - **Reciprocity report no longer shows "nan" for actors with no ties**
     (found during #113): the per-actor Symmetric/nonSymmetric columns
     divided by an actor's total tie count with no zero-guard, unlike every
