@@ -1623,6 +1623,7 @@ private:
     qreal canvasWidth, canvasHeight;
     bool calculatedEdges;
     bool calculatedVertices, calculatedVerticesList, calculatedVerticesSet;
+    bool m_verticesCacheDropIsolates = false, m_verticesCacheCountAll = false;
     bool calculatedAdjacencyMatrix, calculatedDistances, calculatedCentralities;
     bool calculatedIsolates;
     bool calculatedEVC;

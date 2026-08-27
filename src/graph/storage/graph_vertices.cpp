@@ -642,6 +642,10 @@ int Graph::vertexNumberMin()
  * If countAll = false, it skips disabled vertices
  * If countAll = false and dropIsolates = true, it skips both disabled and isolated vertices
  *
+ * The cache is keyed on (dropIsolates, countAll): a cached count computed under one combination
+ * of flags must never be handed back to a caller asking with a different combination, since
+ * callers size fixed allocations off this return value (see #274).
+ *
  * @param dropIsolates
  * @param countAll
  * @return
@@ -649,7 +653,8 @@ int Graph::vertexNumberMin()
 int Graph::vertices(const bool &dropIsolates, const bool &countAll, const bool &recount)
 {
 
-    if (m_totalVertices != 0 && calculatedVertices && !recount)
+    if (m_totalVertices != 0 && calculatedVertices && !recount
+        && m_verticesCacheDropIsolates == dropIsolates && m_verticesCacheCountAll == countAll)
     {
         qCDebug(lcStorage) << "Graph not modified, returning static number: "
                  << m_totalVertices;
@@ -680,6 +685,8 @@ int Graph::vertices(const bool &dropIsolates, const bool &countAll, const bool &
     }
     qCDebug(lcStorage) << "Graph size:" << m_graph.size() << "vertices" << m_totalVertices;
     calculatedVertices = true;
+    m_verticesCacheDropIsolates = dropIsolates;
+    m_verticesCacheCountAll = countAll;
     return m_totalVertices;
 }
 
