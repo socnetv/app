@@ -1,3 +1,24 @@
+socnetv (3.7-1) unstable; urgency=medium
+
+  * New upstream release.
+  * New centrality measures: Katz Centrality and Bonacich Power Centrality.
+  * New cohesion analyses: Node Connectivity and Graph Connectivity.
+  * Geodesic distance distribution report; shortest-path reconstruction
+    with canvas edge highlighting.
+  * Viewport now auto-fits the canvas after layouts, file loads, and
+    window resize.
+  * Analysis reports can now be exported as CSV in addition to HTML.
+  * New CLI options --encoding and --interactive-script, plus an
+    expanded interactive-script command set for headless automation.
+  * Faster maximal clique census via Tomita et al. pivot selection.
+  * Canvas rendering correctness and performance pass.
+  * Various bug fixes: layouts/reports no longer freeze on large
+    networks, faster canvas clearing, Bezier edge toggle applied at
+    startup, Connectedness asks weak vs. strong for directed networks,
+    and several crash/memory-corruption fixes.
+
+ -- Dimitris Kalamaras <dimitris.kalamaras@gmail.com>  Thu, 27 Aug 2026 12:00:00 +0300
+
 socnetv (3.6-1) unstable; urgency=medium
 
   * New upstream release.
