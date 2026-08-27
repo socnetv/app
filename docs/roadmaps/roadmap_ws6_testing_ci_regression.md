@@ -529,6 +529,22 @@ Suggested approach (risk-based, not exhaustive — see below):
 
 ### Open findings
 
+#### Windows/MSVC build warnings: C4458 shadowing, C4996 Qt6 deprecations
+
+**Status: deferred until after the v3.7 release** — noticed during the v3.7 `Release SocNetV`
+workflow run (2026-08), Windows leg takes noticeably longer than macOS/Linux and is noisy with
+warnings not seen on the other two platforms.
+
+- `C4458` ("declaration of 'x' hides class member") — worth checking whether any of these are in
+  the same family as this session's `GraphVertex` uninitialized-member findings (#274): shadowed
+  member names are exactly the kind of thing that makes "did this actually set the member, or a
+  local shadowing it?" hard to eyeball. Could be entirely benign constructor-parameter shadowing
+  too - needs an actual look at the specific sites, not assumed either way.
+- `C4996` ("`QCheckBox::stateChanged` is deprecated: Use `checkStateChanged()` instead") - plain
+  Qt6 API migration debt, unrelated to the above.
+
+Not investigated further yet - just captured here so it isn't lost. Pick up post-3.7.
+
 #### `run_benchmarks.sh` reports `BUILD_TYPE=Debug` even against a Release binary
 
 Script-reporting detail, not a functional bug, but it can confuse future contributors reading
