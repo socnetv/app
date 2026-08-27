@@ -135,7 +135,7 @@ pwd
 ### CHANGELOG SECTION
 ###
 %changelog
-* Fri Jun 26 2026 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 3.7-1
+* Thu Aug 27 2026 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 3.7-1
 - Upstream v3.7
 * Mon Jun 15 2026 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 3.6-1
 - Upstream v3.6
