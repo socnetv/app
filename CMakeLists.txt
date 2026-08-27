@@ -46,6 +46,7 @@
 cmake_minimum_required(VERSION 3.16) # 3.21 or 3.22 for better features and compatibility with modern tools.
 
 option(BUILD_CLI "Build headless regression CLI" ON)
+option(BUILD_MATRIX_BENCH "Build standalone APSP storage benchmark tool (WS5 A2.0)" OFF)
 
 # ==============================================================================
 # 1. Project Setup
@@ -55,7 +56,7 @@ set(APP_NAME SocNetV)
 set(APP_NAME_LOWER socnetv)
 
 project(SocNetV 
-    VERSION 3.6
+    VERSION 3.7
     DESCRIPTION "SocNetV: Open-source social network analysis application based on Qt."
     HOMEPAGE_URL "https://socnetv.org"
     LANGUAGES CXX
@@ -128,15 +129,20 @@ set(GRAPH_SOURCES
     src/graph/distances/graph_distance_facade.cpp
     src/graph/distances/graph_distance_cache.cpp
     src/graph/centrality/graph_centrality.cpp
+    src/graph/centrality/graph_centrality_katz.cpp
+    src/graph/centrality/graph_centrality_bonacich.cpp
     src/graph/centrality/graph_prestige.cpp
     src/graph/prominence/graph_prominence_distribution.cpp
     src/graph/matrices/graph_matrix_adjacency.cpp
+    src/graph/matrices/graph_matrix_distances.cpp
+    src/graph/matrices/graph_matrix_reachability.cpp
     src/graph/generators/graph_random_networks.cpp
     src/graph/crawler/graph_crawler.cpp
     src/graph/layouts/graph_layouts_basic.cpp
     src/graph/layouts/graph_layouts_force.cpp
     src/graph/reachability/graph_reachability_walks.cpp
     src/graph/cohesion/graph_cliques.cpp
+    src/graph/cohesion/graph_connectivity.cpp
     src/graph/clustering/graph_triad_census.cpp
     src/graph/clustering/graph_clustering_coefficients.cpp
     src/graph/clustering/graph_clustering_hierarchical.cpp
@@ -145,6 +151,40 @@ set(GRAPH_SOURCES
     src/graph/reporting/graph_reports_settings.cpp
 )
 
+
+set(MAINWINDOW_SOURCES
+    src/mainwindow.cpp
+    src/mainwindow/lifecycle/mainwindow_lifecycle.cpp
+    src/mainwindow/init/mainwindow_init_settings.cpp
+    src/mainwindow/init/mainwindow_init_actions.cpp
+    src/mainwindow/init/mainwindow_init_menu.cpp
+    src/mainwindow/init/mainwindow_init_panels.cpp
+    src/mainwindow/init/mainwindow_init_app.cpp
+    src/mainwindow/network/mainwindow_network_file.cpp
+    src/mainwindow/network/mainwindow_network_import_export.cpp
+    src/mainwindow/network/mainwindow_network_random.cpp
+    src/mainwindow/network/mainwindow_network_web.cpp
+    src/mainwindow/network/mainwindow_network_view.cpp
+    src/mainwindow/edit/mainwindow_edit_node.cpp
+    src/mainwindow/edit/mainwindow_edit_edge.cpp
+    src/mainwindow/edit/mainwindow_edit_selection.cpp
+    src/mainwindow/edit/mainwindow_edit_relation.cpp
+    src/mainwindow/edit/mainwindow_edit_filters.cpp
+    src/mainwindow/analyze/mainwindow_analyze_centrality.cpp
+    src/mainwindow/analyze/mainwindow_analyze_distance.cpp
+    src/mainwindow/analyze/mainwindow_analyze_matrices.cpp
+    src/mainwindow/analyze/mainwindow_analyze_cohesion.cpp
+    src/mainwindow/analyze/mainwindow_analyze_clustering.cpp
+    src/mainwindow/analyze/mainwindow_analyze_similarity.cpp
+    src/mainwindow/analyze/mainwindow_analyze_prominence.cpp
+    src/mainwindow/analyze/mainwindow_analyze_shared.cpp
+    src/mainwindow/dispatch/mainwindow_dispatch.cpp
+    src/mainwindow/scripting/mainwindow_interactive_script.cpp
+    src/mainwindow/layout/mainwindow_layout.cpp
+    src/mainwindow/options/mainwindow_options.cpp
+    src/mainwindow/help/mainwindow_help.cpp
+    src/mainwindow/edit/mainwindow_edit_shared.cpp
+)
 
 set(PARSER_SOURCES
     src/parser.cpp
@@ -169,6 +209,8 @@ set(CLI_SOURCES
     src/tools/cli/kernels/kernel_io_roundtrip_v5.cpp
     src/tools/cli/kernels/kernel_clustering_v6.cpp
     src/tools/cli/kernels/kernel_connectivity_v7.cpp
+    src/tools/cli/kernels/kernel_matrix_v8.cpp
+    src/tools/cli/kernels/kernel_vertex_connectivity_v9.cpp
 )
 
 
@@ -195,17 +237,19 @@ set (FORMS
     src/forms/dialogfilterbyattribute.ui
     src/forms/dialogbulkedit.ui
     src/forms/dialogedgedichotomization.ui
-    src/forms/dialogexportpdf.ui 
+    src/forms/dialogexportpdf.ui
     src/forms/dialogexportimage.ui
+    src/forms/dialogcentralitykatz.ui
+    src/forms/dialogcentralitybonacich.ui
     # Other UI files
 )
 
 set(SOURCES
-    src/main.cpp 
-    src/mainwindow.cpp 
+    src/main.cpp
     src/texteditor.cpp
     ${ENGINE_SOURCES}
     ${GRAPH_SOURCES}
+    ${MAINWINDOW_SOURCES}
     ${PARSER_SOURCES}
     src/graphvertex.cpp
     src/matrix.cpp 
@@ -247,8 +291,10 @@ set(SOURCES
     src/forms/dialograndlattice.cpp 
     src/forms/dialognodefind.cpp 
     src/forms/dialogexportpdf.cpp 
-    src/forms/dialogexportimage.cpp 
+    src/forms/dialogexportimage.cpp
     src/forms/dialogsysteminfo.cpp
+    src/forms/dialogcentralitykatz.cpp
+    src/forms/dialogcentralitybonacich.cpp
     # Add remaining source files here
 )
 
@@ -334,7 +380,16 @@ set_target_properties(${TARGET_NAME} PROPERTIES
 
 # Add compiler options
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
-    target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra -Wpedantic
+        # WS14: qCDebug(category) << ... (the standard Qt streaming-log idiom, used by every
+        # converted call site) passes zero arguments to qCDebug's variadic macro parameter.
+        # That's only standard-legal in C++20; on our C++17 standard it relies on the
+        # GNU/Clang comma-swallowing extension, which -Wpedantic flags. Functionally correct
+        # (this is how lcGW/lcEngine already worked before this flag was added) and would
+        # otherwise be thousands of warnings once every qDebug() call site is converted.
+        # GCC silently ignores -Wno-* flags it doesn't recognize, so this is safe to share
+        # across both compilers in this branch.
+        -Wno-variadic-macro-arguments-omitted)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_compile_options(${TARGET_NAME} PRIVATE /W4)
 endif()
@@ -531,6 +586,35 @@ if(BUILD_CLI)
     )
 
     qt_finalize_executable(${CLI_TARGET})
+endif()
+
+
+if(BUILD_MATRIX_BENCH)
+    set(MATRIX_BENCH_TARGET matrix-storage-bench)
+
+    qt_add_executable(${MATRIX_BENCH_TARGET}
+        MANUAL_FINALIZATION
+        src/tools/matrix_storage_bench.cpp
+        src/matrix.cpp
+    )
+
+    target_include_directories(${MATRIX_BENCH_TARGET} PUBLIC
+        "${CMAKE_SOURCE_DIR}/src"
+    )
+
+    target_link_libraries(${MATRIX_BENCH_TARGET} PRIVATE
+        Qt6::Core
+    )
+
+    set_target_properties(${MATRIX_BENCH_TARGET} PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON
+        AUTOMOC OFF
+        AUTOUIC OFF
+        AUTORCC OFF
+    )
+
+    qt_finalize_executable(${MATRIX_BENCH_TARGET})
 endif()
 
 

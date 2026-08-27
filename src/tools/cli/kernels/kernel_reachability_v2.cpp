@@ -211,7 +211,7 @@ int runKernelReachabilityV2(const CliConfig &cfg,
         QJsonArray row;
         for (int dst : order)
         {
-            const bool reachable = (gv->distance(dst) != RAND_MAX);
+            const bool reachable = (g.apspDistance(src, dst) != RAND_MAX);
             row.append(reachable ? 1 : 0);
             if (reachable)
                 ++ones;

@@ -43,7 +43,7 @@ Graph *Graph::subgraphFromVertexList(const QList<int> &vertexNums,
                                       const bool &includeCustomAttributes)
 {
     if (vertexNums.isEmpty()) {
-        qDebug() << "subgraphFromVertexList(): vertex list is empty — returning nullptr";
+        qCDebug(lcStorage) << "subgraphFromVertexList(): vertex list is empty — returning nullptr";
         return nullptr;
     }
 
@@ -141,7 +141,7 @@ Graph *Graph::subgraphFromVertexList(const QList<int> &vertexNums,
     // Restore subgraph to relation 0 before handing it back.
     sub->relationSet(0, false);
 
-    qDebug() << "subgraphFromVertexList(): created subgraph" << name
+    qCDebug(lcStorage) << "subgraphFromVertexList(): created subgraph" << name
              << "— vertices:" << sub->vertices()
              << "edges:"      << sub->edgesEnabled();
 
@@ -172,7 +172,7 @@ Graph *Graph::subgraphExtract(const QString &name,
     }
 
     if (visibleNums.isEmpty())
-        qDebug() << "subgraphExtract(): no visible vertices";
+        qCDebug(lcStorage) << "subgraphExtract(): no visible vertices";
 
     return subgraphFromVertexList(visibleNums, name, includeCustomAttributes);
 }
@@ -197,7 +197,7 @@ Graph *Graph::subgraphExtractFromSelection(const QString &name,
     const QList<int> selected = getSelectedVertices();
 
     if (selected.isEmpty())
-        qDebug() << "subgraphExtractFromSelection(): no selected vertices";
+        qCDebug(lcStorage) << "subgraphExtractFromSelection(): no selected vertices";
 
     return subgraphFromVertexList(selected, name, includeCustomAttributes);
 }

@@ -17,6 +17,7 @@
 
 #include "dialogwebcrawler.h"
 #include <QDebug>
+#include "forms_logging.h"
 #include <QTextEdit>
 #include <QPushButton>
 #include <QGraphicsColorizeEffect>
@@ -119,13 +120,13 @@ void DialogWebCrawler::checkErrors(){
     //
     seedUrlInputStr = (ui.seedUrlEdit)->text();
 
-    qDebug()<< "seed url:" << seedUrlInputStr << "Sanitizing...";
+    qCDebug(lcForms)<< "seed url:" << seedUrlInputStr << "Sanitizing...";
 
     seedUrlInputStr = seedUrlInputStr.simplified();
 
     seedUrl = QUrl(seedUrlInputStr);
 
-    qDebug()<< "seed url:" << seedUrl.toString()
+    qCDebug(lcForms)<< "seed url:" << seedUrl.toString()
             << " scheme " << seedUrl.scheme()
             << " host " << seedUrl.host()
             << " path " << seedUrl.path();
@@ -133,19 +134,19 @@ void DialogWebCrawler::checkErrors(){
 
     if ( seedUrl.scheme().isEmpty() ||
          ( seedUrl.scheme() != "http"  && seedUrl.scheme() != "https"  )) {
-        qDebug()<< "seed url has no scheme. Setting the default scheme (http) ";
+        qCDebug(lcForms)<< "seed url has no scheme. Setting the default scheme (http) ";
         seedUrl.setUrl("//" + seedUrlInputStr);
         seedUrl.setScheme("http");
-        qDebug() << seedUrl;
+        qCDebug(lcForms) << seedUrl;
     }
 
     if (seedUrl.path().isEmpty() ) {
-        qDebug()<< "seed url without path. Adding default path '/'...";
+        qCDebug(lcForms)<< "seed url without path. Adding default path '/'...";
         seedUrl.setPath("/");
     }
 
     if (! seedUrl.isValid() || seedUrl.host() == "" || !seedUrl.host().contains(".") ) {
-        qDebug()<< "Error. seed url not valid.";
+        qCDebug(lcForms)<< "Error. seed url not valid.";
         QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
         effect->setColor(QColor("red"));
         ui.seedUrlEdit->setGraphicsEffect(effect);
@@ -213,7 +214,7 @@ void DialogWebCrawler::checkErrors(){
     //
     // CHECK URL PATTERNS TO INCLUDE TEXTEDIT
     //
-    qDebug()<< "Checking included url patterns...";
+    qCDebug(lcForms)<< "Checking included url patterns...";
     urlPatternsIncluded = parseTextEditInput (ui.patternsIncludedTextEdit->toHtml());
 
     if (urlPatternsIncluded.size() == 0 ) {
@@ -226,7 +227,7 @@ void DialogWebCrawler::checkErrors(){
     else {
         if (urlPatternsIncluded.size() == 1 && urlPatternsIncluded.at(0) =="" ) {
             urlPatternsIncluded.clear();
-            qDebug() << "return empty urlPatterns (ALL)";
+            qCDebug(lcForms) << "return empty urlPatterns (ALL)";
         }
         ui.patternsIncludedTextEdit->setGraphicsEffect(0);
         errorPatternsIncl = false;
@@ -237,7 +238,7 @@ void DialogWebCrawler::checkErrors(){
     //
     // CHECK URL PATTERNS TO EXCLUDE TEXTEDIT
     //
-    qDebug()<< "Checking excluded url patterns...";
+    qCDebug(lcForms)<< "Checking excluded url patterns...";
     urlPatternsExcluded = parseTextEditInput (ui.patternsExcludedTextEdit->toHtml());
 
     if (urlPatternsExcluded.size() == 1 ) {
@@ -285,10 +286,8 @@ QStringList DialogWebCrawler::parseTextEditInput(const QString &html){
             for (int i = 0; i < userInput.size(); ++i){
                if (i==0) continue;
                data = userInput.at(i).toLocal8Bit().constData();
-               //qDebug () << "split " << i << ":: " << data << "\n";
-               //qDebug () << "first char > at ::" <<  data.indexOf('>',0) << "\n";
                str = data.mid ( data.indexOf('>',0) +1, data.indexOf("</p>",0) - (data.indexOf('>',0) +1) );
-               qDebug () << "str ::" << str ;
+               qCDebug(lcForms) << "str ::" << str ;
                str.remove("<br />");
                str=str.simplified();
 
@@ -298,13 +297,13 @@ QStringList DialogWebCrawler::parseTextEditInput(const QString &html){
                    str.remove("*");
                }
 
-               qDebug () << "str fin ::"  << str;
+               qCDebug(lcForms) << "str fin ::"  << str;
 
 
                // urls and classes cannot contain spaces...
                if (str.contains(" ")) {
                    userInputParsed.clear();
-                   qDebug () << "urls cannot contain spaces... Break." ;
+                   qCDebug(lcForms) << "urls cannot contain spaces... Break." ;
                    break;
                }
 
@@ -317,7 +316,7 @@ QStringList DialogWebCrawler::parseTextEditInput(const QString &html){
     else {
         userInputParsed.clear();
     }
-    qDebug () << "stringlist size"
+    qCDebug(lcForms) << "stringlist size"
               << userInputParsed.size()<< "\n";
     return userInputParsed;
 
@@ -329,7 +328,7 @@ QStringList DialogWebCrawler::parseTextEditInput(const QString &html){
  */
 void DialogWebCrawler::getUserChoices(){
 
-    qDebug()<< "Emitting user choices:" << "\n"
+    qCDebug(lcForms)<< "Emitting user choices:" << "\n"
             << "seedUrl: " << seedUrl.toString() << "\n"
             << "urlPatternsIncluded" << urlPatternsIncluded << "\n"
             << "urlPatternsExcluded" << urlPatternsExcluded << "\n"

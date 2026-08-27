@@ -47,7 +47,7 @@ QString Graph::getName() const
  */
 void Graph::setName(const QString &graphName)
 {
-    qDebug() << "Setting graph name to:" << graphName;
+    qCDebug(lcGraphCore) << "Setting graph name to:" << graphName;
     m_graphName = graphName;
 }
 
@@ -68,7 +68,7 @@ QString Graph::getFileName() const
  */
 void Graph::setFileName(const QString &fileName)
 {
-    qDebug() << "Setting graph filename to:" << fileName;
+    qCDebug(lcGraphCore) << "Setting graph filename to:" << fileName;
     m_fileName = fileName;
 }
 
@@ -84,7 +84,7 @@ int Graph::getFileFormat() const
 
 void Graph::setFileFormat(const int &fileFormat)
 {
-    qDebug() << "Setting graph file format to:" << fileFormat;
+    qCDebug(lcGraphCore) << "Setting graph file format to:" << fileFormat;
     m_fileFormat = fileFormat;
 }
 
@@ -117,7 +117,7 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW)
     {
         // New network, no vertices. Don't change status.
 
-        qDebug() << "This is a empty new network. Will not change status.";
+        qCDebug(lcGraphCore) << "This is a empty new network. Will not change status.";
 
         emit signalGraphModified(isDirected(),
                                  0,
@@ -131,7 +131,7 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW)
     else if (graphNewStatus == ModStatus::NewNet)
     {
 
-        qDebug() << "This is a new network. Setting graph as new...";
+        qCDebug(lcGraphCore) << "This is a new network. Setting graph as new...";
 
         m_graphModStatus = graphNewStatus;
 
@@ -148,7 +148,7 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW)
 
         // this is called after loading or saving a file
 
-        qDebug() << "Setting graph as saved/unchanged...";
+        qCDebug(lcGraphCore) << "Setting graph as saved/unchanged...";
 
         m_graphModStatus = graphNewStatus;
 
@@ -162,7 +162,6 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW)
         // This is called from any method that alters the graph structure,
         // thus all prior computations are invalidated
 
-        //        qDebug()<<"Major changes, invalidating computations, setting graph as changed...";
 
         m_graphModStatus = graphNewStatus;
 
@@ -182,6 +181,7 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW)
         calculatedDistances = false;
         calculatedCentralities = false;
         m_graphWeaklyConnectedComponents = 0;
+        m_graphStronglyConnectedComponents = 0;
         m_vertexComponentId.clear();
         calculatedDP = false;
         calculatedDC = false;
@@ -189,12 +189,13 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW)
         calculatedIRCC = false;
         calculatedIC = false;
         calculatedEVC = false;
+        calculatedKC = false;
+        calculatedBPC = false;
         calculatedPRP = false;
 
         if (signalMW)
         {
 
-            //            qDebug() << "signaling to MW that the graph is modified...";
 
             emit signalGraphModified(isDirected(),
                                      m_totalVertices,
@@ -215,7 +216,6 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW)
             //  Do not change status if current status is > MajorChanges
             m_graphModStatus = graphNewStatus;
         }
-        //        qDebug()<<"minor changes but needs saving...";
         emit signalGraphSavedStatus(false);
         return;
     }
@@ -234,10 +234,10 @@ bool Graph::isModified() const
 {
     if (m_graphModStatus > ModStatus::MajorChanges)
     {
-        qDebug() << "Graph::isModified() - isModified: true";
+        qCDebug(lcGraphCore) << "Graph::isModified() - isModified: true";
         return true;
     }
-    qDebug() << "Graph::isModified() - isModified: false";
+    qCDebug(lcGraphCore) << "Graph::isModified() - isModified: false";
     return false;
 }
 
@@ -249,10 +249,10 @@ bool Graph::isLoaded() const
 {
     if (!getFileName().isEmpty() && getFileFormat() != FileType::UNRECOGNIZED)
     {
-        qDebug() << "isLoaded: true ";
+        qCDebug(lcGraphCore) << "isLoaded: true ";
         return true;
     }
-    qDebug() << "isLoaded: false ";
+    qCDebug(lcGraphCore) << "isLoaded: false ";
     return false;
 }
 
@@ -264,14 +264,14 @@ bool Graph::isSaved() const
 {
     if (m_graphModStatus == ModStatus::NewNet)
     {
-        qDebug() << "isSaved: true (new net)";
+        qCDebug(lcGraphCore) << "isSaved: true (new net)";
         return true;
     }
     else if (m_graphModStatus == ModStatus::SavedUnchanged)
     {
-        qDebug() << "isSaved: true";
+        qCDebug(lcGraphCore) << "isSaved: true";
         return true;
     }
-    qDebug() << "isSaved: false";
+    qCDebug(lcGraphCore) << "isSaved: false";
     return false;
 }

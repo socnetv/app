@@ -16,6 +16,7 @@
 #include "dialogedgedichotomization.h"
 #include <QPushButton>
 #include <QDebug>
+#include "forms_logging.h"
 
 DialogEdgeDichotomization::DialogEdgeDichotomization (QWidget *parent) : QDialog (parent)
 {
@@ -31,9 +32,9 @@ DialogEdgeDichotomization::DialogEdgeDichotomization (QWidget *parent) : QDialog
 
 
 void DialogEdgeDichotomization::getUserChoices(){
-    qDebug()<< "Dialog: gathering Data!...";
+    qCDebug(lcForms)<< "Dialog: gathering Data!...";
     qreal my_threshold = ui.weightThreshold->value() ;
-    qDebug()<< "DialogEdgeDichotomization::getUserChoices() - We will dichotomize edges according to threshold: " << my_threshold;
-    qDebug()<< "Dialog: emitting userChoices" ;
+    qCDebug(lcForms)<< "DialogEdgeDichotomization::getUserChoices() - We will dichotomize edges according to threshold: " << my_threshold;
+    qCDebug(lcForms)<< "Dialog: emitting userChoices" ;
     emit userChoices( my_threshold );
 }

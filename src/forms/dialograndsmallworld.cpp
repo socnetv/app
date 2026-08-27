@@ -14,6 +14,7 @@
  */
 
 #include <QDebug>
+#include "forms_logging.h"
 #include <QSpinBox>
 #include <QRadioButton>
 #include <QPushButton>
@@ -27,7 +28,7 @@ DialogRandSmallWorld::DialogRandSmallWorld(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::DialogRandSmallWorld)
 {
-    qDebug() << "DialogRandSmallWorld::DialogRandSmallWorld() " ;
+    qCDebug(lcForms) << "DialogRandSmallWorld::DialogRandSmallWorld() " ;
 
     ui->setupUi(this);
 
@@ -91,7 +92,7 @@ void DialogRandSmallWorld::setDiag (){
 }
 
 void DialogRandSmallWorld::checkErrors() {
-    qDebug()<< " DialogRandSmallWorld::checkErrors()" ;
+    qCDebug(lcForms)<< " DialogRandSmallWorld::checkErrors()" ;
 
     //     if ( !ui->gnpRadioButton->isChecked() &&  !ui->gnmRadioButton->isChecked())
     //     {
@@ -109,17 +110,17 @@ void DialogRandSmallWorld::checkErrors() {
 }
 
 void DialogRandSmallWorld::getUserChoices() {
-    qDebug() << "DialogRandSmallWorld::getUserChoices() " ;
+    qCDebug(lcForms) << "DialogRandSmallWorld::getUserChoices() " ;
     nodes = ui->nodesSpinBox->value();
     bprob = ui->probDoubleSpinBox->value();
     degree= ui->degreeSpinBox->value();
     mode = (ui->directedRadioButton->isChecked() ? "digraph" : "graph" );
     diag = (ui->diagCheckBox->isChecked() ? true : false);
-    qDebug() << "nodes " << nodes ;
-    qDebug() << "bprob " << bprob;
-    qDebug() << "degree" << degree;
-    qDebug() << "mode " << mode;
-    qDebug() << "diag " << diag;
+    qCDebug(lcForms) << "nodes " << nodes ;
+    qCDebug(lcForms) << "bprob " << bprob;
+    qCDebug(lcForms) << "degree" << degree;
+    qCDebug(lcForms) << "mode " << mode;
+    qCDebug(lcForms) << "diag " << diag;
     emit userChoices(nodes, degree, bprob, mode, diag);
 
 }

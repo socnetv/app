@@ -14,7 +14,7 @@
 #
 
 Name:		socnetv
-Version:	3.6
+Version:	3.7
 Release:	1%{?dist}
 Summary:	A Social Networks Analyser and Visualiser
 License:	GPL-3.0-or-later
@@ -31,6 +31,7 @@ BuildRequires:  cmake
 %if 0%{?suse_version}
 BuildRequires:  qt6-linguist-devel
 BuildRequires:  qt6-qt5compat-devel
+BuildRequires:  qt6-concurrent-devel
 %endif
 
 %if 0%{?fedora} || 0%{?rhel_version} || 0%{?centos_version}
@@ -134,6 +135,8 @@ pwd
 ### CHANGELOG SECTION
 ###
 %changelog
+* Thu Aug 27 2026 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 3.7-1
+- Upstream v3.7
 * Mon Jun 15 2026 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 3.6-1
 - Upstream v3.6
 * Fri May 08 2026 Dimitris Kalamaras <dimitris.kalamaras@gmail.com> - 3.5-1

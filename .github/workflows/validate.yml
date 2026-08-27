@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 📂 Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: 🐍 Install yamllint
         run: |
           python3 -m pip install --upgrade pip

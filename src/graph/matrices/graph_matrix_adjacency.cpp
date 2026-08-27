@@ -29,37 +29,34 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
                                   const bool inverseWeights,
                                   const bool symmetrize)
 {
-    qDebug() << "Graph::createMatrixAdjacency() "
+    qCDebug(lcGraphMatrices) << "Graph::createMatrixAdjacency() "
              << "dropIsolates" << dropIsolates
              << "considerWeights" << considerWeights
              << "inverseWeights" << inverseWeights
              << "symmetrize" << symmetrize;
     qreal m_weight = RAND_MAX;
     int i = 0, j = 0;
-    int N = vertices(dropIsolates, false, true), progressCounter = 0;
+    int N = vertices(dropIsolates, false, true);
     VList::const_iterator it, jt;
 
-    qDebug() << "Graph::createMatrixAdjacency() -resizing AM to" << N;
+    qCDebug(lcGraphMatrices) << "Graph::createMatrixAdjacency() -resizing AM to" << N;
     AM.resize(N, N);
 
     QString pMsg = tr("Creating Adjacency Matrix. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
-        qDebug() << "Graph::createMatrixAdjacency() - i" << i << "name" << (*it)->number();
+        qCDebug(lcGraphMatrices) << "Graph::createMatrixAdjacency() - i" << i << "name" << (*it)->number();
 
-        progressUpdate(++progressCounter);
         if (progressCanceled())
         {
-            progressFinish();
             return;
         }
         if (!(*it)->isEnabled() || ((*it)->isIsolated() && dropIsolates))
         {
-            qDebug() << "Graph::createMatrixAdjacency() - SKIP i" << i << "name" << (*it)->number();
+            qCDebug(lcGraphMatrices) << "Graph::createMatrixAdjacency() - SKIP i" << i << "name" << (*it)->number();
             continue;
         }
 
@@ -68,11 +65,11 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
         for (jt = it; jt != m_graph.end(); jt++)
         {
 
-            qDebug() << "Graph::createMatrixAdjacency() - j" << j << "name" << (*jt)->number();
+            qCDebug(lcGraphMatrices) << "Graph::createMatrixAdjacency() - j" << j << "name" << (*jt)->number();
 
             if (!(*jt)->isEnabled() || ((*jt)->isIsolated() && dropIsolates))
             {
-                qDebug() << "Graph::createMatrixAdjacency() - SKIP j" << j << "name" << (*jt)->number();
+                qCDebug(lcGraphMatrices) << "Graph::createMatrixAdjacency() - SKIP j" << j << "name" << (*jt)->number();
                 continue;
             }
 
@@ -95,7 +92,7 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
                 AM.setItem(i, j, 0);
             }
 
-            qDebug() << " AM(" << i << "," << j << ") = " << AM.item(i, j);
+            qCDebug(lcGraphMatrices) << " AM(" << i << "," << j << ") = " << AM.item(i, j);
 
             if (i != j)
             {
@@ -123,7 +120,7 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
                     if (symmetrize && (AM.item(i, j) != AM.item(j, i)))
                         AM.setItem(j, i, AM.item(i, j));
                 }
-                qDebug() << " AM(" << j << "," << i << ") = " << AM.item(j, i);
+                qCDebug(lcGraphMatrices) << " AM(" << j << "," << i << ") = " << AM.item(j, i);
             }
             j++;
         }
@@ -131,8 +128,6 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
     }
 
     calculatedAdjacencyMatrix = true;
-
-    progressFinish();
 }
 
 /**
@@ -142,12 +137,9 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
  */
 bool Graph::createMatrixAdjacencyInverse(const QString &method)
 {
-    qDebug() << "Graph::createMatrixAdjacencyInverse() ";
+    qCDebug(lcGraphMatrices) << "Graph::createMatrixAdjacencyInverse() ";
 
     bool considerWeights = false;
-    int i = 0, j = 0;
-    bool isSingular = true;
-
     bool dropIsolates = true; // always drop isolates else AM will be singular
 
     int N = vertices(dropIsolates, false, true);
@@ -161,29 +153,40 @@ bool Graph::createMatrixAdjacencyInverse(const QString &method)
 
     if (method == "gauss")
     {
+        // Unreachable in the current codebase - every caller passes "lu" - kept for
+        // cross-checking only. inverseByGaussJordanElimination() has no singularity signal
+        // of its own, so this keeps the after-the-fact "any nonzero entry" scan Fix #269
+        // replaced on the "lu" path below.
         invAM.inverseByGaussJordanElimination(AM);
-    }
-    else
-    {
-        invAM.inverse(AM);
-    }
 
-    VList::const_iterator it, it1;
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-        if (!(*it)->isEnabled() || (*it)->isIsolated())
-            continue;
-        j = 0;
-        for (it1 = m_graph.cbegin(); it1 != m_graph.cend(); ++it1)
+        int i = 0, j = 0;
+        bool isSingular = true;
+        VList::const_iterator it, it1;
+        for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
         {
-            if (!(*it1)->isEnabled() || (*it1)->isIsolated())
+            if (!(*it)->isEnabled() || (*it)->isIsolated())
                 continue;
-            if (invAM.item(i, j) != 0)
-                isSingular = false;
-            j++;
+            j = 0;
+            for (it1 = m_graph.cbegin(); it1 != m_graph.cend(); ++it1)
+            {
+                if (!(*it1)->isEnabled() || (*it1)->isIsolated())
+                    continue;
+                if (invAM.item(i, j) != 0)
+                    isSingular = false;
+                j++;
+            }
+            i++;
         }
-        i++;
+        return !isSingular;
     }
 
-    return !isSingular;
+    // Fix #269: inverse() now reports genuine singularity via a real relative pivot-magnitude
+    // check in ludcmp(), instead of the weak "any nonzero entry in the result" heuristic above.
+    const bool invertible = invAM.inverse(AM, [this] { return progressCanceled(); });
+    if (progressCanceled())
+    {
+        return false;
+    }
+
+    return invertible;
 }

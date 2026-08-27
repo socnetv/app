@@ -14,14 +14,15 @@ Benchmarks **do not validate correctness** — correctness is enforced by golden
 
 # What Is Being Benchmarked
 
-The benchmark harness supports three benchmark families.
+The benchmark harness supports four benchmark families.
 
 By default (`--type all`), it runs only the **baseline-enforced** families:
 
 - Distance / Centrality
+- Prominence
 - IO Roundtrip
 
-The third family, **Optional Clustering Timing**, is developer-oriented and runs only when explicitly selected with `--type clustering`.
+The fourth family, **Optional Clustering Timing**, is developer-oriented and runs only when explicitly selected with `--type clustering`.
 
 ## Distance / Centrality (schema v1)
 
@@ -44,6 +45,19 @@ Large-net cases (run only if `~/socnetv/library/nets/large/` exists — local de
 > For dense graphs, E dominates. This is why a 1000-node/10000-arc graph
 > takes ~100× longer than a 500-node/1219-arc graph.
 
+## Prominence (schema v4)
+
+Benchmarks the `--kernel prominence` (all node-level centrality + prestige indices: degree,
+closeness, betweenness, information, eigenvector, degree/proximity/PageRank prestige).
+
+Shipped cases (always run, CI-reproducible):
+
+- `PROM_BA500_M3` — Barabási–Albert N=500, m=3
+
+N=500, not `geom.net`-scale: Information Centrality (full matrix inversion) and Eigenvector
+Centrality (power iteration) are O(N³)-ish, impractically slow at N=7,343 for a benchmark that
+runs routinely.
+
 ## IO Roundtrip (schema v5)
 
 Benchmarks `--kernel io_roundtrip` load timing for large datasets.
@@ -58,7 +72,7 @@ Large-net cases (run only if `~/socnetv/library/nets/large/` exists):
 - `IO_GRAPHML_2000N_40000E` — 2000 actors, 40000 edges, GraphML
 - `IO_GRAPHML_1000N_10000A` — 1000 actors, 10000 arcs, GraphML
 
-Other kernels (reachability, walks_matrix, prominence) are validated for correctness only, not performance.
+Other kernels (reachability, walks_matrix) are validated for correctness only, not performance.
 
 ## Optional Clustering Timing (schema v6, informational)
 
@@ -96,14 +110,16 @@ Rationale:
 Use `--type` to select which benchmark family to run:
 
 * `--type distance` → run only distance / centrality benchmarks
+* `--type prominence` → run only prominence benchmarks
 * `--type io` → run only IO timing benchmarks
 * `--type clustering` → run only optional clustering timing probes
-* `--type all` → run the baseline-enforced benchmark families only (`distance` + `io`) (default)
+* `--type all` → run the baseline-enforced benchmark families only (`distance` + `prominence` + `io`) (default)
 
 Examples:
 
 ```bash
 ./scripts/run_benchmarks.sh --type distance
+./scripts/run_benchmarks.sh --type prominence
 ./scripts/run_benchmarks.sh --type io
 ./scripts/run_benchmarks.sh --type clustering
 ./scripts/run_benchmarks.sh --type all
@@ -248,11 +264,16 @@ Baseline sets should be recorded consistently under the same build type and envi
 
 Baselines are treated as **stable performance contracts**.
 
+**Only re-record against a clean tagged release (e.g. `git checkout v3.6`), never against arbitrary
+`develop` HEAD.** `develop` accumulates unrelated speedups/regressions between releases; recording
+against it embeds all of that into what's supposed to be a release snapshot, and every subsequent
+benchmark run then reports misleading "faster than baseline" deltas for work that has nothing to do
+with whatever's actually being tested. Re-record once per release cycle, after tagging.
+
 They should only be re-recorded when:
 
-* A deliberate algorithmic improvement is made
-* A known performance bug is fixed
-* The build environment materially changes
+* A new release has just been tagged
+* A known performance bug is fixed and the fix is being tagged as a release
 
 Baselines are not intended to be routinely overwritten.
 

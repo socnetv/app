@@ -37,7 +37,7 @@ GraphVertex::GraphVertex(Graph* parentGraph,
                          const QHash<QString,QString> &customAttributes
                          ): m_graph (parentGraph)
 { 
-    qDebug() << "vertex:"<< name << "initializing...edgesEstimate:" << edgesEstimate;
+    qCDebug(lcGraphCore) << "vertex:"<< name << "initializing...edgesEstimate:" << edgesEstimate;
 
     m_number=name;
 	m_size=size;
@@ -68,40 +68,18 @@ GraphVertex::GraphVertex(Graph* parentGraph,
     m_outDegree = 0;
     m_inDegree = 0;
     m_localDegree = 0;
+    m_outEdgesNonSym = 0;
+    m_inEdgesNonSym = 0;
+    m_outEdgesSym = 0;
     m_Eccentricity = 0;
     m_distanceSum = 0;
     m_DC=0; m_SDC=0; m_DP=0; m_SDP=0; m_CC=0; m_SCC=0; m_BC=0; m_SBC=0;
     m_SC=0; m_SSC=0; m_IRCC=0; m_SIRCC=0;
+    m_EC=0; m_SEC=0; m_PC=0; m_SPC=0; m_IC=0; m_SIC=0; m_PRC=0; m_SPRC=0;
+    m_PP=0; m_SPP=0; m_EVC=0; m_SEVC=0; m_KC=0; m_SKC=0; m_BPC=0; m_SBPC=0;
     m_CLC=0; m_hasCLC=false;
     m_curRelation=relation;
     m_enabled = true;
-
-    // Connect signal for edge visibility directly to the parent signal!
-    connect( this, &GraphVertex::signalSetEdgeVisibility,
-             m_graph, &Graph::signalSetEdgeVisibility);
-
-}
-
-
-/**
- * @brief constructor with default values
- * @param name
- */
-GraphVertex::GraphVertex(const int &name) {
-    qDebug() << "name"<<  name << "initializing with default values";
-    m_number=name;
-	m_size=9;
-	m_color="black";
-	m_label="";
-	m_labelColor="black";
-	m_shape="circle";
-    m_outEdgesCounter=0;
-    m_inEdgesCounter=0;
-    m_Eccentricity=0;
-    m_DC=0; m_SDC=0; m_DP=0; m_SDP=0; m_CC=0; m_SCC=0; m_BC=0; m_SBC=0;
-    m_IRCC=0; m_SIRCC=0; m_SC=0; m_SSC=0;
-    m_curRelation=0;
-    m_customAttributes = QHash<QString,QString>();
 }
 
 
@@ -336,7 +314,6 @@ void GraphVertex::setCustomAttributes(QHash<QString,QString> customAttributes){
  * @return A QHash containing the custom attributes of the graph vertex.
  */
 QHash<QString,QString> GraphVertex::customAttributes() const {
-    // qDebug() << "GraphVertex::customAttributes()" << m_customAttributes;
     return m_customAttributes;
 }
 
@@ -416,14 +393,14 @@ QPointF& GraphVertex::disp() { return m_disp; }
 *
 * @param newRel
 */
-void GraphVertex::setRelation(int newRel) {
-//    qDebug() << "vertex" << number() << "current rel:" << m_curRelation << "new rel:" << newRel;
+QList<EdgeVisibilityChange> GraphVertex::setRelation(int newRel) {
     // first make false all edges of current relation
-    setEnabledEdgesByRelation(m_curRelation, false);
+    QList<EdgeVisibilityChange> changes = setEnabledEdgesByRelation(m_curRelation, false);
     // then make true all edges of new relation
-    setEnabledEdgesByRelation(newRel, true);
+    changes.append(setEnabledEdgesByRelation(newRel, true));
     // update current relation
     m_curRelation=newRel;
+    return changes;
 }
 
 
@@ -434,8 +411,6 @@ void GraphVertex::setRelation(int newRel) {
  * @param weight
  */
 void GraphVertex::addOutEdge (const int &v2, const qreal &weight, const QString &color, const QString &label) {
-//    qDebug() << "vertex" << number() << "adding new outbound edge"<< "->"<< v2
-//             << "weight"<< weight<< "relation" << m_curRelation;
     // do not use [] operator - silently creates an item if key do not exist
     m_outEdges.insert(
                 v2, pair_i_fb(m_curRelation, pair_f_b(weight, true) ) );
@@ -486,7 +461,6 @@ qreal GraphVertex::hasEdgeTo(const int &v2, const bool &allRelations){
  */
 void GraphVertex::removeOutEdge (const int v2) {
 
-//    qDebug() << "vertex" << number() << "removing outEdge to" << v2;
 
     if (outEdgesCount() == 0) {
         return;
@@ -495,11 +469,6 @@ void GraphVertex::removeOutEdge (const int v2) {
     H_edges::const_iterator it1=m_outEdges.constFind(v2);
     while (it1 != m_outEdges.constEnd() && it1.key() == v2 ) {
         if ( it1.value().first == m_curRelation ) {
-//            qDebug() << " *** vertex " << m_number << " connected to "
-//                     << it1.key() << " relation " << it1.value().first
-//                     << " weight " << it1.value().second.first
-//                     << " enabled ? " << it1.value().second.second
-//                     << " Erasing outEdge from m_outEdges ";
             m_outEdges.erase(it1);
             break;
         }
@@ -517,7 +486,6 @@ void GraphVertex::removeOutEdge (const int v2) {
  * @param status
  */
 void GraphVertex::setOutEdgeEnabled (const int &target, bool status){
-//    qDebug() << "vertex" << number() << "setting outEdge to" << target << "new status" << status;
     int linkTarget=0;
     qreal weight =0;
     int relation = 0;
@@ -528,12 +496,8 @@ void GraphVertex::setOutEdgeEnabled (const int &target, bool status){
             linkTarget=it1.key();
             if ( linkTarget == target ) {
                 weight = it1.value().second.first;
-//                qDebug() << " *** vertex " << m_number << " connected to "
-//                         << linkTarget << " relation " << relation
-//                         << " weight " << weight
-//                         << " status " << it1.value().second.second;
                 it1.value() = pair_i_fb(m_curRelation, pair_f_b(weight, status) );
-                emit signalSetEdgeVisibility (m_curRelation, m_number, target, status );
+                m_graph->notifyEdgeVisibilityChanged(m_curRelation, m_number, target, status);
                 break;
             }
         }
@@ -548,7 +512,6 @@ void GraphVertex::setOutEdgeEnabled (const int &target, bool status){
  * @param weight
  */
 void GraphVertex::setOutEdgeWeight(const int &target, const qreal &weight){
-//    qDebug() << "vertex" << number() << "changing weight of outEdge to" << target << "new weight" << weight;
     H_edges::const_iterator it1=m_outEdges.constFind(target);
     // Find the current edge, remove it and add an updated one.
     while (it1 != m_outEdges.constEnd() ) {
@@ -630,8 +593,6 @@ QHash<QString,QString> GraphVertex::outEdgeCustomAttributes(const int &v2) const
  * @param weight
  */
 void GraphVertex::addInEdge (const int &v1, const qreal &weight) {
-//    qDebug() << "vertex" << number() << "adding new inbound edge"<< "<-"<< v1
-//             << "weight"<< weight<< "relation" << m_curRelation;
     m_inEdges.insert(
                 v1, pair_i_fb (m_curRelation, pair_f_b(weight, true) ) );
 }
@@ -678,7 +639,6 @@ qreal GraphVertex::hasEdgeFrom(const int &v2, const bool &allRelations){
  * @param v2
  */
 void GraphVertex::removeInEdge(const int v2){
-//    qDebug() << "vertex" << number() << "removing inEdge from" << v2;
 
     if (inEdgesCount()==0) {
         return;
@@ -687,11 +647,6 @@ void GraphVertex::removeInEdge(const int v2){
     H_edges::const_iterator it=m_inEdges.constFind(v2);
     while (it != m_inEdges.constEnd() ) {
         if ( it.key() == v2 && it.value().first == m_curRelation ) {
-//            qDebug() << " *** vertex " << m_number << " connected from  "
-//                     << it.key() << " relation " << it.value().first
-//                     << " weight " << it.value().second.first
-//                     << " enabled ? " << it.value().second.second
-//                     << " Erasing inEdge from m_inEdges ";
             m_inEdges.erase(it);
             break;
         }
@@ -709,7 +664,6 @@ void GraphVertex::removeInEdge(const int v2){
  * @param status
  */
 void GraphVertex::setInEdgeEnabled (const int &source, bool status){
-//    qDebug() << "vertex" << number() << ", toggling status of inEdge:" << number() << "<-" << source << "new status:" << status;
     int linkTarget=0;
     qreal weight =0;
     int relation = 0;
@@ -720,12 +674,8 @@ void GraphVertex::setInEdgeEnabled (const int &source, bool status){
             linkTarget=it1.key();
             if ( linkTarget == source ) {
                 weight = it1.value().second.first;
-//                qDebug() << " *** vertex " << m_number << " connected to "
-//                         << linkTarget << " relation " << relation
-//                         << " weight " << weight
-//                         << " status " << it1.value().second.second;
                 it1.value() = pair_i_fb(m_curRelation, pair_f_b(weight, status) );
-                emit signalSetEdgeVisibility (m_curRelation, source, m_number, status );
+                m_graph->notifyEdgeVisibilityChanged(m_curRelation, source, m_number, status);
                 break;
             }
         }
@@ -740,7 +690,6 @@ void GraphVertex::setInEdgeEnabled (const int &source, bool status){
  * @param weight
  */
 void GraphVertex::setInEdgeWeight(const int &source, const qreal &weight){
-//    qDebug() << "vertex" << number() << "changing weight of inEdge from" << source << "new weight" << weight;
     H_edges::const_iterator it1=m_inEdges.constFind(source);
     // Find the current edge, remove it and add an updated one.
     while (it1 != m_inEdges.constEnd() ) {
@@ -893,7 +842,6 @@ bool GraphVertex::isIsolated() {
  * @return QHash<int,qreal>*
  */
 QHash<int,qreal> GraphVertex::outEdgesEnabledHash(const bool &allRelations){
-//    qDebug() << "vertex " << number();
     QHash<int,qreal> enabledOutEdges;
     qreal m_weight=0;
     int relation = 0;
@@ -941,7 +889,6 @@ QHash<int, qreal>* GraphVertex::outEdgesAllRelationsUniqueHash() {
         }
         ++it1;
     }
-//    qDebug() << "vertex" << number() << "outEdges count:"<< outEdgesAll->size();
     return outEdgesAll;
 
 }
@@ -971,7 +918,6 @@ QHash<int, qreal> GraphVertex::reciprocalEdgesHash(){
         ++it1;
     }
 
-//    qDebug() << "vertex" << number() << "reciprocalEdges count:" << m_reciprocalEdges.size();
 
     return m_reciprocalEdges;
 }
@@ -1033,7 +979,6 @@ QHash<int,qreal>* GraphVertex::inEdgesEnabledHash() {
         }
         ++it1;
     }
-//    qDebug() << "vertex" << number() << "enabled inEdges count:"<< enabledInEdges->size();
     return enabledInEdges;
 }
 
@@ -1047,7 +992,6 @@ QHash<int,qreal>* GraphVertex::inEdgesEnabledHash() {
  * @return int
  */
 int GraphVertex::degreeOut() {
-//    qDebug() << "vertex" << number();
     m_outDegree=0;
     qreal m_weight=0;
     int relation = 0;
@@ -1083,7 +1027,6 @@ int GraphVertex::outDegreeConst() {
  * @return int
  */
 int GraphVertex::degreeIn() {
-//    qDebug() << "vertex" << number();
     m_inDegree=0;
     qreal m_weight=0;
     int relation = 0;
@@ -1141,7 +1084,6 @@ int GraphVertex::localDegree(){  int v2=0;
         ++it1;
     }
 
-//    qDebug() << "vertex" << number()  << "localDegree:" << m_localDegree;
 	return m_localDegree;
 }
 
@@ -1152,8 +1094,8 @@ int GraphVertex::localDegree(){  int v2=0;
  *
  * @param status
  */
-void GraphVertex::setEnabledUnilateralEdges(const bool &status){
-//    qDebug() << "vertex:" << number() << "setting unilateral edges of relation" << relation << "to" << status;
+QList<EdgeVisibilityChange> GraphVertex::setEnabledUnilateralEdges(const bool &status){
+    QList<EdgeVisibilityChange> changes;
     int target=0;
     qreal weight=0;
     H_edges::iterator it;
@@ -1162,12 +1104,12 @@ void GraphVertex::setEnabledUnilateralEdges(const bool &status){
             target=it.key();
             weight = it.value().second.first;
             if (hasEdgeFrom(target)==0) {
-//                qDebug() << "vertex:" << number() << "Changing the status of unilateral outbound edge to" << target << "new status" << status << "and emitting signal to Graph....";
                 it.value() = pair_i_fb(m_curRelation, pair_f_b(weight, status) );
-                emit signalSetEdgeVisibility (m_curRelation, m_number, target, status );
+                changes.append(EdgeVisibilityChange(m_curRelation, m_number, target, status));
             }
         }
     }
+    return changes;
 }
 
 
@@ -1178,8 +1120,8 @@ void GraphVertex::setEnabledUnilateralEdges(const bool &status){
  * @param relation
  * @param status
  */
-void GraphVertex::setEnabledEdgesByRelation(const int relation, const bool status ){
-//    qDebug() << "vertex:" << number() << "setting edges of relation" << relation << "to" << status;
+QList<EdgeVisibilityChange> GraphVertex::setEnabledEdgesByRelation(const int relation, const bool status ){
+    QList<EdgeVisibilityChange> changes;
     int target=0;
     qreal weight =0;
     int edgeRelation=0;
@@ -1190,119 +1132,10 @@ void GraphVertex::setEnabledEdgesByRelation(const int relation, const bool statu
             target=it1.key();
             weight = it1.value().second.first;
             it1.value() = pair_i_fb(relation, pair_f_b(weight, status) );
-            emit signalSetEdgeVisibility ( relation, m_number, target, status );
+            changes.append(EdgeVisibilityChange(relation, m_number, target, status));
         }
     }
-}
-
-
-/**
- * @brief Stores the geodesic distance to vertex v1
- *
- * @param v1
- * @param dist
- */
-void GraphVertex::setDistance (const int &v1, const qreal &d) {
-    m_distance.insert( v1, pair_i_f(m_curRelation, d ) );
-}
-
-
-/**
- * @brief Reserves N items for the distance hash. See QHash Algorithmic Complexity
- * Not to be used on large nets, atm.
- * @param N
- */
-void GraphVertex::reserveDistance (const int &N) {
-    m_distance.reserve(N);
-}
-
-
-
-/**
- * @brief Returns the geodesic distance to vertex v1.
- *
- * If d to v1 has not been set previously, returns RAND_MAX
- *
- * @param v1
- */
-qreal GraphVertex::distance (const int &v1) {
-    qreal d=RAND_MAX;
-    int relation=0;
-    H_distance::const_iterator it1=m_distance.constFind(v1);
-    while (it1 != m_distance.constEnd() && it1.key() == v1 ) {
-        relation = it1.value().first;
-        if ( relation == m_curRelation ) {
-            d = it1.value().second;
-            break;
-        }
-        ++it1;
-    }
-//    qDebug() << "vertex" << number()  << "distance to" << v1 << "is" << d;
-    return d;
-}
-
-
-/**
- * @brief Removes all items from m_distance hash dictionary
- */
-void GraphVertex::clearDistance() {
-    m_distance.clear();
-}
-
-
-/**
- * @brief Stores the number of shortest paths from this vertex to vertex v1
- *
- * @param v1
- * @param sp
- */
-void GraphVertex::setShortestPaths (const int &v1, const int &sp) {
-//    qDebug() << "vertex" << number()  << "setting shortest paths count to" << v1 << "equal to" << sp;
-    m_shortestPaths.insert( v1, pair_i_i( m_curRelation, sp ) );
-}
-
-
-/**
- * @brief Returns the stored number of shortest paths to vertex v1
- *
- * If it has not been set previously, then returns 0
- *
- * @param v1
- */
-int GraphVertex::shortestPaths (const int &v1) {
-    int sp=0;
-    int relation=0;
-    H_shortestPaths::const_iterator it1=m_shortestPaths.constFind(v1);
-    while (it1 != m_shortestPaths.constEnd() && it1.key() == v1 ) {
-        relation = it1.value().first;
-        if ( relation == m_curRelation ) {
-            sp = it1.value().second;
-            break;
-        }
-        ++it1;
-    }
-//    qDebug() << "vertex" << number()  << "shortest paths to" << v1 << "count" << sp;
-    return sp;
-}
-
-
-/**
- * @brief Reserves N items for the ShortestPaths hash.
- *
- * See QHash Algorithmic Complexit. Not to be used on large nets, atm.
- *
- * @param N
- */
-void GraphVertex::reserveShortestPaths (const int &N) {
-    m_shortestPaths.reserve(N);
-}
-
-
-/**
- * @brief Removes all items from m_shortestPaths hash dictionary
- */
-void GraphVertex::clearShortestPaths() {
-    m_shortestPaths.clear();
+    return changes;
 }
 
 
@@ -1340,13 +1173,11 @@ int GraphVertex::cliques (const int &ofSize)
  * @param clique
  */
 void GraphVertex::cliqueAdd (const QList<int> &clique) {
-//    qDebug()<<"vertex"<< number()<< "adding clique with:" << clique;
     m_cliques.insert(clique.size(), clique);
 }
 
 
 GraphVertex::~GraphVertex() {
-//    qDebug()<<"vertex"<< number()<< "destroying...";
     m_outEdges.clear();
     m_outEdges.squeeze();
     m_inEdges.clear();
@@ -1361,12 +1192,6 @@ GraphVertex::~GraphVertex() {
     m_outEdgeLabels.squeeze();
 
     m_outEdgeCustomAttributes.clear();
-
-    m_shortestPaths.clear();
-    m_shortestPaths.squeeze();
-
-    m_distance.clear();
-    m_distance.squeeze();
 
     m_cliques.clear();
     m_cliques.squeeze();

@@ -48,9 +48,9 @@
  *     The forward arc (from *Arcs) is left untouched to preserve its original data.
  *   - We emit signalDrawEdge(v2, v1, ..., Reciprocated) — note the swapped arguments.
  *     GraphicsWidget::drawEdge() with Reciprocated looks up the existing arc via
- *     createEdgeName(targetNum, sourceNum). Since createEdgeName() is order-sensitive
- *     ("rel:v1>v2"), passing (v2,v1) makes targetNum=v1, sourceNum=v2, so the lookup
- *     resolves to createEdgeName(v1,v2) which matches the key stored during *Arcs
+ *     edgeKey(targetNum, sourceNum). Since edgeKey() is order-sensitive
+ *     (packs relation/v1/v2 in that order), passing (v2,v1) makes targetNum=v1, sourceNum=v2,
+ *     so the lookup resolves to edgeKey(v1,v2) which matches the key stored during *Arcs
  *     processing. No new GraphicsEdge is created; setDirectionType() is called instead.
  *   - drawArrows is forced true: a reciprocated edge always shows arrows on both ends
  *     regardless of what the undirected request's drawArrows value was.
@@ -116,8 +116,8 @@ bool Graph::edgeCreate(const int &v1,
             //
             // Visual update:
             //   We emit Reciprocated with swapped arguments (v2,v1) so that
-            //   drawEdge()'s internal lookup createEdgeName(targetNum,sourceNum)
-            //   resolves to createEdgeName(v1,v2), matching the key under which
+            //   drawEdge()'s internal lookup edgeKey(targetNum,sourceNum)
+            //   resolves to edgeKey(v1,v2), matching the key under which
             //   the original forward arc was stored during *Arcs processing.
             //   This upgrades the existing GraphicsEdge to bidirectional without
             //   creating any duplicate visual object.
@@ -129,10 +129,6 @@ bool Graph::edgeCreate(const int &v1,
             //   makes the pair more symmetric. Directedness is determined by
             //   the overall graph state after full import completes.
             //
-            // qDebug() << "edgeCreate(): v1->v2 exists as directed arc but request"
-            //             " is Undirected and reverse v2->v1 is missing."
-            //             " Storing reverse arc and upgrading visual to Reciprocated:"
-            //          << v1 << "<->" << v2;
 
             // Store the reverse arc in the data model.
             edgeAdd(v2, v1, weight, EdgeType::Directed, label,
@@ -168,10 +164,6 @@ bool Graph::edgeCreate(const int &v1,
     {
         // Undirected edge: edgeAdd stores BOTH v1->v2 and v2->v1 internally.
         // The UI draws a single undirected edge between the two nodes.
-        // qDebug() << "edgeCreate(): Creating new UNDIRECTED edge:"
-        //          << v1 << "-" << v2
-        //          << "weight" << weight
-        //          << "label" << label;
 
         edgeAdd(v1, v2, weight, type, label,
                 ((weight == 0) ? initEdgeColorZero : color));
@@ -187,11 +179,6 @@ bool Graph::edgeCreate(const int &v1,
         // Adding v1->v2 now makes the relationship reciprocal (bidirectional).
         // Upgrade the edge type to Reciprocated so both the data model and
         // the UI reflect the bidirectional relationship.
-        // qDebug() << "edgeCreate(): Creating new RECIPROCAL edge:"
-        //          << v1 << "->" << v2
-        //          << "weight" << weight
-        //          << "label" << label
-        //          << "(reverse v2->v1 already exists)";
 
         edgeAdd(v1, v2, weight, EdgeType::Reciprocated, label, color);
 
@@ -205,10 +192,6 @@ bool Graph::edgeCreate(const int &v1,
     {
         // Neither v1->v2 nor v2->v1 exists.
         // Create a plain directed arc from v1 to v2.
-        // qDebug() << "edgeCreate(): Creating new DIRECTED edge:"
-        //          << v1 << "->" << v2
-        //          << "weight" << weight
-        //          << "label" << label;
 
         edgeAdd(v1, v2, weight, EdgeType::Directed, label,
                 ((weight == 0) ? initEdgeColorZero : color));
@@ -244,7 +227,6 @@ bool Graph::edgeCreate(const int &v1,
  */
 void Graph::edgeCreateWebCrawler(const int &source, const int &target)
 {
-    //    qDebug()<< " will create edge from" << source << "to" << target ;
     qreal weight = 1.0;
     bool drawArrows = true;
     bool bezier = false;
@@ -300,9 +282,6 @@ void Graph::edgeAdd(const int &v1,
     int source = vpos[v1];
     int target = vpos[v2];
 
-    // qDebug() << "edgeAdd(): Adding arc from vertex" << v1 << "[idx" << source << "]"
-    //          << "to vertex" << v2 << "[idx" << target << "]"
-    //          << "weight" << weight << "type" << type << "label" << label;
 
     // Store the forward arc v1->v2.
     // OutEdge on v1: carries weight, color, and label (full arc metadata).
@@ -333,8 +312,6 @@ void Graph::edgeAdd(const int &v1,
         //
         // Note: only weight is stored on the reverse arc.
         // Color and label are not duplicated on the reverse direction.
-        // qDebug() << "edgeAdd(): Edge is Undirected — also adding reverse arc"
-        //          << v2 << "->" << v1;
 
         m_graph[target]->addOutEdge(v1, weight);
         m_graph[source]->addInEdge(v2, weight);
@@ -368,6 +345,29 @@ void Graph::edgeInboundStatusSet(const int &target, const int &source, const boo
 }
 
 /**
+ * @brief Plain relay to signalSetEdgeVisibility, for GraphVertex (a QtCore-only value class,
+ * not a QObject) to notify the UI layer of a single edge's visibility change. See #WS3 M2.
+ */
+void Graph::notifyEdgeVisibilityChanged(const int &relation, const int &source, const int &target,
+                                        const bool &toggle, const bool &preserveReverseEdge,
+                                        const int &edgeWeight, const int &reverseEdgeWeight)
+{
+    emit signalSetEdgeVisibility(relation, source, target, toggle, preserveReverseEdge,
+                                 edgeWeight, reverseEdgeWeight);
+}
+
+/**
+ * @brief Plain relay to signalSetEdgesVisibilityBatch, for GraphVertex to notify the UI layer
+ * of many edges' visibility changes as a single queued dispatch. See #WS3 M2.
+ */
+void Graph::notifyEdgesVisibilityBatch(const QList<EdgeVisibilityChange> &changes)
+{
+    if (changes.isEmpty())
+        return;
+    emit signalSetEdgesVisibilityBatch(changes);
+}
+
+/**
  * @brief Removes the directed arc v1->v2 or, if the graph is undirected, the edge v1 <->v2
  *
  * Emits signal to GW to delete the graphics item.
@@ -380,7 +380,7 @@ void Graph::edgeRemove(const int &v1,
                        const int &v2,
                        const bool &removeReverse)
 {
-    qDebug() << "Graph::edgeRemove() - edge" << v1 << "[" << vpos[v1]
+    qCDebug(lcStorage) << "Graph::edgeRemove() - edge" << v1 << "[" << vpos[v1]
              << "] -->" << v2 << " to be removed. removeReverse:" << removeReverse;
     m_graph[vpos[v1]]->removeOutEdge(v2);
     m_graph[vpos[v2]]->removeInEdge(v1);
@@ -399,7 +399,11 @@ void Graph::edgeRemove(const int &v1,
         }
     }
 
-    emit signalRemoveEdge(v1, v2, (isDirected() || removeReverse));
+    // Undirected graphs always remove both directions (handled above); for directed graphs,
+    // only remove the reverse arc when the caller explicitly asked for it. Using isDirected()
+    // here always evaluated true for the (much more common) directed case, forcing the GW to
+    // always delete the whole reciprocated edge instead of respecting removeReverse. See #251.
+    emit signalRemoveEdge(v1, v2, (isUndirected() || removeReverse));
 
     setModStatus(ModStatus::EdgeCount);
 }
@@ -412,7 +416,7 @@ void Graph::edgeRemove(const int &v1,
 void Graph::edgeRemoveSelected(SelectedEdge &selectedEdge,
                                const bool &removeReverse)
 {
-    qDebug() << "Graph::edgeRemoveSelected()" << selectedEdge;
+    qCDebug(lcStorage) << "Graph::edgeRemoveSelected()" << selectedEdge;
     edgeRemove(selectedEdge.first, selectedEdge.second, removeReverse);
 }
 
@@ -421,11 +425,11 @@ void Graph::edgeRemoveSelected(SelectedEdge &selectedEdge,
  */
 void Graph::edgeRemoveSelectedAll()
 {
-    qDebug() << "Graph::edgeRemoveSelectedAll()";
+    qCDebug(lcStorage) << "Graph::edgeRemoveSelectedAll()";
 
     foreach (SelectedEdge edgeToRemove, getSelectedEdges())
     {
-        qDebug() << "Graph::edgeRemoveSelectedAll() - About to remove" << edgeToRemove;
+        qCDebug(lcStorage) << "Graph::edgeRemoveSelectedAll() - About to remove" << edgeToRemove;
         edgeRemoveSelected(edgeToRemove, true);
     }
 }
@@ -448,7 +452,6 @@ qreal Graph::edgeExists(const int &v1, const int &v2, const bool &checkReciproca
 {
 
     edgeWeightTemp = m_graph[vpos[v1]]->hasEdgeTo(v2);
-    //    qDebug() << "Checking if edge exists:" << v1 << "->" << v2 << "=" << edgeWeightTemp  ;
 
     if (!checkReciprocal)
     {
@@ -457,7 +460,6 @@ qreal Graph::edgeExists(const int &v1, const int &v2, const bool &checkReciproca
     else if (edgeWeightTemp != 0)
     {
         edgeReverseWeightTemp = m_graph[vpos[v2]]->hasEdgeTo(v1);
-        //        qDebug() << "Checking if reverse edge exists: " << v2 << "->" << v1 << "=" << edgeWeightTemp  ;
         if (edgeWeightTemp == edgeReverseWeightTemp)
         {
             return edgeWeightTemp;
@@ -513,12 +515,12 @@ bool Graph::edgeSymmetric(const int &v1, const int &v2)
 {
     if ((edgeExists(v1, v2, true)) != 0)
     {
-        qDebug() << "Edge" << v1 << "->" << v2 << "is symmetric";
+        qCDebug(lcStorage) << "Edge" << v1 << "->" << v2 << "is symmetric";
         return true;
     }
     else
     {
-        qDebug() << "Edge" << v1 << "->" << v2 << "is not symmetric";
+        qCDebug(lcStorage) << "Edge" << v1 << "->" << v2 << "is not symmetric";
         return false;
     }
 }
@@ -583,7 +585,7 @@ int Graph::edgesEnabled()
  */
 int Graph::vertexEdgesOutbound(int v1)
 {
-    qDebug("Graph: vertexEdgesOutbound()");
+    qCDebug(lcStorage, "Graph: vertexEdgesOutbound()");
     return m_graph[vpos[v1]]->outEdgesCount();
 }
 
@@ -594,7 +596,7 @@ int Graph::vertexEdgesOutbound(int v1)
  */
 int Graph::vertexEdgesInbound(int v1)
 {
-    qDebug("Graph: vertexEdgesInbound()");
+    qCDebug(lcStorage, "Graph: vertexEdgesInbound()");
     return m_graph[vpos[v1]]->inEdgesCount();
 }
 
@@ -613,12 +615,12 @@ int Graph::vertexEdgesInbound(int v1)
 void Graph::edgeWeightSet(const int &v1, const int &v2,
                           const qreal &weight, const bool &undirected)
 {
-    qDebug() << "Changing the weight of edge" << v1 << "[" << vpos[v1]
+    qCDebug(lcStorage) << "Changing the weight of edge" << v1 << "[" << vpos[v1]
              << "]->" << v2 << "[" << vpos[v2] << "]" << " to new weight " << weight;
     m_graph[vpos[v1]]->setOutEdgeWeight(v2, weight);
     if (undirected)
     {
-        qDebug() << "Changing the weight of the reverse edge too";
+        qCDebug(lcStorage) << "Changing the weight of the reverse edge too";
         m_graph[vpos[v2]]->setOutEdgeWeight(v1, weight);
     }
     emit setEdgeWeight(v1, v2, weight);
@@ -649,7 +651,7 @@ void Graph::edgeTypeSet(const int &v1,
                         const int &dirType)
 {
 
-    qDebug() << "Changing the direction type of edge: " << v1
+    qCDebug(lcStorage) << "Changing the direction type of edge: " << v1
              << "->" << v2 << "new edgeType:" << dirType;
 
     if (dirType != EdgeType::Directed)
@@ -661,7 +663,7 @@ void Graph::edgeTypeSet(const int &v1,
         if (revEdgeWeight == 0)
         {
             // Reverse edge does not exist, add it
-            qDebug() << "reverse  edge" << v1 << " <- " << v2 << " does not exist - Adding it...";
+            qCDebug(lcStorage) << "reverse  edge" << v1 << " <- " << v2 << " does not exist - Adding it...";
             // Note: Even if dirType=EdgeType::Undirected we add the opposite edge as EdgeType::Reciprocated
             edgeAdd(v2, v1, weight, EdgeType::Reciprocated, "", initEdgeColor);
         }
@@ -672,7 +674,7 @@ void Graph::edgeTypeSet(const int &v1,
             {
                 // Make the edge weights equal
                 // TOFIX: how do we decide which of the two weights to keep?
-                qDebug() << "Graph::edgeTypeSet(): opposite  " << v1
+                qCDebug(lcStorage) << "Graph::edgeTypeSet(): opposite  " << v1
                          << " <- " << v2 << " exists - equaling weights.";
                 if (weight != revEdgeWeight)
                 {

@@ -17,16 +17,22 @@
 #                       (export skipped for formats without exporter;
 #                        baseline locks in the skipped outcome too)
 #   v6  clustering    — clustering coefficient + triad census + clique census
-#   v7  connectivity  — weakly connected components count + per-node component IDs
+#   v7  connectivity  — weakly/strongly connected components count + per-node component IDs
+#   v8  matrix        — raw contents of every Matrix-producing operation (adjacency,
+#                        inverse, distances, similarity, reachability, walks, cliques)
+#   v9  vertex_connectivity — local (Menger's theorem/max-flow) or global (pairwise-minimum)
+#                        vertex connectivity
 #
 # Baselines:
-#   src/tools/baselines/             (distance v1)
+#   src/tools/baselines/distance/     (v1)
 #   src/tools/baselines/reachability/ (v2)
 #   src/tools/baselines/walks/        (v3)
 #   src/tools/baselines/prominence/   (v4)
 #   src/tools/baselines/io_roundtrip/ (v5)
 #   src/tools/baselines/clustering/   (v6)
 #   src/tools/baselines/connectivity/ (v7)
+#   src/tools/baselines/matrix/       (v8)
+#   src/tools/baselines/vertex_connectivity/ (v9)
 #
 # To add a new case:
 #   1. Run socnetv-cli --kernel <k> ... --dump-json <baseline.json>
@@ -58,13 +64,15 @@ fi
 
 echo "[golden] Using CLI: $CLI"
 
-BASE="${ROOT_DIR}/src/tools/baselines"
+BASE_DISTANCE="${ROOT_DIR}/src/tools/baselines/distance"
 BASE_REACH="${ROOT_DIR}/src/tools/baselines/reachability"
 BASE_WALKS="${ROOT_DIR}/src/tools/baselines/walks"
 BASE_PROM="${ROOT_DIR}/src/tools/baselines/prominence"
 BASE_IO="${ROOT_DIR}/src/tools/baselines/io_roundtrip"
 BASE_CLUST="${ROOT_DIR}/src/tools/baselines/clustering"
 BASE_CONN="${ROOT_DIR}/src/tools/baselines/connectivity"
+BASE_MATRIX="${ROOT_DIR}/src/tools/baselines/matrix"
+BASE_VCONN="${ROOT_DIR}/src/tools/baselines/vertex_connectivity"
 DATA="${ROOT_DIR}/src/data"
 
 if [[ ! -x "$CLI" ]]; then
@@ -144,10 +152,36 @@ run_case_clustering() {
 run_case_connectivity() {
   local input="$1"
   local ftype="$2"
+  local flags=("${@:3:${#}-3}")
   local baseline="${!#}"
 
   echo "==> $(basename "$baseline")"
-  if ! "$CLI" --kernel connectivity -i "$input" -f "$ftype" --compare-json "$baseline"; then
+  if ! "$CLI" --kernel connectivity -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
+    echo "[FAIL] $(basename "$baseline")"
+    FAILS=$((FAILS+1))
+  fi
+}
+
+run_case_matrix() {
+  local input="$1"
+  local ftype="$2"
+  local baseline="${!#}"
+
+  echo "==> $(basename "$baseline")"
+  if ! "$CLI" --kernel matrix -i "$input" -f "$ftype" -c 0 --compare-json "$baseline"; then
+    echo "[FAIL] $(basename "$baseline")"
+    FAILS=$((FAILS+1))
+  fi
+}
+
+run_case_vertex_connectivity() {
+  local input="$1"
+  local ftype="$2"
+  local flags=("${@:3:${#}-3}")
+  local baseline="${!#}"
+
+  echo "==> $(basename "$baseline")"
+  if ! "$CLI" --kernel vertex_connectivity -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
   fi
@@ -179,25 +213,25 @@ run_case \
   "${DATA}/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj" \
   2 \
   -c 1 -w 0 -x 1 -k 0 \
-  "${BASE}/DunbarGelada_H22a__FT2__C1_W0_IW1_DI0.json"
+  "${BASE_DISTANCE}/DunbarGelada_H22a__FT2__C1_W0_IW1_DI0.json"
 
 run_case \
   "${DATA}/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj" \
   2 \
   -c 1 -w 1 -x 1 -k 0 \
-  "${BASE}/DunbarGelada_H22a__FT2__C1_W1_IW1_DI0.json"
+  "${BASE_DISTANCE}/DunbarGelada_H22a__FT2__C1_W1_IW1_DI0.json"
 
 run_case \
   "${DATA}/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl" \
   5 \
   -c 1 -w 0 -x 1 -k 0 \
-  "${BASE}/StokmanZiegler_Netherlands__FT5__C1_W0_IW1_DI0.json"
+  "${BASE_DISTANCE}/StokmanZiegler_Netherlands__FT5__C1_W0_IW1_DI0.json"
 
 run_case \
   "${DATA}/Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl" \
   5 \
   -c 1 -w 1 -x 1 -k 0 \
-  "${BASE}/StokmanZiegler_Netherlands__FT5__C1_W1_IW1_DI0.json"
+  "${BASE_DISTANCE}/StokmanZiegler_Netherlands__FT5__C1_W1_IW1_DI0.json"
 
 # REACHABILITY (schema v2)
 run_case_reachability \
@@ -265,7 +299,137 @@ run_case_prominence \
   -w 0 -x 1 -k 0 \
   "${BASE_PROM}/Sampson_Monks_N18__PROM__V4__FT2__W0_IW1_DI0.json"
 
-  
+# Weighted + isolate coverage (previously missing - see kernel_prominence_v4.cpp's
+# centralityInformation()/centralityEigenvector() arg-shift fix, which this combination
+# would have caught: considerWeights=1 with an isolate present, varying inverseWeights and
+# dropIsolates independently).
+run_case_prominence \
+  "${DATA}/TinyWeightedIsolate_Undir_N4_E2.paj" \
+  2 \
+  -w 1 -x 1 -k 0 \
+  "${BASE_PROM}/TinyWeightedIsolate_Undir_N4_E2__PROM__V4__FT2__W1_IW1_DI0.json"
+
+run_case_prominence \
+  "${DATA}/TinyWeightedIsolate_Undir_N4_E2.paj" \
+  2 \
+  -w 1 -x 1 -k 1 \
+  "${BASE_PROM}/TinyWeightedIsolate_Undir_N4_E2__PROM__V4__FT2__W1_IW1_DI1.json"
+
+run_case_prominence \
+  "${DATA}/TinyWeightedIsolate_Undir_N4_E2.paj" \
+  2 \
+  -w 1 -x 0 -k 0 \
+  "${BASE_PROM}/TinyWeightedIsolate_Undir_N4_E2__PROM__V4__FT2__W1_IW0_DI0.json"
+
+# Katz/Bonacich on binary vs. real (non-unit) weights, both raw and inverted (WS11, #10/#39) -
+# closes a verification gap: every other Katz/Bonacich baseline above only ever exercised binary
+# adjacency (considerWeights=0), never real edge weights or the inverseWeights transformation.
+# All three computed independently via Gauss-Jordan elimination in plain Python against the same
+# A-B(2.5)-C(1.5) weighted path (isolate D dropped) before being dumped.
+run_case_prominence \
+  "${DATA}/TinyWeightedIsolate_Undir_N4_E2.paj" \
+  2 \
+  -w 0 -x 1 -k 1 --katz-alpha 0.2 --bonacich-alpha 1 --bonacich-beta 0.3 \
+  "${BASE_PROM}/TinyWeightedIsolate_Undir_N4_E2__PROM__V4__FT2__W0_IW1_DI1_KA0.2_BA1_BB0.3.json"
+
+run_case_prominence \
+  "${DATA}/TinyWeightedIsolate_Undir_N4_E2.paj" \
+  2 \
+  -w 1 -x 0 -k 1 --katz-alpha 0.171499 --bonacich-alpha 1 --bonacich-beta 0.171499 \
+  "${BASE_PROM}/TinyWeightedIsolate_Undir_N4_E2__PROM__V4__FT2__W1_IW0_DI1_KA0.171499_BA1_BB0.171499.json"
+
+run_case_prominence \
+  "${DATA}/TinyWeightedIsolate_Undir_N4_E2.paj" \
+  2 \
+  -w 1 -x 1 -k 1 --katz-alpha 0.2 --bonacich-alpha 1 --bonacich-beta 0.3 \
+  "${BASE_PROM}/TinyWeightedIsolate_Undir_N4_E2__PROM__V4__FT2__W1_IW1_DI1_KA0.2_BA1_BB0.3.json"
+
+# Katz Centrality (WS11, #10) - each value independently cross-checked against a hand-derived
+# reference computation (Gauss-Jordan elimination of (I - alpha*A^T) in plain Python) before
+# being dumped, not just accepted as "whatever the code produced."
+run_case_prominence \
+  "${DATA}/TinyPath_N3_E2.paj" \
+  2 \
+  -w 0 -x 1 -k 0 --katz-alpha 0.2 \
+  "${BASE_PROM}/TinyPath_N3_E2__PROM__V4__FT2__W0_IW1_DI0_KA0.2.json"
+
+run_case_prominence \
+  "${DATA}/TinyDirChain_N3.paj" \
+  2 \
+  -w 0 -x 1 -k 0 --katz-alpha 0.5 \
+  "${BASE_PROM}/TinyDirChain_N3__PROM__V4__FT2__W0_IW1_DI0_KA0.5.json"
+
+# alpha=0.8 exceeds this graph's 1/lambda_max (~0.707) - locks in the boundary-rejection path
+# (all-zero KC/SKC), not just the happy path.
+run_case_prominence \
+  "${DATA}/TinyPath_N3_E2.paj" \
+  2 \
+  -w 0 -x 1 -k 0 --katz-alpha 0.8 \
+  "${BASE_PROM}/TinyPath_N3_E2__PROM__V4__FT2__W0_IW1_DI0_KA0.8_reject.json"
+
+run_case_prominence \
+  "${DATA}/Krackhardt_Kite_N10.paj" \
+  2 \
+  -w 0 -x 1 -k 0 --katz-alpha 0.1 \
+  "${BASE_PROM}/Krackhardt_Kite_N10__PROM__V4__FT2__W0_IW1_DI0_KA0.1.json"
+
+# Bonacich Power Centrality (WS11, #39) - each value independently cross-checked against a
+# hand-derived reference computation (Gauss-Jordan elimination of (I - beta*A^T) in plain Python)
+# before being dumped, same discipline as Katz above.
+run_case_prominence \
+  "${DATA}/TinyPath_N3_E2.paj" \
+  2 \
+  -w 0 -x 1 -k 0 --bonacich-alpha 1 --bonacich-beta 0.5 \
+  "${BASE_PROM}/TinyPath_N3_E2__PROM__V4__FT2__W0_IW1_DI0_BA1_BB0.5.json"
+
+run_case_prominence \
+  "${DATA}/TinyDirChain_N3.paj" \
+  2 \
+  -w 0 -x 1 -k 0 --bonacich-alpha 1 --bonacich-beta -0.5 \
+  "${BASE_PROM}/TinyDirChain_N3__PROM__V4__FT2__W0_IW1_DI0_BA1_BB-0.5.json"
+
+# beta=0.75 exceeds this graph's 1/lambda_max (~0.707) - locks in the boundary-rejection path
+# (all-zero BPC/SBPC), not just the happy path.
+run_case_prominence \
+  "${DATA}/TinyPath_N3_E2.paj" \
+  2 \
+  -w 0 -x 1 -k 0 --bonacich-alpha 1 --bonacich-beta 0.75 \
+  "${BASE_PROM}/TinyPath_N3_E2__PROM__V4__FT2__W0_IW1_DI0_BA1_BB0.75_reject.json"
+
+# beta=-0.6 (negative, within bound) deliberately exercises Bonacich's signature sign-flip
+# behavior: node 2 (tied to both endpoints) gains a large positive score while both endpoints
+# come out NEGATIVE - hand-verified via the same Gauss-Jordan cross-check.
+run_case_prominence \
+  "${DATA}/TinyPath_N3_E2.paj" \
+  2 \
+  -w 0 -x 1 -k 0 --bonacich-alpha 1 --bonacich-beta -0.6 \
+  "${BASE_PROM}/TinyPath_N3_E2__PROM__V4__FT2__W0_IW1_DI0_BA1_BB-0.6_negflip.json"
+
+run_case_prominence \
+  "${DATA}/Krackhardt_Kite_N10.paj" \
+  2 \
+  -w 0 -x 1 -k 0 --bonacich-alpha 1 --bonacich-beta 0.1 \
+  "${BASE_PROM}/Krackhardt_Kite_N10__PROM__V4__FT2__W0_IW1_DI0_BA1_BB0.1.json"
+
+# Directed acyclic (nilpotent) + weighted, alpha/beta=1 (WS11, #10/#39) - locks in the
+# Matrix::powerIteration() fix for lambdaMax on nilpotent matrices (any directed graph with no
+# cycles - a DAG/tree/chain): the true lambda_max is exactly 0 there (no convergence bound, any
+# value works), but a pre-existing divide-by-zero safety substitution was incorrectly reported
+# as lambdaMax=1 instead, causing Katz/Bonacich to wrongly reject alpha/beta >= 1 on such graphs.
+# alpha=beta=1 here would have been (incorrectly) rejected before the fix. Both raw and inverted
+# weights independently verified via Gauss-Jordan elimination in plain Python.
+run_case_prominence \
+  "${DATA}/TinyDirWeighted_N3.paj" \
+  2 \
+  -w 1 -x 0 -k 0 --katz-alpha 1 --bonacich-alpha 1 --bonacich-beta 1 \
+  "${BASE_PROM}/TinyDirWeighted_N3__PROM__V4__FT2__W1_IW0_DI0_KA1_BA1_BB1.json"
+
+run_case_prominence \
+  "${DATA}/TinyDirWeighted_N3.paj" \
+  2 \
+  -w 1 -x 1 -k 0 --katz-alpha 1 --bonacich-alpha 1 --bonacich-beta 1 \
+  "${BASE_PROM}/TinyDirWeighted_N3__PROM__V4__FT2__W1_IW1_DI0_KA1_BA1_BB1.json"
+
 # IO ROUNDTRIP (schema v5)
 run_case_io "${DATA}/TinyAdj_Undir_N3.adj" 3 -d " " -l 0 "${BASE_IO}/TinyAdj_Undir_N3__FT3.json"
 run_case_io "${DATA}/TinyAdj_Weighted_Dir_N3.adj" 3 -d " " -l 0 "${BASE_IO}/TinyAdj_Weighted_Dir_N3__FT3.json"
@@ -368,6 +532,92 @@ run_case_connectivity \
   "${DATA}/TinyIsolated_Undir_N3_E0.paj" \
   2 \
   "${BASE_CONN}/TinyIsolated_Undir_N3_E0__CONN__V7__FT2.json"
+
+# Strong connectivity (--connectivity-type strong) - only meaningfully distinct from weak on
+# directed graphs, so only the datasets above that actually parse as directed get a strong-mode
+# baseline too (TinyIsolated_Dir_N2_E0 has zero edges and parses as undirected, so it's skipped).
+run_case_connectivity \
+  "${DATA}/TinyDisconnected_Dir_N5_E3.paj" \
+  2 \
+  --connectivity-type strong \
+  "${BASE_CONN}/TinyDisconnected_Dir_N5_E3__CONN__V7__FT2__STRONG.json"
+
+run_case_connectivity \
+  "${DATA}/TinyArc_Dir_N2_E1.paj" \
+  2 \
+  --connectivity-type strong \
+  "${BASE_CONN}/TinyArc_Dir_N2_E1__CONN__V7__FT2__STRONG.json"
+
+run_case_connectivity \
+  "${DATA}/TinyWeaklyConn_Dir_N3_E2.paj" \
+  2 \
+  --connectivity-type strong \
+  "${BASE_CONN}/TinyWeaklyConn_Dir_N3_E2__CONN__V7__FT2__STRONG.json"
+
+# MATRIX (schema v8) - see WS6.7 in roadmap_ws6_testing_ci_regression.md.
+# Note: Benchmark_BA_Directed_N500_m3 is dumped in summary mode (row/col sums, trace,
+# sampled cells) and skips the total_walks category - see kTotalWalksSkipThreshold in
+# kernel_matrix_v8.cpp for why (total walks alone measured ~9 min at N=500).
+run_case_matrix \
+  "${DATA}/TinyPath_N3_E2.paj" \
+  2 \
+  "${BASE_MATRIX}/TinyPath_N3_E2__MATRIX__V8__FT2__W0_IW1_DI0.json"
+
+run_case_matrix \
+  "${DATA}/TinyDisconnected_Undir_N6_E4.paj" \
+  2 \
+  "${BASE_MATRIX}/TinyDisconnected_Undir_N6_E4__MATRIX__V8__FT2__W0_IW1_DI0.json"
+
+run_case_matrix \
+  "${DATA}/Benchmark_BA_Directed_N500_m3.paj" \
+  2 \
+  "${BASE_MATRIX}/Benchmark_BA_Directed_N500_m3__MATRIX__V8__FT2__W0_IW1_DI0.json"
+
+# VERTEX CONNECTIVITY (schema v9) - deliberately Tiny*/toy datasets only. The global mode's
+# pairwise-minimum algorithm is O(n^2) local-connectivity computations in the worst case (see
+# Graph::graphConnectivity()'s doc comment) - fine for a handful of nodes, not for the
+# Benchmark_*/500-node datasets used elsewhere in this file.
+run_case_vertex_connectivity \
+  "${DATA}/TinyPath_N3_E2.paj" \
+  2 \
+  --conn-mode global \
+  "${BASE_VCONN}/TinyPath_N3_E2__VCONN__V9__FT2__global.json"
+
+run_case_vertex_connectivity \
+  "${DATA}/TinyPath_N3_E2.paj" \
+  2 \
+  --conn-mode local --conn-source 1 --conn-target 3 \
+  "${BASE_VCONN}/TinyPath_N3_E2__VCONN__V9__FT2__local_1_3.json"
+
+run_case_vertex_connectivity \
+  "${DATA}/TinyPath_N3_E2.paj" \
+  2 \
+  --conn-mode local --conn-source 1 --conn-target 2 \
+  "${BASE_VCONN}/TinyPath_N3_E2__VCONN__V9__FT2__local_1_2_adjacent.json"
+
+run_case_vertex_connectivity \
+  "${DATA}/TinyDisconnected_Undir_N6_E4.paj" \
+  2 \
+  --conn-mode global \
+  "${BASE_VCONN}/TinyDisconnected_Undir_N6_E4__VCONN__V9__FT2__global.json"
+
+run_case_vertex_connectivity \
+  "${DATA}/TinyWeaklyConn_Dir_N3_E2.paj" \
+  2 \
+  --conn-mode global --connectivity-type weak \
+  "${BASE_VCONN}/TinyWeaklyConn_Dir_N3_E2__VCONN__V9__FT2__global_weak.json"
+
+run_case_vertex_connectivity \
+  "${DATA}/TinyWeaklyConn_Dir_N3_E2.paj" \
+  2 \
+  --conn-mode global --connectivity-type strong \
+  "${BASE_VCONN}/TinyWeaklyConn_Dir_N3_E2__VCONN__V9__FT2__global_strong.json"
+
+run_case_vertex_connectivity \
+  "${DATA}/TinyComplete_Undir_N4_E6.paj" \
+  2 \
+  --conn-mode global \
+  "${BASE_VCONN}/TinyComplete_Undir_N4_E6__VCONN__V9__FT2__global.json"
 
 echo
 if [[ "$FAILS" -eq 0 ]]; then

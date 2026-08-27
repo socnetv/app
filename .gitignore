@@ -1,6 +1,7 @@
 CLAUDE.md
 *.pro.user
 build
+build-asan
 builds/
 build-SocNetV*
 build-tools

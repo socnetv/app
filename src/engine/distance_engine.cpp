@@ -20,12 +20,23 @@
 #include "engine/thread_local_state.h"
 
 #include <QDebug>
+#include <QLoggingCategory>
 #include <QMutex>
 #include <QThread>
 #include <QtConcurrent/QtConcurrent>
 #include <cstdlib>
 #include <queue>
 
+Q_LOGGING_CATEGORY(lcEngine, "socnetv.engine")
+
+/**
+ * @brief Per-run scratch state for DistanceEngine::compute(), scoped to one compute() call.
+ *
+ * Not per-source (see PerSourceScratch/ThreadLocalState in per_source_scratch.h /
+ * thread_local_state.h for that) — this is the state threaded through compute()'s three
+ * phases (initRun / runAllSources / finalize) that used to be a long list of local variables
+ * before WS1's Phase C extraction. One instance lives on compute()'s stack for the whole call.
+ */
 struct DistanceScratch
 {
     // Iterators (kept exactly as locals were)
@@ -53,6 +64,15 @@ struct DistanceScratch
     qreal pairDistance = 0;
 };
 
+/**
+ * @brief Per-run scratch for centrality values computed once per SSSP source, before the
+ * parallel per-source loop existed to own its own copy (see ThreadLocalState::pss for the
+ * per-thread equivalent used inside runAllSources()'s blockingMap lambda).
+ *
+ * Retained as a distinct type from CentralityScratchFinalize because these fields are
+ * meaningful only during the single-source SSSP pass itself, not the finalize/aggregation
+ * phase that runs once after all sources are done.
+ */
 struct CentralityScratchSSSP
 {
     // Per-source values computed inside the SSSP loop
@@ -72,6 +92,13 @@ struct CentralityScratchSSSP
     H_f_i::const_iterator hfi;
 };
 
+/**
+ * @brief Scratch for the finalize() phase — the single-threaded pass that runs once after
+ * runAllSources() completes, scanning every vertex to compute connectivity, group-level
+ * aggregates, and normalised (standardised) centrality scores from the raw per-vertex values
+ * runAllSources() already wrote. Distinct from CentralityScratchSSSP because these values are
+ * only meaningful for this one post-loop scan, not during the per-source SSSP pass itself.
+ */
 struct CentralityScratchFinalize
 {
     // Values used while scanning vertices and aggregating
@@ -114,7 +141,7 @@ void DistanceEngine::compute(const bool computeCentralities,
                              const bool dropIsolates)
 {
 
-    qDebug() << "DistanceEngine::compute() - "
+    qCDebug(lcEngine) << "DistanceEngine::compute() - "
              << "centralities" << computeCentralities
              << "considerWeights:" << considerWeights
              << "inverseWeights:" << inverseWeights
@@ -136,6 +163,9 @@ void DistanceEngine::compute(const bool computeCentralities,
     CentralityScratchSSSP csssp;
     CentralityScratchFinalize csfin;
 
+    // Routes progress/status/cancel notifications back to graph's Qt signals (see
+    // graph_distance_progress_sink.h) - keeps this file free of any direct Qt-signal
+    // dependency of its own.
     GraphDistanceProgressSink sink(graph);
 
     // ---- Phase 0/Init (includes E==0 handling) ----
@@ -159,8 +189,7 @@ void DistanceEngine::compute(const bool computeCentralities,
                       sink);
         if (sink.progressCanceled())
         {
-            qDebug() << "DistanceEngine::compute() - canceled. Skipping finalize.";
-            sink.progressKill();
+            qCDebug(lcEngine) << "DistanceEngine::compute() - canceled. Skipping finalize.";
             return;
         }
         // ---- Finalization: connectivity scan + aggregation ----
@@ -173,9 +202,7 @@ void DistanceEngine::compute(const bool computeCentralities,
 
     graph.calculatedDistances = true;
 
-    qDebug() << "Graph::graphDistancesGeodesic()- FINISHED computing distances";
-
-    sink.progressKill();
+    qCDebug(lcEngine) << "Graph::graphDistancesGeodesic()- FINISHED computing distances";
 }
 
 void DistanceEngine::initRun(const bool computeCentralities,
@@ -194,22 +221,24 @@ void DistanceEngine::initRun(const bool computeCentralities,
     ds.pMsg = QObject::tr("Computing geodesic distances. \nPlease wait...");
 
     sink.statusMessage(ds.pMsg);
-    sink.progressCreate(ds.N, ds.pMsg);
+    sink.resetCancellation();
 
     graph.setSymmetricCached(graph.isSymmetric());
 
     if (ds.E == 0)
     {
-        for (ds.it = graph.verticesBegin(); ds.it != graph.verticesEnd(); ++ds.it)
-        {
-            for (ds.it1 = graph.verticesBegin(); ds.it1 != graph.verticesEnd(); ++ds.it1)
-            {
-                // Set all pair-wise distances to RAND_MAX
-                (*ds.it)->setDistance((*ds.it1)->number(), RAND_MAX);
-                // Set all pair-wise shortest-path counts (sigmas) to 0
-                (*ds.it)->setShortestPaths((*ds.it1)->number(), 0);
-            }
-        }
+        // All pairs unreachable. E==0 means no source loop runs (compute() skips
+        // runAllSources() entirely for E==0), so this is the only place that needs to
+        // populate m_apspDist/m_apspSigma for this case.
+        int totalV = 0;
+        for (auto it = graph.verticesBegin(); it != graph.verticesEnd(); ++it)
+            ++totalV;
+        const int relation = graph.relationCurrent();
+        graph.m_apspDist[relation].resize(totalV, totalV);
+        graph.m_apspSigma[relation].resize(totalV, totalV);
+        graph.m_apspDist[relation].fillMatrix(RAND_MAX);
+        // Sigma stays at 0 - Matrix::resize() zero-initializes every cell already.
+
         if (ds.N < 2)
         {
             // singleton graph consisting of a single isolated node
@@ -341,15 +370,6 @@ void DistanceEngine::initRun(const bool computeCentralities,
         {
             for (ds.it1 = graph.verticesBegin(); ds.it1 != graph.verticesEnd(); ++ds.it1)
             {
-                // All pair-wise distances are set to RAND_MAX by default
-                // inside GraphVertex::distance()
-                // so we don't need to explicitly set them here.
-                // We just clear distance hashmap of each actor.
-                (*ds.it)->clearDistance();
-                // Set all pair-wise shortest-path counts (sigmas) to 0
-                // (*it)->setShortestPaths((*it1)->number(), 0);
-                (*ds.it)->clearShortestPaths();
-
                 if (considerWeights && inverseWeights)
                 {
                     // find the max weight in the network.
@@ -404,7 +424,7 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
                                    DistanceScratch &ds,
                                    IDistanceProgressSink &sink)
 {
-    qDebug() << "*********** MAIN LOOP (parallel): "
+    qCDebug(lcEngine) << "*********** MAIN LOOP (parallel): "
                 "solving SSSP from every source vertex across CPU cores...";
 
     // Count total VList positions (includes disabled vertices) for scratch-array sizing.
@@ -413,6 +433,14 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
     int totalV = 0;
     for (auto it = graph.verticesBegin(); it != graph.verticesEnd(); ++it)
         ++totalV;
+
+    // WS5 A2: relation-keyed flat-matrix APSP storage, resized fresh for this run (same
+    // always-reconstruct convention every other Graph matrix field already follows - see
+    // createMatrixAdjacency()/graphMatrixDistanceGeodesicCreate()). Written alongside the
+    // per-vertex QHash writes below; nothing reads from it yet.
+    const int relation = graph.relationCurrent();
+    graph.m_apspDist[relation].resize(totalV, totalV);
+    graph.m_apspSigma[relation].resize(totalV, totalV);
 
     // Over-allocate the state vector generously.  The pool has at most
     // idealThreadCount() workers; doubling + 4 guards against unexpected
@@ -474,7 +502,7 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
         const int s  = src.first;
         const int si = src.second;
 
-        qDebug() << "***** PHASE 1 (SSSP) [thread slot" << mySlot << "]: source s" << s << "vpos" << si;
+        qCDebug(lcEngine) << "***** PHASE 1 (SSSP) [thread slot" << mySlot << "]: source s" << s << "vpos" << si;
 
         // Reset per-source scratch (dist, sigma, and optionally Stack/Ps/nthOrder).
         // Also resets pss.sourceDistanceSum / sourceGeodesicsCount / sourceDiameter.
@@ -493,21 +521,19 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
         if (tls.pss.sourceDiameter > tls.maxDiameter)
             tls.maxDiameter = tls.pss.sourceDiameter;
 
-        qDebug() << "***** PHASE 1 (SSSP): FINISHED BFS/DIJKSTRA for s" << s
+        qCDebug(lcEngine) << "***** PHASE 1 (SSSP): FINISHED BFS/DIJKSTRA for s" << s
                  << "— writing APSP results back to vertex" << si;
 
-        // APSP write-back: persist tls.pss.dist / sigma into vertex si's per-pair storage.
-        // Safe: si is unique across all concurrent lambda invocations.
-        // Unreachable vertices (dist == RAND_MAX) are skipped; the vertex-hash default
-        // already returns RAND_MAX for missing entries.
+        // APSP write-back: persist tls.pss.dist / sigma into row si of the flat matrices.
+        // Safe: si is unique across all concurrent lambda invocations, so no two sources ever
+        // write the same row. Unconditional (every column vi, not just reached ones) -
+        // tls.pss.dist[vi] already holds RAND_MAX for every unreached vi
+        // (PerSourceScratch::resetPerSource() fills it before every source, unconditionally),
+        // so this isn't new work - it reuses a reset that was already happening.
         for (int vi = 0; vi < totalV; ++vi)
         {
-            if (tls.pss.dist[vi] != (qreal)RAND_MAX)
-            {
-                int vnum = graph.vertexAtIndex(vi)->number();
-                graph.vertexAtIndex(si)->setDistance(vnum, tls.pss.dist[vi]);
-                graph.vertexAtIndex(si)->setShortestPaths(vnum, tls.pss.sigma[vi]);
-            }
+            graph.m_apspDist[relation].setItem(si, vi, tls.pss.dist[vi]);
+            graph.m_apspSigma[relation].setItem(si, vi, (qreal)tls.pss.sigma[vi]);
         }
 
         if (computeCentralities)
@@ -532,7 +558,7 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
             graph.vertexAtIndex(si)->setSPC(spc); // safe: source vertex
             tls.totalSumSPC += spc;
 
-            qDebug() << "***** PHASE 2 (CENTRALITIES): s" << s << "vpos" << si << "PC" << pc;
+            qCDebug(lcEngine) << "***** PHASE 2 (CENTRALITIES): s" << s << "vpos" << si << "PC" << pc;
 
             // ---- Closeness Centrality + delta reset ----
             // Walk every vertex position to zero delta[] (needed for BC back-propagation)
@@ -552,14 +578,14 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
                            : 0;
             graph.vertexAtIndex(si)->setCC(cc);   // safe: source vertex
 
-            qDebug() << "***** PHASE 2 (CENTRALITIES): s" << s << "vpos" << si << "CC" << cc;
+            qCDebug(lcEngine) << "***** PHASE 2 (CENTRALITIES): s" << s << "vpos" << si << "CC" << cc;
 
             // ---- Brandes BC back-propagation ----
             // Visit vertices in reverse BFS/Dijkstra order (deepest first) and propagate
             // dependency deltas up the shortest-path DAG.  Instead of writing to
             // vertex->BC() directly (which would race across threads for intermediate
             // vertices), accumulate into tls.partialBC[wi]; the reduction step merges all.
-            qDebug() << "***** PHASE 2 (BC/ACCUMULATION): back-propagating from s" << s
+            qCDebug(lcEngine) << "***** PHASE 2 (BC/ACCUMULATION): back-propagating from s" << s
                      << "Stack size" << (int)tls.pss.Stack.size();
 
             while (!tls.pss.Stack.empty())
@@ -592,10 +618,9 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
 
         } // END if computeCentralities
 
-        sink.progressUpdate(nextSlot.loadRelaxed()); // queued signal — OK from worker thread
     }); // END QtConcurrent::blockingMap
 
-    qDebug() << "*********** MAIN LOOP (parallel SSSP): FINISHED. Starting reduction.";
+    qCDebug(lcEngine) << "*********** MAIN LOOP (parallel SSSP): FINISHED. Starting reduction.";
 
     // ---- Sequential reduction ----
     // Merge per-thread accumulators into graph-global state.  This runs on the calling
@@ -641,7 +666,7 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
         }
     }
 
-    qDebug() << "*********** MAIN LOOP (SSSP problem): FINISHED.";
+    qCDebug(lcEngine) << "*********** MAIN LOOP (SSSP problem): FINISHED.";
 }
 
 void DistanceEngine::finalize(const bool computeCentralities,
@@ -654,55 +679,67 @@ void DistanceEngine::finalize(const bool computeCentralities,
 
     // check if there are disconnected nodes
     // and get the distance sums
-    qDebug() << "Checking if there are disconnected nodes";
+    qCDebug(lcEngine) << "Checking if there are disconnected nodes";
 
     graph.setConnectedCached(true);
+
+    // WS5 A2: this pair loop is O(N^2) - the actual hot path A2 targets. i is looked up once per
+    // outer iteration (O(N) total, negligible); the inner loop iterates positions directly
+    // (vertexAtIndex(j), not an iterator + a per-pair position lookup), so each pair read is a
+    // genuine O(1) matrix access with no hash lookup involved.
+    int totalV = 0;
+    for (auto it = graph.verticesBegin(); it != graph.verticesEnd(); ++it)
+        ++totalV;
+    const int relation = graph.relationCurrent();
 
     for (ds.it = graph.verticesBegin(); ds.it != graph.verticesEnd(); ++ds.it)
     {
         if (!(*ds.it)->isEnabled())
         {
-            qDebug() << "actor i" << (*ds.it)->number() << "disabled. SKIP/CONTINUE";
+            qCDebug(lcEngine) << "actor i" << (*ds.it)->number() << "disabled. SKIP/CONTINUE";
             continue;
         }
 
         ds.pairDistance = 0;
+        const int i = graph.vertexIndexByNumber((*ds.it)->number());
 
-        for (ds.it1 = graph.verticesBegin(); ds.it1 != graph.verticesEnd(); ++ds.it1)
+        for (int j = 0; j < totalV; ++j)
         {
-            if (!(*ds.it1)->isEnabled())
+            GraphVertex *v1 = graph.vertexAtIndex(j);
+
+            if (!v1->isEnabled())
             {
-                qDebug() << "   actor j" << (*ds.it1)->number() << "disabled. SKIP/CONTINUE";
+                qCDebug(lcEngine) << "   actor j" << v1->number() << "disabled. SKIP/CONTINUE";
                 continue;
             }
-            if ((*ds.it1)->number() == (*ds.it)->number())
+            if (v1->number() == (*ds.it)->number())
             {
-                qDebug() << "   == actor j" << (*ds.it1)->number() << "SKIP/CONTINUE";
+                qCDebug(lcEngine) << "   == actor j" << v1->number() << "SKIP/CONTINUE";
                 continue;
             }
 
-            ds.pairDistance = (*ds.it)->distance((*ds.it1)->number());
+            ds.pairDistance = graph.m_apspDist[relation].item(i, j);
 
             if (ds.pairDistance == RAND_MAX)
             {
-                graph.notConnectedPairsInsert((*ds.it)->number(), (*ds.it1)->number());
+                graph.notConnectedPairsInsert((*ds.it)->number(), v1->number());
                 (*ds.it)->setEccentricity(RAND_MAX);
                 graph.setConnectedCached(false);
 
-                qDebug() << "actor i" << (*ds.it)->number()
+                qCDebug(lcEngine) << "actor i" << (*ds.it)->number()
                          << "has infinite eccentricity. "
                             "There is no path from it to actor j"
-                         << (*ds.it1)->number();
+                         << v1->number();
             }
             else
             {
-                qDebug() << "actor i" << (*ds.it)->number()
+                qCDebug(lcEngine) << "actor i" << (*ds.it)->number()
                          << "distanceSum" << (*ds.it)->distanceSum();
                 (*ds.it)->setDistanceSum((*ds.it)->distanceSum() + ds.pairDistance);
             }
         } // end for
 
-        qDebug() << "actor i" << (*ds.it)->number()
+        qCDebug(lcEngine) << "actor i" << (*ds.it)->number()
                  << "Final distanceSum" << (*ds.it)->distanceSum();
 
         if (computeCentralities)
@@ -710,7 +747,7 @@ void DistanceEngine::finalize(const bool computeCentralities,
             // Compute Eccentricity (max geodesic distance)
             csf.eccentricity = (*ds.it)->eccentricity();
 
-            qDebug() << "actor"
+            qCDebug(lcEngine) << "actor"
                      << (*ds.it)->number()
                      << "eccentricity" << csf.eccentricity;
 
@@ -734,7 +771,7 @@ void DistanceEngine::finalize(const bool computeCentralities,
                 (*ds.it)->setSEC(csf.EC); // Set std EC = EC
                 graph.sumEC += csf.EC;    // set sum EC
 
-                qDebug() << "actor i" << (*ds.it)->number()
+                qCDebug(lcEngine) << "actor i" << (*ds.it)->number()
                          << "EC"
                          << csf.EC;
             }
@@ -745,7 +782,7 @@ void DistanceEngine::finalize(const bool computeCentralities,
                 (*ds.it)->setSEC(csf.EC); // Set std EC = EC
                 graph.sumEC += csf.EC;    // set sum EC
 
-                qDebug() << "actor i" << (*ds.it)->number()
+                qCDebug(lcEngine) << "actor i" << (*ds.it)->number()
                          << "EC=0 (disconnected graph)";
             }
 
@@ -757,27 +794,27 @@ void DistanceEngine::finalize(const bool computeCentralities,
     if (graph.notConnectedPairsSize() == 0)
     {
         graph.setAverageDistanceCached(graph.graphSumDistanceCached() / (ds.N * (ds.N - 1.0)));
-        qDebug() << "Graph::graphDistancesGeodesic() - Average distance:"
+        qCDebug(lcEngine) << "Graph::graphDistancesGeodesic() - Average distance:"
                  << graph.graphDistanceGeodesicAverageCached();
     }
     else
     {
         // TODO In not connected nets, it would be nice to ask the user what to do
         //  with unconnected pairs (make M or drop (default?)
-        qDebug() << "Graph::graphDistancesGeodesic() - Average distance:"
+        qCDebug(lcEngine) << "Graph::graphDistancesGeodesic() - Average distance:"
                  << graph.graphDistanceGeodesicAverageCached();
         graph.setAverageDistanceCached(graph.graphSumDistanceCached() / graph.graphGeodesicsCountCached());
     }
 
     if (computeCentralities)
     {
-        qDebug() << "Graph: graphDistancesGeodesic() - "
+        qCDebug(lcEngine) << "Graph: graphDistancesGeodesic() - "
                     "Computing centralities...";
         for (ds.it = graph.verticesBegin(); ds.it != graph.verticesEnd(); ++ds.it)
         {
             if (dropIsolates && (*ds.it)->isIsolated())
             {
-                qDebug() << "vertex " << (*ds.it)->number()
+                qCDebug(lcEngine) << "vertex " << (*ds.it)->number()
                          << " isolated, continue. ";
                 continue;
             }
@@ -795,7 +832,7 @@ void DistanceEngine::finalize(const bool computeCentralities,
             // Compute std BC, classes and min/maxSBC
             if (graph.symmetricCached())
             {
-                qDebug() << "Betweenness centrality must be divided by"
+                qCDebug(lcEngine) << "Betweenness centrality must be divided by"
                          << " two if the graph is undirected";
                 (*ds.it)->setBC((*ds.it)->BC() / 2.0);
             }
@@ -822,13 +859,13 @@ void DistanceEngine::finalize(const bool computeCentralities,
             {
                 (*ds.it)->setSC(csf.SC / 2.0);
                 csf.SC = (*ds.it)->SC();
-                qDebug() << "SC of " << (*ds.it)->number()
+                qCDebug(lcEngine) << "SC of " << (*ds.it)->number()
                          << "  divided by 2 (because the graph is symmetric) "
                          << (*ds.it)->SC();
             }
             graph.sumSC += csf.SC;
 
-            qDebug() << "vertex " << (*ds.it)->number() << " - "
+            qCDebug(lcEngine) << "vertex " << (*ds.it)->number() << " - "
                      << " EC: " << (*ds.it)->EC()
                      << " CC: " << (*ds.it)->CC()
                      << " BC: " << (*ds.it)->BC()
@@ -836,7 +873,7 @@ void DistanceEngine::finalize(const bool computeCentralities,
                      << " PC: " << (*ds.it)->PC();
         } // end for
 
-        qDebug() << "Graph: graphDistancesGeodesic() -"
+        qCDebug(lcEngine) << "Graph: graphDistancesGeodesic() -"
                     "Computing mean centrality values...";
 
         // Compute mean values and prepare to compute variances
@@ -856,7 +893,7 @@ void DistanceEngine::finalize(const bool computeCentralities,
         graph.varianceEC = 0;
         csf.tempVarianceEC = 0;
 
-        qDebug() << "Graph: graphDistancesGeodesic() - "
+        qCDebug(lcEngine) << "Graph: graphDistancesGeodesic() - "
                     "Computing std centralities ...";
 
         for (ds.it = graph.verticesBegin(); ds.it != graph.verticesEnd(); ++ds.it)
@@ -982,7 +1019,7 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si,
 {
     Q_UNUSED(dropIsolates);
 
-    qDebug() << "BFS:";
+    qCDebug(lcEngine) << "BFS:";
     int u = 0, ui = 0, w = 0, wi = 0;
     int dist_u = 0, temp = 0, dist_w = 0;
     int relation = 0;
@@ -1000,14 +1037,14 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si,
 
     Q.push(s);
 
-    qDebug() << "BFS: LOOP: While Q not empty ";
+    qCDebug(lcEngine) << "BFS: LOOP: While Q not empty ";
     while (!Q.empty())
     {
 
         u = Q.front();
         Q.pop();
         ui = graph.vertexIndexByNumber(u);
-        qDebug() << "BFS: Dequeue: first element of Q is u" << u << "graph.vertexIndexByNumber" << ui;
+        qCDebug(lcEngine) << "BFS: Dequeue: first element of Q is u" << u << "graph.vertexIndexByNumber" << ui;
 
         if (!graph.vertexAtIndex(ui)->isEnabled())
         {
@@ -1016,11 +1053,11 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si,
 
         if (computeCentralities)
         {
-            qDebug() << "BFS: Compute centralities: Pushing u" << u
+            qCDebug(lcEngine) << "BFS: Compute centralities: Pushing u" << u
                      << "to Stack ";
             pss.Stack.push(u);
         }
-        qDebug() << "BFS: LOOP over every edge (u,w) e E, that is all neighbors w of vertex u";
+        qCDebug(lcEngine) << "BFS: LOOP over every edge (u,w) e E, that is all neighbors w of vertex u";
         it1 = graph.vertexAtIndex(ui)->outEdges().cbegin();
         while (it1 != graph.vertexAtIndex(ui)->outEdges().cend())
         {
@@ -1047,22 +1084,22 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si,
             }
             w = it1.key();
             wi = graph.vertexIndexByNumber(w);
-            qDebug("BFS: u=%i is connected with node w=%i of graph.vertexIndexByNumber wi=%i. ", u, w, wi);
+            qCDebug(lcEngine, "BFS: u=%i is connected with node w=%i of graph.vertexIndexByNumber wi=%i. ", u, w, wi);
 
-            qDebug("BFS: Start path discovery");
+            qCDebug(lcEngine, "BFS: Start path discovery");
 
             // if dist[wi] is RAND_MAX, w is found for the first time.
             if (pss.dist[wi] == (qreal)RAND_MAX)
             {
 
-                qDebug("BFS: First time visiting w=%i. Enqueuing w to the end of Q", w);
+                qCDebug(lcEngine, "BFS: First time visiting w=%i. Enqueuing w to the end of Q", w);
 
                 Q.push(w);
 
                 dist_u = (int)pss.dist[ui];
                 dist_w = dist_u + 1;
 
-                qDebug() << "BFS: Setting dist_w = d ( s" << s << ", w" << w
+                qCDebug(lcEngine) << "BFS: Setting dist_w = d ( s" << s << ", w" << w
                          << ") equal to dist_u=d(s,u) plus 1. New dist_w" << dist_w;
 
                 pss.dist[wi] = (qreal)dist_w;
@@ -1076,27 +1113,27 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si,
                 if (dist_w > pss.sourceDiameter)
                     pss.sourceDiameter = dist_w;
 
-                qDebug() << "== BFS  - d("
+                qCDebug(lcEngine) << "== BFS  - d("
                          << s << "," << w
                          << ")=" << pss.dist[wi];
 
                 if (computeCentralities)
                 {
-                    qDebug() << "BFS: Calculate PC: store the number of nodes at distance "
+                    qCDebug(lcEngine) << "BFS: Calculate PC: store the number of nodes at distance "
                              << dist_w << "from s";
 
                     pss.nthOrderIncrement((qreal)dist_w);
-                    qDebug() << "BFS: Calculate CC: the sum of distances (will invert it l8r)";
+                    qCDebug(lcEngine) << "BFS: Calculate CC: the sum of distances (will invert it l8r)";
                     // Source-vertex writes (si is unique per thread): safe for parallelism.
                     graph.vertexAtIndex(si)->setCC(graph.vertexAtIndex(si)->CC() + dist_w);
 
-                    qDebug() << "BFS: Calculate Eccentricity: the maximum distance ";
+                    qCDebug(lcEngine) << "BFS: Calculate Eccentricity: the maximum distance ";
                     if (graph.vertexAtIndex(si)->eccentricity() < dist_w)
                         graph.vertexAtIndex(si)->setEccentricity(dist_w);
                 }
             }
 
-            qDebug() << "BFS: Start path counting";
+            qCDebug(lcEngine) << "BFS: Start path counting";
 
             // Is edge (u,w) on a shortest path from s to w via u?
             if ((int)pss.dist[wi] == (int)pss.dist[ui] + 1)
@@ -1104,7 +1141,7 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si,
 
                 temp = pss.sigma[wi] + pss.sigma[ui];
 
-                qDebug() << "BFS: Found a NEW SHORTEST PATH from s" << s
+                qCDebug(lcEngine) << "BFS: Found a NEW SHORTEST PATH from s" << s
                          << "to w" << w << "via u" << u
                          << "Setting Sigma(s, w)" << temp;
                 if (s != w)
@@ -1113,16 +1150,16 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si,
                 }
                 if (computeCentralities)
                 {
-                    qDebug() << "BFS/SC: Computing centralities: Computing SC ";
+                    qCDebug(lcEngine) << "BFS/SC: Computing centralities: Computing SC ";
                     if (s != w && s != u && u != w)
                     {
-                        qDebug() << "BFS: partialSC[ui=" << ui << "] += 1";
+                        qCDebug(lcEngine) << "BFS: partialSC[ui=" << ui << "] += 1";
                         // Intermediate vertex ui may be processed by concurrent threads
                         // (other sources pass through the same u).  Write to partialSC[ui]
                         // — a per-thread array — instead of vertex->setSC() to avoid races.
                         partialSC[ui] += 1.0;
                     }
-                    qDebug() << "BFS: appending u" << u << " to list Ps[w=" << w
+                    qCDebug(lcEngine) << "BFS: appending u" << u << " to list Ps[w=" << w
                              << "] with the predecessors of w on all shortest paths from s ";
                     pss.Ps[wi].append(u);
                 }
@@ -1174,7 +1211,7 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
     VList::const_iterator it;
 
     // Construct a priority queue where we will store discovered vertices along with their distances from source
-    qDebug() << "### dijkstra: Construct a priority queue prQ to store discovered vertices-distances from source";
+    qCDebug(lcEngine) << "### dijkstra: Construct a priority queue prQ to store discovered vertices-distances from source";
 
     // TODO: Check prQ functionality in weighted graphs, where edge weight denotes value (not cost)
     priority_queue<GraphDistance, vector<GraphDistance>, GraphDistancesCompare> prQ;
@@ -1200,15 +1237,15 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
             //     previous[v]  := undefined
         }
     }
-    qDebug() << "### dijkstra: push s" << s << "to prQ with 0 distance from s";
+    qCDebug(lcEngine) << "### dijkstra: push s" << s << "to prQ with 0 distance from s";
     // Note: without it the priority prQ would pop arbitrary node at first loop
     prQ.push(GraphDistance(s, 0));
 
-    qDebug() << "### dijkstra: LOOP: While prQ not empty ";
+    qCDebug(lcEngine) << "### dijkstra: LOOP: While prQ not empty ";
     while (!prQ.empty())
     {
 
-        qDebug() << "    *** dijkstra: prQ size: " << prQ.size();
+        qCDebug(lcEngine) << "    *** dijkstra: prQ size: " << prQ.size();
 
         // Get the first vertex in the priority queue
         u = prQ.top().target;
@@ -1216,13 +1253,13 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
         ui = graph.vertexIndexByNumber(u);
 
         // Pop it
-        qDebug() << "    *** dijkstra: first vertex in prQ is u" << u << "graph.vertexIndexByNumber" << ui
+        qCDebug(lcEngine) << "    *** dijkstra: first vertex in prQ is u" << u << "graph.vertexIndexByNumber" << ui
                  << ". It has minimum distance from s " << s << "=" << prQ.top().distance << " Popping it from the queue.";
         prQ.pop();
 
         if (visited_vertices.contains(u))
         {
-            qDebug() << "    *** dijkstra: vertex already visited. Skipping!";
+            qCDebug(lcEngine) << "    *** dijkstra: vertex already visited. Skipping!";
             continue;
         }
         // Add it to visited
@@ -1231,7 +1268,7 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
         // Skip if that vertex is disabled
         if (!graph.vertexAtIndex(ui)->isEnabled())
         {
-            qDebug() << "    *** dijkstra: vertex disabled. Skipping!";
+            qCDebug(lcEngine) << "    *** dijkstra: vertex disabled. Skipping!";
             continue;
         }
 
@@ -1239,7 +1276,7 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
         if (computeCentralities)
         {
 
-            qDebug() << "    *** dijkstra: Compute centralities: pushing u ="
+            qCDebug(lcEngine) << "    *** dijkstra: Compute centralities: pushing u ="
                      << u
                      << " to Stack ";
 
@@ -1247,7 +1284,7 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
         }
 
         // LOOP over every edge of u
-        qDebug() << "    --- dijkstra: LOOP over every edge of u (" << u << ", w ) e E... ";
+        qCDebug(lcEngine) << "    --- dijkstra: LOOP over every edge of u (" << u << ", w ) e E... ";
         it1 = graph.vertexAtIndex(ui)->outEdges().cbegin();
         while (it1 != graph.vertexAtIndex(ui)->outEdges().cend())
         {
@@ -1284,17 +1321,17 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                 continue;
             }
 
-            qDebug() << "    --- dijkstra: edge (u, w) = (" << u << "," << w << ") =" << weight;
+            qCDebug(lcEngine) << "    --- dijkstra: edge (u, w) = (" << u << "," << w << ") =" << weight;
 
             // Invert edge weight if the user told us to do so
             if (inverseWeights)
             {
                 weight = 1.0 / weight;
-                qDebug() << "    --- dijkstra: inverting weight to " << weight;
+                qCDebug(lcEngine) << "    --- dijkstra: inverting weight to " << weight;
             }
 
             // Start path discovery
-            qDebug() << "    --- dijkstra: Start path discovery";
+            qCDebug(lcEngine) << "    --- dijkstra: Start path discovery";
 
             // Get the distance of u from source
             dist_u = pss.dist[ui];
@@ -1303,33 +1340,33 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
             if (dist_u == RAND_MAX || dist_u < 0)
             {
                 dist_w = RAND_MAX;
-                qDebug() << "    --- dijkstra: dist_w = RAND_MAX " << RAND_MAX;
+                qCDebug(lcEngine) << "    --- dijkstra: dist_w = RAND_MAX " << RAND_MAX;
             }
             else
             {
                 // dist_u finite, therefore dist_w is (dist_u + edge weight)
                 dist_w = dist_u + weight;
-                qDebug() << "    --- dijkstra: dist_w = dist_u + weight = "
+                qCDebug(lcEngine) << "    --- dijkstra: dist_w = dist_u + weight = "
                          << dist_u << "+" << weight << "=" << dist_w;
             }
 
             // Get the currently computed distance of w from source
             cur_dist_w = pss.dist[wi];
 
-            qDebug() << "    --- dijkstra: RELAXATION: check if dist_w =" << dist_w
+            qCDebug(lcEngine) << "    --- dijkstra: RELAXATION: check if dist_w =" << dist_w
                      << "  shorter than current d(s=" << s << ",w=" << w << ")="
                      << cur_dist_w;
 
             if ((dist_w == cur_dist_w) && dist_w < RAND_MAX)
             {
 
-                qDebug() << "    --- dijkstra: dist_w : " << dist_w
+                qCDebug(lcEngine) << "    --- dijkstra: dist_w : " << dist_w
                          << " ==  current d(s,w) : " << cur_dist_w;
 
                 sp_w = pss.sigma[wi] + pss.sigma[ui];
 
                 // WRONG! We do not know for sure that we are in a shortest path!!!
-                qDebug() << "    --- dijkstra: (POSSIBLE BUG?) Found ANOTHER SP from s ="
+                qCDebug(lcEngine) << "    --- dijkstra: (POSSIBLE BUG?) Found ANOTHER SP from s ="
                          << s
                          << " to w=" << w << " via u=" << u
                          << " - Setting Sigma(s, w) = " << sp_w;
@@ -1343,18 +1380,18 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                 {
                     if (s != w && s != u && u != w)
                     {
-                        qDebug() << "    --- dijkstra: Compute Centralities: partialSC[ui=" << ui << "] += 1";
+                        qCDebug(lcEngine) << "    --- dijkstra: Compute Centralities: partialSC[ui=" << ui << "] += 1";
                         // Intermediate vertex: use partialSC to avoid race with other threads.
                         partialSC[ui] += 1.0;
                     }
                     else
                     {
-                        qDebug() << "    --- dijkstra: Compute Centralities: "
+                        qCDebug(lcEngine) << "    --- dijkstra: Compute Centralities: "
                                     "Skipping SC of u, because s="
                                  << s << " w=" << w << " u=" << u;
                     }
 
-                    qDebug() << "    --- dijkstra: Compute Centralities: "
+                    qCDebug(lcEngine) << "    --- dijkstra: Compute Centralities: "
                                 "Appending u="
                              << u << " to list Ps[w =" << w
                              << "] with the predecessors of w on all shortest paths from s ";
@@ -1365,7 +1402,7 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
             else if (dist_w > 0 && dist_w < cur_dist_w)
             {
 
-                qDebug() << "    --- dijkstra: dist_w " << dist_w
+                qCDebug(lcEngine) << "    --- dijkstra: dist_w " << dist_w
                          << " <  current d(s,w) =" << cur_dist_w
                          << " Pushing w" << w << "to prQ with distance" << dist_w << "from s" << s;
 
@@ -1380,7 +1417,7 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                 // graph.setDiameterCached() directly — those are not thread-safe.
                 ++pss.sourceGeodesicsCount;
 
-                qDebug() << "    --- dijkstra: "
+                qCDebug(lcEngine) << "    --- dijkstra: "
                             "Set d ( s="
                          << s << ", w=" << w
                          << " ) = " << dist_w << "=" << pss.dist[wi];
@@ -1389,14 +1426,14 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                 {
                     pss.sourceDiameter = (int)dist_w;
 
-                    qDebug() << "    --- dijkstra: "
+                    qCDebug(lcEngine) << "    --- dijkstra: "
                                 "New thread-local diameter ="
                              << pss.sourceDiameter;
                 }
 
                 if (s != w)
                 {
-                    qDebug() << "    --- dijkstra: "
+                    qCDebug(lcEngine) << "    --- dijkstra: "
                                 "Found NEW shortest path from s ="
                              << s
                              << " to w =" << w << " via u =" << u
@@ -1409,7 +1446,7 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
 
                     pss.nthOrderIncrement(dist_w);
 
-                    qDebug() << "    --- dijkstra: Compute Centralities: "
+                    qCDebug(lcEngine) << "    --- dijkstra: Compute Centralities: "
                                 "For PC: nthOrder: number of nodes at distance "
                              << dist_w << "from s is "
                              << pss.nthOrder.value(dist_w, 0);
@@ -1417,12 +1454,12 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                     if (graph.vertexAtIndex(si)->eccentricity() < dist_w)
                     {
                         graph.vertexAtIndex(si)->setEccentricity(dist_w);
-                        qDebug() << "    --- dijkstra: Compute Centralities: "
+                        qCDebug(lcEngine) << "    --- dijkstra: Compute Centralities: "
                                     "For EC: max distance ="
                                  << graph.vertexAtIndex(si)->eccentricity();
                     }
 
-                    qDebug() << "    --- dijkstra: Compute Centralities: "
+                    qCDebug(lcEngine) << "    --- dijkstra: Compute Centralities: "
                                 "Appending u="
                              << u << " to list Ps[w =" << w
                              << "] with the predecessors of w on all shortest paths from s ";
@@ -1431,7 +1468,7 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
             }
             else
             {
-                qDebug() << "    --- dijkstra: "
+                qCDebug(lcEngine) << "    --- dijkstra: "
                             "NOT a new SP";
             }
 
@@ -1439,9 +1476,9 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
 
         } // END loop for every outEdge of u
 
-        qDebug() << "    --- dijkstra: LOOP END over every edge (" << u << ", w ) e E... ";
+        qCDebug(lcEngine) << "    --- dijkstra: LOOP END over every edge (" << u << ", w ) e E... ";
 
     } // END loop while prQ not empty
 
-    qDebug() << "### dijkstra: LOOP END. prQ is empty - Returning.";
+    qCDebug(lcEngine) << "### dijkstra: LOOP END. prQ is empty - Returning.";
 } // END dijkstraSSSP()

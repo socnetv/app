@@ -53,14 +53,14 @@ void Graph::vertexFilterByCentrality(const float threshold,
                                      const bool overThreshold,
                                      const IndexType centralityIndex)
 {
-    qDebug() << "Graph::vertexFilterByCentrality()"
+    qCDebug(lcFilters) << "Graph::vertexFilterByCentrality()"
              << "index:" << static_cast<int>(centralityIndex)
              << "threshold:" << threshold
              << "overThreshold:" << overThreshold;
 
     if (!isCentralityIndexComputed(centralityIndex))
     {
-        qDebug() << "Graph::vertexFilterByCentrality() - "
+        qCDebug(lcFilters) << "Graph::vertexFilterByCentrality() - "
                     "index"
                  << static_cast<int>(centralityIndex)
                  << "not yet computed. Aborting.";
@@ -110,6 +110,8 @@ void Graph::vertexFilterByCentrality(const float threshold,
     // After this pass every vertex is in its correct enabled state,
     // so the edge pass can safely query both endpoints.
     // ---------------------------------------------------------------
+    bool anyVertexChanged = false;
+
     VList::const_iterator it;
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
@@ -155,6 +157,12 @@ void Graph::vertexFilterByCentrality(const float threshold,
         case IndexType::CLC:
             score = (*it)->CLC();
             break;
+        case IndexType::KATZ:
+            score = (*it)->KC();
+            break;
+        case IndexType::BPC:
+            score = (*it)->BPC();
+            break;
         default:
             score = (*it)->DC();
             break;
@@ -163,7 +171,7 @@ void Graph::vertexFilterByCentrality(const float threshold,
         const bool shouldDisable = overThreshold ? (score >= thresh) : (score <= thresh);
         const bool currentlyEnabled = (*it)->isEnabled();
 
-        qDebug() << "PASS 1 - vertex" << (*it)->number()
+        qCDebug(lcFilters) << "PASS 1 - vertex" << (*it)->number()
                  << "score=" << score
                  << condition << threshold
                  << "shouldDisable:" << shouldDisable
@@ -173,7 +181,7 @@ void Graph::vertexFilterByCentrality(const float threshold,
             continue; // already in correct state
 
         (*it)->setEnabled(!shouldDisable);
-        setModStatus(ModStatus::VertexCount);
+        anyVertexChanged = true;
         emit setVertexVisibility((*it)->number(), !shouldDisable);
     }
 
@@ -193,13 +201,16 @@ void Graph::vertexFilterByCentrality(const float threshold,
             const int target = ed.key();
             const qreal weight = ed.value().second.first;
             const qreal reverseEdgeWeight = (*it)->hasEdgeFrom(target);
-            const bool preserveReverse = (reverseEdgeWeight != 0);
+            // A self-loop is trivially "its own reverse" (hasEdgeFrom(v) on itself matches
+            // its own out-edge), which would otherwise make the visibility-toggle code below
+            // delete-then-immediately-redraw it instead of leaving it hidden.
+            const bool preserveReverse = (v != target) && (reverseEdgeWeight != 0);
 
             const bool sourceEnabled = (*it)->isEnabled();
             const bool targetEnabled = vertexAtIndex(vertexIndexByNumber(target))->isEnabled();
             const bool edgeVisible = sourceEnabled && targetEnabled;
 
-            qDebug() << "PASS 2 - edge" << v << "->" << target
+            qCDebug(lcFilters) << "PASS 2 - edge" << v << "->" << target
                      << "sourceEnabled:" << sourceEnabled
                      << "targetEnabled:" << targetEnabled
                      << "edgeVisible:" << edgeVisible;
@@ -225,6 +236,14 @@ void Graph::vertexFilterByCentrality(const float threshold,
         }
     }
 
+    // Refresh the Statistics Panel once, after both vertex and edge visibility are in
+    // their final state - calling this during PASS 1 would emit edgesEnabled() before
+    // PASS 2 ever touches edge visibility, leaving the panel showing a stale edge count.
+    if (anyVertexChanged)
+    {
+        setModStatus(ModStatus::VertexCount);
+    }
+
     progressStatus(
         tr("Filter applied: vertices with score %1 %2 are now hidden.")
             .arg(condition, QString::number(threshold)));
@@ -247,11 +266,11 @@ void Graph::vertexFilterByEgoNetwork(const int v1, const int depth)
 {
     Q_UNUSED(depth); // reserved for future k-hop support
 
-    qDebug() << "Graph::vertexFilterByEgoNetwork() - ego:" << v1;
+    qCDebug(lcFilters) << "Graph::vertexFilterByEgoNetwork() - ego:" << v1;
 
     if (!vertexExists(v1))
     {
-        qDebug() << "Graph::vertexFilterByEgoNetwork() - vertex" << v1 << "not found. Aborting.";
+        qCDebug(lcFilters) << "Graph::vertexFilterByEgoNetwork() - vertex" << v1 << "not found. Aborting.";
         return;
     }
 
@@ -273,7 +292,7 @@ void Graph::vertexFilterByEgoNetwork(const int v1, const int depth)
         ++it;
     }
 
-    qDebug() << "Graph::vertexFilterByEgoNetwork() - visible set:" << visibleSet;
+    qCDebug(lcFilters) << "Graph::vertexFilterByEgoNetwork() - visible set:" << visibleSet;
 
     // ------------------------------------------------------------------
     // Snapshot current visibility state BEFORE making any changes.
@@ -308,6 +327,7 @@ void Graph::vertexFilterByEgoNetwork(const int v1, const int depth)
     // ------------------------------------------------------------------
     // PASS 1: Set vertex visibility.
     // ------------------------------------------------------------------
+    bool anyVertexChanged = false;
     for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
     {
         const int vnum = (*vi)->number();
@@ -315,7 +335,7 @@ void Graph::vertexFilterByEgoNetwork(const int v1, const int depth)
         if ((*vi)->isEnabled() != shouldBeVisible)
         {
             (*vi)->setEnabled(shouldBeVisible);
-            setModStatus(ModStatus::VertexCount);
+            anyVertexChanged = true;
             emit setVertexVisibility(vnum, shouldBeVisible);
         }
     }
@@ -339,7 +359,10 @@ void Graph::vertexFilterByEgoNetwork(const int v1, const int depth)
             const int target = ei.key();
             const qreal weight = ei.value().second.first;
             const qreal reverseWeight = (*vi)->hasEdgeFrom(target);
-            const bool preserveReverse = (reverseWeight != 0);
+            // See the matching comment in vertexFilterByCentrality(): a self-loop is
+            // trivially "its own reverse", which must not trigger the delete-then-redraw
+            // path meant for genuinely distinct reciprocated edges.
+            const bool preserveReverse = (source != target) && (reverseWeight != 0);
             const bool edgeShouldBeVisible =
                 visibleSet.contains(source) && visibleSet.contains(target);
 
@@ -359,6 +382,13 @@ void Graph::vertexFilterByEgoNetwork(const int v1, const int depth)
             }
             ++ei;
         }
+    }
+
+    // Refresh the Statistics Panel once, after both passes - see the matching
+    // comment in vertexFilterByCentrality() for why this can't happen in PASS 1.
+    if (anyVertexChanged)
+    {
+        setModStatus(ModStatus::VertexCount);
     }
 
     progressStatus(tr("Showing ego network of node %1 (%2 neighbors).")
@@ -381,11 +411,11 @@ void Graph::vertexFilterByEgoNetwork(const int v1, const int depth)
  */
 void Graph::vertexFilterBySelection(const QList<int> &selectedVertices)
 {
-    qDebug() << "Graph::vertexFilterBySelection() - selection:" << selectedVertices;
+    qCDebug(lcFilters) << "Graph::vertexFilterBySelection() - selection:" << selectedVertices;
 
     if (selectedVertices.isEmpty())
     {
-        qDebug() << "Graph::vertexFilterBySelection() - empty selection, aborting.";
+        qCDebug(lcFilters) << "Graph::vertexFilterBySelection() - empty selection, aborting.";
         progressStatus(tr("No nodes selected. Please select at least one node first."));
         return;
     }
@@ -424,6 +454,7 @@ void Graph::vertexFilterBySelection(const QList<int> &selectedVertices)
     // ------------------------------------------------------------------
     // PASS 1: Set vertex visibility.
     // ------------------------------------------------------------------
+    bool anyVertexChanged = false;
     for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
     {
         const int vnum = (*vi)->number();
@@ -431,7 +462,7 @@ void Graph::vertexFilterBySelection(const QList<int> &selectedVertices)
         if ((*vi)->isEnabled() != shouldBeVisible)
         {
             (*vi)->setEnabled(shouldBeVisible);
-            setModStatus(ModStatus::VertexCount);
+            anyVertexChanged = true;
             emit setVertexVisibility(vnum, shouldBeVisible);
         }
     }
@@ -455,7 +486,10 @@ void Graph::vertexFilterBySelection(const QList<int> &selectedVertices)
             const int target = ei.key();
             const qreal weight = ei.value().second.first;
             const qreal reverseWeight = (*vi)->hasEdgeFrom(target);
-            const bool preserveReverse = (reverseWeight != 0);
+            // See the matching comment in vertexFilterByCentrality(): a self-loop is
+            // trivially "its own reverse", which must not trigger the delete-then-redraw
+            // path meant for genuinely distinct reciprocated edges.
+            const bool preserveReverse = (source != target) && (reverseWeight != 0);
             const bool edgeShouldBeVisible =
                 visibleSet.contains(source) && visibleSet.contains(target);
 
@@ -475,6 +509,13 @@ void Graph::vertexFilterBySelection(const QList<int> &selectedVertices)
             }
             ++ei;
         }
+    }
+
+    // Refresh the Statistics Panel once, after both passes - see the matching
+    // comment in vertexFilterByCentrality() for why this can't happen in PASS 1.
+    if (anyVertexChanged)
+    {
+        setModStatus(ModStatus::VertexCount);
     }
 
     progressStatus(tr("Showing %1 selected node(s) and edges between them.")
@@ -498,7 +539,7 @@ void Graph::vertexFilterBySelection(const QList<int> &selectedVertices)
  */
 void Graph::vertexFilterByAttribute(const FilterCondition &cond)
 {
-    qDebug() << "Graph::vertexFilterByAttribute() key:" << cond.key
+    qCDebug(lcFilters) << "Graph::vertexFilterByAttribute() key:" << cond.key
              << "op:" << static_cast<int>(cond.op) << "value:" << cond.value;
 
     // Build visible set: vertices that satisfy the condition.
@@ -544,6 +585,7 @@ void Graph::vertexFilterByAttribute(const FilterCondition &cond)
     m_visibilityHistory.push(snapshot);
 
     // PASS 1: Set vertex visibility.
+    bool anyVertexChanged = false;
     for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
     {
         const int vnum = (*vi)->number();
@@ -551,7 +593,7 @@ void Graph::vertexFilterByAttribute(const FilterCondition &cond)
         if ((*vi)->isEnabled() != shouldBeVisible)
         {
             (*vi)->setEnabled(shouldBeVisible);
-            setModStatus(ModStatus::VertexCount);
+            anyVertexChanged = true;
             emit setVertexVisibility(vnum, shouldBeVisible);
         }
     }
@@ -572,7 +614,10 @@ void Graph::vertexFilterByAttribute(const FilterCondition &cond)
             const int target = ei.key();
             const qreal weight = ei.value().second.first;
             const qreal reverseWeight = (*vi)->hasEdgeFrom(target);
-            const bool preserveReverse = (reverseWeight != 0);
+            // See the matching comment in vertexFilterByCentrality(): a self-loop is
+            // trivially "its own reverse", which must not trigger the delete-then-redraw
+            // path meant for genuinely distinct reciprocated edges.
+            const bool preserveReverse = (source != target) && (reverseWeight != 0);
             const bool edgeShouldBeVisible =
                 visibleSet.contains(source) && visibleSet.contains(target);
 
@@ -586,6 +631,13 @@ void Graph::vertexFilterByAttribute(const FilterCondition &cond)
                                              false, preserveReverse, weight, reverseWeight);
             ++ei;
         }
+    }
+
+    // Refresh the Statistics Panel once, after both passes - see the matching
+    // comment in vertexFilterByCentrality() for why this can't happen in PASS 1.
+    if (anyVertexChanged)
+    {
+        setModStatus(ModStatus::VertexCount);
     }
 
     progressStatus(tr("Showing %1 node(s) matching: %2.")
@@ -602,11 +654,11 @@ void Graph::vertexFilterByAttribute(const FilterCondition &cond)
  */
 void Graph::vertexFilterRestoreAll()
 {
-    qDebug() << "Graph::vertexFilterRestoreAll()";
+    qCDebug(lcFilters) << "Graph::vertexFilterRestoreAll()";
 
     if (m_visibilityHistory.isEmpty())
     {
-        qDebug() << "Graph::vertexFilterRestoreAll() - history stack empty, nothing to restore.";
+        qCDebug(lcFilters) << "Graph::vertexFilterRestoreAll() - history stack empty, nothing to restore.";
         progressStatus(tr("No active filter to restore."));
         return;
     }
@@ -624,6 +676,7 @@ void Graph::vertexFilterRestoreAll()
 void Graph::applyVisibilitySnapshot(const GraphVisibilitySnapshot &snap)
 {
     // PASS 1: Restore vertex visibility.
+    bool anyVertexChanged = false;
     VList::const_iterator vi;
     for (vi = m_graph.cbegin(); vi != m_graph.cend(); ++vi)
     {
@@ -632,7 +685,7 @@ void Graph::applyVisibilitySnapshot(const GraphVisibilitySnapshot &snap)
         if ((*vi)->isEnabled() != wasVisible)
         {
             (*vi)->setEnabled(wasVisible);
-            setModStatus(ModStatus::VertexCount);
+            anyVertexChanged = true;
             emit setVertexVisibility(vnum, wasVisible);
         }
     }
@@ -653,7 +706,10 @@ void Graph::applyVisibilitySnapshot(const GraphVisibilitySnapshot &snap)
             const int target = ei.key();
             const qreal weight = ei.value().second.first;
             const qreal reverseWeight = (*vi)->hasEdgeFrom(target);
-            const bool preserveReverse = (reverseWeight != 0);
+            // See the matching comment in vertexFilterByCentrality(): a self-loop is
+            // trivially "its own reverse", which must not trigger the delete-then-redraw
+            // path meant for genuinely distinct reciprocated edges.
+            const bool preserveReverse = (source != target) && (reverseWeight != 0);
             const bool wasVisible =
                 snap.arcVisible.value(QPair<int, int>(source, target), true);
 
@@ -669,6 +725,13 @@ void Graph::applyVisibilitySnapshot(const GraphVisibilitySnapshot &snap)
                                              weight, reverseWeight);
             ++ei;
         }
+    }
+
+    // Refresh the Statistics Panel once, after both passes - see the matching
+    // comment in vertexFilterByCentrality() for why this can't happen in PASS 1.
+    if (anyVertexChanged)
+    {
+        setModStatus(ModStatus::VertexCount);
     }
 }
 

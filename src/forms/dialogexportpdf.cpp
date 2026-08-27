@@ -19,6 +19,7 @@
 
 #include <QPushButton>
 #include <QDebug>
+#include "forms_logging.h"
 #include <QGraphicsColorizeEffect>
 #include <QFileDialog>
 
@@ -88,7 +89,7 @@ void DialogExportPDF::checkFilename(const QString &fileName){
                       QFileInfo(m_fileName).suffix() , "pdf", Qt::CaseInsensitive
                       )
                   ) {
-            qDebug() << "suffix() : " << QFileInfo(m_fileName).suffix();
+            qCDebug(lcForms) << "suffix() : " << QFileInfo(m_fileName).suffix();
             m_fileName.append(".pdf");
         }
         ui->fileEdit->setText(m_fileName);
@@ -98,7 +99,7 @@ void DialogExportPDF::checkFilename(const QString &fileName){
         (ui->buttonBox)->button (QDialogButtonBox::Ok)->setDefault(true);
     }
     else {
-        qDebug() << "Empty filaname or dir does not exist";
+        qCDebug(lcForms) << "Empty filaname or dir does not exist";
         QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
         effect->setColor(QColor("red"));
         ui->fileEdit->setGraphicsEffect(effect);
@@ -144,7 +145,7 @@ void DialogExportPDF::getPrinterMode(const QString &mode){
 
 
 void DialogExportPDF::getUserChoices(){
-    qDebug()<< "Dialog: gathering Data!...";
+    qCDebug(lcForms)<< "Dialog: gathering Data!...";
 
     // User might have entered the filename manually!
     if (m_fileName.isEmpty()) {
@@ -167,7 +168,7 @@ void DialogExportPDF::getUserChoices(){
         m_orientation = QPageLayout::Landscape;
     }
 
-    qDebug()<< "Dialog: emitting userChoices" ;
+    qCDebug(lcForms)<< "Dialog: emitting userChoices" ;
 
     emit userChoices( m_fileName, m_orientation, m_dpi, m_printerMode );
 }

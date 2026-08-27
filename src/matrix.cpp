@@ -18,100 +18,108 @@
 
 #define TINY 1.0e-20
 
+// Fix #269: relative-tolerance threshold for ludcmp()'s pivot-magnitude singularity check.
+// The checked value is already scaled by its row's own maximum, so this is a dimensionless
+// relative test - not tied to the matrices' raw value range.
+#define RELATIVE_SINGULARITY_TOLERANCE 1.0e-12
+
 #include <cstdlib>		//allows the use of RAND_MAX macro
 #include <QDebug>
+#include <QLoggingCategory>
 #include <QtMath>		//needed for fabs, qFloor etc
 #include <QTextStream>
 
+Q_LOGGING_CATEGORY(lcMatrix, "socnetv.matrix")
+
 
 /**
- * @brief Matrix::Matrix
- * Default constructor - creates a Matrix of given dimension (0x0)
- * Use resize(m,n) or zeromatrix(m,n) to resize it
- * @param Actors
+ * @brief Constructs a rowDim x colDim matrix, all cells zero-initialized. Defaults to 0x0
+ * (an empty matrix) - use resize()/zeroMatrix()/identityMatrix() to size it later.
+ * @param rowDim
+ * @param colDim
  */
 Matrix::Matrix (int rowDim, int colDim)  : m_rows (rowDim), m_cols(colDim) {
-    row = new (nothrow) MatrixRow[ m_rows ];
-    Q_CHECK_PTR( row );
-    for (int i=0;i<m_rows; i++) {
-        row[i].resize( m_cols );
-    }
+    m_data = new (nothrow) qreal[ static_cast<size_t>(m_rows) * m_cols ]();
+    Q_CHECK_PTR( m_data );
+    rebuildRowPtr();
 }
 
 
 
 /**
-* @brief Matrix::Matrix
-* Copy constructor. Creates a Matrix identical to Matrix b
-* Allows Matrix a=b declaration
-* Every MatrixRow object holds max_int=32762
-* @param b
-*/
+ * @brief Copy constructor: creates a Matrix identical to (an independent copy of) b.
+ * Allows the `Matrix a = b` declaration form.
+ * @param b
+ */
 Matrix::Matrix(const Matrix &b) {
-    qDebug()<< "Matrix:: constructor";
+    qCDebug(lcMatrix)<< "Matrix:: constructor";
     m_rows=b.m_rows;
     m_cols=b.m_cols ;
-    row = new MatrixRow[m_rows];
-    Q_CHECK_PTR( row );
-    for (int i=0;i<m_rows; i++) {
-        row[i].resize( m_cols );
+    const size_t n = static_cast<size_t>(m_rows) * m_cols;
+    m_data = new (nothrow) qreal[n];
+    Q_CHECK_PTR( m_data );
+    for (size_t i=0; i<n; i++) {
+        m_data[i]=b.m_data[i];
     }
-    for (int i=0; i<m_rows; i++) {
-        row[i]=b.row[i];
-    }
+    rebuildRowPtr();
 }
 
 
 /**
- * @brief Matrix::~Matrix
- * Destructor
+ * @brief Destructor: frees the data buffer and the row-pointer index.
  */
 Matrix::~Matrix() {
-    if ( rows() )
-        delete [] row;
+    if ( rows() ) {
+        delete [] m_data;
+        delete [] m_rowPtr;
+    }
 }
 
 
  /**
- * @brief Clears data
+ * @brief Frees this matrix's data buffer and row-pointer index and resets it to 0x0. Called
+ * at the start of resize()/identityMatrix()/zeroMatrix()/operator= before they allocate a
+ * fresh buffer at the new size.
  */
 void Matrix::clear() {
     if (m_rows > 0){
-        qDebug() << "Matrix::clear() deleting old rows";
+        qCDebug(lcMatrix) << "Matrix::clear() deleting old rows";
         m_rows=0;
         m_cols=0;
-        delete [] row;
+        delete [] m_data;
+        delete [] m_rowPtr;
     }
 }
 
 
 /**
- * @brief Resizes this matrix to m x n
- * Called before every operation on new matrices.
- * Every MatrixRow object holds max_int=32762
- * @param Actors
+ * @brief Resizes this matrix to m x n, discarding any previous contents. All cells start
+ * zero-initialized.
+ * @param m New row count.
+ * @param n New column count.
  */
 void Matrix::resize (const int m, const int n) {
-    qDebug() << "Matrix: resize() ";
+    qCDebug(lcMatrix) << "Matrix: resize() ";
     clear();
     m_rows = m;
     m_cols = n;
-    row = new (nothrow) MatrixRow [ m_rows  ];
-    Q_CHECK_PTR( row );
-    qDebug() << "Matrix: resize() -- resizing each row";
-    for (int i=0;i<m_rows; i++) {
-        row[i].resize( m_cols );  // CHECK ME
-    }
+    m_data = new (nothrow) qreal[ static_cast<size_t>(m_rows) * m_cols ]();
+    Q_CHECK_PTR( m_data );
+    rebuildRowPtr();
 }
 
 
 
 
 /**
- * @brief finds Min-Max values in current Matrix
- * @param min value in the matrix
- * @param max value
- * Complexity: O(n^2)
+ * @brief Scans every cell of this matrix (including the diagonal) and reports the smallest
+ * and largest values found, plus whether any cell has a fractional (non-integer) part -
+ * used by report writers to decide display precision and, for distance matrices, whether
+ * the max value is RAND_MAX (meaning some pair is unreachable).
+ * Complexity: O(rows()*cols()).
+ * @param min Output: the smallest value found.
+ * @param max Output: the largest value found.
+ * @param hasRealNumbers Output: true if any cell has a non-zero fractional part.
  */
 void Matrix::findMinMaxValues (qreal &min, qreal & max, bool &hasRealNumbers){
     max=0;
@@ -135,11 +143,17 @@ void Matrix::findMinMaxValues (qreal &min, qreal & max, bool &hasRealNumbers){
 
 
 /**
- * @brief Like Matrix::findMinMaxValues only it skips r==c
- *
- * @param min value. If (r,c) = minimum, it mean that neighbors r and c are the nearest in the matrix/network
- * @param max value
- * Complexity: O(n^2)
+ * @brief Like findMinMaxValues(), but skips the diagonal (r==c) and also reports which
+ * pair of distinct vertices achieved the min/max - used to find the closest and farthest
+ * pair of nodes in a distance/dissimilarity matrix (e.g. by hierarchical clustering, which
+ * repeatedly needs "which two clusters are nearest right now").
+ * Complexity: O(rows()*cols()).
+ * @param min Output: the smallest off-diagonal value found.
+ * @param max Output: the largest off-diagonal value found.
+ * @param imin Output: row of the cell where the minimum was found.
+ * @param jmin Output: column of the cell where the minimum was found.
+ * @param imax Output: row of the cell where the maximum was found.
+ * @param jmax Output: column of the cell where the maximum was found.
  */
 void Matrix::NeighboursNearestFarthest (qreal &min, qreal & max,
                                int &imin, int &jmin,
@@ -168,15 +182,14 @@ void Matrix::NeighboursNearestFarthest (qreal &min, qreal & max,
  * @param dim
  */
 void Matrix::identityMatrix(int dim) {
-    qDebug() << "Matrix::identityMatrix() -- deleting old rows";
+    qCDebug(lcMatrix) << "Matrix::identityMatrix() -- deleting old rows";
     clear();
     m_rows=dim;
     m_cols=dim;
-    row = new (nothrow) MatrixRow [m_rows];
-    Q_CHECK_PTR( row );
-    //qDebug() << "Matrix: resize() -- resizing each row";
+    m_data = new (nothrow) qreal[ static_cast<size_t>(m_rows) * m_cols ]();
+    Q_CHECK_PTR( m_data );
+    rebuildRowPtr();
     for (int i=0;i<m_rows; i++) {
-        row[i].resize(m_rows);
         setItem(i,i, 1);
     }
 }
@@ -189,56 +202,17 @@ void Matrix::identityMatrix(int dim) {
  * @param n
  */
 void Matrix::zeroMatrix(const int m, const int n) {
-    qDebug() << "Matrix::zeroMatrix() m " << m << " n " << n;
+    qCDebug(lcMatrix) << "Matrix::zeroMatrix() m " << m << " n " << n;
     clear();
     m_rows=m;
     m_cols=n;
-    row = new (nothrow) MatrixRow [m_rows];
-    Q_CHECK_PTR( row );
-    //qDebug() << "Matrix::zeroMatrix - resizing each row";
-    for (int i=0;i<m_rows; i++) {
-        row[i].resize(m_cols);
-        for (int j=0;j<m_cols; j++) {
-            setItem(i,j, 0);
-        }
-
-    }
-
+    m_data = new (nothrow) qreal[ static_cast<size_t>(m_rows) * m_cols ]();
+    Q_CHECK_PTR( m_data );
+    rebuildRowPtr();
 }
 
 
-/**
- * @brief Returns the (r,c) matrix element
- * @param r
- * @param c
- * @return
- */
-qreal Matrix::item( int r, int c ){
-    return row[r].column(c);
-}
-
-
-
-/**
- * @brief Sets the (r,c) matrix element calling the setColumn method
- * @param r
- * @param c
- * @param elem
- */
-void Matrix::setItem( const int r, const int c, const qreal elem ) {
-    row [ r ].setColumn(c, elem);
-}
-
-
-
-/**
- * @brief Clears the (r,c) matrix element
- * @param r
- * @param c
- */
-void Matrix::clearItem( int r, int c ) 	{
-    row[r].clearColumn(c);
-}
+// item()/setItem()/clearItem() are now inline in matrix.h.
 
 
 
@@ -247,61 +221,46 @@ void Matrix::clearItem( int r, int c ) 	{
 
 
 /**
- * @brief Deletes row and column and shifts rows and cols accordingly
+ * @brief Deletes row erased and column erased from this (square) matrix, shifting every
+ * later row/column back by one to close the gap. Complexity: O(rows()*cols()) - rebuilds
+ * the whole matrix into a new, smaller buffer (see the comment inside).
  * @param erased row/col to delete
  */
 void Matrix::deleteRowColumn(int erased){
-    qDebug() << "Matrix:deleteRowColumn() - will delete row and column"
+    qCDebug(lcMatrix) << "Matrix:deleteRowColumn() - will delete row and column"
              << erased
              << "m_rows before" <<  m_rows;
 
-    --m_rows;
-    m_cols = m_rows;
-    qDebug() << "Matrix:deleteRowColumn() - m_rows now " << m_rows << ". Resizing...";
-    for (int i=0;i<m_rows+1; i++) {
-        for (int j=0;j<m_rows+1; j++) {
-//            qDebug() << "Matrix:deleteRowColumn() -"
-//                        <<"item ("<< i+1 << "," << j+1 << ") ="<< item(i, j) ;
-            if (i>=m_rows || j>=m_rows) {
-                setItem( i, j, RAND_MAX) ;
-//                qDebug() << "Matrix:deleteRowColumn() -"
-//                         <<"both i,j>=m_rows, corner case (will be deleted). Setting to RAND_MAX."
-//                        << "New item value (" <<  i+1 << ", " << j+1 << ") ="<< item(i, j) ;
-            }
-            else if (i<erased && j< erased) {
-//                qDebug() << "Matrix:deleteRowColumn() -"
-//                         << "i, j < erased. Skipping. Item unchanged.";
-                continue;
-            }
-            else if (i<erased && j>=erased) {
-                setItem( i, j, item(i,j+1) ) ;
-//                qDebug() << "Matrix:deleteRowColumn() -"
-//                            <<"j>=erased, shifting column left"
-//                           << "New item value (" <<  i+1 << ", " << j+1 << ") ="<< item(i, j) ;
-            }
-            else if (i>=erased && j<erased) {
-                setItem( i, j, item(i+1,j) ) ;
-//                qDebug() << "Matrix:deleteRowColumn() -"
-//                         <<"i>=erased, shifting rows up."
-//                        << "New item value (" <<  i+1 << ", " << j+1 << ") ="<< item(i, j) ;
-            }
-            else if (i>=erased && j>=erased) {
-                setItem( i, j, item(i+1,j+1) ) ;
-//                qDebug() << "Matrix:deleteRowColumn() -"
-//                         <<"both i,j>=erased, shifting row up and column left."
-//                        << "New item value (" <<  i+1 << ", " << j+1 << ") ="<< item(i, j) ;
-            }
+    // Removing a column changes every row's stride, so the smaller matrix has to be built
+    // into a fresh buffer rather than shrunk in place.
+    const int oldRows = m_rows;
+    const int newRows = m_rows - 1;
+    qreal *newData = new (nothrow) qreal[ static_cast<size_t>(newRows) * newRows ];
+    Q_CHECK_PTR( newData );
 
+    for (int i=0; i<newRows; i++) {
+        const int srcI = (i < erased) ? i : i + 1;
+        for (int j=0; j<newRows; j++) {
+            const int srcJ = (j < erased) ? j : j + 1;
+            newData[static_cast<size_t>(i) * newRows + j] =
+                m_data[static_cast<size_t>(srcI) * oldRows + srcJ];
         }
-        row[i].setSize(m_cols);
     }
-    qDebug() << "Matrix:deleteRowColumn() - finished, new matrix:";
+
+    delete [] m_data;
+    delete [] m_rowPtr;
+    m_data = newData;
+    m_rows = newRows;
+    m_cols = newRows;
+    rebuildRowPtr();
+
+    qCDebug(lcMatrix) << "Matrix:deleteRowColumn() - finished, new matrix:";
 
 }
 
 
 /**
- * @brief Fills a matrix with a given value
+ * @brief Fills every cell of this matrix with the given value. Complexity: O(rows()*cols()).
  * @param value
  */
 void Matrix::fillMatrix(qreal value )   {
@@ -313,9 +272,9 @@ void Matrix::fillMatrix(qreal value )   {
 
 
 /**
- * @brief Subtracts this matrix from I and returns
- *
- * @return I-this to this matrix
+ * @brief Replaces this matrix with I - this (the identity matrix minus this matrix), in
+ * place. Complexity: O(rows()*cols()).
+ * @return this, now holding I - this.
  */
 Matrix& Matrix::subtractFromI ()  {
     for (int i=0;i< rows();i++)
@@ -323,7 +282,7 @@ Matrix& Matrix::subtractFromI ()  {
             if (i==j)
                 setItem(i,j, 1.0 - item(i,j));
             else
-                setItem(i,j, item(i,j));
+                setItem(i,j, -item(i,j));
         }
     return *this;
 }
@@ -332,15 +291,18 @@ Matrix& Matrix::subtractFromI ()  {
 
 
 /**
- * @brief Swaps row A with row B of this matrix
+ * @brief Swaps row rowA with row rowB of this matrix, element by element.
+ * Used by inverseByGaussJordanElimination() and ludcmp() during partial pivoting (moving
+ * the row with the largest pivot candidate into the current position improves numerical
+ * stability of the elimination). Complexity: O(cols()).
  * @param rowA
  * @param rowB
  */
 void Matrix::swapRows(int rowA,int rowB){
-    qDebug()<<"   swapRow() "<< rowA+1 << " with " << rowB+1;
-    qreal *tempRow = new  (nothrow) qreal [ rows() ];
+    qCDebug(lcMatrix)<<"   swapRow() "<< rowA+1 << " with " << rowB+1;
+    qreal *tempRow = new  (nothrow) qreal [ cols() ];
     Q_CHECK_PTR(tempRow);
-    for ( int j=0; j<  rows(); j++) {
+    for ( int j=0; j<  cols(); j++) {
       tempRow[j] = item (rowB, j);
       setItem ( rowB, j, item ( rowA, j ) );
       setItem ( rowA, j,  tempRow[j] );
@@ -353,13 +315,12 @@ void Matrix::swapRows(int rowA,int rowB){
 
 
 /**
-* @brief Scalar Multiplication. Multiplies this by qreal f
-*  and returns the product matrix of the same dim
-  * Allows to use P.multiplyScalar(f)
-  * @param f
-*/
+ * @brief Multiplies every cell of this matrix, in place, by scalar f. Allows P.multiplyScalar(f).
+ * Complexity: O(rows()*cols()).
+ * @param f
+ */
 void Matrix::multiplyScalar (const qreal  & f) {
-        qDebug()<< "Matrix::multiplyScalar() with f " << f;
+        qCDebug(lcMatrix)<< "Matrix::multiplyScalar() with f " << f;
         for (int i=0;i< rows();i++) {
             for (int j=0;j<cols();j++) {
                 setItem(i,j, item(i,j) * f );
@@ -369,15 +330,15 @@ void Matrix::multiplyScalar (const qreal  & f) {
 
 
 /**
- * @brief Multiply every element of row by value
+ * @brief Multiplies every element of the given row by value, in place. Complexity: O(cols()).
  * @param row
  * @param value
  */
 void Matrix::multiplyRow(int row, qreal value) {
-    qDebug()<<"   multiplyRow() "<< row+1 << " by value " << value;
-    for ( int j=0; j<  rows(); j++) {
+    qCDebug(lcMatrix)<<"   multiplyRow() "<< row+1 << " by value " << value;
+    for ( int j=0; j<  cols(); j++) {
         setItem ( row, j,  value * item (row, j) );
-        qDebug()<<"   item("<< row+1 << ","<< j+1 << ") = " <<  item(row,j);
+        qCDebug(lcMatrix)<<"   item("<< row+1 << ","<< j+1 << ") = " <<  item(row,j);
     }
 }
 
@@ -396,20 +357,21 @@ void Matrix::multiplyRow(int row, qreal value) {
 * @return
 */
 Matrix& Matrix::operator = (Matrix & a) {
-    qDebug()<< "Matrix::operator asignment =";
+    qCDebug(lcMatrix)<< "Matrix::operator asignment =";
     if (this != &a){
-        if (a.m_rows!=m_rows) {
+        // Both dimensions must match before reusing the existing buffer - a shared buffer
+        // can't have rows of inconsistent width the way independent row objects could.
+        if (a.m_rows!=m_rows || a.m_cols!=m_cols) {
             clear();
             m_rows=a.m_rows;
             m_cols=a.m_cols;
-            row=new (nothrow) MatrixRow[m_rows];
-            Q_CHECK_PTR( row );
-            for (int i=0;i<m_rows; i++) {
-                row[i].resize(m_cols); //every MatrixRow object holds max_int=32762
-            }
+            m_data=new (nothrow) qreal[ static_cast<size_t>(m_rows) * m_cols ];
+            Q_CHECK_PTR( m_data );
+            rebuildRowPtr();
         }
-       for (int i=0;i<m_rows; i++)
-           row[i]=a.row[i];
+        const size_t n = static_cast<size_t>(m_rows) * m_cols;
+        for (size_t i=0;i<n; i++)
+            m_data[i]=a.m_data[i];
     }
     return *this;
 }
@@ -417,13 +379,11 @@ Matrix& Matrix::operator = (Matrix & a) {
 
 
 /**
- * @brief Matrix addition
- * Takes two (nxn) matrices and returns their sum as a reference to this
- * Same algorithm as operator +, just different interface.
- * In this case, you use something like: c.sum(a,b)
+ * @brief Matrix addition: sets this matrix to a + b, cell by cell. Same result as
+ * operator+(), just a different calling interface: c.sum(a,b) instead of c = a + b.
+ * Complexity: O(rows()*cols()).
  * @param a
  * @param b
- * @return
  */
 void Matrix::sum( Matrix &a, Matrix & b)  {
     for (int i=0;i< rows();i++)
@@ -436,15 +396,12 @@ void Matrix::sum( Matrix &a, Matrix & b)  {
 
 
 /**
-* @brief Matrix::operator +=
-* Matrix add another matrix: +=
-* Adds to this matrix another matrix B of the same dim and returns to this
-* Allows A+=B
-* @param b
-* @return this
-*/
+ * @brief Adds matrix b to this matrix, in place, cell by cell. Allows A += B.
+ * Complexity: O(rows()*cols()).
+ * @param b
+ */
 void Matrix::operator +=(Matrix & b) {
-    qDebug()<< "Matrix::operator +=";
+    qCDebug(lcMatrix)<< "Matrix::operator +=";
     for (int i=0;i< rows();i++)
         for (int j=0;j<cols();j++)
             setItem(i,j, item(i,j)+b.item(i,j));
@@ -452,15 +409,14 @@ void Matrix::operator +=(Matrix & b) {
 
 
 /**
-  * @brief Matrix addition, operator +
-  * Adds this matrix and B of the same dim and returns the sum S
-  * Allows S = A+B
-  * @param b
-  * @return Matrix S
-*/
+ * @brief Matrix addition, operator +. Adds this matrix and b (same dimensions) and returns
+ * the sum S. Allows S = A + B. Complexity: O(rows()*cols()).
+ * @param b
+ * @return Matrix S
+ */
 Matrix& Matrix::operator +(Matrix & b) {
     Matrix *S = new Matrix(rows(), cols());
-    qDebug()<< "Matrix::operator +";
+    qCDebug(lcMatrix)<< "Matrix::operator +";
     for (int i=0;i< rows();i++)
         for (int j=0;j<cols();j++)
             S->setItem(i,j, item(i,j)+b.item(i,j));
@@ -469,15 +425,14 @@ Matrix& Matrix::operator +(Matrix & b) {
 
 
 /**
-  * @brief Matrix subtraction, operator -
-  * Subtract this matrix - B of the same dim and returns the result S
-  * Allows S = A-B
-  * @param b
-  * @return Matrix S
-*/
+ * @brief Matrix subtraction, operator -. Subtracts b (same dimensions) from this matrix and
+ * returns the result S. Allows S = A - B. Complexity: O(rows()*cols()).
+ * @param b
+ * @return Matrix S
+ */
 Matrix& Matrix::operator -(Matrix & b) {
     Matrix *S = new Matrix(rows(), cols() );
-    qDebug()<< "Matrix::operator -";
+    qCDebug(lcMatrix)<< "Matrix::operator -";
     for (int i=0;i< rows();i++)
         for (int j=0;j<cols();j++)
             S->setItem(i,j, item(i,j)-b.item(i,j));
@@ -487,22 +442,20 @@ Matrix& Matrix::operator -(Matrix & b) {
 
 
 /**
- * @brief Matrix multiplication, operator *
- * Multiplies (right) this matrix with given matrix b.
- * Allows P = A * B where A,B of same dimension
-* and returns product as a reference to the calling object
-* @param b
-* @param symmetry
-* @return
-*/
+ * @brief Matrix multiplication, operator *. Allows P = A * B, where A is this (m x n) and
+ * B is b (n x p); returns the m x p product P.
+ * Complexity: O(m*n*p).
+ * @param b
+ * @return Matrix P
+ */
 Matrix& Matrix::operator *(Matrix & b) {
 
-    qDebug()<< "Matrix::operator *";
+    qCDebug(lcMatrix)<< "Matrix::operator *";
 
-    Matrix *P = new Matrix(rows(), cols());
+    Matrix *P = new Matrix(rows(), b.cols());
 
     if ( cols() != b.rows() ) {
-        qDebug()<< "Matrix::product() - ERROR! Non compatible input matrices:"
+        qCDebug(lcMatrix)<< "Matrix::product() - ERROR! Non compatible input matrices:"
                    " this("
                 << rows() << "," << cols()
                 << ") and b(" << b.rows() << ","<< b.cols();
@@ -523,19 +476,16 @@ Matrix& Matrix::operator *(Matrix & b) {
 
 
 /**
-* @brief Multiplies (right) this m x n matrix with given n x p matrix b
-* and returns the product in the calling matrix which becomes an m x p matrix.
-* This convenience operator *= allows A *= B
-* @param b
-* @param symmetry
-* @return
-*/
+ * @brief Multiplies (right) this m x n matrix with given n x p matrix b, replacing this
+ * matrix's own contents with the m x p product. Allows A *= B. Complexity: O(m*n*p).
+ * @param b
+ */
 void Matrix::operator *=(Matrix & b) {
 
-    qDebug()<< "Matrix::operator *";
+    qCDebug(lcMatrix)<< "Matrix::operator *";
 
     if ( cols() != b.rows() ) {
-        qDebug()<< "Matrix::product() - ERROR! Non compatible input matrices:"
+        qCDebug(lcMatrix)<< "Matrix::product() - ERROR! Non compatible input matrices:"
                    " this("
                 << rows() << "," << cols()
                 << ") and b(" << b.rows() << ","<< b.cols();
@@ -559,20 +509,23 @@ void Matrix::operator *=(Matrix & b) {
 
 
 /**
- * @brief Matrix Multiplication. Given two matrices A (mxn) and B (nxp)
- * computes their product and stores it to the calling matrix which becomes
- * an m x p matrix
- * Allows P.product(A, B)
+ * @brief Matrix Multiplication. Given two matrices A (mxn) and B (nxp), computes their
+ * product and stores it into the calling matrix, which becomes an m x p matrix.
+ * Allows P.product(A, B).
  * @param A
  * @param B
- * @param symmetry
- * @return i x k matrix
+ * @param symmetry If true, the result is assumed symmetric (P(i,j)==P(j,i)): only the
+ * upper triangle (i<=j) is actually computed, and each computed value is mirrored
+ * directly into its (j,i) counterpart instead of being recomputed - roughly half the
+ * multiply-accumulate work of the general case. Used where A and B are already known to
+ * be symmetric (e.g. cocitationMatrix(), which multiplies a matrix by its own transpose).
+ * Complexity: O(m*n*p), or roughly half that with symmetry=true.
  */
 void Matrix::product(Matrix &A, Matrix & B, bool symmetry)  {
-    qDebug()<< "Matrix::product() - symmetry" << symmetry;
+    qCDebug(lcMatrix)<< "Matrix::product() - symmetry" << symmetry;
 
     if (A.cols() != B.rows() ) {
-        qDebug()<< "Matrix::product() - ERROR! Non compatible input matrices:"
+        qCDebug(lcMatrix)<< "Matrix::product() - ERROR! Non compatible input matrices:"
                    " a("
                 << A.rows() << "," << A.cols()
                 << ") and b(" << B.rows() << ","<< B.cols();
@@ -596,7 +549,6 @@ void Matrix::product(Matrix &A, Matrix & B, bool symmetry)  {
             }
         }
     }
-//    qDebug() << "Matrix::product() - this";
     *this = *P;
 
     //this->printMatrixConsole();
@@ -604,10 +556,13 @@ void Matrix::product(Matrix &A, Matrix & B, bool symmetry)  {
 
 
 /**
- * @brief Takes two ( N x N ) matrices (symmetric) and outputs an upper triangular matrix
+ * @brief OBSOLETE - no caller found anywhere in the codebase. Was intended to take two
+ * (N x N) symmetric matrices a and b and write an upper-triangular product into this matrix
+ * (the lower triangle, i>=j, left at zero). Unlike inverseByGaussJordanElimination() (also
+ * uncalled, but explicitly kept for cross-checking matrix inversion), there is no stated
+ * reason to keep this one - a real candidate for removal. Complexity: O(N^3).
  * @param a
  * @param b
- * @return
  */
 Matrix& Matrix::productSym( Matrix &a, Matrix & b)  {
     for (int i=0;i<rows();i++)
@@ -634,22 +589,26 @@ Matrix& Matrix::productSym( Matrix &a, Matrix & b)  {
 
 
 /**
- * @brief Returns the n-nth power of this matrix
+ * @brief Returns the n-th power of this matrix (X^n), via exponentiation by squaring
+ * (see expBySquaring2()). Used by the walks-matrix code (XM = AM.pow(length)): entry
+ * (i,j) of AM^n counts the number of walks of length n from vertex i to vertex j.
  * @param n
- * @param symmetry
- * @return Matrix
+ * @param symmetry Passed straight through to expBySquaring2()/product() - see product()'s
+ * own @param symmetry for what it does.
+ * @return This matrix, raised to the n-th power.
+ * Complexity: O(log(n)) matrix multiplications, each O(rows()^3) - see expBySquaring2().
  */
 Matrix& Matrix::pow (int n, bool symmetry)  {
     if (rows()!= cols()) {
-        qDebug()<< "Matrix::pow() - Error. This works only for square matrix";
+        qCDebug(lcMatrix)<< "Matrix::pow() - Error. This works only for square matrix";
         return *this;
     }
-    qDebug()<< "Matrix::pow() ";
+    qCDebug(lcMatrix)<< "Matrix::pow() ";
     Matrix X, Y; //auxilliary matrices
-    qDebug()<< "Matrix::pow() - creating X = this";
+    qCDebug(lcMatrix)<< "Matrix::pow() - creating X = this";
     X=*this; //X = this
     //X.printMatrixConsole(true);
-    qDebug()<< "Matrix::pow() - creating Y = I";
+    qCDebug(lcMatrix)<< "Matrix::pow() - creating Y = I";
     Y.identityMatrix( rows() ); // y=I
     //Y.printMatrixConsole(true);
     return expBySquaring2 (Y, X, n, symmetry);
@@ -670,42 +629,38 @@ Matrix& Matrix::pow (int n, bool symmetry)  {
 
  * On first call, parameters must be: Y=I, X the orginal matrix to power and n the power.
  * Returns the power of matrix X to this object.
- * For n > 4 it is more efficient than naively multiplying the base with itself repeatedly.
+ * For n > 4 it is more efficient than naively multiplying the base with itself repeatedly:
+ * O(log(n)) matrix multiplications instead of O(n), each multiplication itself O(rows()^3).
  */
 Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
     if (n==1) {
-        qDebug() <<"Matrix::expBySquaring2() - n = 1. Computing PM = X*Y where "
+        qCDebug(lcMatrix) <<"Matrix::expBySquaring2() - n = 1. Computing PM = X*Y where "
                    "X = " ;
         //X.printMatrixConsole();
-        //qDebug() <<"Matrix::expBySquaring2() - n = 1. And Y = ";
         //Y.printMatrixConsole();
         Matrix *PM = new Matrix(rows(), cols());
         PM->product(X, Y, symmetry);
-        //qDebug()<<"Matrix::expBySquaring2() - n = 1. PM = X*Y ="  ;
         //PM->printMatrixConsole();
         return *PM;
     }
     else if ( n%2 == 0 ) { //even
-        qDebug()<<"Matrix::expBySquaring2() - even n =" << n
+        qCDebug(lcMatrix)<<"Matrix::expBySquaring2() - even n =" << n
                << "Computing PM = X * X";
         Matrix PM(rows(), cols());
         PM.product(X,X,symmetry);
-        //qDebug()<<"Matrix::expBySquaring2() - even n =" << n << ". PM = X * X = " ;
         //PM.printMatrixConsole();
         return expBySquaring2 ( Y, PM, n/2 );
     }
     else  { //odd
-        qDebug()<<"Matrix::expBySquaring2() - odd n =" << n
+        qCDebug(lcMatrix)<<"Matrix::expBySquaring2() - odd n =" << n
                << "First compute PM = X * Y";
         Matrix PM(rows(), cols());
         Matrix PM2(rows(), cols());
         PM.product(X,Y,symmetry);
-        //qDebug()<<"Matrix::expBySquaring2() - odd n =" << n << ". PM = X * Y = " ;
         //PM.printMatrixConsole();
-        qDebug()<<"Matrix::expBySquaring2() - odd n =" << n
+        qCDebug(lcMatrix)<<"Matrix::expBySquaring2() - odd n =" << n
                << "Now compute PM2 = X * X";
         PM2.product(X,X,symmetry);
-        //qDebug()<<"Matrix::expBySquaring2() - odd n =" << n << ". PM2 = X * X = " ;
         //PM2.printMatrixConsole();
         return expBySquaring2 ( PM, PM2, (n-1)/2 );
     }
@@ -714,11 +669,11 @@ Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
 
 
 /**
- * @brief Calculates the matrix-by-vector product Ax of this matrix
- * Default product: Ax
- * if leftMultiply=true then it returns the left product xA
- * @param in input array/vector
- * @param out output array
+ * @brief Calculates the matrix-by-vector product Ax of this matrix (or the left product
+ * xA, if leftMultiply is true). Used by powerIteration()'s inner loop.
+ * Complexity: O(rows()*cols()).
+ * @param in input array/vector, cols() elements (rows(), if leftMultiply).
+ * @param out output array, rows() elements (cols(), if leftMultiply).
  * @param leftMultiply
  */
 void Matrix::productByVector (
@@ -793,9 +748,22 @@ qreal Matrix::distanceEuclidean(
  * corresponding to the largest positive eigenvalue.
  * In the process, it also computes min and max values.
  * Used by Eigenvector Centrality (EVC).
+ *
+ * Meaning: start from any vector x, repeatedly multiply by the matrix and rescale back to
+ * unit length - the vector converges to the eigenvector for the matrix's largest eigenvalue
+ * (lambda_max), which is exactly the vector eigenvector centrality reports.
+ *
  * We use C arrays instead of std::vectors or anything else,
  * as we know from start the size (n) of vectors x and tmp
  * This approach is faster than using std::vector when n > 1000
+ * @note Uses n = rows() throughout (for tmp's size, and as both the row and column count
+ * passed to productByVector()/distanceEuclidean()/distanceManhattan()) - correct only for
+ * square matrices. Unlike pow(), this method does not check rows()==cols() itself; it
+ * relies on the caller (centralityEigenvector()) only ever passing a square (adjacency)
+ * matrix.
+ * Complexity: O(maxIter * n^2) - each iteration is one O(n^2) productByVector() call plus
+ * a handful of O(n) passes; iterates until the vector's Manhattan distance to its previous
+ * value drops below eps, or maxIter is reached.
  * @param x
  * @param xsum
  * @param xmax
@@ -804,6 +772,18 @@ qreal Matrix::distanceEuclidean(
  * @param xmini
  * @param eps
  * @param maxIter
+ * @param cancelCheck Optional callback checked once per iteration; if it returns true, the
+ * loop stops early (x/xsum/xmax/xmin reflect the last completed iteration, not a full result).
+ * Defaults to nullptr (never cancels), so existing callers are unaffected.
+ * @param lambdaMax Optional out param: the largest eigenvalue itself, read off from the
+ * pre-normalization vector length on the final iteration (norm(Ax) ~= lambda_max once x has
+ * converged to unit length). Correctly reports exactly 0 for a nilpotent matrix (any directed
+ * acyclic graph - no cycles at all), meaning "no convergence bound, any value works" - this is
+ * the genuine mathematical answer, not a numerical-error placeholder (a symmetric/undirected
+ * adjacency matrix can never be nilpotent unless it's the zero matrix, so this only ever arises
+ * for directed graphs). Callers that only need the eigenvector (e.g. centralityEigenvector())
+ * can leave this nullptr; callers that need to validate a convergence bound like Katz's
+ * alpha < 1/lambda_max need it.
  */
 void Matrix::powerIteration (
         qreal x[],
@@ -813,15 +793,17 @@ void Matrix::powerIteration (
         qreal &xmin,
         int &xmini,
         const qreal eps,
-        const int &maxIter) {
+        const int &maxIter,
+        std::function<bool()> cancelCheck,
+        qreal *lambdaMax) {
 
-    qDebug() << "Matrix::powerIteration() - maxIter"
+    qCDebug(lcMatrix) << "Matrix::powerIteration() - maxIter"
              << maxIter
              <<"initial x"
             << x;
 
     int n = rows();
-    qreal norm = 0, distance=0;
+    qreal norm = 0, trueNorm = 0, distance=0;
 
     qreal *tmp;
     tmp=new (nothrow) qreal [n];
@@ -831,26 +813,34 @@ void Matrix::powerIteration (
     int iter = 0;
 
     do {
-        qDebug() << "Matrix::powerIteration() - iteration"
+        if (cancelCheck && cancelCheck()) {
+            qCDebug(lcMatrix) << "Matrix::powerIteration() - canceled at iteration" << iter;
+            break;
+        }
+
+        qCDebug(lcMatrix) << "Matrix::powerIteration() - iteration"
                  << iter ;
 
         // calculate the matrix-by-vector product Ax and
         // store the result to vector tmp
         productByVector(x, tmp, false);
 
-        qDebug() << "Matrix::powerIteration() - tmp = Ax ="
+        qCDebug(lcMatrix) << "Matrix::powerIteration() - tmp = Ax ="
                  << tmp;
 
         // calculate the euclidean length of the resulting vector
         // which will be the denominator in the vector normalization
-        norm = distanceEuclidean(tmp, n);
+        norm = trueNorm = distanceEuclidean(tmp, n);
 
-        qDebug() << "Matrix::powerIteration() - norm" << norm;
+        qCDebug(lcMatrix) << "Matrix::powerIteration() - norm" << norm;
 
-        // norm should never be zero, but in case there is
-        // numerical error, we set it to 1
+        // norm legitimately reaches exactly zero for a nilpotent matrix (any directed graph
+        // with no cycles at all - a DAG/tree/chain: Ax eventually collapses to the zero vector,
+        // which is the mathematically correct outcome, not a numerical error). Substitute a
+        // safe divisor for the normalization step below, but keep trueNorm (0 in that case) as
+        // the value reported to lambdaMax - see this method's doc comment.
         if (!norm) {
-            qDebug() << "### Matrix::powerIteration() - norm = 0 !!!";
+            qCDebug(lcMatrix) << "### Matrix::powerIteration() - norm = 0 !!!";
             norm = 1;
         }
 
@@ -860,7 +850,7 @@ void Matrix::powerIteration (
         for(int i = 0; i < n; i++) {
            tmp[i] = tmp[i] / norm;
         }
-        qDebug() << "Matrix::powerIteration() - tmp / norm "
+        qCDebug(lcMatrix) << "Matrix::powerIteration() - tmp / norm "
                  << tmp;
 
         // calculate the manhattan distance between the new and prev vectors
@@ -883,7 +873,7 @@ void Matrix::powerIteration (
         }
 
 
-        qDebug() << "Matrix::powerIteration() - end of iteration"
+        qCDebug(lcMatrix) << "Matrix::powerIteration() - end of iteration"
                  << iter << "\n"
                  << "x" << x  << "\n"
                  << "distance from previous x " << distance
@@ -897,22 +887,28 @@ void Matrix::powerIteration (
 
     } while ( distance > eps);
 
+    // trueNorm is ||Ax|| from the final iteration, with x already unit-length from the
+    // previous one - at convergence this approximates the dominant eigenvalue (lambda_max).
+    // Deliberately trueNorm, not norm: norm may hold the divide-by-zero-safe substitute (1)
+    // rather than the real value on a nilpotent matrix, where the true answer is exactly 0
+    // (any directed acyclic graph - see the comment above).
+    if (lambdaMax)
+        *lambdaMax = trueNorm;
+
      delete [] tmp;
 }
 
 
 
 /**
-  * @brief Returns the Transpose of this matrix
-  * Allows T = A.transpose()
-  * @param b
-  * @return Matrix T
-*/
-
+ * @brief Returns the transpose of this matrix (T(i,j) = this(j,i)). Allows T = A.transpose().
+ * Complexity: O(rows()*cols()).
+ * @return Matrix T
+ */
 Matrix& Matrix::transpose() {
     Matrix *T = new Matrix(cols(), rows());
     //T->zeroMatrix(cols(), rows());
-    qDebug()<< "Matrix::transpose()";
+    qCDebug(lcMatrix)<< "Matrix::transpose()";
     for (int i=0;i< cols();i++) {
         for (int j=0;j<rows();j++) {
             T->setItem(i,j, item(j,i));
@@ -927,15 +923,17 @@ Matrix& Matrix::transpose() {
 
 
 /**
-  * @brief Returns the Cocitation Matrix of this matrix (C = A * A^T)
-  * Allows T = A.cocitationMatrix()
-  * @param b
-  * @return Matrix T
-*/
-
+ * @brief Returns the cocitation matrix of this matrix (C = A * A^T). Allows
+ * T = A.cocitationMatrix(). C(i,j) counts how many nodes both i and j point to (or, read the
+ * other way with the transpose on the other side, how many nodes point to both i and j) -
+ * the basis of bibliometric cocitation/coupling analysis.
+ * Complexity: O(rows()^3) - transpose() is O(N^2), but the product() call that follows
+ * dominates at O(N^3).
+ * @return Matrix T
+ */
 Matrix& Matrix::cocitationMatrix() {
     Matrix *T = new Matrix(cols(), rows());
-    qDebug()<< "Matrix::cocitationMatrix() this transpose";
+    qCDebug(lcMatrix)<< "Matrix::cocitationMatrix() this transpose";
     //this->transpose().printMatrixConsole();
     T->product(this->transpose(),*this, true);
     return *T;
@@ -945,17 +943,14 @@ Matrix& Matrix::cocitationMatrix() {
 
 
 /**
-  * @brief Returns the Degree Matrix of this matrix.
-  * The Degree Matrix is diagonal matrix which contains information about the degree
-  * of each graph vertex (row of the adjacency matrix)
-  * Allows S = A.degreeMatrix()
-  * @param b
-  * @return Matrix S
-*/
-
+ * @brief Returns the degree matrix of this matrix: a diagonal matrix where S(i,i) is the
+ * sum of row i (i.e. vertex i's degree, if this is an adjacency matrix). Allows
+ * S = A.degreeMatrix(). Used by laplacianMatrix(). Complexity: O(rows()*cols()).
+ * @return Matrix S
+ */
 Matrix& Matrix::degreeMatrix() {
     Matrix *S = new Matrix(rows(), cols());
-    qDebug()<< "Matrix::degreeMatrix()";
+    qCDebug(lcMatrix)<< "Matrix::degreeMatrix()";
     qreal degree=0;
     for (int i=0;i< rows();i++) {
         degree = 0;
@@ -971,17 +966,14 @@ Matrix& Matrix::degreeMatrix() {
 
 
 /**
-  * @brief Returns the Laplacian of this matrix.
-  * The Laplacian is a NxN matrix L = D - A where D is the degree matrix of A
-  * Allows S = A.laplacianMatrix()
-  * @param b
-  * @return Matrix S
-*/
-
+ * @brief Returns the Laplacian of this matrix: an N x N matrix L = D - A, where D is this
+ * matrix's degreeMatrix(). Allows S = A.laplacianMatrix(). Complexity: O(rows()*cols()).
+ * @return Matrix S
+ */
 Matrix& Matrix::laplacianMatrix() {
     Matrix *S = new Matrix(rows(), cols());
     //S->zeroMatrix(rows(), cols());
-    qDebug()<< "Matrix::laplacianMatrix()";
+    qCDebug(lcMatrix)<< "Matrix::laplacianMatrix()";
     *S = (this->degreeMatrix()) - *this;
     return *S;
 }
@@ -993,17 +985,22 @@ Matrix& Matrix::laplacianMatrix() {
 
 
 /**
- * @brief Inverts given matrix A by Gauss Jordan elimination
-   Input:  matrix A
-   Output: matrix A becomes unit matrix
-   *this becomes the invert of A and is returned back.
+ * @brief Inverts matrix A by Gauss-Jordan elimination with partial pivoting: starts this
+ * matrix as the identity, then applies the same row operations to both A and this that
+ * drive A to the identity - by the time A has become the identity, this matrix has become
+ * A's inverse. Input: matrix A. Output: A becomes the identity matrix; this matrix becomes
+ * A's inverse and is returned. Complexity: O(n^3).
+ * @note Unreachable in the current codebase - createMatrixAdjacencyInverse()'s only caller
+ * always passes "lu" (Matrix::inverse()/ludcmp(), below), never "gauss". Kept rather than
+ * removed: matrix inversion is numerically sensitive code, and a second independent
+ * implementation is useful for cross-checking even while unused.
  * @param A
- * @return inverse matrix of A
+ * @return This matrix, now holding A's inverse.
  */
 Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
-	qDebug()<< "Matrix::inverseByGaussJordanElimination()";
+	qCDebug(lcMatrix)<< "Matrix::inverseByGaussJordanElimination()";
 	int n=A.cols();
-    qDebug()<<"Matrix::inverseByGaussJordanElimination() - build I size " << n
+    qCDebug(lcMatrix)<<"Matrix::inverseByGaussJordanElimination() - build I size " << n
              << " This will become A^-1 in the end";
 
     identityMatrix( n );
@@ -1015,12 +1012,12 @@ Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
 	    l=j+1;
 	    m_pivotLine=-1;
 	    m_pivot = A.item(j,j);
-	    qDebug() << "inverseByGaussJordanElimination() at column " << j+1
+	    qCDebug(lcMatrix) << "inverseByGaussJordanElimination() at column " << j+1
 		    << " Initial pivot " << m_pivot ;
         for ( int i=l; i<n; i++) {
             temp_pivot = A.item(i,j);
             if ( qFabs( temp_pivot ) > qFabs ( m_pivot ) ) {
-                qDebug() << " A("<< i+1 << ","<< j+1  << ") = " <<  temp_pivot
+                qCDebug(lcMatrix) << " A("<< i+1 << ","<< j+1  << ") = " <<  temp_pivot
                          << " absolutely larger than current pivot "<< m_pivot
                          << ". Marking new pivot line: " << i+1;
                 m_pivotLine=i;
@@ -1033,43 +1030,43 @@ Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
         }
 
 
-	    qDebug()<<"   multiplyRow() "<< j+1 << " by value " << 1/m_pivot ;
+	    qCDebug(lcMatrix)<<"   multiplyRow() "<< j+1 << " by value " << 1/m_pivot ;
         for ( int k=0; k<  rows(); k++) {
             A.setItem ( j, k,  (1/m_pivot) * A.item (j, k) );
             setItem ( j, k,  (1/m_pivot) * item (j, k) );
-            qDebug()<<"   A.item("<< j+1 << ","<< k+1 << ") = " <<  A.item(j,k);
-            qDebug()<<"   item("<< j+1 << ","<< k+1 << ") = " <<  item(j,k);
+            qCDebug(lcMatrix)<<"   A.item("<< j+1 << ","<< k+1 << ") = " <<  A.item(j,k);
+            qCDebug(lcMatrix)<<"   item("<< j+1 << ","<< k+1 << ") = " <<  item(j,k);
         }
 
-	    qDebug() << "eliminate variables FromRowsBelow()" << j+1 ;
+	    qCDebug(lcMatrix) << "eliminate variables FromRowsBelow()" << j+1 ;
         for ( int i=0; i<  rows(); i++) {
-		 qDebug()<<"   Eliminating item("<< i+1 << ","<< j+1 << ") = "
+		 qCDebug(lcMatrix)<<"   Eliminating item("<< i+1 << ","<< j+1 << ") = "
 			 <<  A.item(i,j) << " while at column j="<<j+1;
 		 if ( A.item(i,j)==0 ){
-		    qDebug()<< " ...already eliminated - continue";
+		    qCDebug(lcMatrix)<< " ...already eliminated - continue";
 		    continue;
 		}
 		 if ( i == j){
-		     qDebug()<< " ...skip pivotline - continue";
+		     qCDebug(lcMatrix)<< " ...skip pivotline - continue";
 		    continue;
 		}
 		elim_coef=A.item (i, j);
         for ( int k=0; k<  cols(); k++) {
-		    qDebug()<<"   A.item("<< i+1 << ","<< k+1 << ") = " <<  A.item(i,k)
+		    qCDebug(lcMatrix)<<"   A.item("<< i+1 << ","<< k+1 << ") = " <<  A.item(i,k)
 			    << " will be subtracted by " << " A.item ("<< i+1
 			    << ", "<< j+1 << ") x A.item(" << j+1 << ","<<k+1
 			    <<") =" << elim_coef * A.item(j,k) ;
 		    A.setItem ( i, k,   A.item (i, k) -  elim_coef * A.item(j, k)  );
-		    qDebug()<<"   A.item("<< i+1 << ","<< k+1 << ") = " <<  A.item(i,k);
+		    qCDebug(lcMatrix)<<"   A.item("<< i+1 << ","<< k+1 << ") = " <<  A.item(i,k);
 
-		    qDebug()<<"   item("<< i+1 << ","<< k+1 << ") = " <<  item(i,k)
+		    qCDebug(lcMatrix)<<"   item("<< i+1 << ","<< k+1 << ") = " <<  item(i,k)
 			    << " will be subtracted by " << " A.item ("<< i+1
 			    << ", "<< j+1 << ") x item(" << j+1 << ","<<k+1
 			    <<") =" << elim_coef * item(j,k)  <<  " = "
 			    << elim_coef << " x " << item(j,k) ;
 
 		    setItem ( i, k,   item (i, k) -  elim_coef * item(j, k)  );
-		    qDebug()<<"   item("<< i+1 << ","<< k+1 << ") = " <<  item(i,k);
+		    qCDebug(lcMatrix)<<"   item("<< i+1 << ","<< k+1 << ") = " <<  item(i,k);
 
 		}
 	    }
@@ -1083,17 +1080,26 @@ Matrix& Matrix::inverseByGaussJordanElimination(Matrix &A){
 /**
  * @brief Given matrix a, it replaces a by the LU decomposition of a rowwise permutation of itself.
  * Used in combination with lubksb to solve linear equations or invert a matrix.
+ * Complexity: O(n^3).
  * @param a: input matrix n x n and output arranged as in Knuth's equation (2.3.14)
  * @param n: input size of matrix
  * @param indx: output vector, records the row permutation effected by the partial pivoting
  * @param d: output as ±1 depending on whether the number of row interchanges was even or odd
+ * @param cancelCheck Optional callback, checked once per outer-loop iteration in both the O(n^2)
+ * scaling pass and the O(n^3) Crout's-method pass; if it returns true, decomposition stops early
+ * and this returns false (same as the singular-matrix case - callers must not distinguish the two
+ * from this return value alone; inverse()'s post-cancelCheck() logic is what does that, not this).
+ * Defaults to nullptr (never cancels), so existing callers are unaffected. Added because ludcmp()
+ * is the dominant O(n^3) cost inverse() wraps - without this, inverse()'s own per-column
+ * cancelCheck (see below) can never fire in time, since it's only reached after ludcmp() already
+ * finished (see WS15 P1, roadmap_ws15_cancellation_progress_unification.md).
  * @return:
  *
  * Code adapted from Knuth's Numerical Recipes in C, pp 46
  *
  */
-bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d) {
-    qDebug () << "Matrix::ludcmp () - decomposing matrix a to L*U";
+bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d, std::function<bool()> cancelCheck) {
+    qCDebug(lcMatrix) << "Matrix::ludcmp () - decomposing matrix a to L*U";
     int i=0, j=0, imax=0, k;
     qreal big,temp;
     //vv=vector<qreal>(1,n);
@@ -1106,9 +1112,14 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d) {
 
     d=1.0;               // No row interchanges yet.
 
-    qDebug () << "Matrix::ludcmp() - loop over row to get scaling info" ;
+    qCDebug(lcMatrix) << "Matrix::ludcmp() - loop over row to get scaling info" ;
     for (i=0;i<n;i++) {  // Loop over rows to get the implicit scaling information.
-        qDebug () << "Matrix::ludcmp() - row i " <<  i+1;
+        if (cancelCheck && cancelCheck()) {
+            qCDebug(lcMatrix) << "Matrix::ludcmp() - canceled at scaling row" << i;
+            delete[] vv;
+            return false;
+        }
+        qCDebug(lcMatrix) << "Matrix::ludcmp() - row i " <<  i+1;
         big=0;
         for (j=0;j<n;j++) {
             if ((temp=fabs( a[i][j] ) ) > big)
@@ -1116,18 +1127,23 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d) {
         }
         if (big == 0)  //       No nonzero largest element.
         {
-            qDebug() << "Matrix::ludcmp() - Singular matrix in routine ludcmp";
+            qCDebug(lcMatrix) << "Matrix::ludcmp() - Singular matrix in routine ludcmp";
             return false;
         }
         vv[i]=1.0/big;  //  Save the scaling.
-        qDebug () << "Matrix::ludcmp() - big element in row i " << i+1 << " is "<< big << " row scaling vv[i] " << vv[i];
+        qCDebug(lcMatrix) << "Matrix::ludcmp() - big element in row i " << i+1 << " is "<< big << " row scaling vv[i] " << vv[i];
     }
 
-    qDebug () << "Matrix::ludcmp() - Start Crout's LOOP over columns";
+    qCDebug(lcMatrix) << "Matrix::ludcmp() - Start Crout's LOOP over columns";
 
     for (j=0;j<n;j++) //     This is the loop over columns of Crout’s method.
     {
-        qDebug () << "Matrix::ludcmp() - COLUMN j " <<  j+1 << " search largest pivot";
+        if (cancelCheck && cancelCheck()) {
+            qCDebug(lcMatrix) << "Matrix::ludcmp() - canceled at Crout column" << j;
+            delete[] vv;
+            return false;
+        }
+        qCDebug(lcMatrix) << "Matrix::ludcmp() - COLUMN j " <<  j+1 << " search largest pivot";
         big=0;  //      Initialize for the search for largest pivot element.
         imax = j;
 
@@ -1137,14 +1153,14 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d) {
             {   //  Is the figure of merit for the pivot better than the best so far?
                 big=temp;
                 imax=i;
-                qDebug () << "Matrix::ludcmp() - found new largest pivot at row " <<  imax+1 << " big " << temp;
+                qCDebug(lcMatrix) << "Matrix::ludcmp() - found new largest pivot at row " <<  imax+1 << " big " << temp;
             }
         }
 
-        qDebug () << "Matrix::ludcmp() - check for row interchange ";
+        qCDebug(lcMatrix) << "Matrix::ludcmp() - check for row interchange ";
         if (j != imax) //          Do we need to interchange rows?
         {
-            qDebug () << "Matrix::ludcmp() - interchanging rows " << imax+1 << " and " << j+1;
+            qCDebug(lcMatrix) << "Matrix::ludcmp() - interchanging rows " << imax+1 << " and " << j+1;
             for ( k=0; k<n; k++ ) { //            Yes, do so...
                 temp=a[imax][k];
                 a[imax][k] = a[j][k];
@@ -1152,22 +1168,32 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d) {
             }
             d = -(d);  //..and change the parity of d.
             vv[imax]=vv[j];  //         Also interchange the scale factor.
-            qDebug () << "Matrix::ludcmp() - imax  " << imax+1  << " vv[imax]" << vv[imax] << "new parity d " << d;
+            qCDebug(lcMatrix) << "Matrix::ludcmp() - imax  " << imax+1  << " vv[imax]" << vv[imax] << "new parity d " << d;
         }
         indx[j]=imax;
-        qDebug () << "Matrix::ludcmp() - indx[j]=imax=" <<  indx[j] +1;
-        if ( a[j][j] == 0 ) {
-            a[j][j] = TINY; // For some apps, on singular matrices, it is desirable to substitute TINY for zero.
-            qDebug () << "Matrix::ludcmp() - WARNING singular matrix set a[j][j]=TINY ";
+        qCDebug(lcMatrix) << "Matrix::ludcmp() - indx[j]=imax=" <<  indx[j] +1;
+        // Fix #269: 'big' here is the chosen pivot's magnitude, already scaled by its row's
+        // own maximum (vv[j] = 1/rowMax) - a dimensionless, relative quantity, not a raw
+        // value. A singular (or numerically indistinguishable from singular) matrix drives
+        // this toward zero without necessarily hitting it exactly - relying only on an exact
+        // a[j][j]==0 check (as before) misses that case, silently substituting TINY and
+        // dividing by it later, which is exactly what produced the reported 1e+20 garbage
+        // inverse entries on a genuinely singular input. Checking the relative pivot
+        // magnitude here catches both the exact-zero and near-zero cases.
+        if ( big < RELATIVE_SINGULARITY_TOLERANCE ) {
+            qCDebug(lcMatrix) << "Matrix::ludcmp() - Singular matrix: pivot magnitude" << big
+                               << "at column" << j+1 << "below relative tolerance";
+            delete[] vv;
+            return false;
         }
 
         for (i=j+1;i<n;i++) {
             //     Now, divide by the pivot element.
             temp=a[i][j] /=  a[j][j] ;
-            qDebug () << "Matrix::ludcmp() - j " << j+1<< " dividing by pivot " << a.item(j,j) << " temp  = " << temp;
+            qCDebug(lcMatrix) << "Matrix::ludcmp() - j " << j+1<< " dividing by pivot " << a.item(j,j) << " temp  = " << temp;
             for (k=j+1;k<n;k++) {       //reduce remaining submatrix
                 a[i][k] -= ( temp * a[j][k] );
-                qDebug () << "Matrix::ludcmp() - lower a["<< i+1 << "][" << k+1 <<"] = " << a[i][k];
+                qCDebug(lcMatrix) << "Matrix::ludcmp() - lower a["<< i+1 << "][" << k+1 <<"] = " << a[i][k];
             }
         }
 
@@ -1177,7 +1203,7 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d) {
 
 
  //free_vector(vv,1,n);
-    qDebug () << "delete vector vv";
+    qCDebug(lcMatrix) << "delete vector vv";
     delete[] vv;
 
 
@@ -1195,6 +1221,8 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d) {
  * @brief Solves the set of n linear equations A·X = b, where A nxn matrix
  * decomposed as L·U (L lower triangular and U upper triangular)
  * by forward substitution and  backsubstitution.
+ * Complexity: O(n^2) - cheap compared to ludcmp()'s O(n^3) decomposition, which is exactly
+ * why ludcmp() is only run once and lubksb() can then be reused per right-hand side.
  *
  * Given A = L·U we have
  * A · x = (L · U) · x = L · (U · x) = b
@@ -1220,7 +1248,7 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d) {
  */
 void Matrix::lubksb(Matrix &a, const int &n, int indx[], qreal b[])
 {
-    qDebug () << "Matrix::lubksb() - ";
+    qCDebug(lcMatrix) << "Matrix::lubksb() - ";
     int i, j, ii=0,ip;
     qreal sum;
     for ( i=0;i<n;i++) {  // When ii is set to a positive value, it will become the
@@ -1232,28 +1260,48 @@ void Matrix::lubksb(Matrix &a, const int &n, int indx[], qreal b[])
                 sum -= a[i][j]*b[j];
         else if (sum !=0 )     // A nonzero element was encountered, so from now on we
             ii=i+1;         //  will have to do the sums in the loop above.
-        qDebug() << "Matrix::lubksb() "<< "i " << i  << " ip=indx[i] " << ip <<  " b[ip] " << b[ip] << " b[i] " << b[i] <<  "sum " << sum ;
+        qCDebug(lcMatrix) << "Matrix::lubksb() "<< "i " << i  << " ip=indx[i] " << ip <<  " b[ip] " << b[ip] << " b[i] " << b[i] <<  "sum " << sum ;
         b[i]=sum;
     }
     for ( i=(n-1);i>=0;i--) {  // Now we do the backsubstitution, equation (2.3.7).
         sum=b[i];
-        qDebug() << "Matrix::lubksb() backsubstitution: "<< "i " << i  << " b[i] " << b[i] <<  "sum " << sum ;
+        qCDebug(lcMatrix) << "Matrix::lubksb() backsubstitution: "<< "i " << i  << " b[i] " << b[i] <<  "sum " << sum ;
         for ( j=i+1;j<n;j++)
             sum -= a[i][j]*b[j];
         b[i]=sum/a[i][i]; //  Store a component of the solution vector X. All done!
-        qDebug() << "Matrix::lubksb() backsubstitution: "<< "i " << i  <<  "sum " << sum << " a[i][i] " << a[i][i]   << " b[i] " << b[i] ;
+        qCDebug(lcMatrix) << "Matrix::lubksb() backsubstitution: "<< "i " << i  <<  "sum " << sum << " a[i][i] " << a[i][i]   << " b[i] " << b[i] ;
     }
 }
 
 
 
 /**
- * @brief Computes and returns the inverse of given matrix a
- * Allows b.inverse(a)
+ * @brief Computes and returns the inverse of matrix a, into this matrix. Allows b.inverse(a).
+ * Decomposes a once via ludcmp() (LU decomposition with partial pivoting), then solves n
+ * separate systems - one per column of the identity matrix - via lubksb(), each giving one
+ * column of the inverse. This is the "lu" method createMatrixAdjacencyInverse() actually
+ * uses (as opposed to inverseByGaussJordanElimination()'s "gauss" method, which has no
+ * caller). If a is singular, ludcmp() returns false and this matrix is left unmodified
+ * (see the weak-singularity-detection finding, #269, in roadmap_ws5_matrices_modernization.md).
+ * Complexity: O(n^3) for the one-time ludcmp() decomposition, plus O(n) calls to lubksb()
+ * at O(n^2) each (one per column) - O(n^3) overall, same order as the decomposition itself.
  * @param a
- * @return
+ * @param cancelCheck Optional callback, also forwarded to ludcmp() (see its own doc) since
+ * ludcmp()'s one-time O(n^3) decomposition is what this method actually spends most of its time
+ * in - checked there once per outer-loop iteration, and here once per column, before that
+ * column's lubksb() call; if it returns true, the loop stops early and this matrix holds only the
+ * columns already solved (the rest are left at whatever resize()/identityMatrix() initialized them
+ * to - not a valid inverse). Defaults to nullptr (never cancels), so existing callers are
+ * unaffected. Callers must check their own cancellation flag after calling this, not infer it from
+ * the return value - ludcmp() returns false identically for "canceled" and "singular", and this
+ * method has no way to tell those apart either.
+ * @return true if a's inverse was fully computed into this matrix; false if a is singular
+ * (Fix #269: now a real relative-tolerance pivot check in ludcmp(), not a weak after-the-fact
+ * scan for nonzero entries) or cancelCheck fired, in which case this matrix is left
+ * unmodified/partial - callers must not treat its contents as valid without checking the
+ * return value first.
  */
-Matrix& Matrix::inverse(Matrix &a)
+bool Matrix::inverse(Matrix &a, std::function<bool()> cancelCheck)
 {
     int i,j, n=a.rows();
     qreal d;
@@ -1265,23 +1313,34 @@ Matrix& Matrix::inverse(Matrix &a)
     int *indx = new  (nothrow) int [ n ];
     Q_CHECK_PTR(indx);
 
-    qDebug () << "Matrix::inverse() - inverting matrix a - size " << n;
+    qCDebug(lcMatrix) << "Matrix::inverse() - inverting matrix a - size " << n;
     if (n==0) {
-        return (*this);
+        delete[] col;
+        delete[] indx;
+        return true;
     }
-    if ( ! ludcmp(a,n,indx,d) )
+    if ( ! ludcmp(a,n,indx,d,cancelCheck) )
     { //  Decompose the matrix just once.
-        qDebug () << "Matrix::inverse() - matrix a singular - RETURN";
-        return *this;
+        qCDebug(lcMatrix) << "Matrix::inverse() - matrix a singular or canceled - RETURN";
+        delete[] col;
+        delete[] indx;
+        return false;
     }
 
-    qDebug () << "Matrix::inverse() - find inverse by columns";
+    qCDebug(lcMatrix) << "Matrix::inverse() - find inverse by columns";
+    bool completed = true;
     for ( j=0; j<n; j++) {    //    Find inverse by columns.
+        if (cancelCheck && cancelCheck()) {
+            qCDebug(lcMatrix) << "Matrix::inverse() - canceled at column" << j;
+            completed = false;
+            break;
+        }
+
         for( i=0; i<n; i++)
             col[i]=0;
         col[j]=1.0;
 
-        qDebug () << "Matrix::inverse() - call lubksb";
+        qCDebug(lcMatrix) << "Matrix::inverse() - call lubksb";
         lubksb(a,n,indx,col);
 
         for( i=0; i<n; i++) {
@@ -1289,9 +1348,11 @@ Matrix& Matrix::inverse(Matrix &a)
         }
 
     }
-        qDebug () << "Matrix::inverse() - finished!";
+        qCDebug(lcMatrix) << "Matrix::inverse() - finished!";
 
-    return *this;
+    delete[] col;
+    delete[] indx;
+    return completed;
 }
 
 
@@ -1299,11 +1360,14 @@ Matrix& Matrix::inverse(Matrix &a)
 
 
 /**
- * @brief Computes and returns the solution of the set of n linear equations A·x = b
- * Allows A.solve(b)
- *
- * @param b vector
- * @return
+ * @brief Solves the linear system A*x = b, where A is this matrix, in place: b is
+ * overwritten with the solution vector x. Allows A.solve(b). Works on a private copy of
+ * this matrix (ludcmp() would otherwise decompose - and so overwrite - the caller's own
+ * data), via the same ludcmp()+lubksb() pair inverse() uses. Complexity: O(n^3), dominated
+ * by the one-time ludcmp() decomposition (lubksb() itself is only O(n^2)).
+ * @param b Right-hand-side vector on input, solution vector x on output.
+ * @return false if A is singular (b is left unmodified) or the working copy couldn't be
+ * allocated; true on success.
  */
 bool Matrix::solve(qreal b[])
 {
@@ -1323,7 +1387,7 @@ bool Matrix::solve(qreal b[])
     }
     Q_CHECK_PTR(indx);
 
-    qDebug () << "Matrix::solve() - solving A x  - size " << n;
+    qCDebug(lcMatrix) << "Matrix::solve() - solving A x  - size " << n;
     if (n==0) {
         return false;
     }
@@ -1331,36 +1395,45 @@ bool Matrix::solve(qreal b[])
     { //  Decompose the matrix just once.
         delete A;
         delete[] indx;
-        qDebug() << "Matrix::solve() - matrix a singular - RETURN";
+        qCDebug(lcMatrix) << "Matrix::solve() - matrix a singular - RETURN";
         return false ;
     }
 
-//    qDebug () << "Matrix::solve() - call lubksb";
     lubksb(*A, n, indx, b);
-//    qDebug () << "Matrix::solve() - finished!";
 
     return true;
 }
 
 
 /**
- * @brief Computes the dissimilarities matrix of the variables (rows, columns, both)
- * of this matrix using the user defined metric
- * @param metric
- * @param varLocation
- * @param diagonal
- * @param considerWeights
- * @return
+ * @brief Computes a dissimilarities matrix T: T(i,k) is how different variable i and
+ * variable k are, under the chosen metric, treating either this matrix's rows, its columns,
+ * or both (concatenated) as the "variables" being compared. Backs the Distances dialog's
+ * Euclidean/Manhattan/Jaccard/Hamming/Chebyshev options (see graph_reports.cpp's
+ * MATRIX_DISTANCES_* cases).
+ * @param metric One of the METRIC_* constants declared at the top of matrix.h (Jaccard,
+ * Hamming, Euclidean, Manhattan, or Chebyshev - simple matching and Pearson are handled by
+ * similarityMatrix()/pearsonCorrelationCoefficients() instead, not here).
+ * @param varLocation "Rows", "Columns", or "Both" - which axis holds the variables being compared.
+ * @param diagonal If true, i==k / k==j comparisons are included; if false, they're skipped
+ * (a variable is never compared against itself).
+ * @param considerWeights Currently unused (Q_UNUSED) - accepted for interface symmetry with
+ * similarityMatrix()/pearsonCorrelationCoefficients(), which do use it.
+ * Complexity: O(N^2 * M), where N is the number of variables being compared and M is the
+ * length of each variable's sample (the other axis) - a triple-nested loop, effectively
+ * O(N^3) when varLocation is "Rows" or "Columns" (M==N there).
+ * @return Matrix T, the dissimilarities matrix.
  */
 Matrix& Matrix::distancesMatrix(const int &metric,
                         const QString varLocation,
                         const bool &diagonal,
-                        const bool &considerWeights) {
+                        const bool &considerWeights,
+                        std::function<bool()> cancelCheck) {
     Q_UNUSED(considerWeights);
 
     Matrix *T = new Matrix(cols(), rows());
 
-    qDebug()<< "Matrix::distancesMatrix() -"
+    qCDebug(lcMatrix)<< "Matrix::distancesMatrix() -"
             <<"metric"<< metric
             << "varLocation"<< varLocation
             << "diagonal"<<diagonal;
@@ -1377,10 +1450,13 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
         QList<qreal> mean (N,0); // holds mean values
 
-        qDebug()<< "Matrix::distancesMatrix() - input matrix:";
+        qCDebug(lcMatrix)<< "Matrix::distancesMatrix() - input matrix:";
         //this->printMatrixConsole();
 
         for (int i = 0 ; i < N ; i++ ) {
+            if (cancelCheck && cancelCheck()) {
+                return *T;
+            }
             sum = 0 ;
             for (int k = i ; k < N ; k++ ) {
                 distTemp = 0;
@@ -1388,7 +1464,6 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                 max = 0;
                 for (int j = 0 ; j < N ; j++ ) {
 
-//                    qDebug() <<  "(i,j)" << i<< ","<<j << "(k,j)" << k<<","<<j;
 
                     if (!diagonal && (i==j || k==j)) {
                         continue;
@@ -1414,7 +1489,6 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                             distTemp = RAND_MAX;
                         }
                         else {
-//                            qDebug() <<  item(i,j) << "-" << item(k,j) <<"^2";
                             distTemp += ( item(i,j) - item(k,j) )*( item(i,j) - item(k,j) ); //compute (x - y)^2
                         }
                         break;
@@ -1467,8 +1541,6 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                 }
 
 
-//                qDebug() << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
-//                         << "matchRatio("<<i+1<<","<<k+1<<") =" << distance;
 
                 T->setItem(i,k, distance);
                 T->setItem(k,i, distance);
@@ -1487,11 +1559,14 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
         QList<qreal> mean (N,0); // holds mean values
 
-        qDebug()<< "Matrix::distancesMatrix() -"
+        qCDebug(lcMatrix)<< "Matrix::distancesMatrix() -"
                 <<"input matrix";
         //printMatrixConsole(true);
 
         for (int i = 0 ; i < N ; i++ ) {
+            if (cancelCheck && cancelCheck()) {
+                return *T;
+            }
             sum = 0 ;
             for (int k = i ; k < N ; k++ ) {
                 distTemp = 0;
@@ -1574,7 +1649,6 @@ Matrix& Matrix::distancesMatrix(const int &metric,
                 }
 
 
-//                qDebug() << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
 
 //                         << "distance("<<i+1<<","<<k+1<<") =" << distance;
 
@@ -1606,12 +1680,15 @@ Matrix& Matrix::distancesMatrix(const int &metric,
             }
         }
 
-        qDebug()<< "Matrix::distancesMatrix() -"
+        qCDebug(lcMatrix)<< "Matrix::distancesMatrix() -"
                 <<"input matrix";
         //CM.printMatrixConsole(true);
 
 
         for (int i = 0 ; i < N ; i++ ) {
+            if (cancelCheck && cancelCheck()) {
+                return *T;
+            }
 
             for (int k = i ; k < N ; k++ ) {
 
@@ -1701,7 +1778,6 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
 
 
-//                qDebug() << "distTemp("<<i+1<<","<<k+1<<") =" << distTemp
 
 //                         << "matchRatio("<<i+1<<","<<k+1<<") =" << distance;
 
@@ -1719,7 +1795,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
     else {
 
     }
-    qDebug() << "Matrix::distancesMatrix() - FINISHED - Returning matrix:";
+    qCDebug(lcMatrix) << "Matrix::distancesMatrix() - FINISHED - Returning matrix:";
     //T->printMatrixConsole();
     return *T;
 }
@@ -1728,22 +1804,32 @@ Matrix& Matrix::distancesMatrix(const int &metric,
 
 
 /**
- * @brief  Computes the pair-wise matching score of the rows, columns
- * or both of the given matrix AM, based on the given matching measure
- * and returns the similarity matrix.
- * @param AM Matrix
- * @return Matrix nxn with matching scores for every pair of rows/columns of AM
+ * @brief Computes a pairwise similarity matrix SCM: SCM(i,k) is how alike variable i and
+ * variable k are, under the chosen matching measure, treating either AM's rows, its columns,
+ * or both (concatenated) as the "variables" being compared. The mirror image of
+ * distancesMatrix() (similarity instead of dissimilarity) - backs the Similarity dialog's
+ * simple-matching/Jaccard/Hamming/Cosine options.
+ * @param AM Input matrix whose rows/columns/both are being compared.
+ * @param measure One of the METRIC_* constants (simple matching, Jaccard, Hamming, Cosine -
+ * Pearson is handled separately by pearsonCorrelationCoefficients()).
+ * @param varLocation "Rows", "Columns", or "Both" - which axis holds the variables being compared.
+ * @param diagonal If true, i==k comparisons are included; if false, a variable is never
+ * compared against itself.
+ * @param considerWeights Whether edge weights factor into the match/mismatch decision.
+ * @return Matrix SCM, N x N (N = number of variables being compared), with a similarity
+ * score for every pair.
+ * Complexity: O(N^2 * M), same shape as distancesMatrix() - see its complexity note.
  */
-
 Matrix& Matrix::similarityMatrix(Matrix &AM,
                                    const int &measure,
                                    const QString varLocation,
                                    const bool &diagonal,
-                                   const bool &considerWeights){
+                                   const bool &considerWeights,
+                                   std::function<bool()> cancelCheck){
 
     Q_UNUSED(considerWeights);
 
-    qDebug()<< "Matrix::similarityMatrix() -"
+    qCDebug(lcMatrix)<< "Matrix::similarityMatrix() -"
             <<"measure"<< measure
             << "varLocation"<< varLocation;
 
@@ -1761,11 +1847,14 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
 
         QList<qreal> mean (N,0); // holds mean values
 
-        qDebug()<< "Matrix::similarityMatrix() -"
+        qCDebug(lcMatrix)<< "Matrix::similarityMatrix() -"
                 <<"input matrix";
         //AM.printMatrixConsole(true);
 
         for (int i = 0 ; i < N ; i++ ) {
+            if (cancelCheck && cancelCheck()) {
+                return *this;
+            }
             sum = 0 ;
             for (int k = i ; k < N ; k++ ) {
                 matches = 0;
@@ -1840,7 +1929,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
                 }
 
 
-                qDebug() << "matches("<<i+1<<","<<k+1<<") =" << matches
+                qCDebug(lcMatrix) << "matches("<<i+1<<","<<k+1<<") =" << matches
 
                          << "matchRatio("<<i+1<<","<<k+1<<") =" << matchRatio;
                 setItem(i,k, matchRatio);
@@ -1862,11 +1951,14 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
 
         QList<qreal> mean (N,0); // holds mean values
 
-        qDebug()<< "Matrix::similarityMatrix() -"
+        qCDebug(lcMatrix)<< "Matrix::similarityMatrix() -"
                 <<"input matrix";
         //AM.printMatrixConsole(true);
 
         for (int i = 0 ; i < N ; i++ ) {
+            if (cancelCheck && cancelCheck()) {
+                return *this;
+            }
             sum = 0 ;
             for (int k = i ; k < N ; k++ ) {
                 matches = 0;
@@ -1941,7 +2033,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
                 default:
                     break;
                 }
-                qDebug() << "matches("<<i+1<<","<<k+1<<") =" << matches
+                qCDebug(lcMatrix) << "matches("<<i+1<<","<<k+1<<") =" << matches
 
                          << "matchRatio("<<i+1<<","<<k+1<<") =" << matchRatio;
                 setItem(i,k, matchRatio);
@@ -1973,12 +2065,16 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
                 CM.setItem(j + N,i, AM.item(j,i));
             }
         }
-        qDebug()<< "Matrix::similarityMatrix() -"
+        qCDebug(lcMatrix)<< "Matrix::similarityMatrix() -"
                 <<"input matrix";
         //CM.printMatrixConsole(true);
 
 
         for (int i = 0 ; i < N ; i++ ) {
+
+            if (cancelCheck && cancelCheck()) {
+                return *this;
+            }
 
             for (int k = i ; k < N ; k++ ) {
 
@@ -2057,7 +2153,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
                     break;
                 }
 
-                qDebug() << "matches("<<i+1<<","<<k+1<<") =" << matches
+                qCDebug(lcMatrix) << "matches("<<i+1<<","<<k+1<<") =" << matches
 
                          << "matchRatio("<<i+1<<","<<k+1<<") =" << matchRatio;
                 setItem(i,k, matchRatio);
@@ -2083,15 +2179,22 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
 
 
 /**
- * @brief  Computes the Pearson Correlation Coefficient of the rows or the columns
- * of the given matrix AM
- * @param AM Matrix
- * @return Matrix nxn with PPC values for every pair of rows/columns of AM
+ * @brief Computes the Pearson product-moment correlation coefficient between every pair of
+ * variables (AM's rows or its columns, per varLocation), where each variable's "sample" is
+ * the sequence of values across the other axis. r ranges -1 (perfect negative correlation)
+ * to +1 (perfect positive correlation), with 0 meaning no linear correlation.
+ * @param AM Input matrix whose rows or columns are being compared.
+ * @param varLocation "Rows" or "Columns" - which axis holds the variables being compared.
+ * @param diagonal If true, i==k comparisons are included (always r=1, trivially); if false,
+ * a variable is never compared against itself.
+ * @return Matrix N x N (N = number of variables being compared) of Pearson r values.
+ * Complexity: O(N^2 * M), same shape as distancesMatrix() - see its complexity note.
  */
 Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                                                const QString &varLocation,
-                                               const bool &diagonal){
-    qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
+                                               const bool &diagonal,
+                                               std::function<bool()> cancelCheck){
+    qCDebug(lcMatrix)<< "Matrix::pearsonCorrelationCoefficients() -"
             << "varLocation"<< varLocation;
 
     int N = 0;
@@ -2111,15 +2214,18 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
 
         QList<qreal> mean (N,0); // holds mean values
         QList<qreal> sigma(N,0);
-        qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
+        qCDebug(lcMatrix)<< "Matrix::pearsonCorrelationCoefficients() -"
                 <<"input matrix";
         //AM.printMatrixConsole(true);
 
         for (int i = 0 ; i < N ; i++ ) {
+            if (cancelCheck && cancelCheck()) {
+                return *this;
+            }
 
             for (int k = i ; k < N ; k++ ) {
 
-                qDebug() << "comparing rows i"<<i+1<<"k"<<k+1;
+                qCDebug(lcMatrix) << "comparing rows i"<<i+1<<"k"<<k+1;
 
                 // compute mean and variance  values
                 sumi = 0;
@@ -2148,17 +2254,17 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
 
                 for (int j = 0 ; j < N ; j++ ) {
 
-                    qDebug() << "AM.item(i,j)=AM.item("<<i+1<<","<<j+1<<") = "<<AM.item(i,j)
+                    qCDebug(lcMatrix) << "AM.item(i,j)=AM.item("<<i+1<<","<<j+1<<") = "<<AM.item(i,j)
                              << " mean(i)=mean("<<i+1<<") = "<<mean[i]
                                 << "AM.item(k,j)=AM.item("<<k+1<<","<<j+1<<") = "<<AM.item(k,j)
                                 << " mean(k)=mean("<<k+1<<") = "<<mean[k];
 
                     if (!diagonal && (i==j ) ) {
-                        qDebug() << "skipping because i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
+                        qCDebug(lcMatrix) << "skipping because i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
                         continue;
                     }
                     if (!diagonal && (k==j) ) {
-                        qDebug() << "skipping because i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
+                        qCDebug(lcMatrix) << "skipping because i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
                         continue;
                     }
                     else
@@ -2174,7 +2280,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                 }
 
 
-                qDebug() << "covariance("<<i+1<<","<<k+1<<") =" << covariance
+                qCDebug(lcMatrix) << "covariance("<<i+1<<","<<k+1<<") =" << covariance
                          << "sigma["<<i+1<<"]" << sigma[i]
                          << "sigma["<<k+1<<"]" << sigma[k]
                          << "pcc("<<i+1<<","<<k+1<<") =" << pcc;
@@ -2195,16 +2301,19 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
         QList<qreal> mean (N,0); // holds mean values
         QList<qreal> sigma(N,0);
 
-        qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
+        qCDebug(lcMatrix)<< "Matrix::pearsonCorrelationCoefficients() -"
                 <<"input matrix";
         //AM.printMatrixConsole(true);
 
 
         for (int i = 0 ; i < N ; i++ ) {
+            if (cancelCheck && cancelCheck()) {
+                return *this;
+            }
 
             for (int k = i ; k < N ; k++ ) {
 
-                qDebug() << "comparing columns i"<<i+1<<"k"<<k+1;
+                qCDebug(lcMatrix) << "comparing columns i"<<i+1<<"k"<<k+1;
 
                 // compute mean and variance  values
                 sumi = 0;
@@ -2231,7 +2340,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                 covariance = 0;
                 for (int j = 0 ; j < N ; j++ ) {
                     if (!diagonal && (i==j || k==j) ) {
-                        qDebug() << "skipping because i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
+                        qCDebug(lcMatrix) << "skipping because i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
                         continue;
                     }
                     covariance  +=  ( AM.item(j,i)  - mean[i] ) * ( AM.item(j,k)  - mean[k] ) ;
@@ -2246,7 +2355,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                 }
 
 
-                qDebug() << "covariance("<<i+1<<","<<k+1<<") =" << covariance
+                qCDebug(lcMatrix) << "covariance("<<i+1<<","<<k+1<<") =" << covariance
                          << "sigma["<<i+1<<"]" << sigma[i]
                          << "sigma["<<k+1<<"]" << sigma[k]
                          << "pcc("<<i+1<<","<<k+1<<") =" << pcc;
@@ -2282,16 +2391,19 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
             }
         }
 
-        qDebug()<< "Matrix::pearsonCorrelationCoefficients() -"
+        qCDebug(lcMatrix)<< "Matrix::pearsonCorrelationCoefficients() -"
                 <<"input matrix";
         //CM.printMatrixConsole(true);
 
 
         for (int i = 0 ; i < N ; i++ ) {  //a column
+            if (cancelCheck && cancelCheck()) {
+                return *this;
+            }
 
             for (int k = i ; k < N ; k++ ) {  // next column
 
-               qDebug() << "comparing augmented columns i"<<i+1<<"k"<<k+1;
+               qCDebug(lcMatrix) << "comparing augmented columns i"<<i+1<<"k"<<k+1;
 
                 // compute mean and variance  values
                 sumi = 0;
@@ -2318,7 +2430,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                 covariance = 0;
 
                 for (int j = 0 ; j < M ; j++ ) {
-                    qDebug() << "CM.item(j,i)=CM.item("<<j+1<<","<<i+1<<") = "<<CM.item(j,i)
+                    qCDebug(lcMatrix) << "CM.item(j,i)=CM.item("<<j+1<<","<<i+1<<") = "<<CM.item(j,i)
                              << " mean(i)=mean("<<i+1<<") = "<<mean[i]
                                 << "CM.item(j,k)=CM.item("<<j+1<<","<<k+1<<") = "<<CM.item(j,k)
                                 << " mean(k)=mean("<<k+1<<") = "<<mean[k];
@@ -2326,11 +2438,11 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
 
                     if (!diagonal) {
                         if ( (i==j || k==j )) {
-                            qDebug() << "skipping because i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
+                            qCDebug(lcMatrix) << "skipping because i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
                             continue;
                         }
                         if ( j>=N && ( (i+N)==j || (k+N)==j )) {
-                            qDebug() << "skipping because j>=N and i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
+                            qCDebug(lcMatrix) << "skipping because j>=N and i"<<i+1<<"k"<<k+1 <<"j"<<j+1;
                             continue;
                         }
                     }
@@ -2345,7 +2457,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                     pcc = 0;
                 }
 
-                qDebug() << "final covariance("<<i+1<<","<<k+1<<") =" << covariance
+                qCDebug(lcMatrix) << "final covariance("<<i+1<<","<<k+1<<") =" << covariance
                          << "sigma["<<i+1<<"]" << sigma[i]
                          << "sigma["<<k+1<<"]" << sigma[k]
                          << "pcc("<<i+1<<","<<k+1<<") =" << pcc;
@@ -2374,7 +2486,7 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
  */
 QTextStream& operator <<  (QTextStream& os, Matrix& m){
 
-    qDebug() << "Printing matrix m to provided output stream...";
+    qCDebug(lcMatrix) << "Printing matrix m to provided output stream...";
 
     int actorNumber=1, fieldWidth = 13;
     qreal maxVal, minVal, maxAbsVal, element;
@@ -2462,7 +2574,7 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
             << qSetFieldWidth(3) <<"" ;
 
         for (int c = 0; c < m.cols(); ++c) {
-            element = m(r,c) ;
+            element = m.item(r,c) ;
             os << qSetFieldWidth(fieldWidth) << Qt::fixed << Qt::right;
             if ( element == RAND_MAX)  // we print inf symbol instead of RAND_MAX (distances matrix).
                 os << Qt::fixed << Qt::right << qSetFieldWidth(fieldWidth) << infinity ;
@@ -2488,19 +2600,23 @@ QTextStream& operator <<  (QTextStream& os, Matrix& m){
 
 
 /**
- * @brief  Prints this matrix as HTML table
- * WARNING: DO NOT USE WHEN THE NETWORK CONTAINS DISABLED/DELETED NODES 
- * It has the problem that the real actorNumber != elementLabel i.e. when we
- * have deleted a node/vertex
- * @param os
- * @param debug
- * @return
+ * @brief Writes this matrix as an HTML table to os, one row of table cells per matrix row.
+ * @warning Do not use on a network with disabled/deleted nodes - row/column headers are
+ * generated from a running counter, not the real vertex number, so they go out of sync
+ * with actual actor numbers once any vertex has been deleted.
+ * @param os Output stream to write the HTML table to.
+ * @param markDiag If true, diagonal cells get distinct styling.
+ * @param plain If true, skip HTML styling/highlighting (a plain table).
+ * @param printInfinity If true, RAND_MAX cells print as the infinity symbol (unreachable/no
+ * edge) instead of the raw number.
+ * @return true on success.
+ * Complexity: O(rows()*cols()).
  */
 bool Matrix::printHTMLTable(QTextStream& os,
                             const bool markDiag,
                             const bool &plain,
                             const bool &printInfinity){
-    qDebug() << "Matrix::printHTMLTable()";
+    qCDebug(lcMatrix) << "Matrix::printHTMLTable()";
     int elementLabel=0, rowCount = 0;
     qreal maxVal, minVal, element;
     bool hasRealNumbers=false;
@@ -2631,11 +2747,15 @@ bool Matrix::printHTMLTable(QTextStream& os,
 
 
 /**
- * @brief  Prints this matrix to stderr or stdout
- * @return
+ * @brief Prints this matrix as plain text, one line per row, cells right-aligned to a fixed
+ * width. Cells >= RAND_MAX (unreachable/no edge) print as "x" instead of the raw number.
+ * A quick way to eyeball a matrix's contents while debugging.
+ * Complexity: O(rows()*cols()).
+ * @param debug If true, print to stderr; if false, print to stdout.
+ * @return true.
  */
 bool Matrix::printMatrixConsole(bool debug){
-    qDebug() << "Matrix::printMatrixConsole() - debug " << debug
+    qCDebug(lcMatrix) << "Matrix::printMatrixConsole() - debug " << debug
              << "matrix rows" << rows()<< "cols"<< cols();
     QTextStream out ( (debug ? stderr : stdout) );
 
@@ -2662,18 +2782,21 @@ bool Matrix::printMatrixConsole(bool debug){
 
 
 /**
- * @brief  Checks if matrix is ill-defined (contains at least an inf element)
- * @return
+ * @brief Checks whether this matrix is "ill-defined": whether any cell holds RAND_MAX, the
+ * sentinel value used elsewhere in the codebase for "infinite"/unreachable (e.g. a distance
+ * matrix entry for a disconnected pair).
+ * @return true if at least one cell is RAND_MAX or greater; false otherwise.
+ * Complexity: O(rows()*cols()) worst case, but returns as soon as one such cell is found.
  */
 bool Matrix::illDefined(){
-    qDebug() << "Matrix::illDefined() " ;
+    qCDebug(lcMatrix) << "Matrix::illDefined() " ;
 
     for (int r = 0; r < rows(); ++r) {
         for (int c = 0; c < cols(); ++c) {
             if ( item(r,c) < RAND_MAX  ) {
             }
             else {
-                qDebug() << "Matrix::illDefined() - matrix ill-defined: TRUE" ;
+                qCDebug(lcMatrix) << "Matrix::illDefined() - matrix ill-defined: TRUE" ;
                 return true;
 
             }

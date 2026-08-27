@@ -20,197 +20,6 @@
 //
 // Distance matrices / wrapper hub
 //
-/**
- * @brief Creates the matrix SIGMA of shortest paths (geodesics) between vertices
- * Each SIGMA(i,j) is the number of shortest paths (geodesics) from i and j
- * @param considerWeights
- * @param inverseWeights
- * @param dropIsolates
- */
-void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
-                                           const bool &inverseWeights,
-                                           const bool &dropIsolates)
-{
-    qDebug() << "Graph::graphMatrixShortestPathsCreate()";
-
-    graphDistancesGeodesic(false, considerWeights, inverseWeights, dropIsolates);
-
-    if (progressCanceled())
-    {
-        calculatedDistances = false;
-        return;
-    }
-
-    VList::const_iterator it, jt;
-    int N = vertices(dropIsolates, false, true);
-    int progressCounter = 0;
-    int source = 0, target = 0;
-    int i = 0, j = 0;
-
-    qDebug() << "Graph::graphMatrixShortestPathsCreate() - Resizing matrix to hold "
-             << N << " vertices";
-
-    SIGMA.resize(N, N);
-
-    QString pMsg = tr("Creating shortest paths matrix. \nPlease wait ");
-    progressStatus(pMsg);
-    progressCreate(N, pMsg);
-
-    qDebug() << "Graph::graphMatrixShortestPathsCreate() - Writing shortest paths matrix...";
-
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-
-        progressUpdate(++progressCounter);
-        if (progressCanceled())
-        {
-            calculatedDistances = false;
-            progressFinish();
-            return;
-        }
-
-        source = (*it)->number();
-
-        if ((*it)->isIsolated() && dropIsolates)
-        {
-            qDebug() << "Graph::graphMatrixShortestPathsCreate() - "
-                     << source << "isolated. SKIP";
-
-            continue;
-        }
-
-        if (!(*it)->isEnabled())
-        {
-            qDebug() << "Graph::graphMatrixShortestPathsCreate() - "
-                     << source << "disabled. SKIP";
-            continue;
-        }
-
-        qDebug() << "Graph::graphMatrixShortestPathsCreate() - source" << source
-                 << "i" << i;
-
-        for (jt = m_graph.cbegin(); jt != m_graph.cend(); ++jt)
-        {
-
-            target = (*jt)->number();
-
-            if ((*jt)->isIsolated() && dropIsolates)
-            {
-                qDebug() << "Graph::graphMatrixShortestPathsCreate() - "
-                         << target << "isolated. SKIP";
-                continue;
-            }
-
-            if (!(*jt)->isEnabled())
-            {
-                qDebug() << "Graph::graphMatrixShortestPathsCreate() - "
-                         << target << "disabled. SKIP";
-                continue;
-            }
-
-            qDebug() << "Graph::graphMatrixShortestPathsCreate() - "
-                     << "target" << target << "j" << j;
-
-            qDebug() << "Graph::graphMatrixShortestPathsCreate() -  setting SIGMA ("
-                     << i << "," << j << ") =" << (*it)->shortestPaths(target);
-            SIGMA.setItem(i, j, (*it)->shortestPaths(target));
-            j++;
-        }
-        j = 0;
-        i++;
-    }
-
-    progressFinish();
-}
-
-/**
- * @brief Creates the matrix DM of geodesic distances between vertices.
- *
- * Phase 1: calls graphDistancesGeodesic() which runs the DistanceEngine.
- * The engine owns its own progress dialog — it creates it, updates it,
- * and destroys it before returning. The dialog stack is empty on return.
- *
- * Phase 2: fills the DM matrix from the cached per-vertex distances.
- * This is an O(N²) memory-write pass — fast enough to need no progress
- * dialog of its own. No progressUpdate or progressFinish is called here;
- * the caller owns the dialog lifecycle for any subsequent phase.
- *
- * @param considerWeights If true, edge weights are used in distance computations.
- * @param inverseWeights  If true, edge weights are inverted before use.
- * @param dropIsolates    If true, isolate nodes are excluded from the analysis.
- * @return true on success, false if the computation was cancelled.
- */
-bool Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
-                                              const bool &inverseWeights,
-                                              const bool &dropIsolates)
-{
-    qDebug() << "Graph::graphMatrixDistanceGeodesicCreate()";
-
-    // Phase 1: compute all geodesic distances via DistanceEngine.
-    // The engine owns its own progress dialog for this phase.
-    graphDistancesGeodesic(false, considerWeights, inverseWeights, dropIsolates);
-
-    if (progressCanceled())
-    {
-        calculatedDistances = false;
-        return false;
-    }
-
-    VList::const_iterator it, jt;
-    int N = vertices(dropIsolates, false, true);
-    int source = 0, target = 0;
-    int i = 0, j = 0;
-
-    qDebug() << "Graph::graphMatrixDistanceGeodesicCreate() - "
-                "Resizing distance matrix to hold "
-             << N << " vertices";
-
-    DM.resize(N, N);
-
-    // Phase 2: fill DM from cached per-vertex distances.
-    // No progressUpdate here — the DistanceEngine dialog is already destroyed
-    // by this point. The matrix-fill is O(N²) memory writes and needs no
-    // progress reporting of its own.
-    progressStatus(tr("Creating geodesic distances matrix. \nPlease wait "));
-
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-
-        source = (*it)->number();
-
-        if ((*it)->isIsolated() && dropIsolates) {
-            continue;
-        }
-        if (!(*it)->isEnabled()) {
-            continue;
-        }
-
-        for (jt = m_graph.cbegin(); jt != m_graph.cend(); ++jt)
-        {
-            target = (*jt)->number();
-
-            if ((*jt)->isIsolated() && dropIsolates) {
-                continue;
-            }
-            if (!(*jt)->isEnabled()) {
-                continue;
-            }
-
-            // qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() - "
-            //          << "target" << target << "j" << j;
-            // qDebug() << "Graph: graphMatrixDistanceGeodesicCreate() - setting DM ("
-            //          << i << "," << j << ") =" << (*it)->distance(target);
-
-            DM.setItem(i, j, (*it)->distance(target));
-            j++;
-        }
-        j = 0;
-        i++;
-    }
-
-    // No progressFinish() here — the caller owns the outer dialog lifecycle.
-    return true;
-}
 
 /**
  * @brief Computes the geodesic distances between all vertices:
@@ -224,10 +33,60 @@ bool Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
  * * The InfluenceRange and InfluenceDomain of each node.
  * * The centralities for every u in V (if centralities=true):
  *   - Betweenness: BC(u) = Sum ( sigma(i,j,u)/sigma(i,j) ) for every s,t in V
+ *     Meaning: how often u sits "in between" on the shortest routes connecting other pairs of
+ *     actors - a broker/gatekeeper measure. High betweenness means removing u would disrupt
+ *     many people's shortest path to each other.
+ *     When to use: finding brokers, bottlenecks, or single points of failure in a
+ *     communication/supply network - who, if removed, would fragment the network's shortest
+ *     routes the most.
+ *     Weights: shortest-path-based - if a weight represents value/strength (interaction
+ *     frequency, trust), invert it (a strong tie should behave like a short/cheap path) so
+ *     routing favors the strongest ties, not the weakest.
+ *     Compare to: Stress (SC) below counts the same "sits on a shortest path" event without
+ *     dividing by how many alternative shortest paths existed - use BC when you want "share of
+ *     control" over each pair's routing, SC when you want raw path traffic.
  *   - Stress: SC(u) = Sum ( sigma(i,j) ) for every s,t in V
+ *     Meaning: like betweenness, but simply counts how many shortest paths pass through u,
+ *     without dividing by how many alternative shortest paths existed for that pair - so it
+ *     also rewards actors on many paths even when those paths weren't a pair's *only* shortest
+ *     route.
+ *     When to use: estimating raw path/traffic load through a node (e.g. network routing,
+ *     load-bearing infrastructure) rather than its exclusive control over routing.
+ *     Weights: same shortest-path reasoning as BC above - invert a strength-type weight so
+ *     strong ties route like short paths.
  *   - Eccentricity: EC(u) =  1/maxDistance(u,t)  for some t in V
+ *     Meaning: a worst-case reachability measure - how far away is u's single most distant
+ *     counterpart? High eccentricity centrality means even u's "hardest to reach" other actor
+ *     is nearby.
+ *     When to use: worst-case reasoning - e.g. picking a broadcast/facility location that
+ *     minimizes the longest anyone has to wait to be reached, rather than the average case.
+ *     Weights: same shortest-path reasoning as BC/SC above - invert a strength-type weight.
+ *     Compare to: Closeness (CC) below is this same distance-based idea using the *average*
+ *     distance instead of the worst case.
  *   - Closeness: CC(u) =  1 / Sum( d(u,t) )  for every  t in V
- *   - Power:
+ *     Meaning: how close u is, on average, to everyone else - a low total distance to others
+ *     gives a high closeness score. Only meaningful on a fully connected graph, since an
+ *     unreachable actor has undefined distance.
+ *     When to use: identifying actors who can spread something (information, disease, an
+ *     influence campaign) to the whole network fastest, on a graph known to be connected.
+ *     Weights: same shortest-path reasoning as BC/SC/EC above - invert a strength-type weight
+ *     so a strong tie behaves like a short/cheap path.
+ *     Compare to: Influence Range Closeness Centrality (IRCC, see centralityClosenessIR())
+ *     is this same idea adapted to work on disconnected graphs too.
+ *   - Power (Gil-Schmidt): PC(s) = [1/(N-1)] * Sum_i( nthOrder[i] / i ), where nthOrder[i] is
+ *     the number of nodes at distance i from s (computed in DistanceEngine::compute()).
+ *     Meaning: a generalized degree measure that gives (shrinking) credit for nodes several
+ *     steps away too, not just direct neighbors - similar in spirit to eigenvector centrality,
+ *     but computed directly from how many nodes sit at each distance rather than via
+ *     eigen-decomposition.
+ *     When to use: a cheaper, degree-based alternative to Eigenvector Centrality (EVC) for
+ *     rewarding both direct and indirect reach, when a full eigen-decomposition isn't needed.
+ *     Weights: same shortest-path reasoning as BC/SC/EC/CC above (nthOrder is computed from
+ *     DistanceEngine's shortest-path distances) - invert a strength-type weight.
+ *     Compare to: Eigenvector Centrality (EVC, see centralityEigenvector()) captures a related
+ *     "reach plus indirect reach" idea via eigen-decomposition instead. Not to be confused with
+ *     Bonacich's differently-named, unrelated "Power Centrality" measure (BPC, see
+ *     centralityBonacich()).
  * @param centralities
  * @param considerWeights
  * @param inverseWeights
@@ -275,6 +134,7 @@ void Graph::resetDistanceCentralityCacheFlags()
     calculatedDistances = false;
     calculatedCentralities = false;
     m_graphWeaklyConnectedComponents = 0;
+    m_graphStronglyConnectedComponents = 0;
     m_vertexComponentId.clear();
 }
 
@@ -284,6 +144,7 @@ bool Graph::symmetricCached() const { return m_graphIsSymmetric; }
 void Graph::setConnectedCached(bool v) { m_graphIsConnected = v; }
 
 int Graph::graphWeaklyConnectedComponentsCached() const { return m_graphWeaklyConnectedComponents; }
+int Graph::graphStronglyConnectedComponentsCached() const { return m_graphStronglyConnectedComponents; }
 void Graph::setDiameterCached(int v) { m_graphDiameter = v; }
 
 void Graph::resetDistanceAggregates()

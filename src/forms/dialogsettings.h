@@ -43,6 +43,7 @@ public slots:
     void getReportsRealNumberPrecision(const int &precision);
     void getReportsLabelsLength(const int &length);
     void getReportsChartType(const int &type);
+    void getReportsOutputFormat(const int &format);
 
     void getCanvasBgColor();
     void getCanvasBgImage();
@@ -82,6 +83,7 @@ signals:
     void setReportsRealNumberPrecision(const int &precision);
     void setReportsLabelLength(const int &length);
     void setReportsChartType(const int &type);
+    void setReportsOutputFormat(const int &format);
 
     void setCustomStylesheet(const bool &toggle);
 
@@ -122,7 +124,7 @@ signals:
     void setEdgeArrowsVisibility (const bool &toggle);
     void setEdgeArrowSize(const int &size);
     void setEdgeColor(const QColor, const int &);
-    void setEdgeShape(const QString, const long int);
+    void setEdgesBezier(const bool);
     void setEdgeOffsetFromNode(const int&offset, const int &v1=0, const int &v2=0);
     void setEdgeWeightNumbersVisibility(const bool &toggle);
     void setEdgeLabelsVisibility(const bool &toggle);

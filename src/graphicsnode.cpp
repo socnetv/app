@@ -121,7 +121,7 @@ GraphicsNode::GraphicsNode ( GraphicsWidget* gw,
 
     setPos(p);
 
-    qDebug()<< "Constructed new node" << nodeNumber() << "at pos:" << x()<<"x"<<y()
+    qCDebug(lcGW)<< "Constructed new node" << nodeNumber() << "at pos:" << x()<<"x"<<y()
             << "size:" << m_numSize;
 
 } 
@@ -145,11 +145,9 @@ GraphicsNode::GraphicsNode ( GraphicsWidget* gw,
  * @param colorStr
  */
 void GraphicsNode::setColor(const QString &colorName) {
-//    qDebug()<< "Changing the node color to named color:" << colorName << "setting mcol:" << QColor(colorName);
     prepareGeometryChange();
     m_col_orig=m_col=QColor(colorName);
     m_colHover = m_col.darker(120);
-//    qDebug()<< "Calling update()";
     update();
 }
 
@@ -162,11 +160,9 @@ void GraphicsNode::setColor(const QString &colorName) {
  * @param color
  */
 void GraphicsNode::setColor(QColor color){
-//    qDebug()<< "Changing the node Qcolor to:" << color;
     prepareGeometryChange();
     m_col=color;
     m_colHover = m_col.darker(120);
-//    qDebug()<< "Calling update()";
     update();
 }
 
@@ -188,18 +184,21 @@ QString GraphicsNode::color() {
  * @param size
  */
 void GraphicsNode::setSize(const int &size){
-//    qDebug()<< "Changing the node size to:" << size;
     prepareGeometryChange();
     m_size=size;
+    if (isSelected()) {
+        // Keep the deselect-restore cache in sync (see itemChange()'s ItemSelectedHasChanged
+        // handling below): an explicit size change while the node is still selected - e.g. via
+        // Node Properties or Data Table editing - must update it too, or the new size is
+        // silently discarded on the next click elsewhere (#273).
+        m_size_orig = size;
+    }
     for (GraphicsEdge *edge: inEdgeList) {
-//        qDebug()<< "Informing inbound edges";
         edge->setTargetNodeSize(size);
     }
     for (GraphicsEdge *edge: outEdgeList) {
-//        qDebug()<< "Informing oubound edges";
         edge->setSourceNodeSize(size);
     }
-//    qDebug()<< "calling setShape()";
     setShape(m_shape);
 }
 
@@ -238,10 +237,6 @@ void GraphicsNode::setShape(const QString shape, const QString &iconPath) {
 
     m_shape=shape;
 
-//    qDebug()<< "Setting shape for node:" << nodeNumber()
-//            << "shape:" << m_shape
-//            << "iconPath" << iconPath
-//            << "pos:"<<  x() << "," <<  y();
 
     QPainterPath path;
 
@@ -329,7 +324,13 @@ void GraphicsNode::setShape(const QString shape, const QString &iconPath) {
     // Cache the pixmap for icon-based shapes so paint() does no file I/O.
     if (m_shape == "custom"    || m_shape == "person" || m_shape == "person-b" ||
         m_shape == "bugs"      || m_shape == "heart"  || m_shape == "dice") {
-        m_pixmap = QPixmap(m_iconPath);
+        QPixmap raw(m_iconPath);
+        // For user-supplied custom images, scale to fit the bounding box while preserving
+        // aspect ratio so non-square images are not distorted. Built-in icons are already
+        // square, so this is a no-op for them in practice.
+        m_pixmap = raw.scaled(2*m_size, 2*m_size,
+                              Qt::KeepAspectRatio,
+                              Qt::SmoothTransformation);
     } else {
         m_pixmap = QPixmap();
     }
@@ -363,7 +364,6 @@ QPainterPath GraphicsNode::shape() const {
  * @return
  */
 QRectF GraphicsNode::boundingRect() const {
-    //qDebug()<< "GraphicsNode::boundingRect() " << m_path.controlPointRect();
     return m_path.controlPointRect();
     //qreal adjust = 5;
     // return QRectF(-m_size -adjust , -m_size-adjust , 2*m_size+adjust , 2*m_size +adjust);
@@ -381,21 +381,20 @@ QRectF GraphicsNode::boundingRect() const {
 void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) {
     //	painter->setClipRect( option->exposedRect );
 
-//    qDebug()<< "GraphicsNode::paint() - m_col:" << m_col << "color name:" << m_col.name();
 
     if (option->state & QStyle::State_MouseOver) {
-//        qDebug()<< "Highlighting node because of mouse hover ";
         painter->setBrush(m_colHover);
         setZValue(ZValueNodeHighlighted);
     }
     else {
-//        qDebug()<< "GraphicsNode::paint() - no mouse over " << m_col;
         painter->setBrush(m_col);
         setZValue(ZValueNode);
     }
 
     if (m_shape == "custom") {
-        painter->drawPixmap(-m_size, -m_size, 2*m_size, 2*m_size, m_pixmap);
+        // Draw centered within the bounding box; m_pixmap was pre-scaled with KeepAspectRatio
+        // so its dimensions may be smaller than 2*m_size on one axis.
+        painter->drawPixmap(-m_pixmap.width()/2, -m_pixmap.height()/2, m_pixmap);
     }
     else if ( m_shape == "person"  ||
               m_shape == "person-b"  ||
@@ -451,7 +450,6 @@ void GraphicsNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
  */
 QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &value) {
 
-//    qDebug()<<"GraphicsNode::itemChange - change:" << change<< "value:" << value << "m_col" << m_col.name();
 
     switch (change) {
     case ItemPositionHasChanged: {
@@ -474,15 +472,18 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
         break;
     }
     case ItemEnabledHasChanged:{
-//        qDebug() << "Node item has been enabled";
         break;
     }
     case ItemSelectedHasChanged:{
-//         qDebug() << "Node ItemSelectedHasChanged";
         if (value.toBool()) {
             setZValue(ZValueNodeHighlighted);
-            m_size_orig = m_size;
+            int origSize = m_size;
             setSize(m_size * 2 - 1);
+            // setSize() just overwrote m_size_orig with the enlarged size (since
+            // isSelected() is already true here) - restore the real original so
+            // deselect doesn't restore into the enlarged size and compound on
+            // every select/deselect cycle.
+            m_size_orig = origSize;
             m_col_orig = m_col;
             setColor(m_col.darker(120));
 
@@ -566,7 +567,6 @@ void GraphicsNode::setEdgeHighLighting(const bool &toggle) {
  * @param edge
  */
 void GraphicsNode::addInEdge( GraphicsEdge *edge ) {
-//    qDebug() << "adding inEdge"<< nodeNumber() << "<-" << edge->sourceNodeNumber();
     inEdgeList.push_back( edge);
 }
 
@@ -576,7 +576,6 @@ void GraphicsNode::addInEdge( GraphicsEdge *edge ) {
  * @param link
  */
 void GraphicsNode::removeInEdge( GraphicsEdge *edge ){
-//    qDebug () << "node" << nodeNumber()
 //             << "Removing inEdge"<< nodeNumber() << "<-" << edge->sourceNodeNumber()
 //              << "inEdgeList size:" << inEdgeList.size();
     inEdgeList.remove( edge );
@@ -591,7 +590,6 @@ void GraphicsNode::removeInEdge( GraphicsEdge *edge ){
  * @param edge
  */
 void GraphicsNode::addOutEdge( GraphicsEdge *edge ) {
-//    qDebug() << "adding outEdge"<< nodeNumber() << "->" << edge->targetNodeNumber();
     outEdgeList.push_back(edge);
 }
 
@@ -602,7 +600,6 @@ void GraphicsNode::addOutEdge( GraphicsEdge *edge ) {
  * @param edge
  */
 void GraphicsNode::removeOutEdge(GraphicsEdge *edge){
-//    qDebug () << "node" << nodeNumber()
 //             << "Removing outEdge"<< nodeNumber() << "->" << edge->targetNodeNumber()
 //              << "outEdgeList size:" << outEdgeList.size();
     outEdgeList.remove(edge);
@@ -614,7 +611,6 @@ void GraphicsNode::removeOutEdge(GraphicsEdge *edge){
  * @brief Creates a graphics label to this node.
  */
 void GraphicsNode::addLabel ()  {
-//    qDebug()<< "Creating a graphics label for this node." ;
     m_label = new  GraphicsNodeLabel (this, m_labelText, m_labelSize);
     m_label->setDefaultTextColor (m_labelColor);
     m_label->setPos( m_size, m_labelDistance+m_size);
@@ -638,7 +634,6 @@ GraphicsNodeLabel* GraphicsNode::label(){
  * @brief Deletes the graphics label of this node.
  */
 void GraphicsNode::deleteLabel(){
-//    qDebug()<< "Deleting the graphics label of this node";
     if (m_hasLabel) {
         m_hasLabel=false;
         m_label->hide();
@@ -654,7 +649,6 @@ void GraphicsNode::deleteLabel(){
  * @param label
  */
 void GraphicsNode::setLabelText (const QString &label) {
-//    qDebug()<< "Changing the label of this node to:" << label;
     prepareGeometryChange();
     m_labelText = label;
     if (m_hasLabel)
@@ -680,7 +674,6 @@ QString GraphicsNode::labelText ( ) {
  * @param color
  */
 void GraphicsNode::setLabelColor ( const QString &color) {
-//    qDebug()<< "Changing the color of node label to:" << color;
     prepareGeometryChange();
     m_labelColor= color;
     if (m_hasLabel)
@@ -749,7 +742,6 @@ void GraphicsNode::setLabelDistance(const int &distance) {
  * @brief Adds a graphics number to the node
  */
 void GraphicsNode::addNumber () {
-//    qDebug()<<"Adding node graphics number... " ;
     m_hasNumber=true;
     m_hasNumberInside = false;
     m_number= new  GraphicsNodeNumber ( this, QString::number(m_num), m_numSize);
@@ -772,7 +764,6 @@ GraphicsNodeNumber* GraphicsNode::number(){
  * @brief Deletes the graphics node number
  */
 void GraphicsNode::deleteNumber( ){
-//    qDebug () << "Deleting the graphics node number";
     if (m_hasNumber && !m_hasNumberInside) {
         m_number->hide();
         graphicsWidget->removeItem(m_number);
@@ -785,7 +776,6 @@ void GraphicsNode::deleteNumber( ){
  * @param toggle
  */
 void GraphicsNode::setNumberVisibility(const bool &toggle) {
-//    qDebug() << "Changing visibility of node number to:" << toggle;
     if (toggle) { //show
         if (!m_hasNumber) {
             m_hasNumber=toggle;
@@ -809,7 +799,6 @@ void GraphicsNode::setNumberVisibility(const bool &toggle) {
  * @param toggle
  */
 void GraphicsNode::setNumberInside (const bool &toggle){
-//    qDebug()<<"GraphicsNode::setNumberInside() " << toggle;
     if (toggle) { // set number inside
         deleteNumber();
     }
@@ -881,22 +870,27 @@ void GraphicsNode::setNumberDistance(const int &distance) {
 
 
 GraphicsNode::~GraphicsNode(){
-//    qDebug() << "Destructing node "<< nodeNumber()
-//                << "- inEdgeList:" << inEdgeList.size()
-//                << "- outEdgeList: " << outEdgeList.size();
 
-    // Temp copy in edges
-    list<GraphicsEdge*> temp_inEdgeList = inEdgeList;
-    // Loop over the temp list and call delete for each edge
-    // that will call the edge destructor
-    for (GraphicsEdge *edge: temp_inEdgeList) {
-        delete edge;
-    }
+    // Skipped during a bulk GraphicsWidget::clear(): every edge is itself a top-level
+    // scene item, so scene()->clear() destroys it directly regardless of what happens
+    // here. Manually deleting it early would leave a dangling pointer in the *other*
+    // endpoint's edge list (GraphicsEdge::removeRefs() is a no-op while isClearing(),
+    // for the same reason), causing that node's destructor to double-delete it later.
+    // See #260.
+    if (!graphicsWidget->isClearing()) {
+        // Temp copy in edges
+        list<GraphicsEdge*> temp_inEdgeList = inEdgeList;
+        // Loop over the temp list and call delete for each edge
+        // that will call the edge destructor
+        for (GraphicsEdge *edge: temp_inEdgeList) {
+            delete edge;
+        }
 
-    // Temp copy out edges
-    list<GraphicsEdge*> temp_outEdgeList = outEdgeList;
-    for (GraphicsEdge *edge: temp_outEdgeList) {
-        delete edge;
+        // Temp copy out edges
+        list<GraphicsEdge*> temp_outEdgeList = outEdgeList;
+        for (GraphicsEdge *edge: temp_outEdgeList) {
+            delete edge;
+        }
     }
 
     if ( m_hasNumber )
@@ -906,13 +900,8 @@ GraphicsNode::~GraphicsNode(){
         deleteLabel();
 
     inEdgeList.clear();
-    temp_inEdgeList.clear();
-
     outEdgeList.clear();
-    temp_outEdgeList.clear();
-//    qDebug() << "node" << nodeNumber() << "hiding node...";
     this->hide();
-//    qDebug() << "node" << nodeNumber() << "calling GW removeItem...";
     graphicsWidget->removeItem(this);
 
 }

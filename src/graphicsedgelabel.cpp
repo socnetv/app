@@ -17,6 +17,7 @@
 #include "graphicsedgelabel.h"
 
 #include "graphicsedge.h"
+#include "graphicswidget.h"
 #include <QDebug>
 #include <QFont>
 
@@ -24,7 +25,7 @@
 GraphicsEdgeLabel::GraphicsEdgeLabel( GraphicsEdge *link , int size, QString labelText)
 : QGraphicsTextItem( 0)
 {
-    qDebug()<< "GraphicsEdgeLabel:: creating new edgelabel and attaching it to link";
+    qCDebug(lcGW)<< "GraphicsEdgeLabel:: creating new edgelabel and attaching it to link";
 	setPlainText( labelText );
     setParentItem(link); //auto disables child items like this, when link is disabled.
     this->setFont( QFont ("Courier", size, QFont::Light, true) );

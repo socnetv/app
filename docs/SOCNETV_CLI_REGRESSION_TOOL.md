@@ -16,7 +16,7 @@ The CLI enables:
 * Deterministic kernel execution
 * Golden-output JSON generation
 * Strict regression comparison against committed baselines
-* Performance benchmarking (distance kernel only)
+* Performance benchmarking (`distance` and `prominence` kernels)
 * CI integration (fail-fast on mismatch)
 
 This ensures refactors preserve:
@@ -43,6 +43,8 @@ The CLI is modular.
 * `cli/kernels/kernel_io_roundtrip_v5.cpp`
 * `cli/kernels/kernel_clustering_v6.cpp`
 * `cli/kernels/kernel_connectivity_v7.cpp`
+* `cli/kernels/kernel_matrix_v8.cpp`
+* `cli/kernels/kernel_vertex_connectivity_v9.cpp`
 
 Each kernel owns:
 
@@ -216,8 +218,12 @@ Workflow:
    * Multi-relational: compares a per-relation signature bundle (relation names + per-relation counts/signatures).
 
 Export support:
-* Some file formats do not export yet (e.g. GRAPHVIZ, GML, EDGELIST_*).  
-  For those formats, the kernel reports a stable "skipped export" outcome and still emits v5 JSON.
+* Two of the nine importable formats don't export yet — GML and TWOMODE (`Graph::saveToFile()`
+  falls through to its `default:` case for both; see `m_graphFileFormatExportSupported` in
+  `graph.cpp`). Every other format (GraphML, Pajek, Adjacency, GraphViz DOT, UCINET DL, both Edge
+  List variants) does export and is exercised by this kernel's full roundtrip.
+  For the two unsupported formats, the kernel reports a stable "skipped export" outcome and still
+  emits v5 JSON.
 
 Key output fields (v5):
 * `KERNEL_DESC` — describes the kernel contract
@@ -277,8 +283,8 @@ Notes:
 
 Protects:
 
-* weakly connected component count
-* per-node component ID assignment
+* weakly or strongly connected component count
+* per-node component ID assignment (weak mode only)
 * connected/disconnected determination
 
 Connectivity semantics:
@@ -286,16 +292,23 @@ Connectivity semantics:
 | Graph type | Method | Connected when |
 |------------|--------|----------------|
 | Undirected | standard BFS | 1 component |
-| Directed   | BFS treating all arcs as undirected (weak connectivity) | 1 weak component |
+| Directed, `--connectivity-type weak` (default) | BFS treating all arcs as undirected | 1 weak component |
+| Directed, `--connectivity-type strong` | Tarjan's SCC algorithm, respecting arc direction | 1 strong component |
 
-Weak connectivity is the appropriate structural question for both graph types: "how many disconnected islands exist?" For directed graphs it ignores arc direction, which is intentional — strong connectivity (all-pairs directed reachability) is computed separately by the SSSP engine.
+Weak connectivity answers "how many disconnected islands exist?", ignoring arc direction. Strong
+connectivity answers "can every node reach every other node via directed paths?" — a strictly
+finer partition (a directed path a→b→c is one weak component but three strong components, since
+`c` cannot reach `a`). `--connectivity-type` is ignored on undirected graphs, where the two notions
+coincide.
 
 Output fields:
 
 * `connectivity.component_count` — number of components
 * `connectivity.connected` — true if component_count == 1
-* `connectivity.type` — `"connected"` (undirected) or `"weak"` (directed)
-* `per_node[].component_id` — 1-based component assignment per vertex
+* `connectivity.type` — `"connected"` (undirected), `"weak"`, or `"strong"` (directed)
+* `per_node[].component_id` — 1-based component assignment per vertex, **weak mode only** (strong
+  mode reports a count, not per-vertex membership — `Graph::graphStronglyConnectedComponents()`
+  doesn't track it, see the function's own doc comment in `graph_distance_facade.cpp`)
 
 Characteristics:
 
@@ -307,7 +320,104 @@ Notes:
 
 * `-c`, `-w`, `-x`, `-k` are not applicable
 * `--bench` not supported
+* `--connectivity-type weak|strong` (default `weak`); only meaningful on directed graphs
 * Component IDs are 1-based and assigned in BFS discovery order
+
+---
+
+## Matrix Kernel
+
+* Kernel: `matrix`
+* JSON schema: `schema_version = 8`
+
+Protects raw contents of every `Matrix`-producing `Graph` operation — direct coverage of
+`Matrix::item()`/`setItem()` indexing, independent of whatever downstream result (centrality score,
+distance value, clique count) happens to read that matrix. See WS6.7 in
+`roadmap_ws6_testing_ci_regression.md` for the motivating gap and how the dump-mode split below was
+decided.
+
+Seven categories dumped:
+
+* adjacency (`AM`)
+* adjacency inverse (`invAM`) — plus `invertible` (bool)
+* distances (`DM`)
+* similarity (`SCM`, simple-matching metric)
+* reachability (`XRM`)
+* walks, fixed length (`XM`)
+* total walks (`XSM`) — **skipped above N=50** (`kTotalWalksSkipThreshold`, `kernel_matrix_v8.cpp`);
+  summing matrix powers up to N-1 measured ~9.2 minutes at N=500, so this category simply isn't
+  emitted on larger fixtures rather than making every run pay that cost
+* clique co-membership (`CLQM`) — no size gate, stays cheap (single-digit ms) even at N=500
+
+Output fields:
+
+* `matrices.adjacency`, `matrices.distances`, `matrices.reachability`, etc. — one object per
+  category, `null`/omitted for `total_walks` above the size threshold
+* `matrices.adjacency_inverse.invertible` — bool; `false` for a singular matrix (see #269)
+* Each matrix object: `dump_mode` (`"full"` or `"summary"`), `rows`, `cols`, and either `data` (the
+  full grid, small fixtures only) or `row_sums`/`col_sums`/`trace`/`sample_cells` (large fixtures)
+
+Characteristics:
+
+* deterministic vertex ordering
+* dump mode is size-dependent, not a flag — decided internally per fixture
+
+Notes:
+
+* `-w`, `-x`, `-k` control whether weights/isolate-dropping factor into the underlying computations
+  before matrices are dumped. `-c` must be `0` — matrix categories don't involve centralities, and
+  the kernel rejects a truthy value outright (default is `1`, so pass `-c 0` explicitly).
+* `--bench` not supported
+
+---
+
+## Vertex Connectivity Kernel
+
+* Kernel: `vertex_connectivity`
+* JSON schema: `schema_version = 9`
+
+Protects local (Menger's theorem / vertex-split max-flow) and global (pairwise-minimum) vertex
+connectivity — see #7 and `roadmap_ws11_algorithm_additions.md` for the algorithm design.
+
+Two modes, via `--conn-mode`:
+
+* `local` — kappa(s,t) between `--conn-source S` and `--conn-target T` (both required)
+* `global` (default) — kappa(G), the whole network's vertex connectivity
+
+Connectivity semantics — same weak/strong split as the Connectivity Kernel above, via
+`--connectivity-type weak|strong` (default `weak`, ignored on undirected graphs):
+
+| Mode | Directed, weak | Directed, strong |
+|------|-----------------|-------------------|
+| local | undirected adjacency (edges treated as bidirectional) | respects arc direction — kappa(s,t) can differ from kappa(t,s) |
+| global | minimum over unordered non-adjacent pairs | minimum over ordered non-adjacent pairs |
+
+Output fields:
+
+* `mode` — `"local"` or `"global"`
+* `connectivity_type` — `"weak"`, `"strong"`, or `"undirected"`
+* `local.source`, `local.target`, `local.status`, `local.value` (mode `local` only) — `status` is
+  one of `"ok"` (`value` holds kappa(s,t), 0 means unreachable — a normal, valid answer), `"adjacent"`
+  (s,t are directly connected — no finite cut exists, Menger's theorem requires non-adjacency,
+  `value` is omitted), or `"invalid"` (nonexistent or equal source/target, `value` omitted)
+* `global.value` (mode `global` only) — kappa(G); 0 means the network is already disconnected
+
+Characteristics:
+
+* deterministic vertex ordering
+* topology-only (no weights, no centralities)
+* no UI involvement
+* global mode is O(n²) local-connectivity computations in the worst case — fine for the small/toy
+  baseline fixtures used here, not something to run against large benchmark datasets
+
+Notes:
+
+* `-c`, `-w`, `-x`, `-k` are not applicable
+* `--bench` not supported
+* `--conn-source`/`--conn-target` are required for `--conn-mode local`, ignored for `global`
+* The `status`/`value` split (rather than a single int with a sentinel like `-1`) is deliberate —
+  see #271, a real bug this session caused by exactly that pattern (a sentinel silently misused as
+  a bool/count)
 
 ---
 
@@ -316,6 +426,13 @@ Notes:
 ## Available Parameters
 
 `socnetv-cli` is intentionally small: a **single façade** parses a shared set of options, then dispatches into a selected `--kernel` implementation.
+
+### Global flags
+
+#### `-b` / `--verbose`
+
+Enables `qDebug()`/`qCDebug()` output. Without it, only warnings/criticals reach stderr — the
+default for clean regression-script output.
 
 ### Input selection
 
@@ -354,6 +471,19 @@ Notes:
 * The CLI is strict: if you pass a mismatched `-f` for the actual file contents, parsing may fail or semantics may differ.
 * For IO regression work, treat `-f` as part of the baseline identity.
 
+#### `-d <str>` / `--delim <str>`
+
+Field delimiter, passed straight through to `Parser::load()`. Relevant for Adjacency and Edge List
+formats; default is a single space.
+
+#### `-m <0|1>` / `--two-mode <0|1>`
+
+Marks the input as a two-mode (affiliation) network. Default `0`.
+
+#### `-l <0|1>` / `--labels <0|1>`
+
+Tells the Adjacency parser the input file has row/column labels. Default `0`.
+
 ---
 
 ### Kernel selection
@@ -371,6 +501,8 @@ Supported kernels:
 * `io_roundtrip` — schema v5
 * `clustering` — schema v6
 * `connectivity` — schema v7
+* `matrix` — schema v8
+* `vertex_connectivity` — schema v9
 
 Examples:
 
@@ -382,6 +514,8 @@ Examples:
 --kernel io_roundtrip
 --kernel clustering
 --kernel connectivity
+--kernel matrix
+--kernel vertex_connectivity
 ```
 
 If omitted:
@@ -480,11 +614,11 @@ Example:
 `socnetv-cli` runs in **one** of the following "modes":
 
 1. normal run (prints metrics to stdout)
-2. dump deterministic JSON (`--dump-json`)
-3. strict compare against a golden JSON baseline (`--compare-json`)
-4. benchmarking (`--bench`, distance kernel only)
+2. dump deterministic JSON (`--dump-json` / `-j`)
+3. strict compare against a golden JSON baseline (`--compare-json` / `-p`)
+4. benchmarking (`--bench`, `distance` and `prominence` kernels only)
 
-#### `--dump-json <path>`
+#### `--dump-json <path>` / `-j <path>`
 
 Writes the kernel's deterministic JSON output to `<path>`.
 
@@ -502,7 +636,7 @@ Example:
 --dump-json src/tools/baselines/ErdosRenyi_N10_E10__C1_W0_IW1_DI0.json
 ```
 
-#### `--compare-json <baseline.json>`
+#### `--compare-json <baseline.json>` / `-p <baseline.json>`
 
 Runs the selected kernel and strictly compares output to an existing JSON baseline.
 
@@ -522,9 +656,15 @@ Example:
 --compare-json src/tools/baselines/prominence/Krackhardt_Kite_N10__PROM__V4__FT2__W0_IW1_DI0.json
 ```
 
+#### `--strict`
+
+`io_roundtrip`-kernel-specific modifier for `--compare-json`: promotes a timing regression
+(actual roundtrip time vs. the baseline's recorded time) from an advisory warning to a hard
+failure. Has no effect on any other kernel.
+
 ---
 
-### Benchmarking (distance kernel only)
+### Benchmarking (`distance` and `prominence` kernels only)
 
 #### `--bench <runs>`
 
@@ -538,7 +678,7 @@ Runs the compute step multiple times and prints timing stats:
 
 Constraints:
 
-* Only valid for `--kernel distance`
+* Only valid for `--kernel distance` or `--kernel prominence`
 * Cannot combine with `--dump-json`
 * Cannot combine with `--compare-json`
 
@@ -546,6 +686,7 @@ Example:
 
 ```bash
 --kernel distance -c 1 -w 1 -x 1 -k 0 --bench 20
+--kernel prominence --bench 20
 ```
 
 ---
@@ -563,7 +704,7 @@ Allowed:
 
 Notes:
 
-* `--bench` only here.
+* `--bench` is also supported here and on `--kernel prominence` — no other kernel.
 
 ### `--kernel reachability` (schema v2)
 
@@ -585,7 +726,7 @@ Required:
 
 Allowed:
 
-* `-w` (if the implementation supports weighted adjacency behavior; otherwise treat as unweighted by design)
+* `-w`, `-x`, `-k` (all three are read and baked into the schema's `run` object)
 * `--dump-json`, `--compare-json`
 
 Not supported:
@@ -597,11 +738,12 @@ Not supported:
 Allowed:
 
 * `-w`, `-x`, `-k`
-* `--dump-json`, `--compare-json`
+* `--dump-json`, `--compare-json`, `--bench`
 
 Notes:
 
 * Prominence kernel covers *many* indices; `-w/-x` materially changes several results.
+* One of only two kernels (with `distance`) that support `--bench`.
 
 ### `--kernel io_roundtrip` (schema v5)
 
@@ -634,6 +776,7 @@ Notes:
 
 Allowed:
 
+* `--connectivity-type weak|strong`
 * `--dump-json`, `--compare-json`
 
 Not applicable:
@@ -643,9 +786,55 @@ Not applicable:
 
 Notes:
 
-* v7 identifies weakly connected components via BFS.
-* For directed graphs, arcs are treated as undirected during traversal.
-* Component IDs are 1-based and assigned in BFS discovery order.
+* v7 identifies weakly (BFS, arcs treated as undirected) or strongly (Tarjan's SCC, respects arc
+  direction) connected components, per `--connectivity-type` (default `weak`).
+* `--connectivity-type` is ignored on undirected graphs, where the two notions coincide.
+* Component IDs are 1-based and assigned in BFS discovery order — **weak mode only**; strong mode
+  reports a count, not per-vertex membership.
+
+### `--kernel matrix` (schema v8)
+
+Allowed:
+
+* `-w`, `-x`, `-k`
+* `--dump-json`, `--compare-json`
+
+Not applicable / required:
+
+* `-c` must be `0` — `kernel_matrix_v8.cpp` rejects a truthy `-c` outright (`"--centralities is
+  not applicable to --kernel matrix"`). Since `-c`'s CLI-wide default is `1`, **always pass
+  `-c 0` explicitly** or the run fails immediately.
+* `--bench` not supported
+
+Notes:
+
+* v8 dumps raw contents of seven `Matrix`-producing operations (adjacency, inverse, distances,
+  similarity, reachability, walks, total walks) plus clique co-membership.
+* Dump mode (full grid vs. row/col-sum summary) is chosen internally based on fixture size, not a
+  flag.
+* `total_walks` is omitted above N=50 (`kTotalWalksSkipThreshold`) — see the kernel section above.
+
+### `--kernel vertex_connectivity` (schema v9)
+
+Allowed:
+
+* `--conn-mode local|global`
+* `--conn-source S --conn-target T` (required for `--conn-mode local`)
+* `--connectivity-type weak|strong`
+* `--dump-json`, `--compare-json`
+
+Not applicable:
+
+* `-c`, `-w`, `-x`, `-k` — topology-only; these flags have no effect and should be omitted
+* `--bench` not supported
+
+Notes:
+
+* v9 computes local kappa(s,t) (`local` mode) or global kappa(G) (`global` mode, the default) via
+  Menger's theorem / vertex-split max-flow.
+* `--connectivity-type` is ignored on undirected graphs, where the two notions coincide.
+* Local mode's `status` field distinguishes `"ok"` (a real value, including 0 for unreachable),
+  `"adjacent"` (no finite cut exists — not a numeric answer), and `"invalid"` (bad source/target).
 
 ---
 
@@ -657,7 +846,9 @@ When you dump JSON, bake the run flags into the filename (as already used in thi
 * Prominence v4: `__W{0|1}_IW{0|1}_DI{0|1}`
 * Reachability v2 / Walks v3 / IO v5: include kernel + schema label and any required parameters (e.g. `__WALKS_K6__V3`, `__FT2__...`, etc.)
 * Clustering v6: `__CLUST__V6__FT{n}__W{0|1}_IW{0|1}_DI{0|1}`
-* Connectivity v7: `__CONN__V7__FT{n}` (no flag suffixes — topology-only)
+* Connectivity v7: `__CONN__V7__FT{n}` (no flag suffixes — topology-only; add `__STRONG` for `--connectivity-type strong`)
+* Matrix v8: `__MATRIX__V8__FT{n}__W{0|1}_IW{0|1}_DI{0|1}`
+* Vertex Connectivity v9: `__VCONN__V9__FT{n}` (no flag suffixes — topology-only; suffix with mode/pair, e.g. `__global` or `__local_1_3`)
 
 This keeps baselines self-describing and prevents "wrong flags, right file" mistakes.
 
@@ -793,12 +984,23 @@ src/tools/baselines/clustering/
   --dump-json src/tools/baselines/connectivity/TinyDisconnected_Undir_N6_E4__CONN__V7__FT2.json
 ```
 
+Strong mode, on a directed graph:
+
+```bash
+./socnetv-cli \
+  --kernel connectivity \
+  -i src/data/TinyArc_Dir_N2_E1.paj \
+  -f 2 --connectivity-type strong \
+  --dump-json src/tools/baselines/connectivity/TinyArc_Dir_N2_E1__CONN__V7__FT2__STRONG.json
+```
+
 Flag encoding:
 
 ```
-CONN = connectivity kernel
-V7   = schema version 7
-FT2  = file type = 2 (Pajek)
+CONN    = connectivity kernel
+V7      = schema version 7
+FT2     = file type = 2 (Pajek)
+STRONG  = --connectivity-type strong (suffix omitted for weak, the default)
 ```
 
 No weight or centrality flags — connectivity is topology-only.
@@ -807,6 +1009,74 @@ Baseline directory:
 
 ```
 src/tools/baselines/connectivity/
+```
+
+---
+
+## Matrix (schema v8)
+
+```bash
+./socnetv-cli \
+  --kernel matrix \
+  -i src/data/TinyPath_N3_E2.paj \
+  -f 2 -c 0 \
+  --dump-json src/tools/baselines/matrix/TinyPath_N3_E2__MATRIX__V8__FT2__W0_IW1_DI0.json
+```
+
+Flag encoding:
+
+```
+MATRIX = matrix kernel
+V8     = schema version 8
+FT2    = file type = 2 (Pajek)
+W0     = considerWeights=0
+IW1    = inverseWeights=1
+DI0    = dropIsolates=0
+```
+
+Baseline directory:
+
+```
+src/tools/baselines/matrix/
+```
+
+---
+
+## Vertex Connectivity (schema v9)
+
+```bash
+./socnetv-cli \
+  --kernel vertex_connectivity \
+  -i src/data/TinyPath_N3_E2.paj \
+  -f 2 --conn-mode local --conn-source 1 --conn-target 3 \
+  --dump-json src/tools/baselines/vertex_connectivity/TinyPath_N3_E2__VCONN__V9__FT2__local_1_3.json
+```
+
+Global mode:
+
+```bash
+./socnetv-cli \
+  --kernel vertex_connectivity \
+  -i src/data/TinyPath_N3_E2.paj \
+  -f 2 --conn-mode global \
+  --dump-json src/tools/baselines/vertex_connectivity/TinyPath_N3_E2__VCONN__V9__FT2__global.json
+```
+
+Flag encoding:
+
+```
+VCONN  = vertex_connectivity kernel
+V9     = schema version 9
+FT2    = file type = 2 (Pajek)
+```
+
+No weight or centrality flags — topology-only. Global-mode baselines are deliberately Tiny*/toy
+datasets only (see the kernel section above for why).
+
+Baseline directory:
+
+```
+src/tools/baselines/vertex_connectivity/
 ```
 
 ---
@@ -975,25 +1245,85 @@ Cliques:
 
 Graph-level:
 
-* component_count — number of weakly connected components
+* component_count — number of weakly or strongly connected components, per `--connectivity-type`
 * connected — true if component_count == 1
-* type — `"connected"` (undirected) or `"weak"` (directed)
+* type — `"connected"` (undirected), `"weak"`, or `"strong"` (directed)
 
 Per-node:
 
-* component_id — 1-based integer, BFS discovery order
+* component_id — 1-based integer, BFS discovery order. **Weak mode only** — strong mode doesn't
+  track per-vertex SCC membership, only the count.
 
 Semantics:
 
-* For undirected graphs: standard BFS component labeling.
-* For directed graphs: BFS traverses both out-edges and in-edges simultaneously (treats arcs as undirected). This answers the structural question "how many disconnected islands exist?" independent of arc direction.
-* Strong connectivity (directed-only) is not covered here — it is computed by the SSSP engine.
+* For undirected graphs: standard BFS component labeling; `--connectivity-type` has no effect.
+* Weak mode (default): BFS traverses both out-edges and in-edges simultaneously (treats arcs as
+  undirected). Answers "how many disconnected islands exist?" independent of arc direction.
+* Strong mode (`--connectivity-type strong`): Tarjan's SCC algorithm, respecting arc direction.
+  Answers "can every node reach every other node via directed paths?" — a strictly finer partition
+  than weak connectivity, computed by `Graph::graphStronglyConnectedComponents()`.
 
 ---
 
-# Micro-Benchmarking Mode (Distance Kernel Only)
+## Matrix Kernel (v8)
 
-The CLI provides benchmarking for DistanceEngine.
+Graph-level:
+
+* `run.considerWeights`, `run.inverseWeights`, `run.dropIsolates` — the flags the underlying
+  computations ran with
+
+Per-category (`matrices.*`), each with `dump_mode` (`"full"` or `"summary"`), `rows`, `cols`:
+
+* `adjacency` — raw `AM`
+* `adjacency_inverse` — raw `invAM`, plus `invertible` (bool; false for a singular matrix, #269)
+* `distances` — raw `DM`
+* `similarity` — raw `SCM` (simple-matching metric)
+* `reachability` — raw `XRM`
+* `walks` — raw `XM` (fixed length)
+* `total_walks` — raw `XSM`; omitted above N=50 (`kTotalWalksSkipThreshold`)
+* `clique_comembership` — raw `CLQM`
+
+`dump_mode` semantics:
+
+* `"full"` — small fixtures dump the complete N×N grid (`data`)
+* `"summary"` — large/sparse fixtures dump `row_sums`, `col_sums`, `trace`, and `sample_cells`
+  (corners + center) instead of the full grid
+
+---
+
+## Vertex Connectivity Kernel (v9)
+
+Graph-level:
+
+* `mode` — `"local"` or `"global"`
+* `connectivity_type` — `"weak"`, `"strong"`, or `"undirected"`
+
+Local mode (`local.*`):
+
+* `source`, `target` — the requested pair
+* `status` — `"ok"` (`value` holds kappa(s,t)), `"adjacent"` (no finite cut exists, no `value`), or
+  `"invalid"` (bad source/target, no `value`)
+* `value` — present only when `status == "ok"`; 0 is a valid answer (target unreachable from source)
+
+Global mode (`global.*`):
+
+* `value` — kappa(G); 0 means the network is already disconnected
+
+Semantics:
+
+* Local: Menger's theorem via vertex-split max-flow (Edmonds-Karp). Weak mode treats edges as
+  bidirectional; strong mode respects arc direction, so kappa(s,t) can differ from kappa(t,s).
+* Global: minimum local connectivity over all non-adjacent pairs (unordered for weak/undirected,
+  ordered for strong), pruned by a minimum-degree bound (Whitney's inequality).
+* Complete graphs need no special case: with no non-adjacent pair to test, the degree bound itself
+  is the answer (kappa(K_n) = n-1).
+
+---
+
+# Micro-Benchmarking Mode (Distance and Prominence Kernels Only)
+
+The CLI provides benchmarking for `DistanceEngine`-based work, via `--kernel distance` or
+`--kernel prominence`.
 
 ```bash
 ./socnetv-cli \
@@ -1017,7 +1347,7 @@ Constraints:
 
 * Cannot combine with `--dump-json`
 * Cannot combine with `--compare-json`
-* Only supported with `--kernel distance`
+* Only supported with `--kernel distance` or `--kernel prominence`
 
 ---
 
@@ -1038,6 +1368,8 @@ Validates:
 * IO Roundtrip (v5)
 * Clustering (v6)
 * Connectivity (v7)
+* Matrix (v8)
+* Vertex Connectivity (v9)
 
 Fails on any mismatch.
 
@@ -1049,7 +1381,7 @@ Fails on any mismatch.
 scripts/run_benchmarks.sh
 ```
 
-Validates median compute times for the distance kernel only.
+Validates median compute times for the `distance` and `prominence` kernels.
 
 Machine-aware baseline sets supported.
 
@@ -1060,7 +1392,7 @@ Machine-aware baseline sets supported.
 Distance baselines:
 
 ```
-src/tools/baselines/
+src/tools/baselines/distance/
 ```
 
 Reachability baselines:
@@ -1097,6 +1429,18 @@ Connectivity baselines:
 
 ```
 src/tools/baselines/connectivity/
+```
+
+Matrix baselines:
+
+```
+src/tools/baselines/matrix/
+```
+
+Vertex Connectivity baselines:
+
+```
+src/tools/baselines/vertex_connectivity/
 ```
 
 See: [`src/tools/baselines/BASELINES__README.md`](../src/tools/baselines/BASELINES__README.md)

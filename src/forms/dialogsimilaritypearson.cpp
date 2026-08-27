@@ -17,6 +17,7 @@
 #include "dialogsimilaritypearson.h"
 
 #include <QDebug>
+#include "forms_logging.h"
 #include <QPushButton>
 
 
@@ -44,11 +45,11 @@ DialogSimilarityPearson::DialogSimilarityPearson (QWidget *parent) : QDialog (pa
 
 
 void DialogSimilarityPearson::getUserChoices(){
-    qDebug()<< "DialogSimilarityPearson: gathering Data!...";
+    qCDebug(lcForms)<< "DialogSimilarityPearson: gathering Data!...";
     QString matrix = (ui.matrixSelect)->currentText();
     QString varLocation = (ui.variablesLocationSelect)->currentText();
     bool diagonal = (ui.diagonalCheckBox)->isChecked();
-    qDebug()<< "DialogSimilarityPearson: user selected: "
+    qCDebug(lcForms)<< "DialogSimilarityPearson: user selected: "
             << matrix
             << varLocation;
     emit userChoices( matrix, varLocation,diagonal );

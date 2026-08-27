@@ -6,6 +6,7 @@ set -euo pipefail
 # Usage:
 #   ./scripts/run_benchmarks.sh
 #   ./scripts/run_benchmarks.sh --type distance
+#   ./scripts/run_benchmarks.sh --type prominence
 #   ./scripts/run_benchmarks.sh --type io
 #   ./scripts/run_benchmarks.sh --type clustering
 #   ./scripts/run_benchmarks.sh --strict
@@ -19,7 +20,7 @@ set -euo pipefail
 
 RECORD=0
 STRICT=0
-BENCH_TYPE="all"   # all|distance|io|clustering
+BENCH_TYPE="all"   # all|distance|prominence|io|clustering
 LARGE_NETS_DIR="${HOME}/socnetv/library/nets/large"
 
 while [[ $# -gt 0 ]]; do
@@ -39,9 +40,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "$BENCH_TYPE" in
-  all|distance|io|clustering) ;;
+  all|distance|prominence|io|clustering) ;;
   *)
-    echo "ERROR: invalid --type: $BENCH_TYPE (expected: all|distance|io|clustering)" >&2
+    echo "ERROR: invalid --type: $BENCH_TYPE (expected: all|distance|prominence|io|clustering)" >&2
     exit 2
     ;;
 esac
@@ -333,7 +334,7 @@ should_run_type() {
   fi
 
   if [[ "$BENCH_TYPE" == "all" ]]; then
-    [[ "$wanted" == "distance" || "$wanted" == "io" ]]
+    [[ "$wanted" == "distance" || "$wanted" == "prominence" || "$wanted" == "io" ]]
     return
   fi
 
@@ -341,7 +342,7 @@ should_run_type() {
 }
 
 # ---------------- benchmark cases ----------------
-# NOTE: CLI enforces --bench only for --kernel distance (default kernel is distance).
+# NOTE: CLI enforces --bench only for --kernel distance/prominence (default kernel is distance).
 
 if should_run_type distance; then
 
@@ -381,6 +382,19 @@ if should_run_type distance; then
   else
     echo "[bench] LARGE_NETS_DIR not found ($LARGE_NETS_DIR), skipping large-net distance benchmarks" >&2
   fi
+
+fi
+
+# ---------------- prominence benchmark cases ----------------
+# N=500, not geom.net-scale: centralityInformation()/centralityEigenvector() are
+# O(N^3)-ish (matrix inversion / power iteration), impractically slow at N=7343
+# for a benchmark that runs routinely.
+
+if should_run_type prominence; then
+
+  run_case "PROM_BA500_M3" \
+    -i "$ROOT_DIR/src/data/Benchmark_BA_Directed_N500_m3.paj" \
+    -f 2 --kernel prominence --bench 20 || fail=1
 
 fi
 

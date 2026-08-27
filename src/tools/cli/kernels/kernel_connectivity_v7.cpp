@@ -2,8 +2,10 @@
 // SocNetV - Social Network Visualizer
 //
 // Connectivity kernel (schema v7) for socnetv-cli.
-// Computes weakly connected components via Graph::graphWeaklyConnectedComponents()
-// and emits a JSON report suitable for golden-baseline regression testing.
+// Computes weakly or strongly connected components (--connectivity-type weak|strong, weak is the
+// default and the only option that means anything on an undirected graph) via
+// Graph::graphWeaklyConnectedComponents() / Graph::graphStronglyConnectedComponents(), and emits a
+// JSON report suitable for golden-baseline regression testing.
 
 #include "kernel_connectivity_v7.h"
 
@@ -23,7 +25,8 @@ static QJsonObject buildGoldenJsonV7(
     int                fileFormat,
     const HeadlessLoadResult &load,
     Graph             &g,
-    int                componentCount)
+    int                componentCount,
+    const QString     &connectivityTypeLabel)
 {
     QJsonObject root;
     root["schema_version"] = 7;
@@ -52,11 +55,15 @@ static QJsonObject buildGoldenJsonV7(
     QJsonObject conn;
     conn["connected"]       = (componentCount <= 1);
     conn["component_count"] = componentCount;
-    // For directed graphs we compute weak components; for undirected it is simply "connected components"
-    conn["type"] = g.isDirected() ? "weak" : "connected";
+    conn["type"] = connectivityTypeLabel;
     root["connectivity"] = conn;
 
-    // Per-node component IDs (deterministic: BFS visits vertices in list order)
+    // Per-node component IDs (deterministic: BFS visits vertices in list order). Only meaningful
+    // for weak/undirected mode - Graph::vertexComponentId() is populated by
+    // graphWeaklyConnectedComponents() only; graphStronglyConnectedComponents() reports just a
+    // count, not per-vertex SCC membership (see its doc comment), so emitting it here for strong
+    // mode would silently show weak IDs mislabeled as strong ones.
+    const bool showComponentIds = (connectivityTypeLabel != "strong");
     const QHash<int,int> &compMap = g.vertexComponentId();
     QJsonArray perNode;
     const QList<int> verts = g.verticesList();
@@ -64,9 +71,10 @@ static QJsonObject buildGoldenJsonV7(
         GraphVertex *gv = g.vertexPtr(v);
         if (!gv) continue;
         QJsonObject o;
-        o["id"]           = v;
-        o["label"]        = gv->label();
-        o["component_id"] = compMap.value(v, 0);
+        o["id"]    = v;
+        o["label"] = gv->label();
+        if (showComponentIds)
+            o["component_id"] = compMap.value(v, 0);
         perNode.append(o);
     }
     root["per_node"] = perNode;
@@ -153,14 +161,23 @@ int runKernelConnectivityV7(const CliConfig &cfg,
                             const HeadlessLoadResult &load,
                             Graph &g)
 {
-    const int components = g.graphWeaklyConnectedComponents();
+    // Strong connectivity only means something distinct from weak on a directed graph - on an
+    // undirected graph the two notions coincide, so --connectivity-type is ignored there (same
+    // as the GUI's Connectedness action, which only asks weak-vs-strong for directed networks).
+    const bool useStrong = g.isDirected() && (cfg.connectivityType == "strong");
+
+    const int components = useStrong
+        ? g.graphStronglyConnectedComponents()
+        : g.graphWeaklyConnectedComponents();
     const bool connected = (components <= 1);
+    const QString typeLabel = useStrong ? "strong" : (g.isDirected() ? "weak" : "connected");
 
     printKV("COMPONENTS", components);
     printKV("CONNECTED",  connected ? 1 : 0);
+    printKV("TYPE", typeLabel);
 
     const QJsonObject actual = buildGoldenJsonV7(
-        cfg.inputPath, cfg.fileFormat, load, g, components);
+        cfg.inputPath, cfg.fileFormat, load, g, components, typeLabel);
 
     if (!cfg.dumpJsonPath.isEmpty()) {
         QString err;

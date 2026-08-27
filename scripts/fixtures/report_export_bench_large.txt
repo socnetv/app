@@ -1,0 +1,19 @@
+erdos-m 2000 40000 undirected
+delay 1
+distances weights
+report-centrality-degree weights
+report-centrality-closeness weights
+report-centrality-closeness-ir weights
+report-centrality-betweenness weights
+report-centrality-stress weights
+report-centrality-eccentricity weights
+report-centrality-power weights
+report-centrality-information weights
+report-centrality-eigenvector weights
+report-prestige-degree weights
+report-prestige-proximity
+report-prestige-pagerank
+report-reciprocity weights
+report-eccentricity weights
+report-clustering-coefficient
+quit

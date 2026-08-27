@@ -9,6 +9,7 @@
 #include <QFileInfo>
 #include <QTextStream>
 #include <QMessageLogContext>
+#include <QLoggingCategory>
 
 #include "graph.h"
 #include "tools/headless_graph_loader.h"
@@ -21,6 +22,8 @@
 #include "tools/cli/kernels/kernel_io_roundtrip_v5.h"
 #include "tools/cli/kernels/kernel_clustering_v6.h"
 #include "tools/cli/kernels/kernel_connectivity_v7.h"
+#include "tools/cli/kernels/kernel_vertex_connectivity_v9.h"
+#include "tools/cli/kernels/kernel_matrix_v8.h"
 
 int main(int argc, char *argv[])
 {
@@ -51,12 +54,44 @@ int main(int argc, char *argv[])
                                 "N", "0");
 
     QCommandLineOption kernelOpt(QStringList() << "kernel",
-                                 "Kernel: distance|reachability|walks_matrix|prominence|io_roundtrip|clustering|connectivity",
+                                 "Kernel: distance|reachability|walks_matrix|prominence|io_roundtrip|clustering|connectivity|matrix|vertex_connectivity",
                                  "name", "distance");
 
     QCommandLineOption walksLenOpt(QStringList() << "walks-length",
                                    "Walks length K for walks_matrix (K>=1).",
                                    "K", "0");
+
+    QCommandLineOption connTypeOpt(QStringList() << "connectivity-type",
+                                   "Connectivity type for --kernel connectivity on directed graphs: weak|strong.",
+                                   "type", "weak");
+
+    QCommandLineOption connModeOpt(QStringList() << "conn-mode",
+                                   "Mode for --kernel vertex_connectivity: local|global.",
+                                   "mode", "global");
+    QCommandLineOption connSourceOpt(QStringList() << "conn-source",
+                                     "Source node number for --kernel vertex_connectivity --conn-mode local.",
+                                     "int", "-1");
+    QCommandLineOption connTargetOpt(QStringList() << "conn-target",
+                                     "Target node number for --kernel vertex_connectivity --conn-mode local.",
+                                     "int", "-1");
+
+    QCommandLineOption katzAlphaOpt(QStringList() << "katz-alpha",
+                                    "Attenuation factor alpha for --kernel prominence's Katz Centrality "
+                                    "(must satisfy |alpha| < 1/lambda_max or the report will be all-zero). "
+                                    "Omit to skip Katz Centrality entirely.",
+                                    "alpha", "-1");
+
+    QCommandLineOption bonacichAlphaOpt(QStringList() << "bonacich-alpha",
+                                        "Overall scale factor alpha for --kernel prominence's Bonacich "
+                                        "Power Centrality. Requires --bonacich-beta too. Omit to skip "
+                                        "Bonacich Power Centrality entirely.",
+                                        "alpha", "-1");
+
+    QCommandLineOption bonacichBetaOpt(QStringList() << "bonacich-beta",
+                                       "Attenuation factor beta for --kernel prominence's Bonacich Power "
+                                       "Centrality (must satisfy |beta| < 1/lambda_max or the report will "
+                                       "be all-zero). May be negative.",
+                                       "beta", "0");
 
     cli.addOption(verboseOpt);
     cli.addOption(strictOpt);
@@ -74,6 +109,13 @@ int main(int argc, char *argv[])
     cli.addOption(benchOpt);
     cli.addOption(kernelOpt);
     cli.addOption(walksLenOpt);
+    cli.addOption(connTypeOpt);
+    cli.addOption(connModeOpt);
+    cli.addOption(connSourceOpt);
+    cli.addOption(connTargetOpt);
+    cli.addOption(katzAlphaOpt);
+    cli.addOption(bonacichAlphaOpt);
+    cli.addOption(bonacichBetaOpt);
 
     cli.process(app);
 
@@ -91,6 +133,16 @@ int main(int argc, char *argv[])
         {
             QTextStream(stderr) << msg << "\n";
         } });
+        // WS14: the message handler above only discards output AFTER a message has already
+        // been formatted -- it does nothing for qCDebug(category)'s actual cost-saving
+        // mechanism, which is skipping argument evaluation BEFORE formatting, gated by the
+        // category's own enabled/disabled state. Without this, a converted category (e.g.
+        // socnetv.engine) defaults to enabled here and every qCDebug() call still pays full
+        // formatting cost, just to have the result thrown away by the handler above -- the
+        // exact "format-then-discard" tax WS14 exists to eliminate. Explicitly disabling the
+        // categories is what actually lets the category-gate short-circuit take effect.
+        QLoggingCategory::setFilterRules("default.debug=false\n"
+                                         "socnetv.*.debug=false");
     }
     cfg.inputPath = cli.value(fileOpt);
     cfg.fileFormat = cli.value(typeOpt).toInt();
@@ -111,6 +163,13 @@ int main(int argc, char *argv[])
 
     cfg.kernel = cli.value(kernelOpt).trimmed().toLower();
     const int walksLength = cli.value(walksLenOpt).toInt();
+    cfg.connectivityType = cli.value(connTypeOpt).trimmed().toLower();
+    cfg.connMode = cli.value(connModeOpt).trimmed().toLower();
+    cfg.connSource = cli.value(connSourceOpt).toInt();
+    cfg.connTarget = cli.value(connTargetOpt).toInt();
+    cfg.katzAlpha = cli.value(katzAlphaOpt).toDouble();
+    cfg.bonacichAlpha = cli.value(bonacichAlphaOpt).toDouble();
+    cfg.bonacichBeta = cli.value(bonacichBetaOpt).toDouble();
 
     if (cfg.inputPath.isEmpty())
     {
@@ -118,9 +177,9 @@ int main(int argc, char *argv[])
         return 2;
     }
 
-    if (cfg.benchRuns > 0 && cfg.kernel != "distance")
+    if (cfg.benchRuns > 0 && cfg.kernel != "distance" && cfg.kernel != "prominence")
     {
-        QTextStream(stderr) << "ERROR: --bench is only supported with --kernel distance\n";
+        QTextStream(stderr) << "ERROR: --bench is only supported with --kernel distance or prominence\n";
         return 2;
     }
 
@@ -181,6 +240,12 @@ int main(int argc, char *argv[])
 
     if (cfg.kernel == "connectivity")
         return cli::runKernelConnectivityV7(cfg, load, g);
+
+    if (cfg.kernel == "matrix")
+        return cli::runKernelMatrixV8(cfg, load, g);
+
+    if (cfg.kernel == "vertex_connectivity")
+        return cli::runKernelVertexConnectivityV9(cfg, load, g);
 
     QTextStream(stderr) << "ERROR: unsupported --kernel: " << cfg.kernel << "\n";
     return 2;

@@ -52,7 +52,7 @@ SOCNETV_USE_NAMESPACE
  */
 bool Parser::parseAsDL(const QByteArray &rawData)
 {
-    qDebug() << "Parsing data as DL formatted (UCINET)...";
+    qCDebug(lcParser) << "Parsing data as DL formatted (UCINET)...";
 
     QTextCodec *codec = QTextCodec::codecForName(m_textCodecName.toLatin1());
     QString decodedData = codec->toUnicode(rawData);
@@ -117,7 +117,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
 
         actualLineNumber++;
 
-        qDebug() << "actualLineNumber " << actualLineNumber
+        qCDebug(lcParser) << "actualLineNumber " << actualLineNumber
                  << "str.simplified: \n"
                  << str;
 
@@ -125,7 +125,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
         {
             if (!str.startsWith("DL", Qt::CaseInsensitive))
             {
-                qDebug() << "Not a DL file. Aborting!";
+                qCDebug(lcParser) << "Not a DL file. Aborting!";
                 errorMessage = tr("Invalid UCINET-formatted file. The file does not start with DL in first non-comment line %1").arg(fileLineNumber);
                 return false;
             }
@@ -141,7 +141,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
         {
             if (str.contains(","))
             {
-                qDebug() << "DL starting line contains a comma";
+                qCDebug(lcParser) << "DL starting line contains a comma";
                 // If it is a DL file and contains a comma in the first line,
                 // then the line might declare some keywords (N, NM, FORMAT)
                 // this happens in R's sna output files
@@ -154,7 +154,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
             // but contains at least one "=" then we have keywords space separated.
             else if (str.contains("="))
             {
-                qDebug() << "DL starting line contains a = but not a comma";
+                qCDebug(lcParser) << "DL starting line contains a = but not a comma";
                 // this is space separated
                 lineElement = str.split(" ", Qt::SkipEmptyParts);
                 readDLKeywords(lineElement, totalNodes, NM, NR, NC, fullmatrixFormat, edgelist1Format, diagonalPresent);
@@ -180,7 +180,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
             // check if this line contains precisely one "="
             if (str.count("=", Qt::CaseInsensitive) == 1)
             {
-                qDebug() << "Line contains just one = ";
+                qCDebug(lcParser) << "Line contains just one = ";
                 // then one of the above keywords is declared here
                 tempList = str.split("=", Qt::SkipEmptyParts);
 
@@ -189,12 +189,12 @@ bool Parser::parseAsDL(const QByteArray &rawData)
 
                 if (label == "n" || label == "N")
                 {
-                    qDebug() << "N is declared to be : "
+                    qCDebug(lcParser) << "N is declared to be : "
                              << value;
                     totalNodes = value.toInt(&intOK, 10);
                     if (!intOK)
                     {
-                        qDebug() << "N conversion error...";
+                        qCDebug(lcParser) << "N conversion error...";
                         // emit something here...
                         errorMessage = tr("Problem interpreting UCINET-formatted file. Cannot convert N value to integer at line %1.").arg(fileLineNumber);
                         return false;
@@ -202,12 +202,12 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                 }
                 else if (label == "nm" || label == "NM")
                 {
-                    qDebug() << "NM is declared to be : "
+                    qCDebug(lcParser) << "NM is declared to be : "
                              << value;
                     NM = value.toInt(&intOK, 10);
                     if (!intOK)
                     {
-                        qDebug() << "NM conversion error...";
+                        qCDebug(lcParser) << "NM conversion error...";
                         // emit something here...
                         errorMessage = tr("Problem interpreting UCINET-formatted file. Cannot convert NM value to integer at line %1").arg(fileLineNumber);
                         return false;
@@ -215,12 +215,12 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                 }
                 else if (label == "nr" || label == "NR")
                 {
-                    qDebug() << "NR is declared to be : "
+                    qCDebug(lcParser) << "NR is declared to be : "
                              << value;
                     NR = value.toInt(&intOK, 10);
                     if (!intOK)
                     {
-                        qDebug() << "NR conversion error...";
+                        qCDebug(lcParser) << "NR conversion error...";
                         // emit something here...
                         errorMessage = tr("Problem interpreting UCINET-formatted file. Cannot convert NR value to integer at line %1").arg(fileLineNumber);
                         return false;
@@ -228,12 +228,12 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                 }
                 else if (label == "nc" || label == "NC")
                 {
-                    qDebug() << "NC is declared to be : "
+                    qCDebug(lcParser) << "NC is declared to be : "
                              << value;
                     NC = value.toInt(&intOK, 10);
                     if (!intOK)
                     {
-                        qDebug() << "NC conversion error...";
+                        qCDebug(lcParser) << "NC conversion error...";
                         // emit something here...
                         errorMessage = tr("Problem interpreting UCINET-formatted file. Cannot convert NC value to integer at line %1").arg(fileLineNumber);
                         return false;
@@ -241,23 +241,23 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                 }
                 else if (label == "format" || label == "FORMAT")
                 {
-                    qDebug() << "FORMAT is declared to be : "
+                    qCDebug(lcParser) << "FORMAT is declared to be : "
                              << value;
                     if (value.contains("FULLMATRIX", Qt::CaseInsensitive))
                     {
                         fullmatrixFormat = true;
                         edgelist1Format = false;
-                        qDebug() << "✅ FORMAT: FullMatrix detected";
+                        qCDebug(lcParser) << "✅ FORMAT: FullMatrix detected";
                     }
                     else if (value.contains("edgelist", Qt::CaseInsensitive))
                     {
                         edgelist1Format = true;
                         fullmatrixFormat = false;
-                        qDebug() << "✅ FORMAT: EdgeList detected";
+                        qCDebug(lcParser) << "✅ FORMAT: EdgeList detected";
                     }
                     else
                     {
-                        qDebug() << "❌ ERROR: Unknown DL format. Expected 'FULLMATRIX' or 'edgelist'.";
+                        qCDebug(lcParser) << "❌ ERROR: Unknown DL format. Expected 'FULLMATRIX' or 'edgelist'.";
                         errorMessage = tr("Invalid UCINET format declaration. Expected 'FULLMATRIX' or 'edgelist' but found: %1").arg(value);
                         return false;
                     }
@@ -266,7 +266,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                     if (value.contains("DIAGONAL", Qt::CaseInsensitive))
                     {
                         diagonalPresent = true;
-                        qDebug() << "✅ FORMAT: Found standalone DIAGONAL token";
+                        qCDebug(lcParser) << "✅ FORMAT: Found standalone DIAGONAL token";
                     }
                 }
             } // end if count 1 "=" in line (network properties)
@@ -274,7 +274,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
             // check if this line contains more than one "="
             else if (str.count("=", Qt::CaseInsensitive) > 1)
             {
-                qDebug() << "Line contains multiple = ";
+                qCDebug(lcParser) << "Line contains multiple = ";
                 if (str.contains(","))
                 {
                     // this is comma separated
@@ -294,7 +294,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
         // Check for standalone DIAGONAL line
         else if (str.compare("DIAGONAL", Qt::CaseInsensitive) == 0)
         {
-            qDebug() << "✅ Found standalone DIAGONAL line in main parser loop";
+            qCDebug(lcParser) << "✅ Found standalone DIAGONAL line in main parser loop";
             diagonalPresent = true;
             continue;
         }
@@ -304,7 +304,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
             colLabels_flag = false;
             data_flag = false;
             relation_flag = false;
-            qDebug() << "START LABELS RECOGNITION "
+            qCDebug(lcParser) << "START LABELS RECOGNITION "
                         "AND NODE CREATION";
             continue;
         }
@@ -315,7 +315,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
             rowLabels_flag = false;
             data_flag = false;
             relation_flag = false;
-            qDebug() << "START COLUMN LABELS RECOGNITION "
+            qCDebug(lcParser) << "START COLUMN LABELS RECOGNITION "
                         "AND NODE CREATION";
             continue;
         }
@@ -325,7 +325,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
             rowLabels_flag = false;
             colLabels_flag = false;
             relation_flag = false;
-            qDebug() << "START DATA RECOGNITION "
+            qCDebug(lcParser) << "START DATA RECOGNITION "
                         "AND EDGE CREATION";
             continue;
         }
@@ -335,7 +335,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
             data_flag = false;
             rowLabels_flag = false;
             colLabels_flag = false;
-            qDebug() << "START RELATIONS RECOGNITION";
+            qCDebug(lcParser) << "START RELATIONS RECOGNITION";
             continue;
         }
         else if (str.startsWith("matrix labels:", Qt::CaseInsensitive) || str.startsWith("matrix labels :", Qt::CaseInsensitive))
@@ -344,13 +344,13 @@ bool Parser::parseAsDL(const QByteArray &rawData)
             rowLabels_flag = false;
             colLabels_flag = false;
             relation_flag = false;
-            qDebug() << "matrix labels not supported";
+            qCDebug(lcParser) << "matrix labels not supported";
             continue;
         }
 
         else if (str.isEmpty())
         {
-            qDebug() << "EMPTY STRING - CONTINUE";
+            qCDebug(lcParser) << "EMPTY STRING - CONTINUE";
             continue;
         }
 
@@ -361,12 +361,12 @@ bool Parser::parseAsDL(const QByteArray &rawData)
 
             if (rowLabels.contains(label))
             {
-                qDebug() << "⚠ Warning: Duplicate row label '" << label << "' found. Ignoring.";
+                qCDebug(lcParser) << "⚠ Warning: Duplicate row label '" << label << "' found. Ignoring.";
                 continue;
             }
             else
             {
-                qDebug() << "Adding label " << label
+                qCDebug(lcParser) << "Adding label " << label
                          << " to rowLabels, list size: " << rowLabels.size();
                 rowLabels << label;
             }
@@ -379,12 +379,12 @@ bool Parser::parseAsDL(const QByteArray &rawData)
 
             if (colLabels.contains(label))
             {
-                qDebug() << "col label exists. CONTINUE";
+                qCDebug(lcParser) << "col label exists. CONTINUE";
                 continue;
             }
             else
             {
-                qDebug() << "Adding col label " << label
+                qCDebug(lcParser) << "Adding col label " << label
                          << " to colLabels";
                 colLabels << label;
             }
@@ -394,12 +394,12 @@ bool Parser::parseAsDL(const QByteArray &rawData)
             relation = str;
             if (relationsList.contains(relation))
             {
-                qDebug() << "relation exists. CONTINUE";
+                qCDebug(lcParser) << "relation exists. CONTINUE";
                 continue;
             }
             else
             {
-                qDebug() << "adding new relation" << relation
+                qCDebug(lcParser) << "adding new relation" << relation
                          << "to relationsList and signaling to create new relation";
                 relationsList << relation;
                 if (m_parseSink)
@@ -420,12 +420,12 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                 // node to each mode-2 column node it is affiliated with.
                 // Projection (person-network / event-network) is not supported
                 // for the DL format and must be done as a post-load step.
-                qDebug() << "check if NR != 0 (two mode net).";
+                qCDebug(lcParser) << "check if NR != 0 (two mode net).";
                 if (NR != 0 && NC != 0)
                 {
                     twoMode_flag = true;
                     totalNodes   = NR + NC;  // Fix #63-1: set correct total
-                    qDebug() << "Two-mode net: NR=" << NR << "NC=" << NC
+                    qCDebug(lcParser) << "Two-mode net: NR=" << NR << "NC=" << NC
                              << "totalNodes=" << totalNodes;
                 }
 
@@ -435,7 +435,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                     if (!twoMode_flag)
                     {
                         // One-mode: create N nodes with auto-numbering.
-                        qDebug() << "No row labels. Creating" << totalNodes << "nodes.";
+                        qCDebug(lcParser) << "No row labels. Creating" << totalNodes << "nodes.";
                         createRandomNodes(1, QString(), totalNodes);
                         nodeSum = totalNodes;
                     }
@@ -444,7 +444,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                         // Fix #63-2: two-mode, no labels — create NR row nodes
                         // with explicit numbers 1..NR so col nodes can follow
                         // at NR+1..NR+NC without overlap.
-                        qDebug() << "Two-mode, no row labels. Creating" << NR << "row nodes.";
+                        qCDebug(lcParser) << "Two-mode, no row labels. Creating" << NR << "row nodes.";
                         for (int i = 1; i <= NR; ++i)
                         {
                             nodeSum++;
@@ -457,7 +457,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                     // only one label line was found
                     // probably contains a comma to separate labels
                     // split it
-                    qDebug() << "Nodes have not been created yet."
+                    qCDebug(lcParser) << "Nodes have not been created yet."
                              << "One row for labels found."
                              << "Splitting at a comma and calling createRandomNodes(1) for each label";
                     tempList = rowLabels[0].split(",", Qt::SkipEmptyParts);
@@ -471,7 +471,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                 else
                 {
                     // multiple label lines were found
-                    qDebug() << "Nodes have not been created yet."
+                    qCDebug(lcParser) << "Nodes have not been created yet."
                              << "Multiple label lines were found: " << rowLabels.size()
                              << "Calling createRandomNodes() for each label";
                     for (QStringList::Iterator it1 = rowLabels.begin(); it1 != rowLabels.end(); ++it1)
@@ -489,7 +489,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                     {
                         // Fix #63-2: no col labels — loop with explicit numbers
                         // so nodes land at NR+1..NR+NC (nodeSum is NR here).
-                        qDebug() << "Two-mode, no col labels. Creating" << NC
+                        qCDebug(lcParser) << "Two-mode, no col labels. Creating" << NC
                                  << "col nodes starting at" << (nodeSum + 1);
                         for (int j = 0; j < NC; ++j)
                         {
@@ -502,7 +502,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                         // only one col label line was found
                         // probably contains a comma to separate labels
                         // split it
-                        qDebug() << "Nodes have not been created yet."
+                        qCDebug(lcParser) << "Nodes have not been created yet."
                                  << "One line for col label found."
                                  << "Splitting at a comma and calling createRandomNodes(1) for each label";
                         tempList = colLabels[0].split(",", Qt::SkipEmptyParts);
@@ -516,7 +516,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                     else
                     {
                         // multiple  col label lines were found
-                        qDebug() << "Nodes have not been created yet."
+                        qCDebug(lcParser) << "Nodes have not been created yet."
                                  << "Multiple col label lines were found."
                                  << "Calling createRandomNodes(1) for each label";
                         for (QStringList::Iterator it1 = colLabels.begin(); it1 != colLabels.end(); ++it1)
@@ -531,7 +531,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                 // sanity check
                 if (!twoMode_flag && nodeSum != totalNodes)
                 {
-                    qDebug() << "❌ ERROR: Number of nodes processed (" << nodeSum
+                    qCDebug(lcParser) << "❌ ERROR: Number of nodes processed (" << nodeSum
                              << ") does not match declared N=" << totalNodes;
                     errorMessage = tr("Error reading UCINET-formatted file: Number of nodes found (%1) does not match declared N=%2")
                                        .arg(nodeSum)
@@ -546,14 +546,14 @@ bool Parser::parseAsDL(const QByteArray &rawData)
             {
                 if (!twoMode_flag)
                 {
-                    qDebug() << "reading edges in fullmatrix format";
+                    qCDebug(lcParser) << "reading edges in fullmatrix format";
 
                     // FIX FOR ISSUE #174: Handle wrapped matrix rows
                     // Accumulate wrapped lines until we get totalNodes values
                     QString accumulatedLine = str;
                     myRegExp.setPattern("\\s+");
                     lineElement = accumulatedLine.split(myRegExp, Qt::SkipEmptyParts);
-                    qDebug() << "line elements " << lineElement.size();
+                    qCDebug(lcParser) << "line elements " << lineElement.size();
 
                     while (lineElement.size() < totalNodes && !ts.atEnd())
                     {
@@ -568,9 +568,9 @@ bool Parser::parseAsDL(const QByteArray &rawData)
 
                     if (lineElement.size() != totalNodes)
                     {
-                        qDebug() << "❌ ERROR: Mismatch in matrix row size at line" << fileLineNumber
+                        qCDebug(lcParser) << "❌ ERROR: Mismatch in matrix row size at line" << fileLineNumber
                                  << ". Expected" << totalNodes << "columns but found" << lineElement.size();
-                        qDebug() << "🔍 Full row content: " << str;
+                        qCDebug(lcParser) << "🔍 Full row content: " << str;
 
                         errorMessage = tr("Matrix row size mismatch. Expected %1 but got %2 at line %3.")
                                            .arg(totalNodes)
@@ -582,10 +582,10 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                     target = 1;
                     if (source == 1 && relationCounter > 0)
                     {
-                        qDebug() << "we are at source 1. "
+                        qCDebug(lcParser) << "we are at source 1. "
                                     "Checking relationList";
                         relation = relationsList[relationCounter];
-                        qDebug() << "WE ARE THE FIRST DATASET/MATRIX"
+                        qCDebug(lcParser) << "WE ARE THE FIRST DATASET/MATRIX"
                                  << "source node counter is" << source
                                  << "and relation to:" << relation << "index:"
                                  << relationCounter << "signaling to change to that relation...";
@@ -599,7 +599,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                         source = 1;
                         relationCounter++;
                         relation = relationsList[relationCounter];
-                        qDebug() << "LOOKS LIKE WE ENTERED A NEW DATASET/MATRIX "
+                        qCDebug(lcParser) << "LOOKS LIKE WE ENTERED A NEW DATASET/MATRIX "
                                  << " init source node counter to" << source
                                  << " and relation to" << relation << ": "
                                  << relationCounter << "signaling to change to that relation...";
@@ -610,7 +610,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                     }
                     else
                     {
-                        qDebug() << "source node counter is " << source;
+                        qCDebug(lcParser) << "source node counter is " << source;
                     }
 
                     for (QStringList::Iterator it1 = lineElement.begin(); it1 != lineElement.end(); ++it1)
@@ -632,13 +632,13 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                         if (source == target)
                         {
                             // This is a diagonal element (self-loop)
-                            qDebug() << "Diagonal element at (" << source << "," << target
+                            qCDebug(lcParser) << "Diagonal element at (" << source << "," << target
                                      << ") with value " << edgeWeight;
 
                             if (diagonalPresent && edgeWeight > 0)
                             {
                                 // Create self-loop only if DIAGONAL PRESENT and value is non-zero
-                                qDebug() << "Creating self-loop for node " << source;
+                                qCDebug(lcParser) << "Creating self-loop for node " << source;
                                 if (m_parseSink)
                                 {
                                     m_parseSink->createEdge(source, target, edgeWeight, initEdgeColor,
@@ -652,7 +652,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                             // Non-diagonal element - normal edge
                             if (edgeWeight > 0)
                             {
-                                qDebug() << "relation" << relationCounter
+                                qCDebug(lcParser) << "relation" << relationCounter
                                          << "Adding edge from " << source << " to " << target
                                          << " with weight " << edgeWeight;
                                 if (m_parseSink)
@@ -662,7 +662,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                                 }
 
                                 totalLinks++;
-                                qDebug() << "TotalLinks= " << totalLinks;
+                                qCDebug(lcParser) << "TotalLinks= " << totalLinks;
                             }
                         }
                         target++;
@@ -674,14 +674,14 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                 {
                     // two-mode
                     target = NR + 1;
-                    qDebug() << "this is a two-mode fullmatrix file. "
+                    qCDebug(lcParser) << "this is a two-mode fullmatrix file. "
                                 "Splitting str to elements:";
                     myRegExp.setPattern("\\s+");
                     lineElement = str.split(myRegExp, Qt::SkipEmptyParts);
-                    qDebug() << "lineElement:" << lineElement;
+                    qCDebug(lcParser) << "lineElement:" << lineElement;
                     if (lineElement.size() != NC)
                     {
-                        qDebug() << "Not a two-mode fullmatrix UCINET "
+                        qCDebug(lcParser) << "Not a two-mode fullmatrix UCINET "
                                     "formatted file. Aborting!!";
                         // emit something...
                         errorMessage = tr("Problem interpreting UCINET two-mode fullmatrix-formatted file. The file declared %1 columns initially, "
@@ -708,7 +708,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
 
                         if (edgeWeight)
                         {
-                            qDebug() << "relation "
+                            qCDebug(lcParser) << "relation "
                                      << relationCounter
                                      << "found edge from "
                                      << source << " to " << target
@@ -720,7 +720,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                             }
 
                             totalLinks++;
-                            qDebug() << "TotalLinks= " << totalLinks;
+                            qCDebug(lcParser) << "TotalLinks= " << totalLinks;
                         }
                         target++;
                     } // end for
@@ -734,11 +734,11 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                 // read edges in edgelist1 format
                 myRegExp.setPattern("\\s+");
                 lineElement = str.split(myRegExp, Qt::SkipEmptyParts);
-                qDebug() << "edgelist str line:" << str;
-                qDebug() << "edgelist data element:" << lineElement;
+                qCDebug(lcParser) << "edgelist str line:" << str;
+                qCDebug(lcParser) << "edgelist data element:" << lineElement;
                 if (lineElement.size() != 3)
                 {
-                    qDebug() << "Not an edgelist1 UCINET "
+                    qCDebug(lcParser) << "Not an edgelist1 UCINET "
                                 "formatted file. Aborting!!";
                     // emit something...
                     errorMessage = tr("Problem interpreting UCINET-formatted file. "
@@ -751,23 +751,23 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                 source = (lineElement[0]).toInt(&intOK);
                 target = (lineElement[1]).toInt(&intOK);
 
-                qDebug() << "source node "
+                qCDebug(lcParser) << "source node "
                          << source << " target node " << target;
 
                 edgeWeight = (lineElement[2]).toDouble(&conversionOK);
 
                 if (conversionOK)
                 {
-                    qDebug() << "list file declares edge weight: "
+                    qCDebug(lcParser) << "list file declares edge weight: "
                              << edgeWeight;
                 }
                 else
                 {
                     edgeWeight = 1.0;
-                    qDebug() << "	list file NOT declaring edge weight. Setting default: " << edgeWeight;
+                    qCDebug(lcParser) << "	list file NOT declaring edge weight. Setting default: " << edgeWeight;
                 }
 
-                qDebug() << "Signaling to create new edge"
+                qCDebug(lcParser) << "Signaling to create new edge"
                          << source << "->" << target << " weight= " << edgeWeight
                          << " TotalLinks=  " << totalLinks + 1;
                 if (m_parseSink)
@@ -802,7 +802,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
     colLabels.clear();
     relationsList.clear();
 
-    qDebug() << "Finished OK. Returning.";
+    qCDebug(lcParser) << "Finished OK. Returning.";
     return true;
 }
 
@@ -839,12 +839,12 @@ bool Parser::readDLKeywords(QStringList &strList,
     for (QStringList::Iterator it1 = strList.begin(); it1 != strList.end(); ++it1)
     {
         tempStr = (*it1);
-        qDebug() << "element:" << tempStr.toLatin1();
+        qCDebug(lcParser) << "element:" << tempStr.toLatin1();
 
         // Check for standalone DIAGONAL token
         if (tempStr.compare("DIAGONAL", Qt::CaseInsensitive) == 0)
         {
-            qDebug() << "✅ Found standalone DIAGONAL token";
+            qCDebug(lcParser) << "✅ Found standalone DIAGONAL token";
             diagonalPresent = true;
             continue;
         }
@@ -854,7 +854,7 @@ bool Parser::readDLKeywords(QStringList &strList,
             // remove DL
             tempStr.remove("DL", Qt::CaseInsensitive);
             tempStr = tempStr.simplified();
-            qDebug() << "element contained DL. Removed it:"
+            qCDebug(lcParser) << "element contained DL. Removed it:"
                      << tempStr;
         }
 
@@ -863,7 +863,7 @@ bool Parser::readDLKeywords(QStringList &strList,
         {
             if (tempStr.contains("=", Qt::CaseInsensitive))
             {
-                qDebug() << "splitting element at = sign";
+                qCDebug(lcParser) << "splitting element at = sign";
 
                 tempList = tempStr.split("=", Qt::SkipEmptyParts);
 
@@ -872,12 +872,12 @@ bool Parser::readDLKeywords(QStringList &strList,
 
                 if (label == "n" || label == "N")
                 {
-                    qDebug() << "N is declared to be : "
+                    qCDebug(lcParser) << "N is declared to be : "
                              << value;
                     N = value.toInt(&intOK, 10);
                     if (!intOK)
                     {
-                        qDebug() << "N conversion error...";
+                        qCDebug(lcParser) << "N conversion error...";
                         // emit something here...
                         errorMessage = tr("Error while reading UCINET-formatted file. Cannot convert N value to integer. ");
                         return false;
@@ -885,12 +885,12 @@ bool Parser::readDLKeywords(QStringList &strList,
                 }
                 else if (label == "nm" || label == "NM")
                 {
-                    qDebug() << "NM is declared to be : "
+                    qCDebug(lcParser) << "NM is declared to be : "
                              << value;
                     NM = value.toInt(&intOK, 10);
                     if (!intOK)
                     {
-                        qDebug() << "NM conversion error...";
+                        qCDebug(lcParser) << "NM conversion error...";
                         // emit something here...
                         errorMessage = tr("Problem interpreting UCINET file. Cannot convert NM value to integer. ");
                         return false;
@@ -898,12 +898,12 @@ bool Parser::readDLKeywords(QStringList &strList,
                 }
                 else if (label == "nr" || label == "NR")
                 {
-                    qDebug() << "NR is declared to be : "
+                    qCDebug(lcParser) << "NR is declared to be : "
                              << value;
                     NR = value.toInt(&intOK, 10);
                     if (!intOK)
                     {
-                        qDebug() << "NR conversion error...";
+                        qCDebug(lcParser) << "NR conversion error...";
                         // emit something here...
                         errorMessage = tr("Error while reading UCINET-formatted file. Cannot convert NR value to integer.");
                         return false;
@@ -911,12 +911,12 @@ bool Parser::readDLKeywords(QStringList &strList,
                 }
                 else if (label == "nc" || label == "NC")
                 {
-                    qDebug() << "NC is declared to be : "
+                    qCDebug(lcParser) << "NC is declared to be : "
                              << value;
                     NC = value.toInt(&intOK, 10);
                     if (!intOK)
                     {
-                        qDebug() << "NC conversion error...";
+                        qCDebug(lcParser) << "NC conversion error...";
                         // emit something here...
                         errorMessage = tr("Error while reading UCINET-formatted file. Cannot convert NC value to integer. ");
                         return false;
@@ -924,31 +924,31 @@ bool Parser::readDLKeywords(QStringList &strList,
                 }
                 else if (label == "format" || label == "FORMAT")
                 {
-                    qDebug() << "FORMAT is declared to be : "
+                    qCDebug(lcParser) << "FORMAT is declared to be : "
                              << value;
 
                     // Check if DIAGONAL PRESENT is specified in the format
                     if (value.contains("DIAGONAL", Qt::CaseInsensitive))
                     {
                         diagonalPresent = true;
-                        qDebug() << "✅ FORMAT: DIAGONAL token found in format value";
+                        qCDebug(lcParser) << "✅ FORMAT: DIAGONAL token found in format value";
                     }
 
                     if (value.contains("FULLMATRIX", Qt::CaseInsensitive))
                     {
                         fullmatrixFormat = true;
                         edgelist1Format = false;
-                        qDebug() << "✅ FORMAT: FullMatrix detected";
+                        qCDebug(lcParser) << "✅ FORMAT: FullMatrix detected";
                     }
                     else if (value.contains("edgelist", Qt::CaseInsensitive))
                     {
                         edgelist1Format = true;
                         fullmatrixFormat = false;
-                        qDebug() << "✅ FORMAT: EdgeList detected";
+                        qCDebug(lcParser) << "✅ FORMAT: EdgeList detected";
                     }
                     else
                     {
-                        qDebug() << "❌ ERROR: Unknown DL format. Expected 'FULLMATRIX' or 'edgelist'.";
+                        qCDebug(lcParser) << "❌ ERROR: Unknown DL format. Expected 'FULLMATRIX' or 'edgelist'.";
                         errorMessage = tr("Invalid UCINET format declaration. Expected 'FULLMATRIX' or 'edgelist' but found: %1").arg(value);
                         return false;
                     }
@@ -958,7 +958,7 @@ bool Parser::readDLKeywords(QStringList &strList,
             {
                 // We'll be more lenient here - if we encounter unknown tokens without =
                 // we'll just ignore them rather than returning false
-                qDebug() << "Ignoring unknown token without = sign:" << tempStr;
+                qCDebug(lcParser) << "Ignoring unknown token without = sign:" << tempStr;
             }
         } // end if > 0
     } // end for lineElement
@@ -980,7 +980,7 @@ void Parser::createRandomNodes(const int &fixedNum,
     {
         for (int i = 0; i < newNodes; i++)
         {
-            qDebug() << "Signaling to create multiple nodes. Now signaling for node:" << i + 1;
+            qCDebug(lcParser) << "Signaling to create multiple nodes. Now signaling for node:" << i + 1;
             if (m_parseSink)
             {
                 m_parseSink->createNodeAtPosRandom(false);
@@ -989,7 +989,7 @@ void Parser::createRandomNodes(const int &fixedNum,
     }
     else
     {
-        qDebug() << "Signaling to create a single node:" << fixedNum << "with label:" << label;
+        qCDebug(lcParser) << "Signaling to create a single node:" << fixedNum << "with label:" << label;
         if (m_parseSink)
         {
             m_parseSink->createNodeAtPosRandomWithLabel(fixedNum, label, false);

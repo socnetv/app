@@ -20,17 +20,44 @@
  * @brief Computes the Information centrality of each vertex - diagonal included
  *  Note that there is no known generalization of Stephenson & Zelen's theory
  *  for information centrality to directional data
+ *
+ * Meaning: most centrality measures only look at the single shortest path between two
+ * actors. Information centrality gives an actor credit for *every* path connecting it to
+ * others, not just the best one - shorter, less roundabout paths count for more - so an
+ * actor sitting on many decent alternative routes can score as centrally as one sitting on
+ * the single best route.
+ *
+ * When to use: when redundancy of connection matters more than the single fastest route -
+ * e.g. assessing how robust an actor's information access is to a single link failing, or
+ * comparing actors whose "one best path" scores (closeness, betweenness) look similar but
+ * whose actual web of alternative routes differs a lot.
+ *
+ * Compare to: Closeness Centrality (CC) also scores actors by distance to others, but only via
+ * the single shortest path; Betweenness (BC) counts how often an actor sits on shortest paths
+ * between others. Information Centrality is the only one of the three that uses every
+ * connecting path, not just the shortest one.
+ *
+ * Weights: unlike CC/BC/SC/EC/PC/IRCC, this is not shortest-path routing - the raw weight
+ * feeds directly into the B matrix (B_ij = 1 - w_ij), where a *larger* raw weight already
+ * pulls two actors closer together. Don't invert a strength-type weight here (that would
+ * weaken your strongest ties); only invert if the weight genuinely represents a cost.
+ *
+ * Math: build matrix B where B_ii = 1 + (sum of i's edge weights) and B_ij = 1 - w_ij for
+ * i != j, then invert it to get C = B^-1. Information centrality is
+ * IC(i) = 1 / [ C_ii + (tr(C) - 2*R) / n ], where tr(C) is the trace of C and R is the sum
+ * of any one row of C (interchangeable by construction of B).
+ *
  * @param considerWeights
  * @param inverseWeights
  */
 void Graph::centralityInformation(const bool considerWeights,
                                   const bool inverseWeights)
 {
-    qDebug() << "Graph::centralityInformation()";
+    qCDebug(lcCentrality) << "Graph::centralityInformation()";
 
     if (calculatedIC)
     {
-        qDebug() << "Graph::centralityInformation() - already computed. Return.";
+        qCDebug(lcCentrality) << "Graph::centralityInformation() - already computed. Return.";
         return;
     }
 
@@ -71,7 +98,6 @@ void Graph::centralityInformation(const bool considerWeights,
             (*it)->setSIC(0);
         }
         calculatedIC = true;
-        progressFinish();
         return;
     }
 
@@ -84,20 +110,17 @@ void Graph::centralityInformation(const bool considerWeights,
             (*it)->setSIC(0);
         }
         calculatedIC = true;
-        progressFinish();
         return;
     }
 
     createMatrixAdjacency(dropIsolates, considerWeights, inverseWeights, symmetrize);
     if (progressCanceled())
     {
-        progressFinish();
         return;
     }
 
     QString pMsg = tr("Computing Information Centralities. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(n, pMsg);
 
     WM.resize(n, n);
     invM.resize(n, n);
@@ -117,23 +140,35 @@ void Graph::centralityInformation(const bool considerWeights,
         WM.setItem(i, i, weightSum);
     }
 
-    progressUpdate(n / 3);
     if (progressCanceled())
     {
-        progressFinish();
         return;
     }
 
     progressStatus(tr("Computing inverse adjacency matrix. Please wait..."));
-    invM.inverse(WM);
+    const bool invertible = invM.inverse(WM, [this] { return progressCanceled(); });
 
-    progressStatus(tr("Computing IC scores. Please wait..."));
-    progressUpdate(2 * n / 3);
     if (progressCanceled())
     {
-        progressFinish();
         return;
     }
+
+    // Fix #269: WM can be singular; without this check IC would be computed from invM
+    // left as all zeros, silently reporting wrong scores instead of "not defined".
+    if (!invertible)
+    {
+        qCDebug(lcCentrality) << "Graph::centralityInformation() - weight matrix is singular.";
+        progressStatus(tr("Information Centrality is not defined: the weight matrix is singular."));
+        for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+        {
+            (*it)->setIC(0);
+            (*it)->setSIC(0);
+        }
+        calculatedIC = true;
+        return;
+    }
+
+    progressStatus(tr("Computing IC scores. Please wait..."));
 
     traceC = 0;
     commonRowSum = 0;
@@ -212,13 +247,108 @@ void Graph::centralityInformation(const bool considerWeights,
     calculatedIC = true;
 
     WM.clear();
+}
 
-    progressUpdate(n);
-    progressFinish();
+/**
+ * @brief Estimates the adjacency matrix's spectral radius (dominant eigenvalue magnitude).
+ *
+ * Meaning: how "amplifying" the network's connectivity structure is - the factor by which a
+ * signal spreading through the network grows per step, in the worst case. Used to validate the
+ * convergence bound for measures built on a geometric series of the adjacency matrix (Katz
+ * Centrality, Bonacich Power Centrality): their attenuation parameter must satisfy
+ * |x| < 1/lambda_max, or the underlying series - and the matrix inversion computing it in closed
+ * form - does not converge.
+ *
+ * When to use: before running Katz or Bonacich, to know (or show the user) the actual valid
+ * range for alpha/beta on this specific network, rather than a generic guess - dense/large
+ * networks can have a lambda_max well into double digits, making the valid range far smaller
+ * than it would be for a sparse one.
+ *
+ * Compare to: centralityEigenvector() also power-iterates the adjacency matrix to find its
+ * dominant eigenvector, and computes this same lambda_max as a side effect - this method exists
+ * separately because callers here (Katz, Bonacich, and their dialogs) only need the eigenvalue,
+ * not the ranking eigenvector itself.
+ *
+ * Math: via power iteration (Matrix::powerIteration()), starting from a unit seed vector -
+ * ||Ax|| approximates lambda_max once the iteration converges (Perron-Frobenius: for a
+ * non-negative matrix like an adjacency matrix, this is exact for a connected network).
+ *
+ * @param considerWeights
+ * @param inverseWeights
+ * @param dropIsolates
+ * @return the estimated spectral radius, or 0 if the network is empty or the computation was
+ *         canceled. 0 conventionally means "no bound - any value converges" to callers.
+ */
+qreal Graph::estimateSpectralRadius(const bool &considerWeights,
+                                    const bool &inverseWeights,
+                                    const bool &dropIsolates)
+{
+    const bool symmetrize = false;
+    const int N = vertices(dropIsolates);
+
+    if (N == 0)
+    {
+        return 0;
+    }
+
+    createMatrixAdjacency(dropIsolates, considerWeights, inverseWeights, symmetrize);
+    if (progressCanceled())
+    {
+        return 0;
+    }
+
+    qreal *seed = new (nothrow) qreal[N];
+    Q_CHECK_PTR(seed);
+    for (int k = 0; k < N; k++)
+        seed[k] = 1;
+    qreal dummySum = 0, dummyMax = 0, dummyMin = RAND_MAX;
+    int dummyMaxI = 0, dummyMinI = 0;
+    qreal lambdaMax = 0;
+    AM.powerIteration(seed, dummySum, dummyMax, dummyMaxI, dummyMin, dummyMinI,
+                      0.0000001, 500,
+                      [this] { return progressCanceled(); },
+                      &lambdaMax);
+    delete[] seed;
+
+    if (progressCanceled())
+    {
+        return 0;
+    }
+
+    return lambdaMax;
 }
 
 /**
  * @brief Computes Eigenvector centrality
+ *
+ * Meaning: not just how many connections you have, but how important your connections are -
+ * being tied to a few highly-connected people can outscore being tied to many
+ * poorly-connected ones. It is a "popularity feeds back on itself" measure: your score
+ * depends on your neighbors' scores, which depend on their neighbors' scores, and so on
+ * until the whole network settles into one stable ranking.
+ *
+ * When to use: ranking actors by prestige/influence rather than raw activity - e.g. finding
+ * the truly influential accounts in a social network (as opposed to merely the most active
+ * ones), or citation-network-style "important papers cited by other important papers"
+ * reasoning. Needs a connected (or largely connected) graph to produce a meaningful ranking.
+ *
+ * Weights: not shortest-path routing - the adjacency matrix entry is used directly as "how
+ * much this tie contributes." Don't invert a strength-type weight (that would make your
+ * strongest ties count least); only invert if the weight genuinely represents a cost.
+ *
+ * Compare to: Katz Centrality (see centralityKatz()) and Bonacich Power Centrality (see
+ * centralityBonacich()) generalize this same "connections to well-connected others matter" idea
+ * by summing actual walks with a distance-based decay factor instead of finding the dominant
+ * eigenvector directly, which makes the decay directly tunable by the user rather than fixed by
+ * the network's own structure. Power Centrality (PC, Gil-Schmidt, see graphDistancesGeodesic())
+ * is a different, older, similarly-named but unrelated measure computed straight from vertex
+ * degrees rather than via eigen-decomposition.
+ *
+ * Math: the eigenvector centrality vector x is the dominant eigenvector of the adjacency
+ * matrix A, i.e. the vector solving A*x = lambda_max*x for the largest eigenvalue lambda_max.
+ * Computed here via power iteration (Matrix::powerIteration()): start from any vector,
+ * repeatedly multiply by A and rescale to unit length - it converges to that eigenvector.
+ *
  * @param considerWeights
  * @param inverseWeights
  */
@@ -228,11 +358,11 @@ void Graph::centralityEigenvector(const bool &considerWeights,
 {
     if (calculatedEVC)
     {
-        qDebug() << "Graph not changed - EVC already computed. Return.";
+        qCDebug(lcCentrality) << "Graph not changed - EVC already computed. Return.";
         return;
     }
 
-    qDebug() << "(Re)Computing Eigenvector centrality scores...";
+    qCDebug(lcCentrality) << "(Re)Computing Eigenvector centrality scores...";
 
     progressStatus(tr("Calculating EVC scores..."));
 
@@ -261,7 +391,6 @@ void Graph::centralityEigenvector(const bool &considerWeights,
             (*it)->setSEVC(0);
         }
         calculatedEVC = true;
-        progressFinish();
         return;
     }
 
@@ -274,17 +403,15 @@ void Graph::centralityEigenvector(const bool &considerWeights,
     if (progressCanceled())
     {
         delete[] EVC;
-        progressFinish();
         return;
     }
 
     QString pMsg = tr("Computing Eigenvector Centrality scores. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     if (useDegrees)
     {
-        qDebug() << "Using outDegree for initial EVC vector";
+        qCDebug(lcCentrality) << "Using outDegree for initial EVC vector";
 
         progressStatus(tr("Computing outDegrees. Please wait..."));
 
@@ -299,28 +426,30 @@ void Graph::centralityEigenvector(const bool &considerWeights,
     }
     else
     {
-        qDebug() << "Using unit initial EVC vector";
+        qCDebug(lcCentrality) << "Using unit initial EVC vector";
         for (int k = 0; k < N; k++)
             EVC[k] = 1;
     }
 
-    progressUpdate(N / 3);
     if (progressCanceled())
     {
         delete[] EVC;
-        progressFinish();
         return;
     }
 
+    qreal lambdaMax = 0;
     AM.powerIteration(EVC, sumEVC, maxEVC, maxNodeEVC,
                       minEVC, minNodeEVC,
-                      0.0000001, 500);
+                      0.0000001, 500,
+                      [this] { return progressCanceled(); },
+                      &lambdaMax);
 
-    progressUpdate(2 * N / 3);
+    qCDebug(lcCentrality) << "Graph::centralityEigenvector() - dominant eigenvalue (lambdaMax) ="
+             << lambdaMax;
+
     if (progressCanceled())
     {
         delete[] EVC;
-        progressFinish();
         return;
     }
 
@@ -360,13 +489,31 @@ void Graph::centralityEigenvector(const bool &considerWeights,
     calculatedEVC = true;
 
     delete[] EVC;
-
-    progressUpdate(N);
-    progressFinish();
 }
 
 /**
  * @brief Calculates the degree (outDegree) centrality of each vertex - diagonal included
+ *
+ * Meaning: the simplest centrality there is - how many direct connections (ties) does this
+ * actor have? More connections means more prominence, full stop; no attention is paid to who
+ * those connections are or how the rest of the network is shaped.
+ *
+ * When to use: a fast first-pass screen for "who's active/popular" on any graph, directed or
+ * not, connected or not - cheap to compute and easy to explain to a non-technical audience.
+ * Weak at finding brokers or long-range influence; pair with betweenness or eigenvector
+ * centrality when those matter.
+ *
+ * Compare to: Degree Prestige (DP, see prestigeDegree()) is this same idea restricted to
+ * inbound ties only - meaningful on directed graphs, where "connections this actor made" and
+ * "connections this actor received" can differ a lot.
+ *
+ * Weights: no inversion choice here (considerWeights only) - when considered, weights are
+ * summed directly, so a stronger tie always adds more, regardless of what the weight means.
+ *
+ * Math: DC(i) = number of edges incident to i (or the sum of their weights, if weights are
+ * considered). Standardized SDC(i) = DC(i) / (N-1), the fraction of all other actors i is
+ * directly tied to.
+ *
  * @param considerWeights
  * @param dropIsolates
  */
@@ -375,7 +522,7 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
 
     if (calculatedDC)
     {
-        qDebug() << "Graph not changed - no need to recompute degree centralities. Returning.";
+        qCDebug(lcCentrality) << "Graph not changed - no need to recompute degree centralities. Returning.";
         return;
     }
     qreal DC = 0, nom = 0, denom = 0, SDC = 0;
@@ -393,14 +540,11 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
     VList::const_iterator it, it1;
 
     QString pMsg = tr("Computing out-Degree Centralities for %1 nodes. \nPlease wait...").arg(N);
-    qDebug() << pMsg;
+    qCDebug(lcCentrality) << pMsg;
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
-    progressUpdate(N / 3);
     if (progressCanceled())
     {
-        progressFinish();
         return;
     }
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
@@ -439,10 +583,8 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
         sumDC += DC; // store sumDC (for std calc below)
     }
 
-    progressUpdate(2 * N / 3);
     if (progressCanceled())
     {
-        progressFinish();
         return;
     }
     // Calculate std Out-Degree, min, max, classes and sumSDC
@@ -459,7 +601,7 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
         }
         (*it)->setSDC(SDC); // Set Standard DC
 
-        qDebug() << "vertex" << (*it)->number() << "-- DC=" << DC << "SDC=" << SDC;
+        qCDebug(lcCentrality) << "vertex" << (*it)->number() << "-- DC=" << DC << "SDC=" << SDC;
         sumSDC += SDC;
 
         resolveClasses(SDC, discreteSDCs, classesSDC);
@@ -515,9 +657,6 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
     }
 
     calculatedDC = true;
-
-    progressUpdate(N);
-    progressFinish();
 }
 
 /**
@@ -528,6 +667,29 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
  * For each node v, this index calculates the fraction of nodes in its influence
  * range and divides it by the average distance of those nodes from v,
  * ignoring nodes that are not reachable from it.
+ *
+ * Meaning: how efficiently can an actor reach the part of the network it *can* reach? Plain
+ * closeness centrality breaks down on a disconnected network, since "distance to everyone" is
+ * undefined once some actors are unreachable. IRCC sidesteps that by only ever averaging
+ * distances to actors that are actually reachable, so it stays meaningful even when the
+ * network is split into several disconnected pieces.
+ *
+ * When to use: any time the network might not be fully connected - social media crawls,
+ * partial datasets, or naturally fragmented networks (e.g. isolated friend clusters) - where
+ * plain Closeness Centrality (CC) would otherwise be undefined or require dropping actors.
+ *
+ * Weights: shortest-path-based, same as CC - if a weight represents value/strength, invert it
+ * so a strong tie behaves like a short/cheap path.
+ *
+ * Compare to: Closeness Centrality (CC, see graphDistancesGeodesic()) is the classic version
+ * this generalizes - use CC directly once the graph is known to be fully connected. Proximity
+ * Prestige (PP, see prestigeProximity()) is prestige's directed-graph counterpart of this same
+ * idea (distance *from* others, rather than *to* them).
+ *
+ * Math: for actor i, let J_i be the set of nodes reachable from i (its influence range).
+ * IRCC(i) = [ |J_i| / (N-1) ] / [ (sum of d(i,j) for j in J_i) / |J_i| ] - the fraction of
+ * the network i can reach, divided by the average distance to that reachable set.
+ *
  * @param considerWeights
  * @param inverseWeights
  * @param dropIsolates
@@ -539,11 +701,11 @@ void Graph::centralityClosenessIR(const bool considerWeights,
 
     if (calculatedIRCC)
     {
-        qDebug() << "Graph not changed - no need to recompute IRCC. Returning";
+        qCDebug(lcCentrality) << "Graph not changed - no need to recompute IRCC. Returning";
         return;
     }
 
-    qDebug() << "(Re)Computing IRCC closeness centrality...";
+    qCDebug(lcCentrality) << "(Re)Computing IRCC closeness centrality...";
 
     graphDistancesGeodesic(false, considerWeights, inverseWeights, dropIsolates);
     if (progressCanceled())
@@ -552,7 +714,6 @@ void Graph::centralityClosenessIR(const bool considerWeights,
     }
     // calculate centralities
     VList::const_iterator it, jt;
-    int progressCounter = 0;
     qreal IRCC = 0, SIRCC = 0;
     qreal Ji = 0;
     qreal dist = 0;
@@ -570,18 +731,15 @@ void Graph::centralityClosenessIR(const bool considerWeights,
     QString pMsg = tr("Computing Influence Range Centrality scores. \n"
                       "Please wait");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
-    qDebug() << "dropIsolates" << dropIsolates;
-    qDebug() << "computing scores for actors: " << N;
+    qCDebug(lcCentrality) << "dropIsolates" << dropIsolates;
+    qCDebug(lcCentrality) << "computing scores for actors: " << N;
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
-        progressUpdate(++progressCounter);
         if (progressCanceled())
         {
-            progressFinish();
             return;
         }
         IRCC = 0;
@@ -603,18 +761,18 @@ void Graph::centralityClosenessIR(const bool considerWeights,
                 continue;
             }
 
-            dist = (*it)->distance((*jt)->number());
+            dist = apspDistance((*it)->number(), (*jt)->number());
 
             if (dist != RAND_MAX)
             {
                 sumD += dist;
                 Ji++; // compute |Ji|
             }
-            qDebug() << "dist(" << (*it)->number()
+            qCDebug(lcCentrality) << "dist(" << (*it)->number()
                      << "," << (*jt)->number() << ") =" << dist << "sumD" << sumD << " Ji" << Ji;
         }
 
-        qDebug() << "" << (*it)->number()
+        qCDebug(lcCentrality) << "" << (*it)->number()
                  << " sumD" << sumD
                  << "distanceSum" << (*it)->distanceSum();
 
@@ -622,10 +780,10 @@ void Graph::centralityClosenessIR(const bool considerWeights,
         if (sumD != 0)
         {
             averageD = sumD / Ji;
-            qDebug() << "averageD = sumD /  Ji" << averageD;
-            qDebug() << "Ji / (N-1)" << Ji << "/" << N - 1;
+            qCDebug(lcCentrality) << "averageD = sumD /  Ji" << averageD;
+            qCDebug(lcCentrality) << "Ji / (N-1)" << Ji << "/" << N - 1;
             IRCC = (Ji / (qreal)(N - 1)) / averageD;
-            qDebug() << "[ Ji / (N-1) ] / [ sumD / Ji]" << IRCC;
+            qCDebug(lcCentrality) << "[ Ji / (N-1) ] / [ sumD / Ji]" << IRCC;
         }
 
         sumIRCC += IRCC;
@@ -652,8 +810,6 @@ void Graph::centralityClosenessIR(const bool considerWeights,
     varianceIRCC = varianceIRCC / (qreal)N;
 
     calculatedIRCC = true;
-
-    progressFinish();
 }
 
 /**
@@ -667,7 +823,7 @@ void Graph::centralityClosenessIR(const bool considerWeights,
  */
 void Graph::minmax(qreal C, GraphVertex *v, qreal &max, qreal &min, int &maxNode, int &minNode)
 {
-    qDebug() << "MINMAX C = " << C << "  max = " << max << "  min = " << min << " name = " << v->number();
+    qCDebug(lcCentrality) << "MINMAX C = " << C << "  max = " << max << "  min = " << min << " name = " << v->number();
     if (C > max)
     {
         max = C;
@@ -754,6 +910,10 @@ bool Graph::isCentralityIndexComputed(const IndexType index) const
         return calculatedIC;
     case IndexType::EVC:
         return calculatedEVC;
+    case IndexType::KATZ:
+        return calculatedKC;
+    case IndexType::BPC:
+        return calculatedBPC;
     case IndexType::DP:
         return calculatedDP;
     case IndexType::PRP:

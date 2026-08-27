@@ -38,7 +38,7 @@ SOCNETV_BEGIN_NAMESPACE
 // Version
 // ============================================================================
 
-static const QString VERSION = "3.6";
+static const QString VERSION = "3.7";
 
 // ============================================================================
 // Math constants (define only if not already provided by <cmath>)
@@ -125,10 +125,12 @@ enum IndexType
     PC = 7,   ///< Power Centrality
     IC = 8,   ///< Information Centrality
     EVC = 9,  ///< Eigenvector Centrality
-    DP = 10,  ///< Degree Prestige
-    PRP = 11, ///< PageRank Prestige
-    PP = 12,  ///< Proximity Prestige
-    CLC = 13  ///< Clustering Coefficient (Watts-Strogatz)
+    KATZ = 10, ///< Katz Centrality
+    BPC = 11,  ///< Bonacich Power Centrality - distinct from PC (Gil-Schmidt Power Centrality)
+    DP = 12,  ///< Degree Prestige
+    PRP = 13, ///< PageRank Prestige
+    PP = 14,  ///< Proximity Prestige
+    CLC = 15  ///< Clustering Coefficient (Watts-Strogatz)
 };
 
 /**
@@ -141,6 +143,17 @@ enum ChartType
     Spline = 0,
     Area = 1,
     Bars = 2
+};
+
+/**
+ * @enum ReportFormat
+ * @brief Output format for analysis reports: a full HTML document (default), or a lean,
+ *        table-only CSV file (no prose/summary-stats/chart — those have no CSV equivalent).
+ */
+enum ReportFormat
+{
+    Html = 0,
+    Csv = 1
 };
 
 /**
@@ -237,6 +250,34 @@ public:
            const int &t = 0,
            const double &rw = 0.0)
         : source(from), target(to), weight(w), type(t), rWeight(rw) {}
+};
+
+/**
+ * @class EdgeVisibilityChange
+ * @brief One edge's visibility change, batched with others in signalSetEdgesVisibilityBatch
+ * (WS3 M2) so a bulk operation (e.g. a relation switch touching every edge) crosses from
+ * graphThread to the GUI thread as a single queued dispatch instead of one per edge.
+ *
+ * Mirrors the parameters of Graph::signalSetEdgeVisibility / GraphicsWidget::setEdgeVisibility.
+ */
+class EdgeVisibilityChange
+{
+public:
+    int relation = 0;
+    int source = 0;
+    int target = 0;
+    bool visible = false;
+    bool preserveReverseEdge = false;
+    int edgeWeight = 1;
+    int reverseEdgeWeight = 1;
+
+    EdgeVisibilityChange() = default;
+
+    EdgeVisibilityChange(const int &rel, const int &src, const int &tgt, const bool &vis,
+                         const bool &preserveReverse = false,
+                         const int &weight = 1, const int &reverseWeight = 1)
+        : relation(rel), source(src), target(tgt), visible(vis),
+          preserveReverseEdge(preserveReverse), edgeWeight(weight), reverseEdgeWeight(reverseWeight) {}
 };
 
 /**

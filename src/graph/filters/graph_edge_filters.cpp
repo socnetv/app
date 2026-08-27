@@ -35,12 +35,12 @@ void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold
 
     if (overThreshold)
     {
-        qDebug() << "filtering edges with weight over or equal" << m_threshold;
+        qCDebug(lcFilters) << "filtering edges with weight over or equal" << m_threshold;
         words = "equal or over";
     }
     else
     {
-        qDebug() << "Filtering edges with weight below or equal" << m_threshold;
+        qCDebug(lcFilters) << "Filtering edges with weight below or equal" << m_threshold;
         words = "equal or under";
     }
 
@@ -103,8 +103,10 @@ void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold
                 // We should enable only edges with weight >= threshold
                 if (weight < m_threshold)
                 {
-                    // this outedge must be disabled - check reverse edge
-                    reverseEdgeWeight = (*it)->hasEdgeFrom(target);
+                    // this outedge must be disabled - check reverse edge (a self-loop is
+                    // trivially "its own reverse" via hasEdgeFrom, so exclude it - see the
+                    // matching comment in graph_node_filters.cpp)
+                    reverseEdgeWeight = (source != target) ? (*it)->hasEdgeFrom(target) : 0;
                     if (reverseEdgeWeight != 0 && reverseEdgeWeight >= m_threshold)
                     {
                         // reverse edge exists and doesn't match. It must be preserved.
@@ -131,8 +133,10 @@ void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold
                 // We should enable edges with weight <= the threshold
                 if (weight > m_threshold)
                 {
-                    // this outedge must be disabled - check reverse edge
-                    reverseEdgeWeight = (*it)->hasEdgeFrom(target);
+                    // this outedge must be disabled - check reverse edge (a self-loop is
+                    // trivially "its own reverse" via hasEdgeFrom, so exclude it - see the
+                    // matching comment in graph_node_filters.cpp)
+                    reverseEdgeWeight = (source != target) ? (*it)->hasEdgeFrom(target) : 0;
                     if (reverseEdgeWeight != 0 && reverseEdgeWeight <= m_threshold)
                     {
                         // reverse edge exists and doesn't match. It must be preserved.
@@ -171,7 +175,7 @@ void Graph::edgeFilterByWeight(const qreal m_threshold, const bool overThreshold
  */
 void Graph::edgeFilterReset()
 {
-    qDebug() << "Graph::edgeFilterReset()";
+    qCDebug(lcFilters) << "Graph::edgeFilterReset()";
 
     VList::const_iterator it;
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
@@ -186,7 +190,9 @@ void Graph::edgeFilterReset()
 
             const qreal weight = ed.value().second.first;
             const qreal reverseWeight = (*it)->hasEdgeFrom(ed.key());
-            const bool preserveReverse = (reverseWeight != 0);
+            // See the matching comment in graph_node_filters.cpp: a self-loop is trivially
+            // "its own reverse", which isn't a real distinct edge to preserve.
+            const bool preserveReverse = (source != ed.key()) && (reverseWeight != 0);
 
             ed.value() = pair_i_fb(m_curRelation, pair_f_b(weight, true));
             edgeInboundStatusSet(ed.key(), source, true);
@@ -200,29 +206,6 @@ void Graph::edgeFilterReset()
 }
 
 /**
- * @brief Toggles (enables or disables) all edges of the given relation
- *
- * Calls the homonymous method of GraphVertex class.
- *
- * @param relation
- * @param status
- */
-void Graph::edgeFilterByRelation(int relation, bool status)
-{
-    qDebug() << "toggling all edges in relation" << relation << "to status" << status;
-    VList::const_iterator it;
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-        if (!(*it)->isEnabled())
-        {
-            // Skip if the node is disabled.
-            continue;
-        }
-        (*it)->setEnabledEdgesByRelation(relation, status);
-    }
-}
-
-/**
  * @brief Enables or disables unilateral edges in current relationship.
  *
  * If toggle=true, all non-reciprocal edges are disabled, effectively making
@@ -232,12 +215,16 @@ void Graph::edgeFilterByRelation(int relation, bool status)
  */
 void Graph::edgeFilterUnilateral(const bool &toggle)
 {
-    qDebug() << "Toggling unilateral edges:" << toggle;
+    qCDebug(lcFilters) << "Toggling unilateral edges:" << toggle;
+    // Collected into one batch and dispatched once (WS3 M2) - see the matching comment in
+    // relationSet().
+    QList<EdgeVisibilityChange> visibilityChanges;
     VList::const_iterator it;
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-        (*it)->setEnabledUnilateralEdges(toggle);
+        visibilityChanges.append((*it)->setEnabledUnilateralEdges(toggle));
     }
+    notifyEdgesVisibilityBatch(visibilityChanges);
     setModStatus(ModStatus::EdgeCount);
     progressStatus(tr("Unilateral edges have been temporarily disabled."));
 }
@@ -254,7 +241,7 @@ void Graph::edgeFilterUnilateral(const bool &toggle)
  */
 void Graph::edgeFilterByAttribute(const FilterCondition &cond)
 {
-    qDebug() << "Graph::edgeFilterByAttribute() key:" << cond.key
+    qCDebug(lcFilters) << "Graph::edgeFilterByAttribute() key:" << cond.key
              << "op:" << static_cast<int>(cond.op) << "value:" << cond.value;
 
     // Count matching edges (for early-exit guard).
@@ -318,7 +305,9 @@ void Graph::edgeFilterByAttribute(const FilterCondition &cond)
             const int target = ei.key();
             const qreal weight = ei.value().second.first;
             const qreal reverseWeight = (*vi)->hasEdgeFrom(target);
-            const bool preserveReverse = (reverseWeight != 0);
+            // See the matching comment in graph_node_filters.cpp: a self-loop is trivially
+            // "its own reverse", which isn't a real distinct edge to preserve.
+            const bool preserveReverse = (source != target) && (reverseWeight != 0);
 
             const QHash<QString,QString> attrs = (*vi)->outEdgeCustomAttributes(target);
             const bool condMet = attrs.contains(cond.key) && cond.matches(attrs.value(cond.key));

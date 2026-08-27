@@ -26,6 +26,9 @@
 #include <QTextStream>
 #include <QThread>
 #include <QStack>
+#include <QLoggingCategory>
+#include <atomic>
+#include <functional>
 
 
 #include "global.h"
@@ -36,6 +39,33 @@
 #include "matrix.h"
 #include "parser.h"
 #include "webcrawler.h"
+
+// WS14: one logging category per src/graph/<domain>/ slice directory (centrality/, clustering/,
+// distances/, layouts/, storage/, etc.), declared here since graph.h is already included by every
+// slice .cpp, defined once in graph.cpp. Coarser than one-per-file (avoids ~60 near-empty categories
+// for small files) but finer than one blanket category (keeps independent toggling per domain via
+// QLoggingCategory::setFilterRules). lcGraph covers graph.cpp itself (the facade's own small file,
+// distinct from the core/ slice). lcMatrix (src/matrix.cpp, unrelated file) is deliberately not
+// reused here to avoid confusion with lcGraphMatrices (src/graph/matrices/).
+Q_DECLARE_LOGGING_CATEGORY(lcGraph)
+Q_DECLARE_LOGGING_CATEGORY(lcGraphCore)
+Q_DECLARE_LOGGING_CATEGORY(lcStorage)
+Q_DECLARE_LOGGING_CATEGORY(lcCentrality)
+Q_DECLARE_LOGGING_CATEGORY(lcClustering)
+Q_DECLARE_LOGGING_CATEGORY(lcDistances)
+Q_DECLARE_LOGGING_CATEGORY(lcProminence)
+Q_DECLARE_LOGGING_CATEGORY(lcReachability)
+Q_DECLARE_LOGGING_CATEGORY(lcSimilarity)
+Q_DECLARE_LOGGING_CATEGORY(lcLayouts)
+Q_DECLARE_LOGGING_CATEGORY(lcGenerators)
+Q_DECLARE_LOGGING_CATEGORY(lcGraphMatrices)
+Q_DECLARE_LOGGING_CATEGORY(lcCohesion)
+Q_DECLARE_LOGGING_CATEGORY(lcReporting)
+Q_DECLARE_LOGGING_CATEGORY(lcFilters)
+Q_DECLARE_LOGGING_CATEGORY(lcRelations)
+Q_DECLARE_LOGGING_CATEGORY(lcGraphCrawler)
+Q_DECLARE_LOGGING_CATEGORY(lcGraphUI)
+Q_DECLARE_LOGGING_CATEGORY(lcGraphIO)
 
 class QDateTime;
 class QPointF;
@@ -195,8 +225,6 @@ public slots:
     void edgeFilterByWeight(const qreal, const bool);
     void edgeFilterReset();
 
-    void edgeFilterByRelation(int relation, bool status);
-
     void edgeFilterUnilateral(const bool &toggle);
 
     Graph *subgraphExtract(const QString &name,
@@ -242,12 +270,6 @@ signals:
     /** Signals to MainWindow */
 
     void signalNetworkManagerRequest(const QUrl &currentUrl, const NetworkRequestType &type);
-
-    void signalProgressBoxCreate(const int max = 0, const QString msg = "Please wait");
-
-    void signalProgressBoxKill(const int max = 0);
-
-    void signalProgressBoxUpdate(const int &count = 0);
 
     void signalGraphSavedStatus(const int &status);
 
@@ -339,9 +361,15 @@ signals:
                                  const int &edgeWeight = 1,
                                  const int &reverseEdgeWeight = 1); // The last two are used only if we need to draw the edge
 
+    // Bulk counterpart of signalSetEdgeVisibility (WS3 M2): a whole-graph operation like a
+    // relation switch crosses to the GUI thread as one queued dispatch instead of one per edge.
+    void signalSetEdgesVisibilityBatch(const QList<EdgeVisibilityChange> &changes);
+
     void setVertexVisibility(const int &number, const bool &toggle);
 
     void setNodePos(const int &, const qreal &, const qreal &);
+
+    void signalLayoutFinished();
 
     void signalNodesFound(const QList<int> foundList);
 
@@ -551,9 +579,11 @@ public:
     
     bool vertexIsolated(const int &v1) const;
 
-    int vertexExists(const int &v1);
+    bool vertexExists(const int &v1);
+    int vertexIndexIfExists(const int &v1);
 
-    int vertexExists(const QString &label);
+    bool vertexExists(const QString &label);
+    int vertexIndexIfExists(const QString &label);
 
     bool vertexFindByNumber(const QStringList &numList);
 
@@ -691,6 +721,15 @@ public:
                               const int &source,
                               const bool &toggle = false);
 
+    // Plain (non-signal) relay points for GraphVertex, a QtCore-only value class holding a
+    // Graph* rather than a QObject connection (WS3 M2). Each just emits the corresponding
+    // signal below - this is what lets GraphVertex notify the UI layer without being a
+    // QObject itself.
+    void notifyEdgeVisibilityChanged(const int &relation, const int &source, const int &target,
+                                     const bool &toggle, const bool &preserveReverseEdge = false,
+                                     const int &edgeWeight = 1, const int &reverseEdgeWeight = 1);
+    void notifyEdgesVisibilityBatch(const QList<EdgeVisibilityChange> &changes);
+
     void edgeRemove(const int &v1,
                     const int &v2,
                     const bool &removeReverse = false);
@@ -799,7 +838,42 @@ public:
 
     int graphWeaklyConnectedComponentsCached() const;
 
+    int graphStronglyConnectedComponents();
+
+    int graphStronglyConnectedComponentsCached() const;
+
     const QHash<int,int> &vertexComponentId() const { return m_vertexComponentId; }
+
+    // --------------------------------------------------------------------------
+    // FACADE API (SUPPORTED): Vertex connectivity (Menger's theorem via max-flow, #7).
+    // --------------------------------------------------------------------------
+    enum class NodeConnectivityStatus
+    {
+        Ok,       // value holds the local vertex connectivity (>=0; 0 means unreachable)
+        Adjacent, // source and target are directly connected by an edge - no finite vertex
+                  // cut exists (Menger's theorem requires non-adjacency); value is meaningless
+        Invalid   // source/target don't exist, or source == target
+    };
+
+    struct NodeConnectivityResult
+    {
+        NodeConnectivityStatus status = NodeConnectivityStatus::Invalid;
+        int value = 0;
+    };
+
+    NodeConnectivityResult graphNodeConnectivity(int source, int target, bool respectDirection);
+
+    int graphConnectivity(bool respectDirection);
+
+    // WS6.7: read-only-by-convention accessors for kernel_matrix_v8's golden coverage.
+    // Non-const because Matrix::item()/rows()/cols() are themselves non-const throughout.
+    Matrix &matrixAdjacency() { return AM; }
+    Matrix &matrixAdjacencyInverse() { return invAM; }
+    Matrix &matrixDistances() { return DM; }
+    Matrix &matrixReachability() { return XRM; }
+    Matrix &matrixWalks() { return XM; }
+    Matrix &matrixTotalWalks() { return XSM; }
+    Matrix &matrixCliqueCoMembership() { return CLQM; }
 
     void createMatrixAdjacency(const bool dropIsolates = false,
                                const bool considerWeights = true,
@@ -832,14 +906,16 @@ public:
     void setReportsRealNumberPrecision(const int &precision);
     void setReportsLabelLength(const int &length);
     void setReportsChartType(const int &type);
+    void setReportsOutputFormat(const int &format);
 
     void writeDataSetToFile(const QString dir, const QString);
 
     void writeMatrixAdjacencyTo(QTextStream &os,
                                 const bool &saveEdgeWeights = true);
 
-    void writeReciprocity(const QString fileName,
-                          const bool considerWeights = false);
+    bool writeReciprocity(const QString fileName,
+                          const bool considerWeights = false,
+                          const int &format = ReportFormat::Html);
 
     bool writeMatrix(const QString &fileName,
                      const int &matrix = MATRIX_ADJACENCY,
@@ -847,7 +923,8 @@ public:
                      const bool &inverseWeights = false,
                      const bool &dropIsolates = false,
                      const QString &varLocation = "Rows",
-                     const bool &simpler = false);
+                     const bool &simpler = false,
+                     const int &format = ReportFormat::Html);
 
     void writeMatrixHTMLTable(QTextStream &outText, Matrix &M,
                               const bool &markDiag = true,
@@ -855,8 +932,13 @@ public:
                               const bool &printInfinity = true,
                               const bool &dropIsolates = false);
 
-    void writeMatrixAdjacency(const QString fileName,
-                              const bool &markDiag = true);
+    void writeMatrixCSVTable(QTextStream &outText, Matrix &M,
+                             const bool &printInfinity = true,
+                             const bool &dropIsolates = false);
+
+    bool writeMatrixAdjacency(const QString fileName,
+                              const bool &markDiag = true,
+                              const int &format = ReportFormat::Html);
 
     void writeMatrixAdjacencyPlot(const QString fileName,
                                   const bool &simpler = false);
@@ -865,80 +947,136 @@ public:
                                     const QString &metricStr,
                                     const QString &varLocation,
                                     const bool &diagonal,
-                                    const bool &considerWeights);
+                                    const bool &considerWeights,
+                                    const int &format = ReportFormat::Html);
 
     bool writeMatrixSimilarityMatching(const QString fileName,
                                        const QString &measure = "Simple",
                                        const QString &matrix = "adjacency",
                                        const QString &varLocation = "rows",
                                        const bool &diagonal = false,
-                                       const bool &considerWeights = true);
+                                       const bool &considerWeights = true,
+                                       const int &format = ReportFormat::Html);
 
     bool writeMatrixSimilarityPearson(const QString fileName,
                                       const bool considerWeights,
                                       const QString &matrix = "adjacency",
                                       const QString &varLocation = "rows",
-                                      const bool &diagonal = false);
+                                      const bool &diagonal = false,
+                                      const int &format = ReportFormat::Html);
 
     bool writeEccentricity(const QString fileName,
                            const bool considerWeights = false,
                            const bool inverseWeights = false,
-                           const bool dropIsolates = false);
+                           const bool dropIsolates = false,
+                           const int &format = ReportFormat::Html);
 
     //   friend QTextStream& operator <<  (QTextStream& os, Graph& m);
 
+    // Shared per-node score-table renderer for the centrality/prestige and (WS16 Step 3)
+    // Reciprocity/Clustering Coefficient/Eccentricity report families. "Node" and "Label"
+    // columns are fixed; dataColumnHeaders supplies the rest, in order. rowValues returns
+    // that row's already-computed scores, in the same order as dataColumnHeaders - a value
+    // equal to RAND_MAX renders as the infinity glyph, matching writeMatrixHTMLTable/
+    // writeMatrixCSVTable's existing sentinel convention. isBlanked (optional; null means
+    // "never blank", matching writeCentralityEigenvector's existing behaviour) decides
+    // whether a row's data columns are replaced with a placeholder - e.g. dropped isolates -
+    // preserving each report's current isolate-handling exactly rather than unifying it.
+    // isSkipped (optional) omits the row entirely - distinct from isBlanked - matching
+    // writeEccentricity()'s existing "don't print disabled nodes at all" behaviour.
+    void writeScoreTableHTML(QTextStream &outText,
+                             const QStringList &dataColumnHeaders,
+                             const std::function<QVector<qreal>(GraphVertex *)> &rowValues,
+                             const std::function<bool(GraphVertex *)> &isBlanked = nullptr,
+                             const std::function<bool(GraphVertex *)> &isSkipped = nullptr);
+
+    void writeScoreTableCSV(QTextStream &outText,
+                            const QStringList &dataColumnHeaders,
+                            const std::function<QVector<qreal>(GraphVertex *)> &rowValues,
+                            const std::function<bool(GraphVertex *)> &isBlanked = nullptr,
+                            const std::function<bool(GraphVertex *)> &isSkipped = nullptr);
+
     bool writeCentralityDegree(const QString,
                                const bool weights,
-                               const bool dropIsolates);
+                               const bool dropIsolates,
+                               const int &format = ReportFormat::Html);
 
     bool writeCentralityCloseness(const QString,
                                   const bool weights,
                                   const bool inverseWeights,
-                                  const bool dropIsolates);
+                                  const bool dropIsolates,
+                                  const int &format = ReportFormat::Html);
 
     bool writeCentralityClosenessInfluenceRange(const QString,
                                                 const bool weights,
                                                 const bool inverseWeights,
-                                                const bool dropIsolates);
+                                                const bool dropIsolates,
+                                                const int &format = ReportFormat::Html);
 
     bool writeCentralityBetweenness(const QString,
                                     const bool weights,
                                     const bool inverseWeights,
-                                    const bool dropIsolates);
+                                    const bool dropIsolates,
+                                    const int &format = ReportFormat::Html);
 
     bool writeCentralityPower(const QString,
                               const bool weigths,
                               const bool inverseWeights,
-                              const bool dropIsolates);
+                              const bool dropIsolates,
+                              const int &format = ReportFormat::Html);
 
     bool writeCentralityStress(const QString,
                                const bool weigths,
                                const bool inverseWeights,
-                               const bool dropIsolates);
+                               const bool dropIsolates,
+                               const int &format = ReportFormat::Html);
 
     bool writeCentralityEccentricity(const QString,
                                      const bool weigths,
                                      const bool inverseWeights,
-                                     const bool dropIsolates);
+                                     const bool dropIsolates,
+                                     const int &format = ReportFormat::Html);
 
     bool writeCentralityInformation(const QString,
                                     const bool weigths,
-                                    const bool inverseWeights);
+                                    const bool inverseWeights,
+                                    const int &format = ReportFormat::Html);
 
     bool writeCentralityEigenvector(const QString,
                                     const bool &weigths = true,
                                     const bool &inverseWeights = false,
-                                    const bool &dropIsolates = false);
+                                    const bool &dropIsolates = false,
+                                    const int &format = ReportFormat::Html);
+
+    bool writeCentralityKatz(const QString,
+                             const qreal &alpha,
+                             const bool &weigths = false,
+                             const bool &inverseWeights = false,
+                             const bool &dropIsolates = false,
+                             const int &format = ReportFormat::Html);
+
+    bool writeCentralityBonacich(const QString,
+                                 const qreal &alpha,
+                                 const qreal &beta,
+                                 const bool &weigths = false,
+                                 const bool &inverseWeights = false,
+                                 const bool &dropIsolates = false,
+                                 const int &format = ReportFormat::Html);
 
     bool writePrestigeDegree(const QString, const bool weights,
-                             const bool dropIsolates);
+                             const bool dropIsolates,
+                             const int &format = ReportFormat::Html);
 
     bool writePrestigeProximity(const QString, const bool weights,
                                 const bool inverseWeights,
-                                const bool dropIsolates);
+                                const bool dropIsolates,
+                                const int &format = ReportFormat::Html);
 
-    bool writePrestigePageRank(const QString, const bool Isolates = false);
+    bool writePrestigePageRank(const QString, const bool Isolates = false,
+                               const int &format = ReportFormat::Html);
 
+    // HTML-only, permanently (WS16 Step 3): produces an equivalence matrix plus a dendrogram,
+    // neither of which is a single flat table.
     bool writeClusteringHierarchical(const QString &fileName,
                                      const QString &varLocation,
                                      const QString &matrix = "Adjacency",
@@ -954,12 +1092,18 @@ public:
                                                     const int N,
                                                     const bool &dendrogram = false);
 
+    // HTML-only, permanently (WS16 Step 3): writeCliqueCensus() combines 4 heterogeneous
+    // sub-tables (clique list, actor-by-clique matrix, actor-by-actor co-membership matrix,
+    // and a full hierarchical-clustering dendrogram sub-report) that don't reduce to one
+    // flat CSV table.
     bool writeCliqueCensus(const QString &fileName,
                            const bool considerWeights);
 
-    bool writeClusteringCoefficient(const QString, const bool);
+    bool writeClusteringCoefficient(const QString, const bool,
+                                    const int &format = ReportFormat::Html);
 
-    bool writeTriadCensus(const QString, const bool);
+    bool writeTriadCensus(const QString, const bool,
+                          const int &format = ReportFormat::Html);
 
     /* DISTANCES, CENTRALITIES & PROMINENCE MEASURES */
 
@@ -981,6 +1125,26 @@ public:
                               const int &v2,
                               const bool &considerWeights = false,
                               const bool &inverseWeights = true);
+
+    // WS5 A2: read-only accessors into m_apspDist/m_apspSigma (the flat-matrix APSP storage
+    // DistanceEngine populates) for the current relation. Unlike graphDistanceGeodesic() above,
+    // these never trigger a recompute - callers are expected to have already run
+    // graphDistancesGeodesic() themselves. Returns RAND_MAX / 0 respectively if either vertex
+    // number is unknown or nothing has been computed yet for the current relation.
+    qreal apspDistance(const int &v1, const int &v2);
+    int apspShortestPaths(const int &v1, const int &v2);
+
+    QMap<int, int> graphGeodesicDistanceDistribution(const bool &considerWeights = false,
+                                                     const bool &inverseWeights = false);
+
+    bool writeGeodesicDistribution(const QString &fileName,
+                                   const bool &considerWeights = false,
+                                   const bool &inverseWeights = false);
+
+    QList<int> graphGeodesicShortestPath(const int &v1,
+                                         const int &v2,
+                                         const bool &considerWeights = false,
+                                         const bool &inverseWeights = false);
 
     qreal graphDistanceGeodesicAverage(const bool considerWeights,
                                        const bool inverseWeights,
@@ -1055,6 +1219,21 @@ public:
                                const bool &inverseWeights = false,
                                const bool &dropIsolates = false);
 
+    qreal estimateSpectralRadius(const bool &considerWeights = false,
+                                 const bool &inverseWeights = false,
+                                 const bool &dropIsolates = false);
+
+    void centralityKatz(const qreal &alpha,
+                        const bool &considerWeights = false,
+                        const bool &inverseWeights = false,
+                        const bool &dropIsolates = false);
+
+    void centralityBonacich(const qreal &alpha,
+                            const qreal &beta,
+                            const bool &considerWeights = false,
+                            const bool &inverseWeights = false,
+                            const bool &dropIsolates = false);
+
     void centralityClosenessIR(const bool considerWeights = false,
                                const bool inverseWeights = false,
                                const bool dropIsolates = false);
@@ -1075,22 +1254,15 @@ public:
 
     void graphWalksMatrixCreate(const int &N = 0,
                                 const int &length = 0,
-                                const bool &updateProgress = false,
                                 const bool &dropIsolates = false,
                                 const bool &considerWeights = false,
                                 const bool &inverseWeights = false,
                                 const bool &symmetrize = false);
 
-    void writeMatrixWalks(const QString &fn,
+    bool writeMatrixWalks(const QString &fn,
                           const int &length = 0,
-                          const bool &simpler = false);
-
-    QList<int> vertexinfluenceRange(int v1);
-
-    QList<int> vertexinfluenceDomain(int v2);
-
-    void writeReachabilityMatrixPlainText(const QString &fn,
-                                          const bool &dropIsolates = false);
+                          const bool &simpler = false,
+                          const int &format = ReportFormat::Html);
 
     qreal numberOfTriples(int v1);
 
@@ -1115,7 +1287,7 @@ public:
 
     qreal clusteringCoefficientLocal(const int &v1);
 
-    qreal clusteringCoefficient(const bool updateProgress = false);
+    qreal clusteringCoefficient();
 
     bool graphTriadCensus();
 
@@ -1238,9 +1410,8 @@ public:
     // --------------------------------------------------------------------------
 protected:
     void progressStatus(const QString &msg);
-    void progressCreate(int max, const QString &msg);
-    void progressUpdate(int value);
-    void progressFinish();
+
+    void runOnGuiThread(std::function<void()> fn);
 
     void uiProminenceDistributionSpline(const QVector<QPair<qreal, qreal>> &points,
                                         qreal min, qreal max,
@@ -1331,8 +1502,6 @@ private:
     QList<SelectedEdge> m_selectedEdges;
     QStack<GraphVisibilitySnapshot> m_visibilityHistory; // filter undo stack
 
-    QMultiHash<int, int> influenceRanges, influenceDomains;
-
     QMultiHash<int, int> m_vertexPairsNotConnected;
     QHash<int, int> m_vertexPairsUnilaterallyConnected;
 
@@ -1345,19 +1514,26 @@ private:
     QMap<QString, V_int> m_clustersByName;
     QMap<int, V_str> m_clusterPairNamesPerSeq;
 
-    Matrix SIGMA, DM, sumM, invAM, AM, invM, WM;
+    Matrix SIGMA, DM, invAM, AM, invM, WM;
     Matrix XM, XSM, XRM, CLQM;
+
+    // WS5 A2: relation-keyed flat-matrix APSP storage, replacing GraphVertex's per-vertex
+    // QHash<int, QPair<int,qreal>>. Row = source vertex position, column = target vertex
+    // position (see Graph::vertexIndexByNumber()/vertexAtIndex()), not vertex number.
+    QHash<int, Matrix> m_apspDist;
+    QHash<int, Matrix> m_apspSigma;
 
     /** used in resolveClasses and graphDistancesGeodesic() */
     H_StrToInt discreteDPs, discreteSDCs, discreteCCs, discreteBCs, discreteSCs;
     H_StrToInt discreteIRCCs, discreteECs, discreteEccentricities;
     H_StrToInt discretePCs, discreteICs, discretePRPs, discretePPs, discreteEVCs;
-    H_StrToInt discreteCLCs;
+    H_StrToInt discreteCLCs, discreteKCs, discreteBPCs;
 
     QString m_reportsDataDir;
     int m_reportsRealPrecision;
     int m_reportsLabelLength;
     ChartType m_reportsChartType;
+    ReportFormat m_reportsOutputFormat;
 
     int m_fieldWidth, m_curRelation, m_fileFormat, m_vertexClicked;
 
@@ -1373,6 +1549,8 @@ private:
     qreal meanSPC, varianceSPC;
     qreal meanIC, varianceIC;
     qreal meanEVC, varianceEVC;
+    qreal meanKC, varianceKC;
+    qreal meanBPC, varianceBPC;
     qreal meanSDP, varianceSDP;
     qreal meanPP, variancePP;
     qreal meanPRP, variancePRP;
@@ -1387,6 +1565,17 @@ private:
     qreal minEC, maxEC, nomEC, denomEC, sumEC, groupEC, maxIndexEC;
     qreal minIC, maxIC, nomIC, denomIC, sumIC, maxIndexIC;
     qreal minEVC, maxEVC, nomEVC, denomEVC, sumEVC, sumSEVC, groupEVC;
+    qreal minKC, maxKC, sumKC;
+    qreal m_lastKatzAlpha = -1; ///< Cache of the last alpha used to compute Katz Centrality,
+                                ///< read by layoutByProminenceIndex() (WS11, #10) since the
+                                ///< generic layout-by-prominence dispatch has no parameter slot.
+                                ///< -1 means "never computed this session".
+    qreal minBPC, maxBPC, sumBPC;
+    qreal m_lastBonacichAlpha = -1; ///< Same caching purpose as m_lastKatzAlpha (WS11, #39);
+                                    ///< -1 means "never computed this session". Alpha is kept
+                                    ///< positive-only by the dialog so this sentinel is safe -
+                                    ///< beta (which can be negative) has no sentinel role.
+    qreal m_lastBonacichBeta = 0;
     qreal minPRP, maxPRP, nomPRC, denomPRC, sumPC, t_sumPRP, sumPRP;
     qreal minPP, maxPP, nomPP, denomPP, sumPP, groupPP;
 
@@ -1406,6 +1595,8 @@ private:
     int classesPP, maxNodePP, minNodePP;
     int classesCLC;
     int classesEVC, maxNodeEVC, minNodeEVC;
+    int classesKC, maxNodeKC, minNodeKC;
+    int classesBPC, maxNodeBPC, minNodeBPC;
     /** General & initialisation variables */
 
     int m_graphModStatus;
@@ -1432,17 +1623,24 @@ private:
     qreal canvasWidth, canvasHeight;
     bool calculatedEdges;
     bool calculatedVertices, calculatedVerticesList, calculatedVerticesSet;
+    bool m_verticesCacheDropIsolates = false, m_verticesCacheCountAll = false;
     bool calculatedAdjacencyMatrix, calculatedDistances, calculatedCentralities;
     bool calculatedIsolates;
     bool calculatedEVC;
+    bool calculatedKC;
+    bool calculatedBPC;
     bool calculatedDP, calculatedDC, calculatedPP;
     bool calculatedIRCC, calculatedIC, calculatedPRP;
     bool calculatedTriad;
     bool calculatedGraphSymmetry, calculatedGraphReciprocity;
     bool calculatedGraphDensity, calculatedGraphWeighted;
-    bool m_progressCanceled;
+    // Written by slotCancelComputation() (GUI thread, via Qt::DirectConnection) and read by
+    // progressCanceled() (graphThread, mid-computation) - see WS15's P1 for why a plain bool and a
+    // queued connection can't deliver this in time.
+    std::atomic<bool> m_progressCanceled;
     bool m_graphIsDirected, m_graphIsSymmetric, m_graphIsWeighted, m_graphIsConnected;
     int m_graphWeaklyConnectedComponents;
+    int m_graphStronglyConnectedComponents;
     QHash<int,int> m_vertexComponentId;
 
     int csRecDepth;

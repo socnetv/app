@@ -16,6 +16,7 @@
 #include "dialogfilternodesbycentrality.h"
 #include <QPushButton>
 #include <QDebug>
+#include "forms_logging.h"
 #include <QStandardItemModel>
 
 
@@ -96,7 +97,7 @@ void DialogFilterNodesByCentrality::getUserChoices()
     const IndexType centralityIndex =
         static_cast<IndexType>(ui.indexComboBox->currentIndex() + 1);
 
-    qDebug() << "DialogFilterNodesByCentrality:"
+    qCDebug(lcForms) << "DialogFilterNodesByCentrality:"
              << "index:" << ui.indexComboBox->currentText()
              << "(" << static_cast<int>(centralityIndex) << ")"
              << "threshold:" << threshold

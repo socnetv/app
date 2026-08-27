@@ -1,0 +1,52 @@
+{
+    "connectivity": {
+        "component_count": 5,
+        "connected": false,
+        "type": "strong"
+    },
+    "counts": {
+        "links_sna": 3,
+        "nodes": 5,
+        "ties_graph": 3
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "TinyDisconnected_Dir_N5_E3.paj",
+        "path": "src/data/TinyDisconnected_Dir_N5_E3.paj"
+    },
+    "graph": {
+        "directed": true,
+        "weighted": false
+    },
+    "kernel": "connectivity",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 3,
+        "load_msg": "",
+        "net_name": "TinyDisconnected_Dir_N5_E3.paj",
+        "ok": true
+    },
+    "per_node": [
+        {
+            "id": 1,
+            "label": "A"
+        },
+        {
+            "id": 2,
+            "label": "B"
+        },
+        {
+            "id": 3,
+            "label": "C"
+        },
+        {
+            "id": 4,
+            "label": "D"
+        },
+        {
+            "id": 5,
+            "label": "E"
+        }
+    ],
+    "schema_version": 7
+}

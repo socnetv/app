@@ -18,23 +18,25 @@
 
 /**
  * @brief Returns the outDegree (sum of outbound edge weights) of vertex v1
+ *
  * @param v1
  * @return
  */
 int Graph::vertexDegreeOut(int v1)
 {
-    qDebug() << "Returning outDegree of " << v1;
+    qCDebug(lcGraphCore) << "Returning outDegree of " << v1;
     return m_graph[vpos[v1]]->degreeOut();
 }
 
 /**
  * @brief Returns the inDegree (sum of inbound edge weights) of vertex v1
+ *
  * @param v1
  * @return
  */
 int Graph::vertexDegreeIn(int v1)
 {
-    qDebug() << "Returning inDegree of " << v1;
+    qCDebug(lcGraphCore) << "Returning inDegree of " << v1;
     return m_graph[vpos[v1]]->degreeIn();
 }
 
@@ -201,17 +203,17 @@ int Graph::verticesWithReciprocalEdges()
 qreal Graph::graphReciprocity()
 {
 
-    qDebug() << "Graph::graphReciprocity()";
+    qCDebug(lcGraphCore) << "Graph::graphReciprocity()";
 
     if (calculatedGraphReciprocity)
     {
-        qDebug() << "Graph::graphReciprocity() - graph not modified and "
+        qCDebug(lcGraphCore) << "Graph::graphReciprocity() - graph not modified and "
                     "already calculated reciprocity. Returning previous result: "
                  << m_graphReciprocityArc;
         return m_graphReciprocityArc;
     }
 
-    qDebug() << "Graph::graphReciprocity() - Computing...";
+    qCDebug(lcGraphCore) << "Graph::graphReciprocity() - Computing...";
 
     progressStatus((tr("Calculating the Arc Reciprocity of the graph...")));
 
@@ -286,7 +288,7 @@ qreal Graph::graphReciprocity()
                 totalDyads[pair] = true;
             }
 
-            qDebug() << pair
+            qCDebug(lcGraphCore) << pair
                      << "totalTies" << m_graphReciprocityTiesTotal
                      << "totalDyads" << totalDyads.size();
 
@@ -305,7 +307,7 @@ qreal Graph::graphReciprocity()
                     reciprocatedDyads[pair] = true;
                 }
 
-                qDebug() << pair << "reciprocal!"
+                qCDebug(lcGraphCore) << pair << "reciprocal!"
                          << "reciprocatedTies" << m_graphReciprocityTiesReciprocated
                          << "reciprocatedDyads" << reciprocatedDyads.size();
             }
@@ -328,7 +330,7 @@ qreal Graph::graphReciprocity()
 
     m_graphReciprocityDyad = (qreal)m_graphReciprocityPairsReciprocated / (qreal)m_graphReciprocityPairsTotal;
 
-    qDebug() << "Graph: graphReciprocity() - Finished. Arc reciprocity:"
+    qCDebug(lcGraphCore) << "Graph: graphReciprocity() - Finished. Arc reciprocity:"
              << m_graphReciprocityTiesReciprocated
              << "/"
              << m_graphReciprocityTiesTotal << "=" << m_graphReciprocityArc << "\n"
@@ -348,7 +350,7 @@ qreal Graph::graphReciprocity()
  */
 void Graph::graphDichotomization(const qreal threshold)
 {
-    qDebug() << "Graph::graphDichotomization()"
+    qCDebug(lcGraphCore) << "Graph::graphDichotomization()"
              << "initial relations" << relations();
 
     int v2 = 0, v1 = 0;
@@ -364,7 +366,7 @@ void Graph::graphDichotomization(const qreal threshold)
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
         v1 = (*it)->number();
-        qDebug() << "Graph::graphDichotomization() - v" << v1
+        qCDebug(lcGraphCore) << "Graph::graphDichotomization() - v" << v1
                  << "iterate over outEdges in all relations";
         outEdgesAll = (*it)->outEdgesEnabledHash(false);
         it1 = outEdgesAll.cbegin();
@@ -373,17 +375,17 @@ void Graph::graphDichotomization(const qreal threshold)
             v2 = it1.key();
             weight = it1.value();
 
-            qDebug() << v1 << "->" << v2 << "=" << weight << "Checking opposite.";
+            qCDebug(lcGraphCore) << v1 << "->" << v2 << "=" << weight << "Checking opposite.";
             if (weight > threshold)
             {
                 if (!binaryTies->contains(QString::number(v1) + "--" + QString::number(v2)))
                 {
-                    qDebug() << v1 << "--" << v2 << " over threshold. Adding";
+                    qCDebug(lcGraphCore) << v1 << "--" << v2 << " over threshold. Adding";
                     binaryTies->insert(QString::number(v1) + "--" + QString::number(v2), 1);
                 }
                 else
                 {
-                    qDebug() << v1 << "--" << v2 << " exists. Binary Tie already found. Continue";
+                    qCDebug(lcGraphCore) << v1 << "--" << v2 << " exists. Binary Tie already found. Continue";
                 }
             }
             ++it1;
@@ -395,16 +397,16 @@ void Graph::graphDichotomization(const qreal threshold)
     QHash<QString, qreal>::const_iterator it2;
     it2 = binaryTies->constBegin();
     QStringList vertices;
-    qDebug() << "creating binary tie edges";
+    qCDebug(lcGraphCore) << "creating binary tie edges";
     while (it2 != binaryTies->constEnd())
     {
         vertices = it2.key().split("--");
-        qDebug() << "binary tie " << it2.key()
+        qCDebug(lcGraphCore) << "binary tie " << it2.key()
                  << "vertices.at(0)" << vertices.at(0)
                  << "vertices.at(1)" << vertices.at(1);
         v1 = (vertices.at(0)).toInt();
         v2 = (vertices.at(1)).toInt();
-        qDebug() << "calling edgeCreate for"
+        qCDebug(lcGraphCore) << "calling edgeCreate for"
                  << v1 << "--" << v2;
         edgeCreate(v1, v2, 1, initEdgeColor, EdgeType::Undirected, true, false,
                    QString(), false);
@@ -416,5 +418,5 @@ void Graph::graphDichotomization(const qreal threshold)
     m_graphIsSymmetric = true;
 
     setModStatus(ModStatus::EdgeCount);
-    qDebug() << "final relations" << relations();
+    qCDebug(lcGraphCore) << "final relations" << relations();
 }

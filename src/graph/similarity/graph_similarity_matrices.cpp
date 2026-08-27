@@ -36,11 +36,11 @@ void Graph::createMatrixDissimilarities(Matrix &INPUT_MATRIX,
                                         const bool &diagonal,
                                         const bool &considerWeights)
 {
-    qDebug() << "Graph::createMatrixDissimilarities() -metric" << metric;
+    qCDebug(lcSimilarity) << "Graph::createMatrixDissimilarities() -metric" << metric;
 
-    DSM = INPUT_MATRIX.distancesMatrix(metric, varLocation, diagonal, considerWeights);
+    DSM = INPUT_MATRIX.distancesMatrix(metric, varLocation, diagonal, considerWeights,
+                                       [this] { return progressCanceled(); });
 
-    //    qDebug()<<"Graph::createMatrixDissimilarities() - matrix DSM:";
     // DSM.printMatrixConsole(true);
 }
 
@@ -60,13 +60,10 @@ void Graph::createMatrixSimilarityMatching(Matrix &AM,
                                            const bool &diagonal,
                                            const bool &considerWeights)
 {
-    qDebug() << "Graph::createMatrixSimilarityMatching()";
+    qCDebug(lcSimilarity) << "Graph::createMatrixSimilarityMatching()";
 
-    QString pMsg = tr("Computing Similarity coefficients matrix. \nPlease wait...");
-    progressCreate(1, pMsg);
-    SCM.similarityMatrix(AM, measure, varLocation, diagonal, considerWeights);
-    progressUpdate(1);
-    progressFinish();
+    SCM.similarityMatrix(AM, measure, varLocation, diagonal, considerWeights,
+                         [this] { return progressCanceled(); });
 }
 
 /**
@@ -104,10 +101,11 @@ void Graph::createMatrixSimilarityPearson(Matrix &AM,
                                           const QString &varLocation,
                                           const bool &diagonal)
 {
-    qDebug() << "Graph::createMatrixSimilarityPearson()";
+    qCDebug(lcSimilarity) << "Graph::createMatrixSimilarityPearson()";
 
-    PCC.pearsonCorrelationCoefficients(AM, varLocation, diagonal);
+    PCC.pearsonCorrelationCoefficients(AM, varLocation, diagonal,
+                                       [this] { return progressCanceled(); });
 
-    qDebug() << "Graph::createMatrixSimilarityPearson() - matrix PCC";
+    qCDebug(lcSimilarity) << "Graph::createMatrixSimilarityPearson() - matrix PCC";
     // PCC.printMatrixConsole(true);
 }

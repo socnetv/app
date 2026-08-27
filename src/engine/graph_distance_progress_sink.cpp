@@ -1,6 +1,6 @@
 /**
  * @file graph_distance_progress_sink.cpp
- * @brief Implements the GraphDistanceProgressSink class that receives progress updates from the DistanceEngine and forwards them to the Graph for UI updates.
+ * @brief Implements the GraphDistanceProgressSink class, which forwards DistanceEngine's status messages and cancellation state to Graph.
  * @author Dimitris B. Kalamaras
  * @copyright
  *   Copyright (C) 2005-2025 by Dimitris B. Kalamaras.
@@ -26,20 +26,12 @@ void GraphDistanceProgressSink::statusMessage(const QString &msg)
     emit graph.statusMessage(msg);
 }
 
-void GraphDistanceProgressSink::progressCreate(const int total, const QString &msg)
+/**
+ * @brief Resets the cancellation flag at the start of a distance computation.
+ */
+void GraphDistanceProgressSink::resetCancellation()
 {
     graph.resetProgressCanceled();
-    emit graph.signalProgressBoxCreate(total, msg);
-}
-
-void GraphDistanceProgressSink::progressUpdate(const int value)
-{
-    emit graph.signalProgressBoxUpdate(value);
-}
-
-void GraphDistanceProgressSink::progressKill()
-{
-    emit graph.signalProgressBoxKill();
 }
 
 bool GraphDistanceProgressSink::progressCanceled() const

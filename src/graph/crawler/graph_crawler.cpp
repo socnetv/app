@@ -27,12 +27,12 @@
  */
 void Graph::webCrawlTerminateThreads(QString reason)
 {
-    qDebug() << "Terminating webCrawler threads - reason " << reason
+    qCDebug(lcGraphCrawler) << "Terminating webCrawler threads - reason " << reason
              << "Checking webcrawlerThread...";
 
     while (webcrawlerThread.isRunning())
     {
-        qDebug() << "webcrawlerThread running. "
+        qCDebug(lcGraphCrawler) << "webcrawlerThread running. "
                     "Calling webcrawlerThread.quit()";
         webcrawlerThread.requestInterruption();
         webcrawlerThread.quit();
@@ -79,7 +79,7 @@ void Graph::startWebCrawler(
     const bool &delayedRequests)
 {
 
-    qDebug() << "Setting up a new WebCrawler for url:" << startUrl.toString()
+    qCDebug(lcGraphCrawler) << "Setting up a new WebCrawler for url:" << startUrl.toString()
              << "graph thread:" << thread();
 
     // Rename current relation
@@ -102,7 +102,7 @@ void Graph::startWebCrawler(
     // Enqueue the start QUrl
     urlQueue->enqueue(startUrl);
 
-    qDebug() << "Creating new WebCrawler...";
+    qCDebug(lcGraphCrawler) << "Creating new WebCrawler...";
 
     // Create the WebCrawler
     web_crawler = new WebCrawler(
@@ -125,18 +125,18 @@ void Graph::startWebCrawler(
     // Just in case, we reach this place and the thread is still running
     if (webcrawlerThread.isRunning())
     {
-        qDebug() << "webcrawlerThread is already running - calling requestInterruption()...";
+        qCDebug(lcGraphCrawler) << "webcrawlerThread is already running - calling requestInterruption()...";
         webCrawlTerminateThreads("startWebCrawler() to start a new WebCrawler but webcrawlerThread is running...");
     }
 
     // Move the crawler to another thread
     web_crawler->moveToThread(&webcrawlerThread);
 
-    qDebug() << "WebCrawler created and moved to its own thread:"
+    qCDebug(lcGraphCrawler) << "WebCrawler created and moved to its own thread:"
              << web_crawler->thread();
 
     // Connect signals and slots
-    qDebug() << "Connect signals/slots with WebCrawler...";
+    qCDebug(lcGraphCrawler) << "Connect signals/slots with WebCrawler...";
     connect(this, &Graph::signalWebCrawlParse,
             web_crawler, &WebCrawler::parse);
 
@@ -156,18 +156,18 @@ void Graph::startWebCrawler(
             web_crawler, &QObject::deleteLater);
 
     // Start the crawler thread...
-    qDebug() << "Starting WebCrawler thread...";
+    qCDebug(lcGraphCrawler) << "Starting WebCrawler thread...";
     webcrawlerThread.start();
 
     // Create the initial vertex for the starting url
-    qDebug() << "Creating initial node 1, initialUrlStr:" << startUrl.toString();
+    qCDebug(lcGraphCrawler) << "Creating initial node 1, initialUrlStr:" << startUrl.toString();
     vertexCreateAtPosRandomWithLabel(1, startUrl.toString(), false);
 
     // Call the spider to download the html code of the starting url .
-    qDebug() << "Calling webSpider()...";
+    qCDebug(lcGraphCrawler) << "Calling webSpider()...";
     this->webSpider();
 
-    qDebug("web crawler and spider started. See the thread running? ");
+    qCDebug(lcGraphCrawler, "web crawler and spider started. See the thread running? ");
 }
 
 /**
@@ -185,23 +185,23 @@ void Graph::webSpider()
         //  Until we crawl all urls in urlQueue.
         if (urlQueue->size() == 0)
         {
-            qDebug() << "webSpider - urlQueue is empty. Break for now... ";
+            qCDebug(lcGraphCrawler) << "webSpider - urlQueue is empty. Break for now... ";
             break;
         }
 
         // or until we have reached m_maxNodes
         if (m_crawler_max_urls > 0 && m_crawler_visited_urls == m_crawler_max_urls)
         {
-            qDebug() << "webSpider - reached m_crawler_max_urls. Break.";
+            qCDebug(lcGraphCrawler) << "webSpider - reached m_crawler_max_urls. Break.";
             break;
         }
 
         // Take the first url awaiting in the queue
-        qDebug() << "webSpider - urlQueue size: " << urlQueue->size()
+        qCDebug(lcGraphCrawler) << "webSpider - urlQueue size: " << urlQueue->size()
                  << " - Taking the first url from the urlQueue  ";
         QUrl currentUrl = urlQueue->dequeue();
 
-        qDebug() << "webSpider - url to download: "
+        qCDebug(lcGraphCrawler) << "webSpider - url to download: "
                  << currentUrl
                  << "Increasing m_crawler_visited_urls to:" << m_crawler_visited_urls + 1
                  << "and emitting signal signalNetworkManagerRequest to MW...";
@@ -223,7 +223,7 @@ void Graph::webSpider()
 void Graph::slotHandleCrawlerRequestReply()
 {
 
-    qDebug() << "Got reply from MW network manager request. Emitting signal to Web Crawler to parse the reply...";
+    qCDebug(lcGraphCrawler) << "Got reply from MW network manager request. Emitting signal to Web Crawler to parse the reply...";
 
     // Get network reply from the sender
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());

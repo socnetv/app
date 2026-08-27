@@ -17,6 +17,7 @@
 #include "dialogsimilaritymatches.h"
 
 #include <QDebug>
+#include "forms_logging.h"
 #include <QPushButton>
 
 
@@ -53,13 +54,13 @@ DialogSimilarityMatches::DialogSimilarityMatches (QWidget *parent) : QDialog (pa
 
 
 void DialogSimilarityMatches::getUserChoices(){
-    qDebug()<< "DialogSimilarityMatches: gathering Data!...";
+    qCDebug(lcForms)<< "DialogSimilarityMatches: gathering Data!...";
     QString matrix = (ui.matrixSelect)->currentText();
     QString varLocation = (ui.variablesLocationSelect)->currentText();
     QString measure = (ui.measureSelect)->currentText();
     bool diagonal = (ui.diagonalCheckBox)->isChecked();
 
-    qDebug()<< "DialogSimilarityMatches: user selected: "
+    qCDebug(lcForms)<< "DialogSimilarityMatches: user selected: "
             << matrix
             << varLocation
             << measure;

@@ -1,0 +1,343 @@
+# Report CSV Export (WS16)
+
+## Goal
+
+Let analysis reports be exported as CSV, not just HTML — issue #113: currently every
+`Analyze → ...` report is an HTML file opened in the browser or the app's internal `TextEditor`
+(some with charts/prose embedded), with no plain-tabular option for opening results in a
+spreadsheet.
+
+## Status
+
+✅ Complete. All 4 steps done: baseline benchmarking, matrix-family CSV export,
+centrality/prestige CSV + dedup, and the Step 3 long tail (Reciprocity, standalone
+Eccentricity, Clustering Coefficient, Triad Census). Clique Census and Hierarchical
+Clustering are HTML-only permanently, by design (see Step 3 below) — not a gap.
+
+## Background
+
+A three-agent codebase investigation established the actual shape of the problem before any
+design work:
+
+- All ~27 report writers are `Graph::write*()` methods in
+  `src/graph/reporting/graph_reports.cpp`, each opening a `QFile` and writing a full HTML
+  document (`htmlHead` + content + `htmlEnd`, built once in the `Graph` constructor,
+  `graph.cpp:159-275`). `MainWindow::slotAnalyze*` slots call these via the standard
+  `runGraphOperationAsync` dispatch, then open the result via `QDesktopServices::openUrl()` or an
+  internal `TextEditor`, gated by `appSettings["viewReportsInSystemBrowser"]`.
+- **Matrix-family reports** (~15 report types: Adjacency, Distances, Geodesics, Reachability,
+  Laplacian, Degree, Cocitation, Transpose, Adjacency Inverse, Walks, Similarity/Pearson/Matching,
+  Dissimilarities) already funnel through one shared renderer, `Graph::writeMatrixHTMLTable()`
+  (`:5959`), called from `writeMatrix()` (`:5548`, cleanly split into a compute phase and a render
+  phase joined only by a `Matrix&` reference) and four sibling writers. This is the cheap slice —
+  one new renderer function covers all of it.
+- **Centrality/Prestige reports** (12 functions — `writeCentralityDegree`, `...Closeness`,
+  `...ClosenessInfluenceRange`, `...Betweenness`, `...Stress`, `...Eccentricity`, `...Power`,
+  `...Information`, `...Eigenvector`, `writePrestigeDegree`, `...Proximity`, `...PageRank`) have
+  **no shared table renderer** — each hand-rolls an identical 5-column
+  (Node/Label/Raw/Normalized/%Normalized) `<table>` scaffold, complete with copy-pasted
+  `tableSort()` JS wiring and isolate-drop placeholder logic. Harder slice — needs a genuinely new
+  shared renderer, which also deduplicates 12x copy-pasted HTML as a side effect.
+- **No headless path reaches any `write*()` function except `--interactive-script`.**
+  `socnetv-cli`'s kernels only ever emit JSON. The `distances` interactive command
+  (`mainwindow.cpp:6175-6208`) was the only existing example of a report writer benchmarked
+  end-to-end (compute + HTML file I/O) before this workstream.
+- CSV escaping already exists and should be reused: `TableExport::toCSV(QAbstractItemModel*,
+  path)` (`src/graph/io/table_export.cpp:27-76`) has a private `csvQuote()` helper (quote-only-
+  if-needed) used today for the Data Table dock's node/edge export. Matrix reports never need it
+  (row/column headers are always plain vertex numbers); centrality/prestige reports do, since node
+  labels are free text.
+- Settings: `DialogSettings`' existing `reportsGroupBox` (`src/forms/dialogsettings.ui`, inside
+  `generalTab`) already has 3 report-output controls (label length, real-number precision, chart
+  type), each wired `DialogSettings` signal → `MainWindow` connect → a `Graph::setReportsX()`
+  setter storing a `Graph`-private member. A 4th control (output format) fits this exact groupbox
+  and wiring pattern.
+
+**Design decisions**: one global "Report output format" setting (HTML default / CSV), not
+per-report toggles; CSV output is lean (table only, no prose/summary-stats/chart — a report with a
+chart just skips that step for CSV); CSV escaping reused via a new `TableExport` overload, never
+reimplemented; `MainWindow` decides the file extension and always opens CSV via
+`QDesktopServices::openUrl()` (the internal `TextEditor`'s plain-text mode isn't a useful CSV
+view); `writeMatrixAdjacencyPlot()` (glyph-based visual plot) is excluded — not tabular data;
+purely narrative/single-value reports (Connectedness, Node/Graph Connectivity's κ) stay HTML-only.
+
+## What WS16 Delivered
+
+### Step 0 — Baseline benchmarking infrastructure
+
+Since `--interactive-script` is the only headless path that can reach a `Graph::write*()`
+function, and nothing benchmarked the centrality/prestige family before this:
+
+- New interactive-script command `report-centrality-degree [weights] [dropisolates]`
+  (`mainwindow.cpp`), mirroring `slotAnalyzeCentralityDegree()` exactly, same shape as the
+  existing `distances` command — the first centrality/prestige report ever exercised headlessly.
+- New script `scripts/run_report_export_bench.sh`, modeled on `scripts/run_render_perf_bench.sh`
+  (the WS6.6 precedent for GUI-driven, `--interactive-script`, `QT_QPA_PLATFORM=offscreen`
+  benchmarks `run_benchmarks.sh`'s CLI-kernel-only design can't reach). Deliberately a rough
+  capture-and-print tool, not a CI-threshold-gated regression kernel like the render-perf one —
+  formal threshold-gating can follow later if this becomes a standing regression concern.
+- Two fixtures: `scripts/fixtures/report_export_bench_small.txt` (N=500, E=2500) and
+  `..._large.txt` (N=2000, E=40000, matching the existing render-perf fixture's scale).
+
+**Baseline numbers** (median of 5 runs, macOS arm64, Debug build, offscreen):
+
+| Fixture | `distances` (writeMatrix, HTML) | `report-centrality-degree` (writeCentralityDegree, HTML) |
+|---|---|---|
+| small (N=500, E=2500) | 1166 ms | 106 ms |
+| large (N=2000, E=40000) | 27092 ms | 776 ms |
+
+Note: `distances`' timing is dominated by APSP computation (DistanceEngine), not the HTML-writing
+step itself — the two are not separated in this measurement. Later steps should expect these
+end-to-end numbers to stay essentially flat (compute unchanged) rather than looking for a large
+drop; the CSV path's own timing (once it exists) is the more informative comparison.
+
+### Step 1 — Matrix-family CSV export
+
+- New `Graph::writeMatrixCSVTable()` (`graph_reports.cpp`), sibling to `writeMatrixHTMLTable()` —
+  same value-formatting rules (RAND_MAX sentinel, #266 large-magnitude scientific notation,
+  precision), comma-delimited, vertex-number header row, no escaping needed.
+- New `ReportFormat { Html, Csv }` enum (`global.h`), threaded as a parameter through
+  `writeMatrix()`, `writeMatrixWalks()`, `writeMatrixDissimilarities()`,
+  `writeMatrixSimilarityMatching()`, `writeMatrixSimilarityPearson()`, and `writeMatrixAdjacency()`
+  — compute phase untouched in every case, CSV branch is self-contained and returns early.
+  `writeMatrixAdjacency()` doesn't reuse `writeMatrixCSVTable()` (it computes cells live via
+  `edgeExists()`, not from a pre-built `Matrix`, to preserve node numbers after deletions) — has
+  its own small comma-delimited loop instead.
+- New Settings control: `reportsGroupBox` in `DialogSettings` gained a 4th row ("Output format",
+  HTML/CSV combo), wired via the same `DialogSettings` signal → `MainWindow` connect →
+  `Graph::setReportsOutputFormat()` pattern as the 3 existing Reports settings.
+  `appSettings["initReportsOutputFormat"]` persists it (default `"0"` = HTML).
+- **Bug found and fixed along the way**: `writeMatrixAdjacency()` and `writeMatrixWalks()` both
+  returned `void`, unlike every other writer in this family. Their 3 `MainWindow` call sites
+  (`slotNetworkViewSociomatrix`, `slotAnalyzeWalksLength`, `slotAnalyzeWalksTotal`) gated the
+  "open the report" step on `activeGraph->progressCanceled()` alone — which only reflects the user
+  clicking Cancel, not a file-open failure. A silently failed write (bad path, permissions, disk
+  full) was reported to the user as "saved" even though nothing was written. Both functions now
+  return `bool`; all 3 call sites check the real success flag.
+- All 14 `MainWindow` call sites updated: pick `.html`/`.csv` extension from the setting, pass
+  `format` through, CSV always opens via `QDesktopServices::openUrl()`. The `distances`
+  interactive-script command gained a `csv` token (explicit, not settings-read, since a script has
+  no Settings dialog) so it can't silently diverge from the real menu action.
+
+**Verification**: `./scripts/run_golden_compares.sh` clean (Phase A/compute untouched everywhere).
+Manual content check: `distances weights csv` on an 8-node network produced a correct
+comma-delimited, symmetric distance matrix with a 0 diagonal, matching the HTML sibling's values
+exactly. Live GUI check of the new Settings control caught and fixed a real bug (see below) before
+it shipped. Benchmark re-run (`run_report_export_bench.sh`) confirmed the HTML path is unchanged
+within normal run-to-run noise (small: 1166→1243ms, 776→767ms; large: 27092→27481ms,
+776→767ms — all within the ~5-10% variance already present run-to-run). A single-run CSV-vs-HTML
+`distances` comparison on the large fixture (28991ms CSV vs. 24495ms HTML) isn't a real signal
+either way — both fall inside that same variance band, and this benchmark measures APSP compute
+time (identical in both branches), not report-writing cost specifically; isolating the write-only
+cost would need a different measurement, not attempted here.
+
+**Settings UI bug found and fixed during manual verification**: the `.ui` file defined the new
+combo box's two items (`HTML`, `CSV`) *and* the constructor called `addItems()` with the same two
+strings — the combo showed four duplicate entries at runtime. Fixed by removing the static `.ui`
+items, matching the existing `reportsChartTypeSelect` pattern (items added purely in code).
+
+### Step 2 — Centrality/Prestige CSV export + dedup
+
+Cataloguing all 12 functions' HTML table blocks before designing anything (rather than trusting
+Step 1's "5-column" description at face value) surfaced that the table shape isn't uniform:
+
+- **3-data-column family** (raw / standardized / %standardized): Degree, Closeness, Betweenness,
+  Stress, Power, Degree Prestige, PageRank Prestige, Information Centrality — 8 functions.
+- **2-data-column family** (raw only, since raw == standardized for these; %raw): Closeness
+  Influence Range, Eccentricity Centrality, Proximity Prestige — 3 functions.
+- **4-data-column family**: Eigenvector Centrality alone (raw / scaled / standardized /
+  %standardized).
+
+Isolate-row-blanking (the HTML `--` placeholder / CSV empty-cell behaviour) also wasn't uniform:
+10 of the 12 use `dropIsolates && isIsolated()`, Information Centrality uses a bare `isIsolated()`
+(it has no `dropIsolates` parameter), and Eigenvector Centrality never blanks isolate rows at all
+despite taking a `dropIsolates` parameter. Each report's existing behaviour was preserved exactly
+via a per-call predicate rather than silently unified.
+
+**New shared renderer pair** (`Graph::writeScoreTableHTML()` / `writeScoreTableCSV()`,
+`graph_reports.cpp`, ahead of `writeCentralityInformation()`): "Node"/"Label" are fixed leading
+columns; a `QStringList` of data-column headers and a `std::function<QVector<qreal>(GraphVertex*)>`
+row-value callback supply the rest, so all three column-shapes are handled by the same function
+without a fixed-arity assumption. An optional `std::function<bool(GraphVertex*)>` isolate predicate
+(default `nullptr`, matching Eigenvector's "never blank" behaviour) lets each of the 12 call sites
+reproduce its own existing rule. The HTML renderer generates its `tableSort()` `onclick` JS from
+the real column count — a side effect of this is that it also fixes a small pre-existing dead-code
+bug: the three 4-column tables (Influence Range Closeness, Eccentricity, Proximity Prestige) had
+copy-pasted `onclick` handlers that reset a nonexistent `asc5` JS variable; the generated version
+only emits `asc1..ascN` for the columns that actually exist.
+
+**Deviation from the original Step 2 plan**: rather than adding a
+`TableExport::toCSV(headers, rows, path)` overload that opens its own file, `writeScoreTableCSV()`
+follows Step 1's actual `writeMatrixCSVTable()` precedent instead — it writes directly into the
+same already-open `QTextStream`/`QFile` the HTML path uses (self-contained CSV branch, returns
+early, one file-open per report). `TableExport`'s private `csvQuote()` helper was promoted to a
+public `TableExport::csvQuote()` function and is called on the Label column only — the one
+free-text field in these reports; node numbers and scores are always numeric and never need
+escaping.
+
+All 12 `Graph::write*()` signatures gained a trailing `const int &format = ReportFormat::Html`
+parameter (matching Step 1's pattern); all 12 `MainWindow::slotAnalyze*` call sites were retrofitted
+identically to Step 1's 14 matrix-family sites (extension picked from the Settings preference, CSV
+always opens via `QDesktopServices::openUrl()`). The interactive-script `report-centrality-degree`
+command gained a `csv` token (matching `distances`'), and 11 new sibling commands were added -
+`report-centrality-closeness[-ir]`, `report-centrality-betweenness`, `report-centrality-stress`,
+`report-centrality-eccentricity`, `report-centrality-power`, `report-centrality-information`,
+`report-centrality-eigenvector`, `report-prestige-degree`, `report-prestige-proximity`,
+`report-prestige-pagerank` - each mirroring its real menu action exactly, giving every
+centrality/prestige writer a first-ever headless benchmark path.
+
+`scripts/run_report_export_bench.sh` and both fixtures were generalized from the hardcoded
+`distances`/`report-centrality-degree` pair to loop over all 13 commands (an array of command
+names replaces the old 1:1 hand-written variable pairs), so one run now benchmarks every report
+writer this workstream touches.
+
+**Baseline numbers** (median of 3 runs, macOS arm64, Debug build, offscreen; all HTML, since this
+run's purpose is confirming the existing HTML path is unaffected):
+
+| Report | small (N=500, E=2500) | large (N=2000, E=40000) |
+|---|---|---|
+| `distances` (writeMatrix) | 1190 ms | 28768 ms |
+| Degree Centrality | 110 ms | 803 ms |
+| Closeness Centrality | 336 ms | 9281 ms |
+| Closeness (Influence Range) | 103 ms | 762 ms |
+| Betweenness Centrality | 81 ms | 302 ms |
+| Stress Centrality | 83 ms | 299 ms |
+| Eccentricity Centrality | 81 ms | 301 ms |
+| Power Centrality | 81 ms | 291 ms |
+| Information Centrality | 1029 ms | 42545 ms |
+| Eigenvector Centrality | 535 ms | 10599 ms |
+| Degree Prestige | 82 ms | 298 ms |
+| Proximity Prestige | 101 ms | 695 ms |
+| PageRank Prestige | 93 ms | 295 ms |
+
+`distances` and Degree Centrality are within ~2-6% of the Step 0 baseline (1166→1190 ms,
+27092→28768 ms; 106→110 ms, 776→803 ms) - inside the previously-established run-to-run noise band,
+confirming the shared-renderer extraction added no measurable overhead. The other 11 numbers are
+first-ever measurements (no prior baseline existed), now recorded here as the reference point for
+any future change to these writers.
+
+**Verification**: `./scripts/run_golden_compares.sh` clean. Content spot-checks via
+`--interactive-script`: Degree Centrality CSV matched its HTML sibling's values exactly (including
+the `DC'` = `DC / sumDC` valued-network standardization, not `DC / (N-1)`); Eigenvector CSV showed
+all 4 data columns; Influence Range Closeness CSV showed exactly 2; a sparse network with isolates
+confirmed `dropisolates csv` renders **empty cells** for blanked rows (not `--` - CSV consumers
+read a blank field as null/absent, `--` would corrupt a numeric column type on import). Fresh HTML
+regeneration confirmed the `tableSort` dead-code fix (4-column tables now emit only `asc1..asc4`).
+Live GUI smoke test (user-performed, since headless testing can't reach the Settings dialog):
+Settings → Output format → CSV, ran Degree Centrality from the real `Analyze` menu → opened
+correctly in the system's default spreadsheet app with a clean table; switched back to HTML, ran
+Closeness Centrality → opened correctly in the built-in report viewer.
+
+### Step 3 — Long tail
+
+Investigation first, same as Step 2: `writeReciprocity()`, `writeEccentricity()` (the standalone
+report — distinct from Eccentricity *Centrality*, done in Step 2), `writeClusteringCoefficient()`,
+and `writeTriadCensus()` were read in full before deciding anything, plus a check of Connectedness
+and Node/Graph Connectivity's actual call sites.
+
+- **Connectedness and Node/Graph Connectivity turned out not to be file reports at all** —
+  `slotAnalyzeConnectedness()`/`slotAnalyzeNodeConnectivity()` show their result via
+  `QMessageBox`/`QInputDialog`, never calling any `Graph::write*()` function. Nothing to do here;
+  the original plan's "likely stay HTML-only" guess was half right but the real answer is "N/A,
+  not a report."
+- **Reciprocity** fits the Step 2 shared renderer exactly (6 data columns, no isolate-blanking) —
+  reused `writeScoreTableHTML()`/`writeScoreTableCSV()` as-is, no renderer changes needed.
+- **Clustering Coefficient** also fits directly (3 data columns). Its HTML loop had a
+  `progressCanceled()` check on every row, unlike every Step 2 report (which check once before the
+  loop) — dropped to match the established convention, trading fine-grained cancellation on very
+  large N for consistency; the pre-loop check is retained.
+- **Eccentricity** (standalone) needed two genuine renderer extensions, since it doesn't fit the
+  "plain qreal, always-present row" shape the renderer assumed:
+  - Its value can be the infinity glyph (∞), not a number, for disconnected nodes. Rather than a
+    one-off, `writeScoreTableHTML()`/`writeScoreTableCSV()` gained a general RAND_MAX-as-infinity
+    convention matching `writeMatrixHTMLTable()`/`writeMatrixCSVTable()`'s existing sentinel, so
+    any future report needing this doesn't need its own workaround.
+  - It skips disabled vertices entirely (`continue`, row never appears) rather than blanking them
+    — different from every Step 2 report's isolate-*blanking*. Added a second optional predicate,
+    `isSkipped`, distinct from `isBlanked`, so this exact behavior carries over instead of being
+    silently changed to blanking (which would make disabled nodes visible with placeholder cells
+    where before they didn't appear at all).
+  - Minor, deliberate side effect: Reciprocity and Eccentricity's "Actor" column header is now
+    "Node" (the shared renderer's fixed label), matching every other score table. Purely
+    cosmetic — same data, same meaning — not called out separately at the time but worth recording
+    here since it's a visible (if trivial) output change.
+- **Triad Census** is a small *fixed-shape* table (16 known triad types × census count), not
+  per-node — doesn't go through the shared renderer at all. A direct 2-column CSV write (`Type`,
+  `Census`) suffices; no escaping needed since triad-type labels are fixed known strings.
+- **Clique Census** and **Hierarchical Clustering** confirmed as HTML-only, permanently, exactly as
+  scoped originally: Clique Census combines 4 heterogeneous sub-tables (clique list, actor×clique
+  matrix, actor×actor co-membership matrix, and a full HCA dendrogram sub-report) that don't reduce
+  to one flat CSV; Hierarchical Clustering produces an equivalence matrix plus a dendrogram, same
+  reasoning. Documented as comments at both declarations in `graph.h` so the reasoning survives
+  independent of this doc.
+
+**Bug found and fixed along the way**: `writeReciprocity()` had two separate problems, both fixed
+in the same pass since fixing the second required touching the exact code the first lives in:
+- Like `writeMatrixAdjacency()`/`writeMatrixWalks()` in Step 1, it returned `void` and silently
+  swallowed file-open failures; its `MainWindow` call site checked only
+  `activeGraph->progressCanceled()`, which doesn't reflect a failed write. Converted to `bool`,
+  call site now checks the real success flag.
+- The per-actor "Symmetric" ratio divided by an actor's total tie count with **no zero-guard**,
+  unlike every other ratio in the same function. An actor with zero inbound and outbound edges hit
+  `0/0`, producing the literal text `nan` in both HTML and CSV output — confirmed present in the
+  original HTML report too (not something the CSV refactor introduced), by generating a fresh HTML
+  report from the pre-fix code against the same test network. Guarded the same way as the other
+  four ratios: no ties means 0, not NaN.
+
+All 4 `MainWindow` call sites (Reciprocity, Eccentricity, Clustering Coefficient, Triad Census)
+retrofitted with the Step 1/2 extension-picking and viewer-branching pattern. 4 new
+interactive-script commands added (`report-reciprocity`, `report-eccentricity`,
+`report-clustering-coefficient`, `report-triad-census`), each mirroring its real menu action.
+
+**Baseline numbers** (macOS arm64, Debug build, offscreen, HTML):
+
+| Report | small (N=500, E=2500), median of 3 | large (N=2000, E=40000), single run |
+|---|---|---|
+| Reciprocity | 23 ms | 241 ms |
+| Eccentricity (standalone) | 37 ms | 227 ms |
+| Clustering Coefficient | 19 ms | 543 ms |
+| Triad Census | 9164 ms | not run (see below) |
+
+The large fixture's numbers are a **single run, not a median** — see the benchmark-harness finding
+below. `distances` and all 12 Step 2 reports were re-measured in the same pass and stayed within
+normal run-to-run variance of their Step 2 baseline (e.g. `distances` 28768→27057 ms single-run,
+Degree Centrality 803→877 ms), consistent with "no computational change" for those paths.
+
+**Triad Census is O(n³)** (enumerates every triple of vertices) and was excluded from the large
+fixture (N=2000) after a single run took over 12 minutes and was still running when interrupted —
+genuinely expensive at that scale, not a bug. It stays in the small fixture (N=500, ~9s) where it's
+still a meaningful measurement. `scripts/run_report_export_bench.sh`'s shared `COMMANDS` list now
+tolerates a command being absent from one fixture's output (skips it rather than failing), since
+the two fixtures no longer run an identical command set.
+
+**Benchmark-harness finding (not fixed here — out of WS16's scope)**: running
+`scripts/run_report_export_bench.sh` end-to-end, the large-fixture `--interactive-script` process
+**hangs** (not crashes — no error, never returns) on its second invocation in the same script run;
+a single standalone run always completes cleanly. Root cause not diagnosed — plausibly a resource
+or state issue with launching the offscreen GUI repeatedly in a tight loop rather than anything
+specific to Step 3's changes, since the fixtures/harness are WS12 territory, not WS16's. Worth a
+closer look if this benchmark script becomes something run regularly.
+
+**Verification**: `./scripts/run_golden_compares.sh` clean throughout. Content spot-checks via
+`--interactive-script` on a fresh directed test network: Reciprocity CSV/HTML matched exactly
+(post-fix, no `nan` anywhere); Eccentricity CSV/HTML both showed `∞` for all 10 nodes, confirmed
+correct (not a bug) by checking the network genuinely isn't strongly connected — matrix-identical
+between formats; Clustering Coefficient and Triad Census CSVs matched their HTML output.
+
+## Known Gaps
+
+- **Clique Census and Hierarchical Clustering are HTML-only, permanently** — both combine several
+  heterogeneous sub-tables (co-membership matrices, a dendrogram) that don't reduce to one flat CSV
+  table. Documented as comments at their `graph.h` declarations.
+- **Connectedness and Node/Graph Connectivity have no CSV form** because they were never file
+  reports — both show their result via a dialog, not an `Analyze` report.
+- **`scripts/run_report_export_bench.sh`'s large fixture hangs on its second invocation** within
+  the same script run — tracked in
+  [`roadmap_ws12_cli_scripting_mode.md`](roadmap_ws12_cli_scripting_mode.md)'s Known Issues, since
+  it's the shared `--interactive-script` harness (WS12), not anything specific to this workstream.
+- **Triad Census's benchmark only runs at the small fixture's scale (N=500)** — it's O(n³); a
+  single run at the large fixture's N=2000 was still running after 12+ minutes when interrupted.
+
+## What Remains Open
+
+Nothing scoped under WS16.

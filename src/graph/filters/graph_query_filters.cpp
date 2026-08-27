@@ -33,7 +33,7 @@ void Graph::vertexFilterByQuery(const GraphQuery &query)
     if (query.conditions.isEmpty())
         return;
 
-    qDebug() << "Graph::vertexFilterByQuery()" << query.conditions.size() << "condition(s)";
+    qCDebug(lcFilters) << "Graph::vertexFilterByQuery()" << query.conditions.size() << "condition(s)";
 
     // Build visible set: vertices satisfying ALL conditions.
     QSet<int> visibleSet;
@@ -108,7 +108,9 @@ void Graph::vertexFilterByQuery(const GraphQuery &query)
             const int target = ei.key();
             const qreal weight = ei.value().second.first;
             const qreal reverseWeight = (*vi)->hasEdgeFrom(target);
-            const bool preserveReverse = (reverseWeight != 0);
+            // See the matching comment in graph_node_filters.cpp: a self-loop is trivially
+            // "its own reverse", which isn't a real distinct edge to preserve.
+            const bool preserveReverse = (source != target) && (reverseWeight != 0);
             const bool edgeVisible = visibleSet.contains(source) && visibleSet.contains(target);
 
             ei.value() = pair_i_fb(m_curRelation, pair_f_b(weight, edgeVisible));
@@ -142,7 +144,7 @@ void Graph::edgeFilterByQuery(const GraphQuery &query)
     if (query.conditions.isEmpty())
         return;
 
-    qDebug() << "Graph::edgeFilterByQuery()" << query.conditions.size() << "condition(s)";
+    qCDebug(lcFilters) << "Graph::edgeFilterByQuery()" << query.conditions.size() << "condition(s)";
 
     // Count matching edges (for early-exit guard).
     int matchCount = 0;
@@ -213,7 +215,9 @@ void Graph::edgeFilterByQuery(const GraphQuery &query)
             const int target = ei.key();
             const qreal weight = ei.value().second.first;
             const qreal reverseWeight = (*vi)->hasEdgeFrom(target);
-            const bool preserveReverse = (reverseWeight != 0);
+            // See the matching comment in graph_node_filters.cpp: a self-loop is trivially
+            // "its own reverse", which isn't a real distinct edge to preserve.
+            const bool preserveReverse = (source != target) && (reverseWeight != 0);
 
             const QHash<QString,QString> attrs = (*vi)->outEdgeCustomAttributes(target);
             bool condMet = true;

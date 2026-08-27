@@ -53,7 +53,7 @@ SOCNETV_USE_NAMESPACE
  */
 bool Parser::parseAsGML(const QByteArray &rawData)
 {
-    qDebug() << "Parsing data as GML formatted...";
+    qCDebug(lcParser) << "Parsing data as GML formatted...";
 
     QTextCodec *codec = QTextCodec::codecForName(m_textCodecName.toLatin1());
     QString decodedData = codec->toUnicode(rawData);
@@ -315,7 +315,7 @@ bool Parser::parseAsGML(const QByteArray &rawData)
         fileLine++;
         str = ts.readLine().simplified();
 
-        qDebug() << "line" << fileLine << ":" << str;
+        qCDebug(lcParser) << "line" << fileLine << ":" << str;
 
         if (isComment(str))
             continue;
@@ -332,7 +332,7 @@ bool Parser::parseAsGML(const QByteArray &rawData)
              str.contains("graphml", Qt::CaseInsensitive) ||
              str.contains("xml", Qt::CaseInsensitive)))
         {
-            qDebug() << "*** Not a GML-formatted file. Aborting!!";
+            qCDebug(lcParser) << "*** Not a GML-formatted file. Aborting!!";
             errorMessage = tr("Not an GML-formatted file. "
                               "Non-comment line %1 includes keywords reserved by other file formats  "
                               "(i.e vertices, graphml, network, digraph, DL, xml)")
@@ -348,7 +348,7 @@ bool Parser::parseAsGML(const QByteArray &rawData)
 
         if (str.startsWith("graph", Qt::CaseInsensitive))
         {
-            qDebug() << "graph description list start";
+            qCDebug(lcParser) << "graph description list start";
             graphKey = true;
             continue;
         }
@@ -359,12 +359,12 @@ bool Parser::parseAsGML(const QByteArray &rawData)
             {
                 if (str.contains("1"))
                 {
-                    qDebug() << "graph directed 1. A directed graph.";
+                    qCDebug(lcParser) << "graph directed 1. A directed graph.";
                     edgeDirType = EdgeType::Directed;
                 }
                 else
                 {
-                    qDebug() << "graph directed 0. An undirected graph.";
+                    qCDebug(lcParser) << "graph directed 0. An undirected graph.";
                 }
             }
             continue;
@@ -379,7 +379,7 @@ bool Parser::parseAsGML(const QByteArray &rawData)
 
         if (str.startsWith("node", Qt::CaseInsensitive))
         {
-            qDebug() << "node description list starts";
+            qCDebug(lcParser) << "node description list starts";
             nodeKey = true;
             continue;
         }
@@ -397,7 +397,7 @@ bool Parser::parseAsGML(const QByteArray &rawData)
                                        .arg(fileLine);
                     return false;
                 }
-                qDebug() << "id description "
+                qCDebug(lcParser) << "id description "
                          << "This node" << totalNodes
                          << "id" << node_id;
             }
@@ -409,7 +409,7 @@ bool Parser::parseAsGML(const QByteArray &rawData)
             if (nodeKey)
             {
                 nodeLabel = str.split(" ", Qt::SkipEmptyParts).last().remove("\"");
-                qDebug() << "node label definition"
+                qCDebug(lcParser) << "node label definition"
                          << "node" << totalNodes
                          << "id" << node_id
                          << "label" << nodeLabel;
@@ -417,7 +417,7 @@ bool Parser::parseAsGML(const QByteArray &rawData)
             else if (edgeKey)
             {
                 edgeLabel = str.split(" ", Qt::SkipEmptyParts).last();
-                qDebug() << "edge label definition"
+                qCDebug(lcParser) << "edge label definition"
                          << "edge" << totalLinks
                          << "label" << edgeLabel;
             }
@@ -426,7 +426,7 @@ bool Parser::parseAsGML(const QByteArray &rawData)
 
         if (str.startsWith("edge ", Qt::CaseInsensitive) || str == "edge")
         {
-            qDebug() << "edge description list start";
+            qCDebug(lcParser) << "edge description list start";
             edgeKey = true;
             totalLinks++;
             edgeWeight = 1.0;
@@ -448,7 +448,7 @@ bool Parser::parseAsGML(const QByteArray &rawData)
                     return false;
                 }
                 source = edge_source.toInt(nullptr, 10);
-                qDebug() << "edge source definition"
+                qCDebug(lcParser) << "edge source definition"
                          << "edge source" << edge_source;
             }
             continue;
@@ -470,7 +470,7 @@ bool Parser::parseAsGML(const QByteArray &rawData)
                 }
 
                 target = edge_target.toInt(nullptr, 10);
-                qDebug() << "edge target definition"
+                qCDebug(lcParser) << "edge target definition"
                          << "edge target" << edge_target;
             }
             continue;
@@ -489,7 +489,7 @@ bool Parser::parseAsGML(const QByteArray &rawData)
                                        .arg(fileLine);
                     return false;
                 }
-                qDebug() << "edge weight definition"
+                qCDebug(lcParser) << "edge weight definition"
                          << "edge weight" << edgeWeight;
             }
             continue;
@@ -639,7 +639,7 @@ bool Parser::parseAsGML(const QByteArray &rawData)
         }
     }
 
-    qDebug() << "Finished OK. Returning.";
+    qCDebug(lcParser) << "Finished OK. Returning.";
     return true;
 }
 

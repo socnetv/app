@@ -54,7 +54,7 @@ void Graph::vertexCreate(const int &number,
                          const QHash<QString, QString> &customAttributes)
 {
 
-    qDebug() << "Creating a new vertex:" << number
+    qCDebug(lcStorage) << "Creating a new vertex:" << number
              << "shape:" << shape
              << "icon:" << iconPath
              << "signalMW:" << signalMW
@@ -99,7 +99,7 @@ void Graph::vertexCreate(const int &number,
                         labelSize,
                         initVertexLabelDistance);
 
-    qDebug() << "Finished creating new vertex:" << number << "Setting graph mod status";
+    qCDebug(lcStorage) << "Finished creating new vertex:" << number << "Setting graph mod status";
 
     setModStatus(ModStatus::VertexCount, signalMW);
 
@@ -126,7 +126,7 @@ void Graph::vertexCreateAtPos(const QPointF &p)
 {
     int i = vertexNumberMax() + 1;
 
-    qDebug() << "Creating a new vertex:" << i << " in given position:" << p;
+    qCDebug(lcStorage) << "Creating a new vertex:" << i << " in given position:" << p;
 
     vertexCreate(i, initVertexSize, initVertexColor,
                  initVertexNumberColor, initVertexNumberSize,
@@ -155,7 +155,7 @@ void Graph::vertexCreateAtPosRandom(const bool &signalMW)
     QPointF p;
     p.setX(canvasRandomX());
     p.setY(canvasRandomY());
-    qDebug() << "Creating a new random positioned vertex at:" << p;
+    qCDebug(lcStorage) << "Creating a new random positioned vertex at:" << p;
     vertexCreate(vertexNumberMax() + 1, initVertexSize, initVertexColor,
                  initVertexNumberColor, initVertexNumberSize,
                  QString(), initVertexLabelColor, initVertexLabelSize,
@@ -179,7 +179,7 @@ void Graph::vertexCreateAtPosRandomWithLabel(const int &i,
                                              const bool &signalMW)
 {
 
-    qDebug() << "Creates a new randomly positioned vertex:" << i
+    qCDebug(lcStorage) << "Creates a new randomly positioned vertex:" << i
              << "with label:" << label;
     QPointF p;
     p.setX(canvasRandomX());
@@ -199,7 +199,7 @@ void Graph::vertexCreateAtPosRandomWithLabel(const int &i,
  */
 void Graph::vertexRemove(const int &v1)
 {
-    qDebug() << "Removing vertex:"
+    qCDebug(lcStorage) << "Removing vertex:"
              << m_graph[vpos[v1]]->number()
              << "vpos:" << vpos[v1]
              << "Removing all inbound and outbound edges ";
@@ -211,52 +211,52 @@ void Graph::vertexRemove(const int &v1)
     {
         if (qAbs((*it)->hasEdgeTo(v1)) > 0)
         {
-            qDebug() << "another vertex" << (*it)->number()
+            qCDebug(lcStorage) << "another vertex" << (*it)->number()
                      << " has outbound Edge to " << v1 << ". Removing it.";
             (*it)->removeOutEdge(v1);
         }
         if (qAbs((*it)->hasEdgeFrom(v1)) > 0)
         {
-            qDebug() << "another vertex" << (*it)->number()
+            qCDebug(lcStorage) << "another vertex" << (*it)->number()
                      << " has inbound Edge from " << v1 << ". Removing it.";
             (*it)->removeInEdge(v1);
         }
     }
 
-    qDebug() << "Finished with vertices. "
+    qCDebug(lcStorage) << "Finished with vertices. "
                 "Update the vpos which maps vertices inside m_graph ";
     int prevIndex = doomedPos;
 
-    qDebug() << "Updating vpos of all subsequent vertices ";
+    qCDebug(lcStorage) << "Updating vpos of all subsequent vertices ";
     H_Int::const_iterator it1 = vpos.cbegin();
     while (it1 != vpos.cend())
     {
         if (it1.value() > doomedPos)
         {
             prevIndex = it1.value();
-            qDebug() << "vertex" << it1.key()
+            qCDebug(lcStorage) << "vertex" << it1.key()
                      << "had prevIndex:" << prevIndex
                      << " > doomedPos" << doomedPos
                      << "Setting new vpos. vpos size was: " << vpos.size();
             vpos.insert(it1.key(), --prevIndex);
-            qDebug() << "vertex" << it1.key()
+            qCDebug(lcStorage) << "vertex" << it1.key()
                      << "new vpos:" << vpos.value(it1.key(), -666)
                      << "vpos size now:" << vpos.size();
         }
         else
         {
-            qDebug() << "vertex" << it1.key() << "with vpos"
+            qCDebug(lcStorage) << "vertex" << it1.key() << "with vpos"
                      << it1.value() << " =< doomedPos. CONTINUE";
         }
         ++it1;
     }
 
     // Now remove vertex Doomed from m_graph
-    qDebug() << "graph vertices=size=" << vertices() << "="
+    qCDebug(lcStorage) << "graph vertices=size=" << vertices() << "="
              << m_graph.size() << "removing vertex at vpos " << doomedPos;
     m_graph.removeAt(doomedPos);
     m_totalVertices--;
-    qDebug() << "Now graph vertices=size=" << vertices() << "="
+    qCDebug(lcStorage) << "Now graph vertices=size=" << vertices() << "="
              << m_graph.size();
 
     order = false;
@@ -281,7 +281,7 @@ void Graph::vertexRemove(const int &v1)
  */
 void Graph::vertexRemoveDummyNode(int i)
 {
-    qDebug() << "Removing dummy node from graph: " << i;
+    qCDebug(lcStorage) << "Removing dummy node from graph: " << i;
     vertexRemove(i);
 }
 
@@ -344,7 +344,7 @@ QList<int> Graph::verticesListIsolated()
 {
     if (calculatedIsolates)
     {
-        qDebug() << "Graph::verticesListIsolated() - graph not modified and "
+        qCDebug(lcStorage) << "Graph::verticesListIsolated() - graph not modified and "
                     "already calculated isolates. Returning list as is:"
                  << m_verticesIsolatedList;
         return m_verticesIsolatedList;
@@ -359,11 +359,11 @@ QList<int> Graph::verticesListIsolated()
         if ((*it)->isIsolated())
         {
             m_verticesIsolatedList << (*it)->number();
-            qDebug() << "Graph::verticesListIsolated() - node " << (*it)->number()
+            qCDebug(lcStorage) << "Graph::verticesListIsolated() - node " << (*it)->number()
                      << " is isolated. Marking it.";
         }
     }
-    qDebug() << "Graph::verticesListIsolated() - isolated vertices list:"
+    qCDebug(lcStorage) << "Graph::verticesListIsolated() - isolated vertices list:"
              << m_verticesIsolatedList;
     calculatedIsolates = true;
     return m_verticesIsolatedList;
@@ -376,7 +376,7 @@ QList<int> Graph::verticesListIsolated()
  */
 QList<int> Graph::verticesList()
 {
-    qDebug() << "Graph::verticesList()";
+    qCDebug(lcStorage) << "Graph::verticesList()";
     if (!m_verticesList.isEmpty() && calculatedVerticesList)
     {
         return m_verticesList;
@@ -399,7 +399,7 @@ QList<int> Graph::verticesList()
  */
 QSet<int> Graph::verticesSet()
 {
-    qDebug() << "Graph::verticesSet()";
+    qCDebug(lcStorage) << "Graph::verticesSet()";
     if (!m_verticesSet.isEmpty() && calculatedVerticesSet)
     {
         return m_verticesSet;
@@ -437,13 +437,11 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
         vList = m_verticesSelected;
     }
 
-    qDebug() << "Graph::verticesCreateSubgraph() - type:" << type
+    qCDebug(lcStorage) << "Graph::verticesCreateSubgraph() - type:" << type
              << "vList:" << vList;
 
-    int progressCounter = 0;
     QString pMsg = tr("Creating subgraph. \nPlease wait...");
     progressStatus(pMsg);
-    progressCreate(vList.size(), pMsg);
 
     qreal weight;
 
@@ -456,10 +454,8 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
         for (int i = 0; i < vList.size(); ++i)
         {
 
-            progressUpdate(++progressCounter);
             if (progressCanceled())
             {
-                progressFinish();
                 return;
             }            
 
@@ -497,10 +493,8 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
         for (int j = 0; j < vList.size(); ++j)
         {
 
-            progressUpdate(++progressCounter);
             if (progressCanceled())
             {
-                progressFinish();
                 return;
             }
 
@@ -536,10 +530,8 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
         for (int i = 0; i < vList.size(); ++i)
         {
 
-            progressUpdate(++progressCounter);
             if (progressCanceled())
             {
-                progressFinish();
                 return;
             }
             j = (i == vList.size() - 1) ? 0 : i + 1;
@@ -573,10 +565,8 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
         for (int i = 0; i < vList.size(); ++i)
         {
 
-            progressUpdate(++progressCounter);
             if (progressCanceled())
             {
-                progressFinish();
                 return;
             }
             if (i == vList.size() - 1)
@@ -608,10 +598,8 @@ void Graph::verticesCreateSubgraph(QList<int> vList,
     }
     else
     {
-        progressFinish();
         return;
     }
-    progressFinish();
 }
 
 //
@@ -654,6 +642,10 @@ int Graph::vertexNumberMin()
  * If countAll = false, it skips disabled vertices
  * If countAll = false and dropIsolates = true, it skips both disabled and isolated vertices
  *
+ * The cache is keyed on (dropIsolates, countAll): a cached count computed under one combination
+ * of flags must never be handed back to a caller asking with a different combination, since
+ * callers size fixed allocations off this return value (see #274).
+ *
  * @param dropIsolates
  * @param countAll
  * @return
@@ -661,9 +653,10 @@ int Graph::vertexNumberMin()
 int Graph::vertices(const bool &dropIsolates, const bool &countAll, const bool &recount)
 {
 
-    if (m_totalVertices != 0 && calculatedVertices && !recount)
+    if (m_totalVertices != 0 && calculatedVertices && !recount
+        && m_verticesCacheDropIsolates == dropIsolates && m_verticesCacheCountAll == countAll)
     {
-        qDebug() << "Graph not modified, returning static number: "
+        qCDebug(lcStorage) << "Graph not modified, returning static number: "
                  << m_totalVertices;
         return m_totalVertices;
     }
@@ -679,19 +672,21 @@ int Graph::vertices(const bool &dropIsolates, const bool &countAll, const bool &
         {
             if (dropIsolates && (*it)->isIsolated())
             {
-                qDebug() << "Skipping isolated vertex:" << (*it)->number();
+                qCDebug(lcStorage) << "Skipping isolated vertex:" << (*it)->number();
                 continue;
             }
             if (!(*it)->isEnabled())
             {
-                qDebug() << "Skipping disabled vertex:" << (*it)->number();
+                qCDebug(lcStorage) << "Skipping disabled vertex:" << (*it)->number();
                 continue;
             }
             ++m_totalVertices;
         }
     }
-    qDebug() << "Graph size:" << m_graph.size() << "vertices" << m_totalVertices;
+    qCDebug(lcStorage) << "Graph size:" << m_graph.size() << "vertices" << m_totalVertices;
     calculatedVertices = true;
+    m_verticesCacheDropIsolates = dropIsolates;
+    m_verticesCacheCountAll = countAll;
     return m_totalVertices;
 }
 
@@ -706,16 +701,24 @@ bool Graph::isEmpty() const
 /**
  * @brief Checks if the given vertex exists in the graph.
  *
- * Returns the vpos or -1
+ * @param vertex number
+ * @return true if it exists
+ */
+bool Graph::vertexExists(const int &v1)
+{
+    return vertexIndexIfExists(v1) != -1;
+}
+
+/**
+ * @brief Returns the internal position of the given vertex in m_graph, if it exists.
  *
  * Complexity:  O(logN) for vpos retrieval
  *
  * @param vertex number
  * @return vertex pos or -1
  */
-int Graph::vertexExists(const int &v1)
+int Graph::vertexIndexIfExists(const int &v1)
 {
-    //    qDebug () << "Checking if vertex exists, with number:" << v1;
     if (vpos.contains(v1))
     {
         if (m_graph[vpos[v1]]->number() == v1)
@@ -732,18 +735,27 @@ int Graph::vertexExists(const int &v1)
 }
 
 /**
- * @brief Checks if there is a vertex with a specific label exists in the graph
+ * @brief Checks if there is a vertex with a specific label in the graph
  *
- * Returns the vpos or -1
+ * @param label
+ * @return true if it exists
+ */
+bool Graph::vertexExists(const QString &label)
+{
+    return vertexIndexIfExists(label) != -1;
+}
+
+/**
+ * @brief Returns the internal position of the vertex with the given label, if it exists.
  *
  * Complexity:  O(N)
  *
  * @param label
- * @return vpos or -1
+ * @return vertex pos or -1
  */
-int Graph::vertexExists(const QString &label)
+int Graph::vertexIndexIfExists(const QString &label)
 {
-    qDebug() << "Checking if vertex exists, with label:" << label.toUtf8();
+    qCDebug(lcStorage) << "Checking if vertex exists, with label:" << label.toUtf8();
     VList::const_iterator it;
     int i = 0;
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
@@ -764,7 +776,7 @@ int Graph::vertexExists(const QString &label)
  */
 bool Graph::vertexFindByNumber(const QStringList &numList)
 {
-    qDebug() << "Finding vertices by number - searchList:" << numList;
+    qCDebug(lcStorage) << "Finding vertices by number - searchList:" << numList;
     QString vStr;
     QList<int> foundList;
     QStringList notFound;
@@ -777,35 +789,35 @@ bool Graph::vertexFindByNumber(const QStringList &numList)
         v = vStr.toInt(&intOk);
         if (intOk)
         {
-            if (vertexExists(v) != -1)
+            if (vertexExists(v))
             {
-                qDebug() << "vertex number" << v
+                qCDebug(lcStorage) << "vertex number" << v
                          << "exists. Adding it to found list";
                 foundList << v;
             }
             else
             {
-                qDebug() << "vertex number" << v
+                qCDebug(lcStorage) << "vertex number" << v
                          << "does not exist. Adding it to notFound list";
                 notFound << vStr;
             }
         }
         else
         {
-            qDebug() << "cannot read" << vStr;
+            qCDebug(lcStorage) << "cannot read" << vStr;
         }
     }
 
     if (!foundList.isEmpty())
     {
         searchResult = true;
-        qDebug() << "One or more matching nodes found. Signaling to GW to highlight them...";
+        qCDebug(lcStorage) << "One or more matching nodes found. Signaling to GW to highlight them...";
         progressStatus(tr("Found %1 matching nodes.").arg(foundList.size()));
         emit signalNodesFound(foundList);
     }
     else
     {
-        qDebug() << "No matching nodes found. Return.";
+        qCDebug(lcStorage) << "No matching nodes found. Return.";
         progressStatus(tr("Could not find any nodes matching your choices."));
     }
 
@@ -819,7 +831,7 @@ bool Graph::vertexFindByNumber(const QStringList &numList)
  */
 bool Graph::vertexFindByLabel(const QStringList &labelList)
 {
-    qDebug() << "Finding vertices by label - searchList:" << labelList;
+    qCDebug(lcStorage) << "Finding vertices by label - searchList:" << labelList;
 
     QString vLabel;
     QList<int> foundList;
@@ -830,15 +842,15 @@ bool Graph::vertexFindByLabel(const QStringList &labelList)
     {
         vLabel = labelList.at(i);
 
-        if ((vFoundPos = vertexExists(vLabel)) != -1)
+        if ((vFoundPos = vertexIndexIfExists(vLabel)) != -1)
         {
-            qDebug() << "vertex with label" << vLabel
+            qCDebug(lcStorage) << "vertex with label" << vLabel
                      << "exists. Adding it to found list";
             foundList << m_graph[vFoundPos]->number();
         }
         else
         {
-            qDebug() << "vertex with label" << vLabel
+            qCDebug(lcStorage) << "vertex with label" << vLabel
                      << "does not exist. Adding it to notFound list ";
             notFound << vLabel;
         }
@@ -847,13 +859,13 @@ bool Graph::vertexFindByLabel(const QStringList &labelList)
     if (!foundList.isEmpty())
     {
         searchResult = true;
-        qDebug() << "One or more matchin nodes found. Signaling to GW to highlight them...";
+        qCDebug(lcStorage) << "One or more matchin nodes found. Signaling to GW to highlight them...";
         progressStatus(tr("Found %1 matching nodes.").arg(foundList.size()));
         emit signalNodesFound(foundList);
     }
     else
     {
-        qDebug() << "No matching nodes found. Return.";
+        qCDebug(lcStorage) << "No matching nodes found. Return.";
         progressStatus(tr("Could not find any nodes matching your choices."));
     }
 
@@ -869,7 +881,7 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
                                    const bool &considerWeights, const bool &inverseWeights, const bool &dropIsolates)
 {
 
-    qDebug() << "Finding vertices by index" << index
+    qCDebug(lcStorage) << "Finding vertices by index" << index
              << "threshold list" << thresholds
              << "considerWeights" << considerWeights
              << "inverseWeights" << inverseWeights
@@ -938,6 +950,30 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
         clusteringCoefficient();
         break;
     }
+    case IndexType::KATZ:
+    {
+        if (m_lastKatzAlpha < 0)
+        {
+            progressStatus(tr("Please compute Katz Centrality first "
+                              "(Analyze > Centrality > Katz Centrality), then try again."));
+            return false;
+        }
+        centralityKatz(m_lastKatzAlpha, considerWeights, inverseWeights, dropIsolates);
+        break;
+    }
+    case IndexType::BPC:
+    {
+        if (m_lastBonacichAlpha < 0)
+        {
+            progressStatus(tr("Please compute Bonacich Power Centrality first "
+                              "(Analyze > Centrality > Bonacich Power Centrality), then try "
+                              "again."));
+            return false;
+        }
+        centralityBonacich(m_lastBonacichAlpha, m_lastBonacichBeta, considerWeights,
+                           inverseWeights, dropIsolates);
+        break;
+    }
     default:
         graphDistancesGeodesic(true, considerWeights,
                                inverseWeights, dropIsolates);
@@ -963,30 +999,30 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
             gtEqual = true;
             thresholdStr.remove(">=");
             thresholdStr.remove("=>");
-            qDebug() << "thresholdStr starts with >=";
+            qCDebug(lcStorage) << "thresholdStr starts with >=";
         }
         else if (thresholdStr.startsWith(">"))
         {
             gtThan = true;
             thresholdStr.remove(">");
-            qDebug() << "thresholdStr starts with > ";
+            qCDebug(lcStorage) << "thresholdStr starts with > ";
         }
         else if (thresholdStr.startsWith("<=") || thresholdStr.startsWith("=<"))
         {
             lsEqual = true;
             thresholdStr.remove("<=");
             thresholdStr.remove("=<");
-            qDebug() << "thresholdStr starts with <=";
+            qCDebug(lcStorage) << "thresholdStr starts with <=";
         }
         else if (thresholdStr.startsWith("<"))
         {
             lsThan = true;
             thresholdStr.remove("<");
-            qDebug() << "thresholdStr starts with < ";
+            qCDebug(lcStorage) << "thresholdStr starts with < ";
         }
         else
         {
-            qDebug() << "thresholdStr does not start with > or <";
+            qCDebug(lcStorage) << "thresholdStr does not start with > or <";
             continue;
         }
 
@@ -995,12 +1031,12 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
 
         if (!convertedOk)
         {
-            qDebug() << "cannot convert thresholdStr to float";
+            qCDebug(lcStorage) << "cannot convert thresholdStr to float";
             continue;
         }
         else
         {
-            qDebug() << "threshold" << threshold;
+            qCDebug(lcStorage) << "threshold" << threshold;
         }
 
         // Iterate over all vertices and get their scores
@@ -1079,13 +1115,23 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
                 score = (*it)->CLC();
                 break;
             }
+            case IndexType::KATZ:
+            {
+                score = (*it)->SKC();
+                break;
+            }
+            case IndexType::BPC:
+            {
+                score = (*it)->SBPC();
+                break;
+            }
             }
 
             if (gtThan)
             {
                 if (score > threshold)
                 {
-                    qDebug() << "matching vertex" << (*it)->number() << "score" << score;
+                    qCDebug(lcStorage) << "matching vertex" << (*it)->number() << "score" << score;
                     foundList << (*it)->number();
                 }
             }
@@ -1093,7 +1139,7 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
             {
                 if (score >= threshold)
                 {
-                    qDebug() << "matching vertex" << (*it)->number() << "score" << score;
+                    qCDebug(lcStorage) << "matching vertex" << (*it)->number() << "score" << score;
                     foundList << (*it)->number();
                 }
             }
@@ -1101,7 +1147,7 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
             {
                 if (score < threshold)
                 {
-                    qDebug() << "matching vertex" << (*it)->number() << "score" << score;
+                    qCDebug(lcStorage) << "matching vertex" << (*it)->number() << "score" << score;
                     foundList << (*it)->number();
                 }
             }
@@ -1109,7 +1155,7 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
             {
                 if (score <= threshold)
                 {
-                    qDebug() << "matching vertex" << (*it)->number() << "score" << score;
+                    qCDebug(lcStorage) << "matching vertex" << (*it)->number() << "score" << score;
                     foundList << (*it)->number();
                 }
             }
@@ -1119,13 +1165,13 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
     if (!foundList.isEmpty())
     {
         searchResult = true;
-        qDebug() << "One or more matching nodes found. Signaling to GW to highlight them...";
+        qCDebug(lcStorage) << "One or more matching nodes found. Signaling to GW to highlight them...";
         progressStatus(tr("Found %1 matching nodes.").arg(foundList.size()));
         emit signalNodesFound(foundList);
     }
     else
     {
-        qDebug() << "No matching nodes found. Return.";
+        qCDebug(lcStorage) << "No matching nodes found. Return.";
         progressStatus(tr("Could not find any nodes matching your choices."));
     }
 
@@ -1144,7 +1190,7 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
  */
 void Graph::vertexIsolatedAllToggle(const bool &toggle)
 {
-    qDebug() << "Setting all isolated vertices to" << toggle;
+    qCDebug(lcStorage) << "Setting all isolated vertices to" << toggle;
 
     VList::const_iterator it;
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
@@ -1155,7 +1201,7 @@ void Graph::vertexIsolatedAllToggle(const bool &toggle)
         }
         else
         {
-            qDebug() << "vertex" << (*it)->number()
+            qCDebug(lcStorage) << "vertex" << (*it)->number()
                      << "is isolated. Toggling it and emitting setVertexVisibility signal to GW...";
             (*it)->setEnabled(toggle);
 
@@ -1175,10 +1221,10 @@ bool Graph::vertexIsolated(const int &v1) const
 {
     if (m_graph[vpos[v1]]->isIsolated())
     {
-        qDebug() << "vertex:" << v1 << "is isolated";
+        qCDebug(lcStorage) << "vertex:" << v1 << "is isolated";
         return true;
     }
-    qDebug() << "vertex:" << v1 << "not isolated";
+    qCDebug(lcStorage) << "vertex:" << v1 << "not isolated";
     return false;
 }
 

@@ -16,6 +16,7 @@
 #include "dialogdissimilarities.h"
 
 #include <QDebug>
+#include "forms_logging.h"
 #include <QPushButton>
 
 
@@ -48,12 +49,12 @@ DialogDissimilarities::DialogDissimilarities (QWidget *parent) : QDialog (parent
 
 
 void DialogDissimilarities::getUserChoices(){
-    qDebug()<< "DialogDissimilarities: gathering Data!...";
+    qCDebug(lcForms)<< "DialogDissimilarities: gathering Data!...";
     QString varLocation = (ui.variablesLocationSelect)->currentText();
     QString metric = (ui.metricSelect)->currentText();
     bool diagonal = (ui.diagonalCheckBox)->isChecked();
 
-    qDebug()<< "DialogDissimilarities: user selected: "
+    qCDebug(lcForms)<< "DialogDissimilarities: user selected: "
             << varLocation
             << metric;
     emit userChoices( metric, varLocation, diagonal  );

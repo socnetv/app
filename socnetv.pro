@@ -12,7 +12,7 @@ TEMPLATE = app
 CONFIG  += qt thread $${ALLOW_WARNINGS} $${MY_TARGET_BUILD}
 CONFIG  += c++17
 TARGET = socnetv
-VERSION=3.6
+VERSION=3.7
 LANGUAGE = C++
 
 
@@ -53,7 +53,9 @@ FORMS += src/forms/dialogfilteredgesbyweight.ui \
     src/forms/dialogfilterbyattribute.ui \
     src/forms/dialogexportpdf.ui \
     src/forms/dialogexportimage.ui \
-    src/forms/dialogbulkedit.ui
+    src/forms/dialogbulkedit.ui \
+    src/forms/dialogcentralitykatz.ui \
+    src/forms/dialogcentralitybonacich.ui
 
 HEADERS += src/mainwindow.h \
     src/texteditor.h \
@@ -114,10 +116,42 @@ HEADERS += src/mainwindow.h \
     src/forms/dialogexportimage.h \
     src/forms/dialogsysteminfo.h \
     src/forms/dialogbulkedit.h \
+    src/forms/dialogcentralitykatz.h \
+    src/forms/dialogcentralitybonacich.h \
     src/global.h
 
 SOURCES += src/main.cpp \
     src/mainwindow.cpp \
+    src/mainwindow/lifecycle/mainwindow_lifecycle.cpp \
+    src/mainwindow/init/mainwindow_init_settings.cpp \
+    src/mainwindow/init/mainwindow_init_actions.cpp \
+    src/mainwindow/init/mainwindow_init_menu.cpp \
+    src/mainwindow/init/mainwindow_init_panels.cpp \
+    src/mainwindow/init/mainwindow_init_app.cpp \
+    src/mainwindow/network/mainwindow_network_file.cpp \
+    src/mainwindow/network/mainwindow_network_import_export.cpp \
+    src/mainwindow/network/mainwindow_network_random.cpp \
+    src/mainwindow/network/mainwindow_network_web.cpp \
+    src/mainwindow/network/mainwindow_network_view.cpp \
+    src/mainwindow/edit/mainwindow_edit_node.cpp \
+    src/mainwindow/edit/mainwindow_edit_edge.cpp \
+    src/mainwindow/edit/mainwindow_edit_selection.cpp \
+    src/mainwindow/edit/mainwindow_edit_relation.cpp \
+    src/mainwindow/edit/mainwindow_edit_filters.cpp \
+    src/mainwindow/analyze/mainwindow_analyze_centrality.cpp \
+    src/mainwindow/analyze/mainwindow_analyze_distance.cpp \
+    src/mainwindow/analyze/mainwindow_analyze_matrices.cpp \
+    src/mainwindow/analyze/mainwindow_analyze_cohesion.cpp \
+    src/mainwindow/analyze/mainwindow_analyze_clustering.cpp \
+    src/mainwindow/analyze/mainwindow_analyze_similarity.cpp \
+    src/mainwindow/analyze/mainwindow_analyze_prominence.cpp \
+    src/mainwindow/analyze/mainwindow_analyze_shared.cpp \
+    src/mainwindow/dispatch/mainwindow_dispatch.cpp \
+    src/mainwindow/scripting/mainwindow_interactive_script.cpp \
+    src/mainwindow/layout/mainwindow_layout.cpp \
+    src/mainwindow/options/mainwindow_options.cpp \
+    src/mainwindow/help/mainwindow_help.cpp \
+    src/mainwindow/edit/mainwindow_edit_shared.cpp \
     src/texteditor.cpp \
     src/engine/graph_distance_progress_sink.cpp \
     src/engine/distance_engine.cpp \
@@ -146,15 +180,20 @@ SOURCES += src/main.cpp \
     src/graph/distances/graph_distance_facade.cpp \
     src/graph/distances/graph_distance_cache.cpp \
     src/graph/centrality/graph_centrality.cpp \
+    src/graph/centrality/graph_centrality_katz.cpp \
+    src/graph/centrality/graph_centrality_bonacich.cpp \
     src/graph/centrality/graph_prestige.cpp \
     src/graph/prominence/graph_prominence_distribution.cpp \
     src/graph/matrices/graph_matrix_adjacency.cpp \
+    src/graph/matrices/graph_matrix_distances.cpp \
+    src/graph/matrices/graph_matrix_reachability.cpp \
     src/graph/generators/graph_random_networks.cpp \
     src/graph/crawler/graph_crawler.cpp \
     src/graph/layouts/graph_layouts_basic.cpp \
     src/graph/layouts/graph_layouts_force.cpp \
     src/graph/reachability/graph_reachability_walks.cpp \
     src/graph/cohesion/graph_cliques.cpp \
+    src/graph/cohesion/graph_connectivity.cpp \
     src/graph/clustering/graph_triad_census.cpp \
     src/graph/clustering/graph_clustering_coefficients.cpp \
     src/graph/clustering/graph_clustering_hierarchical.cpp \
@@ -211,7 +250,9 @@ SOURCES += src/main.cpp \
     src/forms/dialogexportpdf.cpp \
     src/forms/dialogexportimage.cpp \
     src/forms/dialogsysteminfo.cpp \
-    src/forms/dialogbulkedit.cpp
+    src/forms/dialogbulkedit.cpp \
+    src/forms/dialogcentralitykatz.cpp \
+    src/forms/dialogcentralitybonacich.cpp
 
 
 RESOURCES = src/images.qrc \
@@ -220,8 +261,8 @@ RESOURCES = src/images.qrc \
 
 # This is Windows only
 win32 {
-  VERSION = 3.6.0.1           # major.minor.patch.build
-  VERSION_PE_HEADER = 3.6     # MSVC link.exe option /VERSION:x.y expects two numeric components (major.minor)
+  VERSION = 3.7.0.1           # major.minor.patch.build
+  VERSION_PE_HEADER = 3.7     # MSVC link.exe option /VERSION:x.y expects two numeric components (major.minor)
 
   #RC_FILE = src/icon.rc
   RC_ICONS = src/images/socnetv.ico

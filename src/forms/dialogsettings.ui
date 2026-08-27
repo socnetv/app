@@ -153,7 +153,7 @@
          <property name="minimumSize">
           <size>
            <width>470</width>
-           <height>118</height>
+           <height>150</height>
           </size>
          </property>
          <property name="title">
@@ -340,6 +340,52 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt;&quot;&gt;- Spline charts, which present data as a series of data points connected by lines. &lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt;&quot;&gt;- Area charts, which present data as an area bound by two lines.&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt;&quot;&gt;- Bar charts, which present data as vertical bars. &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_30">
+            <item>
+             <widget class="QLabel" name="label_26">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Output Format&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select whether new reports (i.e. Analyze &amp;gt; ...) are written as a full HTML document, or a lean CSV table for opening in a spreadsheet application.&lt;/p&gt;&lt;p&gt;CSV is not offered for every report - narrative/single-value reports (e.g. Connectedness) and the visual adjacency plot are always HTML, since a CSV file has no meaningful equivalent for them.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Output format</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_28">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>98</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QComboBox" name="reportsOutputFormatSelect">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>170</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Output Format&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select whether new reports are written as a full HTML document (default), or a lean CSV table.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
              </widget>
             </item>
@@ -1354,9 +1400,6 @@ p, li { white-space: pre-wrap; }
             </item>
             <item>
              <widget class="QRadioButton" name="edgeShapeRadioBezier">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Default edge shape&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select the default edge shape for all edges. &lt;/p&gt;&lt;p&gt;Edges can be either straight lines (default) or bezier curves.&lt;/p&gt;&lt;p&gt;This will apply to all existing edgesimmediately.&lt;/p&gt;&lt;p&gt;Once you press OK, the default edge shape will be saved and it will be used in all future SocNetV sessions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -2279,7 +2322,7 @@ p, li { white-space: pre-wrap; }
                </size>
               </property>
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Index Method&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Use the drop-down menu on the right to select the indexing algorithm of the graphics engine for managing positional information about items on the canvas.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;BspTreeIndex&lt;/span&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;: &lt;/span&gt;A Binary Space Partitioning tree is applied. All item location algorithms are of an order close to logarithmic complexity, by making use of binary search. Adding, moving and removing items is logarithmic. This approach is best for static scenes (i.e., scenes where most items do not move).&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;NoIndex&lt;/span&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;: &lt;/span&gt;No index is applied. Item location is of linear complexity, as all items on the scene are searched. Adding, moving and removing items, however, is done in constant time. This approach is ideal for dynamic scenes, where many items are added, moved or removed continuously.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Index Method&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Controls how the graphics engine indexes item positions on the canvas. &lt;span style=&quot; font-weight:600;&quot;&gt;NoIndex is strongly recommended&lt;/span&gt; and is the default. SocNetV networks are dynamic — nodes and edges are continuously moved, added, and removed. BspTreeIndex rebuilds its spatial tree on every such change, which causes severe slowdowns during rubber-band selection and node drag on networks with more than a few hundred nodes.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;NoIndex&lt;/span&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;: &lt;/span&gt;No index. Item location is O(N), but adding, moving, and removing items is O(1). Ideal for dynamic scenes. &lt;span style=&quot; font-weight:600;&quot;&gt;(Recommended)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;BspTreeIndex&lt;/span&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;: &lt;/span&gt;A Binary Space Partitioning tree. Item location is O(log N), but every move triggers a tree rebuild. Only suitable for static scenes where items rarely change position.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string>Index Method</string>
@@ -2320,11 +2363,11 @@ p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt; font-weight:600;&quot;&gt;Index Method&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'DejaVu Sans'; font-size:10pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt;&quot;&gt;Select one of the indexing algorithms the graphics engine provides for managing positional information about items on the canvas.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt;&quot;&gt;Controls how the graphics engine indexes item positions on the canvas. &lt;/span&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt; font-weight:600;&quot;&gt;NoIndex is strongly recommended&lt;/span&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt;&quot;&gt; and is the default. SocNetV networks are dynamic — nodes and edges are continuously moved, added, and removed. BspTreeIndex rebuilds its spatial tree on every such change, causing severe slowdowns during rubber-band selection and node drag on networks with more than a few hundred nodes.&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'DejaVu Sans'; font-size:10pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt; font-weight:600; font-style:italic;&quot;&gt;BspTreeIndex&lt;/span&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt; font-style:italic;&quot;&gt;: &lt;/span&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt;&quot;&gt;A Binary Space Partitioning tree is applied. All item location algorithms are of an order close to logarithmic complexity, by making use of binary search. Adding, moving and removing items is logarithmic. This approach is best for static scenes (i.e., scenes where most items do not move).&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt; font-weight:600; font-style:italic;&quot;&gt;NoIndex&lt;/span&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt; font-style:italic;&quot;&gt;: &lt;/span&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt;&quot;&gt;No index. Item location is O(N), but adding, moving, and removing items is O(1). Best for dynamic scenes. &lt;/span&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt; font-weight:600;&quot;&gt;(Recommended)&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt; font-weight:600; font-style:italic;&quot;&gt;NoIndex&lt;/span&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt; font-style:italic;&quot;&gt;:  &lt;/span&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt;&quot;&gt;No index is applied. Item location is of linear complexity, as all items on the scene are searched. Adding, moving and removing items, however, is done in constant time. This approach is ideal for dynamic scenes, where many items are added, moved or removed continuously.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt; font-weight:600; font-style:italic;&quot;&gt;BspTreeIndex&lt;/span&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt; font-style:italic;&quot;&gt;: &lt;/span&gt;&lt;span style=&quot; font-family:'DejaVu Sans'; font-size:10pt;&quot;&gt;A Binary Space Partitioning tree. Item location is O(log N), but every move triggers a tree rebuild. Only suitable for static scenes where items rarely change position.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
              </widget>
             </item>

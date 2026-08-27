@@ -19,6 +19,26 @@
 /**
  * @brief Computes the Degree Prestige (in-degree) of each vertex - diagonal included
  *	Also the mean value and the variance of the in-degrees.
+ *
+ * Meaning: prestige measures flip centrality's question around - instead of "how many ties
+ * does this actor have," they ask "how many ties point *at* this actor." Degree prestige is
+ * the simplest version: how many others chose to connect to this actor, ignoring how many
+ * connections the actor made outward. Meaningless on an undirected graph, where in- and
+ * out-ties are the same thing.
+ *
+ * When to use: directed networks where "being chosen by others" is the thing worth measuring
+ * - citation counts, follower counts, nomination/endorsement data - and a quick raw count is
+ * enough (see PageRank Prestige below when the *quality* of who's choosing you also matters).
+ *
+ * Compare to: Degree Centrality (DC, see centralityDegree()) is this same raw-count idea for
+ * outbound ties (or all ties, on an undirected graph).
+ *
+ * Weights: no inversion choice here (considerWeights only) - when considered, weights are
+ * summed directly, so a stronger inbound tie always adds more.
+ *
+ * Math: DP(i) = number of inbound edges to i (or their summed weights, if weights are
+ * considered). Standardized SDP(i) = DP(i) / (N-1).
+ *
  * @param weights
  * @param dropIsolates
  */
@@ -27,15 +47,14 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
 
     if (calculatedDP)
     {
-        qDebug() << "Graph not changed - no need to recompute Degree Prestige scores. Returning";
+        qCDebug(lcCentrality) << "Graph not changed - no need to recompute Degree Prestige scores. Returning";
         return;
     }
 
-    qDebug() << "(Re)Computing Degree Prestige scores...";
+    qCDebug(lcCentrality) << "(Re)Computing Degree Prestige scores...";
 
     int N = vertices(dropIsolates);
     int v2 = 0, v1 = 0;
-    int progressCounter = 0;
 
     VList::const_iterator it;
 
@@ -57,34 +76,31 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
 
     QString pMsg = tr("Computing Degree Prestige (in-Degree). \n Please wait ...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
-    qDebug() << "vertices"
+    qCDebug(lcCentrality) << "vertices"
              << N
              << "graph modified. Recomputing...";
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
-        progressUpdate(++progressCounter);
         if (progressCanceled())
         {
             delete enabledInEdges;
-            progressFinish();
             return;
         }
         v1 = (*it)->number();
-        qDebug() << "computing DP for vertex" << v1;
+        qCDebug(lcCentrality) << "computing DP for vertex" << v1;
 
         DP = 0;
 
         if (!(*it)->isEnabled())
         {
-            qDebug() << "vertex disabled. Continue.";
+            qCDebug(lcCentrality) << "vertex disabled. Continue.";
             continue;
         }
 
-        qDebug() << "Iterate over inbound edges of "
+        qCDebug(lcCentrality) << "Iterate over inbound edges of "
                  << v1;
 
         enabledInEdges = (*it)->inEdgesEnabledHash();
@@ -96,12 +112,12 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
 
             v2 = hit.key();
 
-            qDebug() << "inbound edge from" << v2;
+            qCDebug(lcCentrality) << "inbound edge from" << v2;
 
             if (!edgeExists(v2, v1))
             {
                 // sanity check
-                qDebug() << "Cannot verify inbound edge"
+                qCDebug(lcCentrality) << "Cannot verify inbound edge"
                          << v2 << "CONTINUE";
                 ++hit;
                 continue;
@@ -127,7 +143,7 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
         (*it)->setDP(DP); // Set DP
         sumDP += DP;
 
-        qDebug() << "vertex " << (*it)->number()
+        qCDebug(lcCentrality) << "vertex " << (*it)->number()
                  << " DP " << DP;
     }
 
@@ -148,12 +164,12 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
         (*it)->setSDP(SDP);
         sumSDP += SDP;
 
-        qDebug() << "vertex " << (*it)->number() << " DP  "
+        qCDebug(lcCentrality) << "vertex " << (*it)->number() << " DP  "
                  << DP << " SDP " << (*it)->SDP();
 
         resolveClasses(SDP, discreteDPs, classesSDP);
 
-        qDebug("DP classes = %i ", classesSDP);
+        qCDebug(lcCentrality, "DP classes = %i ", classesSDP);
 
         if (maxSDP < SDP)
         {
@@ -172,7 +188,7 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
 
     meanSDP = sumSDP / (qreal)N;
 
-    qDebug("Graph: sumSDP = %f, meanSDP = %f", sumSDP, meanSDP);
+    qCDebug(lcCentrality, "Graph: sumSDP = %f, meanSDP = %f", sumSDP, meanSDP);
 
     // Calculate Variance and the Degree Prestigation of the whole graph. :)
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
@@ -197,18 +213,37 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
     if (!considerWeights)
     {
         groupDP = nom / denom;
-        qDebug("Graph: varianceSDP = %f, groupDP = %f", varianceSDP, groupDP);
+        qCDebug(lcCentrality, "Graph: varianceSDP = %f, groupDP = %f", varianceSDP, groupDP);
     }
 
     delete enabledInEdges;
     calculatedDP = true;
-
-    progressFinish();
 }
 
 /**
  * @brief Computes Proximity Prestige of each vertex
  * Also the mean value and the variance of it..
+ *
+ * Meaning: how close everyone else who can reach this actor actually is, on average -
+ * prestige's answer to closeness centrality. It rewards being easy to reach *and* being
+ * reachable by a large share of the network, so an actor reachable by only a couple of very
+ * close others still scores lower than one reachable, at moderate distance, by almost
+ * everyone.
+ *
+ * When to use: directed networks where you want a refined "how sought-after is this actor"
+ * score that accounts for distance, not just a raw inbound-tie count (see Degree Prestige for
+ * the simpler version).
+ *
+ * Compare to: Influence Range Closeness Centrality (IRCC, see centralityClosenessIR()) is this
+ * same idea from the centrality side (distance *to* others) rather than prestige's (distance
+ * *from* others), and likewise works on disconnected graphs.
+ *
+ * Weights: shortest-path-based, same as CC/IRCC - if a weight represents value/strength, invert
+ * it so a strong tie behaves like a short/cheap path.
+ *
+ * Math: for actor i, let I_i be the set of actors that can reach i (its influence domain).
+ * PP(i) = [ |I_i| / (V-1) ] / [ (sum of d(j,i) for j in I_i) / |I_i| ] - the fraction of the
+ * network that can reach i, divided by their average distance to i.
  */
 void Graph::prestigeProximity(const bool considerWeights,
                               const bool inverseWeights,
@@ -216,11 +251,11 @@ void Graph::prestigeProximity(const bool considerWeights,
 {
     if (calculatedPP)
     {
-        qDebug() << "Graph not changed - no need to recompute proximity prestige. Returning";
+        qCDebug(lcCentrality) << "Graph not changed - no need to recompute proximity prestige. Returning";
         return;
     }
 
-    qDebug() << "(Re)Computing Proximity prestige scores...";
+    qCDebug(lcCentrality) << "(Re)Computing Proximity prestige scores...";
 
     graphDistancesGeodesic(false, considerWeights, inverseWeights, inverseWeights);
     if (progressCanceled())
@@ -241,19 +276,14 @@ void Graph::prestigeProximity(const bool considerWeights,
     variancePP = 0;
     meanPP = 0;
 
-    int progressCounter = 0;
-
     QString pMsg = tr("Computing Proximity Prestige scores. \nPlease wait ...");
     progressStatus(pMsg);
-    progressCreate(V, pMsg);
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
 
-        progressUpdate(++progressCounter);
         if (progressCanceled())
         {
-            progressFinish();
             return;
         }
         PP = 0;
@@ -276,7 +306,7 @@ void Graph::prestigeProximity(const bool considerWeights,
                 continue;
             }
 
-            dist = (*jt)->distance((*it)->number());
+            dist = apspDistance((*jt)->number(), (*it)->number());
 
             if (dist != RAND_MAX)
             {
@@ -285,7 +315,7 @@ void Graph::prestigeProximity(const bool considerWeights,
             }
         }
 
-        qDebug() << "vertex"
+        qCDebug(lcCentrality) << "vertex"
                  << (*it)->number()
                  << "actors in influence domain Ii" << Ii
                  << "actors in network" << (V - 1)
@@ -308,7 +338,6 @@ void Graph::prestigeProximity(const bool considerWeights,
 
         resolveClasses(PP, discretePPs, classesPP);
 
-        // qDebug("PP classes = %i ", classesPP);
         if (maxPP < PP)
         {
             maxPP = PP;
@@ -338,17 +367,40 @@ void Graph::prestigeProximity(const bool considerWeights,
 
     variancePP = variancePP / V;
 
-    qDebug() << "sumPP = " << sumPP
+    qCDebug(lcCentrality) << "sumPP = " << sumPP
              << " meanPP = " << meanPP
              << " variancePP " << variancePP;
 
     calculatedPP = true;
-
-    progressFinish();
 }
 
 /**
  * @brief Calculates the PageRank Prestige of each vertex
+ *
+ * Meaning: the same idea Google originally used to rank web pages - an actor is prestigious
+ * if prestigious actors point to it. Unlike plain degree prestige (which treats every inbound
+ * tie equally), a link from someone with few outbound ties and high prestige counts for much
+ * more than one of a hundred outbound ties from someone unremarkable, and that prestige keeps
+ * circulating until every score stabilizes.
+ *
+ * When to use: directed networks where endorsement quality matters, not just quantity - web
+ * links, citation networks, recommendation/referral graphs - anywhere "an endorsement from
+ * someone important should count for more."
+ *
+ * Compare to: Degree Prestige (DP) counts inbound ties equally; PageRank weighs each one by
+ * the endorser's own prestige divided by their out-degree. Eigenvector Centrality (EVC, see
+ * centralityEigenvector()) is the closest centrality-side analogue - both are "importance
+ * feeds back on itself" measures - but EVC is built for undirected/symmetric graphs while
+ * PageRank is built for directed graphs with an explicit damping factor.
+ *
+ * Weights: no considerWeights/inverseWeights choice at all - every inbound link always counts
+ * as weight 1, normalized by the endorser's out-degree (see Math below), regardless of any
+ * edge weight set on the graph.
+ *
+ * Math: iteratively, PRP(i) = (1-d)/N + d * Sum_j( PRP(j) / outLinks(j) ) for every j linking
+ * to i, where d is the damping factor (0.85, matching Google's original choice) and N is the
+ * number of actors. Repeated until scores stop changing by more than a small delta.
+ *
  * @param dropIsolates
  */
 void Graph::prestigePageRank(const bool &dropIsolates)
@@ -356,11 +408,11 @@ void Graph::prestigePageRank(const bool &dropIsolates)
 
     if (calculatedPRP)
     {
-        qDebug() << "Graph not changed - no need to recompute Pagerank scores. Return ";
+        qCDebug(lcCentrality) << "Graph not changed - no need to recompute Pagerank scores. Return ";
         return;
     }
 
-    qDebug() << "(Re)Computing PageRank prestige scores...";
+    qCDebug(lcCentrality) << "(Re)Computing PageRank prestige scores...";
 
     discretePRPs.clear();
     sumPRP = 0;
@@ -394,7 +446,6 @@ void Graph::prestigePageRank(const bool &dropIsolates)
 
     QString pMsg = tr("Computing PageRank Prestige scores. \nPlease wait ...");
     progressStatus(pMsg);
-    progressCreate(N, pMsg);
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
@@ -406,7 +457,7 @@ void Graph::prestigePageRank(const bool &dropIsolates)
         // compute inEdgesCount() to warm up inEdgesConst for everyone
         inLinks = (*it)->inEdgesCount();
         outLinks = (*it)->outEdgesCount();
-        qDebug() << "node "
+        qCDebug(lcCentrality) << "node "
                  << (*it)->number() << " PR = " << (*it)->PRP()
                  << " inLinks (set const): " << inLinks
                  << " outLinks (set const): " << outLinks;
@@ -414,21 +465,19 @@ void Graph::prestigePageRank(const bool &dropIsolates)
 
     if (edgesEnabled() == 0)
     {
-        qDebug() << "all vertices are isolated and of equal PR. Stop";
+        qCDebug(lcCentrality) << "all vertices are isolated and of equal PR. Stop";
         return;
     }
 
-    progressUpdate(N / 3);
     if (progressCanceled())
     {
-        progressFinish();
         return;
     }
     // begin iteration - continue until we reach our desired delta
     while (maxDelta > delta)
     {
 
-        qDebug() << "ITERATION : " << iterations;
+        qCDebug(lcCentrality) << "ITERATION : " << iterations;
 
         sumPRP = 0;
         maxDelta = 0;
@@ -442,19 +491,19 @@ void Graph::prestigePageRank(const bool &dropIsolates)
             sumInLinksPR = 0;
             oldPRP = (*it)->PRP();
 
-            qDebug() << "computing PR for node: "
+            qCDebug(lcCentrality) << "computing PR for node: "
                      << (*it)->number() << " current PR " << oldPRP;
 
             if ((*it)->isIsolated())
             {
                 // isolates have constant PR = 1/N
-                qDebug() << "isolated - CONTINUE ";
+                qCDebug(lcCentrality) << "isolated - CONTINUE ";
                 continue;
             }
 
             jt = (*it)->m_inEdges.cbegin();
 
-            qDebug() << "Iterate over inEdges of "
+            qCDebug(lcCentrality) << "Iterate over inEdges of "
                      << (*it)->number();
 
             while (jt != (*it)->m_inEdges.cend())
@@ -474,7 +523,7 @@ void Graph::prestigePageRank(const bool &dropIsolates)
 
                 referrer = jt.key();
 
-                qDebug() << "Node " << (*it)->number()
+                qCDebug(lcCentrality) << "Node " << (*it)->number()
                          << " inLinked from neighbor " << referrer << " vpos "
                          << vpos[referrer];
 
@@ -487,7 +536,7 @@ void Graph::prestigePageRank(const bool &dropIsolates)
 
                     transferedPRP = (outLinks != 0) ? (PRP / outLinks) : PRP;
 
-                    qDebug() << "neighbor " << referrer
+                    qCDebug(lcCentrality) << "neighbor " << referrer
                              << " has PR = " << PRP
                              << " and outLinks = " << outLinks
                              << "  will transfer " << transferedPRP;
@@ -503,7 +552,7 @@ void Graph::prestigePageRank(const bool &dropIsolates)
 
             sumPRP += PRP;
 
-            qDebug() << "Node "
+            qCDebug(lcCentrality) << "Node "
                      << (*it)->number()
                      << " new PR = " << PRP
                      << " old PR was = " << oldPRP
@@ -515,14 +564,14 @@ void Graph::prestigePageRank(const bool &dropIsolates)
             if (maxDelta < fabs(PRP - oldPRP))
             {
                 maxDelta = fabs(PRP - oldPRP);
-                qDebug() << "Setting new maxDelta = "
+                qCDebug(lcCentrality) << "Setting new maxDelta = "
                          << maxDelta;
             }
         }
 
         // normalize in every iteration
 
-        qDebug() << "sumPRP for this iteration " << sumPRP;
+        qCDebug(lcCentrality) << "sumPRP for this iteration " << sumPRP;
 
         for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
         {
@@ -542,10 +591,8 @@ void Graph::prestigePageRank(const bool &dropIsolates)
         iterations++;
     }
 
-    progressUpdate(2 * N / 3);
     if (progressCanceled())
     {
-        progressFinish();
         return;
     }
     if (N != 0)
@@ -557,7 +604,7 @@ void Graph::prestigePageRank(const bool &dropIsolates)
         meanPRP = SPRP;
     }
 
-    qDebug() << "sumPRP = " << sumPRP << "  N = " << N
+    qCDebug(lcCentrality) << "sumPRP = " << sumPRP << "  N = " << N
              << "  meanPRP = " << meanPRP;
 
     // calculate std and min/max PRPs
@@ -575,25 +622,22 @@ void Graph::prestigePageRank(const bool &dropIsolates)
         SPRP = PRP / maxPRP;
         (*it)->setSPRP(SPRP);
 
-        qDebug() << "vertex: " << (*it)->number()
+        qCDebug(lcCentrality) << "vertex: " << (*it)->number()
                  << " PR = " << PRP << " standard PR = " << SPRP
                  << " t_sumPRP " << t_sumPRP;
 
         t_variance = (PRP - meanPRP);
         t_variance *= t_variance;
-        qDebug() << "PRP " << (*it)->PRP() << "  t_variance "
+        qCDebug(lcCentrality) << "PRP " << (*it)->PRP() << "  t_variance "
                  << PRP - meanPRP << " t_variance^2" << t_variance;
         variancePRP += t_variance;
     }
 
-    qDebug() << "PRP' Variance   " << variancePRP << " N " << N;
+    qCDebug(lcCentrality) << "PRP' Variance   " << variancePRP << " N " << N;
     variancePRP = variancePRP / (qreal)N;
-    qDebug() << "PRP' Variance: " << variancePRP;
+    qCDebug(lcCentrality) << "PRP' Variance: " << variancePRP;
 
     calculatedPRP = true;
-
-    progressUpdate(N);
-    progressFinish();
 
     return;
 }

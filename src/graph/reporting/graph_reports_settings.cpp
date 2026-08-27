@@ -53,7 +53,7 @@ void Graph::setReportsLabelLength(const int &length)
  */
 void Graph::setReportsChartType(const int &type)
 {
-    qDebug() << "Graph::setReportsChartType() - type:" << type;
+    qCDebug(lcReporting) << "Graph::setReportsChartType() - type:" << type;
     if (type == -1)
     {
         m_reportsChartType = ChartType::None;
@@ -70,4 +70,14 @@ void Graph::setReportsChartType(const int &type)
     {
         m_reportsChartType = ChartType::Bars;
     }
+}
+
+/**
+ * @brief Sets the output format (HTML or CSV) new reports are written in
+ * @param format
+ */
+void Graph::setReportsOutputFormat(const int &format)
+{
+    qCDebug(lcReporting) << "Graph::setReportsOutputFormat() - format:" << format;
+    m_reportsOutputFormat = (format == ReportFormat::Csv) ? ReportFormat::Csv : ReportFormat::Html;
 }

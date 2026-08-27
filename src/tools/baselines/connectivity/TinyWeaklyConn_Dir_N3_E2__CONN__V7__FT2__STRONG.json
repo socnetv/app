@@ -1,0 +1,44 @@
+{
+    "connectivity": {
+        "component_count": 3,
+        "connected": false,
+        "type": "strong"
+    },
+    "counts": {
+        "links_sna": 2,
+        "nodes": 3,
+        "ties_graph": 2
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "TinyWeaklyConn_Dir_N3_E2.paj",
+        "path": "src/data/TinyWeaklyConn_Dir_N3_E2.paj"
+    },
+    "graph": {
+        "directed": true,
+        "weighted": false
+    },
+    "kernel": "connectivity",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 0,
+        "load_msg": "",
+        "net_name": "TinyWeaklyConn_Dir_N3_E2.paj",
+        "ok": true
+    },
+    "per_node": [
+        {
+            "id": 1,
+            "label": "A"
+        },
+        {
+            "id": 2,
+            "label": "B"
+        },
+        {
+            "id": 3,
+            "label": "C"
+        }
+    ],
+    "schema_version": 7
+}

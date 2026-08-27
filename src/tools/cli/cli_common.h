@@ -29,6 +29,17 @@ namespace cli
         int benchRuns = 0; // 0 = off
         QString kernel;    // "distance", etc.
         bool strict = false; // if true, timing regressions fail (exit non-zero)
+
+        QString connectivityType = "weak"; // "weak"|"strong", for --kernel connectivity on directed graphs
+
+        QString connMode = "global"; // "local"|"global", for --kernel vertex_connectivity
+        int connSource = -1;         // required for connMode == "local"
+        int connTarget = -1;         // required for connMode == "local"
+
+        qreal katzAlpha = -1; // >= 0 enables Katz Centrality for --kernel prominence
+
+        qreal bonacichAlpha = -1; // >= 0 enables Bonacich Power Centrality for --kernel prominence
+        qreal bonacichBeta = 0;
     };
 
     // ---------------- printing ----------------

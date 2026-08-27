@@ -1,0 +1,30 @@
+{
+    "connectivity_type": "undirected",
+    "counts": {
+        "links_sna": 6,
+        "nodes": 6,
+        "ties_graph": 3
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "TinyDisconnected_Undir_N6_E4.paj",
+        "path": "src/data/TinyDisconnected_Undir_N6_E4.paj"
+    },
+    "global": {
+        "value": 0
+    },
+    "graph": {
+        "directed": false,
+        "weighted": false
+    },
+    "kernel": "vertex_connectivity",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 0,
+        "load_msg": "",
+        "net_name": "TinyDisconnected_Undir_N6_E4.paj",
+        "ok": true
+    },
+    "mode": "global",
+    "schema_version": 9
+}

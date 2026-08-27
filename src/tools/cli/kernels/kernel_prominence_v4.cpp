@@ -16,6 +16,10 @@
 #include <QJsonArray>
 #include <QTextStream>
 
+#include <algorithm>
+#include <numeric>
+#include <vector>
+
 namespace cli
 {
 
@@ -23,7 +27,7 @@ namespace cli
     // Per-node builder
     // ------------------------------
 
-    static QJsonArray buildPerNodeArrayV4(Graph &g)
+    static QJsonArray buildPerNodeArrayV4(Graph &g, bool katzEnabled, bool bonacichEnabled)
     {
         QJsonArray arr;
 
@@ -37,6 +41,20 @@ namespace cli
             QJsonObject o;
             o["id"] = v;
             o["label"] = gv->label();
+
+            // ---- Katz (optional - only computed/valid when katzEnabled) ----
+            if (katzEnabled)
+            {
+                o["KC"] = d2s(gv->KC());
+                o["SKC"] = d2s(gv->SKC());
+            }
+
+            // ---- Bonacich (optional - only computed/valid when bonacichEnabled) ----
+            if (bonacichEnabled)
+            {
+                o["BPC"] = d2s(gv->BPC());
+                o["SBPC"] = d2s(gv->SBPC());
+            }
 
             // ---- Centrality ----
             o["DC"] = d2s(gv->DC());
@@ -104,10 +122,22 @@ namespace cli
         dataset["filetype"] = fileFormat;
         root["dataset"] = dataset;
 
+        const bool katzEnabled = (cfg.katzAlpha >= 0);
+        const bool bonacichEnabled = (cfg.bonacichAlpha >= 0);
+
         QJsonObject run;
         run["considerWeights"] = cfg.considerWeights;
         run["inverseWeights"] = cfg.inverseWeights;
         run["dropIsolates"] = cfg.dropIsolates;
+        run["katzEnabled"] = katzEnabled;
+        if (katzEnabled)
+            run["katzAlpha"] = d2s(cfg.katzAlpha);
+        run["bonacichEnabled"] = bonacichEnabled;
+        if (bonacichEnabled)
+        {
+            run["bonacichAlpha"] = d2s(cfg.bonacichAlpha);
+            run["bonacichBeta"] = d2s(cfg.bonacichBeta);
+        }
         root["run"] = run;
 
         const int ties_graph = load.tiesGraph; // canonical, already correct
@@ -130,7 +160,7 @@ namespace cli
         metrics["density"] = d2s(g.graphDensity());
         root["metrics"] = metrics;
 
-        root["per_node"] = buildPerNodeArrayV4(g);
+        root["per_node"] = buildPerNodeArrayV4(g, katzEnabled, bonacichEnabled);
 
         QJsonObject loadReport;
         loadReport["ok"] = load.ok;
@@ -149,7 +179,7 @@ namespace cli
 
     // ---- schema v4 compare ----
 
-    static bool cmpPerNodeArrayV4(const QJsonArray &eArr, const QJsonArray &aArr, QTextStream &err)
+    static bool cmpPerNodeArrayV4(const QJsonArray &eArr, const QJsonArray &aArr, bool katzEnabled, bool bonacichEnabled, QTextStream &err)
     {
         if (eArr.size() != aArr.size())
         {
@@ -257,7 +287,17 @@ namespace cli
                 "PRP", "SPRP",
                 "eccentricity"};
 
-            for (const QString &f : numFields)
+            // KC/SKC and BPC/SBPC are only populated (on both sides) when this run enabled the
+            // corresponding measure - see the "katzEnabled"/"bonacichEnabled" run-config checks
+            // in compareGoldenV4() below, which catch an enabled/disabled mismatch between
+            // baseline and current run before we get here.
+            QStringList allFields = numFields;
+            if (katzEnabled)
+                allFields << "KC" << "SKC";
+            if (bonacichEnabled)
+                allFields << "BPC" << "SBPC";
+
+            for (const QString &f : allFields)
                 cmpNodeFieldNumStrTol(e, a, f, eid, TOL);
 
             // Sentinel flag must be exact
@@ -291,6 +331,10 @@ namespace cli
         ok &= cmpBool(eRun, aRun, "considerWeights", err);
         ok &= cmpBool(eRun, aRun, "inverseWeights", err);
         ok &= cmpBool(eRun, aRun, "dropIsolates", err);
+        ok &= cmpBool(eRun, aRun, "katzEnabled", err);
+        const bool katzEnabled = aRun.value("katzEnabled").toBool();
+        ok &= cmpBool(eRun, aRun, "bonacichEnabled", err);
+        const bool bonacichEnabled = aRun.value("bonacichEnabled").toBool();
 
         const QJsonObject eCounts = expected.value("counts").toObject();
         const QJsonObject aCounts = actual.value("counts").toObject();
@@ -306,7 +350,7 @@ namespace cli
         // Per-node (always present in v4)
         const QJsonArray ePN = expected.value("per_node").toArray();
         const QJsonArray aPN = actual.value("per_node").toArray();
-        ok &= cmpPerNodeArrayV4(ePN, aPN, err);
+        ok &= cmpPerNodeArrayV4(ePN, aPN, katzEnabled, bonacichEnabled, err);
 
         if (!ok)
             return 1;
@@ -323,34 +367,80 @@ namespace cli
                               const HeadlessLoadResult &load,
                               Graph &g)
     {
-        // Force recomputation
-        g.resetDistanceCentralityCacheFlags();
+        auto run_compute_once_ms = [&]() -> qint64
+        {
+            // Force recomputation
+            g.resetDistanceCentralityCacheFlags();
 
-        QElapsedTimer t;
-        t.start();
+            QElapsedTimer t;
+            t.start();
 
-        // 1. Geodesic-based centralities
-        g.graphDistancesGeodesic(true,
-                                 cfg.considerWeights,
-                                 cfg.inverseWeights,
-                                 cfg.dropIsolates);
+            // 1. Geodesic-based centralities
+            g.graphDistancesGeodesic(true,
+                                     cfg.considerWeights,
+                                     cfg.inverseWeights,
+                                     cfg.dropIsolates);
 
-        // 2. Standalone centralities
-        g.centralityDegree(cfg.considerWeights, cfg.dropIsolates);
-        g.centralityInformation(cfg.considerWeights, cfg.dropIsolates);
-        g.centralityEigenvector(cfg.considerWeights, cfg.dropIsolates);
-        g.centralityClosenessIR(cfg.considerWeights,
+            // 2. Standalone centralities
+            g.centralityDegree(cfg.considerWeights, cfg.dropIsolates);
+            g.centralityInformation(cfg.considerWeights, cfg.inverseWeights);
+            g.centralityEigenvector(cfg.considerWeights, cfg.inverseWeights, cfg.dropIsolates);
+            g.centralityClosenessIR(cfg.considerWeights,
+                                    cfg.inverseWeights,
+                                    cfg.dropIsolates);
+
+            if (cfg.katzAlpha >= 0)
+                g.centralityKatz(cfg.katzAlpha, cfg.considerWeights,
+                                 cfg.inverseWeights, cfg.dropIsolates);
+
+            if (cfg.bonacichAlpha >= 0)
+                g.centralityBonacich(cfg.bonacichAlpha, cfg.bonacichBeta, cfg.considerWeights,
+                                     cfg.inverseWeights, cfg.dropIsolates);
+
+            // 3. Prestige
+            g.prestigeDegree(cfg.considerWeights, cfg.dropIsolates);
+            g.prestigeProximity(cfg.considerWeights,
                                 cfg.inverseWeights,
                                 cfg.dropIsolates);
+            g.prestigePageRank(cfg.dropIsolates);
 
-        // 3. Prestige
-        g.prestigeDegree(cfg.considerWeights, cfg.dropIsolates);
-        g.prestigeProximity(cfg.considerWeights,
-                            cfg.inverseWeights,
-                            cfg.dropIsolates);
-        g.prestigePageRank(cfg.dropIsolates);
+            return t.elapsed();
+        };
 
-        const qint64 computeMs = t.elapsed();
+        if (cfg.benchRuns > 0)
+        {
+            // warmup (not measured)
+            (void)run_compute_once_ms();
+
+            std::vector<qint64> ms;
+            ms.reserve(static_cast<size_t>(cfg.benchRuns));
+
+            for (int r = 0; r < cfg.benchRuns; ++r)
+                ms.push_back(run_compute_once_ms());
+
+            std::sort(ms.begin(), ms.end());
+
+            const qint64 minMs = ms.front();
+            const qint64 maxMs = ms.back();
+
+            const double meanMs =
+                std::accumulate(ms.begin(), ms.end(), 0.0) / static_cast<double>(ms.size());
+
+            const qint64 medianMs =
+                (ms.size() % 2 == 1)
+                    ? ms[ms.size() / 2]
+                    : (ms[ms.size() / 2 - 1] + ms[ms.size() / 2]) / 2;
+
+            printKV("COMPUTE_RUNS", cfg.benchRuns);
+            printKV("COMPUTE_MS_MIN", minMs);
+            printKV("COMPUTE_MS_MEDIAN", medianMs);
+            printKV("COMPUTE_MS_MEAN", meanMs);
+            printKV("COMPUTE_MS_MAX", maxMs);
+
+            return 0;
+        }
+
+        const qint64 computeMs = run_compute_once_ms();
         printKV("COMPUTE_MS", computeMs);
 
         const QJsonObject actual =

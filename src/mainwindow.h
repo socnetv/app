@@ -27,15 +27,21 @@
 #include <QPrinter>
 #include <QMessageBox>
 #include <QScrollArea>
-#include <QStack>
 #include <QThread>
 #include <QNetworkReply>
+#include <QLoggingCategory>
+#include <functional>
 
 // Allows to use QT_CHARTS namespace directives (see below)
 #include <QtCharts/QChartGlobal>
 
 #include "global.h"
 #include "graph/filters/filter_condition.h"
+
+// WS7 MW0: declared here since mainwindow.h is included by every src/mainwindow/<domain>/ slice
+// .cpp, defined once in mainwindow.cpp. One blanket category (unlike Graph's per-domain split in
+// graph.h) - MainWindow's slots are UI wiring, not independently-toggled algorithm domains.
+Q_DECLARE_LOGGING_CATEGORY(lcMainWindow)
 
 QT_BEGIN_NAMESPACE
 class QGraphicsScene;
@@ -116,13 +122,27 @@ class MainWindow : public QMainWindow
 
 public:
 
-    MainWindow(const QString &m_fileName=QString(), const bool &forceProgress=false, const bool &maximized=false, const bool &fullscreen=false, const int &debugLevel=0);
+    MainWindow(const QString &m_fileName=QString(), const bool &forceProgress=false, const bool &maximized=false, const bool &fullscreen=false, const int &debugLevel=0,
+              const QString &encodingOverride=QString(), const QString &interactiveScriptPath=QString());
     ~MainWindow();
 
     void slotOptionsCustomStylesheet(const bool checked);
     void slotStyleSheetByName(const QString &sheetFileName);
 
     void polishProgressDialog(QProgressDialog* dialog);
+
+    void setAppBusy(bool busy);
+
+    void runGraphOperationAsync(std::function<void()> operation,
+                                const QString &waitMessage,
+                                const QString &doneMessage = QString());
+
+    void runGraphOperationAsync(std::function<void()> operation,
+                                const QString &waitMessage,
+                                std::function<void()> onComplete);
+
+    bool confirmGenerationSize(qint64 expectedEdges, const QString &generatorLabel,
+                               bool scripted);
 
     void initGraph();
     void terminateThreads(const QString &reason);
@@ -138,6 +158,9 @@ public:
     void saveSettings();
 
     void initApp();
+
+    void runInteractiveScript(const QString &scriptPath);
+    void processNextInteractiveCommand();
 
     void initComboBoxes();
 
@@ -428,6 +451,7 @@ public slots:
     void slotAnalyzeMatrixGeodesics();
     void slotAnalyzeDistance();
     void slotAnalyzeDistanceAverage();
+    void slotAnalyzeGeodesicDistribution();
     void slotAnalyzeDiameter();
     void slotAnalyzeEccentricity();
 
@@ -435,6 +459,8 @@ public slots:
     void slotAnalyzeWalksTotal();
     void slotAnalyzeReachabilityMatrix();
     void slotAnalyzeConnectedness();
+    void slotAnalyzeNodeConnectivity();
+    void slotAnalyzeConnectivity();
 
     void slotAnalyzeCentralityDegree();
     void slotAnalyzeCentralityCloseness();
@@ -445,6 +471,8 @@ public slots:
     void slotAnalyzeCentralityStress();
     void slotAnalyzeCentralityPower();
     void slotAnalyzeCentralityEccentricity();
+    void slotAnalyzeCentralityKatz();
+    void slotAnalyzeCentralityBonacich();
 
     void slotAnalyzePrestigeDegree();
     void slotAnalyzePrestigePageRank();
@@ -579,10 +607,6 @@ public slots:
     void toolBoxLayoutByIndexApplyBtnPressed();
     void toolBoxLayoutForceDirectedApplyBtnPressed();
 
-
-    void slotProgressBoxCreate(const int &max=0, const QString &msg="Please wait...");
-    void slotProgressBoxDestroy(const int &max=0);
-
 protected:
     void resizeEvent(QResizeEvent * e);
     void closeEvent( QCloseEvent* ce );
@@ -605,6 +629,10 @@ private:
 
     QString fileName, previous_fileName, fileNameNoPath, progressMsg;
     QString initTextCodecName, userSelectedCodecName;
+    QString m_encodingOverride;
+    QStringList m_interactiveScriptLines;
+    int m_interactiveScriptIndex;
+    bool m_interactiveScriptQuitting = false;
     QString settingsFilePath, settingsDir ;
     QStringList fortuneCookie;
     QStringList tempFileNameNoPath, tips;
@@ -619,7 +647,13 @@ private:
 
     QList<TextEditor *> m_textEditors;
 
-    QStack<QProgressDialog *> progressDialogs;
+    // setAppBusy()'s own record of which actions it disabled, so it can restore exactly
+    // those on busy=false without clobbering actions legitimately disabled elsewhere for
+    // unrelated reasons (e.g. "no network loaded"). See WS15 P2 (roadmap_ws15_
+    // cancellation_progress_unification.md) - menuBar()/toolBar's own setEnabled(false)
+    // blocks clicks but doesn't disable each QAction's own shortcut, so Ctrl+N-style
+    // shortcuts could otherwise still fire and race a still-running background operation.
+    QList<QAction *> m_actionsDisabledForBusy;
 
     QPrinter *printer, *printerPDF;
 
@@ -665,7 +699,7 @@ private:
     QMenu *importSubMenu, *exportSubMenu, *editMenu, *analysisMenu, *helpMenu;
     QMenu *optionsMenu, *colorOptionsMenu, *edgeOptionsMenu, *nodeOptionsMenu;
     QMenu *editNodeMenu, *editEdgeMenu, *centrlMenu,  *viewOptionsMenu, *layoutMenu;
-    QMenu *cohesionMenu, *strEquivalenceMenu, *communitiesMenu, *connectivityMenu;
+    QMenu *cohesionMenu, *strEquivalenceMenu, *communitiesMenu;
     QMenu *matrixMenu;
     QMenu *networkMenu, *randomNetworkMenu, *filterMenu, *subgraphMenu, *recentFilesSubMenu;
     QMenu *randomLayoutMenu, *layoutRadialProminenceMenu, *layoutLevelProminenceMenu;
@@ -749,11 +783,12 @@ private:
     QAction *helpSystemInfoAct, *helpCheckUpdatesApp;
 
     QAction *netDensity, *analyzeGraphReciprocityAct, *analyzeGraphSymmetryAct;
-    QAction *analyzeGraphDistanceAct, *averGraphDistanceAct;
+    QAction *analyzeGraphDistanceAct, *averGraphDistanceAct, *analyzeGeodesicDistributionAct;
     QAction *analyzeMatrixDistancesGeodesicAct, *analyzeMatrixGeodesicsAct;
     QAction *analyzeGraphDiameterAct, *analyzeGraphEccentricityAct;
     QAction *analyzeStrEquivalenceTieProfileDissimilaritiesAct;
     QAction *analyzeGraphWalksAct,*analyzeGraphWalksTotalAct, *analyzeMatrixReachabilityAct, *analyzeGraphConnectednessAct;
+    QAction *analyzeNodeConnectivityAct, *analyzeConnectivityAct;
     QAction *analyzeCommunitiesCliquesAct, *clusteringCoefAct, *analyzeCommunitiesTriadCensusAct;
     QAction *analyzeMatrixAdjTransposeAct, *analyzeMatrixAdjInvertAct;
     QAction *analyzeMatrixAdjCocitationAct;
@@ -762,29 +797,33 @@ private:
     QAction *analyzeStrEquivalenceMatchesAct;
     QAction *cDegreeAct, *cInDegreeAct, *cClosenessAct, *cInfluenceRangeClosenessAct,
     *cBetweennessAct, *cInformationAct, *cEigenvectorAct, *cPageRankAct,
-    *cStressAct, *cPowerAct, *cEccentAct, *cProximityPrestigeAct;
+    *cStressAct, *cPowerAct, *cEccentAct, *cProximityPrestigeAct, *cKatzAct, *cBonacichAct;
     QAction *layoutRandomAct, *layoutRandomRadialAct, *layoutEgoRadialAct, *layoutGuidesAct;
     QAction *layoutRadialProminence_DC_Act, *layoutRadialProminence_DP_Act,
     *layoutRadialProminence_CC_Act, *layoutRadialProminence_SC_Act, *layoutRadialProminence_EC_Act,
     *layoutRadialProminence_PC_Act, *layoutRadialProminence_BC_Act, *layoutRadialProminence_IC_Act,
     *layoutRadialProminence_EVC_Act,
-    *layoutRadialProminence_IRCC_Act,*layoutRadialProminence_PRP_Act, *layoutRadialProminence_PP_Act;
+    *layoutRadialProminence_IRCC_Act,*layoutRadialProminence_PRP_Act, *layoutRadialProminence_PP_Act,
+    *layoutRadialProminence_KATZ_Act, *layoutRadialProminence_BPC_Act;
     QAction *layoutLevelProminence_DC_Act, *layoutLevelProminence_DP_Act,
     *layoutLevelProminence_CC_Act, *layoutLevelProminence_SC_Act, *layoutLevelProminence_EC_Act,
     *layoutLevelProminence_PC_Act, *layoutLevelProminence_BC_Act, *layoutLevelProminence_IC_Act,
     *layoutLevelProminence_EVC_Act,
-    *layoutLevelProminence_IRCC_Act,*layoutLevelProminence_PRP_Act, *layoutLevelProminence_PP_Act;
+    *layoutLevelProminence_IRCC_Act,*layoutLevelProminence_PRP_Act, *layoutLevelProminence_PP_Act,
+    *layoutLevelProminence_KATZ_Act, *layoutLevelProminence_BPC_Act;
     QAction *layoutNodeSizeProminence_DC_Act, *layoutNodeSizeProminence_DP_Act,
     *layoutNodeSizeProminence_CC_Act, *layoutNodeSizeProminence_SC_Act, *layoutNodeSizeProminence_EC_Act,
     *layoutNodeSizeProminence_PC_Act, *layoutNodeSizeProminence_BC_Act, *layoutNodeSizeProminence_IC_Act,
     *layoutNodeSizeProminence_EVC_Act,
-    *layoutNodeSizeProminence_IRCC_Act,*layoutNodeSizeProminence_PRP_Act, *layoutNodeSizeProminence_PP_Act;
+    *layoutNodeSizeProminence_IRCC_Act,*layoutNodeSizeProminence_PRP_Act, *layoutNodeSizeProminence_PP_Act,
+    *layoutNodeSizeProminence_KATZ_Act, *layoutNodeSizeProminence_BPC_Act;
     QAction *layoutNodeColorProminence_DC_Act, *layoutNodeColorProminence_DP_Act,
     *layoutNodeColorProminence_CC_Act, *layoutNodeColorProminence_SC_Act, *layoutNodeColorProminence_EC_Act,
     *layoutNodeColorProminence_PC_Act, *layoutNodeColorProminence_BC_Act, *layoutNodeColorProminence_IC_Act,
     *layoutNodeColorProminence_EVC_Act,
     *layoutNodeColorProminence_IRCC_Act,*layoutNodeColorProminence_PRP_Act, *layoutNodeColorProminence_PP_Act,
-    *layoutNodeColorProminence_CLC_Act;
+    *layoutNodeColorProminence_CLC_Act, *layoutNodeColorProminence_KATZ_Act,
+    *layoutNodeColorProminence_BPC_Act;
     QAction *layoutNodeColorByComponentAct;
 
     QAction *strongColorationAct, *regularColorationAct;

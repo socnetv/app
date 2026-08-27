@@ -19,6 +19,7 @@
 #include "dialogclusteringhierarchical.h"
 
 #include <QDebug>
+#include "forms_logging.h"
 #include <QPushButton>
 
 
@@ -77,7 +78,7 @@ DialogClusteringHierarchical::DialogClusteringHierarchical (QWidget *parent,
 
 
 void DialogClusteringHierarchical::matrixChanged(const QString &matrix) {
-    qDebug()<< "DialogClusteringHierarchical::matrixChanged()"
+    qCDebug(lcForms)<< "DialogClusteringHierarchical::matrixChanged()"
             << matrix;
 }
 
@@ -85,7 +86,7 @@ void DialogClusteringHierarchical::matrixChanged(const QString &matrix) {
  * @brief Gets user choices
  */
 void DialogClusteringHierarchical::getUserChoices(){
-    qDebug()<< "DialogClusteringHierarchical::getUserChoices!...";
+    qCDebug(lcForms)<< "DialogClusteringHierarchical::getUserChoices!...";
 
     QString matrix = ui.matrixSelect->currentText();
 
@@ -101,7 +102,7 @@ void DialogClusteringHierarchical::getUserChoices(){
 
     bool diagram = ui.diagramCheckBox->isChecked();
 
-    qDebug()<< "DialogClusteringHierarchical: user selected: "
+    qCDebug(lcForms)<< "DialogClusteringHierarchical: user selected: "
             << matrix
             << metric
             << linkage;

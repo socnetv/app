@@ -21,6 +21,7 @@
 #include <QMouseEvent>
 #include <QtMath>
 #include <QDebug>
+#include <QLoggingCategory>
 #include <QWheelEvent>
 
 #ifndef QT_NO_OPENGL
@@ -39,6 +40,9 @@
 #include "graphicsedgeweight.h"
 #include "graphicsedgelabel.h"
 
+// Disabled at runtime by default (no recompile needed to re-enable); used for
+// the mouse/wheel/zoom event handlers, which fire on every pixel of drag/scroll.
+Q_LOGGING_CATEGORY(lcGW, "socnetv.graphicswidget")
 
 /**
  * @brief Constructs a GraphicsWidget object
@@ -48,7 +52,7 @@
 GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         QGraphicsView ( sc,m_parent) {
 
-        qDebug() << "Constructing GraphicsWidget...";
+        qCDebug(lcGW) << "Constructing GraphicsWidget...";
 
         qRegisterMetaType<SelectedEdge>("SelectedEdge");
         qRegisterMetaType<QList<SelectedEdge> >();
@@ -57,6 +61,9 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         // Set defaults
         hasDoubleClickedNode=false;
         m_isTransformationActive = false;
+        m_isZooming = false;
+        m_isClearing = false;
+        m_viewCenterValid = false;
         m_nodeLabel="";
 
         // Note: Should be changed by a call to setMaxZoomIndex()
@@ -65,8 +72,9 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         m_currentRotationAngle = 0;
 
         clickedEdge=0;
-        edgesHash.reserve(500000);
-        nodeHash.reserve(10000);
+        // No upfront reserve() - QHash grows amortized O(1) regardless, and a fixed
+        // reserve here pre-allocates the same bucket capacity for every widget instance,
+        // whether it ends up holding 5 nodes or 500,000.
 
         m_edgeHighlighting = true;
         m_edgesBezier = false;
@@ -85,6 +93,12 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         // Scene index method is set at startup via slotOptionsCanvasIndexMethod(appSettings["canvasIndexMethod"]).
         // Default appSetting is NoIndex; user can override via Settings > Canvas.
 
+        // Debounce resize events: fire canvasSizeSet once, 150 ms after the last
+        // resize event, instead of on every pixel of a window-drag resize.
+        m_resizeTimer.setSingleShot(true);
+        connect(&m_resizeTimer, &QTimer::timeout,
+                this, [this]() { emit resized(width(), height()); });
+
         // Connect scene change signal to the slot that handles selected items
         connect ( scene() , &QGraphicsScene::selectionChanged,
                      this, &GraphicsWidget::handleSelectionChanged);
@@ -92,7 +106,7 @@ GraphicsWidget::GraphicsWidget(QGraphicsScene *sc, MainWindow* m_parent)  :
         // Set our scene dimensions. This closes #131
         scene()->setSceneRect(0,0, 3000, 3000);
 
-        qDebug () << "Scene dimensions now:" << scene()->width() << "x" << scene()->height();
+        qCDebug(lcGW) << "Scene dimensions now:" << scene()->width() << "x" << scene()->height();
 
 
 }
@@ -113,11 +127,11 @@ void GraphicsWidget::setOptionsOpenGL(const bool &enabled)
         format.setSamples(4);
         gl->setFormat(format);
         setViewport(gl);
-        qDebug() << "Enabled openGL in GraphicsWidget.";
+        qCDebug(lcGW) << "Enabled openGL in GraphicsWidget.";
     }
     else {
         setViewport(new QWidget);
-        qDebug() << "Disabled openGL in GraphicsWidget.";
+        qCDebug(lcGW) << "Disabled openGL in GraphicsWidget.";
     }
 #else
     qWarning() << "No OpenGL support! Cannot enable OpenGL in GraphicsWidget.";
@@ -158,19 +172,52 @@ void GraphicsWidget::setOptionsNoAntialiasingAutoAdjust(const bool &toggle)
 
 
 /**
- * @brief Creates a QString with the edge name.
+ * @brief Packs (relation, v1, v2) into a single quint64 key for edgesHash.
  *
- * Edge names are used in edgesHash
+ * Used to be a QString built as "relation:v1>v2" (e.g. "0:3>7"), which cost several heap
+ * allocations per call (QString::number() x3 plus concatenation) and character-wise hashing
+ * on every lookup. This is purely a UI-layer lookup key for GraphicsWidget's own edgesHash
+ * (mapping a graph edge to its GraphicsEdge item) — it has nothing to do with Graph's own
+ * data model or any algorithm kernel.
  *
- * @param v1
- * @param v2
- * @param relation
- * @return
+ * The key is decimal-digit-packed, not bit-packed, so it stays readable in a debugger the
+ * same way the old string was: reading left to right you get relation, then v1, then v2 -
+ * e.g. relation=0, v1=3, v2=7 packs to 300000007. (Leading zeros aren't preserved by a plain
+ * integer print, so a value like relation=0 won't visually show its 3-digit field width
+ * unless printed zero-padded to 19 digits — this key is only ever used as an opaque hash
+ * bucket key, never parsed back into fields, so that's not a correctness concern.)
+ *
+ * This is a positional encoding, not a mixing hash: as long as every field's value stays
+ * within its allocated width (relation < 1000, v1 < 100'000'000, v2 < 100'000'000), the
+ * mapping from (relation, v1, v2) to key is a true bijection - collisions between distinct
+ * triples are structurally impossible, not just statistically unlikely. The three asserts
+ * below exist because that guarantee only holds while every field stays under its digit
+ * budget; an overflow would silently bleed into the next field and could produce a genuine
+ * collision with a different triple.
+ *
+ * @param v1 Source node number (must be < 100,000,000)
+ * @param v2 Target node number (must be < 100,000,000)
+ * @param relation Relation index, or -1 to use the current relation (must be < 1000)
+ * @return Packed key, unique per (relation, v1, v2) triple within the bounds above
  */
-QString GraphicsWidget::createEdgeName(const int &v1, const int &v2, const int &relation) {
-    edgeName = QString::number((relation != -1) ? relation : m_curRelation) + QString(":")
-            + QString::number(v1) + QString(">")+ QString::number(v2);
-    return edgeName;
+quint64 GraphicsWidget::edgeKey(const int &v1, const int &v2, const int &relation) {
+    constexpr quint64 kRelationMult = 10'000'000'000'000'000ULL; // relation: 3-digit field
+    constexpr quint64 kV1Mult       = 100'000'000ULL;            // v1: 8-digit field
+    constexpr quint64 kFieldWidth   = 100'000'000ULL;            // v1 and v2 field width
+
+    const int effectiveRelation = (relation != -1) ? relation : m_curRelation;
+
+    Q_ASSERT_X(effectiveRelation >= 0 && quint64(effectiveRelation) < 1000,
+               "GraphicsWidget::edgeKey", "relation exceeds the 3-digit field width");
+    Q_ASSERT_X(v1 >= 0 && quint64(v1) < kFieldWidth,
+               "GraphicsWidget::edgeKey", "v1 exceeds the 8-digit field width");
+    Q_ASSERT_X(v2 >= 0 && quint64(v2) < kFieldWidth,
+               "GraphicsWidget::edgeKey", "v2 exceeds the 8-digit field width");
+
+    m_edgeKey = quint64(effectiveRelation) * kRelationMult
+              + quint64(v1) * kV1Mult
+              + quint64(v2);
+    return m_edgeKey;
 }
 
 
@@ -179,19 +226,29 @@ QString GraphicsWidget::createEdgeName(const int &v1, const int &v2, const int &
  * @brief Clears the scene and all hashes, lists, var etc
  */
 void GraphicsWidget::clear() {
-    qDebug() << "Clearing graphics widget data...";
+    qCDebug(lcGW) << "Clearing graphics widget data...";
     nodeHash.clear();
     edgesHash.clear();
     m_selectedNodes.clear();
     m_selectedEdges.clear();
-    qDebug() << "Clearing GW scene...";
+    qCDebug(lcGW) << "Clearing GW scene...";
+    // scene()->clear() destroys every item unconditionally, so while it runs there is
+    // no point in GraphicsNode/GraphicsEdge destructors also unlinking themselves from
+    // their neighbours' edge lists - that's O(degree) wasted work per edge, repeated
+    // across the whole network. See #260.
+    m_isClearing = true;
     scene()->clear();
+    m_isClearing = false;
+    // scene()->clear() already deleted any guide items; just drop the now-dangling
+    // pointers rather than calling clearGuides(), which would delete them again.
+    m_guides.clear();
     m_curRelation=0;
     clickedEdge=0;
     firstDoubleClickedNode=0;
     secondDoubleClickedNode=0;
     hasDoubleClickedNode=false;
-    qDebug() << "Finished clearing graphics widget";
+    m_viewCenterValid = false;  // next zoom re-centres on content after new network loads
+    qCDebug(lcGW) << "Finished clearing graphics widget";
 }
 
 
@@ -202,7 +259,7 @@ void GraphicsWidget::clear() {
  * @param relation
  */
 void GraphicsWidget::relationSet(int relation) {
-    qDebug() << "Setting relation to" << relation;
+    qCDebug(lcGW) << "Setting relation to" << relation;
     m_curRelation = relation;
 }
 
@@ -241,10 +298,6 @@ void GraphicsWidget::drawNode( const QPointF &p,
                                const int &labelDistance
 
                                ) {
-//    qDebug()<< "Will draw new node:" << nodeNum
-//            << " at:" << p.x() << ", "<< p.y()
-//            << "shape"<<nodeShape
-//            << "nodeIconPath"<<nodeIconPath;
 
     // Draw node
     GraphicsNode *jim= new GraphicsNode ( this,
@@ -298,7 +351,7 @@ void GraphicsWidget::drawEdge(const int &sourceNum, const int &targetNum,
                               const bool &bezier,
                               const bool &weightNumbers)
 {
-    edgeName = createEdgeName(sourceNum, targetNum);
+    m_edgeKey = edgeKey(sourceNum, targetNum);
 
     if (type != EdgeType::Reciprocated)
     {
@@ -313,26 +366,23 @@ void GraphicsWidget::drawEdge(const int &sourceNum, const int &targetNum,
             weightNumbers,
             m_edgeHighlighting,
             m_arrowSize);
-        edgesHash.insert(edgeName, edge);
+        edgesHash.insert(m_edgeKey, edge);
     }
     else
     {
         // Reciprocated: do not create a new GraphicsEdge.
         // Find the existing opposite arc and upgrade its direction type.
         // The caller passes (newSource=v2, newTarget=v1) so that this lookup
-        // createEdgeName(targetNum, sourceNum) resolves to createEdgeName(v1,v2),
+        // edgeKey(targetNum, sourceNum) resolves to edgeKey(v1,v2),
         // matching the key under which the original forward arc was stored.
-        edgeName = createEdgeName(targetNum, sourceNum);
+        m_edgeKey = edgeKey(targetNum, sourceNum);
 
         // Guard against a missing key. In normal flow this should not happen,
         // but defensive check prevents a null dereference if there is any
         // inconsistency between the data model and the visual state.
-        GraphicsEdge *e = edgesHash.value(edgeName, nullptr);
+        GraphicsEdge *e = edgesHash.value(m_edgeKey, nullptr);
         if (!e)
         {
-            // qDebug() << "drawEdge(): WARNING - Reciprocated edge visual not found"
-            //          << "for key" << edgeName
-            //          << "- skipping visual upgrade.";
             return;
         }
         e->setDirectionType(type);
@@ -350,15 +400,12 @@ void GraphicsWidget::drawEdge(const int &sourceNum, const int &targetNum,
  */
 void GraphicsWidget::handleDoubleClickOnNode(GraphicsNode *node){
     if (hasDoubleClickedNode){
-//        qDebug()<< "Got second consecutive double click. "
-//                   "signaling to MW to create a new edge...";
         secondDoubleClickedNode=node;
         emit userMiddleClicked(firstDoubleClickedNode->nodeNumber(), secondDoubleClickedNode->nodeNumber() );
         emit setCursor(Qt::ArrowCursor);
         hasDoubleClickedNode=false;
     }
     else{
-//        qDebug()<<"Got first double click to create a new edge...";
         firstDoubleClickedNode=node;
         hasDoubleClickedNode=true;
         emit setCursor( Qt::PointingHandCursor );
@@ -380,9 +427,7 @@ void GraphicsWidget::handleDoubleClickOnNode(GraphicsNode *node){
  */
 void GraphicsWidget::setNodeClicked(GraphicsNode *node){
     if ( node ) {
-//        qDebug () << "Emitting userClickedNode()";
         if (clickedEdge) {
-//            qDebug () << "Also unsetting previously clicked edge";
             setEdgeClicked(0);
         }
         emit userClickedNode(
@@ -406,18 +451,12 @@ void GraphicsWidget::setNodeClicked(GraphicsNode *node){
  */
 void GraphicsWidget::setEdgeClicked(GraphicsEdge *edge, const bool &openMenu){
     if (edge) {
-//        qDebug() << "Setting new clicked edge"
-//                 << edge->sourceNode()->nodeNumber()
-//                 << "->"
-//                 << edge->targetNode()->nodeNumber()
-//                 << "signalling...";
         clickedEdge=edge;
         emit userClickedEdge(edge->sourceNode()->nodeNumber(),
                              edge->targetNode()->nodeNumber(),
                              openMenu);
     }
     else {
-//        qDebug() <<"Empty edge parameter. Unsetting clickedEdge...";
         clickedEdge=0;
         emit userClickedEdge(0,0,openMenu);
     }
@@ -439,7 +478,6 @@ void GraphicsWidget::setEdgeClicked(GraphicsEdge *edge, const bool &openMenu){
  * @param y
  */
 void GraphicsWidget::moveNode(const int &nodeNum, const qreal &x, const qreal &y){
-//    qDebug() << "Moving node" << nodeNum << "to pos:" << x << "," << y;
     nodeHash.value(nodeNum)->setPos(x,y);
 }
 
@@ -453,13 +491,11 @@ void GraphicsWidget::moveNode(const int &nodeNum, const qreal &x, const qreal &y
  * @param nodeNum
  */
 void GraphicsWidget::removeNode(const int &nodeNum){
-    if ( nodeHash.contains(nodeNum) ) {
-        qDebug() << "nodeHash size:" << nodeHash.size();
-        delete nodeHash.value(nodeNum);
-        qDebug() << "Removed node with number:" << nodeNum;
+    if (GraphicsNode *node = nodeHash.value(nodeNum, nullptr)) {
+        qCDebug(lcGW) << "Removing node with number:" << nodeNum
+                      << "- nodeHash size before:" << nodeHash.size();
+        delete node;
     }
-    qDebug() << "nodeHash size now:" << nodeHash.size()
-             << "nodeHash contains node?" << nodeHash.contains(nodeNum);
 
 }
 
@@ -480,35 +516,34 @@ void GraphicsWidget::removeEdge(const int &sourceNum,
                                 const int &targetNum,
                                 const bool &removeReverse){
 
-    edgeName = createEdgeName(sourceNum, targetNum);
+    m_edgeKey = edgeKey(sourceNum, targetNum);
 
-    if ( edgesHash.contains(edgeName) ) {
-        int directionType = edgesHash.value(edgeName)->directionType();
-        delete edgesHash.value(edgeName);
-//        qDebug() << "Removed edge" << edgeName;
+    if (GraphicsEdge *edge = edgesHash.value(m_edgeKey, nullptr)) {
+        int directionType = edge->directionType();
+        delete edge;
         // Check if it was reciprocated
         if (directionType == EdgeType::Reciprocated) {
             // The deleted edge was reciprocated, draw the reverse edge.
             if (!removeReverse) {
-                qDebug() << "Drawing the reverse edge.";
                 drawEdge(targetNum, sourceNum, 1,"");
-
             }
         }
     }
     else {
-        // Check opposite edge. If it exists, then transform it to directed
-        edgeName = createEdgeName(targetNum, sourceNum);
-        qDebug() << "Edge did not exist, checking for opposite:"
-                 << edgeName;
-        if ( edgesHash.contains(edgeName) ) {
-            qDebug() << "Opposite edge exists. Check if it is reciprocated";
-            if ( edgesHash.value(edgeName)->directionType() == EdgeType::Reciprocated ) {
-                edgesHash.value(edgeName)->setDirectionType(EdgeType::Directed);
+        // Check opposite edge. If it exists and is reciprocated, either downgrade it to a single
+        // directed arc or delete it entirely, matching the removeReverse-found branch above. See #251.
+        m_edgeKey = edgeKey(targetNum, sourceNum);
+        if (GraphicsEdge *reverseEdge = edgesHash.value(m_edgeKey, nullptr)) {
+            if (reverseEdge->directionType() == EdgeType::Reciprocated) {
+                if (removeReverse) {
+                    delete reverseEdge;
+                }
+                else {
+                    reverseEdge->setDirectionType(EdgeType::Directed);
+                }
                 return;
             }
         }
-        qDebug() << "No such edge to remove";
     }
 
 
@@ -527,17 +562,13 @@ void GraphicsWidget::removeEdge(const int &sourceNum,
   */
 void GraphicsWidget::removeItem( GraphicsNode *node){
     int i=node->nodeNumber();
-//    qDebug() << "Removing node with number: " <<  i;
     if (firstDoubleClickedNode == node) {
-//        qDebug() << "Node" <<  i
-//                 << "previously set as source node for a new edge. Unsetting.";
         hasDoubleClickedNode = false;
         emit setCursor(Qt::ArrowCursor);
     }
     nodeHash.remove(i);
     scene()->removeItem(node);
     node->deleteLater ();
-//    qDebug() << "Node removed. ";
 }
 
 
@@ -553,16 +584,11 @@ void GraphicsWidget::removeItem( GraphicsNode *node){
  *
  */
 void GraphicsWidget::removeItem( GraphicsEdge * edge){
-    edgeName = createEdgeName(edge->sourceNodeNumber(), edge->targetNodeNumber() ) ;
-//    qDebug() << "Removing edge"<< edgeName << "Calling edgeClicked(0)" ;
+    m_edgeKey = edgeKey(edge->sourceNodeNumber(), edge->targetNodeNumber() ) ;
     setEdgeClicked(0);
-//    qDebug() << "removing edge from edges hash" ;
-    edgesHash.remove(edgeName);
-//    qDebug() << "removing edge from scene" ;
+    edgesHash.remove(m_edgeKey);
     scene()->removeItem(edge);
-//    qDebug() << "Calling edge->deleteLater()" ;
     edge->deleteLater();
-//    qDebug() << "Edge removed.Finished";
 }
 
 
@@ -572,7 +598,6 @@ void GraphicsWidget::removeItem( GraphicsEdge * edge){
  * @param edgeWeight
  */
 void GraphicsWidget::removeItem( GraphicsEdgeWeight *edgeWeight){
-//    qDebug() << "Removing edge weight";
     scene()->removeItem(edgeWeight);
     edgeWeight->deleteLater();
 }
@@ -585,7 +610,6 @@ void GraphicsWidget::removeItem( GraphicsEdgeWeight *edgeWeight){
  * @param edgeLabel
  */
 void GraphicsWidget::removeItem( GraphicsEdgeLabel *edgeLabel){
-//    qDebug() << "Removing edgeLabel";
     scene()->removeItem(edgeLabel);
     edgeLabel->deleteLater();
 }
@@ -598,7 +622,6 @@ void GraphicsWidget::removeItem( GraphicsEdgeLabel *edgeLabel){
  * @param nodeLabel
  */
 void GraphicsWidget::removeItem( GraphicsNodeLabel *nodeLabel){
-//    qDebug() << "Removing label of node" << nodeLabel->node()->nodeNumber();
     scene()->removeItem(nodeLabel);
     nodeLabel->deleteLater();
 }
@@ -609,7 +632,6 @@ void GraphicsWidget::removeItem( GraphicsNodeLabel *nodeLabel){
  * @param nodeNumber
  */
 void GraphicsWidget::removeItem( GraphicsNodeNumber *nodeNumber){
-//    qDebug() << "removing number of node " <<  nodeNumber->node()->nodeNumber();
     scene()->removeItem(nodeNumber);
     nodeNumber->deleteLater();
 }
@@ -629,7 +651,6 @@ void GraphicsWidget::removeItem( GraphicsNodeNumber *nodeNumber){
  * @return
  */
 bool GraphicsWidget::setNodeColor(const int &nodeNum, const QString &color){
-//    qDebug() << "Setting node"<< nodeNum << "new color to:" << color;
     nodeHash.value(nodeNum)->setColor(color);
     return true;
 }
@@ -647,7 +668,6 @@ bool GraphicsWidget::setNodeColor(const int &nodeNum, const QString &color){
 bool GraphicsWidget::setNodeShape(const int &nodeNum,
                                   const QString &shape,
                                   const QString &iconPath){
-//    qDebug() << "Setting node"<< nodeNum << "new shape to:" << shape;
     nodeHash.value(nodeNum)->setShape(shape,iconPath);
     return true;
 \
@@ -662,7 +682,6 @@ bool GraphicsWidget::setNodeShape(const int &nodeNum,
  * @param toggle
  */
 void GraphicsWidget::setNodeLabelsVisibility (const bool &toggle){
-//    qDebug()<< "Toggling node labels visibility to:" << toggle;
     viewport()->setUpdatesEnabled(false);
     foreach ( GraphicsNode *m_node, nodeHash) {
         m_node->setLabelVisibility(toggle);
@@ -680,7 +699,6 @@ void GraphicsWidget::setNodeLabelsVisibility (const bool &toggle){
  * @return
  */
 bool GraphicsWidget::setNodeLabel(const int &nodeNumber, const QString &label){
-//    qDebug() << "Setting node"<< nodeNumber << "new label to:" << label;
     nodeHash.value(nodeNumber)->setLabelText (label);
     return true;
 
@@ -694,7 +712,6 @@ bool GraphicsWidget::setNodeLabel(const int &nodeNumber, const QString &label){
  * @param numIn
  */
 void GraphicsWidget::setNumbersInsideNodes(const bool &toggle){
-//    qDebug()<< "Toggling node numbers inside:" << toggle;
     viewport()->setUpdatesEnabled(false);
     foreach ( GraphicsNode *m_node, nodeHash) {
         m_node->setNumberInside(toggle);
@@ -715,7 +732,6 @@ void GraphicsWidget::setNumbersInsideNodes(const bool &toggle){
  * @param size
  */
 void GraphicsWidget::setInitNodeSize(int size){
-//    qDebug()<< "Setting default node size to" << size;
     m_nodeSize=size;
 }
 
@@ -751,11 +767,9 @@ void GraphicsWidget::setMaxZoomIndex(const int &maxZoomIndex) {
  * @param toggle
  */
 void GraphicsWidget::setNodeVisibility(const int &nodeNum, const bool &toggle){
-    if  ( nodeHash.contains (nodeNum) ) {
-//        qDebug() << "Setting visibility of node"
-//                 << nodeNum << "to" << toggle;
-        nodeHash.value(nodeNum)->setVisible(toggle);
-        nodeHash.value(nodeNum)->setEnabled(toggle);
+    if (GraphicsNode *node = nodeHash.value(nodeNum, nullptr)) {
+        node->setVisible(toggle);
+        node->setEnabled(toggle);
     }
 }
 
@@ -768,39 +782,13 @@ void GraphicsWidget::setNodeVisibility(const int &nodeNum, const bool &toggle){
  * @return bool
  */
 bool GraphicsWidget::setNodeSize(const int &nodeNum, const int &size ){
-//    qDebug() << "Setting size of node"
-//             << nodeNum << "to" << size;
-    if  ( nodeHash.contains (nodeNum) ) {
-        if (size>0){
-            nodeHash.value(nodeNum)->setSize(size);
-            return true;
-
-        }
-        else {
-//            qDebug() << "Setting size of node"
-//                     << nodeNum << "to default" << m_nodeSize;
-            nodeHash.value(nodeNum)->setSize(m_nodeSize);
-            return true;
-
-        }
+    if (GraphicsNode *node = nodeHash.value(nodeNum, nullptr)) {
+        node->setSize(size > 0 ? size : m_nodeSize);
+        return true;
     }
     return false;
 }
 
-
-/**
- * @brief Changes the size of all nodes.
- *
- * @param size
- */
-void GraphicsWidget::setNodeSizeAll(const int &size ){
-//    qDebug() << "Changing all nodes size... ";
-    viewport()->setUpdatesEnabled(false);
-    foreach ( GraphicsNode *m_node, nodeHash ) {
-            m_node->setSize(size);
-    }
-    viewport()->setUpdatesEnabled(true);
-}
 
 
 
@@ -811,7 +799,6 @@ void GraphicsWidget::setNodeSizeAll(const int &size ){
  * @param toggle
  */
 void GraphicsWidget::setNodeNumberVisibility(const bool &toggle){
-//    qDebug()<< "toggling visibility of all node numbers to" << toggle;
     viewport()->setUpdatesEnabled(false);
     foreach ( GraphicsNode *m_node, nodeHash) {
         m_node->setNumberVisibility(toggle);
@@ -830,12 +817,9 @@ void GraphicsWidget::setNodeNumberVisibility(const bool &toggle){
  * @param color
  */
 void GraphicsWidget::setNodeNumberColor(const int &nodeNum, const QString &color) {
-//    qDebug() << "Setting color of node"
-//             << nodeNum << "to" << color;
-    if  ( nodeHash.contains (nodeNum) ) {
-        if (!color.isNull()){
-            nodeHash.value(nodeNum)->setNumberColor(color) ;
-        }
+    if (!color.isNull()) {
+        if (GraphicsNode *node = nodeHash.value(nodeNum, nullptr))
+            node->setNumberColor(color);
     }
 }
 
@@ -847,11 +831,9 @@ void GraphicsWidget::setNodeNumberColor(const int &nodeNum, const QString &color
  * @param size
  */
 bool GraphicsWidget::setNodeNumberSize(const int &nodeNum, const int &size){
-//    qDebug() << "Setting number size of node"
-//             << nodeNum << "to" << size;
-    if  ( nodeHash.contains (nodeNum) ) {
-        if (size>0){
-            nodeHash.value(nodeNum)->setNumberSize(size) ;
+    if (size > 0) {
+        if (GraphicsNode *node = nodeHash.value(nodeNum, nullptr)) {
+            node->setNumberSize(size);
             return true;
         }
     }
@@ -866,11 +848,9 @@ bool GraphicsWidget::setNodeNumberSize(const int &nodeNum, const int &size){
  * @param distance
  */
 bool GraphicsWidget::setNodeNumberDistance(const int &nodeNum, const int &distance ){
-//    qDebug() << "Setting number distance of node"
-//             << nodeNum << "to" << distance;
-    if  ( nodeHash.contains (nodeNum) ) {
-        if (distance>=0){
-            nodeHash.value(nodeNum)->setNumberDistance(distance) ;
+    if (distance >= 0) {
+        if (GraphicsNode *node = nodeHash.value(nodeNum, nullptr)) {
+            node->setNumberDistance(distance);
             return true;
         }
     }
@@ -886,11 +866,9 @@ bool GraphicsWidget::setNodeNumberDistance(const int &nodeNum, const int &distan
  * @param color
  */
 bool GraphicsWidget::setNodeLabelColor(const int &nodeNum, const QString &color){
-//    qDebug() << "Setting label color of node"
-//             << nodeNum << "to" << color;
-    if  ( nodeHash.contains (nodeNum) ) {
-            nodeHash.value(nodeNum)->setLabelColor(color);
-            return true;
+    if (GraphicsNode *node = nodeHash.value(nodeNum, nullptr)) {
+        node->setLabelColor(color);
+        return true;
     }
     return false;
 }
@@ -904,11 +882,9 @@ bool GraphicsWidget::setNodeLabelColor(const int &nodeNum, const QString &color)
  * @param size
  */
 bool GraphicsWidget::setNodeLabelSize(const int &nodeNum, const int &size){
-//    qDebug() << "Setting label size of node"
-//             << nodeNum << "to" << size;
-    if  ( nodeHash.contains (nodeNum) ) {
-        if (size>0){
-            nodeHash.value(nodeNum)->setLabelSize(size);
+    if (size > 0) {
+        if (GraphicsNode *node = nodeHash.value(nodeNum, nullptr)) {
+            node->setLabelSize(size);
             return true;
         }
     }
@@ -926,11 +902,9 @@ bool GraphicsWidget::setNodeLabelSize(const int &nodeNum, const int &size){
  * @param distance
  */
 bool GraphicsWidget::setNodeLabelDistance( const int &nodeNum, const int &distance ){
-//    qDebug() << "Setting label distance of node"
-//             << nodeNum << "to" << distance;
-    if  ( nodeHash.contains (nodeNum) ) {
-        if (distance>=0){
-            nodeHash.value(nodeNum)->setLabelDistance(distance) ;
+    if (distance >= 0) {
+        if (GraphicsNode *node = nodeHash.value(nodeNum, nullptr)) {
+            node->setLabelDistance(distance);
             return true;
         }
     }
@@ -940,41 +914,16 @@ bool GraphicsWidget::setNodeLabelDistance( const int &nodeNum, const int &distan
 
 
 
-/**
- * @brief Checks if a node with label or nodeNum 'text' exists and returns it
- *
- * @param text
- * @return
- */
-GraphicsNode* GraphicsWidget::hasNode( QString text ){
-    bool ok = false;
-    foreach ( GraphicsNode *candidate, nodeHash) {
-        if ( 	candidate->nodeNumber()==text.toInt(&ok, 10)  ||
-                ( candidate->labelText() == text)
-                ) {
-//            qDebug() << "Node" << text << " found!";
-            return candidate;
-            break;
-        }
-
-    }
-    return 0;	//dummy return.
-}
-
-
 
 /**
  * @brief Selects all nodes in the given list
  *
  * @param list
  */
-void GraphicsWidget::setSelectedNodes(QList<int> list){
-//    qDebug() << "Setting nodes:" << list.size() << "as selected";
+void GraphicsWidget::setSelectedNodes(const QList<int> &list){
     foreach ( int nodeNum, list) {
-        if  ( nodeHash.contains (nodeNum) ) {
-//            qDebug() << "Selecting node"<< nodeNum;
-            nodeHash.value(nodeNum)->setSelected(true) ;
-        }
+        if (GraphicsNode *node = nodeHash.value(nodeNum, nullptr))
+            node->setSelected(true);
     }
 }
 
@@ -993,15 +942,10 @@ void GraphicsWidget::setEdgeLabel(const int &source,
                                   const int &target,
                                   const QString &label){
 
-    edgeName = createEdgeName( source, target );
+    m_edgeKey = edgeKey( source, target );
 
-//    qDebug()<<"Setting label for edge" << edgeName <<  "new label"  << label;
-
-    if  ( edgesHash.contains (edgeName) ) {
-        edgesHash.value(edgeName)->setLabel(label);
-    }
-
-
+    if (GraphicsEdge *edge = edgesHash.value(m_edgeKey, nullptr))
+        edge->setLabel(label);
 }
 
 /**
@@ -1018,14 +962,10 @@ void GraphicsWidget::setEdgeColor(const int &source,
                                   const int &target,
                                   const QString &color){
 
-    edgeName =  createEdgeName( source, target );
+    m_edgeKey =  edgeKey( source, target );
 
-//    qDebug()<<"Setting color of edge" << edgeName <<  "new color:"  << color;
-
-    if  ( edgesHash.contains (edgeName) ) {
-        edgesHash.value(edgeName)->setColor(color);
-    }
-
+    if (GraphicsEdge *edge = edgesHash.value(m_edgeKey, nullptr))
+        edge->setColor(color);
 }
 
 
@@ -1042,16 +982,11 @@ void GraphicsWidget::setEdgeColor(const int &source,
 bool GraphicsWidget::setEdgeDirectionType(const int &source,
                                           const int &target,
                                           const int &dirType){
-//    qDebug() << "Changing the direction type of edge: "
-//             << source
-//             << "->" << target
-//             << "to type:" << dirType;
 
-    edgeName = createEdgeName( source, target );
+    m_edgeKey = edgeKey( source, target );
 
-    if  ( edgesHash.contains (edgeName) ) {
-//        qDebug()<<" Found edge in edgesHash. ";
-        edgesHash.value(edgeName)->setDirectionType(dirType);
+    if (GraphicsEdge *edge = edgesHash.value(m_edgeKey, nullptr)) {
+        edge->setDirectionType(dirType);
         return true;
     }
     return false;
@@ -1074,25 +1009,19 @@ bool GraphicsWidget::setEdgeWeight(const int &source,
                                    const int &target,
                                    const qreal &weight){
 
-    edgeName = createEdgeName( source, target );
+    m_edgeKey = edgeKey( source, target );
 
-//    qDebug()<<"Setting weight of edge:" << edgeName <<  " new weight "  << weight;
-
-    if  ( edgesHash.contains (edgeName) ) {
-        edgesHash.value(edgeName)->setWeight(weight);
+    if (GraphicsEdge *edge = edgesHash.value(m_edgeKey, nullptr)) {
+        edge->setWeight(weight);
         return true;
     }
-
     else {
         //check opposite edge. If it exists, then transform it to directed
-        edgeName = createEdgeName(target, source);
-//        qDebug() << "Edge did not exist, checking for opposite:" << edgeName;
-        if ( edgesHash.contains(edgeName) ) {
-//            qDebug() << "Opposite edge exists. Check if it is reciprocated";
-            edgesHash.value(edgeName)->setWeight(weight);
+        m_edgeKey = edgeKey(target, source);
+        if (GraphicsEdge *edge = edgesHash.value(m_edgeKey, nullptr)) {
+            edge->setWeight(weight);
             return true;
         }
-
     }
 
     return false;
@@ -1106,7 +1035,6 @@ bool GraphicsWidget::setEdgeWeight(const int &source,
  * @param toggle
  */
 void GraphicsWidget::setEdgeArrowsVisibility(const bool &toggle){
-//    qDebug()<< "Setting visibility of all edge arrows to:" << toggle;
     viewport()->setUpdatesEnabled(false);
     foreach ( GraphicsEdge *m_edge, edgesHash) {
         m_edge->showArrows(toggle);
@@ -1144,16 +1072,13 @@ void GraphicsWidget::setEdgeArrowSize(const int &size) {
 void GraphicsWidget::setEdgeOffsetFromNode(const int &source,
                                            const int &target,
                                            const int &offset){
-//    qDebug() << "Changing offset of edge: " << source << "->" << target
-//             << ", new offset" << offset;
 
     if (source && target) {
 
-        QString edgeName =  QString::number(m_curRelation) + QString(":") +
-                QString::number( source ) + QString(">")+ QString::number( target );
+        m_edgeKey = edgeKey(source, target);
 
-        if  ( edgesHash.contains (edgeName) ) {
-            edgesHash.value(edgeName)->setMinimumOffsetFromNode(offset);
+        if (GraphicsEdge *edge = edgesHash.value(m_edgeKey, nullptr)) {
+            edge->setMinimumOffsetFromNode(offset);
             return;
         }
 
@@ -1173,7 +1098,6 @@ void GraphicsWidget::setEdgeOffsetFromNode(const int &source,
  * @param toggle
  */
 void GraphicsWidget::setEdgeWeightNumbersVisibility (const bool &toggle){
-//    qDebug()<< "Toggling all edge weight numbers' visibility" << toggle;
     viewport()->setUpdatesEnabled(false);
     foreach ( GraphicsEdge *m_edge, edgesHash) {
         m_edge->setWeightNumberVisibility(toggle);
@@ -1188,8 +1112,6 @@ void GraphicsWidget::setEdgeWeightNumbersVisibility (const bool &toggle){
  * @param toggle
  */
 void GraphicsWidget::setEdgeLabelsVisibility (const bool &toggle){
-//    qDebug()<< "GW::setEdgeLabelsVisibility() " << toggle
-//               << "for edgesHash.count: " << edgesHash.size();
     viewport()->setUpdatesEnabled(false);
     foreach ( GraphicsEdge *m_edge, edgesHash) {
         m_edge->setLabelVisibility(toggle);
@@ -1209,7 +1131,6 @@ void GraphicsWidget::setEdgeLabelsVisibility (const bool &toggle){
  * @param toggle
  */
 void GraphicsWidget::setEdgeHighlighting(const bool &toggle){
-//    qDebug()<< "Toggling edge highlighting" << toggle;
     viewport()->setUpdatesEnabled(false);
     foreach ( GraphicsNode *m_node, nodeHash) {
         m_node->setEdgeHighLighting(toggle);
@@ -1222,6 +1143,50 @@ void GraphicsWidget::setEdgeHighlighting(const bool &toggle){
 }
 
 
+/**
+ * @brief Selects the edges that form a shortest path, exactly as if the user
+ *        had Shift-clicked each edge in turn.
+ *
+ * Uses QSignalBlocker so that scene()->selectionChanged fires only once
+ * (via the explicit handleSelectionChanged() call at the end), not once per
+ * edge.  MainWindow then receives a single userSelectedItems() emission with
+ * the complete path edge set — same as any other multi-selection.
+ *
+ * For each hop (path[i] → path[i+1]) the forward key is tried first; if the
+ * edge is not found (directed graph, path goes the "other way") the reverse
+ * key is tried.
+ *
+ * @param path  Ordered list of vertex numbers returned by
+ *              Graph::graphGeodesicShortestPath().
+ */
+void GraphicsWidget::selectPath(const QList<int> &path)
+{
+    if (path.size() < 2) return;
+
+    {
+        QSignalBlocker blocker(scene());
+        scene()->clearSelection();
+        for (int i = 0; i < path.size() - 1; ++i) {
+            GraphicsEdge *e = edgesHash.value(edgeKey(path[i], path[i+1]), nullptr);
+            if (!e)
+                e = edgesHash.value(edgeKey(path[i+1], path[i]), nullptr);
+            if (e)
+                e->setSelected(true);
+        }
+    } // blocker destructor re-enables scene signals
+
+    handleSelectionChanged(); // one emission to MainWindow with the full path set
+}
+
+
+/**
+ * @brief Toggles bezier-curve rendering for all edges currently in the scene
+ *
+ * Also stores the toggle in m_edgesBezier so it applies to edges drawn afterwards.
+ * Viewport updates are disabled for the duration of the loop to avoid a repaint per edge.
+ *
+ * @param toggle
+ */
 void GraphicsWidget::setEdgesBezier(const bool &toggle) {
     m_edgesBezier = toggle;
     viewport()->setUpdatesEnabled(false);
@@ -1249,8 +1214,8 @@ void GraphicsWidget::setEdgeVisibility(const int &relation,
                                        const int &edgeWeight,
                                        const int &reverseEdgeWeight)
 {
-    QString reverseEdgeName;
-    edgeName = createEdgeName(sourceNum, targetNum, relation);
+    quint64 reverseEdgeKey;
+    m_edgeKey = edgeKey(sourceNum, targetNum, relation);
 
     // During network teardown/reset, Graph may still emit edge-visibility updates
     // after the corresponding GraphicsNodes have already been removed from nodeHash.
@@ -1258,26 +1223,26 @@ void GraphicsWidget::setEdgeVisibility(const int &relation,
     const bool haveSourceNode = nodeHash.contains(sourceNum);
     const bool haveTargetNode = nodeHash.contains(targetNum);
 
-    if (edgesHash.contains(edgeName)) {
+    if (GraphicsEdge *edge = edgesHash.value(m_edgeKey, nullptr)) {
         // Edge does exist
         if (!visible && preserveReverseEdge) {
             // This edge must be disabled and the reverse must be preserved/created
-            delete edgesHash.value(edgeName);
+            delete edge;
         }
         else {
-            edgesHash.value(edgeName)->setVisible(visible);
-            edgesHash.value(edgeName)->setEnabled(visible);
+            edge->setVisible(visible);
+            edge->setEnabled(visible);
         }
     }
     else {
         // Edge does not exist yet
         if (visible) {
             // The reverse may exist. Check
-            reverseEdgeName = createEdgeName(targetNum, sourceNum, relation);
-            if (edgesHash.contains(reverseEdgeName)) {
-                edgesHash.value(reverseEdgeName)->setVisible(true);
-                edgesHash.value(reverseEdgeName)->setEnabled(true);
-                edgesHash.value(reverseEdgeName)->setDirectionType(EdgeType::Reciprocated);
+            reverseEdgeKey = edgeKey(targetNum, sourceNum, relation);
+            if (GraphicsEdge *reverseEdge = edgesHash.value(reverseEdgeKey, nullptr)) {
+                reverseEdge->setVisible(true);
+                reverseEdge->setEnabled(true);
+                reverseEdge->setDirectionType(EdgeType::Reciprocated);
                 return;
             }
             else {
@@ -1293,11 +1258,11 @@ void GraphicsWidget::setEdgeVisibility(const int &relation,
     if (preserveReverseEdge) {
         // Reverse edge must be preserved (see #140)
         // Check if the reverse exists and if not create it
-        reverseEdgeName = createEdgeName(targetNum, sourceNum, relation);
-        if (edgesHash.contains(reverseEdgeName)) {
-            edgesHash.value(reverseEdgeName)->setVisible(true);
-            edgesHash.value(reverseEdgeName)->setEnabled(true);
-            edgesHash.value(reverseEdgeName)->setDirectionType(EdgeType::Directed);
+        reverseEdgeKey = edgeKey(targetNum, sourceNum, relation);
+        if (GraphicsEdge *reverseEdge = edgesHash.value(reverseEdgeKey, nullptr)) {
+            reverseEdge->setVisible(true);
+            reverseEdge->setEnabled(true);
+            reverseEdge->setDirectionType(EdgeType::Directed);
             return;
         }
         else {
@@ -1307,6 +1272,23 @@ void GraphicsWidget::setEdgeVisibility(const int &relation,
             }
             drawEdge(targetNum, sourceNum, reverseEdgeWeight, "", "black", EdgeType::Directed);
         }
+    }
+}
+
+/**
+ * @brief Applies a batch of edge visibility changes in one call (WS3 M2).
+ *
+ * Reuses setEdgeVisibility() per entry unchanged - the only difference from N separate
+ * signal/slot dispatches is that this whole batch crosses from graphThread to the GUI
+ * thread as a single queued call, not one per edge. See Graph::signalSetEdgesVisibilityBatch.
+ *
+ * @param changes
+ */
+void GraphicsWidget::setEdgesVisibilityBatch(const QList<EdgeVisibilityChange> &changes)
+{
+    for (const EdgeVisibilityChange &c : changes) {
+        setEdgeVisibility(c.relation, c.source, c.target, c.visible,
+                          c.preserveReverseEdge, c.edgeWeight, c.reverseEdgeWeight);
     }
 }
 
@@ -1351,7 +1333,7 @@ void GraphicsWidget::addGuideCircle( const double&x0,
                                      const double&radius){
     GraphicsGuide *circ=new GraphicsGuide (this, x0, y0, radius);
     circ->show();
-
+    m_guides.append(circ);
 }
 
 
@@ -1362,33 +1344,24 @@ void GraphicsWidget::addGuideCircle( const double&x0,
 void GraphicsWidget::addGuideHLine(const double &y0){
     GraphicsGuide *line=new GraphicsGuide (this, y0, width());
     line->show();
+    m_guides.append(line);
 }
 
 
 
 /**
- * @brief Removes all items of the given type
- * @param type
+ * @brief Removes and deletes all guide items previously added via
+ * addGuideCircle()/addGuideHLine(), without scanning the scene.
+ *
+ * GraphicsGuide::die() only clears geometry/visibility bookkeeping — it does
+ * not delete or schedule deletion — so a direct synchronous delete is safe.
  */
-void GraphicsWidget::removeAllItems(int type){
-    qDebug()<< "Removing all GW items...";
-    QList<QGraphicsItem *> list = scene()->items();
-    for (QList<QGraphicsItem *>::iterator item=list.begin();item!=list.end(); item++) {
-        if ( (*item)->type() == type){
-            GraphicsGuide *guide = qgraphicsitem_cast<GraphicsGuide *>  (*item);
-            qDebug()<< "located element";
-            guide->die();
-            guide->deleteLater ();
-            delete *item;
-        }
-    }
-}
-
-
-
 void GraphicsWidget::clearGuides(){
-    qDebug()<< "Clearing/Removing guides...";
-    this->removeAllItems(TypeGuide);
+    for (GraphicsGuide *guide : m_guides) {
+        guide->die();
+        delete guide;
+    }
+    m_guides.clear();
 }
 
 
@@ -1397,14 +1370,13 @@ void GraphicsWidget::clearGuides(){
  * @brief Forces the scene to select all items. Also signals that no node is clicked.
  */
 void GraphicsWidget::selectAll(){
+    qCDebug(lcGW) << "Selecting all scene items... Scene dimensions: "
+                  << scene()->width() << "x" << scene()->height();
     QPainterPath path;
-    qDebug() << "Selecting all scene items... "
-             << "Widget dimensions: " << width()<<"x"<<height()
-             << "Scene dimensions: " << scene()->width()<<"x"<<scene()->height();
-    path.addRect(0, 0, width(),height());
+    path.addRect(scene()->sceneRect());
     scene()->setSelectionArea(path);
     emit userClickedNode(0, QPointF(0,0));
-    qDebug() << "Selected scene items now: " << selectedItems().size();
+    qCDebug(lcGW) << "Selected scene items now: " << selectedItems().size();
 }
 
 
@@ -1413,7 +1385,7 @@ void GraphicsWidget::selectAll(){
  * @brief Clears any item selection from the scene. Also signals that no node is clicked.
  */
 void GraphicsWidget::selectNone(){
-    qDebug() << "Emptying user selection... scene dimensions: " << scene()->width()<<"x"<<scene()->height();
+    qCDebug(lcGW) << "Emptying user selection... scene dimensions: " << scene()->width()<<"x"<<scene()->height();
     emit userClickedNode(0,QPointF(0,0));
     scene()->clearSelection();
 
@@ -1423,11 +1395,20 @@ void GraphicsWidget::selectNone(){
 /**
  * @brief Handles the event of selection change in the scene.
  *
- * Emits selected nodes and edges to Graph
- *
+ * Queries scene()->selectedItems() once, populates m_selectedNodes and
+ * m_selectedEdges from a single pass, then emits both lists to Graph.
  */
 void GraphicsWidget::handleSelectionChanged() {
-    emit userSelectedItems(selectedNodes(), selectedEdges());
+    m_selectedNodes.clear();
+    m_selectedEdges.clear();
+    const QList<QGraphicsItem *> items = scene()->selectedItems();
+    for (QGraphicsItem *item : items) {
+        if (GraphicsNode *node = qgraphicsitem_cast<GraphicsNode *>(item))
+            m_selectedNodes.append(node->nodeNumber());
+        else if (GraphicsEdge *edge = qgraphicsitem_cast<GraphicsEdge *>(item))
+            m_selectedEdges << qMakePair(edge->sourceNodeNumber(), edge->targetNodeNumber());
+    }
+    emit userSelectedItems(m_selectedNodes, m_selectedEdges);
 }
 
 
@@ -1493,7 +1474,7 @@ void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
 
         if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
             if (GraphicsNode *node = qgraphicsitem_cast<GraphicsNode *>(item)) {
-                qDebug() << "Double-click on a node. Starting new edge...";
+                qCDebug(lcGW) << "Double-click on a node. Starting new edge...";
                 handleDoubleClickOnNode(node);
                 QGraphicsView::mouseDoubleClickEvent(e);
                 return;
@@ -1502,11 +1483,11 @@ void GraphicsWidget::mouseDoubleClickEvent ( QMouseEvent * e ) {
                 QGraphicsView::mouseDoubleClickEvent(e);
                 return;
             }
-            qDebug() << "Double-click on something (not node)";
+            qCDebug(lcGW) << "Double-click on something (not node)";
         }
 
         QPointF p = mapToScene(e->pos());
-        qDebug() << "Double-click on empty space. Signalling to create a new vertex/node at:"
+        qCDebug(lcGW) << "Double-click on empty space. Signalling to create a new vertex/node at:"
             << e->pos() << "~"<< p;
         emit userDoubleClickNewNode(p);
     }
@@ -1539,18 +1520,18 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
                 // User clicked on a node
                 //
 
-                qDebug() << "Clicked on a node at:"  << e->pos() << "~"<< p << "Setting it as clicked node...";
+                qCDebug(lcGW) << "Clicked on a node at:"  << e->pos() << "~"<< p << "Setting it as clicked node...";
 
                 setNodeClicked(node);
 
                 if ( e->button()==Qt::RightButton ) {
-                    qDebug() << "This was a right-click on node. Signaling to open node menu";
+                    qCDebug(lcGW) << "This was a right-click on node. Signaling to open node menu";
                     if ( !node->isSelected() )
                         node->setSelected(true);
                     emit openNodeMenu();
                 }
                 else if ( e->button()==Qt::MiddleButton) {
-                    qDebug() << "This was a middle-click on node. Calling to start or conclude a new edge...";
+                    qCDebug(lcGW) << "This was a middle-click on node. Calling to start or conclude a new edge...";
                     handleDoubleClickOnNode(node);
                 }
                 else if ( e->button()==Qt::LeftButton
@@ -1559,7 +1540,7 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
                     // selection without clearing other selected nodes.
                     // Qt's default item handler only treats Ctrl as additive;
                     // we intercept Shift here and return early to skip that path.
-                    qDebug() << "Shift+left-click on node. Toggling selection.";
+                    qCDebug(lcGW) << "Shift+left-click on node. Toggling selection.";
                     node->setSelected(!node->isSelected());
                     return;
                 }
@@ -1571,14 +1552,14 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
                 //
                 // User clicked on an edge
                 //
-                qDebug() << "Clicked on an edge at:" << e->pos() << "~"<< p;
+                qCDebug(lcGW) << "Clicked on an edge at:" << e->pos() << "~"<< p;
 
                 if ( e->button()==Qt::LeftButton ) {
-                    qDebug() << "This was a left click on the edge. Setting clicked edge...";
+                    qCDebug(lcGW) << "This was a left click on the edge. Setting clicked edge...";
                     setEdgeClicked(edge);
                 }
                 else if ( e->button()==Qt::RightButton ) {
-                    qDebug() << "This was a right click on the edge. Signaling to open context menu...";
+                    qCDebug(lcGW) << "This was a right click on the edge. Signaling to open context menu...";
                     setEdgeClicked(edge, true);
                 }
                 else {
@@ -1599,14 +1580,14 @@ void GraphicsWidget::mousePressEvent( QMouseEvent * e ) {
                 // User clicked on empty space, with right button
                 // so we must open the context menu
                 //
-                qDebug() << "Right click on empty space at:" << e->pos() << "~"<< p << "Signalling to open context menu";
+                qCDebug(lcGW) << "Right click on empty space at:" << e->pos() << "~"<< p << "Signalling to open context menu";
                 emit openContextMenu(p);
             }
             else {
                 //
                 //  user clicked on empty space, with left button.
                 //
-                qDebug() << "Left click on empty space at:"
+                qCDebug(lcGW) << "Left click on empty space at:"
                      << e->pos() << "~"<< p << "Setting clickedEdge=0 and emitting signal...";
                 clickedEdge=0;
                 emit userClickOnEmptySpace(p);
@@ -1639,11 +1620,13 @@ void GraphicsWidget::mouseReleaseEvent( QMouseEvent * e ) {
 
         if ( QGraphicsItem *item= itemAt(e->pos() ) ) {
             if (GraphicsNode *node = qgraphicsitem_cast<GraphicsNode *>(item)) {
-                qDebug() << "Mouse released at:" << e->pos() << "~"<< p
+                qCDebug(lcGW) << "Mouse released at:" << e->pos() << "~"<< p
                      << "on a node. Signalling to move all selected nodes";
                 Q_UNUSED(node);
-                foreach (QGraphicsItem *item, scene()->selectedItems()) {
-                    if (GraphicsNode *nodeSelected = qgraphicsitem_cast<GraphicsNode *>(item) ) {
+                // m_selectedNodes is kept in sync by handleSelectionChanged() and does
+                // not change mid-drag, so reuse it instead of re-querying the scene.
+                for (int nodeNum : std::as_const(m_selectedNodes)) {
+                    if (GraphicsNode *nodeSelected = nodeHash.value(nodeNum, nullptr)) {
                         emit userNodeMoved(nodeSelected->nodeNumber(),
                                            nodeSelected->x(),
                                            nodeSelected->y());
@@ -1653,13 +1636,13 @@ void GraphicsWidget::mouseReleaseEvent( QMouseEvent * e ) {
             }
             if (GraphicsEdge *edge= qgraphicsitem_cast<GraphicsEdge *>(item)) {
                 Q_UNUSED(edge);
-                qDebug() << "Mouse released at:" << e->pos() << "~"<< p << "on an edge.";
+                qCDebug(lcGW) << "Mouse released at:" << e->pos() << "~"<< p << "on an edge.";
                 QGraphicsView::mouseReleaseEvent(e);
                 return;
             }
         }
         else{
-            qDebug() << "Mouse released at:" << e->pos() << "~"<< p << "on empty space.";
+            qCDebug(lcGW) << "Mouse released at:" << e->pos() << "~"<< p << "on empty space.";
         }
 
     }
@@ -1679,7 +1662,7 @@ void GraphicsWidget::mouseReleaseEvent( QMouseEvent * e ) {
 void GraphicsWidget::wheelEvent(QWheelEvent *e) {
     bool ctrlKey = (e->modifiers() == Qt::ControlModifier);
     QPoint numDegrees =  e->angleDelta() / 8;
-    qDebug() << "Mouse wheel changeded by numDegrees = " << numDegrees;
+    qCDebug(lcGW) << "Mouse wheel changeded by numDegrees = " << numDegrees;
     if (ctrlKey) {
         if ( numDegrees.x() > 0 || numDegrees.y() > 0)
             zoomIn(1);
@@ -1699,11 +1682,12 @@ void GraphicsWidget::wheelEvent(QWheelEvent *e) {
  */
 void GraphicsWidget::zoomOut (const int step){
 
-    qDebug() << "Zooming out from "<< m_zoomIndex << "-" << step ;
+    qCDebug(lcGW) << "Zooming out from "<< m_zoomIndex << "-" << step ;
     m_zoomIndex-=step;
     if (m_zoomIndex <= 0) {
         m_zoomIndex = 0;
     }
+    changeMatrixScale(m_zoomIndex);
     emit zoomChanged(m_zoomIndex);
 
 }
@@ -1718,7 +1702,7 @@ void GraphicsWidget::zoomOut (const int step){
  * @param level
  */
 void GraphicsWidget::zoomIn(const int step){
-    qDebug() << "Zooming in from "<< m_zoomIndex << "+" << step ;
+    qCDebug(lcGW) << "Zooming in from "<< m_zoomIndex << "+" << step ;
     m_zoomIndex+=step;
     if (m_zoomIndex > m_zoomIndexMax) {
         m_zoomIndex=m_zoomIndexMax;
@@ -1726,6 +1710,7 @@ void GraphicsWidget::zoomIn(const int step){
     if (m_zoomIndex < 0) {
         m_zoomIndex = 0;
     }
+    changeMatrixScale(m_zoomIndex);
     emit zoomChanged(m_zoomIndex);
 }
 
@@ -1740,7 +1725,7 @@ void GraphicsWidget::zoomIn(const int step){
  */
 void GraphicsWidget::changeMatrixScale(int value) {
 
-    qDebug () << "Scaling the view transformation matrix by value" << value
+    qCDebug(lcGW) << "Scaling the view transformation matrix by value" << value
                << " - GW dimensions: " << width() << "x" << height();
 
     // Raise a flag that a non-trivial transformation is applied on the view
@@ -1749,14 +1734,28 @@ void GraphicsWidget::changeMatrixScale(int value) {
     // For any m_zoomIndexMax value, the max scaleFactor will always be: 2 ^ 5 = 32
     m_currentScaleFactor = pow(qreal(2), (value - (m_zoomIndexInit )) / qreal(m_zoomIndexMax/10.0) );
 
-    qDebug() << "Scaling view transformation by new scale factor:" << m_currentScaleFactor
+    qCDebug(lcGW) << "Scaling view transformation by new scale factor:" << m_currentScaleFactor
               << "rotation unchanged:" << m_currentRotationAngle;
 
+    // Anchor zoom to wherever the user last panned to (m_viewCenter), falling back to
+    // content centre on first zoom after load or after reset().  m_isZooming blocks
+    // scrollContentsBy() from updating m_viewCenter during the centerOn() call below.
+    const QRectF contentBounds = scene()->itemsBoundingRect();
+    if (!m_viewCenterValid) {
+        m_viewCenter = contentBounds.isEmpty()
+            ? scene()->sceneRect().center()
+            : contentBounds.center();
+        m_viewCenterValid = true;
+    }
+
+    m_isZooming = true;
     resetTransform();
     scale(m_currentScaleFactor, m_currentScaleFactor);
     rotate(m_currentRotationAngle);
+    centerOn(m_viewCenter);
+    m_isZooming = false;
 
-    qDebug () << "Finished scaling the view."
+    qCDebug(lcGW) << "Finished scaling the view."
                << " - GW dimensions: " << width() << "x" << height()
               << "  Scene dimensions:" << scene()->width() << "x" << scene()->height();
 
@@ -1765,10 +1764,30 @@ void GraphicsWidget::changeMatrixScale(int value) {
 
 
 /**
+ * @brief Tracks the user's pan position so zoom can anchor to it.
+ *
+ * Called by Qt whenever the scroll position changes — user scroll bars, mouse
+ * wheel scroll, or programmatic centerOn().  The m_isZooming flag blocks
+ * updates during our own centerOn() call in changeMatrixScale(), so only
+ * genuine user pans update m_viewCenter.
+ */
+void GraphicsWidget::scrollContentsBy(int dx, int dy)
+{
+    QGraphicsView::scrollContentsBy(dx, dy);
+    if (!m_isZooming)
+        m_viewCenter = mapToScene(viewport()->rect().center());
+}
+
+
+/**
  * @brief Decreases the numerical rotation Rotates the view to the left, by a fixed angle
  */
 void GraphicsWidget::rotateLeft(){
     m_currentRotationAngle-=5;
+    // Apply the transform directly rather than relying on the rotationChanged->slider->
+    // changeMatrixRotation chain: that chain is now display-only (QSignalBlocker'd in
+    // MainWindow), so nothing else would ever apply the rotation.
+    changeMatrixRotation(m_currentRotationAngle);
     emit rotationChanged(m_currentRotationAngle);
 }
 
@@ -1778,6 +1797,7 @@ void GraphicsWidget::rotateLeft(){
  */
 void GraphicsWidget::rotateRight() {
     m_currentRotationAngle+=5;
+    changeMatrixRotation(m_currentRotationAngle);
     emit rotationChanged(m_currentRotationAngle);
 }
 
@@ -1790,7 +1810,7 @@ void GraphicsWidget::rotateRight() {
 void GraphicsWidget::changeMatrixRotation(int angle){
     m_isTransformationActive = true;
     m_currentRotationAngle = angle;
-    qDebug() << "Rotating clockwise by angle" <<  angle
+    qCDebug(lcGW) << "Rotating clockwise by angle" <<  angle
               << " m_currentRotationAngle " << m_currentRotationAngle
               << " m_currentScaleFactor " << m_currentScaleFactor;
     resetTransform();
@@ -1802,13 +1822,88 @@ void GraphicsWidget::changeMatrixRotation(int angle){
 
 
 /**
+ * @brief Scales and centres the view so that the full network is visible.
+ *
+ * Computes the scale factor needed to fit the scene's bounding rect inside the
+ * viewport (with a 20 px margin on each side), maps it to the nearest discrete
+ * zoom index, updates @c m_viewCenter to the content centre, and applies the
+ * transform via @c changeMatrixScale().  @c zoomChanged() is also emitted to
+ * keep the zoom slider in sync, but the transform is applied unconditionally —
+ * not via the slider chain — so the view is always re-centred even when the
+ * computed zoom index equals the slider's current value.
+ *
+ * Called automatically via a QueuedConnection on @c Graph::signalLayoutFinished,
+ * which is emitted after every layout algorithm completes. The queued delivery
+ * guarantees that all @c setNodePos signals (which move scene items to their
+ * new positions) have been processed before this slot runs — so
+ * @c itemsBoundingRect() reflects the finished layout.
+ *
+ * After this call, subsequent zoom or pan operations anchor normally to the
+ * new view centre (the #248 behaviour is preserved).
+ */
+void GraphicsWidget::zoomToFit()
+{
+    const QRectF bounds = scene()->itemsBoundingRect();
+    if (bounds.isEmpty())
+        return;
+
+    const QRectF vp = viewport()->rect();
+    // Small margin so content doesn't touch the viewport edge on tiny networks.
+    const qreal margin = 5.0;
+    const qreal sx = (vp.width()  - margin * 2.0) / bounds.width();
+    const qreal sy = (vp.height() - margin * 2.0) / bounds.height();
+    const qreal fitScale = qMin(sx, sy);
+    qCDebug(lcGW) << "zoomToFit() bounds:" << bounds
+                  << "viewport rect:" << vp
+                  << "sceneRect:" << scene()->sceneRect()
+                  << "sx:" << sx << "sy:" << sy << "fitScale:" << fitScale;
+    if (fitScale <= 0.0)
+        return;
+
+    // Content that's only somewhat larger than the viewport is left at the initial
+    // 100% level rather than computing the "exact" fit-with-margin scale — matching
+    // reset()'s tight, margin-free look instead of visibly shrinking for an overflow
+    // that reset() tolerates just fine. Real-world networks routinely land in the
+    // 0.85-0.95 range here (node/label overhang beyond the raw coordinate range);
+    // only content that would need at least a quarter of its size cut actually
+    // triggers a real zoom-out.
+    int computedZoomIndex;
+    if (fitScale >= 0.75) {
+        computedZoomIndex = m_zoomIndexInit;
+    } else {
+        computedZoomIndex = qRound(m_zoomIndexInit + qLn(fitScale) / qLn(2.0) * (m_zoomIndexMax / 10.0));
+    }
+    m_zoomIndex = qBound(0, computedZoomIndex, m_zoomIndexInit);
+    qCDebug(lcGW) << "zoomToFit() computedZoomIndex (pre-clamp):" << computedZoomIndex
+                  << "m_zoomIndexInit:" << m_zoomIndexInit
+                  << "m_zoomIndexMax:" << m_zoomIndexMax
+                  << "final m_zoomIndex:" << m_zoomIndex;
+
+    m_viewCenter    = bounds.center();
+    m_viewCenterValid = true;
+
+    // Apply the transform directly — don't rely on the zoomChanged→slider→
+    // changeMatrixScale chain, which is a no-op when the index hasn't changed.
+    changeMatrixScale(m_zoomIndex);
+    // Update the slider separately; if valueChanged fires it re-calls
+    // changeMatrixScale with the same values, which is idempotent.
+    emit zoomChanged(m_zoomIndex);
+}
+
+
+/**
  * @brief Resets to default rotation, zoom and scale
  */
 void GraphicsWidget::reset() {
     m_currentRotationAngle=0;
     m_currentScaleFactor = 1;
     m_zoomIndex=m_zoomIndexInit;
-    this->ensureVisible(QRectF(0, 0, 0, 0));
+    m_viewCenterValid = false;  // next zoom re-centres on content
+    // Apply the identity transform directly — don't rely on the
+    // zoomChanged→slider→changeMatrixScale chain, which is a no-op when the
+    // slider is already at m_zoomIndexInit.  changeMatrixScale calls
+    // resetTransform()+scale()+rotate() using the zeroed rotation above.
+    changeMatrixScale(m_zoomIndexInit);
     emit zoomChanged(m_zoomIndex);
     emit rotationChanged(m_currentRotationAngle);
 }
@@ -1824,50 +1919,35 @@ void GraphicsWidget::reset() {
  */
 void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
 
-    qDebug () << "GW resized:" << e->oldSize().width() << "x" << e->oldSize().height()
+    qCDebug(lcGW) << "GW resized:" << e->oldSize().width() << "x" << e->oldSize().height()
             << "-->" << e->size().width() << "x" << e->size().height()
              << "widget dimensions:" << width() << "x"<<height();
 
+    // Always update the scroll-area bookkeeping first so that viewport()->rect()
+    // is current when zoomToFit() reads it later (via the timer).
+    QGraphicsView::resizeEvent(e);
+
+    // Suppress the spurious resize event that Qt fires when our own scale/rotate
+    // calls cause scrollbars to appear or disappear (changing the viewport rect).
     if (m_isTransformationActive)  {
         m_isTransformationActive = false;
         return;
     }
 
-    // Compute resize factors
-    fX = (double)(e->size().width())/(double)(e->oldSize().width());
-    fY = (double)(e->size().height())/(double)(e->oldSize().height());
+    // Guard against 0-size events (window minimise on Windows).
+    if (e->size().isEmpty())
+        return;
 
-    // Reposition  guides
-    foreach (QGraphicsItem *item, scene()->items()) {
-        if ( (item)->type() == TypeGuide ){
-            if (GraphicsGuide *guide = qgraphicsitem_cast<GraphicsGuide *>  (item) ) {
-                if (guide->isCircle()) {
-                    guide->die();
-                    guide->deleteLater ();
-                    delete item;
-                }
-                else {
-                    qDebug()<< "Horizontal GraphicsGuide "
-                            << " original position ("
-                            <<  guide->x() << "," << guide->y()
-                             << ") - width " << guide->width()
-                             << ") - will move to ("
-                             << guide->x()*fX << ", " << guide->y()*fY << ")"
-                                << " new width " << (int) ceil( (guide->width() *fX ));
-                    guide->setHorizontalLine(
-                                mapToScene(guide->pos().x()*fX,
-                                           guide->pos().y()*fY),
-                                (int) ceil( (guide->width() *fX )));
-                }
-            }
-        }
-    }
+    // Guides are positioned relative to the old canvas size; discard them now.
+    // They will be recreated automatically when the next layout runs.
+    clearGuides();
 
-    qDebug () << "Scene dimensions now:" << scene()->width() << "x" << scene()->height();
+    // Debounce: emit resized() once, 150 ms after the last resize event fires.
+    // The signal triggers canvasSizeSet() (proportional node rescaling) on the
+    // graph thread, which then emits signalLayoutFinished → zoomToFit().
+    m_resizeTimer.start(150);
 
-    emit resized(e->size().width(), e->size().height());
-
-    QGraphicsView::resizeEvent(e);
+    qCDebug(lcGW) << "Scene dimensions now:" << scene()->width() << "x" << scene()->height();
 }
 
 
@@ -1877,7 +1957,7 @@ void GraphicsWidget::resizeEvent( QResizeEvent *e ) {
  * @brief Destructor. Calls the method to clear the data.
  */
 GraphicsWidget::~GraphicsWidget(){
-    qDebug() << "Terminating. Calling clear()";
+    qCDebug(lcGW) << "Terminating. Calling clear()";
     clear();
 }
 

@@ -29,9 +29,10 @@ field data from a file in a supported format (GraphML, GraphViz, EdgeList, GML, 
 
 ## 2. Features
 
-- Standard graph-theoretic and network cohesion metrics: density, diameter, geodesics, connectedness (with weakly connected component count), eccentricity, clustering coefficient, walks, reciprocity, and more.
+- Standard graph-theoretic and network cohesion metrics: density, diameter, geodesics, connectedness (weak or strong component count, for directed networks), eccentricity, clustering coefficient, walks, reciprocity, and more.
+- Vertex connectivity: the minimum number of nodes that must be removed to disconnect two chosen actors (Node Connectivity), or to disconnect the network at its weakest point (Graph Connectivity) — a measure of robustness to node removal.
 - Matrix routines: Adjacency, Laplacian, Degree, Cocitation, and more.
-- Advanced centrality and prestige indices: eigenvector, closeness, betweenness, information, power centrality, PageRank prestige, and more.
+- Advanced centrality and prestige indices: eigenvector, closeness, betweenness, information, power, Katz, Bonacich power centrality, PageRank prestige, and more.
 - Community detection algorithms: triad census, clique census, and more.
 - Structural equivalence analysis using hierarchical clustering, actor similarities, and Pearson coefficients.
 - Multiple layout algorithms: prominence-based (circular, nodal sizes by centrality), force-directed (Kamada-Kawai, Fruchterman-Reingold), and ego-centered radial layout. Node colors can also be assigned by connected component, making disconnected sub-networks immediately visible.
@@ -88,6 +89,11 @@ You can download an installer or a binary package for your Operating System from
 project's Downloads page: <https://socnetv.org/downloads>
 
 Follow the instructions below to install it in your system.
+
+> The macOS disk image, Windows installer, and Linux AppImage are built automatically via
+> GitHub Actions against a single pinned Qt6 version (see `.github/workflows/build-release.yml`
+> for the exact version currently in use). The Debian/Ubuntu PPA and the openSUSE/Fedora
+> repositories below are built separately, against each distribution's own Qt6 packages.
 
 #### Install in Windows
 
@@ -163,7 +169,7 @@ sudo zypper in socnetv
 
 ### b. Compile from Source Code
 
-To compile and install SocNetV from source you need the Qt toolkit development libraries, version 6.2 or later (tested with Qt 6.8).
+To compile and install SocNetV from source you need the Qt toolkit development libraries, version 6.2 or later (tested with Qt 6.9).
 
 Qt is an open source C++ toolkit, for Windows, Linux and macOS.
 
@@ -184,7 +190,7 @@ Download the archive with the source code of the latest version from
 
 #### Build with CMake (recommended)
 
-CMake is the recommended build system for SocNetV 3.6. Replace `3.X` with the version you downloaded.
+CMake is the recommended build system for SocNetV 3.7. Replace `3.X` with the version you downloaded.
 
 ```bash
 tar zxfv app-3.X.tar.gz
@@ -233,6 +239,13 @@ Options:
   -d, --debug <level>  Print debug messages to stdout/console. Available
                        verbosity <level>s: 'none', 'min' or 'full'. Default:
                        'min'.
+  --encoding <name>    Load the startup file with this text encoding (e.g.
+                       'UTF-8'), bypassing the encoding preview dialog.
+  --interactive-script <path>
+                       Run a plain-text script after startup, one command
+                       per line, driving the real GUI/event loop — useful
+                       for scripted demos, profiling, or regression testing
+                       without manual clicking.
 
 Arguments:
   file                 Network file to load on startup. You can load a network
@@ -249,12 +262,16 @@ For example, type:
 
 to start SocNetV and immediately load network file named 'net.graphml' (in current folder).
 
-### Headless CLI (socnetv_cli)
+### Headless CLI (socnetv-cli)
 
-Starting with version 3.3, SocNetV also ships a headless command-line tool, `socnetv_cli`, for batch network analysis without a graphical interface. It supports multiple analysis kernels (distances, reachability, walks, prominence centralities) and produces deterministic JSON output suitable for scripting and regression testing.
+Starting with version 3.3, SocNetV also ships a headless command-line tool, `socnetv-cli`, for batch network analysis without a graphical interface. It supports multiple analysis kernels (distances, reachability, walks, prominence centralities, connectivity, and more) and produces deterministic JSON output suitable for scripting and regression testing.
+
+This is a separate binary from the `--interactive-script` option above: `socnetv-cli` runs analysis
+kernels headlessly with no GUI at all, while `--interactive-script` drives the real, full `socnetv`
+GUI application through a scripted sequence of actions.
 
 ```bash
-socnetv_cli --help
+socnetv-cli --help
 ```
 
 This tool is intended for power users, automated pipelines, and developers running regression test suites.
