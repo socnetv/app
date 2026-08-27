@@ -190,7 +190,7 @@ Download the archive with the source code of the latest version from
 
 #### Build with CMake (recommended)
 
-CMake is the recommended build system for SocNetV 3.6. Replace `3.X` with the version you downloaded.
+CMake is the recommended build system for SocNetV 3.7. Replace `3.X` with the version you downloaded.
 
 ```bash
 tar zxfv app-3.X.tar.gz
@@ -262,16 +262,16 @@ For example, type:
 
 to start SocNetV and immediately load network file named 'net.graphml' (in current folder).
 
-### Headless CLI (socnetv_cli)
+### Headless CLI (socnetv-cli)
 
-Starting with version 3.3, SocNetV also ships a headless command-line tool, `socnetv_cli`, for batch network analysis without a graphical interface. It supports multiple analysis kernels (distances, reachability, walks, prominence centralities, connectivity, and more) and produces deterministic JSON output suitable for scripting and regression testing.
+Starting with version 3.3, SocNetV also ships a headless command-line tool, `socnetv-cli`, for batch network analysis without a graphical interface. It supports multiple analysis kernels (distances, reachability, walks, prominence centralities, connectivity, and more) and produces deterministic JSON output suitable for scripting and regression testing.
 
-This is a separate binary from the `--interactive-script` option above: `socnetv_cli` runs analysis
+This is a separate binary from the `--interactive-script` option above: `socnetv-cli` runs analysis
 kernels headlessly with no GUI at all, while `--interactive-script` drives the real, full `socnetv`
 GUI application through a scripted sequence of actions.
 
 ```bash
-socnetv_cli --help
+socnetv-cli --help
 ```
 
 This tool is intended for power users, automated pipelines, and developers running regression test suites.
