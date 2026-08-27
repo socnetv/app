@@ -60,6 +60,9 @@ Roadmap: [`docs/roadmaps/roadmap_ws6_testing_ci_regression.md`](roadmaps/roadmap
 
 Expand golden baselines, dataset coverage, and benchmarking, supporting every other workstream.
 
+**Queued, deferred to post-v3.7**: WS6.8 — independently audit pre-existing golden baselines for
+mathematical correctness (not just regression-stability). See the WS6 roadmap doc for why and how.
+
 ---
 
 ## WS8 — IO Layer Stabilization

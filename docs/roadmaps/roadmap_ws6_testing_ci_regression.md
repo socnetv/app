@@ -482,6 +482,51 @@ CI should run a carefully chosen subset by default:
 
 Heavier suites can run nightly or on-demand.
 
+### WS6.8 — Independently audit pre-existing golden baselines for mathematical correctness
+
+**Status: deferred until after the v3.7 release** — queued during the Katz/Bonacich work (2026-08)
+but explicitly postponed given the v3.7 release deadline; pick this up first thing once v3.7 ships.
+
+Goal:
+
+Golden baselines catch *regressions* (today's output differs from yesterday's), but say nothing
+about whether the *original* baseline was ever mathematically correct. Every baseline currently in
+`src/tools/baselines/` was accepted once, at dump time, without independent verification against a
+hand-computable ground truth.
+
+Motivating precedent: the Katz/Bonacich verification work this session (2026-08) caught two real
+bugs this way that ordinary regression testing had already been passing cleanly against its own
+(silently wrong) baselines:
+
+- The `Matrix::powerIteration()` divide-by-zero substitution (`norm = 1`) leaking into the reported
+  `lambdaMax` on nilpotent (directed, cycle-free) matrices — every golden run agreed with itself,
+  because the bug was baked into the baseline from the start.
+- A stale-cache bug where a rejected alpha/beta silently short-circuited every later recompute —
+  invisible to golden compares since each baseline is dumped once, not re-run with changing inputs.
+
+Both were found only by hand-deriving expected values independently (plain Python, Gauss-Jordan
+elimination, no numpy) against small, deliberately-constructed test networks, then comparing
+against what the app actually produced — not by trusting the existing baseline as ground truth.
+
+Suggested approach (risk-based, not exhaustive — see below):
+
+- Prioritize edge cases most likely to hide latent bugs, per the pattern above: directed +
+  nilpotent/cyclic structure, isolates, self-loops, zero-weight edges, disconnected components,
+  weighted + inverted-weight combinations, and any kernel that recently changed
+  (`vertex_connectivity`, `connectivity`, `matrix` are the newest families and haven't had this
+  treatment at all yet).
+- For each flagged case, hand-derive the expected result independently (small enough networks that
+  this is tractable by hand or a short verification script) and compare against the current
+  baseline — not just against the app's current output, since the app could be self-consistently
+  wrong.
+- Where a baseline is found to be wrong, follow the same discipline used for the `powerIteration`
+  fix: confirm the fix is unambiguously correct, understand exactly what changes and why, get
+  explicit sign-off before touching previously-"passing" baselines, then re-dump with a clear
+  commit explaining what was wrong and how it was verified.
+- Given the scope (9 kernel families, ~78 baseline files as of 2026-08), decide the audit's actual
+  depth (representative sample vs. exhaustive vs. risk-based-only) when this is picked back up,
+  rather than assuming exhaustive coverage is the goal by default.
+
 ### Open findings
 
 #### `run_benchmarks.sh` reports `BUILD_TYPE=Debug` even against a Release binary
