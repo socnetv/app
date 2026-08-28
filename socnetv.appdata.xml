@@ -16,31 +16,30 @@
 	<screenshots>
 		<screenshot type="default">
 			<image>https://socnetv.org/data/uploads/screenshots/30/socnetv-3.0.2.png</image>
+			<caption>SocNetV main window showing a social network visualization</caption>
 		</screenshot>
 	</screenshots>
         <releases>
-          <release version="2.9" date="2021-06-14" />
-          <release version="3.0" date="2021-07-30" />
-          <release version="3.0.1" date="2021-07-30" />
-          <release version="3.0.2" date="2021-07-30" />
-          <release version="3.0.3" date="2021-07-30" />
-          <release version="3.0.4" date="2021-07-30" />
-          <release version="3.1" date="2023-06-12" />
-	  <release version="3.2" date="2025-04-01" />
-	  <release version="3.3" date="2026-02-25" />
-	  <release version="3.3.1" date="2026-02-26" />
-	  <release version="3.4" date="2026-03-10" />
-	  <release version="3.5" date="2026-05-08" />
-	  <release version="3.6" date="2026-06-15" />
-	  <release version="3.7" date="2026-08-27" />
 	  <release version="3.8" date="2026-10-30" />
-
-
-
-
-
+	  <release version="3.7" date="2026-08-27" />
+	  <release version="3.6" date="2026-06-15" />
+	  <release version="3.5" date="2026-05-08" />
+	  <release version="3.4" date="2026-03-10" />
+	  <release version="3.3.1" date="2026-02-26" />
+	  <release version="3.3" date="2026-02-25" />
+	  <release version="3.2" date="2025-04-01" />
+          <release version="3.1" date="2023-06-12" />
+          <release version="3.0.4" date="2021-07-30" />
+          <release version="3.0.3" date="2021-07-30" />
+          <release version="3.0.2" date="2021-07-30" />
+          <release version="3.0.1" date="2021-07-30" />
+          <release version="3.0" date="2021-07-30" />
+          <release version="2.9" date="2021-06-14" />
         </releases>
-        <developer_name>Dimitris B. Kalamaras</developer_name>
+        <content_rating type="oars-1.1" />
+        <developer id="org.socnetv">
+          <name>Dimitris B. Kalamaras</name>
+        </developer>
         <update_contact>dimitris.kalamaras_AT_gmail.com</update_contact>
         <provides>
           <binary>socnetv</binary>
