@@ -529,6 +529,24 @@ genuinely no close neighbor), then **Math** (the formula). See
 
 ---
 
+# Math Notation in Markdown Files (CHANGELOG.md, docs/*.md)
+
+GitHub does **not** render bare `$ ... $` as inline math — that's a LaTeX/Astro-KaTeX convention,
+not GitHub's. Left as bare `$ ... $`, GitHub falls through to plain Markdown parsing, where
+underscores and carets inside the expression (e.g. `\lambda_{max}`) get misread as emphasis
+markers, mangling the text instead of rendering a formula.
+
+GitHub's actual supported syntax:
+- Inline: `` $`...`$ `` (backtick-wrapped, no space after the opening backtick-dollar)
+- Block: a fenced ` ```math ` code block, for anything long enough to warrant its own line(s)
+
+This only applies to files GitHub renders directly (CHANGELOG.md, anything under `docs/`). The
+website manual (`../website/src/content/docs/manual/*.mdx`) is a separate Astro/Starlight
+pipeline with its own KaTeX-based math rendering (`$$ ... $$` block math) — do not "fix" math
+there to match this convention, it would break it.
+
+---
+
 # AddressSanitizer (ASan) Debug Builds
 
 For chasing crashes/dangling-pointer bugs that don't show up in the golden/benchmark suite (those

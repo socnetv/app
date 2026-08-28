@@ -24,10 +24,10 @@ All notable changes to this project are documented in this file.
     dialog asks for alpha; the computation rejects and explains itself if
     alpha is too large to converge (must be smaller than 1 / the network's
     largest eigenvalue). Computed in closed form via the matrix identity
-    $ I + \alpha A + \alpha^2 A^2 + \dots = (I - \alpha A)^{-1} $ (valid for
-    $ |\alpha| < 1/\lambda_{max} $, the same geometric-series identity used
+    $`I + \alpha A + \alpha^2 A^2 + \dots = (I - \alpha A)^{-1}`$ (valid for
+    $`|\alpha| < 1/\lambda_{max}`$, the same geometric-series identity used
     for ordinary numbers, applied to matrices):
-    $ C_{Katz} = \left( (I - \alpha A^T)^{-1} - I \right) \cdot \mathbf{1} $.
+    $`C_{Katz} = \left( (I - \alpha A^T)^{-1} - I \right) \cdot \mathbf{1}`$.
 
   - **Bonacich Power Centrality** (#39): new **Analyze → Centrality →
     Bonacich Power Centrality (BPC)** measure, with the same full parity as
@@ -41,10 +41,10 @@ All notable changes to this project are documented in this file.
     power the more powerful those sellers are), and per-node scores can
     come out negative, unlike every other measure in the app. alpha is a
     free overall scale factor with no convergence bound; only beta must
-    satisfy $ |\beta| < 1/\lambda_{max} $. Distinct from the existing
+    satisfy $`|\beta| < 1/\lambda_{max}`$. Distinct from the existing
     Gil-Schmidt "Power Centrality (PC)". Computed via
-    $ b = \alpha (I - \beta R)^{-1} R \cdot \mathbf{1} $, where
-    $ R = A^T $ (same directional convention as Katz).
+    $`b = \alpha (I - \beta R)^{-1} R \cdot \mathbf{1}`$, where
+    $`R = A^T`$ (same directional convention as Katz).
 
   - **Node and Graph Connectivity** (#7): two new analyses under **Analyze →
     Cohesion**. **Node Connectivity** computes the minimum number of nodes
@@ -81,9 +81,9 @@ All notable changes to this project are documented in this file.
     level. Small networks are never scaled beyond 100%.
 
   - **Tomita pivot selection in clique census** (#64): the Bron–Kerbosch
-    algorithm now selects a pivot vertex $ u \in P \cup X $ that maximises
-    $ |N(u) \cap P| $ before each recursive level, and iterates only over
-    $ P \setminus N(u) $. This can reduce branch count to a single candidate
+    algorithm now selects a pivot vertex $`u \in P \cup X`$ that maximises
+    $`|N(u) \cap P|`$ before each recursive level, and iterates only over
+    $`P \setminus N(u)`$. This can reduce branch count to a single candidate
     per level on dense graphs, giving dramatic speedups on real-world networks
     without changing the set of maximal cliques reported.
 
