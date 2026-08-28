@@ -130,6 +130,22 @@ Three follow-on visualizations surfaced by this work are noted below under What 
   rather than the analysis-output angle — worth scoping together rather than landing two independent
   community-detection implementations.
 
+### Signed Networks — cross-cutting (`src/engine/`, `src/graph/centrality/`)
+
+- **#277 — Negative edge weights silently corrupt distance-based centralities.**
+  `DistanceEngine::dijkstraSSSP()` is genuine Dijkstra - mathematically undefined for negative
+  weights, no guard anywhere. Failure mode is silent finite-but-wrong distances (Dijkstra's
+  "popped = finalized" invariant breaks), not a crash - corrupts every distance-derived measure
+  (CC, BC, SC, EC, IRCC, PC). Negative weights are already legitimate, intentional input in this
+  app (Settings has a dedicated negative-edge display color) - signed network analysis is a real,
+  named SNA subfield (structural balance theory; Everett & Borgatti 2014's PN centrality; Bonacich
+  & Lloyd 2004 extends Bonacich Power Centrality, already implemented here, to negative ties), not
+  something to disallow. Immediate scope is a guard on the Dijkstra-derived measures specifically
+  (reject/warn instead of silently misapplying); matrix-power measures (EVC, Katz, Bonacich, PRP)
+  aren't Dijkstra-based and may not need it, but that's unverified, not assumed. Proper signed-network
+  support (dedicated measures like PN centrality) is separate, larger future work - full scope to be
+  determined when actually prioritized, not designed upfront here.
+
 ### Similarity / Structural Equivalence — `src/graph/similarity/`
 
 - **#181 — Structural equivalence analysis**: Multidimensional Scaling (MDS), blockmodelling,
