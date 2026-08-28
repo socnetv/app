@@ -540,11 +540,6 @@ GitHub's actual supported syntax:
 - Inline: `` $`...`$ `` (backtick-wrapped, no space after the opening backtick-dollar)
 - Block: a fenced ` ```math ` code block, for anything long enough to warrant its own line(s)
 
-This only applies to files GitHub renders directly (CHANGELOG.md, anything under `docs/`). The
-website manual (`../website/src/content/docs/manual/*.mdx`) is a separate Astro/Starlight
-pipeline with its own KaTeX-based math rendering (`$$ ... $$` block math) — do not "fix" math
-there to match this convention, it would break it.
-
 ---
 
 # AddressSanitizer (ASan) Debug Builds
