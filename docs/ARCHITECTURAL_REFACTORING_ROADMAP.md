@@ -42,7 +42,6 @@ The `Graph` object is a façade and state coordinator — not a monolith. Algori
 | WS3  | Architecture & Performance          | ✔ complete (v3.6/v3.7)        | [`roadmap_ws3_architecture_performance.md`](roadmaps/roadmap_ws3_architecture_performance.md) |
 | WS4  | IO / Parser modernization           | ✔ complete                    | [`roadmap_ws4_io_parser_refactor.md`](roadmaps/roadmap_ws4_io_parser_refactor.md) |
 | WS5  | Matrices Modernization              | ✔ complete (v3.7)             | [`roadmap_ws5_matrices_modernization.md`](roadmaps/roadmap_ws5_matrices_modernization.md) |
-| WS9  | Graph exploration & data workflows  | ✔ shipped v3.5/v3.6           | [`roadmap_ws9_graph_exploration.md`](roadmaps/roadmap_ws9_graph_exploration.md) |
 | WS14 | Logging Cost & Release-Build Hygiene| ✔ complete (v3.7, #268)       | [`roadmap_ws14_logging_cost.md`](roadmaps/roadmap_ws14_logging_cost.md) |
 | WS16 | Report CSV Export                   | ✔ complete (v3.7, #113)       | [`roadmap_ws16_report_csv_export.md`](roadmaps/roadmap_ws16_report_csv_export.md) |
 | WS7  | MainWindow Decomposition (MW0)      | ✔ complete (v3.7, #257)       | [`roadmap_ws7_mainwindow_decomposition.md`](roadmaps/roadmap_ws7_mainwindow_decomposition.md) |
@@ -79,6 +78,16 @@ hand-maintained per-format switch statements.
 Roadmap: [`docs/roadmaps/roadmap_ws10_graphicswidget_overhaul.md`](roadmaps/roadmap_ws10_graphicswidget_overhaul.md)
 
 Ongoing GraphicsWidget canvas rendering and feature work, separate from WS3.
+
+---
+
+## WS9 — Graph Exploration & Data Workflows
+
+Roadmap: [`docs/roadmaps/roadmap_ws9_graph_exploration.md`](roadmaps/roadmap_ws9_graph_exploration.md)
+
+Core (filtering, subgraph extraction, table/CSV/JSON data workflows) shipped v3.5–v3.6. Debt
+backlog still open: tab-based multi-graph UI (#245), attribute transformations (#229), temporal
+attributes/timeline (#222), dynamic networks (#25), multirelational node removal (#57).
 
 ---
 
@@ -134,6 +143,8 @@ mistaken for having fixed all four.
 6. **WS12** — CLI scripting mode. Thirty-four commands shipped across several passes since
    #261/#262; further commands added on demand, not prioritised as a standing backlog.
 7. **WS13** — undo/redo. Just created; not prioritised yet, no code written.
+8. **WS9** — graph exploration debt backlog. Core shipped; five open issues (#245, #229, #222,
+   #25, #57), none prioritised yet — #245 blocks on significant tab-UI infrastructure investment.
 
 ---
 
