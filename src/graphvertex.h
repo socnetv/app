@@ -286,7 +286,7 @@ private:
     int m_outEdgesNonSym, m_inEdgesNonSym, m_outEdgesSym;
     int m_size, m_labelSize, m_numberSize, m_numberDistance, m_labelDistance;
     int m_curRelation;
-    bool m_reciprocalLinked, m_enabled, m_hasCLC, m_isolated;
+    bool m_enabled, m_hasCLC, m_isolated;
     double m_x, m_y;
     qreal m_Eccentricity, m_CLC;
     qreal m_EC, m_SEC;
