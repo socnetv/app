@@ -15,6 +15,7 @@
 
 #include "graph.h"
 #include <QDebug>
+#include <QtConcurrent/QtConcurrent>
 
 /**
  * @brief Returns the local clustering coefficient (CLUCOF) of vertex v1.
@@ -47,16 +48,18 @@
  * (excluding v_i itself), and each directed edge e_jk is counted
  * independently – i.e. e_jk and e_kj are distinct.
  *
- * Bug fix (issue #58): the previous implementation built N_i from
- * reciprocalEdgesHash() (only mutual ties), which gave C_i = 0 for nodes
- * whose in- and out-neighbourhood were not identical.  N_i must be the
- * full combined neighbourhood for directed networks.
+ * Thread-safety (WS15 P4): isSymmetric is passed in rather than computed here via
+ * this->isSymmetric() - that call lazily computes-and-caches on first use, which would
+ * race if every worker thread's first call landed concurrently. Callers must compute it
+ * once, sequentially, before running this concurrently (see clusteringCoefficient()).
  *
  * @param v1  The vertex number whose local CLUCOF is requested.
+ * @param isSymmetric  Whether the graph's current relation is symmetric - the caller's
+ *        already-known/cached Graph::isSymmetric() result.
  * @return    The local clustering coefficient in [0, 1], or 0 for isolates
  *            and vertices with fewer than 2 neighbours.
  */
-qreal Graph::clusteringCoefficientLocal(const int &v1)
+qreal Graph::clusteringCoefficientLocal(const int &v1, const bool &isSymmetric)
 {
     if (!isModified() && (m_graph[vpos[v1]]->hasCLC()))
     {
@@ -67,8 +70,6 @@ qreal Graph::clusteringCoefficientLocal(const int &v1)
     }
     qCDebug(lcClustering) << "Graph::clusteringCoefficientLocal(" << v1 << ") -"
              << "Graph changed or clucof not yet calculated.";
-
-    const bool isSymmetric = this->isSymmetric();
 
     qreal clucof = 0, denom = 0, nom = 0;
     int u1 = 0, u2 = 0, k = 0;
@@ -235,6 +236,15 @@ qreal Graph::clusteringCoefficientLocal(const int &v1)
 /**
  * @brief Computes local clustering coefficients and returns
  * the network average Clustering Coefficient
+ *
+ * Parallelization (WS15 P4): each vertex's clusteringCoefficientLocal() call only reads
+ * edges and writes its own GraphVertex (setCLC) - independent, same per-vertex shape as
+ * centralityDegree()/isSymmetric(). isSymmetric() is computed once, sequentially, before
+ * the parallel step, since it lazily computes-and-caches on first use (see
+ * clusteringCoefficientLocal()'s own doc comment). Class/min/max/average/variance
+ * bookkeeping is reduced sequentially afterwards, reading back each vertex's now-cached
+ * CLC() - same split as centralityDegree()'s sumDC/SDC pass.
+ *
  * @param updateProgress
  * @return
  */
@@ -256,15 +266,24 @@ qreal Graph::clusteringCoefficient()
                       "Please wait...");
     progressStatus(pMsg);
 
+    if (progressCanceled())
+    {
+        return averageCLC;
+    }
+
+    // Warm isSymmetric()'s cache sequentially before any worker thread reads it below.
+    const bool graphIsSymmetric = isSymmetric();
+
+    // Cancel signals cannot be delivered while graphThread's event loop is blocked in
+    // blockingMap, so (like DistanceEngine/centralityDegree) we skip the cancel check
+    // inside the lambda.
+    QtConcurrent::blockingMap(m_graph, [&](GraphVertex *v) {
+        clusteringCoefficientLocal(v->number(), graphIsSymmetric);
+    });
+
     for (vertex = m_graph.cbegin(); vertex != m_graph.cend(); ++vertex)
     {
-
-        if (progressCanceled())
-        {
-            return averageCLC;
-        }
-
-        temp = clusteringCoefficientLocal((*vertex)->number());
+        temp = (*vertex)->CLC();
 
         resolveClasses(temp, discreteCLCs, classesCLC);
 

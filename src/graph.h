@@ -1285,7 +1285,7 @@ public:
                                      const bool &inverseWeights = false,
                                      const bool &dropIsolates = false);
 
-    qreal clusteringCoefficientLocal(const int &v1);
+    qreal clusteringCoefficientLocal(const int &v1, const bool &isSymmetric);
 
     qreal clusteringCoefficient();
 
