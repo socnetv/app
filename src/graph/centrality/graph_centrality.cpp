@@ -14,7 +14,9 @@
  */
 
 #include "graph.h"
+#include <QAtomicInteger>
 #include <QDebug>
+#include <QtConcurrent/QtConcurrent>
 
 /**
  * @brief Computes the Information centrality of each vertex - diagonal included
@@ -514,6 +516,11 @@ void Graph::centralityEigenvector(const bool &considerWeights,
  * considered). Standardized SDC(i) = DC(i) / (N-1), the fraction of all other actors i is
  * directly tied to.
  *
+ * Parallelization (WS15 P4): each vertex's DC only reads edges and writes its own GraphVertex
+ * (setDC) - independent, read-mostly, same per-source shape as DistanceEngine's APSP. The one
+ * shared write, m_graphIsSymmetric, is reduced via QAtomicInteger OR instead of a plain bool to
+ * avoid a data race across worker threads. sumDC is reduced sequentially after the parallel step.
+ *
  * @param considerWeights
  * @param dropIsolates
  */
@@ -526,7 +533,6 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
         return;
     }
     qreal DC = 0, nom = 0, denom = 0, SDC = 0;
-    qreal weight;
     classesSDC = 0;
     discreteSDCs.clear();
     sumSDC = 0;
@@ -537,7 +543,7 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
     meanSDC = 0;
     int N = vertices(dropIsolates);
 
-    VList::const_iterator it, it1;
+    VList::const_iterator it;
 
     QString pMsg = tr("Computing out-Degree Centralities for %1 nodes. \nPlease wait...").arg(N);
     qCDebug(lcCentrality) << pMsg;
@@ -547,17 +553,20 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
     {
         return;
     }
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
 
-        DC = 0;
-
-        if (!(*it)->isEnabled() || (dropIsolates && (*it)->isIsolated()))
+    // Cancel signals cannot be delivered while graphThread's event loop is blocked in
+    // blockingMap, so (like DistanceEngine) we skip the cancel check inside the lambda.
+    QAtomicInteger<bool> asymmetric{m_graphIsSymmetric ? false : true};
+    QtConcurrent::blockingMap(m_graph, [&](GraphVertex *v) {
+        if (!v->isEnabled() || (dropIsolates && v->isIsolated()))
         {
-            continue;
+            return;
         }
 
-        for (it1 = m_graph.cbegin(); it1 != m_graph.cend(); ++it1)
+        qreal DC = 0;
+        qreal weight;
+
+        for (VList::const_iterator it1 = m_graph.cbegin(); it1 != m_graph.cend(); ++it1)
         {
 
             if (!(*it1)->isEnabled() || (dropIsolates && (*it1)->isIsolated()))
@@ -565,7 +574,7 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
                 continue;
             }
 
-            if ((weight = edgeExists((*it)->number(), (*it1)->number())) != 0.0)
+            if ((weight = edgeExists(v->number(), (*it1)->number())) != 0.0)
             {
                 if (considerWeights)
                     DC += weight;
@@ -573,14 +582,22 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
                     DC++;
 
                 // check here if the matrix is symmetric - we need this below
-                if (weight != edgeExists((*it1)->number(), (*it)->number()))
-                    m_graphIsSymmetric = false;
+                if (weight != edgeExists((*it1)->number(), v->number()))
+                    asymmetric.storeRelease(true);
             }
         }
 
-        (*it)->setDC(DC); // Set OutDegree
+        v->setDC(DC); // Set OutDegree
+    });
+    m_graphIsSymmetric = !asymmetric.loadAcquire();
 
-        sumDC += DC; // store sumDC (for std calc below)
+    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    {
+        if (!(*it)->isEnabled() || (dropIsolates && (*it)->isIsolated()))
+        {
+            continue;
+        }
+        sumDC += (*it)->DC(); // store sumDC (for std calc below)
     }
 
     if (progressCanceled())
