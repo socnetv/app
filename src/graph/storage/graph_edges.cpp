@@ -450,19 +450,21 @@ void Graph::edgeRemoveSelectedAll()
  */
 qreal Graph::edgeExists(const int &v1, const int &v2, const bool &checkReciprocal)
 {
-
-    edgeWeightTemp = m_graph[vpos[v1]]->hasEdgeTo(v2);
+    // Pure function - no Graph-instance state read or written beyond m_graph/vpos lookups
+    // (both read-only here), so this is safe to call concurrently across worker threads
+    // (e.g. from WS15 P4 parallelized loops).
+    const qreal edgeWeight = m_graph[vpos[v1]]->hasEdgeTo(v2);
 
     if (!checkReciprocal)
     {
-        return edgeWeightTemp;
+        return edgeWeight;
     }
-    else if (edgeWeightTemp != 0)
+    else if (edgeWeight != 0)
     {
-        edgeReverseWeightTemp = m_graph[vpos[v2]]->hasEdgeTo(v1);
-        if (edgeWeightTemp == edgeReverseWeightTemp)
+        const qreal edgeReverseWeight = m_graph[vpos[v2]]->hasEdgeTo(v1);
+        if (edgeWeight == edgeReverseWeight)
         {
-            return edgeWeightTemp;
+            return edgeWeight;
         }
     }
     return 0;

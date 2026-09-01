@@ -1539,7 +1539,6 @@ private:
 
     MyEdge m_clickedEdge;
 
-    qreal edgeWeightTemp, edgeReverseWeightTemp;
     qreal meanSDC, varianceSDC;
     qreal meanSCC, varianceSCC;
     qreal meanIRCC, varianceIRCC;
