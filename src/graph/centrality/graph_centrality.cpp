@@ -556,6 +556,9 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
 
     // Cancel signals cannot be delivered while graphThread's event loop is blocked in
     // blockingMap, so (like DistanceEngine) we skip the cancel check inside the lambda.
+    //
+    // QAtomicInteger<bool>: a bool that's safe for multiple worker threads (below) to write
+    // to at the same time - a plain bool would be a data race here.
     QAtomicInteger<bool> asymmetric{m_graphIsSymmetric ? false : true};
     QtConcurrent::blockingMap(m_graph, [&](GraphVertex *v) {
         if (!v->isEnabled() || (dropIsolates && v->isIsolated()))
@@ -583,12 +586,15 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
 
                 // check here if the matrix is symmetric - we need this below
                 if (weight != edgeExists((*it1)->number(), v->number()))
+                    // storeRelease(): safely write true from this worker thread.
                     asymmetric.storeRelease(true);
             }
         }
 
         v->setDC(DC); // Set OutDegree
     });
+    // loadAcquire(): safely read the final value now that all worker threads are done
+    // (blockingMap only returns once every one of them has finished).
     m_graphIsSymmetric = !asymmetric.loadAcquire();
 
     for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)

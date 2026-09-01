@@ -135,12 +135,8 @@ bool Graph::isSymmetric()
         return m_graphIsSymmetric;
     }
 
-    // storeRelease/loadAcquire (not relaxed load/store): makes explicit at the call site that
-    // this flag crosses the worker-thread -> main-thread boundary, so every read a worker did
-    // before its storeRelease is visible once the main thread's loadAcquire below sees it.
-    // blockingMap() already joins every worker before returning, so this is technically
-    // redundant with that barrier - kept for self-documentation and to match the same pattern
-    // used in centralityDegree()'s asymmetric flag.
+    // QAtomicInteger<bool>: a bool that's safe for multiple worker threads (below) to write
+    // to at the same time - a plain bool would be a data race here.
     QAtomicInteger<bool> asymmetric{false};
 
     QtConcurrent::blockingMap(m_graph, [&](GraphVertex *v) {
@@ -157,12 +153,15 @@ bool Graph::isSymmetric()
 
             if (edgeExists(v2, v1) != weight)
             {
+                // storeRelease(): safely write true from this worker thread.
                 asymmetric.storeRelease(true);
                 break;
             }
         }
     });
 
+    // loadAcquire(): safely read the final value now that all worker threads are done
+    // (blockingMap only returns once every one of them has finished).
     m_graphIsSymmetric = !asymmetric.loadAcquire();
     qCDebug(lcGraphCore) << "Graph: isSymmetric() - Finished. Result:" << m_graphIsSymmetric;
     calculatedGraphSymmetry = true;
