@@ -4,9 +4,17 @@ All notable changes to this project are documented in this file.
 
 ## [3.8] – Oct 2026
 
-### New Features
+_Work in progress — more entries to come as the 3.8 cycle continues._
 
-  - _TODO: add release notes_
+### Improvements
+
+  - **`centralityDegree()` parallelized** (WS15 P4): Degree Centrality's per-vertex computation
+    now runs via `QtConcurrent::blockingMap`, the same pattern used by `DistanceEngine`'s
+    shortest-path engine — first implementation from WS15's parallelization audit. Found and
+    fixed a real thread-safety bug along the way: `Graph::edgeExists()` wrote its result through
+    two `Graph`-instance member fields instead of local variables, which is safe single-threaded
+    but races once called concurrently — converted to locals, benefiting every future concurrent
+    edge-reading code, not just this one caller.
 
 ## [3.7] – Aug 2026
 

@@ -131,7 +131,7 @@ mistaken for having fixed all four.
 # Priorities
 
 1. **WS15** — app responsiveness contract. P1-P3 done and live-verified; P4's parallelization audit
-   done, implementation not started.
+   done, implementation started.
 2. **WS6** — regression safety (ongoing support — continuously active underneath every other
    workstream, not "next in queue").
 3. **WS10** — GraphicsWidget canvas rendering & features. Phase 1 (#250), #260, and the

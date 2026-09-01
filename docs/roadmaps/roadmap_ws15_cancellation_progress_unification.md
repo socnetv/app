@@ -26,7 +26,8 @@ not something to paper over.
 ## Status
 
 🚧 In progress. P1-P3 ✅ done — linear progress-dialog system retired, exactly one progress dialog
-now exists app-wide. P4's audit done; implementation not started. See What WS15 Delivered below.
+now exists app-wide. P4's audit done; `centralityDegree()` parallelized as the first
+implementation, rest of the candidates not started. See What WS15 Delivered below.
 
 ## What WS15 Delivered
 
@@ -67,7 +68,7 @@ before emitting `canceled()` (`setAutoClose`/`setAutoReset` don't gate that path
 `canceled()` connection re-shows it, relabels it "Canceling...", and disables it until the
 operation's own completion continuation tears it down for real.
 
-### P4 — Parallelization audit ✅ Audit done, implementation not started
+### P4 — Parallelization audit ✅ Audit done, `centralityDegree()` implemented, rest open
 
 Audited every long-running operation in `src/graph/`'s algorithm slices against all four contract
 properties, judging property 4 by real algorithm structure (independent per-source/per-node work
@@ -103,9 +104,28 @@ Not yet decided whether/when to act on any of this — it's a map, not a commitm
 parallelization work still needs its own golden/benchmark evidence (same discipline as WS5
 A2.0/A3) before being called a real improvement.
 
+### P4 — First implementation: `centralityDegree()` parallelized
+
+`Graph::centralityDegree()` now maps its outer per-vertex loop via `QtConcurrent::blockingMap`,
+same shape as `DistanceEngine`'s APSP. Found and fixed a real, pre-existing thread-safety bug
+along the way: `Graph::edgeExists()` (called from inside the parallel loop) wrote its result
+through two `Graph`-instance member fields (`edgeWeightTemp`/`edgeReverseWeightTemp`) instead of
+locals - harmless single-threaded, but a data race across worker threads. Converted to locals;
+nothing outside `edgeExists()` read those fields, so this was a pure win with no external effect,
+and it de-risks every future P4 candidate that also reads edges concurrently.
+
+Golden/benchmark evidence: `./scripts/run_golden_compares.sh` and `run_benchmarks.sh` both clean.
+No measured wall-clock win at tested scale (N≈2000 on `2000actors-40000edges.graphml`: DC alone
+measured 0ms both before and after - too cheap an O(N²) hash-lookup loop to register at this
+size). Landed anyway: the value here is validating the pattern and fixing `edgeExists()`, ahead of
+parallelizing costlier candidates (`graphTriadCensus`, the matrix-fill loops) where the win should
+actually be measurable.
+
 ## What Remains Open
 
-- **P4 implementation**: decide which parallelization candidates to act on, if any.
+- **P4 implementation, remaining candidates**: `graphTriadCensus`, `clusteringCoefficient`, the
+  O(N²) matrix-fill loops after `graphDistancesGeodesic()`, `centralityClosenessIR`/
+  `prestigeDegree`/`prestigeProximity` - not yet started. Decide which to act on next.
 
 While investigating P3's Cancel-button fix, tracing a distance-based analysis end to end also
 surfaced a reproducible crash in the `--interactive-script` command dispatcher (a script-ordering
