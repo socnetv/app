@@ -26,8 +26,9 @@ not something to paper over.
 ## Status
 
 🚧 In progress. P1-P3 ✅ done — linear progress-dialog system retired, exactly one progress dialog
-now exists app-wide. P4's audit done; `centralityDegree()` parallelized as the first
-implementation, rest of the candidates not started. See What WS15 Delivered below.
+now exists app-wide. P4's audit done; `centralityDegree()`, `isSymmetric()`, and
+`clusteringCoefficient()` parallelized so far, rest of the candidates not started. See What WS15
+Delivered below.
 
 ## What WS15 Delivered
 
@@ -68,7 +69,7 @@ before emitting `canceled()` (`setAutoClose`/`setAutoReset` don't gate that path
 `canceled()` connection re-shows it, relabels it "Canceling...", and disables it until the
 operation's own completion continuation tears it down for real.
 
-### P4 — Parallelization audit ✅ Audit done, `centralityDegree()` implemented, rest open
+### P4 — Parallelization audit ✅ Audit done, three implementations landed, rest open
 
 Audited every long-running operation in `src/graph/`'s algorithm slices against all four contract
 properties, judging property 4 by real algorithm structure (independent per-source/per-node work
@@ -121,11 +122,44 @@ size). Landed anyway: the value here is validating the pattern and fixing `edgeE
 parallelizing costlier candidates (`graphTriadCensus`, the matrix-fill loops) where the win should
 actually be measurable.
 
+### P4 — Second implementation: `isSymmetric()` parallelized
+
+Found while fixing `clusteringCoefficientLocal()`'s own internal `this->isSymmetric()` call (not
+in the original audit's named candidate list, but the same per-vertex/read-mostly shape). Same
+`m_graphIsSymmetric` shared-write hazard as `centralityDegree()`'s inline symmetry check, fixed the
+same way (`QAtomicInteger` OR-reduce). Can't short-circuit on first asymmetry under
+`blockingMap` (no shared control flow across worker threads), so every vertex is now always
+checked - strictly more work in the asymmetric case, never wrong, no slower in the common
+(symmetric) case where every vertex had to be checked anyway. This also removes the pre-existing
+duplication where `centralityDegree()` had to reimplement this same check inline instead of
+calling `isSymmetric()`, now that it's safe to call from a parallel context too.
+
+Also fixed in the same pass: `GraphVertex::reciprocalEdgesHash()` had the same
+member-field-as-scratch-space hazard as `edgeExists()` (`m_reciprocalEdges`, never read
+externally) - converted to a local. Found and removed one genuinely dead field
+(`m_reciprocalLinked`, unused anywhere) via a `-Wunused-private-field` warning surfaced while
+touching neighboring fields.
+
+### P4 — Third implementation: `clusteringCoefficient()` parallelized
+
+`Graph::clusteringCoefficient()`'s outer per-vertex loop now maps via `blockingMap`, depending on
+the now-safe `isSymmetric()` above: `clusteringCoefficientLocal()` used to call
+`this->isSymmetric()` internally on every invocation, which would race across worker threads on
+first (cache-cold) use, so it now takes `isSymmetric` as a parameter instead - the caller computes
+it once, sequentially, before the parallel step. Class/min/max/average/variance bookkeeping stays
+sequential afterward, reading back each vertex's now-cached `CLC()`.
+
+Measured (not assumed), same dataset as above: 499ms sequential vs. 84ms parallel, **~5.9x** -
+isolated via a temporary edit to `kernel_clustering_v6.cpp`'s timer (reverted before committing).
+Unlike `centralityDegree()`, this candidate does show a real, measurable win: each vertex's
+`clusteringCoefficientLocal()` call is O(k²) in its neighbourhood size, not a flat O(N) sum, so
+there's genuinely more per-vertex work for the parallel step to amortize.
+
 ## What Remains Open
 
-- **P4 implementation, remaining candidates**: `graphTriadCensus`, `clusteringCoefficient`, the
-  O(N²) matrix-fill loops after `graphDistancesGeodesic()`, `centralityClosenessIR`/
-  `prestigeDegree`/`prestigeProximity` - not yet started. Decide which to act on next.
+- **P4 implementation, remaining candidates**: `graphTriadCensus`, the O(N²) matrix-fill loops
+  after `graphDistancesGeodesic()`, `centralityClosenessIR`/`prestigeDegree`/`prestigeProximity` -
+  not yet started. Decide which to act on next.
 
 While investigating P3's Cancel-button fix, tracing a distance-based analysis end to end also
 surfaced a reproducible crash in the `--interactive-script` command dispatcher (a script-ordering

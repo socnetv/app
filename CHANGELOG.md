@@ -16,6 +16,20 @@ _Work in progress — more entries to come as the 3.8 cycle continues._
     but races once called concurrently — converted to locals, benefiting every future concurrent
     edge-reading code, not just this one caller.
 
+  - **`isSymmetric()` parallelized** (WS15 P4): checking whether the current relation's adjacency
+    matrix is symmetric now checks every vertex's edges concurrently instead of one at a time.
+    Found and fixed the same class of thread-safety bug as above, this time in
+    `GraphVertex::reciprocalEdgesHash()`. Also removes a pre-existing duplication where
+    `centralityDegree()` had to reimplement this same symmetry check inline instead of calling
+    `isSymmetric()` directly, since it's now safe to call from a parallel context too.
+
+  - **`clusteringCoefficient()` parallelized** (WS15 P4): the Clustering Coefficient computation
+    now computes each vertex's local coefficient concurrently, then reduces the network-wide
+    average/min/max/variance sequentially. Measured (not assumed) on a 2000-node/40,000-edge
+    network: 499ms sequential vs. 84ms parallel, roughly 6x faster — the first of these three
+    parallelization passes with an actually measurable wall-clock win, since each vertex's
+    computation is quadratic in its neighbourhood size rather than a flat per-vertex cost.
+
 ## [3.7] – Aug 2026
 
 ### New Features
