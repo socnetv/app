@@ -92,6 +92,9 @@ phase (`edgeCreate()` mutates shared state) — not a drop-in `blockingMap`.
 `createMatrixSimilarityMatching` (one opaque uncancellable step), `randomNetRegularCreate`'s
 unbounded edge-randomization retry loop, `graphCliques`' Bron-Kerbosch recursion (checked only at
 recursion depth 1, deliberately, to avoid flooding the event loop — an accepted trade-off).
+`graphConnectivity()` (#278, WS11's #7) is the worst of these: zero `progressCanceled()` checks at
+all, on an O(N²) max-flow sweep — confirmed hanging 30+ minutes uncancellable on a real N=2000
+sparse network. Missed by this audit at the time it was written; tracked in WS11 now.
 
 Already parallel: `graphDistancesGeodesic` (→ `DistanceEngine`, `QtConcurrent::blockingMap`);
 Betweenness/Brandes centrality rides along in the same pass.

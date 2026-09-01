@@ -40,6 +40,13 @@ directory each would live in.
 Three follow-on visualizations surfaced by this work are noted below under What Remains Open
 (Cohesion), not yet filed or scoped.
 
+- **#278 — `graphConnectivity()` hangs on moderate sparse networks, ignores Cancel.** Runs a
+  max-flow call for every non-adjacent vertex pair (up to ~N²/2 on a sparse graph) with zero
+  `progressCanceled()` checks anywhere in the file. Confirmed live: N=2000/E=8000 small-world,
+  Ryzen 9 5900X (12-core), 30+ minutes unfinished, Cancel unresponsive. Worth pruning (fewer
+  pairs need a full max-flow call) and/or parallelizing (each pair's flow computation is
+  independent/read-only) — see also WS15's cancellation-gaps list.
+
 - **#10 — Katz Centrality.** New **Analyze → Centrality → Katz Centrality (KC)**, with full parity
   to the app's other 12 prominence indices: HTML/CSV report, all 4 Layout → By Prominence Index
   variants, Filter Nodes by Centrality, Find Node by index score, prominence distribution chart,
