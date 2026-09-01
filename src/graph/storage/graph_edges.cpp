@@ -443,6 +443,12 @@ void Graph::edgeRemoveSelectedAll()
  *
  * Complexity:  O(logN) for vpos retrieval + O(1) for QList index retrieval + O(logN) for checking edge(v2)
  *
+ * Thread-safety (WS15 P4): pure function - returns through locals only, no Graph-instance
+ * state is read or written beyond m_graph/vpos lookups (both read-only here). Safe to call
+ * concurrently across worker threads, e.g. from QtConcurrent::blockingMap loops. Was not
+ * always true: edgeWeightTemp/edgeReverseWeightTemp used to be Graph-instance member fields
+ * used as scratch space, which raced under concurrent callers - converted to locals.
+ *
  * @param v1
  * @param v2
  * @param reciprocated: if true, checks if the edge is reciprocated (v1<->v2) with the same weight
@@ -450,9 +456,6 @@ void Graph::edgeRemoveSelectedAll()
  */
 qreal Graph::edgeExists(const int &v1, const int &v2, const bool &checkReciprocal)
 {
-    // Pure function - no Graph-instance state read or written beyond m_graph/vpos lookups
-    // (both read-only here), so this is safe to call concurrently across worker threads
-    // (e.g. from WS15 P4 parallelized loops).
     const qreal edgeWeight = m_graph[vpos[v1]]->hasEdgeTo(v2);
 
     if (!checkReciprocal)

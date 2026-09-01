@@ -896,10 +896,15 @@ QHash<int, qreal>* GraphVertex::outEdgesAllRelationsUniqueHash() {
 /**
  * @brief Returns a qhash of all reciprocal edges to neighbors in the active relation
  *
+ * Thread-safety (WS15 P4): pure function - the result hash is a local, not member state
+ * (m_reciprocalEdges used to be a GraphVertex-instance field used as scratch space, which
+ * was never read externally; converted to a local), so this is safe to call concurrently
+ * across worker threads, e.g. from QtConcurrent::blockingMap loops.
+ *
  * @return  QHash<int,qreal>*
  */
 QHash<int, qreal> GraphVertex::reciprocalEdgesHash(){
-    m_reciprocalEdges.clear();
+    QHash<int, qreal> reciprocalEdges;
     qreal m_weight=0;
     int relation = 0;
     bool edgeStatus=false;
@@ -911,15 +916,14 @@ QHash<int, qreal> GraphVertex::reciprocalEdgesHash(){
             if ( edgeStatus == true) {
                 m_weight=it1.value().second.first;
                 if (this->hasEdgeFrom (it1.key()) == m_weight ) {
-                    m_reciprocalEdges.insert(it1.key(), m_weight);
+                    reciprocalEdges.insert(it1.key(), m_weight);
                 }
             }
         }
         ++it1;
     }
 
-
-    return m_reciprocalEdges;
+    return reciprocalEdges;
 }
 
 
@@ -1182,8 +1186,6 @@ GraphVertex::~GraphVertex() {
     m_outEdges.squeeze();
     m_inEdges.clear();
     m_inEdges.squeeze();
-    m_reciprocalEdges.clear();
-    m_reciprocalEdges.squeeze();
 
     m_outLinkColors.clear();
     m_outLinkColors.squeeze();

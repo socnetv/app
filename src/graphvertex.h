@@ -300,7 +300,6 @@ private:
     QPointF m_disp;
 
     QHash<QString,QString> m_customAttributes;
-    QHash<int,qreal> m_reciprocalEdges;
     QMultiHash <int, L_int> m_cliques;
     H_IntToStr m_outLinkColors, m_outEdgeLabels;
     QHash<int, QHash<QString,QString>> m_outEdgeCustomAttributes;
