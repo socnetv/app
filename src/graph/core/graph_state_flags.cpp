@@ -15,6 +15,8 @@
  */
 
 #include "graph.h"
+#include <QAtomicInteger>
+#include <QtConcurrent/QtConcurrent>
 
 /**
  * @brief Returns true if the **current relation** has at least one edge
@@ -109,6 +111,16 @@ void Graph::setWeighted(const bool &toggle)
 
 /**
  * @brief Returns TRUE if the adjacency matrix of the current relation is symmetric
+ *
+ * Parallelization (WS15 P4): each vertex's out-edges are checked independently against
+ * their reverse arc via edgeExists() (read-only, thread-safe since WS15 P4's edgeExists()
+ * fix) - same per-vertex shape as centralityDegree(). Can't short-circuit on first
+ * asymmetry found under QtConcurrent::blockingMap (no shared control flow across worker
+ * threads), so instead every vertex is always checked and the result is OR-reduced via
+ * QAtomicInteger - strictly more work than the old early-exit in the asymmetric case, but
+ * never wrong, and no slower than before in the common (symmetric) case where every vertex
+ * had to be checked anyway.
+ *
  * @return bool
  */
 bool Graph::isSymmetric()
@@ -122,43 +134,36 @@ bool Graph::isSymmetric()
                  << m_graphIsSymmetric;
         return m_graphIsSymmetric;
     }
-    m_graphIsSymmetric = true;
-    int v2 = 0, v1 = 0;
-    qreal weight = 0;
 
-    QHash<int, qreal> enabledOutEdges;
+    // storeRelease/loadAcquire (not relaxed load/store): makes explicit at the call site that
+    // this flag crosses the worker-thread -> main-thread boundary, so every read a worker did
+    // before its storeRelease is visible once the main thread's loadAcquire below sees it.
+    // blockingMap() already joins every worker before returning, so this is technically
+    // redundant with that barrier - kept for self-documentation and to match the same pattern
+    // used in centralityDegree()'s asymmetric flag.
+    QAtomicInteger<bool> asymmetric{false};
 
-    QHash<int, qreal>::const_iterator hit;
-    VList::const_iterator lit;
+    QtConcurrent::blockingMap(m_graph, [&](GraphVertex *v) {
+        if (!v->isEnabled())
+            return;
 
-    for (lit = m_graph.cbegin(); lit != m_graph.cend(); ++lit)
-    {
-        v1 = (*lit)->number();
+        const int v1 = v->number();
+        const QHash<int, qreal> enabledOutEdges = v->outEdgesEnabledHash();
 
-        if (!(*lit)->isEnabled())
-            continue;
-
-        enabledOutEdges = (*lit)->outEdgesEnabledHash();
-
-        hit = enabledOutEdges.cbegin();
-
-        while (hit != enabledOutEdges.cend())
+        for (auto hit = enabledOutEdges.cbegin(); hit != enabledOutEdges.cend(); ++hit)
         {
-
-            v2 = hit.key();
-            weight = hit.value();
+            const int v2 = hit.key();
+            const qreal weight = hit.value();
 
             if (edgeExists(v2, v1) != weight)
             {
-
-                m_graphIsSymmetric = false;
-
+                asymmetric.storeRelease(true);
                 break;
             }
-            ++hit;
         }
-    }
-    // delete enabledOutEdges;
+    });
+
+    m_graphIsSymmetric = !asymmetric.loadAcquire();
     qCDebug(lcGraphCore) << "Graph: isSymmetric() - Finished. Result:" << m_graphIsSymmetric;
     calculatedGraphSymmetry = true;
     return m_graphIsSymmetric;
