@@ -1901,11 +1901,13 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
 
                 switch (measure) {
                 case METRIC_SIMPLE_MATCHING :
-                    matchRatio=   matches/  ( ( ties  ) ) ;
+                    // Fix #279: ties==0 means the sample was empty (e.g. diagonal=false
+                    // with N<=2), which would otherwise divide 0/0 into NaN. No comparable
+                    // columns means no evidence of similarity, so fall back to 0.
+                    matchRatio = (ties != 0) ? matches / ties : 0;
                     break;
                 case METRIC_JACCARD_INDEX:
-                    matchRatio=   matches/  ( ( ties ) ) ;
-
+                    matchRatio = (ties != 0) ? matches / ties : 0;
                     break;
                 case METRIC_HAMMING_DISTANCE:
                     matchRatio = matches;
@@ -2007,11 +2009,13 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
 
                 switch (measure) {
                 case METRIC_SIMPLE_MATCHING :
-                    matchRatio=   matches/  ( ( ties  ) ) ;
+                    // Fix #279: ties==0 means the sample was empty (e.g. diagonal=false
+                    // with N<=2), which would otherwise divide 0/0 into NaN. No comparable
+                    // columns means no evidence of similarity, so fall back to 0.
+                    matchRatio = (ties != 0) ? matches / ties : 0;
                     break;
                 case METRIC_JACCARD_INDEX:
-                    matchRatio=   matches/  ( ( ties ) ) ;
-
+                    matchRatio = (ties != 0) ? matches / ties : 0;
                     break;
                 case METRIC_HAMMING_DISTANCE:
                     matchRatio = matches;
@@ -2126,11 +2130,13 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
 
                 switch (measure) {
                 case METRIC_SIMPLE_MATCHING :
-                    matchRatio=   matches/  ( ( ties  ) ) ;
+                    // Fix #279: ties==0 means the sample was empty (e.g. diagonal=false
+                    // with N<=2), which would otherwise divide 0/0 into NaN. No comparable
+                    // columns means no evidence of similarity, so fall back to 0.
+                    matchRatio = (ties != 0) ? matches / ties : 0;
                     break;
                 case METRIC_JACCARD_INDEX:
-                    matchRatio=   matches/  ( ( ties ) ) ;
-
+                    matchRatio = (ties != 0) ? matches / ties : 0;
                     break;
                 case METRIC_HAMMING_DISTANCE:
                     matchRatio = matches;
@@ -2236,8 +2242,19 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                     sumi += AM.item(i,j);
                     sumk += AM.item(k,j);
                 }
-                mean[i] = sumi / ( (diagonal) ? (qreal) N : (qreal) (N-2) ) ;
-                mean[k] = sumk / ( (diagonal) ? (qreal) N : (qreal) (N-2) ) ;
+                // Fix #279: with diagonal=false the sample size is N-2; for N<=2 that's
+                // <=0, so sumi/sumk (always 0, since the loop above excluded everything)
+                // would divide 0/0 into NaN and poison sigma/pcc downstream. Treat an
+                // empty sample the same as the existing sigma==0 case: no correlation.
+                qreal sampleSizeIK = (diagonal) ? (qreal) N : (qreal) (N-2) ;
+                if (sampleSizeIK <= 0) {
+                    pcc = 0;
+                    setItem(i,k, pcc);
+                    setItem(k,i, pcc);
+                    continue;
+                }
+                mean[i] = sumi / sampleSizeIK ;
+                mean[k] = sumk / sampleSizeIK ;
                 varianceTimesNi = 0;
                 varianceTimesNk = 0;
                 for (int j = 0 ; j < N ; j++ ) {
@@ -2324,8 +2341,17 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                     sumi += AM.item(j,i);
                     sumk += AM.item(j,k);
                 }
-                mean[i] = sumi / ( (diagonal) ? (qreal) N : (qreal) (N-2) ) ;
-                mean[k] = sumk / ( (diagonal) ? (qreal) N : (qreal) (N-2) ) ;
+                // Fix #279: see the "Rows" branch above for why an empty sample
+                // (N<=2 with diagonal=false) must be guarded before dividing.
+                qreal sampleSizeIK = (diagonal) ? (qreal) N : (qreal) (N-2) ;
+                if (sampleSizeIK <= 0) {
+                    pcc = 0;
+                    setItem(i,k, pcc);
+                    setItem(k,i, pcc);
+                    continue;
+                }
+                mean[i] = sumi / sampleSizeIK ;
+                mean[k] = sumk / sampleSizeIK ;
                 varianceTimesNi = 0;
                 varianceTimesNk = 0;
                 for (int j = 0 ; j < N ; j++ ) {
@@ -2414,8 +2440,17 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                     sumi += CM.item(j,i);
                     sumk += CM.item(j,k);
                 }
-                mean[i] = sumi / ( (diagonal) ? (qreal) M : (qreal) (M-4) ) ;
-                mean[k] = sumk / ( (diagonal) ? (qreal) M : (qreal) (M-4) ) ;
+                // Fix #279: see the "Rows" branch above for why an empty sample
+                // (M<=4 with diagonal=false) must be guarded before dividing.
+                qreal sampleSizeIK = (diagonal) ? (qreal) M : (qreal) (M-4) ;
+                if (sampleSizeIK <= 0) {
+                    pcc = 0;
+                    setItem(i,k, pcc);
+                    setItem(k,i, pcc);
+                    continue;
+                }
+                mean[i] = sumi / sampleSizeIK ;
+                mean[k] = sumk / sampleSizeIK ;
                 varianceTimesNi = 0;
                 varianceTimesNk = 0;
                 for (int j = 0 ; j < M; j++ ) {
