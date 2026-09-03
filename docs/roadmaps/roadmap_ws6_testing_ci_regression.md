@@ -219,6 +219,19 @@ matrix baselines went red, plus several pre-existing kernels that also read `Mat
 indirectly (distance, prominence, reachability, walks). Reverted; suite is clean again. WS5's A3
 now has the safety net it was waiting on.
 
+**Extended for #279 (v3.8)**: the `similarity` category originally only ever ran Simple Matching
+(hardcoded `METRIC_SIMPLE_MATCHING`), so `similarityMatrix()`'s Jaccard path and
+`pearsonCorrelationCoefficients()` (a separate `Graph` method, never called by this kernel at
+all) had zero golden coverage — exactly the gap that let #279's divide-by-zero/NaN bug on both
+go unnoticed. Added a `--similarity-measure simple_matching|jaccard|pearson` CLI flag
+(`cli_common.h`, `socnetv_cli.cpp`) so the kernel can select and dump each one; `pearson` routes
+to `createMatrixSimilarityPearson()` instead of `createMatrixSimilarityMatching()`. Three new
+baselines on `TinyArc_Dir_N2_E1` (N=2, one directed arc) pin the fix: with the default
+`diagonal=false`, comparing the network's only pair excludes every sampled column, driving
+Jaccard/Simple-Matching's `ties` and Pearson's effective sample size to exactly zero — verified
+directly (not assumed) by building the pre-#279-fix commit in a scratch worktree and confirming
+`nan` in the dumped JSON there vs. `0` post-fix on the same fixture/measure.
+
 ### `kernel_connectivity_v7` — weak/strong connected components (#85, #272) ✅ Done
 
 - `Graph::graphWeaklyConnectedComponents()` — BFS treating all edges as undirected (weak connectivity); caches count in `m_graphWeaklyConnectedComponents` and per-node IDs in `m_vertexComponentId`. Cache invalidated with `resetDistanceCentralityCacheFlags()`.

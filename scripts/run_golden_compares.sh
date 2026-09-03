@@ -165,10 +165,11 @@ run_case_connectivity() {
 run_case_matrix() {
   local input="$1"
   local ftype="$2"
+  local flags=("${@:3:${#}-3}")
   local baseline="${!#}"
 
   echo "==> $(basename "$baseline")"
-  if ! "$CLI" --kernel matrix -i "$input" -f "$ftype" -c 0 --compare-json "$baseline"; then
+  if ! "$CLI" --kernel matrix -i "$input" -f "$ftype" -c 0 "${flags[@]}" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
   fi
@@ -572,6 +573,29 @@ run_case_matrix \
   "${DATA}/Benchmark_BA_Directed_N500_m3.paj" \
   2 \
   "${BASE_MATRIX}/Benchmark_BA_Directed_N500_m3__MATRIX__V8__FT2__W0_IW1_DI0.json"
+
+# Fix #279: TinyArc_Dir_N2_E1 (N=2, one directed arc) is the minimal fixture that drives
+# similarityMatrix()/pearsonCorrelationCoefficients() into their degenerate empty-sample
+# case (ties==0 for Jaccard/Simple-Matching, N-2<=0 for Pearson) under the default
+# diagonal=false - before the fix this produced NaN entries; these three baselines pin the
+# post-fix fallback value (0) for each measure.
+run_case_matrix \
+  "${DATA}/TinyArc_Dir_N2_E1.paj" \
+  2 \
+  --similarity-measure simple_matching \
+  "${BASE_MATRIX}/TinyArc_Dir_N2_E1__MATRIX__V8__FT2__W0_IW1_DI0__simple_matching.json"
+
+run_case_matrix \
+  "${DATA}/TinyArc_Dir_N2_E1.paj" \
+  2 \
+  --similarity-measure jaccard \
+  "${BASE_MATRIX}/TinyArc_Dir_N2_E1__MATRIX__V8__FT2__W0_IW1_DI0__jaccard.json"
+
+run_case_matrix \
+  "${DATA}/TinyArc_Dir_N2_E1.paj" \
+  2 \
+  --similarity-measure pearson \
+  "${BASE_MATRIX}/TinyArc_Dir_N2_E1__MATRIX__V8__FT2__W0_IW1_DI0__pearson.json"
 
 # VERTEX CONNECTIVITY (schema v9) - deliberately Tiny*/toy datasets only. The global mode's
 # pairwise-minimum algorithm is O(n^2) local-connectivity computations in the worst case (see

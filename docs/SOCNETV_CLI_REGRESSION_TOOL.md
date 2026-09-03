@@ -341,7 +341,11 @@ Seven categories dumped:
 * adjacency (`AM`)
 * adjacency inverse (`invAM`) — plus `invertible` (bool)
 * distances (`DM`)
-* similarity (`SCM`, simple-matching metric)
+* similarity (`SCM`) — measure selectable via `--similarity-measure
+  simple_matching|jaccard|pearson` (default `simple_matching`, unchanged from before); the chosen
+  measure is echoed in `matrices.similarity.metric`. Added for #279 (NaN from divide-by-zero on
+  Jaccard/Simple-Matching's `ties==0` and Pearson's `N-2<=0`/`M-4<=0` degenerate sample) so each
+  measure's guarded path has its own golden coverage — see the `TinyArc_Dir_N2_E1` baselines below.
 * reachability (`XRM`)
 * walks, fixed length (`XM`)
 * total walks (`XSM`) — **skipped above N=50** (`kTotalWalksSkipThreshold`, `kernel_matrix_v8.cpp`);
@@ -797,6 +801,7 @@ Notes:
 Allowed:
 
 * `-w`, `-x`, `-k`
+* `--similarity-measure simple_matching|jaccard|pearson` (default `simple_matching`)
 * `--dump-json`, `--compare-json`
 
 Not applicable / required:
@@ -813,6 +818,10 @@ Notes:
 * Dump mode (full grid vs. row/col-sum summary) is chosen internally based on fixture size, not a
   flag.
 * `total_walks` is omitted above N=50 (`kTotalWalksSkipThreshold`) — see the kernel section above.
+* `--similarity-measure` selects which measure the `similarity` category runs
+  (`createMatrixSimilarityMatching()` for `simple_matching`/`jaccard`,
+  `createMatrixSimilarityPearson()` for `pearson`); an invalid value is rejected before the graph
+  even loads.
 
 ### `--kernel vertex_connectivity` (schema v9)
 
@@ -847,7 +856,9 @@ When you dump JSON, bake the run flags into the filename (as already used in thi
 * Reachability v2 / Walks v3 / IO v5: include kernel + schema label and any required parameters (e.g. `__WALKS_K6__V3`, `__FT2__...`, etc.)
 * Clustering v6: `__CLUST__V6__FT{n}__W{0|1}_IW{0|1}_DI{0|1}`
 * Connectivity v7: `__CONN__V7__FT{n}` (no flag suffixes — topology-only; add `__STRONG` for `--connectivity-type strong`)
-* Matrix v8: `__MATRIX__V8__FT{n}__W{0|1}_IW{0|1}_DI{0|1}`
+* Matrix v8: `__MATRIX__V8__FT{n}__W{0|1}_IW{0|1}_DI{0|1}`, plus a trailing `__{measure}` suffix
+  (e.g. `__jaccard`, `__pearson`) whenever `--similarity-measure` is not the default
+  `simple_matching` — see the `TinyArc_Dir_N2_E1` baselines added for #279
 * Vertex Connectivity v9: `__VCONN__V9__FT{n}` (no flag suffixes — topology-only; suffix with mode/pair, e.g. `__global` or `__local_1_3`)
 
 This keeps baselines self-describing and prevents "wrong flags, right file" mistakes.
@@ -1032,6 +1043,17 @@ FT2    = file type = 2 (Pajek)
 W0     = considerWeights=0
 IW1    = inverseWeights=1
 DI0    = dropIsolates=0
+```
+
+`--similarity-measure` example (Fix #279 — the degenerate N=2 case that used to produce NaN):
+
+```bash
+./socnetv-cli \
+  --kernel matrix \
+  -i src/data/TinyArc_Dir_N2_E1.paj \
+  -f 2 -c 0 \
+  --similarity-measure jaccard \
+  --dump-json src/tools/baselines/matrix/TinyArc_Dir_N2_E1__MATRIX__V8__FT2__W0_IW1_DI0__jaccard.json
 ```
 
 Baseline directory:
@@ -1277,7 +1299,9 @@ Per-category (`matrices.*`), each with `dump_mode` (`"full"` or `"summary"`), `r
 * `adjacency` — raw `AM`
 * `adjacency_inverse` — raw `invAM`, plus `invertible` (bool; false for a singular matrix, #269)
 * `distances` — raw `DM`
-* `similarity` — raw `SCM` (simple-matching metric)
+* `similarity` — raw `SCM` (or `PCC` for `--similarity-measure pearson`); measure selectable via
+  `--similarity-measure simple_matching|jaccard|pearson` (default `simple_matching`), echoed in
+  `matrices.similarity.metric`
 * `reachability` — raw `XRM`
 * `walks` — raw `XM` (fixed length)
 * `total_walks` — raw `XSM`; omitted above N=50 (`kTotalWalksSkipThreshold`)

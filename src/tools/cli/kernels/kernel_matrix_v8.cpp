@@ -365,10 +365,22 @@ int runKernelMatrixV8(const CliConfig &cfg,
     // overwrote AM with its own dropIsolates=true policy, so rebuild once more here.
     g.createMatrixAdjacency();
     Matrix similarity;
-    g.createMatrixSimilarityMatching(g.matrixAdjacency(), similarity,
-                                     METRIC_SIMPLE_MATCHING, "Rows", false, false);
+    // Fix #279: which measure runs is selectable via --similarity-measure (default
+    // simple_matching, unchanged from before) so the NaN-guard fix on Jaccard's and
+    // Pearson's degenerate (empty-sample, diagonal=false) path can each get their own
+    // golden baseline instead of only ever exercising simple_matching.
+    if (cfg.similarityMeasure == "pearson")
+    {
+        g.createMatrixSimilarityPearson(g.matrixAdjacency(), similarity, "Rows", false);
+    }
+    else
+    {
+        const int measure = (cfg.similarityMeasure == "jaccard") ? METRIC_JACCARD_INDEX
+                                                                  : METRIC_SIMPLE_MATCHING;
+        g.createMatrixSimilarityMatching(g.matrixAdjacency(), similarity, measure, "Rows", false, false);
+    }
     QJsonObject sim = dumpMatrixJson(similarity, fullGrid);
-    sim["metric"] = "simple_matching";
+    sim["metric"] = cfg.similarityMeasure;
     matrices["similarity"] = sim;
 
     g.createMatrixReachability();

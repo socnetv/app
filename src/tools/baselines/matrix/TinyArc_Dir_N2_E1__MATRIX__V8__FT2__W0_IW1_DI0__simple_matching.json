@@ -1,0 +1,155 @@
+{
+    "counts": {
+        "links_sna": 1,
+        "nodes": 2,
+        "ties_graph": 1
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "TinyArc_Dir_N2_E1.paj",
+        "path": "src/data/TinyArc_Dir_N2_E1.paj"
+    },
+    "graph": {
+        "directed": true,
+        "weighted": false
+    },
+    "kernel": "matrix",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 2,
+        "load_msg": "",
+        "net_name": "TinyArc_Dir_N2_E1.paj",
+        "ok": true
+    },
+    "matrices": {
+        "adjacency": {
+            "cols": 2,
+            "data": [
+                [
+                    "0",
+                    "1"
+                ],
+                [
+                    "0",
+                    "0"
+                ]
+            ],
+            "dump_mode": "full",
+            "rows": 2
+        },
+        "adjacency_inverse": {
+            "cols": 2,
+            "data": [
+                [
+                    "0",
+                    "0"
+                ],
+                [
+                    "0",
+                    "0"
+                ]
+            ],
+            "dump_mode": "full",
+            "invertible": false,
+            "rows": 2
+        },
+        "clique_comembership": {
+            "cols": 2,
+            "data": [
+                [
+                    "1",
+                    "0"
+                ],
+                [
+                    "0",
+                    "1"
+                ]
+            ],
+            "dump_mode": "full",
+            "rows": 2
+        },
+        "distances": {
+            "cols": 2,
+            "data": [
+                [
+                    "0",
+                    "1"
+                ],
+                [
+                    "2147483647",
+                    "0"
+                ]
+            ],
+            "dump_mode": "full",
+            "rows": 2
+        },
+        "reachability": {
+            "cols": 2,
+            "data": [
+                [
+                    "1",
+                    "1"
+                ],
+                [
+                    "0",
+                    "1"
+                ]
+            ],
+            "dump_mode": "full",
+            "rows": 2
+        },
+        "similarity": {
+            "cols": 2,
+            "data": [
+                [
+                    "1",
+                    "0"
+                ],
+                [
+                    "0",
+                    "1"
+                ]
+            ],
+            "dump_mode": "full",
+            "metric": "simple_matching",
+            "rows": 2
+        },
+        "total_walks": {
+            "cols": 2,
+            "data": [
+                [
+                    "0",
+                    "1"
+                ],
+                [
+                    "0",
+                    "0"
+                ]
+            ],
+            "dump_mode": "full",
+            "rows": 2
+        },
+        "walks": {
+            "cols": 2,
+            "data": [
+                [
+                    "0",
+                    "0"
+                ],
+                [
+                    "0",
+                    "0"
+                ]
+            ],
+            "dump_mode": "full",
+            "length": 2,
+            "rows": 2
+        }
+    },
+    "run": {
+        "considerWeights": false,
+        "dropIsolates": false,
+        "inverseWeights": true
+    },
+    "schema_version": 8
+}

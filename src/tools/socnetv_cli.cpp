@@ -93,6 +93,11 @@ int main(int argc, char *argv[])
                                        "be all-zero). May be negative.",
                                        "beta", "0");
 
+    QCommandLineOption similarityMeasureOpt(QStringList() << "similarity-measure",
+                                            "Measure for --kernel matrix's similarity category: "
+                                            "simple_matching|jaccard|pearson.",
+                                            "measure", "simple_matching");
+
     cli.addOption(verboseOpt);
     cli.addOption(strictOpt);
     cli.addOption(fileOpt);
@@ -116,6 +121,7 @@ int main(int argc, char *argv[])
     cli.addOption(katzAlphaOpt);
     cli.addOption(bonacichAlphaOpt);
     cli.addOption(bonacichBetaOpt);
+    cli.addOption(similarityMeasureOpt);
 
     cli.process(app);
 
@@ -170,6 +176,7 @@ int main(int argc, char *argv[])
     cfg.katzAlpha = cli.value(katzAlphaOpt).toDouble();
     cfg.bonacichAlpha = cli.value(bonacichAlphaOpt).toDouble();
     cfg.bonacichBeta = cli.value(bonacichBetaOpt).toDouble();
+    cfg.similarityMeasure = cli.value(similarityMeasureOpt).trimmed().toLower();
 
     if (cfg.inputPath.isEmpty())
     {
@@ -180,6 +187,14 @@ int main(int argc, char *argv[])
     if (cfg.benchRuns > 0 && cfg.kernel != "distance" && cfg.kernel != "prominence")
     {
         QTextStream(stderr) << "ERROR: --bench is only supported with --kernel distance or prominence\n";
+        return 2;
+    }
+
+    if (cfg.similarityMeasure != "simple_matching" && cfg.similarityMeasure != "jaccard"
+        && cfg.similarityMeasure != "pearson")
+    {
+        QTextStream(stderr) << "ERROR: --similarity-measure must be one of "
+                                "simple_matching|jaccard|pearson\n";
         return 2;
     }
 

@@ -40,6 +40,12 @@ namespace cli
 
         qreal bonacichAlpha = -1; // >= 0 enables Bonacich Power Centrality for --kernel prominence
         qreal bonacichBeta = 0;
+
+        // "simple_matching"|"jaccard"|"pearson", for --kernel matrix's similarity category.
+        // Fix #279: selects which similarity/correlation measure the kernel dumps, so the
+        // NaN-guard fix on each measure's degenerate (empty-sample) path can be covered by
+        // a dedicated golden baseline instead of only ever exercising simple_matching.
+        QString similarityMeasure = "simple_matching";
     };
 
     // ---------------- printing ----------------

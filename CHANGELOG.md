@@ -30,6 +30,19 @@ _Work in progress — more entries to come as the 3.8 cycle continues._
     parallelization passes with an actually measurable wall-clock win, since each vertex's
     computation is quadratic in its neighbourhood size rather than a flat per-vertex cost.
 
+### Bug Fixes
+
+  - **Similarity/Pearson reports no longer produce NaN on small networks** (#279):
+    `Matrix::similarityMatrix()` (Jaccard, Simple-Matching) and
+    `Matrix::pearsonCorrelationCoefficients()` divided by a sample-size denominator (`ties`,
+    `N-2`, `M-4`) with no guard against it being zero or negative — unlike the sibling
+    `distancesMatrix()`, which already guarded this case. Since **exclude diagonal** is the
+    default for the Similarity and Pearson reports, any pair whose comparison sample was fully
+    excluded (e.g. a 2-actor network) produced NaN entries in the exported report instead of a
+    defined value. Both methods now fall back to 0 (no evidence of similarity/correlation) when
+    the sample is empty, matching the existing convention used elsewhere in the same methods
+    (e.g. cosine similarity's zero-magnitude fallback).
+
 ## [3.7] – Aug 2026
 
 ### New Features
