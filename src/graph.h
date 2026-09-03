@@ -17,6 +17,7 @@
 #define GRAPH_H
 
 #include <QObject>
+#include <QAtomicInteger>
 #include <QList>
 #include <QQueue>
 #include <QHash>
@@ -26,6 +27,7 @@
 #include <QTextStream>
 #include <QThread>
 #include <QStack>
+#include <QVector>
 #include <QLoggingCategory>
 #include <atomic>
 #include <functional>
@@ -1291,7 +1293,8 @@ public:
 
     bool graphTriadCensus();
 
-    void triadType_examine_MAN_label(int, int, int, GraphVertex *, GraphVertex *, GraphVertex *);
+    void triadType_examine_MAN_label(int, int, int, GraphVertex *, GraphVertex *, GraphVertex *,
+                                     QVector<QAtomicInteger<int>> &);
     // --- Triad census results (read-only access for CLI / reports) ---
     const QList<int> &graphTriadTypeFreqs() const { return triadTypeFreqs; }
     bool hasCalculatedTriadCensus() const { return calculatedTriad; }
