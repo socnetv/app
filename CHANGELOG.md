@@ -43,6 +43,17 @@ _Work in progress — more entries to come as the 3.8 cycle continues._
     the sample is empty, matching the existing convention used elsewhere in the same methods
     (e.g. cosine similarity's zero-magnitude fallback).
 
+  - **Fixed heap-allocation leaks in `Matrix` operators, `pow()`, and `ludcmp()`** (#280):
+    `operator+`/`operator-`/`operator*`/`operator*=`, `product()`, `pow()`, and
+    `expBySquaring2()` all leaked a heap-allocated `Matrix` on every call — `pow()` in
+    particular is used by the "Walks of given length" report (`XM = AM.pow(length)`), so every
+    such report leaked. Converted to return by value (RVO) instead of `new` + reference return;
+    `operator=` now takes its argument by `const&` so it can bind the resulting temporaries.
+    Also fixed a smaller, unrelated leak in `ludcmp()`'s zero-row early return, which — unlike
+    its sibling early-return paths — didn't free its scaling buffer before returning. Measured
+    with `leaks` on the walks kernel: 137 leaks (4784 bytes) before the fix, 56 leaks (896
+    bytes) after — the remainder is unrelated pre-existing allocations, not part of this fix.
+
 ## [3.7] – Aug 2026
 
 ### New Features

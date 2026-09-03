@@ -356,7 +356,7 @@ void Matrix::multiplyRow(int row, qreal value) {
 * @param a
 * @return
 */
-Matrix& Matrix::operator = (Matrix & a) {
+Matrix& Matrix::operator = (const Matrix & a) {
     qCDebug(lcMatrix)<< "Matrix::operator asignment =";
     if (this != &a){
         // Both dimensions must match before reusing the existing buffer - a shared buffer
@@ -414,13 +414,13 @@ void Matrix::operator +=(Matrix & b) {
  * @param b
  * @return Matrix S
  */
-Matrix& Matrix::operator +(Matrix & b) {
-    Matrix *S = new Matrix(rows(), cols());
+Matrix Matrix::operator +(Matrix & b) {
+    Matrix S(rows(), cols());
     qCDebug(lcMatrix)<< "Matrix::operator +";
     for (int i=0;i< rows();i++)
         for (int j=0;j<cols();j++)
-            S->setItem(i,j, item(i,j)+b.item(i,j));
-    return *S;
+            S.setItem(i,j, item(i,j)+b.item(i,j));
+    return S;
 }
 
 
@@ -430,13 +430,13 @@ Matrix& Matrix::operator +(Matrix & b) {
  * @param b
  * @return Matrix S
  */
-Matrix& Matrix::operator -(Matrix & b) {
-    Matrix *S = new Matrix(rows(), cols() );
+Matrix Matrix::operator -(Matrix & b) {
+    Matrix S(rows(), cols() );
     qCDebug(lcMatrix)<< "Matrix::operator -";
     for (int i=0;i< rows();i++)
         for (int j=0;j<cols();j++)
-            S->setItem(i,j, item(i,j)-b.item(i,j));
-    return *S;
+            S.setItem(i,j, item(i,j)-b.item(i,j));
+    return S;
 }
 
 
@@ -448,29 +448,29 @@ Matrix& Matrix::operator -(Matrix & b) {
  * @param b
  * @return Matrix P
  */
-Matrix& Matrix::operator *(Matrix & b) {
+Matrix Matrix::operator *(Matrix & b) {
 
     qCDebug(lcMatrix)<< "Matrix::operator *";
 
-    Matrix *P = new Matrix(rows(), b.cols());
+    Matrix P(rows(), b.cols());
 
     if ( cols() != b.rows() ) {
         qCDebug(lcMatrix)<< "Matrix::product() - ERROR! Non compatible input matrices:"
                    " this("
                 << rows() << "," << cols()
                 << ") and b(" << b.rows() << ","<< b.cols();
-        return *P;
+        return P;
     }
 
     for (int i=0;i< rows();i++)
         for (int j=0;j<b.cols();j++) {
-            P->setItem(i,j,0);
+            P.setItem(i,j,0);
             for (int k=0;k< cols();k++) {
-                    P->setItem(i,j, P->item(i,j) + item(i,k)*b.item(k,j) );
+                    P.setItem(i,j, P.item(i,j) + item(i,k)*b.item(k,j) );
 
             }
         }
-    return *P;
+    return P;
 }
 
 
@@ -492,17 +492,17 @@ void Matrix::operator *=(Matrix & b) {
         return;
     }
 
-    Matrix *P = new Matrix(rows(), b.cols());
+    Matrix P(rows(), b.cols());
 
     for (int i=0;i< rows();i++) {
         for (int j=0;j<b.cols();j++) {
-            P->setItem(i,j,0);
+            P.setItem(i,j,0);
             for (int k=0;k < cols();k++) {
-                    P->setItem(i,j, P->item(i,j) + item(i,k)*b.item(k,j) );
+                    P.setItem(i,j, P.item(i,j) + item(i,k)*b.item(k,j) );
             }
         }
     }
-    *this = *P;
+    *this = P;
 }
 
 
@@ -532,7 +532,7 @@ void Matrix::product(Matrix &A, Matrix & B, bool symmetry)  {
         return;
     }
 
-    Matrix *P = new Matrix(A.rows(), B.cols());
+    Matrix P(A.rows(), B.cols());
 
     qreal prod = 0;
 
@@ -543,13 +543,13 @@ void Matrix::product(Matrix &A, Matrix & B, bool symmetry)  {
             for (int k=0;k<A.cols();k++) {
                 prod += A.item(i,k)*B.item(k,j);
             }
-            P->setItem(i,j, prod);
+            P.setItem(i,j, prod);
             if (symmetry) {
-               P->setItem(j,i, prod );
+               P.setItem(j,i, prod );
             }
         }
     }
-    *this = *P;
+    *this = P;
 
     //this->printMatrixConsole();
 }
@@ -598,7 +598,7 @@ Matrix& Matrix::productSym( Matrix &a, Matrix & b)  {
  * @return This matrix, raised to the n-th power.
  * Complexity: O(log(n)) matrix multiplications, each O(rows()^3) - see expBySquaring2().
  */
-Matrix& Matrix::pow (int n, bool symmetry)  {
+Matrix Matrix::pow (int n, bool symmetry)  {
     if (rows()!= cols()) {
         qCDebug(lcMatrix)<< "Matrix::pow() - Error. This works only for square matrix";
         return *this;
@@ -632,16 +632,16 @@ Matrix& Matrix::pow (int n, bool symmetry)  {
  * For n > 4 it is more efficient than naively multiplying the base with itself repeatedly:
  * O(log(n)) matrix multiplications instead of O(n), each multiplication itself O(rows()^3).
  */
-Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
+Matrix Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
     if (n==1) {
         qCDebug(lcMatrix) <<"Matrix::expBySquaring2() - n = 1. Computing PM = X*Y where "
                    "X = " ;
         //X.printMatrixConsole();
         //Y.printMatrixConsole();
-        Matrix *PM = new Matrix(rows(), cols());
-        PM->product(X, Y, symmetry);
-        //PM->printMatrixConsole();
-        return *PM;
+        Matrix PM(rows(), cols());
+        PM.product(X, Y, symmetry);
+        //PM.printMatrixConsole();
+        return PM;
     }
     else if ( n%2 == 0 ) { //even
         qCDebug(lcMatrix)<<"Matrix::expBySquaring2() - even n =" << n
@@ -1128,6 +1128,7 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d, std::functio
         if (big == 0)  //       No nonzero largest element.
         {
             qCDebug(lcMatrix) << "Matrix::ludcmp() - Singular matrix in routine ludcmp";
+            delete[] vv;
             return false;
         }
         vv[i]=1.0/big;  //  Save the scaling.
@@ -1929,7 +1930,6 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
                 default:
                     break;
                 }
-
 
                 qCDebug(lcMatrix) << "matches("<<i+1<<","<<k+1<<") =" << matches
 
