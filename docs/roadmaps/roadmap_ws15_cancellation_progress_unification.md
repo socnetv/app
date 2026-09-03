@@ -26,9 +26,9 @@ not something to paper over.
 ## Status
 
 🚧 In progress. P1-P3 ✅ done — linear progress-dialog system retired, exactly one progress dialog
-now exists app-wide. P4's audit done; `centralityDegree()`, `isSymmetric()`, and
-`clusteringCoefficient()` parallelized so far, rest of the candidates not started. See What WS15
-Delivered below.
+now exists app-wide. P4's audit done; `centralityDegree()`, `isSymmetric()`,
+`clusteringCoefficient()`, and `graphTriadCensus()` parallelized so far, rest of the candidates
+not started. See What WS15 Delivered below.
 
 ## What WS15 Delivered
 
@@ -69,7 +69,7 @@ before emitting `canceled()` (`setAutoClose`/`setAutoReset` don't gate that path
 `canceled()` connection re-shows it, relabels it "Canceling...", and disables it until the
 operation's own completion continuation tears it down for real.
 
-### P4 — Parallelization audit ✅ Audit done, three implementations landed, rest open
+### P4 — Parallelization audit ✅ Audit done, four implementations landed, rest open
 
 Audited every long-running operation in `src/graph/`'s algorithm slices against all four contract
 properties, judging property 4 by real algorithm structure (independent per-source/per-node work
@@ -155,11 +155,33 @@ Unlike `centralityDegree()`, this candidate does show a real, measurable win: ea
 `clusteringCoefficientLocal()` call is O(k²) in its neighbourhood size, not a flat O(N) sum, so
 there's genuinely more per-vertex work for the parallel step to amortize.
 
+### P4 — Fourth implementation: `graphTriadCensus()` parallelized
+
+`Graph::graphTriadCensus()`'s outer vertex loop now maps via `blockingMap` over vertex positions
+(needed for the existing `v2 = v1+1`/`v3 = v2+1` positional pairing, unlike the other three
+candidates' simpler per-vertex-pointer mapping); each worker thread runs its own `v2`/`v3` loops
+exactly as before, since every `(v1,v2,v3)` triad classification only reads edges via
+`GraphVertex::hasEdgeTo()` and has no dependency on any other triad. The one shared state -
+`triadTypeFreqs[16]`, previously incremented directly (non-atomic `++`) by
+`triadType_examine_MAN_label()` - would race once reached from multiple worker threads
+concurrently. Fixed by having that function increment one of 16 `QAtomicInteger<int>` counters
+instead (`fetchAndAddOrdered`), with a sequential pass copying the final counts into
+`triadTypeFreqs` after `blockingMap` returns. The one existing mid-loop `progressCanceled()` check
+(previously once per outer vertex, already coarse against O(N³) work) moves to a single check
+before the parallel step starts, since cancel can't be delivered while `graphThread`'s event loop
+is blocked inside `blockingMap` anyway - same accepted tradeoff as the other three candidates.
+
+Measured (not assumed) on a 1000-node/10,000-edge network (`1000actors-10000arcs.graphml`),
+isolated via the same temporary-kernel-timer method as above: **68.2s sequential vs. 15.4s
+parallel, ~4.4x** - the largest measured win of WS15 P4 so far, consistent with this being the one
+O(N³) candidate among the four done to date. Triad classification output (all 16 class counts,
+166,167,000 total triads) verified identical between the sequential and parallel runs.
+
 ## What Remains Open
 
-- **P4 implementation, remaining candidates**: `graphTriadCensus`, the O(N²) matrix-fill loops
-  after `graphDistancesGeodesic()`, `centralityClosenessIR`/`prestigeDegree`/`prestigeProximity` -
-  not yet started. Decide which to act on next.
+- **P4 implementation, remaining candidates**: the O(N²) matrix-fill loops after
+  `graphDistancesGeodesic()`, `centralityClosenessIR`/`prestigeDegree`/`prestigeProximity` - not
+  yet started. Decide which to act on next.
 
 While investigating P3's Cancel-button fix, tracing a distance-based analysis end to end also
 surfaced a reproducible crash in the `--interactive-script` command dispatcher (a script-ordering

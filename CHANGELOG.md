@@ -30,6 +30,12 @@ _Work in progress — more entries to come as the 3.8 cycle continues._
     parallelization passes with an actually measurable wall-clock win, since each vertex's
     computation is quadratic in its neighbourhood size rather than a flat per-vertex cost.
 
+  - **`graphTriadCensus()` parallelized** (WS15 P4): the Triad Census's O(N³) outer vertex loop
+    now runs via `QtConcurrent::blockingMap`, with the 16 triad-type frequency counters reduced
+    through atomics instead of a shared list. Measured on a 1000-node/10,000-edge network: 68.2s
+    sequential vs. 15.4s parallel, roughly 4.4x faster — the biggest measured win of WS15 P4's
+    parallelization work so far, matching this candidate's cubic complexity.
+
 ### Bug Fixes
 
   - **Similarity/Pearson reports no longer produce NaN on small networks** (#279):
