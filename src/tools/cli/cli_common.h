@@ -46,6 +46,16 @@ namespace cli
         // NaN-guard fix on each measure's degenerate (empty-sample) path can be covered by
         // a dedicated golden baseline instead of only ever exercising simple_matching.
         QString similarityMeasure = "simple_matching";
+
+        // "adjacency"|"distances", for --kernel matrix's similarity category. Selects which
+        // Matrix-producing operation feeds similarityMatrix(): the adjacency matrix (AM, the
+        // long-standing default - never contains RAND_MAX) or the geodesic distances matrix
+        // (DM, which does contain RAND_MAX for unreachable pairs on a disconnected network).
+        // similarityMatrix()'s Jaccard branch didn't exclude RAND_MAX from its match/ties
+        // count the way distancesMatrix() does, so two actors both unreachable from some
+        // third node counted as a false-positive match - only reachable via the "distances"
+        // input, hence this flag.
+        QString similarityInput = "adjacency";
     };
 
     // ---------------- printing ----------------

@@ -597,6 +597,18 @@ run_case_matrix \
   --similarity-measure pearson \
   "${BASE_MATRIX}/TinyArc_Dir_N2_E1__MATRIX__V8__FT2__W0_IW1_DI0__pearson.json"
 
+# similarityMatrix()'s Jaccard branch didn't exclude RAND_MAX (the "unreachable" sentinel)
+# from its match/ties count the way distancesMatrix() does, so two actors both unreachable
+# from some third node counted as a false-positive match - invisible on the adjacency matrix
+# (never contains RAND_MAX), only reachable via --similarity-input distances. Verified live
+# impact before fixing: on this fixture, cell (D,F) [0-indexed (3,5)] read 0.75 pre-fix
+# (false-positive similarity from shared unreachability) vs. 0.0 post-fix.
+run_case_matrix \
+  "${DATA}/TinyDisconnected_Undir_N6_E4.paj" \
+  2 \
+  --similarity-measure jaccard --similarity-input distances \
+  "${BASE_MATRIX}/TinyDisconnected_Undir_N6_E4__MATRIX__V8__FT2__W0_IW1_DI0__jaccard_distances.json"
+
 # VERTEX CONNECTIVITY (schema v9) - deliberately Tiny*/toy datasets only. The global mode's
 # pairwise-minimum algorithm is O(n^2) local-connectivity computations in the worst case (see
 # Graph::graphConnectivity()'s doc comment) - fine for a handful of nodes, not for the

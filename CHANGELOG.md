@@ -60,6 +60,22 @@ _Work in progress — more entries to come as the 3.8 cycle continues._
     with `leaks` on the walks kernel: 137 leaks (4784 bytes) before the fix, 56 leaks (896
     bytes) after — the remainder is unrelated pre-existing allocations, not part of this fix.
 
+  - **`similarityMatrix()`'s Jaccard measure no longer false-positives on shared unreachability**:
+    unlike `distancesMatrix()`, `similarityMatrix()`'s Jaccard branch didn't exclude `RAND_MAX`
+    (the "unreachable" sentinel) from its match/ties count. Invisible when similarity runs on
+    the adjacency matrix (never contains `RAND_MAX`), but real when run on a Distances matrix
+    (`graph_reports.cpp`'s `DM` path) on a disconnected network — two actors both unreachable
+    from some third node counted as a positive match instead of being excluded. Verified live
+    impact before fixing: on a 6-node network with an isolated vertex, one cell read `0.75`
+    (a false-positive similarity from three shared-unreachable columns) pre-fix vs. `0.0`
+    post-fix. Also hardened three smaller `Matrix` issues found during the same audit, none
+    currently reachable by any caller: `product(..., symmetry=true)` could write out of bounds
+    if `A.rows() != B.cols()` (now guarded, matching the existing dimension-mismatch check);
+    `productByVector(..., leftMultiply=true)` computed the wrong output length and read out of
+    bounds for non-square input (fixed to match its own documented contract); and
+    `distancesMatrix()`/`similarityMatrix()`/`pearsonCorrelationCoefficients()`'s assumption
+    that the input is always square is now documented explicitly.
+
 ## [3.7] – Aug 2026
 
 ### New Features

@@ -232,6 +232,37 @@ Jaccard/Simple-Matching's `ties` and Pearson's effective sample size to exactly 
 directly (not assumed) by building the pre-#279-fix commit in a scratch worktree and confirming
 `nan` in the dumped JSON there vs. `0` post-fix on the same fixture/measure.
 
+**Extended again for the Jaccard `RAND_MAX` fix (v3.8)**: a follow-on audit of `matrix.cpp`
+(same pass that produced #279/#280) found `similarityMatrix()`'s Jaccard branch didn't exclude
+`RAND_MAX` (the "unreachable" sentinel) from its match/ties count the way `distancesMatrix()`
+does — invisible when similarity runs on the adjacency matrix (`AM`, never contains
+`RAND_MAX`), only reachable when it runs on the geodesic distances matrix (`DM`,
+`graph_reports.cpp`'s `createMatrixSimilarityMatching(DM, ...)` path) on a disconnected
+network. Added a `--similarity-input adjacency|distances` CLI flag (mirroring
+`--similarity-measure`) so the kernel can select which matrix feeds the `similarity` category;
+`DM` is already computed unconditionally earlier in the kernel, so no extra work is needed to
+supply it. One new baseline on `TinyDisconnected_Undir_N6_E4` (already used above as the
+full-grid small fixture) with `--similarity-measure jaccard --similarity-input distances`
+pins the fix. Verified live impact
+before fixing (not assumed): cell (D,F) read `0.75` pre-fix (a false-positive similarity from
+three shared-unreachable sample columns) vs. `0.0` post-fix, confirmed via a scratch worktree
+comparison the same way #279 was.
+
+Three smaller, currently-unreachable `Matrix` issues found during the same audit were hardened
+alongside the Jaccard fix, with no dedicated golden coverage (no real caller reaches either
+path today, so there's no natural kernel entry point without inventing a synthetic harness
+disproportionate to the fix):
+- `product(A, B, symmetry=true)` wrote out of bounds if `A.rows() != B.cols()` — now guarded
+  with an early return, matching the existing `A.cols() != B.rows()` incompatibility check in
+  the same function.
+- `productByVector(..., leftMultiply=true)` computed the wrong output length and read past
+  `cols()` for non-square input — fixed to match the loop bounds its own doc comment already
+  specified (`out` has `cols()` elements, `in` has `rows()`, for the left-multiply case).
+- `distancesMatrix()`/`similarityMatrix()`/`pearsonCorrelationCoefficients()` all assume a
+  square input (`N` taken from `rows()` for every axis, in every `varLocation` mode) — true for
+  every current caller (`AM`/`DM`, always square), now documented explicitly via `@note` rather
+  than left implicit.
+
 ### `kernel_connectivity_v7` — weak/strong connected components (#85, #272) ✅ Done
 
 - `Graph::graphWeaklyConnectedComponents()` — BFS treating all edges as undirected (weak connectivity); caches count in `m_graphWeaklyConnectedComponents` and per-node IDs in `m_vertexComponentId`. Cache invalidated with `resetDistanceCentralityCacheFlags()`.

@@ -98,6 +98,11 @@ int main(int argc, char *argv[])
                                             "simple_matching|jaccard|pearson.",
                                             "measure", "simple_matching");
 
+    QCommandLineOption similarityInputOpt(QStringList() << "similarity-input",
+                                          "Input matrix for --kernel matrix's similarity category: "
+                                          "adjacency|distances.",
+                                          "input", "adjacency");
+
     cli.addOption(verboseOpt);
     cli.addOption(strictOpt);
     cli.addOption(fileOpt);
@@ -122,6 +127,7 @@ int main(int argc, char *argv[])
     cli.addOption(bonacichAlphaOpt);
     cli.addOption(bonacichBetaOpt);
     cli.addOption(similarityMeasureOpt);
+    cli.addOption(similarityInputOpt);
 
     cli.process(app);
 
@@ -177,6 +183,7 @@ int main(int argc, char *argv[])
     cfg.bonacichAlpha = cli.value(bonacichAlphaOpt).toDouble();
     cfg.bonacichBeta = cli.value(bonacichBetaOpt).toDouble();
     cfg.similarityMeasure = cli.value(similarityMeasureOpt).trimmed().toLower();
+    cfg.similarityInput = cli.value(similarityInputOpt).trimmed().toLower();
 
     if (cfg.inputPath.isEmpty())
     {
@@ -195,6 +202,12 @@ int main(int argc, char *argv[])
     {
         QTextStream(stderr) << "ERROR: --similarity-measure must be one of "
                                 "simple_matching|jaccard|pearson\n";
+        return 2;
+    }
+
+    if (cfg.similarityInput != "adjacency" && cfg.similarityInput != "distances")
+    {
+        QTextStream(stderr) << "ERROR: --similarity-input must be one of adjacency|distances\n";
         return 2;
     }
 

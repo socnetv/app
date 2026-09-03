@@ -802,6 +802,7 @@ Allowed:
 
 * `-w`, `-x`, `-k`
 * `--similarity-measure simple_matching|jaccard|pearson` (default `simple_matching`)
+* `--similarity-input adjacency|distances` (default `adjacency`)
 * `--dump-json`, `--compare-json`
 
 Not applicable / required:
@@ -822,6 +823,13 @@ Notes:
   (`createMatrixSimilarityMatching()` for `simple_matching`/`jaccard`,
   `createMatrixSimilarityPearson()` for `pearson`); an invalid value is rejected before the graph
   even loads.
+* `--similarity-input` selects which `Matrix`-producing operation feeds the `similarity`
+  category: the adjacency matrix (`AM`, default — never contains `RAND_MAX`) or the geodesic
+  distances matrix (`DM`, computed unconditionally just before this category runs — contains
+  `RAND_MAX` for unreachable pairs on a disconnected network). Needed to exercise a fix where
+  `similarityMatrix()`'s Jaccard branch didn't exclude `RAND_MAX` from its match/ties count the
+  way `distancesMatrix()` does — invisible when similarity runs on `AM`, only reachable via
+  `distances`. The chosen input is echoed in `matrices.similarity.input`.
 
 ### `--kernel vertex_connectivity` (schema v9)
 

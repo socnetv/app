@@ -369,18 +369,25 @@ int runKernelMatrixV8(const CliConfig &cfg,
     // simple_matching, unchanged from before) so the NaN-guard fix on Jaccard's and
     // Pearson's degenerate (empty-sample, diagonal=false) path can each get their own
     // golden baseline instead of only ever exercising simple_matching.
+    // --similarity-input selects which matrix feeds similarityMatrix(): the default
+    // adjacency (AM, never contains RAND_MAX) or the geodesic distances matrix just
+    // computed above (DM, which does for unreachable pairs) - needed to cover Jaccard's
+    // RAND_MAX-exclusion fix, whose effect is invisible on AM.
+    Matrix &similarityInput = (cfg.similarityInput == "distances") ? g.matrixDistances()
+                                                                   : g.matrixAdjacency();
     if (cfg.similarityMeasure == "pearson")
     {
-        g.createMatrixSimilarityPearson(g.matrixAdjacency(), similarity, "Rows", false);
+        g.createMatrixSimilarityPearson(similarityInput, similarity, "Rows", false);
     }
     else
     {
         const int measure = (cfg.similarityMeasure == "jaccard") ? METRIC_JACCARD_INDEX
                                                                   : METRIC_SIMPLE_MATCHING;
-        g.createMatrixSimilarityMatching(g.matrixAdjacency(), similarity, measure, "Rows", false, false);
+        g.createMatrixSimilarityMatching(similarityInput, similarity, measure, "Rows", false, false);
     }
     QJsonObject sim = dumpMatrixJson(similarity, fullGrid);
     sim["metric"] = cfg.similarityMeasure;
+    sim["input"] = cfg.similarityInput;
     matrices["similarity"] = sim;
 
     g.createMatrixReachability();

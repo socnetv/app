@@ -532,6 +532,16 @@ void Matrix::product(Matrix &A, Matrix & B, bool symmetry)  {
         return;
     }
 
+    // symmetry=true mirrors P(i,j) into P(j,i) for j up to B.cols()-1, which is only an
+    // in-bounds row index of P (sized A.rows() x B.cols()) when A.rows()==B.cols().
+    if (symmetry && A.rows() != B.cols() ) {
+        qCDebug(lcMatrix)<< "Matrix::product() - ERROR! symmetry=true requires A.rows()==B.cols():"
+                   " a("
+                << A.rows() << "," << A.cols()
+                << ") and b(" << B.rows() << ","<< B.cols();
+        return;
+    }
+
     Matrix P(A.rows(), B.cols());
 
     qreal prod = 0;
@@ -681,22 +691,29 @@ void Matrix::productByVector (
         qreal out[],
         const bool &leftMultiply) {
 
-    int n = rows();
-    int m = cols();
+    // leftMultiply computes x^T * A (x a row vector of rows() elements), so out has cols()
+    // elements and in has rows() elements - the reverse of the non-left case below.
+    if (leftMultiply) {
+        const int outLen = cols();
+        const int inLen = rows();
+        for (int i = 0; i < outLen; i++) {
+            out[i] = 0;
+            for (int j = 0; j < inLen; j++) {
+                // dot product of row vector 'in' with the i-th column of this matrix
+                out[i] += item(j, i) * in[j];
+            }
+        }
+        return;
+    }
 
-    for(int i = 0; i < n; i++) {
-         out[i] = 0;
-         for (int j = 0; j < m; j++) {
-             if (leftMultiply) {
-              // dot product of row vector b with j-th column in A
-              out[i] += item (j, i) * in[j];
-             }
-             else {
-               // dot product of i-th row in A with the column vector b
-               out[i] += item (i, j) * in[j];
-             }
-
-         }
+    const int n = rows();
+    const int m = cols();
+    for (int i = 0; i < n; i++) {
+        out[i] = 0;
+        for (int j = 0; j < m; j++) {
+            // dot product of i-th row in this matrix with the column vector 'in'
+            out[i] += item(i, j) * in[j];
+        }
     }
 }
 
@@ -1423,6 +1440,10 @@ bool Matrix::solve(qreal b[])
  * Complexity: O(N^2 * M), where N is the number of variables being compared and M is the
  * length of each variable's sample (the other axis) - a triple-nested loop, effectively
  * O(N^3) when varLocation is "Rows" or "Columns" (M==N there).
+ * @note Assumes a square input (rows()==cols()): N is always taken from rows(), including as
+ * the bound for the "other axis" in every varLocation mode. Every current caller passes the
+ * (always-square) adjacency or distances matrix; a non-square input would read/write past the
+ * intended bounds.
  * @return Matrix T, the dissimilarities matrix.
  */
 Matrix& Matrix::distancesMatrix(const int &metric,
@@ -1820,6 +1841,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
  * @return Matrix SCM, N x N (N = number of variables being compared), with a similarity
  * score for every pair.
  * Complexity: O(N^2 * M), same shape as distancesMatrix() - see its complexity note.
+ * @note Assumes a square AM (rows()==cols()) - see distancesMatrix()'s @note for why.
  */
 Matrix& Matrix::similarityMatrix(Matrix &AM,
                                    const int &measure,
@@ -1874,10 +1896,16 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
                         ties++;
                         break;
                     case METRIC_JACCARD_INDEX:
-                        if (AM.item(i,j) == AM.item(k,j)  && AM.item(i,j) != 0) {
+                        // RAND_MAX is the "unreachable" sentinel (AM here can be a Distances
+                        // matrix, e.g. graph_reports.cpp's DM -> createMatrixSimilarityMatching()
+                        // path, not just the adjacency matrix) - treated like zero here, same
+                        // as distancesMatrix()'s Jaccard branch.
+                        if (AM.item(i,j) == AM.item(k,j)
+                            && (AM.item(i,j) != 0 && AM.item(i,j) != RAND_MAX)) {
                             matches++;
                         }
-                        if (AM.item(i,j) != 0  || AM.item(k,j)  ) {
+                        if ((AM.item(i,j) != 0 && AM.item(i,j) != RAND_MAX)
+                            || (AM.item(k,j) != 0 && AM.item(k,j) != RAND_MAX)) {
                            ties++;
                         }
                         break;
@@ -1979,10 +2007,14 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
                         ties++;
                         break;
                     case METRIC_JACCARD_INDEX:
-                        if (AM.item(j,i) == AM.item(j,k)  && AM.item(j,i) != 0) {
+                        // See the "Rows" branch above for why RAND_MAX (unreachable
+                        // sentinel) is excluded here just like distancesMatrix() does.
+                        if (AM.item(j,i) == AM.item(j,k)
+                            && (AM.item(j,i) != 0 && AM.item(j,i) != RAND_MAX)) {
                             matches++;
                         }
-                        if (AM.item(j,i) != 0  || AM.item(j,k) !=0 ) {
+                        if ((AM.item(j,i) != 0 && AM.item(j,i) != RAND_MAX)
+                            || (AM.item(j,k) != 0 && AM.item(j,k) != RAND_MAX)) {
                            ties++;
                         }
 
@@ -2101,10 +2133,14 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
                         ties++;
                         break;
                     case METRIC_JACCARD_INDEX:
-                        if (CM.item(j,i) == CM.item(j,k)  && CM.item(j,i) != 0) {
+                        // See the "Rows" branch above for why RAND_MAX (unreachable
+                        // sentinel) is excluded here just like distancesMatrix() does.
+                        if (CM.item(j,i) == CM.item(j,k)
+                            && (CM.item(j,i) != 0 && CM.item(j,i) != RAND_MAX)) {
                             matches++;
                         }
-                        if (CM.item(j,i) != 0  || CM.item(j,k) !=0 ) {
+                        if ((CM.item(j,i) != 0 && CM.item(j,i) != RAND_MAX)
+                            || (CM.item(j,k) != 0 && CM.item(j,k) != RAND_MAX)) {
                            ties++;
                         }
                         break;
@@ -2195,6 +2231,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
  * a variable is never compared against itself.
  * @return Matrix N x N (N = number of variables being compared) of Pearson r values.
  * Complexity: O(N^2 * M), same shape as distancesMatrix() - see its complexity note.
+ * @note Assumes a square AM (rows()==cols()) - see distancesMatrix()'s @note for why.
  */
 Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                                                const QString &varLocation,
