@@ -58,7 +58,6 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
 
     VList::const_iterator it;
 
-    QHash<int, qreal> *enabledInEdges = new QHash<int, qreal>;
     QHash<int, qreal>::const_iterator hit;
 
     qreal DP = 0, SDP = 0, nom = 0, denom = 0;
@@ -86,7 +85,6 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
 
         if (progressCanceled())
         {
-            delete enabledInEdges;
             return;
         }
         v1 = (*it)->number();
@@ -103,7 +101,10 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
         qCDebug(lcCentrality) << "Iterate over inbound edges of "
                  << v1;
 
-        enabledInEdges = (*it)->inEdgesEnabledHash();
+        // Local, freed at the end of this iteration - inEdgesEnabledHash() heap-allocates
+        // a fresh QHash on every call, so reusing one variable across iterations without
+        // freeing the previous result (as this used to do) leaks one QHash per vertex.
+        QHash<int, qreal> *enabledInEdges = (*it)->inEdgesEnabledHash();
 
         hit = enabledInEdges->cbegin();
 
@@ -139,6 +140,8 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
             }
             ++hit;
         }
+
+        delete enabledInEdges;
 
         (*it)->setDP(DP); // Set DP
         sumDP += DP;
@@ -216,7 +219,6 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
         qCDebug(lcCentrality, "Graph: varianceSDP = %f, groupDP = %f", varianceSDP, groupDP);
     }
 
-    delete enabledInEdges;
     calculatedDP = true;
 }
 
