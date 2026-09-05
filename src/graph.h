@@ -872,6 +872,7 @@ public:
     Matrix &matrixAdjacency() { return AM; }
     Matrix &matrixAdjacencyInverse() { return invAM; }
     Matrix &matrixDistances() { return DM; }
+    Matrix &matrixShortestPaths() { return SIGMA; }
     Matrix &matrixReachability() { return XRM; }
     Matrix &matrixWalks() { return XM; }
     Matrix &matrixTotalWalks() { return XSM; }
@@ -1474,6 +1475,8 @@ private:
     void resolveClasses(qreal C,
                         H_StrToInt &discreteClasses,
                         int &classes, int name);
+
+    QVector<int> compactedMatrixIndex(const bool &dropIsolates) const;
 
     void layoutRandomInMemory();
 

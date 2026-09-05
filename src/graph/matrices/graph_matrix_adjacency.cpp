@@ -14,11 +14,24 @@
  */
 #include "graph.h"
 #include <QDebug>
+#include <QtConcurrent/QtConcurrent>
 
 /**
  * @brief  Creates an adjacency matrix AM
  *  where AM(i,j)=1 if i is connected to j
  *  and AM(i,j)=0 if i not connected to j
+ *
+ * Parallelization (WS15 P4): unlike the other three matrix-fill candidates, this one has no
+ * APSP dependency - it's a direct O(N²) edgeExists() scan (halved via the upper-triangle
+ * trick: each outer vertex i fills both AM(i,j) and AM(j,i) for j>=i in one pass). Maps via
+ * QtConcurrent::blockingMap over vertex positions using compactedMatrixIndex(), same as the
+ * other three. Each worker thread writes row i (cells j=i..N-1) *and* column i (cells
+ * j=0..i-1, via the paired AM(j,i) writes) - not confined to a single row like the other
+ * candidates, but still race-free: the upper-triangle partition (i<=j) guarantees no two
+ * different outer vertices ever write the same (row,col) cell. edgeExists() itself is
+ * read-only/thread-safe (fixed under WS15 P4's first implementation, see graph_edges.cpp).
+ * Single progressCanceled() check before the parallel step, not per-vertex as before.
+ *
  * @param dropIsolates
  * @param considerWeights
  * @param inverseWeights
@@ -34,10 +47,7 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
              << "considerWeights" << considerWeights
              << "inverseWeights" << inverseWeights
              << "symmetrize" << symmetrize;
-    qreal m_weight = RAND_MAX;
-    int i = 0, j = 0;
     int N = vertices(dropIsolates, false, true);
-    VList::const_iterator it, jt;
 
     qCDebug(lcGraphMatrices) << "Graph::createMatrixAdjacency() -resizing AM to" << N;
     AM.resize(N, N);
@@ -45,74 +55,62 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
     QString pMsg = tr("Creating Adjacency Matrix. \nPlease wait...");
     progressStatus(pMsg);
 
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    if (progressCanceled())
     {
+        return;
+    }
 
-        qCDebug(lcGraphMatrices) << "Graph::createMatrixAdjacency() - i" << i << "name" << (*it)->number();
+    const QVector<int> rowOf = compactedMatrixIndex(dropIsolates);
+    const int total = m_graph.size();
 
-        if (progressCanceled())
-        {
+    QList<int> positions;
+    positions.reserve(total);
+    for (int p = 0; p < total; ++p)
+        positions.append(p);
+
+    QtConcurrent::blockingMap(positions, [&](int p1) {
+        const int i = rowOf[p1];
+        if (i < 0)
             return;
-        }
-        if (!(*it)->isEnabled() || ((*it)->isIsolated() && dropIsolates))
+
+        GraphVertex *v1 = m_graph.at(p1);
+        qreal m_weight = RAND_MAX;
+
+        for (int p2 = p1; p2 < total; ++p2)
         {
-            qCDebug(lcGraphMatrices) << "Graph::createMatrixAdjacency() - SKIP i" << i << "name" << (*it)->number();
-            continue;
-        }
-
-        j = i;
-
-        for (jt = it; jt != m_graph.end(); jt++)
-        {
-
-            qCDebug(lcGraphMatrices) << "Graph::createMatrixAdjacency() - j" << j << "name" << (*jt)->number();
-
-            if (!(*jt)->isEnabled() || ((*jt)->isIsolated() && dropIsolates))
-            {
-                qCDebug(lcGraphMatrices) << "Graph::createMatrixAdjacency() - SKIP j" << j << "name" << (*jt)->number();
+            const int j = rowOf[p2];
+            if (j < 0)
                 continue;
-            }
 
-            if ((m_weight = edgeExists((*it)->number(), (*jt)->number())) != 0)
+            GraphVertex *v2 = m_graph.at(p2);
+
+            if ((m_weight = edgeExists(v1->number(), v2->number())) != 0)
             {
                 if (!considerWeights)
-                {
                     AM.setItem(i, j, 1);
-                }
+                else if (inverseWeights)
+                    AM.setItem(i, j, 1.0 / m_weight);
                 else
-                {
-                    if (inverseWeights)
-                        AM.setItem(i, j, 1.0 / m_weight);
-                    else
-                        AM.setItem(i, j, m_weight);
-                }
+                    AM.setItem(i, j, m_weight);
             }
             else
             {
                 AM.setItem(i, j, 0);
             }
 
-            qCDebug(lcGraphMatrices) << " AM(" << i << "," << j << ") = " << AM.item(i, j);
-
             if (i != j)
             {
-                if ((m_weight = edgeExists((*jt)->number(), (*it)->number())) != 0)
+                if ((m_weight = edgeExists(v2->number(), v1->number())) != 0)
                 {
                     if (!considerWeights)
-                    {
                         AM.setItem(j, i, 1);
-                    }
+                    else if (inverseWeights)
+                        AM.setItem(j, i, 1.0 / m_weight);
                     else
-                    {
-                        if (inverseWeights)
-                            AM.setItem(j, i, 1.0 / m_weight);
-                        else
-                            AM.setItem(j, i, m_weight);
-                    }
+                        AM.setItem(j, i, m_weight);
+
                     if (symmetrize && (AM.item(i, j) != AM.item(j, i)))
-                    {
                         AM.setItem(i, j, AM.item(j, i));
-                    }
                 }
                 else
                 {
@@ -120,12 +118,9 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
                     if (symmetrize && (AM.item(i, j) != AM.item(j, i)))
                         AM.setItem(j, i, AM.item(i, j));
                 }
-                qCDebug(lcGraphMatrices) << " AM(" << j << "," << i << ") = " << AM.item(j, i);
             }
-            j++;
         }
-        i++;
-    }
+    });
 
     calculatedAdjacencyMatrix = true;
 }

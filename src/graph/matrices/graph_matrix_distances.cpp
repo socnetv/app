@@ -16,11 +16,52 @@
 
 #include "graph.h"
 
+#include <QAtomicInteger>
 #include <QDebug>
+#include <QtConcurrent/QtConcurrent>
+
+/**
+ * @brief Maps each vertex's position in m_graph to its compacted row/column index in an
+ * N-by-N Matrix, or -1 if the vertex is excluded (disabled, or isolated with dropIsolates).
+ *
+ * Parallelization (WS15 P4): the matrix-fill loops below used to track their row/column
+ * index with plain int i/j counters incremented sequentially as included vertices were
+ * visited - safe single-threaded, but that sequential dependency is exactly what blocks
+ * mapping the outer loop over worker threads (each one needs to know its own row index
+ * without waiting for every earlier vertex to be visited first). Precomputing the mapping
+ * once, sequentially, lets each worker thread look up its own (and any other vertex's)
+ * compacted index independently.
+ *
+ * @param dropIsolates  If true, isolated vertices are also excluded (in addition to
+ *        disabled ones) - matches each caller's own existing skip logic exactly.
+ * @return QVector<int> sized m_graph.size(), indexed by position in m_graph.
+ */
+QVector<int> Graph::compactedMatrixIndex(const bool &dropIsolates) const
+{
+    QVector<int> index(m_graph.size(), -1);
+    int next = 0;
+    for (int pos = 0; pos < m_graph.size(); ++pos)
+    {
+        GraphVertex *v = m_graph.at(pos);
+        if (!v->isEnabled() || (v->isIsolated() && dropIsolates))
+            continue;
+        index[pos] = next++;
+    }
+    return index;
+}
 
 /**
  * @brief Creates the matrix SIGMA of shortest paths (geodesics) between vertices
  * Each SIGMA(i,j) is the number of shortest paths (geodesics) from i and j
+ *
+ * Parallelization (WS15 P4): the outer vertex loop maps via QtConcurrent::blockingMap over
+ * vertex positions, using compactedMatrixIndex() (computed once, sequentially, beforehand)
+ * in place of the old sequential i/j counters. Each worker thread writes only to its own
+ * row of SIGMA - disjoint cells, safe for concurrent writes (Matrix storage is a flat
+ * array with no locking/COW, see Matrix::setItem()). Cancel signals cannot be delivered
+ * while graphThread's event loop is blocked in blockingMap, so the progressCanceled()
+ * check only runs once, before the parallel step, not per-row as before.
+ *
  * @param considerWeights
  * @param inverseWeights
  * @param dropIsolates
@@ -39,10 +80,7 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
         return;
     }
 
-    VList::const_iterator it, jt;
     int N = vertices(dropIsolates, false, true);
-    int source = 0, target = 0;
-    int i = 0, j = 0;
 
     qCDebug(lcDistances) << "Graph::graphMatrixShortestPathsCreate() - Resizing matrix to hold "
              << N << " vertices";
@@ -52,67 +90,39 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
     QString pMsg = tr("Creating shortest paths matrix. \nPlease wait ");
     progressStatus(pMsg);
 
+    if (progressCanceled())
+    {
+        calculatedDistances = false;
+        return;
+    }
+
     qCDebug(lcDistances) << "Graph::graphMatrixShortestPathsCreate() - Writing shortest paths matrix...";
 
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
+    const QVector<int> rowOf = compactedMatrixIndex(dropIsolates);
+    const int total = m_graph.size();
 
-        if (progressCanceled())
-        {
-            calculatedDistances = false;
+    QList<int> positions;
+    positions.reserve(total);
+    for (int p = 0; p < total; ++p)
+        positions.append(p);
+
+    QtConcurrent::blockingMap(positions, [&](int p1) {
+        const int i = rowOf[p1];
+        if (i < 0)
             return;
-        }
 
-        source = (*it)->number();
+        const int source = m_graph.at(p1)->number();
 
-        if ((*it)->isIsolated() && dropIsolates)
+        for (int p2 = 0; p2 < total; ++p2)
         {
-            qCDebug(lcDistances) << "Graph::graphMatrixShortestPathsCreate() - "
-                     << source << "isolated. SKIP";
-
-            continue;
-        }
-
-        if (!(*it)->isEnabled())
-        {
-            qCDebug(lcDistances) << "Graph::graphMatrixShortestPathsCreate() - "
-                     << source << "disabled. SKIP";
-            continue;
-        }
-
-        qCDebug(lcDistances) << "Graph::graphMatrixShortestPathsCreate() - source" << source
-                 << "i" << i;
-
-        for (jt = m_graph.cbegin(); jt != m_graph.cend(); ++jt)
-        {
-
-            target = (*jt)->number();
-
-            if ((*jt)->isIsolated() && dropIsolates)
-            {
-                qCDebug(lcDistances) << "Graph::graphMatrixShortestPathsCreate() - "
-                         << target << "isolated. SKIP";
+            const int j = rowOf[p2];
+            if (j < 0)
                 continue;
-            }
 
-            if (!(*jt)->isEnabled())
-            {
-                qCDebug(lcDistances) << "Graph::graphMatrixShortestPathsCreate() - "
-                         << target << "disabled. SKIP";
-                continue;
-            }
-
-            qCDebug(lcDistances) << "Graph::graphMatrixShortestPathsCreate() - "
-                     << "target" << target << "j" << j;
-
-            qCDebug(lcDistances) << "Graph::graphMatrixShortestPathsCreate() -  setting SIGMA ("
-                     << i << "," << j << ") =" << apspShortestPaths(source, target);
+            const int target = m_graph.at(p2)->number();
             SIGMA.setItem(i, j, apspShortestPaths(source, target));
-            j++;
         }
-        j = 0;
-        i++;
-    }
+    });
 }
 
 /**
@@ -122,6 +132,13 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
  *
  * Phase 2: fills the DM matrix from the cached per-vertex distances - an O(N²)
  * memory-write pass.
+ *
+ * Parallelization (WS15 P4): same pattern as graphMatrixShortestPathsCreate() above -
+ * compactedMatrixIndex() replaces the old sequential i/j counters, each worker thread
+ * writes only to its own disjoint row of DM. The progressCanceled() check that used to
+ * only exist before Phase 2 (none inside the O(N²) loop itself) is unchanged in spirit -
+ * still a single check before the parallel step, since a mid-loop check couldn't be
+ * delivered under blockingMap anyway.
  *
  * @param considerWeights If true, edge weights are used in distance computations.
  * @param inverseWeights  If true, edge weights are inverted before use.
@@ -143,10 +160,7 @@ bool Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
         return false;
     }
 
-    VList::const_iterator it, jt;
     int N = vertices(dropIsolates, false, true);
-    int source = 0, target = 0;
-    int i = 0, j = 0;
 
     qCDebug(lcDistances) << "Graph::graphMatrixDistanceGeodesicCreate() - "
                 "Resizing distance matrix to hold "
@@ -157,36 +171,37 @@ bool Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
     // Phase 2: fill DM from cached per-vertex distances.
     progressStatus(tr("Creating geodesic distances matrix. \nPlease wait "));
 
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    if (progressCanceled())
     {
-
-        source = (*it)->number();
-
-        if ((*it)->isIsolated() && dropIsolates) {
-            continue;
-        }
-        if (!(*it)->isEnabled()) {
-            continue;
-        }
-
-        for (jt = m_graph.cbegin(); jt != m_graph.cend(); ++jt)
-        {
-            target = (*jt)->number();
-
-            if ((*jt)->isIsolated() && dropIsolates) {
-                continue;
-            }
-            if (!(*jt)->isEnabled()) {
-                continue;
-            }
-
-
-            DM.setItem(i, j, apspDistance(source, target));
-            j++;
-        }
-        j = 0;
-        i++;
+        calculatedDistances = false;
+        return false;
     }
+
+    const QVector<int> rowOf = compactedMatrixIndex(dropIsolates);
+    const int total = m_graph.size();
+
+    QList<int> positions;
+    positions.reserve(total);
+    for (int p = 0; p < total; ++p)
+        positions.append(p);
+
+    QtConcurrent::blockingMap(positions, [&](int p1) {
+        const int i = rowOf[p1];
+        if (i < 0)
+            return;
+
+        const int source = m_graph.at(p1)->number();
+
+        for (int p2 = 0; p2 < total; ++p2)
+        {
+            const int j = rowOf[p2];
+            if (j < 0)
+                continue;
+
+            const int target = m_graph.at(p2)->number();
+            DM.setItem(i, j, apspDistance(source, target));
+        }
+    });
 
     return true;
 }

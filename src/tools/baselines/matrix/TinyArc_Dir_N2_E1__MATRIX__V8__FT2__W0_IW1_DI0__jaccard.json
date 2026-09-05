@@ -98,6 +98,21 @@
             "dump_mode": "full",
             "rows": 2
         },
+        "shortest_paths": {
+            "cols": 2,
+            "data": [
+                [
+                    "1",
+                    "1"
+                ],
+                [
+                    "0",
+                    "1"
+                ]
+            ],
+            "dump_mode": "full",
+            "rows": 2
+        },
         "similarity": {
             "cols": 2,
             "data": [
@@ -111,6 +126,7 @@
                 ]
             ],
             "dump_mode": "full",
+            "input": "adjacency",
             "metric": "jaccard",
             "rows": 2
         },

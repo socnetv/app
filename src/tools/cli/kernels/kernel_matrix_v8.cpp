@@ -266,8 +266,8 @@ static int compareGoldenV8(const QJsonObject &expected, const QJsonObject &actua
     const QJsonObject aM = actual.value("matrices").toObject();
 
     static const QStringList kAlwaysPresent = {
-        "adjacency", "adjacency_inverse", "distances", "similarity", "reachability", "walks",
-        "clique_comembership"
+        "adjacency", "adjacency_inverse", "distances", "shortest_paths", "similarity",
+        "reachability", "walks", "clique_comembership"
     };
     for (const QString &cat : kAlwaysPresent)
     {
@@ -315,9 +315,9 @@ static int compareGoldenV8(const QJsonObject &expected, const QJsonObject &actua
 
 // ---- exported runner ----
 
-// Builds every Matrix-producing category (adjacency, inverse, distances, similarity,
-// reachability, walks, total walks, clique co-membership) in turn, dumping each one's
-// contents right after it's constructed, then writes/compares the resulting JSON per
+// Builds every Matrix-producing category (adjacency, inverse, distances, shortest paths,
+// similarity, reachability, walks, total walks, clique co-membership) in turn, dumping each
+// one's contents right after it's constructed, then writes/compares the resulting JSON per
 // --dump-json/--compare-json.
 int runKernelMatrixV8(const CliConfig &cfg,
                       const HeadlessLoadResult &load,
@@ -360,6 +360,9 @@ int runKernelMatrixV8(const CliConfig &cfg,
 
     g.graphMatrixDistanceGeodesicCreate(cfg.considerWeights, cfg.inverseWeights, cfg.dropIsolates);
     matrices["distances"] = dumpMatrixJson(g.matrixDistances(), fullGrid);
+
+    g.graphMatrixShortestPathsCreate(cfg.considerWeights, cfg.inverseWeights, cfg.dropIsolates);
+    matrices["shortest_paths"] = dumpMatrixJson(g.matrixShortestPaths(), fullGrid);
 
     // Similarity needs a fresh adjacency input - createMatrixAdjacencyInverse() already
     // overwrote AM with its own dropIsolates=true policy, so rebuild once more here.

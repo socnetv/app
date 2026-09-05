@@ -17,9 +17,16 @@
 #include "graph.h"
 
 #include <QDebug>
+#include <QtConcurrent/QtConcurrent>
 
 /**
  * @brief Creates the reachability matrix XRM
+ *
+ * Parallelization (WS15 P4): same pattern as graphMatrixShortestPathsCreate()/
+ * graphMatrixDistanceGeodesicCreate() (graph_matrix_distances.cpp) - compactedMatrixIndex()
+ * (with dropIsolates=false, matching this function's own enabled-only filter) replaces the
+ * old sequential i/j counters, each worker thread writes only to its own disjoint row of
+ * XRM. Single progressCanceled() check before the parallel step, not per-row as before.
  */
 void Graph::createMatrixReachability()
 {
@@ -30,60 +37,47 @@ void Graph::createMatrixReachability()
     {
         return;
     }
-    VList::const_iterator it, jt;
 
     int N = vertices(false, false, true);
-
-    int source = 0, target = 0;
-    int i = 0, j = 0;
-    int reachVal = 0;
 
     XRM.resize(N, N);
 
     QString pMsg = tr("Creating reachability matrix. \nPlease wait ");
     progressStatus(pMsg);
 
+    if (progressCanceled())
+    {
+        return;
+    }
+
     qCDebug(lcReachability) << "Writing Reachability matrix...";
 
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
+    const QVector<int> rowOf = compactedMatrixIndex(false);
+    const int total = m_graph.size();
 
-        if (progressCanceled())
-        {
+    QList<int> positions;
+    positions.reserve(total);
+    for (int p = 0; p < total; ++p)
+        positions.append(p);
+
+    QtConcurrent::blockingMap(positions, [&](int p1) {
+        const int i = rowOf[p1];
+        if (i < 0)
             return;
-        }
-        source = (*it)->number();
 
-        if (!(*it)->isEnabled())
+        const int source = m_graph.at(p1)->number();
+
+        for (int p2 = 0; p2 < total; ++p2)
         {
-            qCDebug(lcReachability) << "source vertex" << source << "disabled. SKIP";
-            continue;
-        }
-
-        qCDebug(lcReachability) << "source vertex" << source << "i" << i;
-
-        for (jt = m_graph.cbegin(); jt != m_graph.cend(); ++jt)
-        {
-
-            target = (*jt)->number();
-
-            if (!(*jt)->isEnabled())
-            {
-                qCDebug(lcReachability) << "target vertex" << target << "disabled. SKIP";
+            const int j = rowOf[p2];
+            if (j < 0)
                 continue;
-            }
 
-            qCDebug(lcReachability) << "target vertex" << target << "j" << j;
-
-            reachVal = (apspDistance(source, target) != RAND_MAX) ? 1 : 0;
-            qCDebug(lcReachability) << "Setting XRM (" << i << "," << j << ") =" << reachVal;
+            const int target = m_graph.at(p2)->number();
+            const int reachVal = (apspDistance(source, target) != RAND_MAX) ? 1 : 0;
             XRM.setItem(i, j, reachVal);
-
-            j++;
         }
-        j = 0;
-        i++;
-    }
+    });
 }
 
 /**
