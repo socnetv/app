@@ -25,6 +25,40 @@
 #include "tools/cli/kernels/kernel_vertex_connectivity_v9.h"
 #include "tools/cli/kernels/kernel_matrix_v8.h"
 
+namespace
+{
+    // QString::toInt()/toDouble() silently return 0 on unparseable input (e.g. "-f graphml"
+    // instead of "-f 1") instead of failing - the caller can't tell a genuine 0 from a typo,
+    // and a value like "-f" happened to still "work" here since the loader falls back to
+    // file-extension auto-detection, masking the mistake entirely. These wrappers use the
+    // ok-flag overloads to reject bad input outright instead of silently defaulting to 0.
+    bool parseIntArg(const QCommandLineParser &cli, const QCommandLineOption &opt, int &out)
+    {
+        bool ok = false;
+        const QString raw = cli.value(opt);
+        out = raw.toInt(&ok);
+        if (!ok)
+        {
+            QTextStream(stderr) << "ERROR: --" << opt.names().last() << " expects an integer, got \""
+                                 << raw << "\"\n";
+        }
+        return ok;
+    }
+
+    bool parseDoubleArg(const QCommandLineParser &cli, const QCommandLineOption &opt, qreal &out)
+    {
+        bool ok = false;
+        const QString raw = cli.value(opt);
+        out = raw.toDouble(&ok);
+        if (!ok)
+        {
+            QTextStream(stderr) << "ERROR: --" << opt.names().last() << " expects a number, got \""
+                                 << raw << "\"\n";
+        }
+        return ok;
+    }
+}
+
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
@@ -157,31 +191,45 @@ int main(int argc, char *argv[])
                                          "socnetv.*.debug=false");
     }
     cfg.inputPath = cli.value(fileOpt);
-    cfg.fileFormat = cli.value(typeOpt).toInt();
     cfg.delimiter = cli.value(delimOpt);
-    cfg.twoMode = cli.value(twoModeOpt).toInt();
-    cfg.hasLabels = (cli.value(labelsOpt).toInt() != 0);
 
-    cfg.computeCentralities = (cli.value(centralitiesOpt).toInt() != 0);
-    cfg.considerWeights = (cli.value(weightsOpt).toInt() != 0);
-    cfg.inverseWeights = (cli.value(invWeightsOpt).toInt() != 0);
-    cfg.dropIsolates = (cli.value(dropIsoOpt).toInt() != 0);
+    int hasLabelsRaw = 0, computeCentralitiesRaw = 0, considerWeightsRaw = 0,
+        inverseWeightsRaw = 0, dropIsolatesRaw = 0, benchRunsRaw = 0, walksLength = 0;
+
+    bool argsOk = true;
+    argsOk &= parseIntArg(cli, typeOpt, cfg.fileFormat);
+    argsOk &= parseIntArg(cli, twoModeOpt, cfg.twoMode);
+    argsOk &= parseIntArg(cli, labelsOpt, hasLabelsRaw);
+    argsOk &= parseIntArg(cli, centralitiesOpt, computeCentralitiesRaw);
+    argsOk &= parseIntArg(cli, weightsOpt, considerWeightsRaw);
+    argsOk &= parseIntArg(cli, invWeightsOpt, inverseWeightsRaw);
+    argsOk &= parseIntArg(cli, dropIsoOpt, dropIsolatesRaw);
+    argsOk &= parseIntArg(cli, benchOpt, benchRunsRaw);
+    argsOk &= parseIntArg(cli, walksLenOpt, walksLength);
+    argsOk &= parseIntArg(cli, connSourceOpt, cfg.connSource);
+    argsOk &= parseIntArg(cli, connTargetOpt, cfg.connTarget);
+    argsOk &= parseDoubleArg(cli, katzAlphaOpt, cfg.katzAlpha);
+    argsOk &= parseDoubleArg(cli, bonacichAlphaOpt, cfg.bonacichAlpha);
+    argsOk &= parseDoubleArg(cli, bonacichBetaOpt, cfg.bonacichBeta);
+    if (!argsOk)
+    {
+        return 2;
+    }
+
+    cfg.hasLabels = (hasLabelsRaw != 0);
+    cfg.computeCentralities = (computeCentralitiesRaw != 0);
+    cfg.considerWeights = (considerWeightsRaw != 0);
+    cfg.inverseWeights = (inverseWeightsRaw != 0);
+    cfg.dropIsolates = (dropIsolatesRaw != 0);
 
     cfg.dumpJsonPath = cli.value(dumpJsonOpt);
     cfg.compareJsonPath = cli.value(compareJsonOpt);
 
-    const int benchRunsRaw = cli.value(benchOpt).toInt();
     cfg.benchRuns = (benchRunsRaw > 0) ? benchRunsRaw : 0;
 
     cfg.kernel = cli.value(kernelOpt).trimmed().toLower();
-    const int walksLength = cli.value(walksLenOpt).toInt();
     cfg.connectivityType = cli.value(connTypeOpt).trimmed().toLower();
     cfg.connMode = cli.value(connModeOpt).trimmed().toLower();
-    cfg.connSource = cli.value(connSourceOpt).toInt();
-    cfg.connTarget = cli.value(connTargetOpt).toInt();
-    cfg.katzAlpha = cli.value(katzAlphaOpt).toDouble();
-    cfg.bonacichAlpha = cli.value(bonacichAlphaOpt).toDouble();
-    cfg.bonacichBeta = cli.value(bonacichBetaOpt).toDouble();
     cfg.similarityMeasure = cli.value(similarityMeasureOpt).trimmed().toLower();
     cfg.similarityInput = cli.value(similarityInputOpt).trimmed().toLower();
 
