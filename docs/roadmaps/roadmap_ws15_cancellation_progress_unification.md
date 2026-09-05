@@ -27,8 +27,10 @@ not something to paper over.
 
 🚧 In progress. P1-P3 ✅ done — linear progress-dialog system retired, exactly one progress dialog
 now exists app-wide. P4's audit done; `centralityDegree()`, `isSymmetric()`,
-`clusteringCoefficient()`, and `graphTriadCensus()` parallelized so far, rest of the candidates
-not started. See What WS15 Delivered below.
+`clusteringCoefficient()`, `graphTriadCensus()`, and the four matrix-fill operations
+(`graphMatrixShortestPathsCreate`, `graphMatrixDistanceGeodesicCreate`, `createMatrixReachability`,
+`createMatrixAdjacency`) parallelized so far. Remaining: `centralityClosenessIR`/`prestigeDegree`/
+`prestigeProximity`. See What WS15 Delivered below.
 
 ## What WS15 Delivered
 
@@ -69,7 +71,7 @@ before emitting `canceled()` (`setAutoClose`/`setAutoReset` don't gate that path
 `canceled()` connection re-shows it, relabels it "Canceling...", and disables it until the
 operation's own completion continuation tears it down for real.
 
-### P4 — Parallelization audit ✅ Audit done, four implementations landed, rest open
+### P4 — Parallelization audit ✅ Audit done, five implementations landed (eight functions), rest open
 
 Audited every long-running operation in `src/graph/`'s algorithm slices against all four contract
 properties, judging property 4 by real algorithm structure (independent per-source/per-node work
@@ -177,11 +179,66 @@ parallel, ~4.4x** - the largest measured win of WS15 P4 so far, consistent with 
 O(N³) candidate among the four done to date. Triad classification output (all 16 class counts,
 166,167,000 total triads) verified identical between the sequential and parallel runs.
 
+### P4 — Fifth implementation: four matrix-fill operations parallelized
+
+`graphMatrixShortestPathsCreate()`, `graphMatrixDistanceGeodesicCreate()`,
+`createMatrixReachability()` (`graph_matrix_distances.cpp`/`graph_matrix_reachability.cpp`), and
+`createMatrixAdjacency()` (`graph_matrix_adjacency.cpp`) all share the same O(N²) shape: an outer
+per-vertex loop filling one row (or, for `createMatrixAdjacency`, one row plus its paired column
+cell) of a `Matrix` from already-computed data. The first three depend on `graphDistancesGeodesic()`
+(already parallel) having fully populated its APSP cache beforehand - their own loop is a pure
+"copy already-computed values into a Matrix" pass, no BFS/Dijkstra work happens in it.
+`createMatrixAdjacency()` has no APSP dependency; it's a direct `edgeExists()` scan (already
+thread-safe per WS15 P4's first implementation), halved via an upper-triangle trick.
+
+The real obstacle to parallelizing any of these wasn't a data race on `Matrix` itself (confirmed
+safe for concurrent writes to disjoint cells: flat raw-array storage, no locking/COW - see
+`Matrix::setItem()`) but that each loop tracked its row/column index with plain `int i`/`j`
+counters incremented sequentially as included (enabled, non-isolated) vertices were visited -
+exactly the kind of sequential dependency that blocks mapping the outer loop over worker threads.
+Fixed with a new shared helper, `Graph::compactedMatrixIndex(dropIsolates)`
+(`graph_matrix_distances.cpp`), computed once sequentially before the parallel step: it walks
+`m_graph` once and returns a `QVector<int>` mapping each vertex's position to its compacted
+row/column index (or -1 if excluded), replicating each function's own skip logic exactly. Each
+worker thread then looks up its own (and any other vertex's) index independently, writing only to
+disjoint `Matrix` cells - one row each for the first three, one row plus one column (still disjoint
+across different outer vertices, since the upper-triangle partition guarantees no two outer
+vertices ever write the same cell) for `createMatrixAdjacency()`.
+`graphMatrixDistanceGeodesicCreate()` previously had zero mid-loop `progressCanceled()` checks in
+its O(N²) fill phase (worse than its three siblings' per-row checks); all four now have a single
+check before the parallel step instead, consistent with the established P4 tradeoff.
+
+Found and fixed a real, independent testing gap along the way:
+`graphMatrixShortestPathsCreate()`'s SIGMA matrix had no golden/CLI coverage at all before this -
+no public accessor existed for it (unlike `AM`/`DM`/`XRM`), so a regression in it could not have
+been caught by any existing test. Added `Graph::matrixShortestPaths()` and wired a
+`"shortest_paths"` category into `kernel_matrix_v8`'s golden coverage (all 7 existing baselines
+regenerated to include it).
+
+Measured (not assumed) on a 1000-node/10,000-edge network, isolated via `git stash` on just the
+four algorithm files (keeping the kernel/accessor wiring in place for a fair comparison): **28.2s
+sequential vs. 14.6s parallel for the full matrix kernel bundle, ~1.9x**. Correctness verified by
+diffing the full JSON dump (all 8 matrix categories, including the newly-covered `shortest_paths`)
+between the sequential and parallel runs - bit-identical.
+
+Also fixed, found during this same investigation but unrelated to parallelization:
+`Graph::prestigeDegree()` leaked one `QHash` per vertex (reused pointer variable overwritten each
+iteration without freeing the previous allocation), and `socnetv-cli`'s numeric CLI options
+(`-f`/`--format` and 13 others) used `QString::toInt()`/`toDouble()`, which silently return 0 on
+unparseable input instead of failing - `-f graphml` (instead of `-f 1`) silently became `-f 0` and
+the loader's file-extension auto-detection fallback masked the mistake entirely. Both fixed
+independently; see CHANGELOG for details.
+
 ## What Remains Open
 
-- **P4 implementation, remaining candidates**: the O(N²) matrix-fill loops after
-  `graphDistancesGeodesic()`, `centralityClosenessIR`/`prestigeDegree`/`prestigeProximity` - not
-  yet started. Decide which to act on next.
+- **P4 implementation, remaining candidates**: `centralityClosenessIR`/`prestigeDegree`/
+  `prestigeProximity` - not yet started. These need a different fix shape than anything done so
+  far: all three mutate shared class-frequency/min/max/sum bookkeeping (`resolveClasses()`,
+  `minmax()`, and hand-inlined min/max/sum) inline during the per-vertex loop rather than in a
+  deferred sequential pass, which would race under `blockingMap`. The fix is to compute only the
+  per-vertex value inside the parallel step (safe - each vertex only writes its own `GraphVertex`
+  fields) and move the class/min/max/sum bookkeeping to a sequential pass afterward, extending the
+  sequential tail loops these functions already have for variance/mean.
 
 While investigating P3's Cancel-button fix, tracing a distance-based analysis end to end also
 surfaced a reproducible crash in the `--interactive-script` command dispatcher (a script-ordering
@@ -190,6 +247,7 @@ race, independent of anything above) — found, fixed, and documented in
 
 ## Work Rules
 
-- No GitHub issue for any of this (unreleased 3.7-cycle behavior) — fix directly.
+- No GitHub issue for any of this (unreleased 3.8-cycle behavior, tracked in this roadmap doc
+  + CHANGELOG instead) — fix directly.
 - Once P4 lands (or is explicitly parked): add a changelog entry, update WS5's A5 section and
   WS7's status line to point here instead of duplicating content.

@@ -36,6 +36,17 @@ _Work in progress — more entries to come as the 3.8 cycle continues._
     sequential vs. 15.4s parallel, roughly 4.4x faster — the biggest measured win of WS15 P4's
     parallelization work so far, matching this candidate's cubic complexity.
 
+  - **Four matrix-fill operations parallelized** (WS15 P4): `graphMatrixShortestPathsCreate()`,
+    `graphMatrixDistanceGeodesicCreate()`, `createMatrixReachability()`, and
+    `createMatrixAdjacency()` now fill their respective matrices (SIGMA, DM, XRM, AM) via
+    `QtConcurrent::blockingMap`, using a new `compactedMatrixIndex()` helper to precompute each
+    vertex's row/column index instead of the old sequential-counter approach. Measured on a
+    1000-node/10,000-edge network: 28.2s sequential vs. 14.6s parallel for the full matrix
+    kernel, roughly 1.9x faster. Also closes a real testing gap found along the way:
+    `graphMatrixShortestPathsCreate()`'s SIGMA matrix had no golden/CLI coverage at all before
+    this (no accessor existed) — added `Graph::matrixShortestPaths()` and wired it into the
+    matrix kernel's golden coverage.
+
 ### Bug Fixes
 
   - **Similarity/Pearson reports no longer produce NaN on small networks** (#279):
@@ -75,6 +86,21 @@ _Work in progress — more entries to come as the 3.8 cycle continues._
     bounds for non-square input (fixed to match its own documented contract); and
     `distancesMatrix()`/`similarityMatrix()`/`pearsonCorrelationCoefficients()`'s assumption
     that the input is always square is now documented explicitly.
+
+  - **`prestigeDegree()` no longer leaks one `QHash` per vertex**: `inEdgesEnabledHash()`
+    heap-allocates a fresh `QHash` on every call, but the loop reassigned the same pointer
+    variable each iteration without freeing the previous one — only the last iteration's
+    allocation was ever freed. Found while auditing this function as a WS15 P4 parallelization
+    candidate; fixed independently of that work since it's a real bug regardless.
+
+  - **`socnetv-cli` no longer silently misparses invalid numeric flag values**: `-f`/`--format`
+    and every other integer/double-valued option (`--two-mode`, `--labels`, `--centralities`,
+    `--weights`, `--inverse-weights`, `--drop-isolates`, `--bench`, `--walks-length`,
+    `--conn-source`, `--conn-target`, `--katz-alpha`, `--bonacich-alpha`, `--bonacich-beta`) used
+    `QString::toInt()`/`toDouble()`, which silently return `0` on unparseable input instead of
+    failing — e.g. `-f graphml` (instead of `-f 1`) silently became `-f 0`, and the loader still
+    "worked" via its file-extension auto-detection fallback, completely masking the mistake.
+    All of these now reject invalid input with a clear error naming the flag and the bad value.
 
 ## [3.7] – Aug 2026
 
