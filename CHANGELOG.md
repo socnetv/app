@@ -47,6 +47,18 @@ _Work in progress — more entries to come as the 3.8 cycle continues._
     this (no accessor existed) — added `Graph::matrixShortestPaths()` and wired it into the
     matrix kernel's golden coverage.
 
+  - **`centralityClosenessIR()`, `prestigeDegree()`, and `prestigeProximity()` parallelized**
+    (WS15 P4 — final three candidates from the parallelization audit): each vertex's score now
+    computes concurrently via `QtConcurrent::blockingMap`; the class-frequency/sum/min/max
+    bookkeeping these three used to mutate inline (a real thread-safety hazard not present in
+    earlier WS15 P4 work) now runs in a deferred sequential pass afterward, reading back each
+    vertex's cached score — same split already used for `clusteringCoefficient()`.
+    `prestigeDegree()` also had its own inline symmetry-check race, fixed the same way as
+    `centralityDegree()`'s earlier fix. Measured on a 1000-node/10,000-edge network: IRCC+PP
+    combined 297ms sequential vs. 64ms parallel (~4.6x); `prestigeDegree()` itself showed no
+    measurable win at this scale (2ms vs. 9ms, both trivial), same conclusion as
+    `centralityDegree()`'s. All three verified bit-identical against sequential output.
+
 ### Bug Fixes
 
   - **Similarity/Pearson reports no longer produce NaN on small networks** (#279):

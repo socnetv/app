@@ -45,6 +45,7 @@ The `Graph` object is a façade and state coordinator — not a monolith. Algori
 | WS14 | Logging Cost & Release-Build Hygiene| ✔ complete (v3.7, #268)       | [`roadmap_ws14_logging_cost.md`](roadmaps/roadmap_ws14_logging_cost.md) |
 | WS16 | Report CSV Export                   | ✔ complete (v3.7, #113)       | [`roadmap_ws16_report_csv_export.md`](roadmaps/roadmap_ws16_report_csv_export.md) |
 | WS7  | MainWindow Decomposition (MW0)      | ✔ complete (v3.7, #257)       | [`roadmap_ws7_mainwindow_decomposition.md`](roadmaps/roadmap_ws7_mainwindow_decomposition.md) |
+| WS15 | App Responsiveness Contract         | ✔ complete (3.8-cycle)        | [`roadmap_ws15_cancellation_progress_unification.md`](roadmaps/roadmap_ws15_cancellation_progress_unification.md) |
 
 ---
 
@@ -118,32 +119,22 @@ to structural mutations and attribute edits.
 
 ---
 
-## WS15 — App Responsiveness Contract (Dispatch, Cancellation, Busy-Guard & Parallelization)
-
-Roadmap: [`docs/roadmaps/roadmap_ws15_cancellation_progress_unification.md`](roadmaps/roadmap_ws15_cancellation_progress_unification.md)
-
-App responsiveness contract — non-blocking dispatch, working cancellation, busy-guard coverage, and
-internal parallelization — checked independently per operation, so fixing one property can't be
-mistaken for having fixed all four.
-
 ---
 
 # Priorities
 
-1. **WS15** — app responsiveness contract. P1-P3 done and live-verified; P4's parallelization audit
-   done, implementation started.
-2. **WS6** — regression safety (ongoing support — continuously active underneath every other
+1. **WS6** — regression safety (ongoing support — continuously active underneath every other
    workstream, not "next in queue").
-3. **WS10** — GraphicsWidget canvas rendering & features. Phase 1 (#250), #260, and the
+2. **WS10** — GraphicsWidget canvas rendering & features. Phase 1 (#250), #260, and the
    rendering-perf regression kernel (WS6.6) all shipped; the rest of the Performance/Feature
    checklists remain scoped but not prioritised yet.
-4. **WS8** — IO layer stabilization. Roadmap scoped; zero code written yet.
-5. **WS11** — algorithm additions. Started: #7 and #272 shipped; rest of the backlog not
+3. **WS8** — IO layer stabilization. Roadmap scoped; zero code written yet.
+4. **WS11** — algorithm additions. Started: #7 and #272 shipped; rest of the backlog not
    prioritised yet.
-6. **WS12** — CLI scripting mode. Thirty-four commands shipped across several passes since
+5. **WS12** — CLI scripting mode. Thirty-four commands shipped across several passes since
    #261/#262; further commands added on demand, not prioritised as a standing backlog.
-7. **WS13** — undo/redo. Just created; not prioritised yet, no code written.
-8. **WS9** — graph exploration debt backlog. Core shipped; five open issues (#245, #229, #222,
+6. **WS13** — undo/redo. Just created; not prioritised yet, no code written.
+7. **WS9** — graph exploration debt backlog. Core shipped; five open issues (#245, #229, #222,
    #25, #57), none prioritised yet — #245 blocks on significant tab-UI infrastructure investment.
 
 ---

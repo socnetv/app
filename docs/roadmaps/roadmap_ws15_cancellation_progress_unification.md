@@ -25,12 +25,12 @@ not something to paper over.
 
 ## Status
 
-🚧 In progress. P1-P3 ✅ done — linear progress-dialog system retired, exactly one progress dialog
-now exists app-wide. P4's audit done; `centralityDegree()`, `isSymmetric()`,
-`clusteringCoefficient()`, `graphTriadCensus()`, and the four matrix-fill operations
-(`graphMatrixShortestPathsCreate`, `graphMatrixDistanceGeodesicCreate`, `createMatrixReachability`,
-`createMatrixAdjacency`) parallelized so far. Remaining: `centralityClosenessIR`/`prestigeDegree`/
-`prestigeProximity`. See What WS15 Delivered below.
+✅ Done. P1-P3 done — linear progress-dialog system retired, exactly one progress dialog now
+exists app-wide. P4's audit done and every candidate it named has been parallelized:
+`centralityDegree()`, `isSymmetric()`, `clusteringCoefficient()`, `graphTriadCensus()`, the four
+matrix-fill operations (`graphMatrixShortestPathsCreate`, `graphMatrixDistanceGeodesicCreate`,
+`createMatrixReachability`, `createMatrixAdjacency`), and the final three
+(`centralityClosenessIR`, `prestigeDegree`, `prestigeProximity`). See What WS15 Delivered below.
 
 ## What WS15 Delivered
 
@@ -71,7 +71,7 @@ before emitting `canceled()` (`setAutoClose`/`setAutoReset` don't gate that path
 `canceled()` connection re-shows it, relabels it "Canceling...", and disables it until the
 operation's own completion continuation tears it down for real.
 
-### P4 — Parallelization audit ✅ Audit done, five implementations landed (eight functions), rest open
+### P4 — Parallelization audit ✅ Audit done, all named candidates parallelized (11 functions)
 
 Audited every long-running operation in `src/graph/`'s algorithm slices against all four contract
 properties, judging property 4 by real algorithm structure (independent per-source/per-node work
@@ -229,16 +229,43 @@ unparseable input instead of failing - `-f graphml` (instead of `-f 1`) silently
 the loader's file-extension auto-detection fallback masked the mistake entirely. Both fixed
 independently; see CHANGELOG for details.
 
+### P4 — Sixth implementation: `centralityClosenessIR()`, `prestigeDegree()`, `prestigeProximity()` parallelized
+
+The final three candidates from the audit, done together since they share one fix shape not seen
+in any earlier WS15 P4 work: all three used to mutate shared class-frequency/sum/min/max
+bookkeeping (`resolveClasses()`, `minmax()`, and hand-inlined min/max/sum) *inline* during the
+per-vertex loop, rather than in a deferred sequential pass - a real thread-safety hazard, since
+`resolveClasses()` mutates a shared `QHash` and the sum/min/max writes are plain
+compare-and-assign, both unsafe under concurrent access. Fixed by computing only the per-vertex
+value inside each `blockingMap` step (safe - each vertex only ever reads the APSP cache and
+writes its own `GraphVertex` fields) and moving the shared bookkeeping to a sequential pass
+afterward that reads back each vertex's now-cached score - same split as `clusteringCoefficient()`.
+Isolated/disabled vertices are skipped in both the parallel step and the sequential pass, matching
+each function's pre-existing "leave the stale value untouched" behavior exactly.
+
+`prestigeDegree()` additionally had its own inline `m_graphIsSymmetric = false` write - the same
+hazard `centralityDegree()` hit and fixed earlier, fixed here the same way (`QAtomicInteger<bool>`
+OR-reduce).
+
+Measured (not assumed) on a 1000-node/10,000-edge network: `centralityClosenessIR()` +
+`prestigeProximity()` combined (isolated together since both depend on the same warmed APSP
+cache) - **297ms sequential vs. 64ms parallel, ~4.6x**. `prestigeDegree()` alone showed no
+measurable win at this scale (2ms parallel vs. 9ms sequential, both too cheap to register
+meaningfully) - the same conclusion as `centralityDegree()`'s, consistent with both being a flat
+O(N) or O(N × degree) per-vertex scan rather than genuine O(N²)/O(N³) work. All three verified
+correct: the fields each function actually writes (`IRCC`/`SIRCC`, `PP`/`SPP`, `DP`/`SDP`) were
+bit-identical between sequential and parallel runs; unrelated fields elsewhere in the same JSON
+dump (`BC`, `PRP`, `PC`, `SPC`) showed pre-existing last-ULP floating-point differences confirmed
+present even between two runs of the unmodified sequential code, not a regression from this work.
+
+This completes every candidate named in the original P4 audit.
+
 ## What Remains Open
 
-- **P4 implementation, remaining candidates**: `centralityClosenessIR`/`prestigeDegree`/
-  `prestigeProximity` - not yet started. These need a different fix shape than anything done so
-  far: all three mutate shared class-frequency/min/max/sum bookkeeping (`resolveClasses()`,
-  `minmax()`, and hand-inlined min/max/sum) inline during the per-vertex loop rather than in a
-  deferred sequential pass, which would race under `blockingMap`. The fix is to compute only the
-  per-vertex value inside the parallel step (safe - each vertex only writes its own `GraphVertex`
-  fields) and move the class/min/max/sum bookkeeping to a sequential pass afterward, extending the
-  sequential tail loops these functions already have for variance/mean.
+Nothing from the original P4 audit - all named candidates are parallelized. Future work would
+require a new audit pass (e.g. `createMatrixSimilarityMatching`/`Matrix::distancesMatrix()`/
+`pearsonCorrelationCoefficients()`, noted in the audit as needing a `cancelCheck`-style `Matrix`
+API change first) rather than continuing this list.
 
 While investigating P3's Cancel-button fix, tracing a distance-based analysis end to end also
 surfaced a reproducible crash in the `--interactive-script` command dispatcher (a script-ordering
