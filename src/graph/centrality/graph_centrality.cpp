@@ -713,6 +713,15 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
  * IRCC(i) = [ |J_i| / (N-1) ] / [ (sum of d(i,j) for j in J_i) / |J_i| ] - the fraction of
  * the network i can reach, divided by the average distance to that reachable set.
  *
+ * Parallelization (WS15 P4): the per-vertex IRCC computation maps via
+ * QtConcurrent::blockingMap - each worker thread only reads the already-computed APSP cache
+ * (apspDistance(), warmed sequentially by graphDistancesGeodesic() above before the parallel
+ * step starts) and writes its own vertex's IRCC/SIRCC, independent of every other vertex.
+ * sumIRCC, resolveClasses(), and minmax() used to run inline in the same loop - all three
+ * mutate shared state that would race across worker threads - so they're now a separate
+ * sequential pass right after blockingMap, reading back each vertex's now-cached IRCC(), same
+ * split as clusteringCoefficient()'s.
+ *
  * @param considerWeights
  * @param inverseWeights
  * @param dropIsolates
@@ -736,12 +745,8 @@ void Graph::centralityClosenessIR(const bool considerWeights,
         return;
     }
     // calculate centralities
-    VList::const_iterator it, jt;
+    VList::const_iterator it;
     qreal IRCC = 0, SIRCC = 0;
-    qreal Ji = 0;
-    qreal dist = 0;
-    qreal sumD = 0;
-    qreal averageD = 0;
     qreal N = vertices(dropIsolates, false, true);
     classesIRCC = 0;
     discreteIRCCs.clear();
@@ -758,24 +763,18 @@ void Graph::centralityClosenessIR(const bool considerWeights,
     qCDebug(lcCentrality) << "dropIsolates" << dropIsolates;
     qCDebug(lcCentrality) << "computing scores for actors: " << N;
 
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-
-        if (progressCanceled())
-        {
+    QtConcurrent::blockingMap(m_graph, [&](GraphVertex *v) {
+        if (v->isIsolated())
             return;
-        }
-        IRCC = 0;
-        sumD = 0;
-        Ji = 0;
-        if ((*it)->isIsolated())
-        {
-            continue;
-        }
-        for (jt = m_graph.cbegin(); jt != m_graph.cend(); ++jt)
+
+        qreal IRCC = 0;
+        qreal sumD = 0;
+        qreal Ji = 0;
+
+        for (auto jt = m_graph.cbegin(); jt != m_graph.cend(); ++jt)
         {
 
-            if ((*it)->number() == (*jt)->number())
+            if (v->number() == (*jt)->number())
             {
                 continue;
             }
@@ -784,34 +783,44 @@ void Graph::centralityClosenessIR(const bool considerWeights,
                 continue;
             }
 
-            dist = apspDistance((*it)->number(), (*jt)->number());
+            const qreal dist = apspDistance(v->number(), (*jt)->number());
 
             if (dist != RAND_MAX)
             {
                 sumD += dist;
                 Ji++; // compute |Ji|
             }
-            qCDebug(lcCentrality) << "dist(" << (*it)->number()
+            qCDebug(lcCentrality) << "dist(" << v->number()
                      << "," << (*jt)->number() << ") =" << dist << "sumD" << sumD << " Ji" << Ji;
         }
 
-        qCDebug(lcCentrality) << "" << (*it)->number()
+        qCDebug(lcCentrality) << "" << v->number()
                  << " sumD" << sumD
-                 << "distanceSum" << (*it)->distanceSum();
+                 << "distanceSum" << v->distanceSum();
 
         // sanity check for sumD=0 (=> node is disconnected)
         if (sumD != 0)
         {
-            averageD = sumD / Ji;
+            const qreal averageD = sumD / Ji;
             qCDebug(lcCentrality) << "averageD = sumD /  Ji" << averageD;
             qCDebug(lcCentrality) << "Ji / (N-1)" << Ji << "/" << N - 1;
             IRCC = (Ji / (qreal)(N - 1)) / averageD;
             qCDebug(lcCentrality) << "[ Ji / (N-1) ] / [ sumD / Ji]" << IRCC;
         }
 
+        v->setIRCC(IRCC);
+        v->setSIRCC(IRCC); // IRCC is a ratio, already std
+    });
+
+    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    {
+        if ((*it)->isIsolated())
+        {
+            continue;
+        }
+
+        IRCC = (*it)->IRCC();
         sumIRCC += IRCC;
-        (*it)->setIRCC(IRCC);
-        (*it)->setSIRCC(IRCC); // IRCC is a ratio, already std
         resolveClasses(IRCC, discreteIRCCs, classesIRCC);
         minmax(IRCC, (*it), maxIRCC, minIRCC, maxNodeIRCC, minNodeIRCC);
     }

@@ -14,7 +14,9 @@
  */
 
 #include "graph.h"
+#include <QAtomicInteger>
 #include <QDebug>
+#include <QtConcurrent/QtConcurrent>
 
 /**
  * @brief Computes the Degree Prestige (in-degree) of each vertex - diagonal included
@@ -39,6 +41,15 @@
  * Math: DP(i) = number of inbound edges to i (or their summed weights, if weights are
  * considered). Standardized SDP(i) = DP(i) / (N-1).
  *
+ * Parallelization (WS15 P4): the per-vertex DP computation maps via
+ * QtConcurrent::blockingMap - each worker thread only reads edges (via inEdgesEnabledHash()/
+ * edgeExists(), both thread-safe per WS15 P4's earlier fixes) and writes its own vertex's DP
+ * (setDP()), independent of every other vertex. The inline `m_graphIsSymmetric = false` write
+ * used to race the same way centralityDegree()'s did before its own WS15 P4 fix - replaced
+ * with the same QAtomicInteger<bool> OR-reduce. sumDP (needed before any SDP can be computed,
+ * since the weighted case divides by it) is now reduced in its own small sequential pass
+ * right after blockingMap, before the existing classes/min/max/mean pass below runs.
+ *
  * @param weights
  * @param dropIsolates
  */
@@ -54,14 +65,10 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
     qCDebug(lcCentrality) << "(Re)Computing Degree Prestige scores...";
 
     int N = vertices(dropIsolates);
-    int v2 = 0, v1 = 0;
 
     VList::const_iterator it;
 
-    QHash<int, qreal>::const_iterator hit;
-
     qreal DP = 0, SDP = 0, nom = 0, denom = 0;
-    qreal weight;
 
     classesSDP = 0;
     sumSDP = 0;
@@ -71,47 +78,52 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
     discreteDPs.clear();
     varianceSDP = 0;
     meanSDP = 0;
-    m_graphIsSymmetric = true;
 
     QString pMsg = tr("Computing Degree Prestige (in-Degree). \n Please wait ...");
     progressStatus(pMsg);
+
+    if (progressCanceled())
+    {
+        return;
+    }
 
     qCDebug(lcCentrality) << "vertices"
              << N
              << "graph modified. Recomputing...";
 
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
+    // QAtomicInteger<bool>: a bool that's safe for multiple worker threads (below) to write
+    // to at the same time - a plain bool would be a data race here.
+    QAtomicInteger<bool> asymmetric{m_graphIsSymmetric ? false : true};
 
-        if (progressCanceled())
-        {
-            return;
-        }
-        v1 = (*it)->number();
+    QtConcurrent::blockingMap(m_graph, [&](GraphVertex *v) {
+        const int v1 = v->number();
         qCDebug(lcCentrality) << "computing DP for vertex" << v1;
 
-        DP = 0;
+        qreal DP = 0;
 
-        if (!(*it)->isEnabled())
+        if (!v->isEnabled())
         {
+            // Matches the pre-parallelization behavior: a disabled vertex's DP is left
+            // untouched (not reset to 0), same as the original sequential loop's continue
+            // before setDP() was ever reached.
             qCDebug(lcCentrality) << "vertex disabled. Continue.";
-            continue;
+            return;
         }
 
         qCDebug(lcCentrality) << "Iterate over inbound edges of "
                  << v1;
 
-        // Local, freed at the end of this iteration - inEdgesEnabledHash() heap-allocates
-        // a fresh QHash on every call, so reusing one variable across iterations without
+        // Local, freed at the end of this call - inEdgesEnabledHash() heap-allocates a
+        // fresh QHash on every call, so reusing one variable across iterations without
         // freeing the previous result (as this used to do) leaks one QHash per vertex.
-        QHash<int, qreal> *enabledInEdges = (*it)->inEdgesEnabledHash();
+        QHash<int, qreal> *enabledInEdges = v->inEdgesEnabledHash();
 
-        hit = enabledInEdges->cbegin();
+        QHash<int, qreal>::const_iterator hit = enabledInEdges->cbegin();
 
         while (hit != enabledInEdges->cend())
         {
 
-            v2 = hit.key();
+            const int v2 = hit.key();
 
             qCDebug(lcCentrality) << "inbound edge from" << v2;
 
@@ -124,7 +136,7 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
                 continue;
             }
 
-            weight = hit.value();
+            const qreal weight = hit.value();
 
             if (considerWeights)
             {
@@ -136,18 +148,28 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
             }
             if (edgeExists(v1, v2) != weight)
             {
-                m_graphIsSymmetric = false;
+                // storeRelease(): safely write true from this worker thread.
+                asymmetric.storeRelease(true);
             }
             ++hit;
         }
 
         delete enabledInEdges;
 
-        (*it)->setDP(DP); // Set DP
-        sumDP += DP;
+        v->setDP(DP);
 
-        qCDebug(lcCentrality) << "vertex " << (*it)->number()
-                 << " DP " << DP;
+        qCDebug(lcCentrality) << "vertex " << v1 << " DP " << DP;
+    });
+
+    // loadAcquire(): safely read the final value now that all worker threads are done
+    // (blockingMap only returns once every one of them has finished).
+    m_graphIsSymmetric = !asymmetric.loadAcquire();
+
+    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    {
+        if (!(*it)->isEnabled())
+            continue;
+        sumDP += (*it)->DP();
     }
 
     // Calculate std DP, min,max, mean
@@ -246,6 +268,15 @@ void Graph::prestigeDegree(const bool &considerWeights, const bool &dropIsolates
  * Math: for actor i, let I_i be the set of actors that can reach i (its influence domain).
  * PP(i) = [ |I_i| / (V-1) ] / [ (sum of d(j,i) for j in I_i) / |I_i| ] - the fraction of the
  * network that can reach i, divided by their average distance to i.
+ *
+ * Parallelization (WS15 P4): the per-vertex PP computation maps via
+ * QtConcurrent::blockingMap - each worker thread only reads the already-computed APSP cache
+ * (apspDistance(), warmed sequentially by graphDistancesGeodesic() above before the parallel
+ * step starts) and writes its own vertex's PP/SPP, independent of every other vertex. sumPP,
+ * resolveClasses(), and min/max tracking used to run inline in the same loop - all three
+ * mutate shared state (a plain sum, a shared QHash, plain compare-and-assign) that would race
+ * across worker threads - so they're now a separate sequential pass right after blockingMap,
+ * reading back each vertex's now-cached PP(), same split as clusteringCoefficient()'s.
  */
 void Graph::prestigeProximity(const bool considerWeights,
                               const bool inverseWeights,
@@ -265,10 +296,8 @@ void Graph::prestigeProximity(const bool considerWeights,
         return;
     }
     // calculate centralities
-    VList::const_iterator it, jt;
+    VList::const_iterator it;
     qreal PP = 0;
-    qreal dist = 0;
-    qreal Ii = 0;
     qreal V = vertices(dropIsolates);
     classesPP = 0;
     discretePPs.clear();
@@ -281,25 +310,17 @@ void Graph::prestigeProximity(const bool considerWeights,
     QString pMsg = tr("Computing Proximity Prestige scores. \nPlease wait ...");
     progressStatus(pMsg);
 
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-
-        if (progressCanceled())
-        {
+    QtConcurrent::blockingMap(m_graph, [&](GraphVertex *v) {
+        if (v->isIsolated())
             return;
-        }
-        PP = 0;
-        Ii = 0;
 
-        if ((*it)->isIsolated())
-        {
-            continue;
-        }
+        qreal PP = 0;
+        qreal Ii = 0;
 
-        for (jt = m_graph.cbegin(); jt != m_graph.cend(); ++jt)
+        for (auto jt = m_graph.cbegin(); jt != m_graph.cend(); ++jt)
         {
 
-            if ((*it)->number() == (*jt)->number())
+            if (v->number() == (*jt)->number())
             {
                 continue;
             }
@@ -308,7 +329,7 @@ void Graph::prestigeProximity(const bool considerWeights,
                 continue;
             }
 
-            dist = apspDistance((*jt)->number(), (*it)->number());
+            const qreal dist = apspDistance((*jt)->number(), v->number());
 
             if (dist != RAND_MAX)
             {
@@ -318,7 +339,7 @@ void Graph::prestigeProximity(const bool considerWeights,
         }
 
         qCDebug(lcCentrality) << "vertex"
-                 << (*it)->number()
+                 << v->number()
                  << "actors in influence domain Ii" << Ii
                  << "actors in network" << (V - 1)
                  << "fraction of actors who reach i |Ii|/(V-1)=" << Ii / (V - 1)
@@ -333,10 +354,20 @@ void Graph::prestigeProximity(const bool considerWeights,
             PP /= Ii;
             PP = (Ii / (V - 1)) / PP;
         }
-        sumPP += PP;
 
-        (*it)->setPP(PP);
-        (*it)->setSPP(PP); // PP is already stdized
+        v->setPP(PP);
+        v->setSPP(PP); // PP is already stdized
+    });
+
+    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    {
+        if ((*it)->isIsolated())
+        {
+            continue;
+        }
+
+        PP = (*it)->PP();
+        sumPP += PP;
 
         resolveClasses(PP, discretePPs, classesPP);
 
