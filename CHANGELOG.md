@@ -59,6 +59,18 @@ _Work in progress — more entries to come as the 3.8 cycle continues._
     measurable win at this scale (2ms vs. 9ms, both trivial), same conclusion as
     `centralityDegree()`'s. All three verified bit-identical against sequential output.
 
+  - **`graphConnectivity()` (Graph Connectivity, κ(G)) now uses Esfahanian-Hakimi (1984)
+    instead of a full O(N²) pairwise sweep** (#281): fixes a min-degree vertex `v`, tests `v`
+    against every other non-adjacent vertex, then tests every non-adjacent pair among `v`'s own
+    neighbors against each other — provably exact (Menger's theorem plus a pigeonhole argument),
+    O(n + δ²) max-flow calls instead of O(n²). A synthetic N=2000/E=8000 small-world network that
+    previously hung 30+ minutes uncancellable (#278, fixed earlier this cycle) now completes in
+    ~9 seconds. The previous full-sweep algorithm is kept as `graphConnectivityNaive()` for
+    correctness cross-checking (not used by any production path); a new `--verify-naive` CLI flag
+    on `--kernel vertex_connectivity --conn-mode global` runs both and reports any mismatch.
+    Verified identical results on every golden fixture plus 5 hand-picked networks with
+    analytically-known κ(G).
+
 ### Bug Fixes
 
   - **Similarity/Pearson reports no longer produce NaN on small networks** (#279):

@@ -40,12 +40,36 @@ directory each would live in.
 Three follow-on visualizations surfaced by this work are noted below under What Remains Open
 (Cohesion), not yet filed or scoped.
 
-- **#278 — `graphConnectivity()` hangs on moderate sparse networks, ignores Cancel.** Runs a
-  max-flow call for every non-adjacent vertex pair (up to ~N²/2 on a sparse graph) with zero
-  `progressCanceled()` checks anywhere in the file. Confirmed live: N=2000/E=8000 small-world,
-  Ryzen 9 5900X (12-core), 30+ minutes unfinished, Cancel unresponsive. Worth pruning (fewer
-  pairs need a full max-flow call) and/or parallelizing (each pair's flow computation is
-  independent/read-only) — see also WS15's cancellation-gaps list.
+- **#278 — `graphConnectivity()` hung on moderate sparse networks, ignored Cancel. Fixed.**
+  Confirmed live before the fix: N=2000/E=8000 small-world, Ryzen 9 5900X (12-core), 30+ minutes
+  unfinished, Cancel unresponsive - zero `progressCanceled()` checks anywhere in the file (see
+  also WS15's cancellation-gaps list). Fixed by enumerating non-adjacent pairs up front and
+  processing them in fixed-size batches via `QtConcurrent::blockingMap`, checking
+  `progressCanceled()` between batches - Cancel now responds within roughly one batch's
+  duration instead of never. `Graph::graphConnectivity()`'s return type changed from a plain
+  `int` to `GraphConnectivityResult { status, value }` to distinguish a canceled run (partial,
+  upper-bound result) from a completed one. Did not reduce the underlying O(N²) pair count on
+  its own - see #281 below for that.
+
+- **#281 — `graphConnectivity()` O(N²) pairwise sweep replaced with Esfahanian-Hakimi (1984).**
+  #278 fixed cancellability but not the pair count itself - a full run could still take many
+  minutes on a large sparse network. Replaced the naive full-pairwise algorithm (kept as
+  `Graph::graphConnectivityNaive()`, a comparative/correctness cross-check, not used by any
+  production path) with Esfahanian, A.-H. and Hakimi, S.L. (1984)'s algorithm: fix a
+  minimum-degree vertex `v`, test `v` against every other non-adjacent vertex (`k1`), test every
+  non-adjacent pair among `v`'s own neighbors against each other (`k2`), answer = `min(k1,k2)` -
+  proven exact (not an approximation) by Menger's theorem plus a pigeonhole argument on cut size
+  vs. `v`'s degree. O(n + δ²) max-flow calls instead of O(n²), where δ = minimum degree. A
+  refinement built on Even & Tarjan (1975)'s max-flow formulation of local vertex connectivity
+  (already used via Menger's theorem elsewhere in this file) - both cited in
+  `website/.../manual/references.mdx`. Correctness verified: identical results to
+  `graphConnectivityNaive()` on all golden fixtures plus 5 hand-picked networks with
+  analytically-known κ(G) (a cycle, a tree, disconnected components, a directed strongly-connected
+  cycle, complete bipartite K₃,₃ - the last one specifically exercises the `k2` step, since `v`'s
+  neighbors sit entirely on the graph's other partition). A new `--verify-naive` CLI flag on
+  `--kernel vertex_connectivity --conn-mode global` runs both algorithms and reports any mismatch,
+  kept as a standing tool for future verification. Measured: a synthetic N=2000/E=8000
+  small-world network that previously hung 30+ minutes now completes in ~9 seconds.
 
 - **#10 — Katz Centrality.** New **Analyze → Centrality → Katz Centrality (KC)**, with full parity
   to the app's other 12 prominence indices: HTML/CSV report, all 4 Layout → By Prominence Index
