@@ -119,6 +119,16 @@ to structural mutations and attribute edits.
 
 ---
 
+## WS17 — Bipartite / Two-Mode Network Analysis
+
+Roadmap: [`docs/roadmaps/roadmap_ws17_bipartite_analysis.md`](roadmaps/roadmap_ws17_bipartite_analysis.md)
+
+Persistent bipartite/partition model, two-mode GraphML/Pajek round-trip and `.2sm` export,
+two-mode layouts, bipartite generators, Robins-Alexander clustering, bipartite matching
+(Hopcroft-Karp). No external dependencies — hand-rolled, consistent with the rest of the codebase.
+
+---
+
 ---
 
 # Priorities
@@ -136,6 +146,7 @@ to structural mutations and attribute edits.
 6. **WS13** — undo/redo. Just created; not prioritised yet, no code written.
 7. **WS9** — graph exploration debt backlog. Core shipped; five open issues (#245, #229, #222,
    #25, #57), none prioritised yet — #245 blocks on significant tab-UI infrastructure investment.
+8. **WS17** — bipartite/two-mode analysis. Just scoped; no code written yet.
 
 ---
 
