@@ -109,6 +109,12 @@ int main(int argc, char *argv[])
                                      "Target node number for --kernel vertex_connectivity --conn-mode local.",
                                      "int", "-1");
 
+    QCommandLineOption verifyNaiveOpt(QStringList() << "verify-naive",
+                                      "For --kernel vertex_connectivity --conn-mode global: also runs "
+                                      "graphConnectivityNaive() (the full O(n^2) pairwise sweep) and "
+                                      "reports a mismatch against graphConnectivity() (Esfahanian-Hakimi, "
+                                      "#281) if the two disagree.");
+
     QCommandLineOption katzAlphaOpt(QStringList() << "katz-alpha",
                                     "Attenuation factor alpha for --kernel prominence's Katz Centrality "
                                     "(must satisfy |alpha| < 1/lambda_max or the report will be all-zero). "
@@ -157,6 +163,7 @@ int main(int argc, char *argv[])
     cli.addOption(connModeOpt);
     cli.addOption(connSourceOpt);
     cli.addOption(connTargetOpt);
+    cli.addOption(verifyNaiveOpt);
     cli.addOption(katzAlphaOpt);
     cli.addOption(bonacichAlphaOpt);
     cli.addOption(bonacichBetaOpt);
@@ -208,6 +215,7 @@ int main(int argc, char *argv[])
     argsOk &= parseIntArg(cli, walksLenOpt, walksLength);
     argsOk &= parseIntArg(cli, connSourceOpt, cfg.connSource);
     argsOk &= parseIntArg(cli, connTargetOpt, cfg.connTarget);
+    cfg.verifyNaive = cli.isSet(verifyNaiveOpt);
     argsOk &= parseDoubleArg(cli, katzAlphaOpt, cfg.katzAlpha);
     argsOk &= parseDoubleArg(cli, bonacichAlphaOpt, cfg.bonacichAlpha);
     argsOk &= parseDoubleArg(cli, bonacichBetaOpt, cfg.bonacichBeta);

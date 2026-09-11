@@ -865,7 +865,21 @@ public:
 
     NodeConnectivityResult graphNodeConnectivity(int source, int target, bool respectDirection);
 
-    int graphConnectivity(bool respectDirection);
+    enum class GraphConnectivityStatus
+    {
+        Ok,       // value holds kappa(G), the true minimum over every pair actually tested
+        Canceled  // value holds the best (lowest) local connectivity found among pairs tested
+                  // before cancellation - a valid upper bound on kappa(G), not necessarily exact
+    };
+
+    struct GraphConnectivityResult
+    {
+        GraphConnectivityStatus status = GraphConnectivityStatus::Ok;
+        int value = 0;
+    };
+
+    GraphConnectivityResult graphConnectivity(bool respectDirection);
+    GraphConnectivityResult graphConnectivityNaive(bool respectDirection);
 
     // WS6.7: read-only-by-convention accessors for kernel_matrix_v8's golden coverage.
     // Non-const because Matrix::item()/rows()/cols() are themselves non-const throughout.

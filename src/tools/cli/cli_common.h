@@ -36,6 +36,13 @@ namespace cli
         int connSource = -1;         // required for connMode == "local"
         int connTarget = -1;         // required for connMode == "local"
 
+        // #281: cross-checks Graph::graphConnectivity() (Esfahanian-Hakimi, O(n+delta^2))
+        // against Graph::graphConnectivityNaive() (full O(n^2) pairwise sweep, kept as a
+        // trustworthy ground truth) for --kernel vertex_connectivity --conn-mode global. Only
+        // meaningful for global mode - graphNodeConnectivity() (local mode) has no naive/fast
+        // pair to compare, it's the same single max-flow call either way.
+        bool verifyNaive = false;
+
         qreal katzAlpha = -1; // >= 0 enables Katz Centrality for --kernel prominence
 
         qreal bonacichAlpha = -1; // >= 0 enables Bonacich Power Centrality for --kernel prominence

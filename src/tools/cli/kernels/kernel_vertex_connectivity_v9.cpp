@@ -159,8 +159,34 @@ int runKernelVertexConnectivityV9(const CliConfig &cfg,
         if (localResult.status == Graph::NodeConnectivityStatus::Ok)
             printKV("VALUE", localResult.value);
     } else {
-        globalValue = g.graphConnectivity(respectDirection);
+        // Headless runs never set progressCanceled() (there's no interactive Cancel button),
+        // so Canceled is unreachable here in practice - checked anyway since the API allows it.
+        const Graph::GraphConnectivityResult result = g.graphConnectivity(respectDirection);
+        if (result.status == Graph::GraphConnectivityStatus::Canceled) {
+            QTextStream(stderr) << "ERROR: graphConnectivity() was canceled unexpectedly\n";
+            return 2;
+        }
+        globalValue = result.value;
         printKV("VALUE", globalValue);
+
+        // #281: cross-check the fast Esfahanian-Hakimi algorithm above against the naive full
+        // O(n^2) pairwise sweep, which is trivially correct by construction (test literally
+        // everything) and therefore a trustworthy ground truth for catching a subtle bug in the
+        // faster algorithm's reduced pair selection.
+        if (cfg.verifyNaive) {
+            const Graph::GraphConnectivityResult naiveResult = g.graphConnectivityNaive(respectDirection);
+            if (naiveResult.status == Graph::GraphConnectivityStatus::Canceled) {
+                QTextStream(stderr) << "ERROR: graphConnectivityNaive() was canceled unexpectedly\n";
+                return 2;
+            }
+            printKV("VERIFY_NAIVE_VALUE", naiveResult.value);
+            if (naiveResult.value != globalValue) {
+                QTextStream(stderr) << "MISMATCH: graphConnectivity()=" << globalValue
+                                     << " graphConnectivityNaive()=" << naiveResult.value << "\n";
+                return 1;
+            }
+            printKV("VERIFY_NAIVE_MATCH", 1);
+        }
     }
     printKV("TYPE", typeLabel);
 
