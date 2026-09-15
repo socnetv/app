@@ -46,6 +46,38 @@ bool Graph::graphTriadCensus()
      * QList::triadTypeFreqs stores triad type frequencies with the following order:
      * 0	1	2	3		4	5	6	7	8		9	10	11	12		13	14	15
      * 003 012 102	021D 021U 021C 111D	111U 030T 030C 201 	120D 120U 120C 210 300
+     *
+     * What each of the 16 MAN-labeled types means (Davis, Leinhardt & Holland's scheme - see
+     * the manual's Triad Census section for the sociological "why", this is just the structural
+     * "what"). M/A/N = count of Mutual/Asymmetric/Null dyads among the triad's 3 pairs; a 4th
+     * letter (D/U/C/T) disambiguates types that share the same M-A-N counts but differ in shape:
+     *
+     *   003  no ties at all.
+     *   012  one one-way tie, third actor isolated: a->b, c alone.
+     *   102  one reciprocated tie, third actor isolated: a<->b, c alone.
+     *   021D "Down"/divergent: one actor sends to both others: a<-b->c (b is the source).
+     *   021U "Up"/convergent: one actor receives from both others: a->b<-c (b is the sink).
+     *   021C "Chain": an open 2-step path, not closed: a->b->c.
+     *   111D one reciprocated pair plus one more one-way tie pointing INTO one member of that
+     *        pair from the third (otherwise-isolated) actor: b->c, a<->c - one actor (c) ends up
+     *        receiving ties from both a reciprocal partner and a one-way sender.
+     *   111U mirror of 111D: the one-way tie points OUT of a member of the mutual pair toward
+     *        the third actor instead of into it: b<-c, a<->c.
+     *   030T "Transitive": the classic hierarchy triad: a->b, b->c, a->c (if a beats b and b
+     *        beats c, a also beats c - no cycle).
+     *   030C "Cyclic": a closed 3-cycle, no transitivity: a->b->c->a.
+     *   201  two reciprocated ties sharing one actor, third pair null: a<->b, a<->c, b/c not tied.
+     *   120D "Down" version of 201 plus one more asymmetric tie added in the divergent direction
+     *        (mirrors 021D's shape with one dyad upgraded to mutual).
+     *   120U "Up" version, mirrors 021U's convergent shape with one dyad upgraded to mutual.
+     *   120C "Cyclic" version, mirrors 021C/030C's chain/cycle shape with one dyad upgraded to
+     *        mutual.
+     *   210  two reciprocated ties plus one more one-way tie (only one pair left non-mutual).
+     *   300  fully reciprocated triangle: a<->b, b<->c, a<->c.
+     *
+     * The D/U/C/T letters recur across rows (021/111/120/030) because the same structural
+     * distinction - which direction the "extra" asymmetric tie(s) point relative to a hub actor,
+     * or whether they form a closed cycle vs. a transitive chain - applies at each M-A-N level.
      */
     triadTypeFreqs.clear();
     for (int i = 0; i <= 15; ++i)
@@ -148,6 +180,7 @@ bool Graph::graphTriadCensus()
 /**
     Examines the triad type (in Mutual-Asymmetric-Null label format)
     and increases by one the proper frequency element inside triadTypeCounts.
+    See graphTriadCensus()'s own doc comment for what each of the 16 MAN-labeled types means.
  *
  * Thread-safety (WS15 P4): increments triadTypeCounts (QAtomicInteger<int>, one per triad
  * type) instead of writing Graph::triadTypeFreqs directly, since this is called from
@@ -290,7 +323,7 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
 
                         if (isInLinked)
                         {
-                            triadTypeCounts[6].fetchAndAddOrdered(1); //"030T"
+                            triadTypeCounts[6].fetchAndAddOrdered(1); //"111D"
                             isUp = true;
                             break;
                         }
