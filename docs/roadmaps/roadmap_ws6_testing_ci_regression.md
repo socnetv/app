@@ -46,9 +46,14 @@ Key properties:
 - IO roundtrip baselines are committed in-repo under `src/tools/baselines/io_roundtrip/`.
 
 Perf baselines (`scripts/perf_baselines/<platform>/perf_expected.env`) are re-recorded from a clean
-`v3.6` tag checkout, not arbitrary `develop` HEAD — a stale pre-M1-speedup baseline once made every
+tagged release, not arbitrary `develop` HEAD — a stale pre-M1-speedup baseline once made every
 benchmark misleadingly report "30-70% faster than baseline" regardless of what was actually being
-tested. All three platform sets (macOS arm64/M5, Linux x86_64) are current as of this writing.
+tested (same failure mode recurred with WS15 P4's parallelization work, discovered when
+`develop`'s benchmarks kept reporting large "faster than baseline" numbers against baselines that
+predated all of WS15 P4). Current baseline provenance: macOS `arm64`/`m5` (compute + render, all
+four `.env` files) re-recorded from `v3.7` (2026-09-15); Linux `x86_64` (compute only, no render
+baseline exists for that platform) recorded from `v3.7` at the time of its own commit (2026-08-27),
+still current.
 
 ### WS6.6 — Canvas rendering performance kernel (#240) ✅ Done (v3.7)
 
