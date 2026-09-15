@@ -859,7 +859,7 @@ bool Graph::vertexFindByLabel(const QStringList &labelList)
     if (!foundList.isEmpty())
     {
         searchResult = true;
-        qCDebug(lcStorage) << "One or more matchin nodes found. Signaling to GW to highlight them...";
+        qCDebug(lcStorage) << "One or more matching nodes found. Signaling to GW to highlight them...";
         progressStatus(tr("Found %1 matching nodes.").arg(foundList.size()));
         emit signalNodesFound(foundList);
     }
