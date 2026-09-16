@@ -163,19 +163,12 @@ Three follow-on visualizations surfaced by this work are noted below under What 
 
 ### Signed Networks — cross-cutting (`src/engine/`, `src/graph/centrality/`)
 
-- **#277 — Negative edge weights silently corrupt distance-based centralities.**
-  `DistanceEngine::dijkstraSSSP()` is genuine Dijkstra - mathematically undefined for negative
-  weights, no guard anywhere. Failure mode is silent finite-but-wrong distances (Dijkstra's
-  "popped = finalized" invariant breaks), not a crash - corrupts every distance-derived measure
-  (CC, BC, SC, EC, IRCC, PC). Negative weights are already legitimate, intentional input in this
-  app (Settings has a dedicated negative-edge display color) - signed network analysis is a real,
-  named SNA subfield (structural balance theory; Everett & Borgatti 2014's PN centrality; Bonacich
-  & Lloyd 2004 extends Bonacich Power Centrality, already implemented here, to negative ties), not
-  something to disallow. Immediate scope is a guard on the Dijkstra-derived measures specifically
-  (reject/warn instead of silently misapplying); matrix-power measures (EVC, Katz, Bonacich, PRP)
-  aren't Dijkstra-based and may not need it, but that's unverified, not assumed. Proper signed-network
-  support (dedicated measures like PN centrality) is separate, larger future work - full scope to be
-  determined when actually prioritized, not designed upfront here.
+- **#277 — Negative edge weights silently corrupt distance-based centralities.** Moved to
+  **WS18** (`roadmap_ws18_signed_network_analysis.md`) as that workstream's P1 — #277's guard scope
+  (reject/warn Dijkstra-derived measures on negative weights, instead of silently misapplying) is
+  unchanged, but the full signed-network picture (Bellman-Ford shortest paths, PN centrality,
+  structural balance on triads) grew large enough to warrant its own workstream rather than staying
+  a single WS11 bullet. See WS18 for the complete design and phase breakdown.
 
 ### Similarity / Structural Equivalence — `src/graph/similarity/`
 

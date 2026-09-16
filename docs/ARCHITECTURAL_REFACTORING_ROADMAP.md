@@ -129,6 +129,17 @@ two-mode layouts, bipartite generators, Robins-Alexander clustering, bipartite m
 
 ---
 
+## WS18 — Signed Network Analysis / Structural Balance
+
+Roadmap: [`docs/roadmaps/roadmap_ws18_signed_network_analysis.md`](roadmaps/roadmap_ws18_signed_network_analysis.md)
+
+First-class support for signed networks (edge sign, not just magnitude): guard existing
+distance-based measures against negative weights (#277, P1), Bellman-Ford-based negative-weight-safe
+shortest paths, signed-specific centrality (PN centrality), and Heider/Cartwright-Harary structural
+balance analysis on triads, building on the existing MAN triad census.
+
+---
+
 ---
 
 # Priorities
@@ -147,6 +158,8 @@ two-mode layouts, bipartite generators, Robins-Alexander clustering, bipartite m
 7. **WS9** — graph exploration debt backlog. Core shipped; five open issues (#245, #229, #222,
    #25, #57), none prioritised yet — #245 blocks on significant tab-UI infrastructure investment.
 8. **WS17** — bipartite/two-mode analysis. Just scoped; no code written yet.
+9. **WS18** — signed network analysis / structural balance. Just scoped; no code written yet. P1
+   (#277's guard) is the one piece with an existing, already-agreed immediate scope.
 
 ---
 
