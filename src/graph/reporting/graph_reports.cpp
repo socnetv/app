@@ -1606,6 +1606,13 @@ bool Graph::writeCentralityCloseness(const QString fileName,
         progressStatus(tr("Computation canceled."));
         return false;
     }
+    if (negativeWeightsDetected())
+    {
+        file.close();
+        progressStatus(tr("Computation refused: the network contains negative edge weight(s), "
+                          "which this measure does not support."));
+        return false;
+    }
 
     if (format == ReportFormat::Csv)
     {

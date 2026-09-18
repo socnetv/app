@@ -1411,6 +1411,13 @@ public:
     bool progressCanceled() const;
     void resetProgressCanceled();
 
+    // Set by DistanceEngine (via GraphDistanceProgressSink) when a distance computation refuses to
+    // run because the network contains a negative edge weight - Dijkstra is undefined for those.
+    // See #277/WS18 P1. Same read/reset shape as progressCanceled() above.
+    bool negativeWeightsDetected() const;
+    void resetNegativeWeightsDetected();
+    void setNegativeWeightsDetected();
+
     /**  vpos stores the real position of each vertex inside m_graph.
      *  It starts at zero (0).
      *   We need to know the place of a vertex inside m_graph after adding
@@ -1657,6 +1664,10 @@ private:
     // progressCanceled() (graphThread, mid-computation) - see WS15's P1 for why a plain bool and a
     // queued connection can't deliver this in time.
     std::atomic<bool> m_progressCanceled;
+    // Written by DistanceEngine::initRun() (graphThread) via GraphDistanceProgressSink, read by
+    // negativeWeightsDetected() from whichever thread issued the computation - same cross-thread
+    // shape as m_progressCanceled above, so same atomic-bool treatment.
+    std::atomic<bool> m_negativeWeightsRefused;
     bool m_graphIsDirected, m_graphIsSymmetric, m_graphIsWeighted, m_graphIsConnected;
     int m_graphWeaklyConnectedComponents;
     int m_graphStronglyConnectedComponents;

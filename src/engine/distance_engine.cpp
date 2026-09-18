@@ -178,6 +178,13 @@ void DistanceEngine::compute(const bool computeCentralities,
             csfin,
             sink);
 
+    if (graph.negativeWeightsDetected())
+    {
+        qCDebug(lcEngine) << "DistanceEngine::compute() - refused: negative edge weight(s) "
+                              "detected, Dijkstra is undefined for those. Skipping computation.";
+        return;
+    }
+
     if (ds.E != 0)
     {
         // ---- Phase 1+2: SSSP loop + per-source accumulation ----
@@ -222,6 +229,7 @@ void DistanceEngine::initRun(const bool computeCentralities,
 
     sink.statusMessage(ds.pMsg);
     sink.resetCancellation();
+    graph.resetNegativeWeightsDetected();
 
     graph.setSymmetricCached(graph.isSymmetric());
 
@@ -370,13 +378,24 @@ void DistanceEngine::initRun(const bool computeCentralities,
         {
             for (ds.it1 = graph.verticesBegin(); ds.it1 != graph.verticesEnd(); ++ds.it1)
             {
-                if (considerWeights && inverseWeights)
+                if (considerWeights)
                 {
-                    // find the max weight in the network.
-                    // it will be used for maxCC below
+                    // hasEdgeTo() returns exactly 0 for "no edge" (see its own doc comment), so a
+                    // negative return is unambiguously a real negative-weight edge, never a
+                    // nonexistent one.
                     ds.tempEdgeWeight = (*ds.it)->hasEdgeTo((*ds.it1)->number());
-                    if (ds.tempEdgeWeight > ds.maxEdgeWeightInNetwork)
+                    if (ds.tempEdgeWeight < 0)
                     {
+                        // Dijkstra (dijkstraSSSP()) is mathematically undefined for negative
+                        // weights - refuse the whole computation rather than silently returning
+                        // finite-but-wrong distances. See #277/WS18 P1.
+                        sink.reportNegativeWeights();
+                        return;
+                    }
+                    if (inverseWeights && ds.tempEdgeWeight > ds.maxEdgeWeightInNetwork)
+                    {
+                        // find the max weight in the network.
+                        // it will be used for maxCC below
                         ds.maxEdgeWeightInNetwork = ds.tempEdgeWeight;
                     }
                 }

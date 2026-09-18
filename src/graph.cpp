@@ -132,6 +132,7 @@ Graph::Graph(const int &reserveVerticesSize, const int &reserveEdgesPerVertexSiz
     calculatedPRP = false;
     calculatedTriad = false;
     m_progressCanceled = false;
+    m_negativeWeightsRefused = false;
 
     m_reportsDataDir = "";
     m_reportsRealPrecision = 6;
@@ -437,6 +438,7 @@ void Graph::clear(const QString &reason)
     calculatedPRP = false;
     calculatedTriad = false;
     m_progressCanceled = false;
+    m_negativeWeightsRefused = false;
 
     m_graphModStatus = ModStatus::NewNet;
 

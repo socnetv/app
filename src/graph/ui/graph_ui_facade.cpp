@@ -81,6 +81,30 @@ bool Graph::progressCanceled() const
 }
 
 /**
+ * @brief Resets the negative-edge-weight refusal flag at the start of a distance computation.
+ */
+void Graph::resetNegativeWeightsDetected()
+{
+    m_negativeWeightsRefused = false;
+}
+/**
+ * @brief Returns true if the most recent distance computation refused to run because the network
+ * contains a negative edge weight (Dijkstra is undefined for those - see #277/WS18 P1).
+ */
+bool Graph::negativeWeightsDetected() const
+{
+    return m_negativeWeightsRefused;
+}
+/**
+ * @brief Set by DistanceEngine (via GraphDistanceProgressSink) when it detects a negative edge
+ * weight and refuses to run Dijkstra.
+ */
+void Graph::setNegativeWeightsDetected()
+{
+    m_negativeWeightsRefused = true;
+}
+
+/**
  * @brief Slot called by MainWindow when the user clicks Cancel in the progress dialog.
  */
 void Graph::slotCancelComputation()
