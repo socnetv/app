@@ -329,6 +329,10 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
     {
         return;
     }
+    if (negativeWeightsDetected())
+    {
+        return;
+    }
     QString pMsg;
     switch (layoutType)
     {

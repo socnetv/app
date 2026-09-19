@@ -744,6 +744,10 @@ void Graph::centralityClosenessIR(const bool considerWeights,
     {
         return;
     }
+    if (negativeWeightsDetected())
+    {
+        return;
+    }
     // calculate centralities
     VList::const_iterator it;
     qreal IRCC = 0, SIRCC = 0;

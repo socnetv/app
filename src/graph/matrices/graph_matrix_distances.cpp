@@ -79,6 +79,11 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
         calculatedDistances = false;
         return;
     }
+    if (negativeWeightsDetected())
+    {
+        calculatedDistances = false;
+        return;
+    }
 
     int N = vertices(dropIsolates, false, true);
 
@@ -155,6 +160,11 @@ bool Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
     graphDistancesGeodesic(false, considerWeights, inverseWeights, dropIsolates);
 
     if (progressCanceled())
+    {
+        calculatedDistances = false;
+        return false;
+    }
+    if (negativeWeightsDetected())
     {
         calculatedDistances = false;
         return false;

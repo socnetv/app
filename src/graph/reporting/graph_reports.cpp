@@ -253,6 +253,13 @@ bool Graph::writeEccentricity(const QString fileName, const bool considerWeights
         progressStatus(tr("Computation canceled."));
         return false;
     }
+    if (negativeWeightsDetected())
+    {
+        file.close();
+        progressStatus(tr("Computation refused: the network contains negative edge weight(s), "
+                          "which this measure does not support."));
+        return false;
+    }
 
     if (format == ReportFormat::Csv)
     {
@@ -2039,6 +2046,13 @@ bool Graph::writeCentralityBetweenness(const QString fileName,
         progressStatus(tr("Computation canceled."));
         return false;
     }
+    if (negativeWeightsDetected())
+    {
+        file.close();
+        progressStatus(tr("Computation refused: the network contains negative edge weight(s), "
+                          "which this measure does not support."));
+        return false;
+    }
 
     if (format == ReportFormat::Csv)
     {
@@ -2273,6 +2287,13 @@ bool Graph::writeCentralityStress(const QString fileName,
         progressStatus(tr("Computation canceled."));
         return false;
     }
+    if (negativeWeightsDetected())
+    {
+        file.close();
+        progressStatus(tr("Computation refused: the network contains negative edge weight(s), "
+                          "which this measure does not support."));
+        return false;
+    }
 
     if (format == ReportFormat::Csv)
     {
@@ -2465,6 +2486,13 @@ bool Graph::writeCentralityEccentricity(const QString fileName,
         progressStatus(tr("Computation canceled."));
         return false;
     }
+    if (negativeWeightsDetected())
+    {
+        file.close();
+        progressStatus(tr("Computation refused: the network contains negative edge weight(s), "
+                          "which this measure does not support."));
+        return false;
+    }
 
     if (format == ReportFormat::Csv)
     {
@@ -2644,6 +2672,13 @@ bool Graph::writeCentralityPower(const QString fileName,
     {
         file.close();
         progressStatus(tr("Computation canceled."));
+        return false;
+    }
+    if (negativeWeightsDetected())
+    {
+        file.close();
+        progressStatus(tr("Computation refused: the network contains negative edge weight(s), "
+                          "which this measure does not support."));
         return false;
     }
 

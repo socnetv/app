@@ -295,6 +295,10 @@ void Graph::prestigeProximity(const bool considerWeights,
     {
         return;
     }
+    if (negativeWeightsDetected())
+    {
+        return;
+    }
     // calculate centralities
     VList::const_iterator it;
     qreal PP = 0;

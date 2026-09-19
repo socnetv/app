@@ -980,6 +980,13 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
         break;
     }
 
+    if (negativeWeightsDetected())
+    {
+        progressStatus(tr("Computation refused: the network contains negative edge weight(s), "
+                          "which this measure does not support."));
+        return false;
+    }
+
     // Parse threshold user input
     for (int i = 0; i < thresholds.size(); ++i)
     {
