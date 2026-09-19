@@ -298,8 +298,6 @@ void DistanceEngine::initRun(const bool computeCentralities,
 
         ds.pairDistance = 0;
 
-        graph.setConnectedCached(true);
-
         graph.maxSCC = 0;
         graph.minSCC = RAND_MAX;
         graph.nomSCC = 0;
@@ -382,13 +380,14 @@ void DistanceEngine::initRun(const bool computeCentralities,
                 {
                     // hasEdgeTo() returns exactly 0 for "no edge" (see its own doc comment), so a
                     // negative return is unambiguously a real negative-weight edge, never a
-                    // nonexistent one.
+                    // nonexistent one. Checked first, before any state below (setConnectedCached(),
+                    // per-vertex centrality zeroing) is mutated - Dijkstra is mathematically
+                    // undefined for negative weights, so refuse the whole computation rather than
+                    // leaving partially-mutated state that looks legitimately computed but isn't.
+                    // See #277/WS18 P1.
                     ds.tempEdgeWeight = (*ds.it)->hasEdgeTo((*ds.it1)->number());
                     if (ds.tempEdgeWeight < 0)
                     {
-                        // Dijkstra (dijkstraSSSP()) is mathematically undefined for negative
-                        // weights - refuse the whole computation rather than silently returning
-                        // finite-but-wrong distances. See #277/WS18 P1.
                         sink.reportNegativeWeights();
                         return;
                     }
@@ -413,6 +412,8 @@ void DistanceEngine::initRun(const bool computeCentralities,
                 (*ds.it)->setPC(0.0);
             }
         }
+
+        graph.setConnectedCached(true);
 
         if (graph.symmetricCached())
         {
