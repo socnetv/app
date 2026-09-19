@@ -1031,6 +1031,75 @@ void MainWindow::processNextInteractiveCommand()
                 QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
             });
     }
+    else if (line == "diameter" || line.startsWith("diameter "))
+    {
+        // diameter [weights] [inverse] - #277/WS18 P1 verification aid: exercises
+        // Graph::graphDiameter() plus the same negativeWeightsDetected()-refusal branch
+        // MainWindow::slotAnalyzeDiameter() gained alongside its existing *isWeighted branching
+        // (that slot has no script-command equivalent to call directly, since every existing
+        // report-* command deliberately calls the underlying Graph method rather than the slot,
+        // to skip askAboutEdgeWeights()'s modal prompt - this replicates the slot's own
+        // negativeWeights check rather than the slot itself, same shape, so a negative-weight
+        // fixture can be scripted end-to-end).
+        const QStringList tokens = line.mid(8).trimmed().split(' ', Qt::SkipEmptyParts);
+        const bool considerWeights = tokens.contains("weights");
+        const bool inverseWeights = tokens.contains("inverse");
+
+        auto netDiameter = std::make_shared<int>(0);
+        auto negativeWeights = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, considerWeights, inverseWeights, netDiameter, negativeWeights]() {
+                *netDiameter = activeGraph->graphDiameter(considerWeights, inverseWeights);
+                *negativeWeights = activeGraph->negativeWeightsDetected();
+            },
+            tr("Computing graph diameter (script). Please wait..."),
+            [this, considerWeights, inverseWeights, netDiameter, negativeWeights, timer]() {
+                qInfo() << "BENCH diameter weights=" << considerWeights
+                        << "inverse=" << inverseWeights
+                        << "refused=" << *negativeWeights
+                        << "D=" << *netDiameter
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "average-distance" || line.startsWith("average-distance "))
+    {
+        // average-distance [weights] [inverse] [dropisolates] - #277/WS18 P1 verification aid,
+        // same rationale as 'diameter' above: exercises Graph::graphDistanceGeodesicAverage()
+        // plus the negativeWeightsDetected()-refusal branch
+        // MainWindow::slotAnalyzeDistanceAverage() gained alongside its existing *isConnected
+        // branching.
+        const QStringList tokens = line.mid(17).trimmed().split(' ', Qt::SkipEmptyParts);
+        const bool considerWeights = tokens.contains("weights");
+        const bool inverseWeights = tokens.contains("inverse");
+        const bool dropIsolates = tokens.contains("dropisolates");
+
+        auto averGraphDistance = std::make_shared<qreal>(0);
+        auto negativeWeights = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, considerWeights, inverseWeights, dropIsolates, averGraphDistance, negativeWeights]() {
+                *averGraphDistance = activeGraph->graphDistanceGeodesicAverage(
+                    considerWeights, inverseWeights, dropIsolates);
+                *negativeWeights = activeGraph->negativeWeightsDetected();
+            },
+            tr("Computing Average Graph Distance (script). Please wait..."),
+            [this, considerWeights, inverseWeights, dropIsolates, averGraphDistance, negativeWeights, timer]() {
+                qInfo() << "BENCH average-distance weights=" << considerWeights
+                        << "inverse=" << inverseWeights << "dropisolates=" << dropIsolates
+                        << "refused=" << *negativeWeights
+                        << "d=" << *averGraphDistance
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
     else if (line == "render")
     {
         // WS10/WS6.6 render-perf benchmarking aid: forces a synchronous repaint (unlike

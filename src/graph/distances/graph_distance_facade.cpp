@@ -40,6 +40,13 @@ int Graph::graphDistanceGeodesic(const int &v1, const int &v2,
 {
     qCDebug(lcDistances) << "Graph::graphDistanceGeodesic()";
     graphDistancesGeodesic(false, considerWeights, inverseWeights, false);
+    if (negativeWeightsDetected())
+    {
+        // apspDistance() would otherwise return a stale value left over from a previous
+        // successful computation on this relation (refusal never clears m_apspDist) - RAND_MAX
+        // matches apspDistance()'s own "nothing computed for this relation" sentinel.
+        return RAND_MAX;
+    }
     return apspDistance(v1, v2);
 }
 
@@ -102,6 +109,13 @@ QMap<int, int> Graph::graphGeodesicDistanceDistribution(const bool &considerWeig
     graphDistancesGeodesic(false, considerWeights, inverseWeights, false);
 
     QMap<int, int> distribution;
+
+    if (negativeWeightsDetected())
+    {
+        // Same stale-m_apspDist concern as graphDistanceGeodesic() above - return an empty
+        // distribution rather than one built from a previous computation's leftover distances.
+        return distribution;
+    }
 
     VList::const_iterator it1, it2;
     for (it1 = m_graph.cbegin(); it1 != m_graph.cend(); ++it1) {

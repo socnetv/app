@@ -159,15 +159,22 @@ void MainWindow::slotAnalyzeDiameter()
     const bool inverseWeightsFinal = inverseWeights;
     auto netDiameter = std::make_shared<int>(0);
     auto isWeighted = std::make_shared<bool>(false);
+    auto negativeWeights = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, considerWeights, inverseWeightsFinal, netDiameter, isWeighted]() {
+        [this, considerWeights, inverseWeightsFinal, netDiameter, isWeighted, negativeWeights]() {
             *netDiameter = activeGraph->graphDiameter(considerWeights, inverseWeightsFinal);
             *isWeighted = activeGraph->isWeighted();
+            *negativeWeights = activeGraph->negativeWeightsDetected();
         },
         tr("Computing graph diameter. Please wait..."),
-        [this, considerWeights, netDiameter, isWeighted]() {
-            if (*isWeighted)
+        [this, considerWeights, netDiameter, isWeighted, negativeWeights]() {
+            if (*negativeWeights)
+            {
+                statusMessage(tr("Computation refused: the network contains negative edge "
+                                 "weight(s), which this measure does not support."));
+            }
+            else if (*isWeighted)
             {
                 if (considerWeights)
                 {
@@ -227,19 +234,28 @@ void MainWindow::slotAnalyzeDistanceAverage()
     const bool inverseWeightsFinal = inverseWeights;
     auto averGraphDistance = std::make_shared<qreal>(0);
     auto isConnected = std::make_shared<bool>(false);
+    auto negativeWeights = std::make_shared<bool>(false);
 
     runGraphOperationAsync(
-        [this, considerWeights, inverseWeightsFinal, dropIsolates, averGraphDistance, isConnected]() {
+        [this, considerWeights, inverseWeightsFinal, dropIsolates, averGraphDistance, isConnected, negativeWeights]() {
             *averGraphDistance = activeGraph->graphDistanceGeodesicAverage(
                 considerWeights, inverseWeightsFinal, dropIsolates);
+            *negativeWeights = activeGraph->negativeWeightsDetected();
             // Cheap here: graphDistanceGeodesicAverage() just triggered the full APSP with
             // these exact params, so isConnected()'s cache hit is immediate - not a second
-            // expensive computation.
-            *isConnected = activeGraph->isConnected();
+            // expensive computation. Skipped on refusal: isConnected() would otherwise silently
+            // re-trigger a fresh unweighted computation and report a misleading true.
+            if (!*negativeWeights)
+                *isConnected = activeGraph->isConnected();
         },
         tr("Computing Average Graph Distance. Please wait..."),
-        [this, averGraphDistance, isConnected]() {
-            if (*isConnected)
+        [this, averGraphDistance, isConnected, negativeWeights]() {
+            if (*negativeWeights)
+            {
+                statusMessage(tr("Computation refused: the network contains negative edge "
+                                 "weight(s), which this measure does not support."));
+            }
+            else if (*isConnected)
             {
                 slotHelpMessageToUser(
                     USER_MSG_INFO,
