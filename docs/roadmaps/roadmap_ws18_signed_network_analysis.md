@@ -10,8 +10,7 @@ Harary structural balance analysis on triads.
 
 ## Status
 
-**Not started.** Scoped only; no code written yet. #277 (guard) is the one piece with an existing
-issue and an already-agreed immediate scope — everything else here is new.
+**P1 complete (2026-09-19, #277).** P2-P4 not started — scoped only.
 
 ## Background
 
@@ -50,22 +49,45 @@ see `roadmap_ws11_algorithm_additions.md`'s #277 entry.
 
 ## Phases
 
-Ordered by dependency. P1 is standalone and already scoped (#277). P2 depends on P1 only in the
-sense that P1's guard becomes obsolete for graphs where P2's engine is selected — the two aren't
-sequenced by data dependency otherwise. P3 depends on P2 for any measure defined via signed
-shortest paths (most of them are), but PN centrality specifically is not distance-based and could
-land before P2. P4 (structural balance) is independent of P2/P3 — it operates on triad sign
-patterns directly, not on distances.
+Ordered by dependency. P1 is complete (#277). P2 depends on P1 only in the sense that P1's guard
+becomes obsolete for graphs where P2's engine is selected — the two aren't sequenced by data
+dependency otherwise. P3 depends on P2 for any measure defined via signed shortest paths (most of
+them are), but PN centrality specifically is not distance-based and could land before P2. P4
+(structural balance) is independent of P2/P3 — it operates on triad sign patterns directly, not on
+distances.
 
-### P1 — Guard existing distance-based measures against negative weights (#277)
+### P1 — Guard existing distance-based measures against negative weights (#277) ✔ complete
 
-Already scoped and agreed. Detect negative edge weights before a Dijkstra-based computation runs;
-reject/warn instead of silently returning wrong numbers. Guard lives once in
-`DistanceEngine::initRun()` (the single funnel behind all ~15 call sites of
-`Graph::graphDistancesGeodesic()`), reported back via a `Graph`-level flag mirroring the existing
-`m_progressCanceled`/`progressCanceled()` pattern. Matrix-power measures (EVC, Katz, Bonacich, PRP)
-are not Dijkstra-based and are out of scope for this phase — Bonacich already handles negative
-values by design (see Background).
+Shipped 2026-09-19 across three commits (c8666fd6, 5123064a, 38f1d6c1). Detects a negative edge
+weight once per computation inside `DistanceEngine::initRun()` (merged into the existing
+max-weight-scan loop — one O(N²) pass, not a second one — and checked before
+`graph.setConnectedCached(true)` runs, so refusal never leaves connectivity state looking
+legitimately computed), reported back via `Graph::negativeWeightsDetected()`, a queryable flag
+mirroring the existing `m_progressCanceled`/`progressCanceled()` pattern exactly (same
+cross-thread-atomic treatment, same reset-at-start-of-computation shape).
+
+All 15 real `considerWeights`-forwarding call sites of `Graph::graphDistancesGeodesic()` are
+guarded — 11 mirror an existing `progressCanceled()`-refusal precedent at their own call site
+(`writeCentralityCloseness()`/`writeCentralityBetweenness()`/`writeCentralityStress()`/
+`writeCentralityEccentricity()`/`writeCentralityPower()`/`writeEccentricity()` in
+`graph_reports.cpp`; `centralityClosenessIR()`; `prestigeProximity()`;
+`layoutByProminenceIndex()`; `vertexFindByIndexScore()`;
+`graphMatrixShortestPathsCreate()`/`graphMatrixDistanceGeodesicCreate()` in
+`graph_matrix_distances.cpp`). The remaining 4 (`graph_distance_facade.cpp`) had no existing
+precedent and needed their own design: `graphDistanceGeodesic()`/`graphGeodesicDistanceDistribution()`
+now return `RAND_MAX`/an empty `QMap` on refusal (matching `apspDistance()`'s own "nothing computed"
+sentinel — without this, a *prior* successful computation's stale `m_apspDist` entry would have been
+returned instead of a clear refusal signal); `graphDiameter()`/`graphDistanceGeodesicAverage()` have
+no safe sentinel (0 is a legitimate result), so the fix lives in their sole MainWindow callers
+(`slotAnalyzeDiameter()`/`slotAnalyzeDistanceAverage()` in `mainwindow_analyze_distance.cpp`), which
+now capture `negativeWeightsDetected()` the same way they already captured `*isWeighted`/`*isConnected`
+and show a refusal status message instead of a misleading numeric result.
+
+Verified live via `--interactive-script` against a negative-weight fixture and an otherwise-identical
+positive-weight control (two new script commands, `diameter`/`average-distance`, added since no
+existing command reached those two MainWindow slots). `./scripts/run_golden_compares.sh` clean
+throughout. Matrix-power measures (EVC, Katz, Bonacich, PRP) are not Dijkstra-based and were
+correctly left untouched — Bonacich already handles negative values by design (see Background).
 
 ### P2 — Negative-weight-safe shortest paths (Bellman-Ford)
 

@@ -158,8 +158,9 @@ balance analysis on triads, building on the existing MAN triad census.
 7. **WS9** — graph exploration debt backlog. Core shipped; five open issues (#245, #229, #222,
    #25, #57), none prioritised yet — #245 blocks on significant tab-UI infrastructure investment.
 8. **WS17** — bipartite/two-mode analysis. Just scoped; no code written yet.
-9. **WS18** — signed network analysis / structural balance. Just scoped; no code written yet. P1
-   (#277's guard) is the one piece with an existing, already-agreed immediate scope.
+9. **WS18** — signed network analysis / structural balance. P1 (#277's negative-weight guard)
+   shipped 2026-09-19; P2-P4 (Bellman-Ford distances, PN centrality, structural balance) just
+   scoped, not prioritised yet.
 
 ---
 
