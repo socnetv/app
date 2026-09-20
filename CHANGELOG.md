@@ -126,6 +126,21 @@ _Work in progress — more entries to come as the 3.8 cycle continues._
     "worked" via its file-extension auto-detection fallback, completely masking the mistake.
     All of these now reject invalid input with a clear error naming the flag and the bad value.
 
+  - **Betweenness Centrality (BC/SBC) could come out slightly too high on some weighted
+    networks** (#283): `DistanceEngine::dijkstraSSSP()`'s tie-breaking bookkeeping wasn't fully
+    updated when a vertex's distance was revised to a strictly shorter value during the same
+    source's traversal — its predecessor list could retain an entry from an earlier, superseded
+    relaxation, and its shortest-path count was set to a fixed value instead of inherited from
+    the relaxing predecessor. Only affects weighted networks where a vertex can be relaxed more
+    than once before reaching its final distance; distances and every other measure are
+    unaffected. Found by cross-checking BC output against an independent library on a new
+    hand-built regression fixture (`WeightedTies_Dir_N5_SigmaRegression`, added in Pajek/
+    GraphML/DL). Three existing golden baselines (`DunbarGelada_H22a`,
+    `StokmanZiegler_Netherlands`, `Krackhardt_Kite_N10`) carried the old, slightly-too-high
+    values and are corrected — every other field in all three is unchanged. Also replaced
+    `dijkstraSSSP()`'s exact-equality tie comparison with a relative-tolerance one, closing a
+    related (separately latent) floating-point-precision risk in the same neighborhood of code.
+
 ## [3.7] – Aug 2026
 
 ### New Features
