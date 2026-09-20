@@ -24,10 +24,29 @@
 #include <QMutex>
 #include <QThread>
 #include <QtConcurrent/QtConcurrent>
+#include <algorithm>
+#include <cmath>
 #include <cstdlib>
 #include <queue>
 
 Q_LOGGING_CATEGORY(lcEngine, "socnetv.engine")
+
+namespace {
+
+// Relative-tolerance comparison for two accumulated path-length sums. Plain qreal == is fragile
+// once a distance is a sum of several independently-rounded edge weights - two paths that are
+// mathematically tied can land a bit or two apart after summation, especially once WS18's
+// Johnson's-reweighting path composes an extra per-edge potential term into every weight before
+// this comparison runs. eps is fixed and relative to the larger operand's magnitude, so it scales
+// sensibly across the wide range of edge-weight magnitudes real SNA datasets use, rather than
+// being too loose for small weights or too tight for large ones.
+bool distancesNearlyEqual(qreal a, qreal b)
+{
+    constexpr qreal eps = 1e-9;
+    return std::abs(a - b) <= eps * std::max({qreal(1.0), std::abs(a), std::abs(b)});
+}
+
+} // namespace
 
 /**
  * @brief Per-run scratch state for DistanceEngine::compute(), scoped to one compute() call.
@@ -1377,7 +1396,7 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                      << "  shorter than current d(s=" << s << ",w=" << w << ")="
                      << cur_dist_w;
 
-            if ((dist_w == cur_dist_w) && dist_w < RAND_MAX)
+            if (distancesNearlyEqual(dist_w, cur_dist_w) && dist_w < RAND_MAX)
             {
 
                 qCDebug(lcEngine) << "    --- dijkstra: dist_w : " << dist_w
@@ -1421,6 +1440,9 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                 }
             }
 
+            // Reached only when the tie check above didn't match, so dist_w is guaranteed to be
+            // outside distancesNearlyEqual()'s tolerance of cur_dist_w here - a genuine strict
+            // improvement, not a near-tie that happens to round slightly lower.
             else if (dist_w > 0 && dist_w < cur_dist_w)
             {
 
