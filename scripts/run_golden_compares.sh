@@ -294,6 +294,29 @@ run_case_prominence \
   -w 1 -x 1 -k 0 \
   "${BASE_PROM}/Krackhardt_Kite_N10__PROM__V4__FT2__W1_IW1_DI0.json"
 
+# Small directed, weighted, ties-heavy fixture: a vertex is relaxed to a strictly shorter
+# distance more than once within a single source's Dijkstra pass, and predecessors that were
+# only tentatively best now need replacing rather than accumulating - the specific shape
+# regular random/complete-graph fixtures don't reliably exercise. Same network in three formats
+# (Pajek, GraphML, UCINET DL) so the fix is protected regardless of which parser path is used.
+run_case_prominence \
+  "${DATA}/WeightedTies_Dir_N5_SigmaRegression.paj" \
+  2 \
+  -c 1 -w 1 -x 0 -k 0 \
+  "${BASE_PROM}/WeightedTies_Dir_N5_SigmaRegression__PROM__V4__FT2__W1_IW0_DI0.json"
+
+run_case_prominence \
+  "${DATA}/WeightedTies_Dir_N5_SigmaRegression.graphml" \
+  1 \
+  -c 1 -w 1 -x 0 -k 0 \
+  "${BASE_PROM}/WeightedTies_Dir_N5_SigmaRegression__PROM__V4__FT1__W1_IW0_DI0.json"
+
+run_case_prominence \
+  "${DATA}/WeightedTies_Dir_N5_SigmaRegression.dl" \
+  5 \
+  -c 1 -w 1 -x 0 -k 0 \
+  "${BASE_PROM}/WeightedTies_Dir_N5_SigmaRegression__PROM__V4__FT5__W1_IW0_DI0.json"
+
 run_case_prominence \
   "${DATA}/Sampson_Monks_N18.net" \
   2 \

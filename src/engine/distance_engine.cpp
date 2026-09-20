@@ -1385,8 +1385,10 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
 
                 sp_w = pss.sigma[wi] + pss.sigma[ui];
 
-                // WRONG! We do not know for sure that we are in a shortest path!!!
-                qCDebug(lcEngine) << "    --- dijkstra: (POSSIBLE BUG?) Found ANOTHER SP from s ="
+                // This branch only runs when dist_w == cur_dist_w, i.e. (u,w) is confirmed to lie
+                // on a shortest path from s to w that ties the current best - so accumulating
+                // sigma(s,u) into sigma(s,w) here is correct, not speculative.
+                qCDebug(lcEngine) << "    --- dijkstra: Found ANOTHER SP from s ="
                          << s
                          << " to w=" << w << " via u=" << u
                          << " - Setting Sigma(s, w) = " << sp_w;
@@ -1457,8 +1459,11 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                                 "Found NEW shortest path from s ="
                              << s
                              << " to w =" << w << " via u =" << u
-                             << " - Setting Sigma(s, w) = 1 ";
-                    pss.sigma[wi] = 1;
+                             << " - Setting Sigma(s, w) = Sigma(s, u) =" << pss.sigma[ui];
+                    // w's only shortest path so far is through u, so w inherits u's shortest-
+                    // path count - not a hardcoded 1, which silently discards u's own tie count
+                    // whenever u itself was reached via more than one tied shortest path.
+                    pss.sigma[wi] = pss.sigma[ui];
                 }
 
                 if (computeCentralities)
@@ -1480,10 +1485,11 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                     }
 
                     qCDebug(lcEngine) << "    --- dijkstra: Compute Centralities: "
-                                "Appending u="
-                             << u << " to list Ps[w =" << w
-                             << "] with the predecessors of w on all shortest paths from s ";
-                    pss.Ps[wi].append(u);
+                                "Resetting Ps[w =" << w << "] to [u =" << u
+                             << "], the sole predecessor of w on the new strictly-shorter "
+                                "path from s - any predecessor recorded here from a prior, "
+                                "now-superseded relaxation of w must not survive.";
+                    pss.Ps[wi] = QList<int>{u};
                 }
             }
             else
