@@ -12,6 +12,12 @@ Harary structural balance analysis on triads.
 
 **P1 complete (2026-09-19, #277).** P2-P4 not started — scoped only.
 
+**Unrelated fix found and landed along the way (#283):** while designing P2's Bellman-Ford engine
+path, cross-checking `dijkstraSSSP()`'s behavior against an independent library surfaced a real BC
+bug in the existing (unsigned) Dijkstra path — unrelated to signed networks, pre-dating this
+workstream. Fixed separately; see `f6076bc7`. Noted here only because it was found during WS18
+work, not because it's in scope for this workstream.
+
 ## Background
 
 SocNetV already treats negative edge weights as legitimate, intentional input — Settings has a
