@@ -10,8 +10,10 @@ Harary structural balance analysis on triads.
 
 ## Status
 
-Tracked by #284. **P1 complete (2026-09-19, #277).** P0 filed (#285), not started. P2-P4 not
-started — scoped only.
+Tracked by #284. **P1 complete (2026-09-19, #277).** P0 filed (#285), not started. **P2 in
+progress**: algorithm choice and design decisions settled (Johnson's), `bellmanFordPotentials()`
+implemented and golden-tested standalone, not yet wired into `dijkstraSSSP()`/`runAllSources()` —
+see P2 below for exact status. P3-P4 not started — scoped only.
 
 **Unrelated fix found and landed along the way (#283):** while designing P2's Bellman-Ford engine
 path, cross-checking `dijkstraSSSP()`'s behavior against an independent library surfaced a real BC
@@ -113,22 +115,56 @@ existing command reached those two MainWindow slots). `./scripts/run_golden_comp
 throughout. Matrix-power measures (EVC, Katz, Bonacich, PRP) are not Dijkstra-based and were
 correctly left untouched — Bonacich already handles negative values by design (see Background).
 
-### P2 — Negative-weight-safe shortest paths (Bellman-Ford)
+### P2 — Negative-weight-safe shortest paths (Johnson's algorithm)
 
-- New SSSP engine path for the negative-weight case: Bellman-Ford, O(V·E) per source (Johnson's
-  algorithm — a Bellman-Ford re-weighting pass once, then Dijkstra per source — is the standard way
-  to avoid paying O(V·E) per source on graphs with only a few negative edges; worth evaluating once
-  this phase is actually scoped, rather than committing to naive per-source Bellman-Ford upfront).
-- Negative-cycle detection is mandatory, not optional: a shortest path is undefined in a graph with
-  a reachable negative cycle. Must surface as a distinct, clearly-worded refusal (different from
-  P1's "negative weight, wrong algorithm" refusal) — a negative cycle isn't a Dijkstra-can't-do-this
-  problem, it's a "shortest path doesn't exist" problem, and BC/CC/etc. need a defined answer (skip
-  the pair? refuse the whole computation?) that doesn't exist in unsigned SNA and needs a decision
-  before implementation.
-- Once this lands, P1's guard on the Dijkstra path can either stay (as the default algorithm
-  selection for non-negative graphs, since Dijkstra is faster) or the engine can auto-select
-  Bellman-Ford whenever a negative weight is detected instead of refusing — a design choice to make
-  when this phase is scoped, not assumed here.
+**Algorithm choice settled: Johnson's, not naive per-source Bellman-Ford.** A single global
+Bellman-Ford pass from a virtual source computes a potential `h(v)` per vertex; every edge is
+reweighted as `w'(u,v) = w(u,v) + h(u) - h(v)` (guaranteed non-negative, preserves the shortest-path
+set and ties exactly); the existing `dijkstraSSSP()` then runs **unmodified** on the reweighted
+graph, once per source, inside the existing parallel loop; results are un-reweighted afterward
+(`d(s,v) = d'(s,v) - h(s) + h(v)`). Negative-cycle detection falls out of the same Bellman-Ford pass
+for free (the standard "does round V still improve anything" check). This was chosen over naive
+Bellman-Ford for its asymptotics (`O(V·(E+V log V))` total vs. `O(V²·E)`) and because it leaves
+`dijkstraSSSP()`'s own logic untouched — no separate relaxation-order/Stack-ordering concern the way
+naive Bellman-Ford would have needed (Dijkstra's own pop order already satisfies Brandes' back-
+propagation requirement once every weight it sees is non-negative).
+
+**Design decisions confirmed:**
+- Negative-cycle handling: **refuse the whole computation**, not partial results — a shortest path
+  is undefined in a graph with a reachable negative cycle, and there's no principled way to give
+  BC/CC/etc. a defined answer for just the affected pairs.
+- P1's existing guard: **stays as the default**, refuse-by-default behavior. Johnson's is opt-in via
+  an explicit flag on the relevant `Graph` entry points, not a silent auto-switch whenever a
+  negative weight is detected — callers ask for negative-weight-safe distances, they don't get
+  silently upgraded to a different algorithm.
+- Reweighted edge costs are **not cached anywhere** (no parallel edge-weight structure): potentials
+  are threaded into `dijkstraSSSP()` as a read-only `const QVector<qreal> &`, and `w'` is computed
+  inline at the existing weight-read site. Rejected a precomputed reweighted-edge cache — it would
+  save one subtraction per edge examination at the cost of a second, must-stay-in-sync source of
+  truth for edge weight, not worth it.
+- Tie-detection floating-point risk (composing two independently-rounded `h(u)`, `h(v)` into every
+  edge before the `dist_w == cur_dist_w` comparison) is **already closed**: `dijkstraSSSP()`'s tie
+  check was switched from exact `qreal` equality to `distancesNearlyEqual()` (a relative-tolerance
+  comparison) ahead of this phase, specifically to remove this as an open risk before Johnson's
+  reweighting starts composing extra floating-point terms into every edge weight.
+
+**Status: engine work in progress.**
+- ✔ `DistanceEngine::bellmanFordPotentials()` — the reweighting/negative-cycle-detection pass
+  itself, implemented and golden-tested standalone via a new CLI kernel (`--kernel signed`, schema
+  v10; see WS6.1's `kernel_signed_v10` entry) ahead of being wired into the SSSP loop. Not yet
+  called from `compute()` — calling it unconditionally would cost every ordinary (non-negative-
+  weight) computation a wasted edge-relaxation pass.
+- ▶ **Next (not started): thread potentials into `dijkstraSSSP()`/`runAllSources()`.** New
+  `const QVector<qreal> &potentials` parameter on `dijkstraSSSP()`, reweighting applied inline at
+  the existing weight-read site (`distance_engine.cpp`, in `dijkstraSSSP()`'s edge loop); un-
+  reweight `tls.pss.dist[]` in `runAllSources()`'s per-source lambda immediately after
+  `dijkstraSSSP()` returns, before the CC/PC accumulation block and the `m_apspDist` write-back
+  (both read `dist[]` directly and need the true, not reweighted, value). For this step, `compute()`
+  keeps calling with an empty `potentials` vector (no live caller yet) so the change is provable
+  as a no-op on every existing golden baseline before anything starts consuming it.
+- Not started: the explicit opt-in flag threaded through `Graph`'s public distance-computation entry
+  points (supersedes P1's blanket refusal only when set); this is where P1's guard's fate above
+  actually gets implemented in code.
 
 ### P3 — Signed-specific centrality measures
 
