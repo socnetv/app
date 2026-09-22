@@ -703,7 +703,7 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
         qCDebug(lcEngine) << "***** PHASE 1 (SSSP) [thread slot" << mySlot << "]: source s" << s << "vpos" << si;
 
         // Reset per-source scratch (dist, sigma, and optionally Stack/Ps/nthOrder).
-        // Also resets pss.sourceDistanceSum / sourceGeodesicsCount / sourceDiameter.
+        // Also resets pss.sourceDistanceSum / sourceGeodesicsCount.
         tls.pss.resetPerSource(computeCentralities);
 
         // Run BFS or Dijkstra; unsafe graph calls go to tls.pss scratch fields / tls.partialSC.
@@ -720,8 +720,6 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
         // These will be reduced into graph-global state after the parallel loop.
         tls.totalDistanceSum    += tls.pss.sourceDistanceSum;
         tls.totalGeodesicsCount += tls.pss.sourceGeodesicsCount;
-        if (tls.pss.sourceDiameter > tls.maxDiameter)
-            tls.maxDiameter = tls.pss.sourceDiameter;
 
         qCDebug(lcEngine) << "***** PHASE 1 (SSSP): FINISHED BFS/DIJKSTRA for s" << s
                  << "— writing APSP results back to vertex" << si;
@@ -740,17 +738,29 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
             }
         }
 
-        // APSP write-back: persist tls.pss.dist / sigma into row si of the flat matrices.
+        // APSP write-back: persist tls.pss.dist / sigma into row si of the flat matrices, and
+        // (same pass, since it's already walking every final, un-reweighted distance) find this
+        // source's own eccentricity/diameter contribution - the max over FINAL per-vertex
+        // distances, not a running max sampled during relaxation (a vertex can be relaxed to a
+        // smaller distance after an earlier, larger one; tracking every relaxation event instead
+        // of the final value per vertex was a real bug - see #286). RAND_MAX (unreached) is
+        // excluded, matching existing diameter semantics (an unreachable pair doesn't contribute).
         // Safe: si is unique across all concurrent lambda invocations, so no two sources ever
         // write the same row. Unconditional (every column vi, not just reached ones) -
         // tls.pss.dist[vi] already holds RAND_MAX for every unreached vi
         // (PerSourceScratch::resetPerSource() fills it before every source, unconditionally),
         // so this isn't new work - it reuses a reset that was already happening.
+        int sourceMaxDist = 0;
         for (int vi = 0; vi < totalV; ++vi)
         {
             graph.m_apspDist[relation].setItem(si, vi, tls.pss.dist[vi]);
             graph.m_apspSigma[relation].setItem(si, vi, (qreal)tls.pss.sigma[vi]);
+
+            if (tls.pss.dist[vi] != RAND_MAX && tls.pss.dist[vi] > sourceMaxDist)
+                sourceMaxDist = (int)tls.pss.dist[vi];
         }
+        if (sourceMaxDist > tls.maxDiameter)
+            tls.maxDiameter = sourceMaxDist;
 
         if (computeCentralities)
         {
@@ -1326,8 +1336,6 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si,
                 // into graph state after QtConcurrent::blockingMap returns.
                 pss.sourceDistanceSum += dist_w;
                 ++pss.sourceGeodesicsCount;
-                if (dist_w > pss.sourceDiameter)
-                    pss.sourceDiameter = dist_w;
 
                 qCDebug(lcEngine) << "== BFS  - d("
                          << s << "," << w
@@ -1661,15 +1669,6 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                             "Set d ( s="
                          << s << ", w=" << w
                          << " ) = " << dist_w << "=" << pss.dist[wi];
-
-                if (dist_w > (qreal)pss.sourceDiameter)
-                {
-                    pss.sourceDiameter = (int)dist_w;
-
-                    qCDebug(lcEngine) << "    --- dijkstra: "
-                                "New thread-local diameter ="
-                             << pss.sourceDiameter;
-                }
 
                 if (s != w)
                 {

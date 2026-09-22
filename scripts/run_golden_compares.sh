@@ -248,6 +248,17 @@ run_case \
   -c 1 -w 1 -x 1 -k 0 \
   "${BASE_DISTANCE}/StokmanZiegler_Netherlands__FT5__C1_W1_IW1_DI0.json"
 
+# WeightedTies_Dir_N5_SigmaRegression (#283's fixture) had no distance-kernel coverage until now -
+# only prominence/signed used it, neither of which reports diameter/avg_distance. That gap let
+# #286 (diameter tracked from relaxation events instead of final per-vertex distances) ship
+# undetected. diameter=22, avg_distance=8.8 independently verified before this baseline was
+# committed - see #286.
+run_case \
+  "${DATA}/WeightedTies_Dir_N5_SigmaRegression.paj" \
+  2 \
+  -c 1 -w 1 -x 0 -k 0 \
+  "${BASE_DISTANCE}/WeightedTies_Dir_N5_SigmaRegression__FT2__C1_W1_IW0_DI0.json"
+
 # REACHABILITY (schema v2)
 run_case_reachability \
   "${DATA}/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj" \

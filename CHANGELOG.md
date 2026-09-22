@@ -141,6 +141,17 @@ _Work in progress — more entries to come as the 3.8 cycle continues._
     `dijkstraSSSP()`'s exact-equality tie comparison with a relative-tolerance one, closing a
     related (separately latent) floating-point-precision risk in the same neighborhood of code.
 
+  - **Weighted-network diameter could come out too high** (#286): diameter was tracked as a
+    running max over every relaxation event during `dijkstraSSSP()`'s traversal, not the max of
+    each vertex's final distance — a vertex relaxed more than once could leave a stale, larger
+    intermediate value as "the diameter." Fixed by computing diameter from final per-vertex
+    distances after each source's SSSP run completes. Confirmed on `WeightedTies_Dir_N5_
+    SigmaRegression`: reported diameter 289 (the largest raw edge weight in the network) instead
+    of the correct 22, independently verified. Only `graphDiameter()` was affected — BC, CC, and
+    every other distance-derived measure read final distances directly and were already correct.
+    New golden baseline pins the fix; the network had prior golden coverage for other measures
+    but none that exercised diameter specifically, which is how this went undetected.
+
 ## [3.7] – Aug 2026
 
 ### New Features

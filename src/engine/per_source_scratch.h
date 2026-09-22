@@ -58,7 +58,10 @@ struct PerSourceScratch
     // and the post-loop reduction merges them into the graph-level aggregates.
     qreal sourceDistanceSum    = 0;  // replaces graph.addToDistanceSum(dist_w) in BFS
     int   sourceGeodesicsCount = 0;  // replaces graph.incGeodesicsCount() in BFS / Dijkstra
-    int   sourceDiameter       = 0;  // replaces graph.setDiameterCached() in BFS / Dijkstra
+    // Diameter is not tracked here: it must be the max of each vertex's FINAL distance, not a
+    // running max over every relaxation event (a vertex can be relaxed to a smaller distance
+    // after an earlier, larger one) - computed directly from dist[] in runAllSources() instead,
+    // after a source's SSSP run has fully settled. See #286 for the bug this replaced.
 
     // Allocate all containers once for totalVertices positions.
     // Call this once before the source loop.
@@ -79,7 +82,6 @@ struct PerSourceScratch
         // Reset per-source graph-aggregate accumulators so they reflect only this source.
         sourceDistanceSum    = 0;
         sourceGeodesicsCount = 0;
-        sourceDiameter       = 0;
         if (computeCentralities)
         {
             while (!Stack.empty())
