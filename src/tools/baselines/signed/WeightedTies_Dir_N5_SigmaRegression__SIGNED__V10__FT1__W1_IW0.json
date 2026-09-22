@@ -9,6 +9,51 @@
         "name": "WeightedTies_Dir_N5_SigmaRegression.graphml",
         "path": "src/data/WeightedTies_Dir_N5_SigmaRegression.graphml"
     },
+    "distances": {
+        "negative_cycle_detected": false,
+        "per_node": [
+            {
+                "BC": "3.5",
+                "CC": "0.125",
+                "distance_sum": "8",
+                "eccentricity": "3",
+                "id": 1,
+                "label": "1"
+            },
+            {
+                "BC": "4.5",
+                "CC": "0.037037037037037035",
+                "distance_sum": "27",
+                "eccentricity": "189",
+                "id": 2,
+                "label": "2"
+            },
+            {
+                "BC": "0.25",
+                "CC": "0.027027027027027029",
+                "distance_sum": "37",
+                "eccentricity": "289",
+                "id": 3,
+                "label": "3"
+            },
+            {
+                "BC": "0.75",
+                "CC": "0.027027027027027029",
+                "distance_sum": "37",
+                "eccentricity": "289",
+                "id": 4,
+                "label": "4"
+            },
+            {
+                "BC": "1.5",
+                "CC": "0.014925373134328358",
+                "distance_sum": "67",
+                "eccentricity": "89",
+                "id": 5,
+                "label": "5"
+            }
+        ]
+    },
     "graph": {
         "directed": true,
         "weighted": true
@@ -16,7 +61,7 @@
     "kernel": "signed",
     "load_report": {
         "fileType_signal": 1,
-        "load_ms": 1,
+        "load_ms": 0,
         "load_msg": "",
         "net_name": "WeightedTies_Dir_N5_SigmaRegression",
         "ok": true

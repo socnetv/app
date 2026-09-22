@@ -88,8 +88,10 @@ void Graph::resetNegativeWeightsDetected()
     m_negativeWeightsRefused = false;
 }
 /**
- * @brief Returns true if the most recent distance computation refused to run because the network
- * contains a negative edge weight (Dijkstra is undefined for those - see #277/WS18 P1).
+ * @brief Returns true if the most recent default (Dijkstra) distance computation refused to run
+ * because the network contains a negative edge weight (Dijkstra is undefined for those - see
+ * #277/WS18 P1). Does not fire for a negative-weight-safe computation - see
+ * negativeCycleDetected() for that path's own refusal.
  */
 bool Graph::negativeWeightsDetected() const
 {
@@ -102,6 +104,30 @@ bool Graph::negativeWeightsDetected() const
 void Graph::setNegativeWeightsDetected()
 {
     m_negativeWeightsRefused = true;
+}
+
+/**
+ * @brief Resets the negative-cycle refusal flag at the start of a distance computation.
+ */
+void Graph::resetNegativeCycleDetected()
+{
+    m_negativeCycleDetected = false;
+}
+/**
+ * @brief Returns true if the most recent negative-weight-safe distance computation refused to
+ * run because the network contains a reachable negative cycle (shortest paths are undefined).
+ */
+bool Graph::negativeCycleDetected() const
+{
+    return m_negativeCycleDetected;
+}
+/**
+ * @brief Set by DistanceEngine when its negative-weight-safe path finds a reachable negative
+ * cycle.
+ */
+void Graph::setNegativeCycleDetected()
+{
+    m_negativeCycleDetected = true;
 }
 
 /**

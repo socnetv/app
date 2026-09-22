@@ -161,18 +161,25 @@ DistanceEngine::DistanceEngine(Graph &g)
  * @param considerWeights      If true, uses edge weights (Dijkstra); otherwise BFS.
  * @param inverseWeights       If true, uses 1/weight as the distance metric.
  * @param dropIsolates         If true, excludes isolated vertices from all calculations.
+ * @param negativeWeightSafe   If true, negative edge weights are not refused - instead, potentials
+ * are computed via bellmanFordPotentials() (Johnson's algorithm) and every source's Dijkstra run
+ * is reweighted to be non-negative. Refuses instead if the network has a reachable negative cycle
+ * (see Graph::negativeCycleDetected()), since shortest paths are then undefined regardless of
+ * algorithm. Has no effect unless considerWeights is also true.
  */
 void DistanceEngine::compute(const bool computeCentralities,
                              const bool considerWeights,
                              const bool inverseWeights,
-                             const bool dropIsolates)
+                             const bool dropIsolates,
+                             const bool negativeWeightSafe)
 {
 
     qCDebug(lcEngine) << "DistanceEngine::compute() - "
              << "centralities" << computeCentralities
              << "considerWeights:" << considerWeights
              << "inverseWeights:" << inverseWeights
-             << "dropIsolates:" << dropIsolates;
+             << "dropIsolates:" << dropIsolates
+             << "negativeWeightSafe:" << negativeWeightSafe;
 
     if (computeCentralities)
     {
@@ -200,12 +207,13 @@ void DistanceEngine::compute(const bool computeCentralities,
             considerWeights,
             inverseWeights,
             dropIsolates,
+            negativeWeightSafe,
             ds,
             csssp,
             csfin,
             sink);
 
-    if (graph.negativeWeightsDetected())
+    if (!negativeWeightSafe && graph.negativeWeightsDetected())
     {
         qCDebug(lcEngine) << "DistanceEngine::compute() - refused: negative edge weight(s) "
                               "detected, Dijkstra is undefined for those. Skipping computation.";
@@ -214,13 +222,22 @@ void DistanceEngine::compute(const bool computeCentralities,
 
     if (ds.E != 0)
     {
-        // bellmanFordPotentials() is not called here yet: every graph reaching this line already
-        // has non-negative weights only (negativeWeightsDetected() refused above), so nothing
-        // consumes its output today and calling it here would just be a wasted full edge-weight
-        // relaxation pass on every ordinary computation. Call it here, gated behind an explicit
-        // negative-weight-safe opt-in flag (not considerWeights alone), once a follow-up change
-        // threads its potentials into dijkstraSSSP()/runAllSources() - see bellmanFordPotentials()'s
-        // own doc comment in distance_engine.h.
+        // negativeWeightSafe: compute potentials once, single-threaded, before any per-source
+        // work starts - every parallel Dijkstra call in runAllSources() needs to read the same
+        // frozen h(v) vector. A reachable negative cycle makes shortest paths undefined for any
+        // algorithm, so refuse the whole computation rather than a partial/best-effort result.
+        if (negativeWeightSafe && considerWeights)
+        {
+            graph.resetNegativeCycleDetected();
+            if (!bellmanFordPotentials(inverseWeights, ds))
+            {
+                graph.setNegativeCycleDetected();
+                qCDebug(lcEngine) << "DistanceEngine::compute() - refused: reachable negative "
+                                      "cycle detected, shortest paths are undefined. Skipping "
+                                      "computation.";
+                return;
+            }
+        }
 
         // ---- Phase 1+2: SSSP loop + per-source accumulation ----
         runAllSources(computeCentralities,
@@ -251,6 +268,7 @@ void DistanceEngine::initRun(const bool computeCentralities,
                              const bool considerWeights,
                              const bool inverseWeights,
                              const bool dropIsolates,
+                             const bool negativeWeightSafe,
                              DistanceScratch &ds,
                              CentralityScratchSSSP &csssp,
                              CentralityScratchFinalize &csfin,
@@ -419,9 +437,11 @@ void DistanceEngine::initRun(const bool computeCentralities,
                     // per-vertex centrality zeroing) is mutated - Dijkstra is mathematically
                     // undefined for negative weights, so refuse the whole computation rather than
                     // leaving partially-mutated state that looks legitimately computed but isn't.
-                    // See #277/WS18 P1.
+                    // See #277/WS18 P1. Skipped when negativeWeightSafe is set: that caller has
+                    // opted into the Johnson's-algorithm path (see compute()), which is defined
+                    // for negative weights - only a negative cycle is refused there, not this.
                     ds.tempEdgeWeight = (*ds.it)->hasEdgeTo((*ds.it1)->number());
-                    if (ds.tempEdgeWeight < 0)
+                    if (ds.tempEdgeWeight < 0 && !negativeWeightSafe)
                     {
                         sink.reportNegativeWeights();
                         return;
@@ -687,10 +707,14 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
         tls.pss.resetPerSource(computeCentralities);
 
         // Run BFS or Dijkstra; unsafe graph calls go to tls.pss scratch fields / tls.partialSC.
+        // ds.potentials is read-only from here on (populated once, single-threaded, before this
+        // parallel loop starts - see bellmanFordPotentials()) so concurrent reads across source
+        // threads are safe; empty unless a caller explicitly requested Johnson's reweighting.
         if (!considerWeights)
             bfsSSSP(s, si, computeCentralities, dropIsolates, tls.pss, tls.partialSC);
         else
-            dijkstraSSSP(s, si, computeCentralities, inverseWeights, dropIsolates, tls.pss, tls.partialSC);
+            dijkstraSSSP(s, si, computeCentralities, inverseWeights, dropIsolates, tls.pss,
+                        tls.partialSC, ds.potentials);
 
         // Accumulate per-source aggregates into thread-local running totals.
         // These will be reduced into graph-global state after the parallel loop.
@@ -701,6 +725,20 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
 
         qCDebug(lcEngine) << "***** PHASE 1 (SSSP): FINISHED BFS/DIJKSTRA for s" << s
                  << "— writing APSP results back to vertex" << si;
+
+        // Un-reweight before anything below reads tls.pss.dist[]: d(s,v) = d'(s,v) - h(s) + h(v).
+        // Must happen before both the APSP write-back just below and the CC/PC accumulation
+        // further down, since both consume tls.pss.dist[] directly. A no-op when ds.potentials
+        // is empty (plain Dijkstra/BFS, no Johnson's reweighting requested). RAND_MAX (unreached)
+        // is left untouched - it's a sentinel, not a real distance to un-reweight.
+        if (!ds.potentials.isEmpty())
+        {
+            for (int vi = 0; vi < totalV; ++vi)
+            {
+                if (tls.pss.dist[vi] != RAND_MAX)
+                    tls.pss.dist[vi] += ds.potentials[vi] - ds.potentials[si];
+            }
+        }
 
         // APSP write-back: persist tls.pss.dist / sigma into row si of the flat matrices.
         // Safe: si is unique across all concurrent lambda invocations, so no two sources ever
@@ -1376,7 +1414,8 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                                   const bool &inverseWeights,
                                   const bool &dropIsolates,
                                   PerSourceScratch &pss,
-                                  QVector<qreal> &partialSC)
+                                  QVector<qreal> &partialSC,
+                                  const QVector<qreal> &potentials)
 {
 
     Q_UNUSED(dropIsolates);
@@ -1508,6 +1547,16 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                 qCDebug(lcEngine) << "    --- dijkstra: inverting weight to " << weight;
             }
 
+            // Johnson's-algorithm reweighting: w'(u,v) = w(u,v) + h(u) - h(v). Applied after
+            // inverseWeights above, since potentials reweight the actual edge cost being
+            // minimized, not the pre-inversion raw weight. potentials is empty for a plain
+            // Dijkstra run, so this is a no-op unless a caller explicitly opted in.
+            if (!potentials.isEmpty())
+            {
+                weight = weight + potentials[ui] - potentials[wi];
+                qCDebug(lcEngine) << "    --- dijkstra: reweighted to " << weight;
+            }
+
             // Start path discovery
             qCDebug(lcEngine) << "    --- dijkstra: Start path discovery";
 
@@ -1582,7 +1631,15 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
             // Reached only when the tie check above didn't match, so dist_w is guaranteed to be
             // outside distancesNearlyEqual()'s tolerance of cur_dist_w here - a genuine strict
             // improvement, not a near-tie that happens to round slightly lower.
-            else if (dist_w > 0 && dist_w < cur_dist_w)
+            //
+            // >= 0, not > 0: dist_w == 0 for w != s is impossible under plain Dijkstra (the
+            // #30 fix above already skips every zero-weight edge, so a non-source vertex can
+            // never land at exactly 0), but is a legitimate relaxed distance once Johnson's
+            // reweighting is in play - w'(u,v) = w(u,v) + h(u) - h(v) is only guaranteed >= 0,
+            // not > 0, so an ordinary positive-weight edge can reweight to exactly 0. A strict
+            // dist_w > 0 here silently drops that relaxation, which is a real, pre-existing bug
+            // this reweighting path is the first thing to actually reach.
+            else if (dist_w >= 0 && dist_w < cur_dist_w)
             {
 
                 qCDebug(lcEngine) << "    --- dijkstra: dist_w " << dist_w

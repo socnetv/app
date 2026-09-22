@@ -1174,6 +1174,10 @@ public:
                                 const bool &inverseWeights = true,
                                 const bool &dropIsolates = false);
 
+    void graphDistancesGeodesicSigned(const bool &computeCentralities = false,
+                                      const bool &inverseWeights = true,
+                                      const bool &dropIsolates = false);
+
     bool graphBellmanFordPotentials(const bool inverseWeights, QVector<qreal> &outPotentials);
 
     // ============================================================================
@@ -1413,12 +1417,23 @@ public:
     bool progressCanceled() const;
     void resetProgressCanceled();
 
-    // Set by DistanceEngine (via GraphDistanceProgressSink) when a distance computation refuses to
-    // run because the network contains a negative edge weight - Dijkstra is undefined for those.
-    // See #277/WS18 P1. Same read/reset shape as progressCanceled() above.
+    // Set by DistanceEngine (via GraphDistanceProgressSink) when the default (Dijkstra) distance
+    // computation refuses to run because the network contains a negative edge weight - Dijkstra
+    // is undefined for those. See #277/WS18 P1. Does not fire for a negative-weight-safe
+    // computation (see negativeCycleDetected() below for that path's own refusal). Same
+    // read/reset shape as progressCanceled() above.
     bool negativeWeightsDetected() const;
     void resetNegativeWeightsDetected();
     void setNegativeWeightsDetected();
+
+    // Set by DistanceEngine when a negative-weight-safe (Johnson's algorithm) computation finds
+    // a reachable negative cycle, which makes shortest paths undefined. Distinct from
+    // negativeWeightsDetected() above: that flag means "negative weight, wrong algorithm
+    // (Dijkstra)"; this one means "no algorithm can answer this, the graph itself has no
+    // well-defined shortest paths." Same read/reset shape as progressCanceled() above.
+    bool negativeCycleDetected() const;
+    void resetNegativeCycleDetected();
+    void setNegativeCycleDetected();
 
     /**  vpos stores the real position of each vertex inside m_graph.
      *  It starts at zero (0).
@@ -1670,6 +1685,10 @@ private:
     // negativeWeightsDetected() from whichever thread issued the computation - same cross-thread
     // shape as m_progressCanceled above, so same atomic-bool treatment.
     std::atomic<bool> m_negativeWeightsRefused;
+    // Written by DistanceEngine::compute() (graphThread) when its negative-weight-safe path finds
+    // a reachable negative cycle, read by negativeCycleDetected() - same cross-thread shape as
+    // m_negativeWeightsRefused above.
+    std::atomic<bool> m_negativeCycleDetected;
     bool m_graphIsDirected, m_graphIsSymmetric, m_graphIsWeighted, m_graphIsConnected;
     int m_graphWeaklyConnectedComponents;
     int m_graphStronglyConnectedComponents;

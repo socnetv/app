@@ -9,6 +9,35 @@
         "name": "Signed_Dir_N3_NegCycle.graphml",
         "path": "src/data/Signed_Dir_N3_NegCycle.graphml"
     },
+    "distances": {
+        "negative_cycle_detected": true,
+        "per_node": [
+            {
+                "BC": "0",
+                "CC": "0",
+                "distance_sum": "0",
+                "eccentricity": "0",
+                "id": 1,
+                "label": "1"
+            },
+            {
+                "BC": "0",
+                "CC": "0",
+                "distance_sum": "0",
+                "eccentricity": "0",
+                "id": 2,
+                "label": "2"
+            },
+            {
+                "BC": "0",
+                "CC": "0",
+                "distance_sum": "0",
+                "eccentricity": "0",
+                "id": 3,
+                "label": "3"
+            }
+        ]
+    },
     "graph": {
         "directed": true,
         "weighted": true

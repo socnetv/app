@@ -30,7 +30,8 @@ public:
     void compute(const bool computeCentralities,
                  const bool considerWeights,
                  const bool inverseWeights,
-                 const bool dropIsolates);
+                 const bool dropIsolates,
+                 const bool negativeWeightSafe = false);
 
     // Public probe for the potentials pass - see distance_engine.cpp for the doc comment.
     bool bellmanFordPotentials(const bool inverseWeights, QVector<qreal> &outPotentials);
@@ -42,6 +43,7 @@ private:
                  const bool considerWeights,
                  const bool inverseWeights,
                  const bool dropIsolates,
+                 const bool negativeWeightSafe,
                  struct DistanceScratch &ds,
                  struct CentralityScratchSSSP &csssp,
                  struct CentralityScratchFinalize &csfin,
@@ -83,12 +85,17 @@ private:
     // Dijkstra SSSP for weighted graphs (directed or not).
     // Same thread-safety contract as bfsSSSP: unsafe graph-wide writes go to
     // pss scratch fields and partialSC instead of touching graph/vertex state directly.
+    // potentials: empty for a plain Dijkstra run (the default); when non-empty, indexed by
+    // vertex position like pss.dist, each edge weight is reweighted inline as
+    // weight + potentials[ui] - potentials[wi] before relaxation (Johnson's algorithm - see
+    // bellmanFordPotentials()). Caller is responsible for un-reweighting pss.dist afterward.
     void dijkstraSSSP(const int &s, const int &si,
                       const bool &computeCentralities,
                       const bool &inverseWeights,
                       const bool &dropIsolates,
                       PerSourceScratch &pss,
-                      QVector<qreal> &partialSC);
+                      QVector<qreal> &partialSC,
+                      const QVector<qreal> &potentials = QVector<qreal>());
 };
 
 #endif // SOCNETV_DISTANCE_ENGINE_H

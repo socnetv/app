@@ -9,6 +9,43 @@
         "name": "Signed_Dir_N4_NoCycle.paj",
         "path": "src/data/Signed_Dir_N4_NoCycle.paj"
     },
+    "distances": {
+        "negative_cycle_detected": false,
+        "per_node": [
+            {
+                "BC": "0",
+                "CC": "0.1111111111111111",
+                "distance_sum": "9",
+                "eccentricity": "10",
+                "id": 1,
+                "label": "A"
+            },
+            {
+                "BC": "2",
+                "CC": "0",
+                "distance_sum": "0",
+                "eccentricity": "2147483647",
+                "id": 2,
+                "label": "B"
+            },
+            {
+                "BC": "2",
+                "CC": "0",
+                "distance_sum": "4",
+                "eccentricity": "2147483647",
+                "id": 3,
+                "label": "C"
+            },
+            {
+                "BC": "0",
+                "CC": "0",
+                "distance_sum": "0",
+                "eccentricity": "2147483647",
+                "id": 4,
+                "label": "D"
+            }
+        ]
+    },
     "graph": {
         "directed": true,
         "weighted": true

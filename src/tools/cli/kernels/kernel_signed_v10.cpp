@@ -21,13 +21,38 @@
 
 namespace cli {
 
+static QJsonArray buildDistancesPerNodeArray(Graph &g, bool negativeCycleDetected)
+{
+    QJsonArray arr;
+    const QList<int> verts = g.verticesList();
+    for (int v : verts)
+    {
+        GraphVertex *gv = g.vertexPtr(v);
+        if (!gv) continue;
+
+        QJsonObject o;
+        o["id"] = v;
+        o["label"] = gv->label();
+        // Not meaningful when negativeCycleDetected is true - same "shape stays uniform,
+        // check the flag first" convention as the potentials section above.
+        o["BC"] = negativeCycleDetected ? d2s(0) : d2s(gv->BC());
+        o["CC"] = negativeCycleDetected ? d2s(0) : d2s(gv->CC());
+        o["distance_sum"] = negativeCycleDetected ? d2s(0) : d2s(gv->distanceSum());
+        const qreal ecc = negativeCycleDetected ? 0 : gv->eccentricity();
+        o["eccentricity"] = d2s(ecc);
+        arr.append(o);
+    }
+    return arr;
+}
+
 static QJsonObject buildGoldenJsonV10(
     const QString     &inputPath,
     int                fileFormat,
     const HeadlessLoadResult &load,
     Graph             &g,
     bool               negativeCycleDetected,
-    const QVector<qreal> &potentials)
+    const QVector<qreal> &potentials,
+    bool               distancesNegativeCycleDetected)
 {
     QJsonObject root;
     root["schema_version"] = 10;
@@ -73,6 +98,15 @@ static QJsonObject buildGoldenJsonV10(
     }
     potentialsObj["per_node"] = perNode;
     root["potentials"] = potentialsObj;
+
+    // Distances/centralities from the actual negative-weight-safe SSSP path
+    // (Graph::graphDistancesGeodesicSigned(), Johnson's algorithm), not just the standalone
+    // potentials probe above - proves the reweighting is wired correctly end-to-end, not just
+    // that bellmanFordPotentials() computes h(v) correctly in isolation.
+    QJsonObject distancesObj;
+    distancesObj["negative_cycle_detected"] = distancesNegativeCycleDetected;
+    distancesObj["per_node"] = buildDistancesPerNodeArray(g, distancesNegativeCycleDetected);
+    root["distances"] = distancesObj;
 
     QJsonObject loadReport;
     loadReport["ok"]               = load.ok;
@@ -142,6 +176,33 @@ static int compareGoldenV10(const QJsonObject &expected, const QJsonObject &actu
         }
     }
 
+    const QJsonObject eDist = expected.value("distances").toObject();
+    const QJsonObject aDist = actual.value("distances").toObject();
+    ok &= cmpBool(eDist, aDist, "negative_cycle_detected", err);
+    const QJsonArray eDPN = eDist.value("per_node").toArray();
+    const QJsonArray aDPN = aDist.value("per_node").toArray();
+    if (eDPN.size() != aDPN.size()) {
+        err << "MISMATCH distances.per_node.size expected=" << eDPN.size()
+            << " got=" << aDPN.size() << "\n";
+        ok = false;
+    } else {
+        const QStringList fields = {"BC", "CC", "distance_sum", "eccentricity"};
+        for (int i = 0; i < eDPN.size(); ++i) {
+            const QJsonObject e = eDPN.at(i).toObject();
+            const QJsonObject a = aDPN.at(i).toObject();
+            const int eid = e.value("id").toInt();
+            const int aid = a.value("id").toInt();
+            if (eid != aid) {
+                err << "MISMATCH distances.per_node ordering at index=" << i
+                    << " expected_id=" << eid << " got_id=" << aid << "\n";
+                ok = false;
+                continue;
+            }
+            for (const QString &f : fields)
+                ok &= cmpNumStrTol(e, a, f, err, 1e-15);
+        }
+    }
+
     if (!ok) return 1;
 
     err << "OK: baseline match\n";
@@ -158,8 +219,16 @@ int runKernelSignedV10(const CliConfig &cfg,
 
     printKV("NEGATIVE_CYCLE_DETECTED", negativeCycleDetected ? 1 : 0);
 
+    // Also exercise the real negative-weight-safe SSSP path end-to-end (not just the standalone
+    // potentials probe above), so BC/CC/etc. get golden coverage through the actual reweighting
+    // wired into dijkstraSSSP()/runAllSources(). Its own negativeCycleDetected() should always
+    // agree with the probe above (same graph, same algorithm) - both are reported, but the
+    // distances section below reflects this call specifically.
+    g.graphDistancesGeodesicSigned(/*computeCentralities=*/true, cfg.inverseWeights, cfg.dropIsolates);
+    const bool distancesNegativeCycle = g.negativeCycleDetected();
+
     const QJsonObject actual = buildGoldenJsonV10(
-        cfg.inputPath, cfg.fileFormat, load, g, negativeCycleDetected, potentials);
+        cfg.inputPath, cfg.fileFormat, load, g, negativeCycleDetected, potentials, distancesNegativeCycle);
 
     if (!cfg.dumpJsonPath.isEmpty()) {
         QString err;

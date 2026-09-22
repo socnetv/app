@@ -9,6 +9,35 @@
         "name": "Signed_Dir_N3_NegCycle.paj",
         "path": "src/data/Signed_Dir_N3_NegCycle.paj"
     },
+    "distances": {
+        "negative_cycle_detected": true,
+        "per_node": [
+            {
+                "BC": "0",
+                "CC": "0",
+                "distance_sum": "0",
+                "eccentricity": "0",
+                "id": 1,
+                "label": "A"
+            },
+            {
+                "BC": "0",
+                "CC": "0",
+                "distance_sum": "0",
+                "eccentricity": "0",
+                "id": 2,
+                "label": "B"
+            },
+            {
+                "BC": "0",
+                "CC": "0",
+                "distance_sum": "0",
+                "eccentricity": "0",
+                "id": 3,
+                "label": "C"
+            }
+        ]
+    },
     "graph": {
         "directed": true,
         "weighted": true
