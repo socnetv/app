@@ -112,10 +112,10 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
  * shortest paths undefined; true with outPotentials fully populated (indexed by vertex position,
  * same order as verticesList()) otherwise.
  */
-bool Graph::graphComputePotentials(const bool inverseWeights, QVector<qreal> &outPotentials)
+bool Graph::graphBellmanFordPotentials(const bool inverseWeights, QVector<qreal> &outPotentials)
 {
     DistanceEngine engine(*this);
-    return engine.computePotentials(inverseWeights, outPotentials);
+    return engine.bellmanFordPotentials(inverseWeights, outPotentials);
 }
 
 //

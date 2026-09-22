@@ -83,7 +83,7 @@ struct DistanceScratch
     qreal pairDistance = 0;
 
     // Johnson's-algorithm potentials, one entry per vertex position (same indexing as
-    // PerSourceScratch::dist), computed once per compute() call by computePotentials() and
+    // PerSourceScratch::dist), computed once per compute() call by bellmanFordPotentials() and
     // shared read-only across every parallel per-source Dijkstra call. Empty/unused until
     // this reweighting is actually wired into dijkstraSSSP() - for now this is only computed
     // and validated, not consumed yet.
@@ -214,12 +214,12 @@ void DistanceEngine::compute(const bool computeCentralities,
 
     if (ds.E != 0)
     {
-        // computePotentials() is not called here yet: every graph reaching this line already
+        // bellmanFordPotentials() is not called here yet: every graph reaching this line already
         // has non-negative weights only (negativeWeightsDetected() refused above), so nothing
         // consumes its output today and calling it here would just be a wasted full edge-weight
         // relaxation pass on every ordinary computation. Call it here, gated behind an explicit
         // negative-weight-safe opt-in flag (not considerWeights alone), once a follow-up change
-        // threads its potentials into dijkstraSSSP()/runAllSources() - see computePotentials()'s
+        // threads its potentials into dijkstraSSSP()/runAllSources() - see bellmanFordPotentials()'s
         // own doc comment in distance_engine.h.
 
         // ---- Phase 1+2: SSSP loop + per-source accumulation ----
@@ -482,10 +482,10 @@ void DistanceEngine::initRun(const bool computeCentralities,
  * not meaningful if this returns false
  * @return false if a reachable negative cycle was found, true otherwise
  */
-bool DistanceEngine::computePotentials(const bool inverseWeights, QVector<qreal> &outPotentials)
+bool DistanceEngine::bellmanFordPotentials(const bool inverseWeights, QVector<qreal> &outPotentials)
 {
     DistanceScratch ds;
-    const bool ok = computePotentials(inverseWeights, ds);
+    const bool ok = bellmanFordPotentials(inverseWeights, ds);
     outPotentials = ds.potentials;
     return ok;
 }
@@ -507,7 +507,7 @@ bool DistanceEngine::computePotentials(const bool inverseWeights, QVector<qreal>
  * @param ds run-scratch state; ds.potentials/ds.negativeCycleDetected are written here
  * @return false if a reachable negative cycle was found, true otherwise
  */
-bool DistanceEngine::computePotentials(const bool inverseWeights, DistanceScratch &ds)
+bool DistanceEngine::bellmanFordPotentials(const bool inverseWeights, DistanceScratch &ds)
 {
     int totalV = 0;
     for (auto it = graph.verticesBegin(); it != graph.verticesEnd(); ++it)

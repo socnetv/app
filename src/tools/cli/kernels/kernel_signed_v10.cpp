@@ -2,7 +2,7 @@
 // SocNetV - Social Network Visualizer
 //
 // Signed-network analysis kernel (schema v10) for socnetv-cli.
-// Computes Johnson's-algorithm potentials h(v) via Graph::graphComputePotentials() and reports
+// Computes Johnson's-algorithm potentials h(v) via Graph::graphBellmanFordPotentials() and reports
 // negative-cycle detection, so both can be covered by golden-baseline regression testing.
 // Designed to grow: later signed-network measures (PN centrality, structural balance ratio) are
 // expected to add new JSON sections to this same kernel rather than spawning new ones, since they
@@ -153,7 +153,7 @@ int runKernelSignedV10(const CliConfig &cfg,
                        Graph &g)
 {
     QVector<qreal> potentials;
-    const bool ok = g.graphComputePotentials(cfg.inverseWeights, potentials);
+    const bool ok = g.graphBellmanFordPotentials(cfg.inverseWeights, potentials);
     const bool negativeCycleDetected = !ok;
 
     printKV("NEGATIVE_CYCLE_DETECTED", negativeCycleDetected ? 1 : 0);

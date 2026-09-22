@@ -33,7 +33,7 @@ public:
                  const bool dropIsolates);
 
     // Public probe for the potentials pass - see distance_engine.cpp for the doc comment.
-    bool computePotentials(const bool inverseWeights, QVector<qreal> &outPotentials);
+    bool bellmanFordPotentials(const bool inverseWeights, QVector<qreal> &outPotentials);
 
 private:
     Graph &graph;
@@ -48,7 +48,7 @@ private:
                  IDistanceProgressSink &sink);
 
     // Bellman-Ford reweighting pass - see distance_engine.cpp for the doc comment.
-    bool computePotentials(const bool inverseWeights, struct DistanceScratch &ds);
+    bool bellmanFordPotentials(const bool inverseWeights, struct DistanceScratch &ds);
 
     // Parallel SSSP source loop (Phase 2).
     // Distributes source vertices across CPU cores via QtConcurrent::blockingMap.

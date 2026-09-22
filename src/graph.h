@@ -1174,7 +1174,7 @@ public:
                                 const bool &inverseWeights = true,
                                 const bool &dropIsolates = false);
 
-    bool graphComputePotentials(const bool inverseWeights, QVector<qreal> &outPotentials);
+    bool graphBellmanFordPotentials(const bool inverseWeights, QVector<qreal> &outPotentials);
 
     // ============================================================================
     // --- Connectivity bookkeeping ---
