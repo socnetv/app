@@ -105,6 +105,19 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
                    dropIsolates);
 }
 
+/**
+ * @brief Computes Johnson's-algorithm potentials h(v) for every vertex - a standalone probe,
+ * not part of graphDistancesGeodesic()'s refuse-and-compute pipeline. Returns false (and
+ * leaves outPotentials not meaningful) if the graph has a reachable negative cycle, which makes
+ * shortest paths undefined; true with outPotentials fully populated (indexed by vertex position,
+ * same order as verticesList()) otherwise.
+ */
+bool Graph::graphComputePotentials(const bool inverseWeights, QVector<qreal> &outPotentials)
+{
+    DistanceEngine engine(*this);
+    return engine.computePotentials(inverseWeights, outPotentials);
+}
+
 //
 // DISCONNECTED PAIRS CACHE
 // During SSSP, we may find pairs of vertices that are not connected.

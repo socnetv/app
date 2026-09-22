@@ -81,6 +81,14 @@ struct DistanceScratch
 
     // Used during finalize/connectivity scan
     qreal pairDistance = 0;
+
+    // Johnson's-algorithm potentials, one entry per vertex position (same indexing as
+    // PerSourceScratch::dist), computed once per compute() call by computePotentials() and
+    // shared read-only across every parallel per-source Dijkstra call. Empty/unused until
+    // this reweighting is actually wired into dijkstraSSSP() - for now this is only computed
+    // and validated, not consumed yet.
+    QVector<qreal> potentials;
+    bool negativeCycleDetected = false;
 };
 
 /**
@@ -206,6 +214,14 @@ void DistanceEngine::compute(const bool computeCentralities,
 
     if (ds.E != 0)
     {
+        // computePotentials() is not called here yet: every graph reaching this line already
+        // has non-negative weights only (negativeWeightsDetected() refused above), so nothing
+        // consumes its output today and calling it here would just be a wasted full edge-weight
+        // relaxation pass on every ordinary computation. Call it here, gated behind an explicit
+        // negative-weight-safe opt-in flag (not considerWeights alone), once a follow-up change
+        // threads its potentials into dijkstraSSSP()/runAllSources() - see computePotentials()'s
+        // own doc comment in distance_engine.h.
+
         // ---- Phase 1+2: SSSP loop + per-source accumulation ----
         runAllSources(computeCentralities,
                       considerWeights,
@@ -454,6 +470,129 @@ void DistanceEngine::initRun(const bool computeCentralities,
             graph.maxIndexCC = graph.maxIndexCC * (1.0 / ds.maxEdgeWeightInNetwork);
         }
     }
+}
+
+/**
+ * @brief Public entry point for the potentials pass below, for callers with no DistanceScratch
+ * of their own (currently just the "signed" CLI kernel). Owns a throwaway DistanceScratch and
+ * copies its result out. Not part of compute()'s pipeline and not yet threaded into
+ * dijkstraSSSP()/runAllSources() - see the overload below for the algorithm and status.
+ * @param inverseWeights invert each edge weight before relaxing, same convention as elsewhere
+ * @param outPotentials filled with h(v) per vertex (indexed by vertex position) on success;
+ * not meaningful if this returns false
+ * @return false if a reachable negative cycle was found, true otherwise
+ */
+bool DistanceEngine::computePotentials(const bool inverseWeights, QVector<qreal> &outPotentials)
+{
+    DistanceScratch ds;
+    const bool ok = computePotentials(inverseWeights, ds);
+    outPotentials = ds.potentials;
+    return ok;
+}
+
+/**
+ * @brief Bellman-Ford reweighting pass computing a potential h(v) for every vertex, so that
+ * edges can later be reweighted as w'(u,v) = w(u,v) + h(u) - h(v) and handed to dijkstraSSSP()
+ * unmodified on a graph guaranteed to have no negative edges. Every real vertex starts at
+ * potential 0 - this is exactly the result an implicit virtual source with a zero-weight edge
+ * to every real vertex would produce on round 0, so that virtual source never needs to be
+ * materialized. Also detects negative cycles as a by-product of the same pass (the standard
+ * "does relaxation round V still improve anything" check) - a negative cycle makes shortest
+ * paths undefined, so ds.potentials is left incomplete/unusable and this returns false.
+ * Not yet called from compute() or wired into dijkstraSSSP()/runAllSources() - calling it
+ * unconditionally would cost every ordinary (non-negative-weight) computation a wasted full
+ * edge relaxation pass; it should be gated behind an explicit opt-in once its result is
+ * actually consumed by the SSSP loop.
+ * @param inverseWeights invert each edge weight before relaxing, same convention as elsewhere
+ * @param ds run-scratch state; ds.potentials/ds.negativeCycleDetected are written here
+ * @return false if a reachable negative cycle was found, true otherwise
+ */
+bool DistanceEngine::computePotentials(const bool inverseWeights, DistanceScratch &ds)
+{
+    int totalV = 0;
+    for (auto it = graph.verticesBegin(); it != graph.verticesEnd(); ++it)
+        ++totalV;
+
+    // Every real vertex starts at potential 0. This is exactly the result a zero-weight edge
+    // from an implicit virtual source to each real vertex would produce on round 0 of
+    // Bellman-Ford, so the virtual source never needs to be materialized as an actual vertex.
+    ds.potentials.assign(totalV, 0.0);
+    ds.negativeCycleDetected = false;
+
+    const int relation = graph.relationCurrent();
+
+    // Standard Bellman-Ford: V-1 rounds of relaxing every edge is enough to find every
+    // shortest path from the virtual source (which reaches every vertex directly), then one
+    // more round checks whether anything still improves - if so, a negative cycle is
+    // reachable and shortest paths (hence potentials) are undefined.
+    for (int round = 0; round < totalV; ++round)
+    {
+        bool anyRelaxed = false;
+
+        for (auto it = graph.verticesBegin(); it != graph.verticesEnd(); ++it)
+        {
+            const int u  = (*it)->number();
+            const int ui = graph.vertexIndexByNumber(u);
+
+            if (ds.potentials[ui] == RAND_MAX)
+            {
+                // u itself unreachable from the virtual source so far this round - can't relax
+                // anything through it yet. Never true in practice since every real vertex starts
+                // reachable from the virtual source at potential 0, kept only for safety.
+                continue;
+            }
+
+            auto it1 = graph.vertexAtIndex(ui)->outEdges().cbegin();
+            while (it1 != graph.vertexAtIndex(ui)->outEdges().cend())
+            {
+                if (it1.value().first != relation || it1.value().second.second != true)
+                {
+                    ++it1;
+                    continue;
+                }
+
+                const int w  = it1.key();
+                const int wi = graph.vertexIndexByNumber(w);
+
+                qreal weight = it1.value().second.first;
+
+                // Same zero-weight-edge and inverse-weight handling as dijkstraSSSP(), so the
+                // graph this pass reasons about is exactly the one dijkstraSSSP() will traverse.
+                if (weight == 0)
+                {
+                    ++it1;
+                    continue;
+                }
+                if (inverseWeights)
+                {
+                    weight = 1.0 / weight;
+                }
+
+                if (ds.potentials[ui] + weight < ds.potentials[wi])
+                {
+                    if (round == totalV - 1)
+                    {
+                        // This is the extra (Vth) round: relaxation still finding an
+                        // improvement here means a negative cycle is reachable.
+                        ds.negativeCycleDetected = true;
+                        return false;
+                    }
+                    ds.potentials[wi] = ds.potentials[ui] + weight;
+                    anyRelaxed = true;
+                }
+
+                ++it1;
+            }
+        }
+
+        if (!anyRelaxed)
+        {
+            // Converged early - no need to run the remaining rounds.
+            break;
+        }
+    }
+
+    return true;
 }
 
 void DistanceEngine::runAllSources(const bool computeCentralities,

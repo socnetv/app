@@ -24,6 +24,7 @@
 #include "tools/cli/kernels/kernel_connectivity_v7.h"
 #include "tools/cli/kernels/kernel_vertex_connectivity_v9.h"
 #include "tools/cli/kernels/kernel_matrix_v8.h"
+#include "tools/cli/kernels/kernel_signed_v10.h"
 
 namespace
 {
@@ -88,7 +89,7 @@ int main(int argc, char *argv[])
                                 "N", "0");
 
     QCommandLineOption kernelOpt(QStringList() << "kernel",
-                                 "Kernel: distance|reachability|walks_matrix|prominence|io_roundtrip|clustering|connectivity|matrix|vertex_connectivity",
+                                 "Kernel: distance|reachability|walks_matrix|prominence|io_roundtrip|clustering|connectivity|matrix|vertex_connectivity|signed",
                                  "name", "distance");
 
     QCommandLineOption walksLenOpt(QStringList() << "walks-length",
@@ -330,6 +331,9 @@ int main(int argc, char *argv[])
 
     if (cfg.kernel == "vertex_connectivity")
         return cli::runKernelVertexConnectivityV9(cfg, load, g);
+
+    if (cfg.kernel == "signed")
+        return cli::runKernelSignedV10(cfg, load, g);
 
     QTextStream(stderr) << "ERROR: unsupported --kernel: " << cfg.kernel << "\n";
     return 2;
