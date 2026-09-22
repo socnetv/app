@@ -345,6 +345,23 @@ Examples of high-value additions:
   above: no automated check exists today that `GraphicsWidget` state (visible/hidden edges, node
   positions) after a fixed operation sequence matches expectations, only manual
   `--interactive-script` testing. Could share WS6.6's harness scaffolding or be a sibling kernel.
+- **kernel_signed_v10** (not yet built, in progress — WS18 P2) — signed-network analysis outputs,
+  starting from `DistanceEngine::computePotentials()` (Johnson's-algorithm reweighting pass, added
+  but not yet wired into `dijkstraSSSP()`/`runAllSources()`):
+  - New `Graph::graphComputePotentials(inverseWeights, outPotentials)` — constructs a
+    `DistanceEngine`, calls the already-private `computePotentials()`, copies out the per-vertex
+    potential vector, returns whether a negative cycle was detected. `Graph` is already a friend of
+    `DistanceEngine`; no new friendship needed. Kept as a standalone probe, not part of the
+    refuse-and-compute pipeline `graphDistancesGeodesic()` drives.
+  - `src/tools/cli/kernels/kernel_signed_v10.{h,cpp}`, `--kernel signed`: dumps per-vertex
+    potentials and `negative_cycle_detected`, same `dataset`/`counts`/`graph` boilerplate every
+    other kernel emits. Registered in `socnetv_cli.cpp` and `CMakeLists.txt`.
+  - Baselines: `WeightedTies_Dir_N5_SigmaRegression` (already has an independently hand-verified
+    ground truth from #283) plus a new small fixture with a genuine negative cycle.
+  - **Designed to grow, not be replaced**, as WS18's later phases land: P3 (PN centrality) and P4
+    (structural balance ratio) add new JSON sections to this same kernel rather than spawning
+    `kernel_pn_v11`/`kernel_balance_v12` — all outputs describe the same "signed-network analysis
+    of this dataset" concept, on the same dataset shape (fixtures with signed edge weights).
 - **kernel_attribute_import_v7** (not yet built) — CSV/JSON attribute import + export roundtrip (#227, #232):
   - Use `src/data/TinyDir_N2_E1_Attributes.graphml` as the seed graph (2 nodes, 1 edge; heterogeneous custom attrs `Age`/`Party` using `d1000+` keys — also covers #208 regression)
   - Export nodes and edges to CSV and JSON via `TableExport`

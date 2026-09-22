@@ -10,7 +10,8 @@ Harary structural balance analysis on triads.
 
 ## Status
 
-**P1 complete (2026-09-19, #277).** P2-P4 not started — scoped only.
+Tracked by #284. **P1 complete (2026-09-19, #277).** P0 filed (#285), not started. P2-P4 not
+started — scoped only.
 
 **Unrelated fix found and landed along the way (#283):** while designing P2's Bellman-Ford engine
 path, cross-checking `dijkstraSSSP()`'s behavior against an independent library surfaced a real BC
@@ -55,12 +56,29 @@ see `roadmap_ws11_algorithm_additions.md`'s #277 entry.
 
 ## Phases
 
-Ordered by dependency. P1 is complete (#277). P2 depends on P1 only in the sense that P1's guard
+Ordered by dependency. P0 and P1 are independent of each other (P0 is an input-layer fix, P1 is
+a computation-layer guard) and both are prerequisites for everything after them — P1 is already
+complete; P0 is filed but not started. P2 depends on P1 only in the sense that P1's guard
 becomes obsolete for graphs where P2's engine is selected — the two aren't sequenced by data
 dependency otherwise. P3 depends on P2 for any measure defined via signed shortest paths (most of
 them are), but PN centrality specifically is not distance-based and could land before P2. P4
 (structural balance) is independent of P2/P3 — it operates on triad sign patterns directly, not on
 distances.
+
+### P0 — Parser support for negative edge weights (#285)
+
+DL and Adjacency (one-mode) format parsers gate edge creation on `edgeWeight > 0`
+(`parser_dl.cpp`'s fullmatrix reader, both the diagonal and normal-edge branches;
+`parser_adjacency.cpp`'s one-mode branch — the two-mode/bipartite branch is unaffected, it
+already gates on `cell != "0"`), silently dropping any negative-weight cell on import. Found
+while building the golden-coverage kernel for this workstream (`kernel_signed_v10`, WS6.1):
+a hand-built negative-cycle `.dl` fixture loaded with an edge missing, no error. Confirmed
+unaffected by checking every other parser's edge-creation call site: Pajek, GraphML, GML,
+EdgeList, and DOT all create an edge unconditionally once a weight is parsed, no positivity
+gate.
+
+Fix: create an edge on any non-zero weight in both parsers, matching the other five formats.
+Document each format's fix in CHANGELOG as it lands.
 
 ### P1 — Guard existing distance-based measures against negative weights (#277) ✔ complete
 
