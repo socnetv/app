@@ -72,8 +72,8 @@ that would be hardest to retrofit later. What's actually missing:
     `delay` between them. Found and fixed across all 9 affected commands during the WS15
     investigation that also produced Finding 8's fix — see
     `roadmap_ws15_cancellation_progress_unification.md`.
-  - **Two-step** (`filter_ego`, `filter_isolates`, `symmetrize_strongties`,
-    `symmetrize_cocitation`, `unilateral`, `distances`, `distances_bench` — anything long enough to
+  - **Two-step** (`filter-ego`, `filter-isolates`, `symmetrize-strongties`,
+    `symmetrize-cocitation`, `unilateral`, `distances`, `distances-bench` — anything long enough to
     want a progress dialog): `runGraphOperationAsync(operation, waitMessage, onComplete)` — one
     lambda does the (possibly slow) work, a second runs only once that's genuinely finished, to log
     `BENCH` and advance the script. Both lambdas share timer/result state via `std::shared_ptr`,
@@ -114,7 +114,7 @@ command below, not just the ones originally added for benchmarking.
   (`DistanceEngine::initRun` → `Graph::isSymmetric` → `edgeExists` → `GraphVertex::hasEdgeTo`,
   invalid `QMultiHash` access) — the real menu action, computing via `writeMatrix()`, did not crash
   on the same network, so this command now goes through that path instead.
-- `distances_bench [weights] [inverse] [dropisolates] [centralities]` — benchmarking-only sibling
+- `distances-bench [weights] [inverse] [dropisolates] [centralities]` — benchmarking-only sibling
   of `distances`: same dispatch and computation, no disk write. `centralities` has no real-menu
   equivalent (the GUI computes each centrality index via ~9 separate menu actions, not one combined
   action), so it lives here rather than on `distances`.

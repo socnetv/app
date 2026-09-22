@@ -71,8 +71,8 @@ void MainWindow::runInteractiveScript(const QString &scriptPath)
  *   `QMetaObject::invokeMethod(this, ..., Qt::QueuedConnection)` back to the GUI thread) must
  *   therefore both happen *inside* that same lambda, at the point the work is genuinely done -
  *   never outside/after the `invokeMethod()` call itself.
- * - **Two-step dispatch** (`filter_ego`, `filter_isolates`, `symmetrize_strongties`,
- *   `symmetrize_cocitation`, `unilateral`, `distances`, `distances_bench`,
+ * - **Two-step dispatch** (`filter-ego`, `filter-isolates`, `symmetrize-strongties`,
+ *   `symmetrize-cocitation`, `unilateral`, `distances`, `distances-bench`,
  *   `report-centrality-degree`, `report-centrality-closeness`, `report-centrality-closeness-ir`,
  *   `report-centrality-betweenness`, `report-centrality-stress`, `report-centrality-eccentricity`,
  *   `report-centrality-power`, `report-centrality-information`, `report-centrality-eigenvector`,
@@ -242,7 +242,7 @@ void MainWindow::processNextInteractiveCommand()
     {
         // Direct Graph::edgeFilterUnilateral() call via runGraphOperationAsync, matching
         // slotEditFilterEdgesUnilateral()'s own dispatch - same convention as
-        // 'filter_isolates'/'symmetrize_strongties' below. Previously triggered the real
+        // 'filter-isolates'/'symmetrize-strongties' below. Previously triggered the real
         // QAction instead, then advanced immediately without waiting for the (already async,
         // since WS15 P3) slot to actually finish - the same race class confirmed on 'erdos'.
         const bool toggleTo = !editFilterEdgesUnilateralAct->isChecked();
@@ -342,7 +342,7 @@ void MainWindow::processNextInteractiveCommand()
         // click-node <id> - sets Graph::vertexClicked() without going through GraphicsWidget's
         // real mouse-press/selection-changed chain (which also gates filterNodesByEgoNetworkAct's
         // enabled state - irrelevant here since the commands below call Graph:: methods directly,
-        // not via that QAction). Prerequisite for 'filter_ego'.
+        // not via that QAction). Prerequisite for 'filter-ego'.
         bool ok = false;
         const int id = line.mid(11).trimmed().toInt(&ok);
         if (!ok)
@@ -358,17 +358,17 @@ void MainWindow::processNextInteractiveCommand()
             qInfo() << "BENCH click-node id=" << id << "elapsed_ms=" << timer.elapsed();
             // Advance only after this queued lambda actually finishes on graphThread - see the
             // matching comment on 'erdos' above for why (a reproducible crash otherwise). Also
-            // makes 'filter_ego' below's own FIFO-ordering workaround belt-and-braces rather
+            // makes 'filter-ego' below's own FIFO-ordering workaround belt-and-braces rather
             // than load-bearing, since vertexClickedSet() is now guaranteed complete before the
             // next command starts.
             QMetaObject::invokeMethod(this, &MainWindow::processNextInteractiveCommand, Qt::QueuedConnection);
         }, Qt::QueuedConnection);
     }
-    else if (line == "filter_ego")
+    else if (line == "filter-ego")
     {
         // WS15 P3 Group C test aid: mirrors slotFilterNodesByEgoNetwork()'s real
         // vertexFilterByEgoNetwork() call and runGraphOperationAsync dispatch, skipping only the
-        // GUI-only filter-chip/filter-bar bookkeeping (same philosophy as distances_bench skipping
+        // GUI-only filter-chip/filter-bar bookkeeping (same philosophy as distances-bench skipping
         // the disk write) - added specifically to reproduce and verify the fix for the reported
         // multi-minute freeze on a large network (2000+ nodes) with only the OS beachball as
         // feedback. Needs 'click-node <id>' first.
@@ -391,21 +391,21 @@ void MainWindow::processNextInteractiveCommand()
             },
             tr("Filtering ego network (script)..."),
             [this, v1, timer]() {
-                qInfo() << "BENCH filter_ego v1=" << *v1
+                qInfo() << "BENCH filter-ego v1=" << *v1
                         << "N=" << activeNodes() << "E=" << activeEdges()
                         << "elapsed_ms=" << timer->elapsed();
                 QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
             });
     }
-    else if (line.startsWith("filter_isolates "))
+    else if (line.startsWith("filter-isolates "))
     {
-        // filter_isolates <on|off> - direct Graph::vertexIsolatedAllToggle() call via
+        // filter-isolates <on|off> - direct Graph::vertexIsolatedAllToggle() call via
         // runGraphOperationAsync, same dispatch as the real editFilterNodesIsolatesAct-driven
         // slotEditFilterNodesIsolates(), skipping only the QAction/status-message side effects.
         const QString arg = line.mid(16).trimmed();
         if (arg != "on" && arg != "off")
         {
-            qWarning() << "Malformed 'filter_isolates' command, skipping:" << line;
+            qWarning() << "Malformed 'filter-isolates' command, skipping:" << line;
             processNextInteractiveCommand();
             return;
         }
@@ -416,15 +416,15 @@ void MainWindow::processNextInteractiveCommand()
             [this, disableIsolates]() { activeGraph->vertexIsolatedAllToggle(disableIsolates); },
             tr("Filtering isolate nodes (script)..."),
             [this, disableIsolates, timer]() {
-                qInfo() << "BENCH filter_isolates disable=" << disableIsolates
+                qInfo() << "BENCH filter-isolates disable=" << disableIsolates
                         << "N=" << activeNodes() << "E=" << activeEdges()
                         << "elapsed_ms=" << timer->elapsed();
                 QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
             });
     }
-    else if (line.startsWith("symmetrize_strongties "))
+    else if (line.startsWith("symmetrize-strongties "))
     {
-        // symmetrize_strongties <all|current> - direct Graph::addRelationSymmetricStrongTies()
+        // symmetrize-strongties <all|current> - direct Graph::addRelationSymmetricStrongTies()
         // call via runGraphOperationAsync. Only safe to script on a single-relation network - the
         // real slotEditEdgeSymmetrizeStrongTies() shows a modal chooser dialog when multiple
         // relations exist, which would block an unattended script (same reason 'erdos'/'save'
@@ -432,7 +432,7 @@ void MainWindow::processNextInteractiveCommand()
         const QString arg = line.mid(22).trimmed();
         if (arg != "all" && arg != "current")
         {
-            qWarning() << "Malformed 'symmetrize_strongties' command, skipping:" << line;
+            qWarning() << "Malformed 'symmetrize-strongties' command, skipping:" << line;
             processNextInteractiveCommand();
             return;
         }
@@ -443,13 +443,13 @@ void MainWindow::processNextInteractiveCommand()
             [this, allRelations]() { activeGraph->addRelationSymmetricStrongTies(allRelations); },
             tr("Symmetrizing strong ties (script)..."),
             [this, allRelations, timer]() {
-                qInfo() << "BENCH symmetrize_strongties all=" << allRelations
+                qInfo() << "BENCH symmetrize-strongties all=" << allRelations
                         << "N=" << activeNodes() << "E=" << activeEdges()
                         << "elapsed_ms=" << timer->elapsed();
                 QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
             });
     }
-    else if (line == "symmetrize_cocitation")
+    else if (line == "symmetrize-cocitation")
     {
         // Direct Graph::relationAddCocitation() call via runGraphOperationAsync - no modal
         // dialog in the real slot for this one, so no bypass needed.
@@ -459,7 +459,7 @@ void MainWindow::processNextInteractiveCommand()
             [this]() { activeGraph->relationAddCocitation(); },
             tr("Computing cocitation relation (script)..."),
             [this, timer]() {
-                qInfo() << "BENCH symmetrize_cocitation N=" << activeNodes()
+                qInfo() << "BENCH symmetrize-cocitation N=" << activeNodes()
                         << "E=" << activeEdges() << "elapsed_ms=" << timer->elapsed();
                 QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
             });
@@ -504,9 +504,9 @@ void MainWindow::processNextInteractiveCommand()
                 QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
             });
     }
-    else if (line == "distances_bench" || line.startsWith("distances_bench "))
+    else if (line == "distances-bench" || line.startsWith("distances-bench "))
     {
-        // distances_bench [weights] [inverse] [dropisolates] [centralities] - benchmarking-only
+        // distances-bench [weights] [inverse] [dropisolates] [centralities] - benchmarking-only
         // variant of 'distances' above: same dispatch mechanism (runGraphOperationAsync) and
         // same underlying computation, but skips the disk write entirely, for isolating pure
         // computation cost. 'centralities' has no real-menu equivalent (the GUI computes each
@@ -528,9 +528,49 @@ void MainWindow::processNextInteractiveCommand()
             },
             tr("Computing geodesic distances (benchmark, no disk write). Please wait..."),
             [this, considerWeights, inverseWeights, dropIsolates, computeCentralities, timer]() {
-                qInfo() << "BENCH distances_bench weights=" << considerWeights
+                qInfo() << "BENCH distances-bench weights=" << considerWeights
                         << "inverse=" << inverseWeights << "dropisolates=" << dropIsolates
                         << "centralities=" << computeCentralities
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "bellman-ford" || line.startsWith("bellman-ford "))
+    {
+        // bellman-ford [inverse] [dropisolates] - verification aid for the negative-weight-safe
+        // distance path (Graph::graphDistancesGeodesicSigned(), Johnson's algorithm): same
+        // dispatch shape as distances-bench above, but always computes centralities and always
+        // considers weights (there is no unweighted variant of this path - a caller wanting plain
+        // BFS distances should use 'distances'/'distances-bench' instead), and reports
+        // negativeCycleDetected() instead of negativeWeightsDetected() - a negative cycle, not a
+        // negative weight, is the only thing this path refuses on.
+        const QStringList tokens = line.mid(12).trimmed().split(' ', Qt::SkipEmptyParts);
+        const bool inverseWeights = tokens.contains("inverse");
+        const bool dropIsolates = tokens.contains("dropisolates");
+
+        auto negativeCycle = std::make_shared<bool>(false);
+        auto sumBC = std::make_shared<qreal>(0);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, inverseWeights, dropIsolates, negativeCycle, sumBC]() {
+                activeGraph->graphDistancesGeodesicSigned(/*computeCentralities=*/true,
+                                                           inverseWeights, dropIsolates);
+                *negativeCycle = activeGraph->negativeCycleDetected();
+                if (!*negativeCycle)
+                {
+                    for (const int v : activeGraph->verticesList())
+                        *sumBC += activeGraph->vertexPtr(v)->BC();
+                }
+            },
+            tr("Computing geodesic distances (negative-weight-safe). Please wait..."),
+            [this, inverseWeights, dropIsolates, negativeCycle, sumBC, timer]() {
+                qInfo() << "BENCH bellman-ford inverse=" << inverseWeights
+                        << "dropisolates=" << dropIsolates
+                        << "negative_cycle=" << *negativeCycle
+                        << "sumBC=" << *sumBC
                         << "N=" << activeNodes() << "E=" << activeEdges()
                         << "elapsed_ms=" << timer->elapsed();
                 QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
