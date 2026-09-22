@@ -178,6 +178,21 @@ Candidate commands, not yet scoped:
   Motivating use case: verifying WS5 A5's cancellation-aware algebra kernels actually interrupt a
   real in-progress computation, not just accept the parameter without exercising it.
 
+### Command naming direction: parity with established scripting tools
+
+Going forward, new `--interactive-script` commands should be named and shaped after the
+equivalent operation's name in established, widely-used SNA scripting ecosystems (e.g. mainstream
+graph-analysis libraries/languages), rather than an arbitrary SocNetV-internal name, whenever a
+clear equivalent already exists there. Two motivations: (a) it makes cross-checking SocNetV's
+computations against those tools straightforward during development — matching names make the
+mapping between the two obvious rather than something to look up each time; (b) it lowers the
+friction for a user porting an existing script from one of those tools to SocNetV.
+
+This is a naming/API-shape preference for new commands, and worth revisiting on existing ones
+opportunistically, not a mandate to rename everything immediately or to add any external
+dependency/integration — SocNetV's own existing conventions in this file (see Commands above)
+still take precedence where they'd conflict.
+
 ### Known issues
 
 - **`scripts/run_report_export_bench.sh`'s large fixture hangs on its second invocation** within
