@@ -73,6 +73,7 @@ BASE_CLUST="${ROOT_DIR}/src/tools/baselines/clustering"
 BASE_CONN="${ROOT_DIR}/src/tools/baselines/connectivity"
 BASE_MATRIX="${ROOT_DIR}/src/tools/baselines/matrix"
 BASE_VCONN="${ROOT_DIR}/src/tools/baselines/vertex_connectivity"
+BASE_SIGNED="${ROOT_DIR}/src/tools/baselines/signed"
 DATA="${ROOT_DIR}/src/data"
 
 if [[ ! -x "$CLI" ]]; then
@@ -183,6 +184,19 @@ run_case_vertex_connectivity() {
 
   echo "==> $(basename "$baseline")"
   if ! "$CLI" --kernel vertex_connectivity -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
+    echo "[FAIL] $(basename "$baseline")"
+    FAILS=$((FAILS+1))
+  fi
+}
+
+run_case_signed() {
+  local input="$1"
+  local ftype="$2"
+  local flags=("${@:3:${#}-3}")
+  local baseline="${!#}"
+
+  echo "==> $(basename "$baseline")"
+  if ! "$CLI" --kernel signed -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
   fi
@@ -677,6 +691,53 @@ run_case_vertex_connectivity \
   2 \
   --conn-mode global \
   "${BASE_VCONN}/TinyComplete_Undir_N4_E6__VCONN__V9__FT2__global.json"
+
+# SIGNED (schema v10) - Johnson's-algorithm potentials / negative-cycle detection (WS18 P2).
+# WeightedTies_Dir_N5_SigmaRegression is all-positive-weight (reused from #283's BC fixture) -
+# potentials degenerate to all-zero here, which is the correct Bellman-Ford-from-virtual-source
+# result on a graph with no negative edges, not a placeholder/weak case.
+run_case_signed \
+  "${DATA}/WeightedTies_Dir_N5_SigmaRegression.paj" \
+  2 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/WeightedTies_Dir_N5_SigmaRegression__SIGNED__V10__FT2__W1_IW0.json"
+
+run_case_signed \
+  "${DATA}/WeightedTies_Dir_N5_SigmaRegression.graphml" \
+  1 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/WeightedTies_Dir_N5_SigmaRegression__SIGNED__V10__FT1__W1_IW0.json"
+
+# Signed_Dir_N4_NoCycle: mixed positive/negative edges, no negative cycle - pins non-trivial
+# potentials (h = [A:0, B:0, C:-2, D:0]), independently verified by hand, a standalone Python
+# Bellman-Ford, and networkx's single_source_bellman_ford_path_length() from a virtual source.
+# No .dl variant yet - DL's fullmatrix parser silently drops negative-weight cells (#285).
+run_case_signed \
+  "${DATA}/Signed_Dir_N4_NoCycle.paj" \
+  2 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/Signed_Dir_N4_NoCycle__SIGNED__V10__FT2__W1_IW0.json"
+
+run_case_signed \
+  "${DATA}/Signed_Dir_N4_NoCycle.graphml" \
+  1 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/Signed_Dir_N4_NoCycle__SIGNED__V10__FT1__W1_IW0.json"
+
+# Signed_Dir_N3_NegCycle: A->B->C->A summing to -3 - pins negative_cycle_detected=true.
+# Same independent verification (hand, Python, networkx) confirms the cycle; per-vertex
+# potentials aren't meaningful once a cycle is found, so the kernel reports 0 for all of them.
+run_case_signed \
+  "${DATA}/Signed_Dir_N3_NegCycle.paj" \
+  2 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/Signed_Dir_N3_NegCycle__SIGNED__V10__FT2__W1_IW0.json"
+
+run_case_signed \
+  "${DATA}/Signed_Dir_N3_NegCycle.graphml" \
+  1 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/Signed_Dir_N3_NegCycle__SIGNED__V10__FT1__W1_IW0.json"
 
 echo
 if [[ "$FAILS" -eq 0 ]]; then

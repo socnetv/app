@@ -1,0 +1,55 @@
+{
+    "counts": {
+        "links_sna": 20,
+        "nodes": 5,
+        "ties_graph": 20
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "WeightedTies_Dir_N5_SigmaRegression.paj",
+        "path": "src/data/WeightedTies_Dir_N5_SigmaRegression.paj"
+    },
+    "graph": {
+        "directed": true,
+        "weighted": true
+    },
+    "kernel": "signed",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 2,
+        "load_msg": "",
+        "net_name": "WeightedTies_Dir_N5_SigmaRegression.paj",
+        "ok": true
+    },
+    "potentials": {
+        "negative_cycle_detected": false,
+        "per_node": [
+            {
+                "id": 1,
+                "label": "A",
+                "potential": 0
+            },
+            {
+                "id": 2,
+                "label": "B",
+                "potential": 0
+            },
+            {
+                "id": 3,
+                "label": "C",
+                "potential": 0
+            },
+            {
+                "id": 4,
+                "label": "D",
+                "potential": 0
+            },
+            {
+                "id": 5,
+                "label": "E",
+                "potential": 0
+            }
+        ]
+    },
+    "schema_version": 10
+}

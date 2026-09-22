@@ -1,0 +1,50 @@
+{
+    "counts": {
+        "links_sna": 4,
+        "nodes": 4,
+        "ties_graph": 4
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "Signed_Dir_N4_NoCycle.paj",
+        "path": "src/data/Signed_Dir_N4_NoCycle.paj"
+    },
+    "graph": {
+        "directed": true,
+        "weighted": true
+    },
+    "kernel": "signed",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 0,
+        "load_msg": "",
+        "net_name": "Signed_Dir_N4_NoCycle.paj",
+        "ok": true
+    },
+    "potentials": {
+        "negative_cycle_detected": false,
+        "per_node": [
+            {
+                "id": 1,
+                "label": "A",
+                "potential": 0
+            },
+            {
+                "id": 2,
+                "label": "B",
+                "potential": 0
+            },
+            {
+                "id": 3,
+                "label": "C",
+                "potential": -2
+            },
+            {
+                "id": 4,
+                "label": "D",
+                "potential": 0
+            }
+        ]
+    },
+    "schema_version": 10
+}

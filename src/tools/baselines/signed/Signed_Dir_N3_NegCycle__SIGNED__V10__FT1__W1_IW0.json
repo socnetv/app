@@ -1,0 +1,45 @@
+{
+    "counts": {
+        "links_sna": 3,
+        "nodes": 3,
+        "ties_graph": 3
+    },
+    "dataset": {
+        "filetype": 1,
+        "name": "Signed_Dir_N3_NegCycle.graphml",
+        "path": "src/data/Signed_Dir_N3_NegCycle.graphml"
+    },
+    "graph": {
+        "directed": true,
+        "weighted": true
+    },
+    "kernel": "signed",
+    "load_report": {
+        "fileType_signal": 1,
+        "load_ms": 0,
+        "load_msg": "",
+        "net_name": "Signed_Dir_N3_NegCycle",
+        "ok": true
+    },
+    "potentials": {
+        "negative_cycle_detected": true,
+        "per_node": [
+            {
+                "id": 1,
+                "label": "1",
+                "potential": 0
+            },
+            {
+                "id": 2,
+                "label": "2",
+                "potential": 0
+            },
+            {
+                "id": 3,
+                "label": "3",
+                "potential": 0
+            }
+        ]
+    },
+    "schema_version": 10
+}

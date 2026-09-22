@@ -1,0 +1,45 @@
+{
+    "counts": {
+        "links_sna": 3,
+        "nodes": 3,
+        "ties_graph": 3
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "Signed_Dir_N3_NegCycle.paj",
+        "path": "src/data/Signed_Dir_N3_NegCycle.paj"
+    },
+    "graph": {
+        "directed": true,
+        "weighted": true
+    },
+    "kernel": "signed",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 0,
+        "load_msg": "",
+        "net_name": "Signed_Dir_N3_NegCycle.paj",
+        "ok": true
+    },
+    "potentials": {
+        "negative_cycle_detected": true,
+        "per_node": [
+            {
+                "id": 1,
+                "label": "A",
+                "potential": 0
+            },
+            {
+                "id": 2,
+                "label": "B",
+                "potential": 0
+            },
+            {
+                "id": 3,
+                "label": "C",
+                "potential": 0
+            }
+        ]
+    },
+    "schema_version": 10
+}
