@@ -45,6 +45,7 @@ The CLI is modular.
 * `cli/kernels/kernel_connectivity_v7.cpp`
 * `cli/kernels/kernel_matrix_v8.cpp`
 * `cli/kernels/kernel_vertex_connectivity_v9.cpp`
+* `cli/kernels/kernel_signed_v10.cpp`
 
 Each kernel owns:
 
@@ -422,6 +423,45 @@ Notes:
 * The `status`/`value` split (rather than a single int with a sentinel like `-1`) is deliberate —
   see #271, a real bug this session caused by exactly that pattern (a sentinel silently misused as
   a bool/count)
+
+---
+
+## Signed-Network Kernel
+
+* Kernel: `signed`
+* JSON schema: `schema_version = 10`
+
+Protects Johnson's-algorithm potentials (`DistanceEngine::bellmanFordPotentials()`) and the
+negative-weight-safe distance path (`Graph::graphDistancesGeodesicSigned()`) — see WS18 in
+`roadmap_ws18_signed_network_analysis.md` for the algorithm design. Designed to grow: later
+signed-network measures (PN centrality, structural balance ratio) are expected to add new JSON
+sections to this same kernel rather than spawning new ones.
+
+Two sections:
+
+* `potentials` — the standalone `bellmanFordPotentials()` probe: per-vertex potential `h(v)` and
+  `negative_cycle_detected`, independent of any SSSP run.
+* `distances` — BC/CC/`distance_sum`/`eccentricity` per vertex from the real negative-weight-safe
+  SSSP path (`graphDistancesGeodesicSigned()`), plus its own `negative_cycle_detected` (should
+  always agree with the `potentials` section's, since both run the same underlying algorithm on
+  the same graph — reported separately because they come from two different calls).
+
+On a negative cycle, per-vertex values in both sections are not meaningful (h(v) left incomplete,
+BC/CC/etc. left at 0) — the JSON shape stays uniform either way, but callers must check
+`negative_cycle_detected` before trusting any value.
+
+Characteristics:
+
+* deterministic vertex ordering
+* always considers weights (there is no unweighted variant of this path — a caller wanting plain
+  BFS distances should use the `distance` kernel instead)
+* no UI involvement
+
+Notes:
+
+* `-w`/`-x` control `inverseWeights`; `-c`/`-k` are not applicable (centralities are always
+  computed, drop-isolates is not currently exposed)
+* `--bench` not supported
 
 ---
 
@@ -853,6 +893,27 @@ Notes:
 * Local mode's `status` field distinguishes `"ok"` (a real value, including 0 for unreachable),
   `"adjacent"` (no finite cut exists — not a numeric answer), and `"invalid"` (bad source/target).
 
+### `--kernel signed` (schema v10)
+
+Allowed:
+
+* `-w`, `-x` (`-w` has no real effect — this kernel always considers weights; `-x` controls
+  `inverseWeights`)
+* `--dump-json`, `--compare-json`
+
+Not applicable:
+
+* `-c`, `-k` — centralities are always computed, drop-isolates is not currently exposed
+* `--bench` not supported
+
+Notes:
+
+* Reports both the standalone `bellmanFordPotentials()` probe (`potentials` section) and the real
+  negative-weight-safe SSSP path (`distances` section, BC/CC/`distance_sum`/`eccentricity`) — see
+  the kernel's own section above.
+* On a negative cycle, per-vertex values in both sections are not meaningful — check
+  `negative_cycle_detected` in each section before trusting any value there.
+
 ---
 
 ## Baseline naming convention (recommended)
@@ -868,6 +929,7 @@ When you dump JSON, bake the run flags into the filename (as already used in thi
   (e.g. `__jaccard`, `__pearson`) whenever `--similarity-measure` is not the default
   `simple_matching` — see the `TinyArc_Dir_N2_E1` baselines added for #279
 * Vertex Connectivity v9: `__VCONN__V9__FT{n}` (no flag suffixes — topology-only; suffix with mode/pair, e.g. `__global` or `__local_1_3`)
+* Signed v10: `__SIGNED__V10__FT{n}__W{0|1}_IW{0|1}`
 
 This keeps baselines self-describing and prevents "wrong flags, right file" mistakes.
 
