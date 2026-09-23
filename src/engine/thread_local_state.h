@@ -12,7 +12,7 @@
  *  - Running totals for graph-wide aggregates (distance sum, diameter, PC/SPC sums) that
  *    would otherwise require a mutex around every graph call. Geodesics (reachable-pair)
  *    count is NOT among these - it's computed once in finalize() from the final APSP
- *    matrix, not accumulated per-source (see #290).
+ *    matrix, not accumulated per-source.
  *
  * Lifecycle:
  *   allocate(totalV)   — called once per thread before the parallel loop
@@ -48,8 +48,7 @@ struct ThreadLocalState
 
     // Sum, across all sources this thread has processed, of each source's final-distance sum
     // (accumulated in the APSP write-back loop from tls.pss.dist[], after SSSP has fully
-    // settled - correct for both BFS and Dijkstra; see #287 for the bug this replaced, where
-    // BFS and the CC-denominator computation each accumulated their own copy of this sum).
+    // settled - correct for both BFS and Dijkstra).
     // Reduced into graph.addToDistanceSum() after the parallel loop.
     qreal totalDistanceSum = 0;
 

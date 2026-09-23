@@ -55,8 +55,7 @@ struct PerSourceScratch
     // distance, not a running/duplicated accumulation sampled during or right after
     // relaxation (a vertex can be relaxed to a smaller distance after an earlier, larger
     // one) - computed directly from dist[] / the final APSP matrix in runAllSources() and
-    // finalize() instead, after a source's SSSP run has fully settled. See #286 (diameter),
-    // #287 (distance sum) and #290 (geodesics count) for the bugs this replaced.
+    // finalize() instead, after a source's SSSP run has fully settled.
 
     // Allocate all containers once for totalVertices positions.
     // Call this once before the source loop.

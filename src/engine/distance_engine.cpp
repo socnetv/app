@@ -470,7 +470,10 @@ void DistanceEngine::initRun(const bool computeCentralities,
 
         graph.setConnectedCached(true);
 
-        if (graph.symmetricCached())
+        // maxIndexBC/maxIndexSC are the SBC/SSC normalization denominators; gated on the
+        // graph's directed/undirected mode (not tie reciprocity) to match the halving the raw
+        // BC/SC values get further down in this function.
+        if (graph.isUndirected())
         {
             graph.maxIndexBC = (ds.N == 2) ? 1 : (ds.N - 1.0) * (ds.N - 2.0) / 2.0;
             graph.maxIndexSC = (ds.N == 2) ? 1 : (ds.N - 1.0) * (ds.N - 2.0) / 2.0;
@@ -718,7 +721,7 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
         // Distance sum and geodesics (reachable-pair) count are NOT accumulated here from
         // per-source scratch - both are computed once, after every source has settled, from
         // the final APSP matrix (distance sum in the write-back loop just below; geodesics
-        // count in finalize()). See #287 and #290 for the bugs this replaced.
+        // count in finalize()).
 
         qCDebug(lcEngine) << "***** PHASE 1 (SSSP): FINISHED BFS/DIJKSTRA for s" << s
                  << "— writing APSP results back to vertex" << si;
@@ -741,15 +744,13 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
         // (same pass, since it's already walking every final, un-reweighted distance) find this
         // source's own diameter contribution and its own distance-sum contribution - both from
         // FINAL per-vertex distances, not a running/duplicated sum sampled during or right after
-        // relaxation (a vertex can be relaxed to a smaller distance after an earlier, larger one;
-        // tracking every relaxation event instead of the final value per vertex was a real bug
-        // for diameter - see #286 - and accumulating the distance sum from two different places
-        // at once was a real bug too - see #287; per-vertex eccentricity had the same relaxation-
-        // event-tracking bug too, fixed separately in finalize() - see #288). RAND_MAX (unreached)
-        // is excluded from both, matching graphSumDistanceCached()'s existing disconnected-graph
-        // handling (divides
-        // by the reachable-pair count, not N*(N-1), when the graph isn't fully connected - see
-        // runAllSources() below). Safe: si is unique across all concurrent lambda invocations, so
+        // relaxation, since a vertex can be relaxed to a smaller distance after an earlier,
+        // larger one (per-vertex eccentricity and the graph-wide geodesics count need the same
+        // final-state treatment, computed separately in finalize()). RAND_MAX (unreached) is
+        // excluded from both, matching graphSumDistanceCached()'s existing disconnected-graph
+        // handling (divides by the reachable-pair count, not N*(N-1), when the graph isn't fully
+        // connected - see runAllSources() below). Safe: si is unique across all concurrent
+        // lambda invocations, so
         // no two sources ever write the same row. Unconditional (every column vi, not just reached
         // ones) - tls.pss.dist[vi] already holds RAND_MAX for every unreached vi
         // (PerSourceScratch::resetPerSource() fills it before every source, unconditionally),
@@ -802,8 +803,8 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
             // disconnected-graph sentinel so CC becomes 0 when s cannot reach all others.
             // This sum is local to CC only - it deliberately includes RAND_MAX (unlike the
             // graph-wide distance sum accumulated in the APSP write-back loop above), so it
-            // must never also feed graph.addToDistanceSum() (see #287: it used to, and that
-            // duplicated the graph-wide sum on top of the one already accumulated above).
+            // must never also feed graph.addToDistanceSum() - doing so would duplicate the
+            // graph-wide sum on top of the one already accumulated above.
             qreal distances_sum_for_s = 0;
             for (int vi1 = 0; vi1 < totalV; ++vi1)
             {
@@ -865,12 +866,12 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
     // thread after blockingMap returns; no concurrent access, no mutexes needed.
     for (auto &tls : allStates)
     {
-        // Distance sum from the APSP write-back loop's final-distance walk (#287) - the single
+        // Distance sum from the APSP write-back loop's final-distance walk - the single
         // source of truth for the graph-wide sum, correct for both BFS and Dijkstra.
         graph.addToDistanceSum(tls.totalDistanceSum);
 
-        // Geodesics count is NOT reduced here - see #290; finalize() computes the true
-        // reachable-pair count from the final APSP matrix instead of this per-thread total.
+        // Geodesics count is NOT reduced here; finalize() computes the true reachable-pair
+        // count from the final APSP matrix instead of a per-thread total.
 
         // Diameter: keep the overall maximum across all threads.
         if (tls.maxDiameter > graph.graphDiameterCached())
@@ -930,10 +931,9 @@ void DistanceEngine::finalize(const bool computeCentralities,
 
     // True count of distinct reachable ordered pairs, used as avg_distance's denominator on a
     // disconnected graph - computed here, once, from the final settled APSP matrix, not
-    // accumulated as pss.sourceGeodesicsCount during relaxation (that counts every relaxation
-    // EVENT, which over-counts whenever a pair is relaxed more than once before settling on its
-    // true shortest distance - the same "event count instead of final state" bug shape as
-    // #286/#287/#288; see #290).
+    // accumulated by incrementing a counter once per relaxation EVENT during the source loop
+    // (that over-counts whenever a pair is relaxed more than once before settling on its true
+    // shortest distance).
     int reachablePairsCount = 0;
 
     for (ds.it = graph.verticesBegin(); ds.it != graph.verticesEnd(); ++ds.it)
@@ -951,7 +951,7 @@ void DistanceEngine::finalize(const bool computeCentralities,
         // parallel source loop wrote), which tracks a running max sampled during/after each
         // relaxation event, not each vertex's FINAL distance. A vertex can be relaxed to a
         // smaller distance after an earlier, larger one, so that running max can overstate the
-        // true eccentricity - same bug shape as #286 (diameter), see #288.
+        // true eccentricity.
         bool disconnectedFromSome = false;
         qreal maxReachableDist = 0;
 
@@ -1047,10 +1047,8 @@ void DistanceEngine::finalize(const bool computeCentralities,
 
     } // end for disconnected checking
 
-    // Replaces the old per-source pss.sourceGeodesicsCount/totalGeodesicsCount accumulation
-    // (which counted every relaxation event, over-counting whenever a pair was relaxed more
-    // than once - see #290) with the true count of distinct reachable ordered pairs, just
-    // computed above from the final settled APSP matrix.
+    // The true count of distinct reachable ordered pairs, just computed above from the final
+    // settled APSP matrix.
     graph.addGeodesicsCount(reachablePairsCount);
 
     // Compute average path length...
@@ -1093,7 +1091,14 @@ void DistanceEngine::finalize(const bool computeCentralities,
             graph.minmax(csf.SPC, (*ds.it), graph.maxSPC, graph.minSPC, graph.maxNodeSPC, graph.minNodeSPC);
 
             // Compute std BC, classes and min/maxSBC
-            if (graph.symmetricCached())
+            //
+            // Gated on the graph's directed/undirected mode, not tie reciprocity: a directed
+            // graph can have every tie reciprocated (e.g. a corporate-interlocks network where
+            // every link happens to be mutual) while Brandes' algorithm still visits (s,t) and
+            // (t,s) as distinct ordered pairs, as it should for a directed network. Only a
+            // graph genuinely undirected collapses (s,t)/(t,s) into one unordered pair needing
+            // the /2 correction.
+            if (graph.isUndirected())
             {
                 qCDebug(lcEngine) << "Betweenness centrality must be divided by"
                          << " two if the graph is undirected";
@@ -1118,7 +1123,8 @@ void DistanceEngine::finalize(const bool computeCentralities,
 
             // prepare to compute stdSC
             csf.SC = (*ds.it)->SC();
-            if (graph.symmetricCached())
+            // Same reasoning as BC just above: gate on isUndirected(), not symmetricCached().
+            if (graph.isUndirected())
             {
                 (*ds.it)->setSC(csf.SC / 2.0);
                 csf.SC = (*ds.it)->SC();
@@ -1371,12 +1377,11 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si,
                 // Multiple threads run bfsSSSP concurrently; these graph methods
                 // are not thread-safe.  The owning thread reduces the scratch totals
                 // into graph state after QtConcurrent::blockingMap returns.
-                // Distance sum and geodesics count are NOT accumulated here (see #287, #290) -
-                // both are summed once, after SSSP settles, from the final settled APSP data
-                // (distance sum in runAllSources()'s write-back loop, geodesics count in
-                // finalize()) - safe for both BFS and Dijkstra, since a vertex can be
-                // re-relaxed to a smaller distance later (Dijkstra) and only the final
-                // value should count.
+                // Distance sum and geodesics count are NOT accumulated here - both are summed
+                // once, after SSSP settles, from the final settled APSP data (distance sum in
+                // runAllSources()'s write-back loop, geodesics count in finalize()) - safe for
+                // both BFS and Dijkstra, since a vertex can be re-relaxed to a smaller distance
+                // later (Dijkstra) and only the final value should count.
 
                 qCDebug(lcEngine) << "== BFS  - d("
                          << s << "," << w
@@ -1392,8 +1397,8 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si,
                     // Source-vertex writes (si is unique per thread): safe for parallelism.
                     graph.vertexAtIndex(si)->setCC(graph.vertexAtIndex(si)->CC() + dist_w);
 
-                    // Eccentricity is NOT tracked here (see #288) - finalize() computes it from
-                    // each vertex's final settled APSP row instead, the single source of truth.
+                    // Eccentricity is NOT tracked here - finalize() computes it from each
+                    // vertex's final settled APSP row instead, the single source of truth.
                 }
             }
 
@@ -1701,8 +1706,8 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
 
                 pss.dist[wi] = dist_w;
 
-                // Geodesics count is NOT accumulated here (see #290) - finalize() computes
-                // the true reachable-pair count from the final settled APSP matrix instead.
+                // Geodesics count is NOT accumulated here - finalize() computes the true
+                // reachable-pair count from the final settled APSP matrix instead.
 
                 qCDebug(lcEngine) << "    --- dijkstra: "
                             "Set d ( s="
@@ -1732,11 +1737,11 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                              << dist_w << "from s is "
                              << pss.nthOrder.value(dist_w, 0);
 
-                    // Eccentricity is NOT tracked here (see #288) - a running max sampled
-                    // during/after relaxation events can overstate a vertex's true eccentricity
-                    // when some other vertex is relaxed to a smaller distance later (same bug
-                    // shape as #286/diameter). finalize() computes it from each vertex's final
-                    // settled APSP row instead, the single source of truth.
+                    // Eccentricity is NOT tracked here - a running max sampled during/after
+                    // relaxation events can overstate a vertex's true eccentricity when some
+                    // other vertex is relaxed to a smaller distance later. finalize() computes
+                    // it from each vertex's final settled APSP row instead, the single source
+                    // of truth.
 
                     qCDebug(lcEngine) << "    --- dijkstra: Compute Centralities: "
                                 "Resetting Ps[w =" << w << "] to [u =" << u
