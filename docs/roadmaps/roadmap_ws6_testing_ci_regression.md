@@ -681,7 +681,7 @@ Weighted col is N/A where the table above says the kernel doesn't read weights):
 | `matrix` | ✅ yes | ✅ done 2026-09-23 | ✅ done 2026-09-23 — `adjacency`/`distances`/`reachability`/`clique_comembership` on `TinyPath_N3_E2` hand-verified; `Benchmark_BA_Directed_N500_m3`'s adjacency (row/col sums, trace, 5 sampled cells) cross-checked via independent `.paj` parse, all match; `similarity` already verified for #279/#280. New weighted baseline `TinyDirWeighted_N3` (A→B:2, B→C:3, directed, one-way only) added and independently verified two ways: hand-derived adjacency/distances/reachability, and a from-scratch Python reimplementation of simple-matching similarity's algorithm (not copied from SocNetV source) cross-checked against the dumped `similarity` category. Also confirms `clique_comembership` correctly requires **reciprocal** ties for adjacency (`reciprocalNeighborhoodList()`) — a one-directional arc doesn't count, so this fixture's expected result is the identity matrix (no shared cliques), not what a naive undirected-adjacency assumption would predict. |
 | `vertex_connectivity` | ✅ yes | N/A (topology-only) | ✅ done (pre-existing) — Petersen graph kappa(G)=3 textbook cross-check + live GUI cross-check |
 | `reachability` | ✅ yes (1 dir + 1 undir) | N/A (topology-only) | ✅ done 2026-09-23 — both baselines cross-checked cell-by-cell against a standalone Python BFS reimplementation (not SocNetV code). `DunbarGelada_H22a` (undirected, N=12): fully connected, all 144 pairs reachable, density 1.0, every matrix cell independently confirmed 1. `StokmanZiegler_Netherlands` (directed per DL FULLMATRIX loading, though the underlying matrix happens to be symmetric; N=16, node 16/NSU fully isolated): 226/256 reachable pairs, density 0.8828125, full 16×16 matrix matched cell-by-cell. |
-| `walks` | ✅ yes (1 dir + 1 undir + 1 tiny) | N/A (topology-only) | ❌ not done — 3 baselines, none independently verified |
+| `walks` | ✅ yes (1 dir + 1 undir + 1 tiny) | N/A (topology-only) | ✅ done 2026-09-23 — all 3 baselines cross-checked cell-by-cell against a standalone Python adjacency-matrix-power reimplementation (not SocNetV code). `TinyPath_N3_E2` (K=2, undirected N=3): total 6, matrix matched. `DunbarGelada_H22a` (K=6, undirected N=12): total 136644, all 144 cells matched. `StokmanZiegler_Netherlands` (K=6, directed load path over a symmetric binarized matrix, N=16): total 5129002, all 256 cells matched. |
 | `clustering` | ✅ yes | ✅ yes | ❌ not done — 8 baselines, weighted/unweighted and dir/undir breadth exists, zero independent verification |
 | `distance` | partial — weighted cases skew directed | ✅ yes | ✅ partial — several verified during #283/#286 |
 | `prominence` | mostly directed | ✅ yes | ⚠️ partial — spot-checked during Katz/Bonacich work, not exhaustive |
@@ -691,9 +691,7 @@ Weighted col is N/A where the table above says the kernel doesn't read weights):
 **Next actions implied by this table**, in the risk-based order from Approach above:
 1. ~~Add the missing weighted `matrix` baseline~~ — done 2026-09-23 (`TinyDirWeighted_N3`).
 2. ~~Independently verify `reachability`'s 2 existing baselines~~ — done 2026-09-23.
-3. Independently verify `walks`'s 3 existing baselines (tractable by hand for `TinyPath_N3_E2`;
-   `DunbarGelada_H22a`/`StokmanZiegler_Netherlands` need a short standalone script, adjacency-power
-   is trivial to reimplement independently).
+3. ~~Independently verify `walks`'s 3 existing baselines~~ — done 2026-09-23.
 4. Independently verify `clustering`'s 8 baselines (already has full weighted/unweighted ×
    dir/undir breadth — pure verification work, no new fixtures needed).
 5. Extend `distance`/`prominence` verification to full breadth (currently partial).
