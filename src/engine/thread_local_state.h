@@ -44,15 +44,12 @@ struct ThreadLocalState
     // Post-loop: vertex[ui]->setSC( sum over all threads of partialSC[ui] )
     QVector<qreal> partialSC;
 
-    // Sum of pss.sourceDistanceSum across all sources this thread has processed.
-    // Originates from BFS inner-loop "dist_w" accumulation (not used by Dijkstra).
+    // Sum, across all sources this thread has processed, of each source's final-distance sum
+    // (accumulated in the APSP write-back loop from tls.pss.dist[], after SSSP has fully
+    // settled - correct for both BFS and Dijkstra; see #287 for the bug this replaced, where
+    // BFS and the CC-denominator computation each accumulated their own copy of this sum).
     // Reduced into graph.addToDistanceSum() after the parallel loop.
     qreal totalDistanceSum = 0;
-
-    // Sum of per-source distances_sum_for_s (computeCentralities path only).
-    // This is the CC-denominator sum that also goes into graphSumDistance.
-    // Reduced into graph.addToDistanceSum() after the parallel loop.
-    qreal totalCCDistanceSum = 0;
 
     // Total geodesic-path count across all sources this thread has processed.
     // Replaces repeated graph.incGeodesicsCount() calls inside BFS / Dijkstra.

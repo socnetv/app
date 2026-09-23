@@ -703,7 +703,7 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
         qCDebug(lcEngine) << "***** PHASE 1 (SSSP) [thread slot" << mySlot << "]: source s" << s << "vpos" << si;
 
         // Reset per-source scratch (dist, sigma, and optionally Stack/Ps/nthOrder).
-        // Also resets pss.sourceDistanceSum / sourceGeodesicsCount.
+        // Also resets pss.sourceGeodesicsCount.
         tls.pss.resetPerSource(computeCentralities);
 
         // Run BFS or Dijkstra; unsafe graph calls go to tls.pss scratch fields / tls.partialSC.
@@ -718,7 +718,8 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
 
         // Accumulate per-source aggregates into thread-local running totals.
         // These will be reduced into graph-global state after the parallel loop.
-        tls.totalDistanceSum    += tls.pss.sourceDistanceSum;
+        // Distance sum is accumulated below, in the APSP write-back loop, from final
+        // dist[] values - not here (see #287).
         tls.totalGeodesicsCount += tls.pss.sourceGeodesicsCount;
 
         qCDebug(lcEngine) << "***** PHASE 1 (SSSP): FINISHED BFS/DIJKSTRA for s" << s
@@ -740,27 +741,36 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
 
         // APSP write-back: persist tls.pss.dist / sigma into row si of the flat matrices, and
         // (same pass, since it's already walking every final, un-reweighted distance) find this
-        // source's own eccentricity/diameter contribution - the max over FINAL per-vertex
-        // distances, not a running max sampled during relaxation (a vertex can be relaxed to a
-        // smaller distance after an earlier, larger one; tracking every relaxation event instead
-        // of the final value per vertex was a real bug - see #286). RAND_MAX (unreached) is
-        // excluded, matching existing diameter semantics (an unreachable pair doesn't contribute).
-        // Safe: si is unique across all concurrent lambda invocations, so no two sources ever
-        // write the same row. Unconditional (every column vi, not just reached ones) -
-        // tls.pss.dist[vi] already holds RAND_MAX for every unreached vi
+        // source's own eccentricity/diameter contribution and its own distance-sum contribution -
+        // both from FINAL per-vertex distances, not a running/duplicated sum sampled during or
+        // right after relaxation (a vertex can be relaxed to a smaller distance after an earlier,
+        // larger one; tracking every relaxation event instead of the final value per vertex was a
+        // real bug for diameter - see #286 - and accumulating the distance sum from two different
+        // places at once was a real bug too - see #287). RAND_MAX (unreached) is excluded from
+        // both, matching graphSumDistanceCached()'s existing disconnected-graph handling (divides
+        // by the reachable-pair count, not N*(N-1), when the graph isn't fully connected - see
+        // runAllSources() below). Safe: si is unique across all concurrent lambda invocations, so
+        // no two sources ever write the same row. Unconditional (every column vi, not just reached
+        // ones) - tls.pss.dist[vi] already holds RAND_MAX for every unreached vi
         // (PerSourceScratch::resetPerSource() fills it before every source, unconditionally),
         // so this isn't new work - it reuses a reset that was already happening.
         int sourceMaxDist = 0;
+        qreal sourceDistanceSum = 0;
         for (int vi = 0; vi < totalV; ++vi)
         {
             graph.m_apspDist[relation].setItem(si, vi, tls.pss.dist[vi]);
             graph.m_apspSigma[relation].setItem(si, vi, (qreal)tls.pss.sigma[vi]);
 
-            if (tls.pss.dist[vi] != RAND_MAX && tls.pss.dist[vi] > sourceMaxDist)
-                sourceMaxDist = (int)tls.pss.dist[vi];
+            if (tls.pss.dist[vi] != RAND_MAX)
+            {
+                sourceDistanceSum += tls.pss.dist[vi];
+                if (tls.pss.dist[vi] > sourceMaxDist)
+                    sourceMaxDist = (int)tls.pss.dist[vi];
+            }
         }
         if (sourceMaxDist > tls.maxDiameter)
             tls.maxDiameter = sourceMaxDist;
+        tls.totalDistanceSum += sourceDistanceSum;
 
         if (computeCentralities)
         {
@@ -790,14 +800,16 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
             // Walk every vertex position to zero delta[] (needed for BC back-propagation)
             // and simultaneously sum distances for CC.  RAND_MAX propagates the
             // disconnected-graph sentinel so CC becomes 0 when s cannot reach all others.
+            // This sum is local to CC only - it deliberately includes RAND_MAX (unlike the
+            // graph-wide distance sum accumulated in the APSP write-back loop above), so it
+            // must never also feed graph.addToDistanceSum() (see #287: it used to, and that
+            // duplicated the graph-wide sum on top of the one already accumulated above).
             qreal distances_sum_for_s = 0;
             for (int vi1 = 0; vi1 < totalV; ++vi1)
             {
                 tls.pss.delta[vi1] = 0.0;
                 distances_sum_for_s += tls.pss.dist[vi1];
             }
-            // Accumulate into thread-local total; graph.addToDistanceSum() in reduction.
-            tls.totalCCDistanceSum += distances_sum_for_s;
 
             qreal cc = (distances_sum_for_s != 0 && distances_sum_for_s < RAND_MAX)
                            ? 1.0 / distances_sum_for_s
@@ -853,11 +865,9 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
     // thread after blockingMap returns; no concurrent access, no mutexes needed.
     for (auto &tls : allStates)
     {
-        // Distance sum from BFS inner-loop discoveries (0 for Dijkstra).
+        // Distance sum from the APSP write-back loop's final-distance walk (#287) - the single
+        // source of truth for the graph-wide sum, correct for both BFS and Dijkstra.
         graph.addToDistanceSum(tls.totalDistanceSum);
-        if (computeCentralities)
-            // Distance sum from the CC-denominator accumulation in the centralities block.
-            graph.addToDistanceSum(tls.totalCCDistanceSum);
 
         // Geodesics count (reachable source-target pairs found by BFS / Dijkstra).
         graph.addGeodesicsCount(tls.totalGeodesicsCount);
@@ -1334,7 +1344,12 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si,
                 // Multiple threads run bfsSSSP concurrently; these graph methods
                 // are not thread-safe.  The owning thread reduces the scratch totals
                 // into graph state after QtConcurrent::blockingMap returns.
-                pss.sourceDistanceSum += dist_w;
+                // Distance sum itself is NOT accumulated here (see #287) - it's summed
+                // once, after SSSP settles, from the final pss.dist[] values in
+                // runAllSources()'s APSP write-back loop, the same place diameter is
+                // computed - safe for both BFS and Dijkstra, since a vertex can be
+                // re-relaxed to a smaller distance later (Dijkstra) and only the final
+                // value should count.
                 ++pss.sourceGeodesicsCount;
 
                 qCDebug(lcEngine) << "== BFS  - d("
