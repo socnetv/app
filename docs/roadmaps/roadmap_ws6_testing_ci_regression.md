@@ -625,6 +625,17 @@ Approach:
 - For each kernel, hand-derive the expected result independently (small enough networks that this
   is tractable by hand or a short verification script) and compare against the current baseline —
   not just against the app's current output, since the app could be self-consistently wrong.
+- **A single hand-derivation attempt is not automatically trustworthy — use a second independent
+  method when the first result is at all surprising.** Found live during the `matrix` weighted
+  baseline work (2026-09-23): a first hand-derivation of `similarity`'s simple-matching values
+  guessed the wrong column-exclusion rule (assumed "skip the diagonal cell", the actual rule is
+  "skip column j whenever j equals either actor being compared") and produced plausible-looking but
+  wrong expected values. A second, independent method — a short standalone script implementing the
+  measure from its algorithmic definition (not copied from SocNetV's C++), separate from external
+  tools used elsewhere for cross-checking (see this repo's own conventions for that) — caught the
+  mismatch and confirmed the app's output, not the first hand-derivation, was correct. The lesson:
+  "independently verified" means the verification method must itself be checked, not just run once
+  and trusted because it produced *a* number.
 - Where a baseline is found to be wrong, follow the same discipline used for the `powerIteration`
   fix and #283/#286: confirm the fix is unambiguously correct, understand exactly what changes and
   why, get explicit sign-off before touching previously-"passing" baselines, then re-dump with a
@@ -667,7 +678,7 @@ Weighted col is N/A where the table above says the kernel doesn't read weights):
 | Kernel | Dir+Undir? | Weighted axis | Independently verified? |
 |---|---|---|---|
 | `connectivity` | ✅ yes | N/A (topology-only) | ✅ done 2026-09-23 — all 10 baselines hand-derived from `.paj` source and matched exactly (component counts, weak vs. strong) |
-| `matrix` | ✅ yes | ⚠️ gap — every existing baseline runs `considerWeights=false` | ✅ partial 2026-09-23 — `adjacency`/`distances`/`reachability`/`clique_comembership` on `TinyPath_N3_E2` hand-verified; `Benchmark_BA_Directed_N500_m3`'s adjacency (row/col sums, trace, 5 sampled cells) cross-checked via independent `.paj` parse, all match. `similarity` already verified for #279/#280. **Still open: no weighted baseline exists at all** — `TinyDirWeighted_N3` (A→B:2, B→C:3, already in-repo) identified as the fixture to use; not yet added as a committed baseline. |
+| `matrix` | ✅ yes | ✅ done 2026-09-23 | ✅ done 2026-09-23 — `adjacency`/`distances`/`reachability`/`clique_comembership` on `TinyPath_N3_E2` hand-verified; `Benchmark_BA_Directed_N500_m3`'s adjacency (row/col sums, trace, 5 sampled cells) cross-checked via independent `.paj` parse, all match; `similarity` already verified for #279/#280. New weighted baseline `TinyDirWeighted_N3` (A→B:2, B→C:3, directed, one-way only) added and independently verified two ways: hand-derived adjacency/distances/reachability, and a from-scratch Python reimplementation of simple-matching similarity's algorithm (not copied from SocNetV source) cross-checked against the dumped `similarity` category. Also confirms `clique_comembership` correctly requires **reciprocal** ties for adjacency (`reciprocalNeighborhoodList()`) — a one-directional arc doesn't count, so this fixture's expected result is the identity matrix (no shared cliques), not what a naive undirected-adjacency assumption would predict. |
 | `vertex_connectivity` | ✅ yes | N/A (topology-only) | ✅ done (pre-existing) — Petersen graph kappa(G)=3 textbook cross-check + live GUI cross-check |
 | `reachability` | ✅ yes (1 dir + 1 undir) | N/A (topology-only) | ❌ not done — 2 baselines (`DunbarGelada_H22a`, `StokmanZiegler_Netherlands`), neither ever independently verified |
 | `walks` | ✅ yes (1 dir + 1 undir + 1 tiny) | N/A (topology-only) | ❌ not done — 3 baselines, none independently verified |
@@ -678,7 +689,7 @@ Weighted col is N/A where the table above says the kernel doesn't read weights):
 | `io_roundtrip` | per-format | per-format | N/A — fidelity check, not a numeric algorithm |
 
 **Next actions implied by this table**, in the risk-based order from Approach above:
-1. Add the missing weighted `matrix` baseline (`TinyDirWeighted_N3`, fixture already exists).
+1. ~~Add the missing weighted `matrix` baseline~~ — done 2026-09-23 (`TinyDirWeighted_N3`).
 2. Independently verify `reachability`'s 2 existing baselines (tractable by hand — both are BFS
    reachability on graphs under 20 nodes).
 3. Independently verify `walks`'s 3 existing baselines (tractable by hand for `TinyPath_N3_E2`;

@@ -622,6 +622,18 @@ run_case_matrix \
   2 \
   "${BASE_MATRIX}/Benchmark_BA_Directed_N500_m3__MATRIX__V8__FT2__W0_IW1_DI0.json"
 
+# WS6.8: first weighted matrix baseline (adjacency/distances/similarity/etc. all read real
+# weight values when considerWeights=true, unlike connectivity/vertex_connectivity/
+# reachability/walks, which are edge-existence-only - see the coverage matrix in
+# roadmap_ws6_testing_ci_regression.md). Also exercises the reciprocal-ties-only rule for
+# clique co-membership: A->B, B->C are one-directional, so no pair is mutually tied and the
+# expected clique_comembership is the identity matrix (each vertex its own singleton clique).
+run_case_matrix \
+  "${DATA}/TinyDirWeighted_N3.paj" \
+  2 \
+  -w 1 -x 0 \
+  "${BASE_MATRIX}/TinyDirWeighted_N3__MATRIX__V8__FT2__W1_IW0_DI0.json"
+
 # Fix #279: TinyArc_Dir_N2_E1 (N=2, one directed arc) is the minimal fixture that drives
 # similarityMatrix()/pearsonCorrelationCoefficients() into their degenerate empty-sample
 # case (ties==0 for Jaccard/Simple-Matching, N-2<=0 for Pearson) under the default
