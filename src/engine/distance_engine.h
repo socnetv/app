@@ -71,9 +71,9 @@ private:
                   IDistanceProgressSink &sink);
 
     // Breadth-First Search SSSP for unweighted graphs.
-    // Writes distances and sigma to pss; accumulates the unsafe graph-wide geodesics count
-    // into pss.sourceGeodesicsCount instead of calling graph methods directly (safe for
-    // parallel execution from multiple threads).
+    // Writes distances and sigma to pss. Graph-wide aggregates (distance sum, geodesics
+    // count, diameter) are computed post-hoc from the final settled state, not accumulated
+    // here (see #287, #290).
     // SC increments go into partialSC[ui] rather than vertex->setSC() to avoid races
     // on intermediate vertices that may be visited by concurrent source threads.
     void bfsSSSP(const int &s, const int &si,

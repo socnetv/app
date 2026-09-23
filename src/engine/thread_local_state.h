@@ -9,14 +9,16 @@
  *    sources, so BC/SC are NOT written to GraphVertex directly inside the loop.
  *    Instead each thread accumulates into partialBC / partialSC, and a single-threaded
  *    reduction step at the end writes the totals to the vertex objects.
- *  - Running totals for graph-wide aggregates (distance sum, geodesics count, diameter,
- *    PC/SPC sums) that would otherwise require a mutex around every graph call.
+ *  - Running totals for graph-wide aggregates (distance sum, diameter, PC/SPC sums) that
+ *    would otherwise require a mutex around every graph call. Geodesics (reachable-pair)
+ *    count is NOT among these - it's computed once in finalize() from the final APSP
+ *    matrix, not accumulated per-source (see #290).
  *
  * Lifecycle:
  *   allocate(totalV)   — called once per thread before the parallel loop
  *   (partialBC / partialSC are zeroed at allocation; pss is reset per source)
- *   Post-loop reduction reads totalDistanceSum, totalGeodesicsCount, maxDiameter,
- *   totalSumPC, totalSumSPC, partialBC[*], partialSC[*] and merges into graph state.
+ *   Post-loop reduction reads totalDistanceSum, maxDiameter, totalSumPC, totalSumSPC,
+ *   partialBC[*], partialSC[*] and merges into graph state.
  */
 
 #ifndef SOCNETV_THREAD_LOCAL_STATE_H
@@ -50,11 +52,6 @@ struct ThreadLocalState
     // BFS and the CC-denominator computation each accumulated their own copy of this sum).
     // Reduced into graph.addToDistanceSum() after the parallel loop.
     qreal totalDistanceSum = 0;
-
-    // Total geodesic-path count across all sources this thread has processed.
-    // Replaces repeated graph.incGeodesicsCount() calls inside BFS / Dijkstra.
-    // Reduced via graph.addGeodesicsCount() after the parallel loop.
-    int totalGeodesicsCount = 0;
 
     // Maximum geodesic distance (diameter) seen by this thread.
     // Replaces graph.setDiameterCached() inside BFS / Dijkstra.

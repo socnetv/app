@@ -24,7 +24,7 @@
                 "BC": "4.5",
                 "CC": "0.037037037037037035",
                 "distance_sum": "27",
-                "eccentricity": "189",
+                "eccentricity": "13",
                 "id": 2,
                 "label": "2"
             },
@@ -32,7 +32,7 @@
                 "BC": "0.25",
                 "CC": "0.027027027027027029",
                 "distance_sum": "37",
-                "eccentricity": "289",
+                "eccentricity": "13",
                 "id": 3,
                 "label": "3"
             },
@@ -40,7 +40,7 @@
                 "BC": "0.75",
                 "CC": "0.027027027027027029",
                 "distance_sum": "37",
-                "eccentricity": "289",
+                "eccentricity": "13",
                 "id": 4,
                 "label": "4"
             },
@@ -48,7 +48,7 @@
                 "BC": "1.5",
                 "CC": "0.014925373134328358",
                 "distance_sum": "67",
-                "eccentricity": "89",
+                "eccentricity": "22",
                 "id": 5,
                 "label": "5"
             }

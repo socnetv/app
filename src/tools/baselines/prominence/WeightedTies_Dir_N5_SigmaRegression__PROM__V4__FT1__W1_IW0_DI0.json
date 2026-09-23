@@ -16,7 +16,7 @@
     "kernel": "prominence",
     "load_report": {
         "fileType_signal": 1,
-        "load_ms": 1,
+        "load_ms": 0,
         "load_msg": "",
         "net_name": "WeightedTies_Dir_N5_SigmaRegression",
         "ok": true
@@ -76,7 +76,7 @@
             "SPP": "0.1111111111111111",
             "SPRP": "1",
             "SSC": "0.16666666666666666",
-            "eccentricity": "189",
+            "eccentricity": "13",
             "eccentricity_inf": false,
             "id": 2,
             "label": "2"
@@ -104,7 +104,7 @@
             "SPP": "0.080000000000000002",
             "SPRP": "1",
             "SSC": "0.16666666666666666",
-            "eccentricity": "289",
+            "eccentricity": "13",
             "eccentricity_inf": false,
             "id": 3,
             "label": "3"
@@ -132,7 +132,7 @@
             "SPP": "0.14285714285714285",
             "SPRP": "1",
             "SSC": "0.33333333333333331",
-            "eccentricity": "289",
+            "eccentricity": "13",
             "eccentricity_inf": false,
             "id": 4,
             "label": "4"
@@ -145,7 +145,7 @@
             "EVC": "0.20533194248762163",
             "IC": "128.86750836643373",
             "IRCC": "0.059701492537313432",
-            "PC": "0.29424461306483773",
+            "PC": "0.29424461306483779",
             "PP": "0.5714285714285714",
             "PRP": "0.20000000000000001",
             "SBC": "0.125",
@@ -156,11 +156,11 @@
             "SEVC": "0.30080238129082298",
             "SIC": "0.19157768657937191",
             "SIRCC": "0.059701492537313432",
-            "SPC": "0.049040768844139618",
+            "SPC": "0.049040768844139632",
             "SPP": "0.5714285714285714",
             "SPRP": "1",
             "SSC": "0",
-            "eccentricity": "89",
+            "eccentricity": "22",
             "eccentricity_inf": false,
             "id": 5,
             "label": "5"

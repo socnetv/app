@@ -50,18 +50,13 @@ struct PerSourceScratch
     // Size of the connected component reachable from s (used for SPC normalisation).
     int componentSize = 0;
 
-    // Per-source graph-aggregate accumulator.
-    // Phase 2: SSSP functions write here instead of calling graph.incGeodesicsCount()
-    // directly, which would be unsafe when multiple threads process different sources
-    // concurrently. The owning thread accumulates this into ThreadLocalState totals after
-    // each source, and the post-loop reduction merges it into the graph-level aggregate.
-    int sourceGeodesicsCount = 0;  // replaces graph.incGeodesicsCount() in BFS / Dijkstra
-    // Neither diameter nor the distance sum is tracked here: both must be computed from
-    // each vertex's FINAL distance, not a running/duplicated accumulation sampled during or
-    // right after relaxation (a vertex can be relaxed to a smaller distance after an earlier,
-    // larger one) - computed directly from dist[] in runAllSources() instead, after a
-    // source's SSSP run has fully settled. See #286 (diameter) and #287 (distance sum) for
-    // the bugs this replaced.
+    // No per-source graph-aggregate accumulators live here: diameter, distance sum, and
+    // geodesics (reachable-pair) count must all be computed from each vertex's FINAL
+    // distance, not a running/duplicated accumulation sampled during or right after
+    // relaxation (a vertex can be relaxed to a smaller distance after an earlier, larger
+    // one) - computed directly from dist[] / the final APSP matrix in runAllSources() and
+    // finalize() instead, after a source's SSSP run has fully settled. See #286 (diameter),
+    // #287 (distance sum) and #290 (geodesics count) for the bugs this replaced.
 
     // Allocate all containers once for totalVertices positions.
     // Call this once before the source loop.
@@ -79,8 +74,6 @@ struct PerSourceScratch
     {
         dist.fill((qreal)RAND_MAX);
         sigma.fill(0);
-        // Reset per-source graph-aggregate accumulator so it reflects only this source.
-        sourceGeodesicsCount = 0;
         if (computeCentralities)
         {
             while (!Stack.empty())
