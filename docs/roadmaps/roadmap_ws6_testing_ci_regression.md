@@ -526,6 +526,11 @@ Direction:
   - `--skip <suite1,suite2,...>`
   - default: run all
 
+- reformat output as a human-readable summary table (case, kernel, pass/fail, timing) instead of
+  the current flat `==> filename` / raw CLI output / `OK`/`FAIL` stream - the detailed streaming
+  output is fine to keep for diagnosing one failing case, but the default end-of-run view should
+  be scannable at a glance, especially as the baseline count keeps growing.
+
 Outcome:
 
 Faster local workflows and easier diagnosis when one suite fails.
@@ -548,50 +553,65 @@ CI should run a carefully chosen subset by default:
 
 Heavier suites can run nightly or on-demand.
 
-### WS6.8 — Independently audit pre-existing golden baselines for mathematical correctness
+### WS6.8 — Independently verify every algorithm's correctness, not just its self-consistency
 
-**Status: deferred until after the v3.7 release** — queued during the Katz/Bonacich work (2026-08)
-but explicitly postponed given the v3.7 release deadline; pick this up first thing once v3.7 ships.
+**Status: active priority (2026-09-22)** — originally queued during the Katz/Bonacich work
+(2026-08), deferred past v3.7. Two more real bugs found the same way since (#283, #286, both
+2026-09) make this no longer a someday-audit: it's the standing bar every algorithm needs to clear.
 
 Goal:
 
 Golden baselines catch *regressions* (today's output differs from yesterday's), but say nothing
 about whether the *original* baseline was ever mathematically correct. Every baseline currently in
 `src/tools/baselines/` was accepted once, at dump time, without independent verification against a
-hand-computable ground truth.
+hand-computable ground truth. **Every kernel/algorithm family should have at least one baseline
+independently verified against ground truth computed outside SocNetV** (by hand, or a short
+standalone script — never by re-deriving the expected value from SocNetV's own code) — not just a
+risk-based sample. A risk-based order (below) still decides which cases get done first; it no
+longer decides whether a case gets done at all.
 
-Motivating precedent: the Katz/Bonacich verification work this session (2026-08) caught two real
-bugs this way that ordinary regression testing had already been passing cleanly against its own
-(silently wrong) baselines:
+Motivating precedent — three separate incidents now, same failure shape each time: a bug baked
+into the very first implementation, invisible for years because every later golden run only ever
+checked self-consistency (today's output vs. yesterday's), never against an outside ground truth:
 
 - The `Matrix::powerIteration()` divide-by-zero substitution (`norm = 1`) leaking into the reported
-  `lambdaMax` on nilpotent (directed, cycle-free) matrices — every golden run agreed with itself,
-  because the bug was baked into the baseline from the start.
-- A stale-cache bug where a rejected alpha/beta silently short-circuited every later recompute —
-  invisible to golden compares since each baseline is dumped once, not re-run with changing inputs.
+  `lambdaMax` on nilpotent (directed, cycle-free) matrices (2026-08, Katz/Bonacich work).
+- A stale-cache bug where a rejected alpha/beta silently short-circuited every later recompute
+  (2026-08, same work) — invisible to golden compares since each baseline is dumped once, not
+  re-run with changing inputs.
+- `dijkstraSSSP()`'s tie-breaking bookkeeping not fully updated on a strictly-improved relaxation
+  (#283, 2026-09) — inflated BC/SBC on any weighted network where a vertex is relaxed more than
+  once. Dated to the original 2014 Dijkstra implementation.
+- Diameter tracked as a running max over relaxation *events* instead of each vertex's *final*
+  distance (#286, 2026-09) — same 2014 origin commit as #283, same "vertex relaxed more than once"
+  precondition, found only because a WS18 GUI-testing session happened to hand-verify a diameter
+  value and it didn't match.
 
-Both were found only by hand-deriving expected values independently (plain Python, Gauss-Jordan
-elimination, no numpy) against small, deliberately-constructed test networks, then comparing
-against what the app actually produced — not by trusting the existing baseline as ground truth.
+All four were found only by hand-deriving or independently scripting the expected value against a
+small, deliberately-constructed test network, then comparing against what the app actually
+produced — never by trusting the existing baseline, and never by re-deriving the expected value
+from SocNetV's own algorithm (that would just re-confirm the same bug, not catch it).
 
-Suggested approach (risk-based, not exhaustive — see below):
+Approach:
 
 - Prioritize edge cases most likely to hide latent bugs, per the pattern above: directed +
   nilpotent/cyclic structure, isolates, self-loops, zero-weight edges, disconnected components,
-  weighted + inverted-weight combinations, and any kernel that recently changed
-  (`vertex_connectivity`, `connectivity`, `matrix` are the newest families and haven't had this
-  treatment at all yet).
-- For each flagged case, hand-derive the expected result independently (small enough networks that
-  this is tractable by hand or a short verification script) and compare against the current
-  baseline — not just against the app's current output, since the app could be self-consistently
-  wrong.
+  weighted + inverted-weight combinations, any network where some vertex is relaxed more than once
+  during Dijkstra (the exact precondition #283/#286 both needed), and any kernel that recently
+  changed (`vertex_connectivity`, `connectivity`, `matrix`, `signed` are the newest families and
+  haven't had this treatment at all yet).
+- For each kernel, hand-derive the expected result independently (small enough networks that this
+  is tractable by hand or a short verification script) and compare against the current baseline —
+  not just against the app's current output, since the app could be self-consistently wrong.
 - Where a baseline is found to be wrong, follow the same discipline used for the `powerIteration`
-  fix: confirm the fix is unambiguously correct, understand exactly what changes and why, get
-  explicit sign-off before touching previously-"passing" baselines, then re-dump with a clear
-  commit explaining what was wrong and how it was verified.
-- Given the scope (9 kernel families, ~78 baseline files as of 2026-08), decide the audit's actual
-  depth (representative sample vs. exhaustive vs. risk-based-only) when this is picked back up,
-  rather than assuming exhaustive coverage is the goal by default.
+  fix and #283/#286: confirm the fix is unambiguously correct, understand exactly what changes and
+  why, get explicit sign-off before touching previously-"passing" baselines, then re-dump with a
+  clear commit explaining what was wrong and how it was verified.
+- Given the scope (9 kernel families, ~78 baseline files as of 2026-08, growing), this is
+  incremental work threaded through ordinary development, not a single dedicated pass — every new
+  algorithm/measure added from now on gets independent verification as part of landing it (see
+  WS6's own Work Rules below), and existing kernels get worked through opportunistically in the
+  risk-based order above.
 
 ### Open findings
 
@@ -637,3 +657,8 @@ text — worth including once this is revisited.
 - Baseline regeneration should be treated as exceptional.
 - Any "FAIL" in benchmarks must be investigated; if it is noise, prefer mitigation via more stable measurement rather than loosening thresholds by default.
 - WS6 work should remain incremental: small changes, deterministic evidence, and consistent scripts.
+- **New algorithm/measure work must independently verify at least one result before its first
+  golden baseline is trusted** (see WS6.8) — a fixture whose expected value was hand-derived or
+  computed by a standalone script outside SocNetV, not just "the app agrees with itself." A
+  self-consistent golden baseline proves nothing about correctness on its own; three separate
+  bugs (`powerIteration`, #283, #286) shipped silently for years hiding behind exactly that gap.
