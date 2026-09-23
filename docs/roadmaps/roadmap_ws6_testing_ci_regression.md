@@ -640,6 +640,54 @@ Approach:
   quirks); where formats lack exporters, keep using export-skipped baseline locking; prefer shipped
   datasets under `src/data` where possible, add external datasets only if licensing permits.
 
+#### Coverage matrix (living checklist — update as work lands)
+
+**First finding, worth internalizing before adding fixtures anywhere below: not every kernel has
+a meaningful weighted axis.** Several families operate purely on edge *existence*, never read a
+weight value, so a "weighted vs unweighted" baseline pair for them would be identical output by
+construction — a wasted baseline, not real coverage. Checked by reading the actual algorithm
+source (not assumed):
+
+| Kernel | Reads edge weight values? | Where checked |
+|---|---|---|
+| `connectivity` | No — `graphWeaklyConnectedComponents()`/`graphStronglyConnectedComponents()` are pure BFS/DFS over edge presence | `graph_distance_facade.cpp` |
+| `vertex_connectivity` | No — Menger's-theorem max-flow via vertex-split, no edge capacities used | `graph_connectivity.cpp` |
+| `reachability` | No — `apspDistance() != RAND_MAX`, path existence only | `kernel_reachability_v2.cpp` |
+| `walks` | No — `walksBetween()` is adjacency-matrix power, binary | `kernel_walks_v3.cpp` |
+| `matrix` | **Yes** — `createMatrixAdjacency(considerWeights=true)` stores real weight values in `AM`/`DM`/similarity | `graph_matrix_adjacency.cpp` |
+| `clustering`, `prominence`, `distance`, `signed` | Yes | (established, weighted baselines already exist) |
+
+So for `connectivity`/`vertex_connectivity`/`reachability`/`walks`, the directed/undirected axis
+is the only topology axis that matters — a weighted variant is not missing coverage, it's a
+no-op. Don't add one.
+
+**Status per family, as of 2026-09-23** (Dir/Undir = at least one baseline of each topology exists;
+Weighted col is N/A where the table above says the kernel doesn't read weights):
+
+| Kernel | Dir+Undir? | Weighted axis | Independently verified? |
+|---|---|---|---|
+| `connectivity` | ✅ yes | N/A (topology-only) | ✅ done 2026-09-23 — all 10 baselines hand-derived from `.paj` source and matched exactly (component counts, weak vs. strong) |
+| `matrix` | ✅ yes | ⚠️ gap — every existing baseline runs `considerWeights=false` | ✅ partial 2026-09-23 — `adjacency`/`distances`/`reachability`/`clique_comembership` on `TinyPath_N3_E2` hand-verified; `Benchmark_BA_Directed_N500_m3`'s adjacency (row/col sums, trace, 5 sampled cells) cross-checked via independent `.paj` parse, all match. `similarity` already verified for #279/#280. **Still open: no weighted baseline exists at all** — `TinyDirWeighted_N3` (A→B:2, B→C:3, already in-repo) identified as the fixture to use; not yet added as a committed baseline. |
+| `vertex_connectivity` | ✅ yes | N/A (topology-only) | ✅ done (pre-existing) — Petersen graph kappa(G)=3 textbook cross-check + live GUI cross-check |
+| `reachability` | ✅ yes (1 dir + 1 undir) | N/A (topology-only) | ❌ not done — 2 baselines (`DunbarGelada_H22a`, `StokmanZiegler_Netherlands`), neither ever independently verified |
+| `walks` | ✅ yes (1 dir + 1 undir + 1 tiny) | N/A (topology-only) | ❌ not done — 3 baselines, none independently verified |
+| `clustering` | ✅ yes | ✅ yes | ❌ not done — 8 baselines, weighted/unweighted and dir/undir breadth exists, zero independent verification |
+| `distance` | partial — weighted cases skew directed | ✅ yes | ✅ partial — several verified during #283/#286 |
+| `prominence` | mostly directed | ✅ yes | ⚠️ partial — spot-checked during Katz/Bonacich work, not exhaustive |
+| `signed` | directed only (signed implies weighted; undirected signed ties are not a modeled case) | N/A (weight required by definition) | ✅ done — this session's WS18 work (hand + independent script) |
+| `io_roundtrip` | per-format | per-format | N/A — fidelity check, not a numeric algorithm |
+
+**Next actions implied by this table**, in the risk-based order from Approach above:
+1. Add the missing weighted `matrix` baseline (`TinyDirWeighted_N3`, fixture already exists).
+2. Independently verify `reachability`'s 2 existing baselines (tractable by hand — both are BFS
+   reachability on graphs under 20 nodes).
+3. Independently verify `walks`'s 3 existing baselines (tractable by hand for `TinyPath_N3_E2`;
+   `DunbarGelada_H22a`/`StokmanZiegler_Netherlands` need a short standalone script, adjacency-power
+   is trivial to reimplement independently).
+4. Independently verify `clustering`'s 8 baselines (already has full weighted/unweighted ×
+   dir/undir breadth — pure verification work, no new fixtures needed).
+5. Extend `distance`/`prominence` verification to full breadth (currently partial).
+
 Rules:
 
 - add datasets incrementally; baseline additions must be reviewed (do not bulk-regenerate)
