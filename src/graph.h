@@ -1132,6 +1132,8 @@ public:
 
     int graphDiameter(const bool considerWeights, const bool inverseWeights);
 
+    int graphDiameterSigned(const bool inverseWeights);
+
     int graphDiameterCached() const;
 
     qreal graphSumDistanceCached() const;

@@ -168,11 +168,57 @@ void MainWindow::slotAnalyzeDiameter()
             *negativeWeights = activeGraph->negativeWeightsDetected();
         },
         tr("Computing graph diameter. Please wait..."),
-        [this, considerWeights, netDiameter, isWeighted, negativeWeights]() {
+        [this, considerWeights, inverseWeightsFinal, netDiameter, isWeighted, negativeWeights]() {
             if (*negativeWeights)
             {
                 statusMessage(tr("Computation refused: the network contains negative edge "
                                  "weight(s), which this measure does not support."));
+
+                const int response = slotHelpMessageToUser(
+                    USER_MSG_QUESTION,
+                    tr("Negative edge weights found"),
+                    tr("Use the negative-weight-safe algorithm instead?"),
+                    tr("The default algorithm (Dijkstra) cannot handle negative edge weights. "
+                       "A slower alternative (Bellman-Ford/Johnson's algorithm) can, as long as "
+                       "the network has no reachable negative cycle - in which case the "
+                       "diameter is undefined and this will refuse as well."),
+                    QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+
+                if (response == QMessageBox::Yes)
+                {
+                    auto netDiameterSigned = std::make_shared<int>(0);
+                    auto negativeCycle = std::make_shared<bool>(false);
+
+                    runGraphOperationAsync(
+                        [this, inverseWeightsFinal, netDiameterSigned, negativeCycle]() {
+                            *netDiameterSigned = activeGraph->graphDiameterSigned(inverseWeightsFinal);
+                            *negativeCycle = activeGraph->negativeCycleDetected();
+                        },
+                        tr("Computing graph diameter (negative-weight-safe). Please wait..."),
+                        [this, netDiameterSigned, negativeCycle]() {
+                            if (*negativeCycle)
+                            {
+                                statusMessage(tr("Computation refused: the network contains a "
+                                                 "reachable negative cycle, so shortest paths "
+                                                 "(and diameter) are undefined."));
+                            }
+                            else
+                            {
+                                slotHelpMessageToUser(
+                                    USER_MSG_INFO,
+                                    tr("Network diameter computed."),
+                                    tr("Network diameter computed. \n\n"
+                                       "D = %1")
+                                        .arg(*netDiameterSigned),
+                                    tr("The diameter of a network is the maximum geodesic "
+                                       "distance (maximum shortest path length) between any two "
+                                       "nodes.\n\n"
+                                       "Note, this network has negative edge weights, so the "
+                                       "negative-weight-safe algorithm was used instead of the "
+                                       "default one."));
+                            }
+                        });
+                }
             }
             else if (*isWeighted)
             {

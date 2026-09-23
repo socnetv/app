@@ -379,6 +379,18 @@ int Graph::graphDiameter(const bool considerWeights,
 }
 
 /**
+ * @brief Negative-weight-safe variant of graphDiameter(), via Johnson's algorithm instead of
+ * refusing on a negative edge weight. Always considers weights (there is no unweighted variant
+ * of this path). Still refuses - via negativeCycleDetected() - on a reachable negative cycle.
+ */
+int Graph::graphDiameterSigned(const bool inverseWeights)
+{
+    qCDebug(lcDistances) << "Graph::graphDiameterSigned()";
+    graphDistancesGeodesicSigned(false, inverseWeights, false);
+    return m_graphDiameter;
+}
+
+/**
  * @brief Returns the average distance of the graph
  * @param considerWeights
  * @param inverseWeights
