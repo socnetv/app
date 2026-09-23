@@ -283,14 +283,21 @@ public:
 /**
  * @class GraphDistance
  * @brief Holds a (target, distance) pair for use in Dijkstra's priority queue.
+ *
+ * distance is qreal, not int: with inverseWeights or Johnson's-algorithm reweighting, a
+ * tentative distance is routinely fractional (e.g. 0.25, 0.75). An int distance silently
+ * truncated every value below 1.0 to 0, so distinct fractional distances all compared equal
+ * to the source's own 0 - breaking the priority queue's pop order and letting a vertex be
+ * popped (and marked visited) before its true shortest distance was known, permanently
+ * losing any later, correct relaxation through it. See #289.
  */
 class GraphDistance
 {
 public:
     int target;
-    int distance;
+    qreal distance;
 
-    GraphDistance(int t, int dist)
+    GraphDistance(int t, qreal dist)
         : target(t), distance(dist) {}
 };
 
