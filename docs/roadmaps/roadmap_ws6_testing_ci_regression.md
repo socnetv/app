@@ -11,15 +11,50 @@ workstream). CI integration (WS6.5) is explicitly last and not started.
 
 ## Background
 
+### What `socnetv-cli` is, and why it exists
+
+SocNetV has no unit-test framework. Instead, correctness is checked by running the actual
+computation code (the same `Graph`/`DistanceEngine`/algorithm-slice code the GUI calls) against a
+real network file, capturing the numeric result as JSON, and comparing that JSON against a
+committed "known good" copy on every future run. If a refactor accidentally changes a result, the
+comparison fails immediately — this is what "golden testing" / "regression testing" means in this
+codebase.
+
+`socnetv-cli` is the tool that runs those computations headlessly — no window, no `QApplication`,
+just `QCoreApplication` plus whatever `Graph` machinery a given computation needs. It's built
+alongside the main app (`cmake ... -DBUILD_CLI=ON`) as a separate small binary. Concretely:
+
+```bash
+./build/socnetv-cli -i src/data/Padgett.graphml -f graphml --kernel clustering \
+  --compare-json src/tools/baselines/clustering/padgett_clustering.json
+```
+
+This loads `Padgett.graphml`, runs the `clustering` kernel's computation, and compares the result
+against the committed baseline file — exiting non-zero (and printing what differs) if anything
+doesn't match.
+
+**A kernel** is one self-contained computation family exposed via `--kernel <name>` — `distance`,
+`clustering`, `matrix`, `signed`, etc. Each kernel owns its own JSON schema (`schema_version`,
+versioned independently per kernel) and its own compare logic; kernels don't share a schema, since
+they protect entirely different parts of the codebase (BC/CC vs. raw matrix contents vs.
+connectivity component counts, etc.). The full kernel list, CLI flags, and exact JSON schemas live
+in [`docs/SOCNETV_CLI_REGRESSION_TOOL.md`](../SOCNETV_CLI_REGRESSION_TOOL.md) — not duplicated
+here; this file is about the *testing strategy* (what to cover, how it's organized, what's still
+missing), that one is the *reference* (what each kernel's flags/output actually are).
+
+**A baseline** is the committed "known good" JSON file a kernel run is compared against — one file
+per (dataset, kernel, flag combination), stored under `src/tools/baselines/<kernel>/`. A baseline
+is only as trustworthy as how it was produced: dumping one from the app's *current* output only
+proves *self-consistency* (today's output matches itself later) — it says nothing about whether
+that output was ever *correct*. WS6.8 (below) exists specifically to close that gap: a baseline
+should ideally be checked, at least once, against a result computed independently of SocNetV
+entirely (by hand, or a short standalone script), not just accepted as "whatever the app printed."
+
 Both GUI and CLI load graphs through the same IO mutation pipeline introduced in WS4
 (`Parser` → `IGraphParseSink` → `Graph`), via `tools/headless_graph_loader.h`, which blocks on
 `Graph::signalGraphLoaded` (falling back to `Parser::finished`). This is what makes CLI kernel
 output valid regression evidence for GUI-triggered behavior, rather than a separate code path
 being tested in isolation.
-
-`socnetv-cli` itself is a thin façade (argument parsing + dispatch only) over kernel translation
-units under `src/tools/cli/kernels/`. The full kernel list, CLI flags, and JSON schemas live in
-[`docs/SOCNETV_CLI_REGRESSION_TOOL.md`](../SOCNETV_CLI_REGRESSION_TOOL.md) — not duplicated here.
 
 > **Before committing any change described in this file:** run
 > `./scripts/run_golden_compares.sh`. All golden JSON baselines must still pass.
@@ -412,7 +447,7 @@ This is currently absorbed by the harness: per-node fields compare with a **rela
 
 The concern is the margin. Worst observed relative spread across 25 runs: **3.4e-16** against a
 `1e-15` tolerance — **2.9× headroom**, no more. That margin shrinks as thread count and accumulation
-chain length grow, and WS6.2 explicitly plans to add *larger* datasets. A `geom.net`-scale baseline
+chain length grow, and WS6.8 explicitly plans to add *larger* datasets. A `geom.net`-scale baseline
 (7343 nodes) could plausibly exceed `1e-15` and turn the suite intermittently red, which is the
 worst possible failure mode for a regression harness — flaky, unreproducible, and easy to
 misattribute to whatever change happened to be in flight.
@@ -474,29 +509,10 @@ the tolerance argument above resolves the problem without touching the engine at
 fallback, not the first move.
 
 **Suggested order:** widen the tolerance with the reasoning recorded → then measure the actual
-spread at `geom.net` scale (7343 nodes) to confirm the new margin holds where WS6.2 is heading.
+spread at `geom.net` scale (7343 nodes) to confirm the new margin holds where WS6.8 is heading.
 
 Reproduce: run the same `--dump-json` invocation N times and hash the output with `_ms` fields
 stripped.
-
-### WS6.2 — Systematically expand datasets and coverage
-
-Goal:
-
-Increase confidence by testing more networks and more edge cases in a structured way.
-
-Approach:
-
-- grow the dataset suite gradually
-- include representative small/medium/large graphs
-- include tricky parser edge cases per format (GraphML/DOT/Pajek quirks)
-- where formats lack exporters, keep using export-skipped baseline locking
-- prefer shipped datasets under `src/data` where possible; add external datasets only if licensing permits
-
-Rules:
-
-- add datasets incrementally
-- baseline additions must be reviewed (do not bulk-regenerate)
 
 ### WS6.3 — Refactor the golden harness scripts for modularity
 
@@ -558,6 +574,12 @@ Heavier suites can run nightly or on-demand.
 **Status: active priority (2026-09-22)** — originally queued during the Katz/Bonacich work
 (2026-08), deferred past v3.7. Two more real bugs found the same way since (#283, #286, both
 2026-09) make this no longer a someday-audit: it's the standing bar every algorithm needs to clear.
+**Absorbs the former WS6.2** ("systematically expand datasets and coverage") — that section's goal
+(more networks/edge cases, tested in a structured way) was a looser, less concrete restatement of
+what this section now demands precisely; keeping both risked them drifting apart or contradicting
+each other. Its dataset-breadth concerns (parser edge cases per format, small/medium/large scale)
+are folded into the Approach below as a distinct dimension from independent-verification coverage,
+not dropped.
 
 Goal:
 
@@ -612,6 +634,15 @@ Approach:
   algorithm/measure added from now on gets independent verification as part of landing it (see
   WS6's own Work Rules below), and existing kernels get worked through opportunistically in the
   risk-based order above.
+- **Dataset/format breadth** (former WS6.2), a distinct dimension from independent-verification
+  coverage above but pursued alongside it: grow the dataset suite gradually; include representative
+  small/medium/large graphs; include tricky parser edge cases per format (GraphML/DOT/Pajek
+  quirks); where formats lack exporters, keep using export-skipped baseline locking; prefer shipped
+  datasets under `src/data` where possible, add external datasets only if licensing permits.
+
+Rules:
+
+- add datasets incrementally; baseline additions must be reviewed (do not bulk-regenerate)
 
 ### Open findings
 
