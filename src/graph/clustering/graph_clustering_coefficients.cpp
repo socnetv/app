@@ -46,7 +46,21 @@
  *
  * where N_i is the UNION of in-neighbours and out-neighbours of v_i
  * (excluding v_i itself), and each directed edge e_jk is counted
- * independently – i.e. e_jk and e_kj are distinct.
+ * independently – i.e. e_jk and e_kj are distinct. This is a simpler
+ * directed extension than e.g. Fagiolo (2007), which distinguishes several
+ * directed-triangle types (cycle/transitive/etc.) via a geometric-mean
+ * formula; both are legitimate, published definitions of "directed local
+ * clustering coefficient," they are just not numerically the same measure.
+ *
+ * Unweighted by design, in both branches: this is the classic
+ * Watts–Strogatz notion, which only asks whether a tie exists, never how
+ * strong it is. considerWeights (threaded in from the caller via edge
+ * enable/disable state, not a parameter of this function) only ever
+ * excludes zero-weight edges from N_i - it does not change the CLUCOF
+ * formula to account for tie strength. A weighted local clustering
+ * coefficient (e.g. Barrat et al. 2004, Onnela et al. 2005) is a distinct,
+ * not-yet-implemented measure - see WS11 in
+ * docs/roadmaps/roadmap_ws11_algorithm_additions.md.
  *
  * Thread-safety (WS15 P4): isSymmetric is passed in rather than computed here via
  * this->isSymmetric() - that call lazily computes-and-caches on first use, which would

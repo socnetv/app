@@ -636,6 +636,19 @@ Approach:
   mismatch and confirmed the app's output, not the first hand-derivation, was correct. The lesson:
   "independently verified" means the verification method must itself be checked, not just run once
   and trusted because it produced *a* number.
+- **Prefer cross-checking against established outside scripting tools over hand derivation when
+  the case is tractable that way** — a standalone script re-implementing an algorithm from its
+  published definition remains the fallback for cases those tools don't cover natively (schema
+  details specific to this app, e.g. `links_sna` vs `ties_graph` counts) or where using one would
+  be disproportionate. This matters for one non-obvious reason found live during the `clustering`
+  work (2026-09-23): a metric can have more than one legitimate published definition — SocNetV's
+  directed local clustering coefficient (union of in/out neighbourhood, ordered-pair denominator)
+  and a well-known outside library's default directed clustering coefficient (Fagiolo 2007,
+  geometric-triangle based) are **both correct, but different metrics**, and comparing against the
+  wrong one produces a false mismatch. When an outside-tool cross-check disagrees, check whether the
+  two sides are actually computing the same defined quantity before concluding either is wrong —
+  read SocNetV's own doc comment for the formula it claims to implement, then independently
+  reimplement *that specific formula* (not the outside tool's default) as the real check.
 - Where a baseline is found to be wrong, follow the same discipline used for the `powerIteration`
   fix and #283/#286: confirm the fix is unambiguously correct, understand exactly what changes and
   why, get explicit sign-off before touching previously-"passing" baselines, then re-dump with a
@@ -666,11 +679,12 @@ source (not assumed):
 | `reachability` | No — `apspDistance() != RAND_MAX`, path existence only | `kernel_reachability_v2.cpp` |
 | `walks` | No — `walksBetween()` is adjacency-matrix power, binary | `kernel_walks_v3.cpp` |
 | `matrix` | **Yes** — `createMatrixAdjacency(considerWeights=true)` stores real weight values in `AM`/`DM`/similarity | `graph_matrix_adjacency.cpp` |
-| `clustering`, `prominence`, `distance`, `signed` | Yes | (established, weighted baselines already exist) |
+| `clustering` | No — `clusteringCoefficientLocal()` only checks edge *presence* to build the neighbourhood; `considerWeights` merely gates a zero-weight-edge exclusion filter already active regardless, so a weighted vs. unweighted run only differs when the fixture has an edge that becomes weight-zero — none of the 8 existing fixtures do. Confirmed 2026-09-23: `DunbarGelada_H22a` and `StokmanZiegler_Netherlands`'s `W0`/`W1` baseline pairs are byte-identical apart from the `run`/timing fields. | `graph_clustering_coefficients.cpp` |
+| `prominence`, `distance`, `signed` | Yes | (established, weighted baselines already exist) |
 
-So for `connectivity`/`vertex_connectivity`/`reachability`/`walks`, the directed/undirected axis
-is the only topology axis that matters — a weighted variant is not missing coverage, it's a
-no-op. Don't add one.
+So for `connectivity`/`vertex_connectivity`/`reachability`/`walks`/`clustering`, the
+directed/undirected axis is the only topology axis that matters — a weighted variant is not
+missing coverage, it's a no-op. Don't add one.
 
 **Status per family, as of 2026-09-23** (Dir/Undir = at least one baseline of each topology exists;
 Weighted col is N/A where the table above says the kernel doesn't read weights):
@@ -682,7 +696,7 @@ Weighted col is N/A where the table above says the kernel doesn't read weights):
 | `vertex_connectivity` | ✅ yes | N/A (topology-only) | ✅ done (pre-existing) — Petersen graph kappa(G)=3 textbook cross-check + live GUI cross-check |
 | `reachability` | ✅ yes (1 dir + 1 undir) | N/A (topology-only) | ✅ done 2026-09-23 — both baselines cross-checked cell-by-cell against a standalone Python BFS reimplementation (not SocNetV code). `DunbarGelada_H22a` (undirected, N=12): fully connected, all 144 pairs reachable, density 1.0, every matrix cell independently confirmed 1. `StokmanZiegler_Netherlands` (directed per DL FULLMATRIX loading, though the underlying matrix happens to be symmetric; N=16, node 16/NSU fully isolated): 226/256 reachable pairs, density 0.8828125, full 16×16 matrix matched cell-by-cell. |
 | `walks` | ✅ yes (1 dir + 1 undir + 1 tiny) | N/A (topology-only) | ✅ done 2026-09-23 — all 3 baselines cross-checked cell-by-cell against a standalone Python adjacency-matrix-power reimplementation (not SocNetV code). `TinyPath_N3_E2` (K=2, undirected N=3): total 6, matrix matched. `DunbarGelada_H22a` (K=6, undirected N=12): total 136644, all 144 cells matched. `StokmanZiegler_Netherlands` (K=6, directed load path over a symmetric binarized matrix, N=16): total 5129002, all 256 cells matched. |
-| `clustering` | ✅ yes | ✅ yes | ❌ not done — 8 baselines, weighted/unweighted and dir/undir breadth exists, zero independent verification |
+| `clustering` | ✅ yes | N/A (topology-only, see finding above) | ✅ done 2026-09-23 — all 8 baselines cross-checked against an outside-tool reimplementation. `TinyPath_N3_E2`, `TinyDirChain_N3`, `Krackhardt_Kite_N10`, and `DunbarGelada_H22a`'s undirected CLC/cliques/triad-census all matched a standalone networkx script directly. `Sampson_Monks_N18` (mixed `*Arcs`+`*Edges`, directed) and both `StokmanZiegler_Netherlands` variants matched on cliques and triad census, but directed CLC first came back *mismatched* against `nx.clustering()` — turned out to be two different legitimate formulas, not a bug: SocNetV uses union-of-in/out-neighbourhood with an ordered-pair denominator `k*(k-1)` (documented directly in `clusteringCoefficientLocal()`), while networkx's directed CLC defaults to the Fagiolo (2007) geometric-triangle formula. Reimplementing SocNetV's own documented formula from scratch (independently, not copied from its C++) matched the baseline exactly, confirming the baseline itself is correct for what it claims to measure. Weighted variants (`DunbarGelada_H22a`, `StokmanZiegler_Netherlands`) reconfirmed byte-identical to their unweighted counterparts, consistent with the no-weighted-axis finding above. |
 | `distance` | partial — weighted cases skew directed | ✅ yes | ✅ partial — several verified during #283/#286 |
 | `prominence` | mostly directed | ✅ yes | ⚠️ partial — spot-checked during Katz/Bonacich work, not exhaustive |
 | `signed` | directed only (signed implies weighted; undirected signed ties are not a modeled case) | N/A (weight required by definition) | ✅ done — this session's WS18 work (hand + independent script) |
@@ -692,8 +706,7 @@ Weighted col is N/A where the table above says the kernel doesn't read weights):
 1. ~~Add the missing weighted `matrix` baseline~~ — done 2026-09-23 (`TinyDirWeighted_N3`).
 2. ~~Independently verify `reachability`'s 2 existing baselines~~ — done 2026-09-23.
 3. ~~Independently verify `walks`'s 3 existing baselines~~ — done 2026-09-23.
-4. Independently verify `clustering`'s 8 baselines (already has full weighted/unweighted ×
-   dir/undir breadth — pure verification work, no new fixtures needed).
+4. ~~Independently verify `clustering`'s 8 baselines~~ — done 2026-09-23.
 5. Extend `distance`/`prominence` verification to full breadth (currently partial).
 
 Rules:

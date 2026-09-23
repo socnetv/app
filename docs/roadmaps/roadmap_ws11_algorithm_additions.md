@@ -160,6 +160,19 @@ Three follow-on visualizations surfaced by this work are noted below under What 
   the same underlying capability (community detection) from the layout/coloring-integration angle
   rather than the analysis-output angle — worth scoping together rather than landing two independent
   community-detection implementations.
+- **(not yet filed) Weighted local Clustering Coefficient.** Found as a documentation gap during
+  WS6.8's independent-verification pass (2026-09-23): `clusteringCoefficientLocal()` is, by design,
+  the classic unweighted Watts-Strogatz measure (and its directed union-neighborhood extension) —
+  `considerWeights` only ever excludes zero-weight edges from the neighborhood, it never changes the
+  formula to account for tie *strength*. That's not a bug (the current formula is a real, correctly
+  implemented, textbook definition), but it means a weighted variant (e.g. Barrat et al. 2004 or
+  Onnela et al. 2005, both incorporating edge weight into triangle strength) is simply not available
+  today, even though the app already accepts weighted networks everywhere else. Scope: pick one
+  weighted formula (Barrat's arithmetic-mean-of-weight-ratios approach is the more commonly cited of
+  the two, and generalizes to directed the same way the current unweighted formula does), add it as
+  a distinct output alongside the existing CLC (not a silent formula swap under the same field name,
+  since that would break every existing golden baseline's meaning), with its own golden coverage
+  independently verified against ground truth per WS6.8's standing rule before landing.
 
 ### Signed Networks — cross-cutting (`src/engine/`, `src/graph/centrality/`)
 
