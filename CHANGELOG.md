@@ -205,6 +205,35 @@ _Work in progress — more entries to come as the 3.8 cycle continues._
     everything else: hop count when unweighted, the true weighted geodesic distance when edge
     weights are considered.
 
+  - **`socnetv-cli` golden-compare harness silently hard-failed on a legitimate `"nan"` value**:
+    every numeric-string comparison helper (`cmpNumStrTol` and its per-kernel
+    `cmpNodeFieldNumStrTol`/`cmpNumStrArray` variants) treated a non-parseable string as a
+    mismatch, including the literal `"nan"` a 0/0 ratio legitimately renders as (e.g. Stress
+    Centrality when no shortest path passes through a vertex, or reciprocity on a graph with no
+    ties) — even when both the expected and actual baseline agreed it was `"nan"`. Never
+    triggered before now since no existing baseline had hit that exact case. Both sides literally
+    `"nan"` is now checked explicitly and treated as a match before the numeric parse.
+
+### Testing / CI
+
+  - **`socnetv-cli`'s ten kernel families now cover directed/undirected × weighted/unweighted ×
+    isolates/disconnected-components for every kernel** (WS6.8): closes a coverage gap where
+    baselines were accepted once, at dump time, without independent verification against a
+    hand-computable ground truth, and where disconnected graphs/isolated vertices had no
+    dedicated fixtures at all despite being exactly the condition several of the bugs above
+    (#287, #288, #290, #292–#294) needed to manifest. Every kernel family's baselines are now
+    independently verified against ground truth computed outside SocNetV (by hand or a standalone
+    script), not just accepted as self-consistent with a prior run.
+
+  - **`connectivity` kernel gains a `reciprocity` JSON block** (WS6.9): `Graph::graphReciprocity()`
+    (the arc-level ratio) and its companion dyad-level ratio and raw tie/pair counts previously
+    had no CLI coverage at all — computed, used by the HTML report, but never independently
+    verified or protected against regression. New public accessors
+    (`graphReciprocityDyad()`/`graphReciprocityTiesReciprocated()`/`graphReciprocityTiesTotal()`/
+    `graphReciprocityPairsReciprocated()`/`graphReciprocityPairsTotal()`) plus a new JSON block on
+    every `connectivity` kernel run, independently verified against hand-derived tie/pair counts
+    on two networks with differing reciprocity profiles.
+
 ## [3.7] – Aug 2026
 
 ### New Features
