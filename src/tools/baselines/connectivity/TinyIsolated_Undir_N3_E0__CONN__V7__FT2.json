@@ -12,7 +12,7 @@
     "dataset": {
         "filetype": 2,
         "name": "TinyIsolated_Undir_N3_E0.paj",
-        "path": "/home/dimitris/socnetv/app/src/data/TinyIsolated_Undir_N3_E0.paj"
+        "path": "src/data/TinyIsolated_Undir_N3_E0.paj"
     },
     "graph": {
         "directed": false,
@@ -43,5 +43,13 @@
             "label": "C"
         }
     ],
+    "reciprocity": {
+        "arc": "nan",
+        "arc_ties_reciprocated": 0,
+        "arc_ties_total": 0,
+        "dyad": "nan",
+        "dyad_pairs_reciprocated": 0,
+        "dyad_pairs_total": 0
+    },
     "schema_version": 7
 }

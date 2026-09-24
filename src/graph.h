@@ -814,6 +814,15 @@ public:
 
     qreal graphReciprocity();
 
+    // Cached alongside graphReciprocity() (a single call computes all of these); dyad reciprocity
+    // is a distinct pair-level ratio from the tie-level arc ratio graphReciprocity() itself
+    // returns - both are meaningful, independently reported quantities (see writeReciprocity()).
+    qreal graphReciprocityDyad() const;
+    int graphReciprocityTiesReciprocated() const;
+    int graphReciprocityTiesTotal() const;
+    int graphReciprocityPairsReciprocated() const;
+    int graphReciprocityPairsTotal() const;
+
     bool isSymmetric();
 
     void setSymmetric();

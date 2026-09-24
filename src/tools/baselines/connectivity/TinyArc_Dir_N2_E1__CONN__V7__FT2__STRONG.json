@@ -36,5 +36,13 @@
             "label": "B"
         }
     ],
+    "reciprocity": {
+        "arc": "0",
+        "arc_ties_reciprocated": 0,
+        "arc_ties_total": 1,
+        "dyad": "0",
+        "dyad_pairs_reciprocated": 0,
+        "dyad_pairs_total": 1
+    },
     "schema_version": 7
 }

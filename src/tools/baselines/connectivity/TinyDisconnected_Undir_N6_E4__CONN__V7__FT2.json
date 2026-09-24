@@ -12,7 +12,7 @@
     "dataset": {
         "filetype": 2,
         "name": "TinyDisconnected_Undir_N6_E4.paj",
-        "path": "/home/dimitris/socnetv/app/src/data/TinyDisconnected_Undir_N6_E4.paj"
+        "path": "src/data/TinyDisconnected_Undir_N6_E4.paj"
     },
     "graph": {
         "directed": false,
@@ -21,7 +21,7 @@
     "kernel": "connectivity",
     "load_report": {
         "fileType_signal": 2,
-        "load_ms": 0,
+        "load_ms": 2,
         "load_msg": "",
         "net_name": "TinyDisconnected_Undir_N6_E4.paj",
         "ok": true
@@ -58,5 +58,13 @@
             "label": "F"
         }
     ],
+    "reciprocity": {
+        "arc": "1",
+        "arc_ties_reciprocated": 6,
+        "arc_ties_total": 6,
+        "dyad": "1",
+        "dyad_pairs_reciprocated": 3,
+        "dyad_pairs_total": 3
+    },
     "schema_version": 7
 }
