@@ -442,6 +442,25 @@ run_case_prominence \
   -w 1 -x 1 -k 1 --katz-alpha 0.2 --bonacich-alpha 1 --bonacich-beta 0.3 \
   "${BASE_PROM}/TinyWeightedIsolate_Undir_N4_E2__PROM__V4__FT2__W1_IW1_DI1_KA0.2_BA1_BB0.3.json"
 
+# Isolates/disconnection coverage: a genuine multi-component disconnected graph (not just a
+# single isolate, unlike TinyWeightedIsolate_Undir_N4_E2 above). Reuses the distance kernel's
+# already-verified fixtures. Independently verified: DC/DP (out/in-degree) and BC/SC match this
+# fixture's already-verified distance-kernel baseline; IC=0 for every node confirmed correct via
+# a hand-computed determinant of the symmetrized weight matrix (genuinely singular on a
+# disconnected graph, not a silent failure); PRP(isolate)=1/N and PP(isolate)=0 match their
+# documented isolate-handling behavior.
+run_case_prominence \
+  "${DATA}/TinyDisconnectedWeighted_Undir_N6_E4.paj" \
+  2 \
+  -w 1 -x 0 -k 0 \
+  "${BASE_PROM}/TinyDisconnectedWeighted_Undir_N6_E4__PROM__V4__FT2__W1_IW0_DI0.json"
+
+run_case_prominence \
+  "${DATA}/TinyDisconnectedWeighted_Dir_N5_E3.paj" \
+  2 \
+  -w 1 -x 0 -k 0 \
+  "${BASE_PROM}/TinyDisconnectedWeighted_Dir_N5_E3__PROM__V4__FT2__W1_IW0_DI0.json"
+
 # Katz Centrality (WS11, #10) - each value independently cross-checked against a hand-derived
 # reference computation (Gauss-Jordan elimination of (I - alpha*A^T) in plain Python) before
 # being dumped, not just accepted as "whatever the code produced."
