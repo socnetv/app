@@ -16,10 +16,14 @@
     "kernel": "prominence",
     "load_report": {
         "fileType_signal": 2,
-        "load_ms": 0,
+        "load_ms": 1,
         "load_msg": "",
         "net_name": "TinyPath_N3_E2.paj",
         "ok": true
+    },
+    "metrics": {
+        "density": "0.66666666666666663",
+        "spectralRadius": "1.4142135623730949"
     },
     "per_node": [
         {
@@ -32,7 +36,7 @@
             "IRCC": "0.66666666666666663",
             "PC": "1.5",
             "PP": "0.66666666666666663",
-            "PRP": "0.2567686987380754",
+            "PRP": "0.25676869873807551",
             "SBC": "0",
             "SC": "0",
             "SCC": "0.66666666666666663",
@@ -60,7 +64,7 @@
             "IRCC": "1",
             "PC": "2",
             "PP": "1",
-            "PRP": "0.48650678785472817",
+            "PRP": "0.48650678785472834",
             "SBC": "1",
             "SC": "1",
             "SCC": "1",
@@ -88,7 +92,7 @@
             "IRCC": "0.66666666666666663",
             "PC": "1.5",
             "PP": "0.66666666666666663",
-            "PRP": "0.25676538483825945",
+            "PRP": "0.25676538483825956",
             "SBC": "0",
             "SC": "0",
             "SCC": "0.66666666666666663",
@@ -99,7 +103,7 @@
             "SIRCC": "0.66666666666666663",
             "SPC": "0.75",
             "SPP": "0.66666666666666663",
-            "SPRP": "0.527773488979418",
+            "SPRP": "0.52777348897941812",
             "SSC": "0",
             "eccentricity": "2",
             "eccentricity_inf": false,
@@ -108,9 +112,11 @@
         }
     ],
     "run": {
+        "bonacichEnabled": false,
         "considerWeights": false,
         "dropIsolates": false,
-        "inverseWeights": true
+        "inverseWeights": true,
+        "katzEnabled": false
     },
     "schema_version": 4
 }

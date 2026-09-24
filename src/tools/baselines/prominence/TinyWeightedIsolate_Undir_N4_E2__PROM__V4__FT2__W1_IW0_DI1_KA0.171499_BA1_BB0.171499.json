@@ -22,7 +22,8 @@
         "ok": true
     },
     "metrics": {
-        "density": "0.33333333333333331"
+        "density": "0.33333333333333331",
+        "spectralRadius": "2.9154759474226504"
     },
     "per_node": [
         {

@@ -278,6 +278,7 @@ static int compareGoldenV1(const QJsonObject &expected, const QJsonObject &actua
     ok &= cmpNumStrTol(eMetrics, aMetrics, "diameter", err, 1e-15);
     ok &= cmpInt(eMetrics, aMetrics, "disconnected_pairs", err);
     ok &= cmpBool(eMetrics, aMetrics, "connected", err);
+    ok &= cmpNumStrTol(eMetrics, aMetrics, "density", err, 1e-15);
 
     const bool wantPerNode = expected.value("run").toObject().value("computeCentralities").toBool();
     if (wantPerNode)

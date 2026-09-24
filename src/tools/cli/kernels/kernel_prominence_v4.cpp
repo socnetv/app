@@ -158,6 +158,9 @@ namespace cli
         // Metrics (add density so golden JSONs carry it)
         QJsonObject metrics;
         metrics["density"] = d2s(g.graphDensity());
+        metrics["spectralRadius"] = d2s(g.estimateSpectralRadius(cfg.considerWeights,
+                                                                  cfg.inverseWeights,
+                                                                  cfg.dropIsolates));
         root["metrics"] = metrics;
 
         root["per_node"] = buildPerNodeArrayV4(g, katzEnabled, bonacichEnabled);
@@ -351,6 +354,11 @@ namespace cli
         const QJsonObject aGraph = actual.value("graph").toObject();
         ok &= cmpBool(eGraph, aGraph, "directed", err);
         ok &= cmpBool(eGraph, aGraph, "weighted", err);
+
+        const QJsonObject eMetrics = expected.value("metrics").toObject();
+        const QJsonObject aMetrics = actual.value("metrics").toObject();
+        ok &= cmpNumStrTol(eMetrics, aMetrics, "density", err);
+        ok &= cmpNumStrTol(eMetrics, aMetrics, "spectralRadius", err);
 
         // Per-node (always present in v4)
         const QJsonArray ePN = expected.value("per_node").toArray();

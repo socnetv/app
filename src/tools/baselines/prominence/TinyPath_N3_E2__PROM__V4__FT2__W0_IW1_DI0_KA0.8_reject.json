@@ -22,7 +22,8 @@
         "ok": true
     },
     "metrics": {
-        "density": "0.66666666666666663"
+        "density": "0.66666666666666663",
+        "spectralRadius": "1.4142135623730949"
     },
     "per_node": [
         {
@@ -117,6 +118,7 @@
         }
     ],
     "run": {
+        "bonacichEnabled": false,
         "considerWeights": false,
         "dropIsolates": false,
         "inverseWeights": true,

@@ -16,13 +16,14 @@
     "kernel": "prominence",
     "load_report": {
         "fileType_signal": 2,
-        "load_ms": 3,
+        "load_ms": 0,
         "load_msg": "",
         "net_name": "TinyDisconnectedWeighted_Undir_N6_E4.paj",
         "ok": true
     },
     "metrics": {
-        "density": "0.20000000000000001"
+        "density": "0.20000000000000001",
+        "spectralRadius": "2.9999999999999885"
     },
     "per_node": [
         {
