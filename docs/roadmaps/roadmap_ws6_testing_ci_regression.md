@@ -740,13 +740,13 @@ don't analyze them); no k-core algorithm exists anywhere in the codebase (not a 
 from SocNetV). Five methods currently have **zero** kernel coverage — never dumped into a baseline,
 never independently verified, never protected against regression:
 
-| # | Algorithm | Source | What it computes | Natural home |
-|---|---|---|---|---|
-| 1 | `Graph::graphReciprocity()` | `src/graph/core/graph_structure_metrics.cpp` | Arc/dyad reciprocity ratios for the current relation | New lightweight check, or fold into `connectivity` |
-| 2 | `Graph::createMatrixDissimilarities()` | `src/graph/similarity/graph_similarity_matrices.cpp` | Actor dissimilarity matrix (complement of the already-covered similarity-matching/Pearson paths) | `matrix` kernel |
-| 3 | `Graph::graphClusteringHierarchical()` | `src/graph/clustering/graph_clustering_hierarchical.cpp` | Agglomerative structural-equivalence clustering (single/complete/average linkage), optional dendrogram | `clustering` kernel |
-| 4 | `Graph::estimateSpectralRadius()` | `src/graph/centrality/graph_centrality.cpp` | Dominant eigenvalue estimate — used internally by Katz/Bonacich but never independently checked on its own | `prominence` kernel, as an auxiliary value |
-| 5 | `Graph::isSymmetric()` | `src/graph/core/graph_state_flags.cpp` | Whether the adjacency matrix is symmetric | Smaller in kind — already printed as the top-level `SYMMETRIC` field on every kernel run via `socnetv_cli.cpp`, so it's present in every existing baseline; just never singled out as independently verified on its own |
+| # | Algorithm | Source | What it computes | Natural home | Status |
+|---|---|---|---|---|---|
+| 1 | `Graph::graphReciprocity()` | `src/graph/core/graph_structure_metrics.cpp` | Arc/dyad reciprocity ratios for the current relation | `connectivity` kernel | ✅ done 2026-09-24 — new accessors added, wired into a `reciprocity` JSON block, all 10 existing `connectivity` baselines re-dumped. Independently verified: `StokmanZiegler_Netherlands`'s fully-reciprocal ties (166/166 ties, 60/60 pairs) and `Sampson_Monks_N18`'s partial reciprocity (32/57 ties, 16/41 pairs) both hand-derived from source and matched exactly. Surfaced and fixed a pre-existing golden-compare harness gap along the way: `"nan"` (a legitimate 0/0 ratio, e.g. on a zero-edge fixture) was always a hard mismatch, even against another `"nan"` — fixed centrally in `cmpNumStrTol` and its per-kernel variants. |
+| 2 | `Graph::createMatrixDissimilarities()` | `src/graph/similarity/graph_similarity_matrices.cpp` | Actor dissimilarity matrix (complement of the already-covered similarity-matching/Pearson paths) | `matrix` kernel | Not started |
+| 3 | `Graph::graphClusteringHierarchical()` | `src/graph/clustering/graph_clustering_hierarchical.cpp` | Agglomerative structural-equivalence clustering (single/complete/average linkage), optional dendrogram | `clustering` kernel | Not started |
+| 4 | `Graph::estimateSpectralRadius()` | `src/graph/centrality/graph_centrality.cpp` | Dominant eigenvalue estimate — used internally by Katz/Bonacich but never independently checked on its own | `prominence` kernel, as an auxiliary value | Not started |
+| 5 | `Graph::isSymmetric()` | `src/graph/core/graph_state_flags.cpp` | Whether the adjacency matrix is symmetric | Smaller in kind — already printed as the top-level `SYMMETRIC` field on every kernel run via `socnetv_cli.cpp`, so it's present in every existing baseline; just never singled out as independently verified on its own | Not started |
 
 For each of #1–4: wire it into its natural-home kernel's JSON output, add at least one fixture,
 independently verify the dumped value against ground truth computed outside SocNetV (hand or a
