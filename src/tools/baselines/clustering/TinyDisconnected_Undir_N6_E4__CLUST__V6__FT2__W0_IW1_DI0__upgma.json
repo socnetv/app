@@ -1,0 +1,155 @@
+{
+    "cliques": {
+        "by_size": {
+            "1": 1,
+            "2": 3
+        },
+        "max_clique_size": 2,
+        "total_cliques": 4
+    },
+    "counts": {
+        "links_sna": 6,
+        "nodes": 6,
+        "ties_graph": 3
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "TinyDisconnected_Undir_N6_E4.paj",
+        "path": "src/data/TinyDisconnected_Undir_N6_E4.paj"
+    },
+    "graph": {
+        "directed": false,
+        "weighted": false
+    },
+    "hierarchical": {
+        "merge_count": 5,
+        "merges": [
+            {
+                "level": "0",
+                "members": [
+                    1,
+                    3
+                ],
+                "seq": 1
+            },
+            {
+                "level": "0",
+                "members": [
+                    4,
+                    5
+                ],
+                "seq": 2
+            },
+            {
+                "level": "1",
+                "members": [
+                    1,
+                    2,
+                    3
+                ],
+                "seq": 3
+            },
+            {
+                "level": "1",
+                "members": [
+                    4,
+                    5,
+                    6
+                ],
+                "seq": 4
+            },
+            {
+                "level": "1.3927966030003589",
+                "members": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6
+                ],
+                "seq": 5
+            }
+        ]
+    },
+    "kernel": "clustering",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 2,
+        "load_msg": "",
+        "net_name": "TinyDisconnected_Undir_N6_E4.paj",
+        "ok": true
+    },
+    "metrics": {
+        "averageCLC": "0",
+        "nodesWithCLC": 6
+    },
+    "per_node": [
+        {
+            "CLC": "0",
+            "hasCLC": true,
+            "id": 1,
+            "label": "A"
+        },
+        {
+            "CLC": "0",
+            "hasCLC": true,
+            "id": 2,
+            "label": "B"
+        },
+        {
+            "CLC": "0",
+            "hasCLC": true,
+            "id": 3,
+            "label": "C"
+        },
+        {
+            "CLC": "0",
+            "hasCLC": true,
+            "id": 4,
+            "label": "D"
+        },
+        {
+            "CLC": "0",
+            "hasCLC": true,
+            "id": 5,
+            "label": "E"
+        },
+        {
+            "CLC": "0",
+            "hasCLC": true,
+            "id": 6,
+            "label": "F"
+        }
+    ],
+    "run": {
+        "clusteringInput": "adjacency",
+        "clusteringMethod": "upgma",
+        "considerWeights": false,
+        "dissimilarityMeasure": "euclidean",
+        "dropIsolates": false,
+        "inverseWeights": true
+    },
+    "schema_version": 6,
+    "triad_census": {
+        "classes": {
+            "003": 9,
+            "012": 0,
+            "021C": 0,
+            "021D": 0,
+            "021U": 0,
+            "030C": 0,
+            "030T": 0,
+            "102": 10,
+            "111D": 0,
+            "111U": 0,
+            "120C": 0,
+            "120D": 0,
+            "120U": 0,
+            "201": 1,
+            "210": 0,
+            "300": 0
+        },
+        "total_triads": 20
+    }
+}

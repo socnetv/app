@@ -151,7 +151,9 @@ int main(int argc, char *argv[])
 
     QCommandLineOption clusteringMethodOpt(QStringList() << "clustering-method",
                                            "Linkage method for --kernel clustering's hierarchical "
-                                           "clustering category: single|complete|average.",
+                                           "clustering category: single|complete|average|upgma. "
+                                           "'average' is WPGMA (unweighted mean of prior cluster "
+                                           "distances); 'upgma' weights by each old cluster's size.",
                                            "method", "average");
 
     QCommandLineOption clusteringInputOpt(QStringList() << "clustering-input",
@@ -299,10 +301,10 @@ int main(int argc, char *argv[])
     }
 
     if (cfg.clusteringMethod != "single" && cfg.clusteringMethod != "complete"
-        && cfg.clusteringMethod != "average")
+        && cfg.clusteringMethod != "average" && cfg.clusteringMethod != "upgma")
     {
         QTextStream(stderr) << "ERROR: --clustering-method must be one of "
-                                "single|complete|average\n";
+                                "single|complete|average|upgma\n";
         return 2;
     }
 

@@ -70,9 +70,11 @@ namespace cli
         // mode since it's a numeric-distance measure, not a binary-match one.
         QString dissimilarityMeasure = "euclidean";
 
-        // "single"|"complete"|"average", for --kernel clustering's hierarchical clustering
-        // category (Graph::graphClusteringHierarchical()). Selects the linkage method used to
-        // compute distances between a newly merged cluster and the remaining clusters.
+        // "single"|"complete"|"average"|"upgma", for --kernel clustering's hierarchical
+        // clustering category (Graph::graphClusteringHierarchical()). Selects the linkage
+        // method used to compute distances between a newly merged cluster and the remaining
+        // clusters. "average" is WPGMA (unweighted mean of the two prior cluster distances);
+        // "upgma" weights that mean by each old cluster's member count.
         QString clusteringMethod = "average";
 
         // "adjacency"|"distances", for --kernel clustering's hierarchical clustering category.

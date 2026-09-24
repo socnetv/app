@@ -570,6 +570,7 @@ namespace cli
         int method = Graph::Average_Linkage;
         if (cfg.clusteringMethod == "single") method = Graph::Single_Linkage;
         else if (cfg.clusteringMethod == "complete") method = Graph::Complete_Linkage;
+        else if (cfg.clusteringMethod == "upgma") method = Graph::Average_Linkage_UPGMA;
 
         if (!g.graphClusteringHierarchical(STR_EQUIV, "Rows", dissimMetric, method,
                                            false, false, cfg.considerWeights,

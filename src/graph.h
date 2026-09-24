@@ -437,12 +437,26 @@ public:
         VertexEdgeCount = 13,
     };
 
+    // Linkage methods for graphClusteringHierarchical() - how the distance from a newly
+    // merged cluster to each remaining cluster is derived from the two prior distances.
     enum Clustering
     {
-        Single_Linkage = 0,   //"single-link" or minimum
-        Complete_Linkage = 1, // "complete-link or maximum
-        Average_Linkage = 2,  // mean or "average-linkage" or UPGMA
-
+        // Single-link/"minimum"/"connectedness": distance to the nearest member of the
+        // merged cluster, i.e. min(dist to old cluster A, dist to old cluster B).
+        Single_Linkage = 0,
+        // Complete-link/"maximum"/"diameter": distance to the farthest member of the
+        // merged cluster, i.e. max(dist to old cluster A, dist to old cluster B).
+        Complete_Linkage = 1,
+        // Average-link, WPGMA (Weighted Pair Group Method with Arithmetic mean - the
+        // "weighted" here refers to the algorithm's own historical name, not to weighting
+        // by cluster size): unweighted mean of the two prior cluster distances, (dA+dB)/2.
+        // Matches true UPGMA only when the two merging clusters happen to be equal-sized.
+        Average_Linkage = 2,
+        // Average-link, UPGMA (Unweighted Pair Group Method with Arithmetic mean - despite
+        // the name, this is the one that size-weights): mean of the two prior cluster
+        // distances weighted by each old cluster's member count, equivalent to averaging
+        // every raw pairwise distance between the two merging clusters.
+        Average_Linkage_UPGMA = 3,
     };
 
     // --------------------------------------------------------------------------

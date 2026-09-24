@@ -44,6 +44,7 @@ DialogClusteringHierarchical::DialogClusteringHierarchical (QWidget *parent,
 
     linkageList << "Single-linkage (minimum)"
                 << "Complete-linkage (maximum)"
+                << "Average-linkage (WPGMA)"
                 << "Average-linkage (UPGMA)";
 
     variablesLocationList

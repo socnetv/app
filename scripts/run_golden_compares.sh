@@ -586,6 +586,17 @@ run_case_clustering \
   -w 0 -x 1 -k 0 \
   "${BASE_CLUST}/TinyDisconnected_Undir_N6_E4__CLUST__V6__FT2__W0_IW1_DI0.json"
 
+# Fix #296: dedicated UPGMA coverage. Earlier merges here involve equal-sized clusters,
+# where UPGMA and the default WPGMA formula agree - see the baseline above for the
+# identical-up-to-that-point WPGMA result on the same fixture. The final merge level does
+# differ (unweighted vs size-weighted averaging over the accumulated cluster distances).
+# Independently verified against scipy.cluster.hierarchy.linkage(..., method='average').
+run_case_clustering \
+  "${DATA}/TinyDisconnected_Undir_N6_E4.paj" \
+  2 \
+  -w 0 -x 1 -k 0 --clustering-method upgma \
+  "${BASE_CLUST}/TinyDisconnected_Undir_N6_E4__CLUST__V6__FT2__W0_IW1_DI0__upgma.json"
+
 run_case_clustering \
   "${DATA}/TinyDisconnected_Dir_N5_E3.paj" \
   2 \
