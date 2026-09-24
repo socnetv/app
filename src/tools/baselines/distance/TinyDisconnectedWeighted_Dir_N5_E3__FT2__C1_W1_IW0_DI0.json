@@ -1,0 +1,124 @@
+{
+    "counts": {
+        "links_sna": 3,
+        "nodes": 5,
+        "ties_graph": 3
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "TinyDisconnectedWeighted_Dir_N5_E3.paj",
+        "path": "src/data/TinyDisconnectedWeighted_Dir_N5_E3.paj"
+    },
+    "graph": {
+        "directed": true,
+        "weighted": true
+    },
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 0,
+        "load_msg": "",
+        "net_name": "TinyDisconnectedWeighted_Dir_N5_E3.paj",
+        "ok": true
+    },
+    "metrics": {
+        "avg_distance": "2.5",
+        "connected": false,
+        "density": "0.14999999999999999",
+        "diameter": "3.5",
+        "disconnected_pairs": 16
+    },
+    "per_node": [
+        {
+            "BC": "0",
+            "CC": "0",
+            "EC": "0",
+            "PC": "0.7857142857142857",
+            "SBC": "0",
+            "SC": "0",
+            "SCC": "0",
+            "SEC": "0",
+            "SPC": "0.39285714285714285",
+            "SSC": "0",
+            "distance_sum": "5.5",
+            "eccentricity": "2147483647",
+            "eccentricity_inf": true,
+            "id": 1,
+            "label": "A"
+        },
+        {
+            "BC": "1",
+            "CC": "0",
+            "EC": "0",
+            "PC": "0.66666666666666663",
+            "SBC": "0.083333333333333329",
+            "SC": "1",
+            "SCC": "0",
+            "SEC": "0",
+            "SPC": "0.66666666666666663",
+            "SSC": "1",
+            "distance_sum": "1.5",
+            "eccentricity": "2147483647",
+            "eccentricity_inf": true,
+            "id": 2,
+            "label": "B"
+        },
+        {
+            "BC": "0",
+            "CC": "0",
+            "EC": "0",
+            "PC": "0",
+            "SBC": "0",
+            "SC": "0",
+            "SCC": "0",
+            "SEC": "0",
+            "SPC": "0",
+            "SSC": "0",
+            "distance_sum": "0",
+            "eccentricity": "2147483647",
+            "eccentricity_inf": true,
+            "id": 3,
+            "label": "C"
+        },
+        {
+            "BC": "0",
+            "CC": "0",
+            "EC": "0",
+            "PC": "0.33333333333333331",
+            "SBC": "0",
+            "SC": "0",
+            "SCC": "0",
+            "SEC": "0",
+            "SPC": "0.33333333333333331",
+            "SSC": "0",
+            "distance_sum": "3",
+            "eccentricity": "2147483647",
+            "eccentricity_inf": true,
+            "id": 4,
+            "label": "D"
+        },
+        {
+            "BC": "0",
+            "CC": "0",
+            "EC": "0",
+            "PC": "0",
+            "SBC": "0",
+            "SC": "0",
+            "SCC": "0",
+            "SEC": "0",
+            "SPC": "0",
+            "SSC": "0",
+            "distance_sum": "0",
+            "eccentricity": "2147483647",
+            "eccentricity_inf": true,
+            "id": 5,
+            "label": "E"
+        }
+    ],
+    "run": {
+        "computeCentralities": true,
+        "considerWeights": true,
+        "dropIsolates": false,
+        "inverseWeights": false
+    },
+    "schema_version": 1
+}
