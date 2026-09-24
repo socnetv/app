@@ -710,13 +710,23 @@ Weighted col is N/A where the table above says the kernel doesn't read weights):
 5. ~~Extend `distance`/`prominence` verification to full breadth~~ — done 2026-09-24.
 6. Add the disconnected-graph coverage axis (flagged, not yet started — see note below).
 
-**Third coverage axis: connected vs. disconnected.** Directed/undirected and weighted/unweighted
-are covered per-kernel above, but none of the baselines were chosen specifically to exercise a
-disconnected graph (isolates, or multiple components with no path between them). This matters
+**Third coverage axis: isolates / disconnection.** Directed/undirected and weighted/unweighted are
+covered per-kernel above, but none of the baselines were chosen specifically to exercise a
+disconnected graph — either isolated vertices (degree 0) or multiple components with no path
+between them; these are two distinct states worth covering separately, not one. This matters
 because several of this session's bugs (#287, #288, #290) only manifested — or manifested worse —
-on graphs with unreachable pairs (the `RAND_MAX` sentinel path). Needs the same treatment as the
-other two axes: audit which kernels currently have a disconnected fixture, add one per kernel
-family that lacks it, independently verify. Not started.
+on graphs with unreachable pairs (the `RAND_MAX` sentinel path).
+
+Target: every kernel family gets baseline coverage for the full cross product — directed/undirected
+× weighted/unweighted × (fully connected / has isolates / has a disconnected non-trivial component)
+— the same treatment already completed for the first two axes above. Concretely:
+1. Audit which kernels already have a disconnected or isolate-bearing fixture (some may, incidentally).
+2. For each kernel family missing one, add a minimal fixture (reuse an existing dataset where
+   possible rather than manufacturing a new one per kernel).
+3. Independently verify each new baseline the same way as the other two axes (hand-derivation
+   and/or a standalone reimplementation, not SocNetV's own source).
+
+Not started.
 
 Rules:
 
