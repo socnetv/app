@@ -12,12 +12,13 @@
     "graph": {
         "directed": true,
         "relations": 1,
+        "symmetric": false,
         "weighted": false
     },
     "kernel": "io_roundtrip",
     "load_report": {
         "fileType_signal": 2,
-        "load_ms": 10,
+        "load_ms": 8,
         "load_msg": "",
         "net_name": "scale-free",
         "ok": true
@@ -15252,9 +15253,9 @@
         ]
     },
     "timings": {
-        "load_ms": 10,
-        "reload_ms": 13,
-        "save_ms": 53,
-        "total_ms": 81
+        "load_ms": 8,
+        "reload_ms": 9,
+        "save_ms": 54,
+        "total_ms": 79
     }
 }

@@ -20,6 +20,7 @@
     },
     "graph": {
         "directed": false,
+        "symmetric": true,
         "weighted": false
     },
     "hierarchical": {
@@ -120,7 +121,7 @@
     "kernel": "clustering",
     "load_report": {
         "fileType_signal": 2,
-        "load_ms": 1,
+        "load_ms": 0,
         "load_msg": "",
         "net_name": "Krackhardt_Kite_N10.paj",
         "ok": true

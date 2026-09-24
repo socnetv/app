@@ -11,12 +11,13 @@
     },
     "graph": {
         "directed": false,
+        "symmetric": true,
         "weighted": false
     },
     "kernel": "matrix",
     "load_report": {
         "fileType_signal": 2,
-        "load_ms": 3,
+        "load_ms": 0,
         "load_msg": "",
         "net_name": "TinyPath_N3_E2.paj",
         "ok": true

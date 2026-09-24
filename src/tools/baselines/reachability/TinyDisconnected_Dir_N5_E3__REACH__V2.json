@@ -11,12 +11,13 @@
     },
     "graph": {
         "directed": true,
+        "symmetric": false,
         "weighted": false
     },
     "kernel": "reachability",
     "load_report": {
         "fileType_signal": 2,
-        "load_ms": 3,
+        "load_ms": 0,
         "load_msg": "",
         "net_name": "TinyDisconnected_Dir_N5_E3.paj",
         "ok": true

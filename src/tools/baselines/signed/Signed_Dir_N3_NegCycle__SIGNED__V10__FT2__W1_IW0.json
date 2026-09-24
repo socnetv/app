@@ -40,6 +40,7 @@
     },
     "graph": {
         "directed": true,
+        "symmetric": false,
         "weighted": true
     },
     "kernel": "signed",

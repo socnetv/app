@@ -11,6 +11,7 @@
     },
     "graph": {
         "directed": true,
+        "symmetric": false,
         "weighted": true
     },
     "load_report": {

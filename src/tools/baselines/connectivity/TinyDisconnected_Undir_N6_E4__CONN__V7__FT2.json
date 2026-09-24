@@ -16,12 +16,13 @@
     },
     "graph": {
         "directed": false,
+        "symmetric": true,
         "weighted": false
     },
     "kernel": "connectivity",
     "load_report": {
         "fileType_signal": 2,
-        "load_ms": 2,
+        "load_ms": 0,
         "load_msg": "",
         "net_name": "TinyDisconnected_Undir_N6_E4.paj",
         "ok": true

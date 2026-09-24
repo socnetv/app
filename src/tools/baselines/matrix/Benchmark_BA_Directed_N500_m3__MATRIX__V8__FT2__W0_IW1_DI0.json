@@ -11,12 +11,13 @@
     },
     "graph": {
         "directed": true,
+        "symmetric": false,
         "weighted": false
     },
     "kernel": "matrix",
     "load_report": {
         "fileType_signal": 2,
-        "load_ms": 8,
+        "load_ms": 7,
         "load_msg": "",
         "net_name": "scale-free",
         "ok": true

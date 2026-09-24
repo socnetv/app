@@ -22,6 +22,7 @@
     },
     "graph": {
         "directed": true,
+        "symmetric": true,
         "weighted": true
     },
     "hierarchical": {

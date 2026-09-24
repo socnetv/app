@@ -225,6 +225,7 @@ static QJsonObject buildGoldenJsonV8(
     QJsonObject graph;
     graph["directed"] = g.isDirected();
     graph["weighted"] = g.isWeighted();
+    graph["symmetric"] = g.isSymmetric();
     root["graph"] = graph;
 
     QJsonObject run;
@@ -269,6 +270,7 @@ static int compareGoldenV8(const QJsonObject &expected, const QJsonObject &actua
     ok &= cmpInt(expected.value("counts").toObject(), actual.value("counts").toObject(), "nodes", err);
     ok &= cmpBool(expected.value("graph").toObject(), actual.value("graph").toObject(), "directed", err);
     ok &= cmpBool(expected.value("graph").toObject(), actual.value("graph").toObject(), "weighted", err);
+    ok &= cmpBool(expected.value("graph").toObject(), actual.value("graph").toObject(), "symmetric", err);
 
     const QJsonObject eM = expected.value("matrices").toObject();
     const QJsonObject aM = actual.value("matrices").toObject();

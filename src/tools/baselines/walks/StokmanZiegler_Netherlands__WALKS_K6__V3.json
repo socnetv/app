@@ -11,15 +11,19 @@
     },
     "graph": {
         "directed": true,
+        "symmetric": true,
         "weighted": true
     },
     "kernel": "walks_matrix",
     "load_report": {
         "fileType_signal": 5,
-        "load_ms": 2,
+        "load_ms": 0,
         "load_msg": "",
         "net_name": "Stokman_Ziegler_Corporate_Interlocks_Netherlands.dl",
         "ok": true
+    },
+    "metrics": {
+        "density": "0.5"
     },
     "run": {
         "considerWeights": true,

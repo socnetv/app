@@ -12,6 +12,7 @@
     "graph": {
         "directed": true,
         "relations": 2,
+        "symmetric": true,
         "weighted": true
     },
     "kernel": "io_roundtrip",

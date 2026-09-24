@@ -117,6 +117,7 @@ static QJsonObject buildGoldenJsonV1(
     QJsonObject graph;
     graph["directed"] = g.isDirected();
     graph["weighted"] = g.isWeighted();
+    graph["symmetric"] = g.isSymmetric();
     root["graph"] = graph;
 
     // ---------------- Metrics ----------------
@@ -271,6 +272,7 @@ static int compareGoldenV1(const QJsonObject &expected, const QJsonObject &actua
     const QJsonObject aGraph = actual.value("graph").toObject();
     ok &= cmpBool(eGraph, aGraph, "directed", err);
     ok &= cmpBool(eGraph, aGraph, "weighted", err);
+    ok &= cmpBool(eGraph, aGraph, "symmetric", err);
 
     const QJsonObject eMetrics = expected.value("metrics").toObject();
     const QJsonObject aMetrics = actual.value("metrics").toObject();

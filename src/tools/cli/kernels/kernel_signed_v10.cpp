@@ -76,6 +76,7 @@ static QJsonObject buildGoldenJsonV10(
     QJsonObject graph;
     graph["directed"] = g.isDirected();
     graph["weighted"] = g.isWeighted();
+    graph["symmetric"] = g.isSymmetric();
     root["graph"] = graph;
 
     QJsonObject potentialsObj;
@@ -144,6 +145,10 @@ static int compareGoldenV10(const QJsonObject &expected, const QJsonObject &actu
 
     ok &= cmpBool(expected.value("graph").toObject(),
                   actual.value("graph").toObject(),    "directed", err);
+    ok &= cmpBool(expected.value("graph").toObject(),
+                  actual.value("graph").toObject(),    "weighted", err);
+    ok &= cmpBool(expected.value("graph").toObject(),
+                  actual.value("graph").toObject(),    "symmetric", err);
 
     const QJsonObject ePot = expected.value("potentials").toObject();
     const QJsonObject aPot = actual.value("potentials").toObject();

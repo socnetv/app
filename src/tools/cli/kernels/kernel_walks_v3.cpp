@@ -65,6 +65,7 @@ static QJsonObject buildGoldenJsonV3WalksMatrix(
     QJsonObject graph;
     graph["directed"] = g.isDirected();
     graph["weighted"] = g.isWeighted();
+    graph["symmetric"] = g.isSymmetric();
     root["graph"] = graph;
 
     // Metrics (add density so golden JSONs carry it)
@@ -129,6 +130,9 @@ static int compareGoldenV3WalksMatrix(const QJsonObject &expected, const QJsonOb
 
     ok &= cmpBool(expected.value("graph").toObject(), actual.value("graph").toObject(), "directed", err);
     ok &= cmpBool(expected.value("graph").toObject(), actual.value("graph").toObject(), "weighted", err);
+    ok &= cmpBool(expected.value("graph").toObject(), actual.value("graph").toObject(), "symmetric", err);
+
+    ok &= cmpNumStrTol(expected.value("metrics").toObject(), actual.value("metrics").toObject(), "density", err);
 
     const QJsonObject eW = expected.value("walks").toObject();
     const QJsonObject aW = actual.value("walks").toObject();

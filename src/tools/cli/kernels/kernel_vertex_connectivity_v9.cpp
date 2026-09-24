@@ -61,6 +61,7 @@ static QJsonObject buildGoldenJsonV9(
     QJsonObject graph;
     graph["directed"] = g.isDirected();
     graph["weighted"] = g.isWeighted();
+    graph["symmetric"] = g.isSymmetric();
     root["graph"] = graph;
 
     root["mode"] = mode;
@@ -116,6 +117,10 @@ static int compareGoldenV9(const QJsonObject &expected, const QJsonObject &actua
 
     ok &= cmpBool(expected.value("graph").toObject(),
                   actual.value("graph").toObject(),    "directed", err);
+    ok &= cmpBool(expected.value("graph").toObject(),
+                  actual.value("graph").toObject(),    "weighted", err);
+    ok &= cmpBool(expected.value("graph").toObject(),
+                  actual.value("graph").toObject(),    "symmetric", err);
 
     ok &= cmpStr(expected, actual, "mode", err);
     ok &= cmpStr(expected, actual, "connectivity_type", err);
