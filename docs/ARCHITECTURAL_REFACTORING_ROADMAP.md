@@ -60,8 +60,11 @@ Roadmap: [`docs/roadmaps/roadmap_ws6_testing_ci_regression.md`](roadmaps/roadmap
 
 Expand golden baselines, dataset coverage, and benchmarking, supporting every other workstream.
 
-**Queued, deferred to post-v3.7**: WS6.8 — independently audit pre-existing golden baselines for
-mathematical correctness (not just regression-stability). See the WS6 roadmap doc for why and how.
+**WS6.8** (independently audit every algorithm's correctness, not just self-consistency) and
+**WS6.9** (close the CLI kernel coverage gaps WS6.8's audit found) are both done (2026-09-25) —
+all ten kernel families independently verified across directed/undirected, weighted/unweighted,
+and isolates/disconnection, with several real bugs found and fixed along the way. See the WS6
+roadmap doc for the full per-kernel status and bug list.
 
 ---
 
