@@ -205,6 +205,25 @@ _Work in progress — more entries to come as the 3.8 cycle continues._
     everything else: hop count when unweighted, the true weighted geodesic distance when edge
     weights are considered.
 
+  - **Hierarchical clustering corrupted every merge on any graph with an isolated vertex**
+    (#295): Step 1's cluster-index population skipped isolated vertices, but the paired
+    dissimilarity matrix always sizes itself to include every enabled vertex, isolates included.
+    The mismatch left an unindexed matrix row that every subsequent merge decision and
+    linkage-distance update still scanned and folded in, corrupting the whole dendrogram — up to
+    and including a spurious merge where a cluster was merged with itself. Fixed by giving every
+    enabled vertex, isolates included, its own singleton cluster entry, matching the matrix.
+    Independently verified via a standalone hierarchical-clustering reimplementation.
+
+  - **Hierarchical clustering's "average-linkage (UPGMA)" method was actually WPGMA** (#296):
+    the linkage-update formula — an unweighted mean of the two prior cluster distances — is
+    WPGMA (Weighted Pair Group Method with Arithmetic mean), not true UPGMA (which weights by
+    each old cluster's member count). The two formulas only agree when the merging clusters
+    happen to be equal-sized, so simple test cases looked correct while real UPGMA use diverged
+    silently. Relabeled the existing method "WPGMA" and added a genuinely size-weighted
+    `Average_Linkage_UPGMA` method alongside it, so both are now independently selectable (GUI
+    dialog and `--clustering-method single|complete|average|upgma`). Independently verified
+    via a standalone size-weighted-average-linkage reimplementation.
+
   - **`socnetv-cli` golden-compare harness silently hard-failed on a legitimate `"nan"` value**:
     every numeric-string comparison helper (`cmpNumStrTol` and its per-kernel
     `cmpNodeFieldNumStrTol`/`cmpNumStrArray` variants) treated a non-parseable string as a
@@ -233,6 +252,41 @@ _Work in progress — more entries to come as the 3.8 cycle continues._
     `graphReciprocityPairsReciprocated()`/`graphReciprocityPairsTotal()`) plus a new JSON block on
     every `connectivity` kernel run, independently verified against hand-derived tie/pair counts
     on two networks with differing reciprocity profiles.
+
+  - **`matrix` kernel gains a `dissimilarity` JSON category** (WS6.9): `Graph::createMatrixDissimilarities()`
+    had no CLI coverage. New `--dissimilarity-measure euclidean|manhattan|jaccard|hamming|chebyshev`
+    flag (mirroring the existing `--similarity-measure`), independently verified by hand-deriving
+    Euclidean distances from a small fixture's adjacency rows and by independently recomputing a
+    sample cell from raw source data on a 500-node fixture.
+
+  - **`clustering` kernel gains a `hierarchical` JSON block** (WS6.9): `Graph::graphClusteringHierarchical()`
+    had no CLI coverage. New `--clustering-method single|complete|average|upgma` and
+    `--clustering-input adjacency|distances` flags (reusing `--dissimilarity-measure` for the
+    metric) dump the full merge sequence and linkage levels. Wiring this in surfaced #295 and
+    #296 above. Independently verified via a standalone hierarchical-clustering reimplementation.
+
+  - **`prominence` kernel gains a `metrics.spectralRadius` field** (WS6.9): `Graph::estimateSpectralRadius()`
+    — the dominant-eigenvalue estimate Katz/Bonacich Centrality depend on internally — had no CLI
+    coverage of its own. Always computed alongside the existing centralities; independently
+    verified against a standalone eigendecomposition on five fixtures spanning directed/undirected,
+    weighted/unweighted, and isolated/disconnected graphs, including the degenerate nilpotent
+    (all-zero-eigenvalue) case on a directed acyclic chain.
+
+  - **`graph.symmetric` added to every kernel's JSON output** (WS6.9): `Graph::isSymmetric()` was
+    printed to `socnetv-cli`'s console output (`SYMMETRIC=...`) but never actually written into
+    any kernel's JSON, so it was never regression-tested despite looking present in every run.
+    Added alongside the existing `graph.directed`/`graph.weighted` in all nine kernels that carry
+    a `graph` block, closing three pre-existing `weighted`-compare gaps (`connectivity`/`signed`/
+    `vertex_connectivity` dumped it but never compared it) and a `metrics.density`-compare gap
+    (`walks_matrix`/`reachability`) found along the way. Independently verified against the
+    already-verified reciprocity baselines: a directed network with 100% reciprocal ties reports
+    `symmetric=true`; one with no reciprocal ties reports `symmetric=false`.
+
+  - **`run_golden_compares.sh` gains an `--update` flag**: regenerating a registered baseline
+    after a deliberate semantic change previously required either hand-retyping each case's exact
+    CLI flags or temporarily hand-patching the script itself. `--update` dumps fresh JSON over
+    every registered baseline in one run, using a relative dataset path consistent with the
+    existing baseline corpus — mirrors `run_golden_io_roundtrip.sh`'s existing `--update` mode.
 
 ## [3.7] – Aug 2026
 

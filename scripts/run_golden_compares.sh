@@ -658,7 +658,7 @@ run_case_clustering \
 # where UPGMA and the default WPGMA formula agree - see the baseline above for the
 # identical-up-to-that-point WPGMA result on the same fixture. The final merge level does
 # differ (unweighted vs size-weighted averaging over the accumulated cluster distances).
-# Independently verified against scipy.cluster.hierarchy.linkage(..., method='average').
+# Independently verified via a standalone size-weighted-average-linkage reimplementation.
 run_case_clustering \
   "${DATA}/TinyDisconnected_Undir_N6_E4.paj" \
   2 \
