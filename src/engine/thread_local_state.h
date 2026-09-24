@@ -41,8 +41,9 @@ struct ThreadLocalState
     QVector<qreal> partialBC;
 
     // Partial stress centrality sums, indexed by vertex position.
-    // Each new shortest path through vertex ui increments partialSC[ui] by 1
-    // instead of calling vertex->setSC() directly.
+    // Each vertex ui that is a direct predecessor of some w on the final settled shortest-path
+    // DAG from a source increments partialSC[ui] by 1 - accumulated in the same Brandes
+    // back-propagation loop that computes partialBC, from pss.Ps/pss.sigma, not during relaxation.
     // Post-loop: vertex[ui]->setSC( sum over all threads of partialSC[ui] )
     QVector<qreal> partialSC;
 

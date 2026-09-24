@@ -708,15 +708,15 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
         // Reset per-source scratch (dist, sigma, and optionally Stack/Ps/nthOrder).
         tls.pss.resetPerSource(computeCentralities);
 
-        // Run BFS or Dijkstra; unsafe graph calls go to tls.pss scratch fields / tls.partialSC.
+        // Run BFS or Dijkstra; unsafe graph calls go to tls.pss scratch fields.
         // ds.potentials is read-only from here on (populated once, single-threaded, before this
         // parallel loop starts - see bellmanFordPotentials()) so concurrent reads across source
         // threads are safe; empty unless a caller explicitly requested Johnson's reweighting.
         if (!considerWeights)
-            bfsSSSP(s, si, computeCentralities, dropIsolates, tls.pss, tls.partialSC);
+            bfsSSSP(s, si, computeCentralities, dropIsolates, tls.pss);
         else
             dijkstraSSSP(s, si, computeCentralities, inverseWeights, dropIsolates, tls.pss,
-                        tls.partialSC, ds.potentials);
+                        ds.potentials);
 
         // Distance sum and geodesics (reachable-pair) count are NOT accumulated here from
         // per-source scratch - both are computed once, after every source has settled, from
@@ -819,11 +819,20 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
 
             qCDebug(lcEngine) << "***** PHASE 2 (CENTRALITIES): s" << s << "vpos" << si << "CC" << cc;
 
-            // ---- Brandes BC back-propagation ----
+            // ---- Brandes BC back-propagation, also feeds SC ----
             // Visit vertices in reverse BFS/Dijkstra order (deepest first) and propagate
             // dependency deltas up the shortest-path DAG.  Instead of writing to
             // vertex->BC() directly (which would race across threads for intermediate
             // vertices), accumulate into tls.partialBC[wi]; the reduction step merges all.
+            //
+            // Stress Centrality: SC(u) = number of (s,w) ordered pairs, s != w != u, where u is
+            // a direct predecessor of w on the final, settled shortest-path DAG from s. Ps[wi]
+            // holds exactly those predecessors, so SC is accumulated here from the settled DAG,
+            // once per confirmed edge - never live during relaxation, since a relaxation event
+            // can be superseded by an even shorter path discovered later in the same run.
+            // Undirected graphs: each undirected edge is stored as two directed DAG entries, so
+            // the raw sum here is halved for SC (and BC) further down in finalize(), gated on
+            // graph.isUndirected().
             qCDebug(lcEngine) << "***** PHASE 2 (BC/ACCUMULATION): back-propagating from s" << s
                      << "Stack size" << (int)tls.pss.Stack.size();
 
@@ -843,6 +852,11 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
                         tls.pss.delta[ui] += (1.0 + tls.pss.delta[wi]) *
                                              ((qreal)tls.pss.sigma[ui] /
                                               (qreal)tls.pss.sigma[wi]);
+                    }
+
+                    if (s != w && s != u && u != w)
+                    {
+                        tls.partialSC[ui] += 1.0;
                     }
                 }
 
@@ -1274,17 +1288,17 @@ void DistanceEngine::finalize(const bool computeCentralities,
                 it calculates CC(s) as the sum of its distances from every other vertex.
                 it calculates eccentricity(s) as the maximum distance from all other vertices.
                 it increases pss.nthOrder[ N ] by one, to store the number of nodes at distance n from source s
-            b) For every vertex u:
-                it increases SC(u) by one, when it finds a new shor. path from s to t through u.
-                appends each neighbor y of u to pss.Ps[y], thus Ps stores all predecessors of y on all shortest paths from s
+            b) For every vertex u on a shortest path from s to w:
+                appends u to pss.Ps[w], thus Ps stores all predecessors of w on all shortest paths from s.
+                BC and SC are both derived from Ps/sigma afterward, in runAllSources()'s Brandes
+                back-propagation loop - not accumulated here.
             c) Each vertex u popped from Q is pushed to pss.Stack
 
 */
 void DistanceEngine::bfsSSSP(const int &s, const int &si,
                              const bool &computeCentralities,
                              const bool &dropIsolates,
-                             PerSourceScratch &pss,
-                             QVector<qreal> &partialSC)
+                             PerSourceScratch &pss)
 {
     Q_UNUSED(dropIsolates);
 
@@ -1419,15 +1433,9 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si,
                 }
                 if (computeCentralities)
                 {
-                    qCDebug(lcEngine) << "BFS/SC: Computing centralities: Computing SC ";
-                    if (s != w && s != u && u != w)
-                    {
-                        qCDebug(lcEngine) << "BFS: partialSC[ui=" << ui << "] += 1";
-                        // Intermediate vertex ui may be processed by concurrent threads
-                        // (other sources pass through the same u).  Write to partialSC[ui]
-                        // — a per-thread array — instead of vertex->setSC() to avoid races.
-                        partialSC[ui] += 1.0;
-                    }
+                    // SC is NOT accumulated here - it's computed post-hoc from the final Ps[]
+                    // predecessor DAG in runAllSources()'s Brandes back-propagation loop, the
+                    // same data this Ps[wi].append(u) below feeds BC from.
                     qCDebug(lcEngine) << "BFS: appending u" << u << " to list Ps[w=" << w
                              << "] with the predecessors of w on all shortest paths from s ";
                     pss.Ps[wi].append(u);
@@ -1457,8 +1465,9 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si,
                 it calculates eccentricity(s) as the maximum distance from all other vertices.
                 it increases pss.nthOrder[ N ] by one, to store the number of nodes at distance n from source s
             b) For every vertex u:
-                it increases SC(u) by one, when it finds a new shor. path from s to t through u.
-                appends each neighbor y of u to pss.Ps[y], thus Ps stores all predecessors of y on all shortest paths from s
+                appends each predecessor u of w to pss.Ps[w], thus Ps stores all predecessors of w
+                on all shortest paths from s. BC and SC are both derived from Ps/sigma afterward,
+                in runAllSources()'s Brandes back-propagation loop - not accumulated here.
             c) Each vertex u popped from prQ is pushed to pss.Stack
 
 */
@@ -1467,7 +1476,6 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                                   const bool &inverseWeights,
                                   const bool &dropIsolates,
                                   PerSourceScratch &pss,
-                                  QVector<qreal> &partialSC,
                                   const QVector<qreal> &potentials)
 {
 
@@ -1660,19 +1668,9 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
 
                 if (computeCentralities)
                 {
-                    if (s != w && s != u && u != w)
-                    {
-                        qCDebug(lcEngine) << "    --- dijkstra: Compute Centralities: partialSC[ui=" << ui << "] += 1";
-                        // Intermediate vertex: use partialSC to avoid race with other threads.
-                        partialSC[ui] += 1.0;
-                    }
-                    else
-                    {
-                        qCDebug(lcEngine) << "    --- dijkstra: Compute Centralities: "
-                                    "Skipping SC of u, because s="
-                                 << s << " w=" << w << " u=" << u;
-                    }
-
+                    // SC is NOT accumulated here - it's computed post-hoc from the final Ps[]
+                    // predecessor DAG in runAllSources()'s Brandes back-propagation loop, the
+                    // same data this Ps[wi].append(u) below feeds BC from.
                     qCDebug(lcEngine) << "    --- dijkstra: Compute Centralities: "
                                 "Appending u="
                              << u << " to list Ps[w =" << w
@@ -1742,6 +1740,12 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                     // other vertex is relaxed to a smaller distance later. finalize() computes
                     // it from each vertex's final settled APSP row instead, the single source
                     // of truth.
+
+                    // SC is NOT accumulated here either, for the same reason: a strict
+                    // improvement recorded now can itself be superseded by an even shorter path
+                    // found later in this same run, so counting it here would count edges that
+                    // never make it into the final shortest-path DAG. Computed post-hoc from the
+                    // final Ps[] in runAllSources()'s Brandes back-propagation loop instead.
 
                     qCDebug(lcEngine) << "    --- dijkstra: Compute Centralities: "
                                 "Resetting Ps[w =" << w << "] to [u =" << u

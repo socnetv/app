@@ -71,20 +71,18 @@ private:
                   IDistanceProgressSink &sink);
 
     // Breadth-First Search SSSP for unweighted graphs.
-    // Writes distances and sigma to pss. Graph-wide aggregates (distance sum, geodesics
-    // count, diameter) are computed post-hoc from the final settled state, not accumulated
-    // here.
-    // SC increments go into partialSC[ui] rather than vertex->setSC() to avoid races
-    // on intermediate vertices that may be visited by concurrent source threads.
+    // Writes distances, sigma, and Ps (predecessor lists) to pss. Graph-wide aggregates
+    // (distance sum, geodesics count, diameter) and centrality accumulators that depend on the
+    // final settled shortest-path DAG (BC, SC) are computed post-hoc from pss.Ps/pss.sigma in
+    // runAllSources()'s Brandes back-propagation loop, not accumulated here.
     void bfsSSSP(const int &s, const int &si,
                  const bool &computeCentralities,
                  const bool &dropIsolates,
-                 PerSourceScratch &pss,
-                 QVector<qreal> &partialSC);
+                 PerSourceScratch &pss);
 
     // Dijkstra SSSP for weighted graphs (directed or not).
-    // Same thread-safety contract as bfsSSSP: unsafe graph-wide writes go to
-    // pss scratch fields and partialSC instead of touching graph/vertex state directly.
+    // Same contract as bfsSSSP: unsafe graph-wide writes and DAG-dependent centralities go
+    // through pss scratch fields, not touched directly here.
     // potentials: empty for a plain Dijkstra run (the default); when non-empty, indexed by
     // vertex position like pss.dist, each edge weight is reweighted inline as
     // weight + potentials[ui] - potentials[wi] before relaxation (Johnson's algorithm - see
@@ -94,7 +92,6 @@ private:
                       const bool &inverseWeights,
                       const bool &dropIsolates,
                       PerSourceScratch &pss,
-                      QVector<qreal> &partialSC,
                       const QVector<qreal> &potentials = QVector<qreal>());
 };
 
