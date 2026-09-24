@@ -152,6 +152,59 @@ _Work in progress — more entries to come as the 3.8 cycle continues._
     New golden baseline pins the fix; the network had prior golden coverage for other measures
     but none that exercised diameter specifically, which is how this went undetected.
 
+  - **Graph-wide average distance could be roughly doubled, or far worse on disconnected
+    networks** (#287): the distance sum feeding `avg_distance` was accumulated twice — once
+    inline during BFS/Dijkstra relaxation, and again independently inside the Closeness
+    Centrality computation, which (correctly, for CC's own purposes) includes the "unreachable"
+    sentinel in its running sum. Both values fed the same graph-wide total. Fixed by accumulating
+    the sum exactly once, from each vertex's final settled distances, after SSSP completes.
+
+  - **Per-vertex Eccentricity Centrality (EC/SEC) could be overstated** (#288): same
+    relaxation-event-tracking shape as #286's diameter bug, just per-vertex instead of
+    graph-wide — eccentricity was updated live during relaxation instead of computed once from
+    each vertex's final settled distances. Affects any weighted network where a vertex is relaxed
+    more than once before reaching its true distance.
+
+  - **Dijkstra could silently drop correct, shorter paths on weighted networks with fractional
+    distances** (#289): `GraphDistance`, the priority queue's node type, stored `distance` as
+    `int` — routine with `inverseWeights` or Johnson's-algorithm reweighting, where tentative
+    distances are usually fractional. Any distance under 1.0 truncated to 0, corrupting the
+    min-heap's pop order and permanently losing later, correct relaxations through a vertex
+    popped too early. Fixed by widening to `qreal`.
+
+  - **Reachable-pair count inflated on disconnected networks** (#290): same relaxation-event
+    shape as #287/#288 — the geodesics/reachable-pair counter incremented once per relaxation
+    event rather than being derived from final settled state, over-counting whenever a pair was
+    relaxed more than once before settling. Fixed by computing it once, post-hoc, from the final
+    distance matrix.
+
+  - **Betweenness and Stress Centrality (BC/SC) could be exactly double their correct value on
+    directed networks with fully reciprocal ties** (#291): the undirected-halving step (dividing
+    by 2 to correct for each undirected edge appearing as two directed DAG entries) was gated on
+    whether every tie happened to have a reciprocal counterpart, not on whether the graph's
+    declared mode is actually undirected. A genuinely directed network (e.g. corporate interlocks
+    with mutual ties) has every edge reciprocal without being undirected, so BC/SC — which should
+    treat `(s,t)`/`(t,s)` as distinct ordered pairs there — were incorrectly halved.
+
+  - **Stress Centrality (SC) could read as 0 almost everywhere on weighted networks** (#292):
+    Dijkstra's SC accumulator was only incremented on a *tied* shortest path, never on a vertex's
+    first, strictly-shorter relaxation — the overwhelmingly common case. Unweighted (BFS) graphs
+    were unaffected.
+
+  - **Stress Centrality (SC) could still be wrong after #292's fix, even where it wasn't zero**
+    (#293): incrementing SC live during relaxation counts edges from paths that are later
+    superseded by an even shorter path discovered in the same run — the same "relaxation event,
+    not final state" shape as #287/#288/#290. Fixed by computing SC post-hoc from the settled
+    shortest-path predecessor DAG, in the same Brandes back-propagation pass Betweenness
+    Centrality already uses, instead of a live counter.
+
+  - **Graph diameter truncated to an integer on weighted networks** (#294): `diameter` was the
+    one distance-derived metric still typed `int` — `avg_distance`, Closeness Centrality, and
+    eccentricity all already reported the exact fractional weighted value. Changed to `qreal`
+    end to end (engine, `Graph` API, CLI, GUI dialogs) so diameter tracks the same metric as
+    everything else: hop count when unweighted, the true weighted geodesic distance when edge
+    weights are considered.
+
 ## [3.7] – Aug 2026
 
 ### New Features
