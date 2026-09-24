@@ -289,6 +289,21 @@ run_case_reachability \
   -w 1 -x 1 -k 0 -c 0 \
   "${BASE_REACH}/StokmanZiegler_Netherlands__REACH__V2.json"
 
+# Isolates/disconnection coverage (topology-only kernel, no weighted axis - see coverage matrix
+# in the WS6.8 roadmap doc). Independently hand-verified: reachable_pairs/density and the full
+# block-structured matrix derived from the topology by hand.
+run_case_reachability \
+  "${DATA}/TinyDisconnected_Undir_N6_E4.paj" \
+  2 \
+  -w 1 -x 1 -k 0 -c 0 \
+  "${BASE_REACH}/TinyDisconnected_Undir_N6_E4__REACH__V2.json"
+
+run_case_reachability \
+  "${DATA}/TinyDisconnected_Dir_N5_E3.paj" \
+  2 \
+  -w 1 -x 1 -k 0 -c 0 \
+  "${BASE_REACH}/TinyDisconnected_Dir_N5_E3__REACH__V2.json"
+
 # WALKS MATRIX (schema v3)
 run_case_walks \
   "${DATA}/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj" \
@@ -310,6 +325,23 @@ run_case_walks \
   2 \
   -w 1 -x 1 -k 0 -c 0 \
   "${BASE_WALKS}/TinyPath_N3_E2__WALKS_K2__V3.json"
+
+# Isolates/disconnection coverage. Independently hand-verified: the K=2 walk matrix has zero
+# cross-component cells by construction (no walk of any length can cross a disconnected boundary),
+# and every within-component cell derived by hand from the topology.
+run_case_walks \
+  "${DATA}/TinyDisconnected_Undir_N6_E4.paj" \
+  2 \
+  2 \
+  -w 1 -x 1 -k 0 -c 0 \
+  "${BASE_WALKS}/TinyDisconnected_Undir_N6_E4__WALKS_K2__V3.json"
+
+run_case_walks \
+  "${DATA}/TinyDisconnected_Dir_N5_E3.paj" \
+  2 \
+  2 \
+  -w 1 -x 1 -k 0 -c 0 \
+  "${BASE_WALKS}/TinyDisconnected_Dir_N5_E3__WALKS_K2__V3.json"
 
 # PROMINENCE (schema v4)
 run_case_prominence \
@@ -526,6 +558,20 @@ run_case_clustering \
   2 \
   -w 0 -x 1 -k 0 \
   "${BASE_CLUST}/TinyDirChain_N3__CLUST__V6__FT2__W0_IW1_DI0.json"
+
+# Isolates/disconnection coverage. Independently verified: cliques/CLC/triad_census all
+# cross-checked against a standalone networkx script (not SocNetV's own code).
+run_case_clustering \
+  "${DATA}/TinyDisconnected_Undir_N6_E4.paj" \
+  2 \
+  -w 0 -x 1 -k 0 \
+  "${BASE_CLUST}/TinyDisconnected_Undir_N6_E4__CLUST__V6__FT2__W0_IW1_DI0.json"
+
+run_case_clustering \
+  "${DATA}/TinyDisconnected_Dir_N5_E3.paj" \
+  2 \
+  -w 0 -x 1 -k 0 \
+  "${BASE_CLUST}/TinyDisconnected_Dir_N5_E3__CLUST__V6__FT2__W0_IW1_DI0.json"
 
 run_case_clustering \
   "${DATA}/TinyPath_N3_E2.paj" \
@@ -747,6 +793,15 @@ run_case_signed \
   1 \
   -w 1 -x 0 \
   "${BASE_SIGNED}/WeightedTies_Dir_N5_SigmaRegression__SIGNED__V10__FT1__W1_IW0.json"
+
+# Isolates/disconnection coverage: two components, all-positive weights (potentials correctly
+# all-zero, same reasoning as WeightedTies_Dir_N5_SigmaRegression above). distance_sum/BC/
+# eccentricity values match this fixture's independently hand-verified distance-kernel baseline.
+run_case_signed \
+  "${DATA}/TinyDisconnectedWeighted_Dir_N5_E3.paj" \
+  2 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/TinyDisconnectedWeighted_Dir_N5_E3__SIGNED__V10__FT2__W1_IW0.json"
 
 # Signed_Dir_N4_NoCycle: mixed positive/negative edges, no negative cycle - pins non-trivial
 # potentials (h = [A:0, B:0, C:-2, D:0]), independently verified by hand, a standalone Python

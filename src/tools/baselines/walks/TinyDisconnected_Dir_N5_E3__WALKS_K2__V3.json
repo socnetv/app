@@ -1,0 +1,82 @@
+{
+    "counts": {
+        "links_sna": 3,
+        "nodes": 5,
+        "ties_graph": 3
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "TinyDisconnected_Dir_N5_E3.paj",
+        "path": "src/data/TinyDisconnected_Dir_N5_E3.paj"
+    },
+    "graph": {
+        "directed": true,
+        "weighted": false
+    },
+    "kernel": "walks_matrix",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 0,
+        "load_msg": "",
+        "net_name": "TinyDisconnected_Dir_N5_E3.paj",
+        "ok": true
+    },
+    "metrics": {
+        "density": "0.14999999999999999"
+    },
+    "run": {
+        "considerWeights": true,
+        "dropIsolates": false,
+        "inverseWeights": true,
+        "operation": "walks_matrix_exact_length",
+        "walks_length": 2
+    },
+    "schema_version": 3,
+    "walks": {
+        "matrix": [
+            [
+                "0",
+                "0",
+                "1",
+                "0",
+                "0"
+            ],
+            [
+                "0",
+                "0",
+                "0",
+                "0",
+                "0"
+            ],
+            [
+                "0",
+                "0",
+                "0",
+                "0",
+                "0"
+            ],
+            [
+                "0",
+                "0",
+                "0",
+                "0",
+                "0"
+            ],
+            [
+                "0",
+                "0",
+                "0",
+                "0",
+                "0"
+            ]
+        ],
+        "nodes": [
+            1,
+            2,
+            3,
+            4,
+            5
+        ],
+        "total_walks": "1"
+    }
+}

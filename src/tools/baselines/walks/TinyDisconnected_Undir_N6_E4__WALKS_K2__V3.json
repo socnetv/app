@@ -1,0 +1,96 @@
+{
+    "counts": {
+        "links_sna": 6,
+        "nodes": 6,
+        "ties_graph": 3
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "TinyDisconnected_Undir_N6_E4.paj",
+        "path": "src/data/TinyDisconnected_Undir_N6_E4.paj"
+    },
+    "graph": {
+        "directed": false,
+        "weighted": false
+    },
+    "kernel": "walks_matrix",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 0,
+        "load_msg": "",
+        "net_name": "TinyDisconnected_Undir_N6_E4.paj",
+        "ok": true
+    },
+    "metrics": {
+        "density": "0.20000000000000001"
+    },
+    "run": {
+        "considerWeights": true,
+        "dropIsolates": false,
+        "inverseWeights": true,
+        "operation": "walks_matrix_exact_length",
+        "walks_length": 2
+    },
+    "schema_version": 3,
+    "walks": {
+        "matrix": [
+            [
+                "1",
+                "0",
+                "1",
+                "0",
+                "0",
+                "0"
+            ],
+            [
+                "0",
+                "2",
+                "0",
+                "0",
+                "0",
+                "0"
+            ],
+            [
+                "1",
+                "0",
+                "1",
+                "0",
+                "0",
+                "0"
+            ],
+            [
+                "0",
+                "0",
+                "0",
+                "1",
+                "0",
+                "0"
+            ],
+            [
+                "0",
+                "0",
+                "0",
+                "0",
+                "1",
+                "0"
+            ],
+            [
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0"
+            ]
+        ],
+        "nodes": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+        ],
+        "total_walks": "8"
+    }
+}

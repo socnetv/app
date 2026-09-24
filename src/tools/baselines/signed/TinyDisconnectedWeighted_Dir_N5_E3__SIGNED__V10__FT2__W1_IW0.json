@@ -1,0 +1,100 @@
+{
+    "counts": {
+        "links_sna": 3,
+        "nodes": 5,
+        "ties_graph": 3
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "TinyDisconnectedWeighted_Dir_N5_E3.paj",
+        "path": "src/data/TinyDisconnectedWeighted_Dir_N5_E3.paj"
+    },
+    "distances": {
+        "negative_cycle_detected": false,
+        "per_node": [
+            {
+                "BC": "0",
+                "CC": "0",
+                "distance_sum": "5.5",
+                "eccentricity": "2147483647",
+                "id": 1,
+                "label": "A"
+            },
+            {
+                "BC": "1",
+                "CC": "0",
+                "distance_sum": "1.5",
+                "eccentricity": "2147483647",
+                "id": 2,
+                "label": "B"
+            },
+            {
+                "BC": "0",
+                "CC": "0",
+                "distance_sum": "0",
+                "eccentricity": "2147483647",
+                "id": 3,
+                "label": "C"
+            },
+            {
+                "BC": "0",
+                "CC": "0",
+                "distance_sum": "3",
+                "eccentricity": "2147483647",
+                "id": 4,
+                "label": "D"
+            },
+            {
+                "BC": "0",
+                "CC": "0",
+                "distance_sum": "0",
+                "eccentricity": "2147483647",
+                "id": 5,
+                "label": "E"
+            }
+        ]
+    },
+    "graph": {
+        "directed": true,
+        "weighted": true
+    },
+    "kernel": "signed",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 5,
+        "load_msg": "",
+        "net_name": "TinyDisconnectedWeighted_Dir_N5_E3.paj",
+        "ok": true
+    },
+    "potentials": {
+        "negative_cycle_detected": false,
+        "per_node": [
+            {
+                "id": 1,
+                "label": "A",
+                "potential": 0
+            },
+            {
+                "id": 2,
+                "label": "B",
+                "potential": 0
+            },
+            {
+                "id": 3,
+                "label": "C",
+                "potential": 0
+            },
+            {
+                "id": 4,
+                "label": "D",
+                "potential": 0
+            },
+            {
+                "id": 5,
+                "label": "E",
+                "potential": 0
+            }
+        ]
+    },
+    "schema_version": 10
+}

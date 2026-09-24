@@ -1,0 +1,96 @@
+{
+    "counts": {
+        "links_sna": 6,
+        "nodes": 6,
+        "ties_graph": 3
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "TinyDisconnected_Undir_N6_E4.paj",
+        "path": "src/data/TinyDisconnected_Undir_N6_E4.paj"
+    },
+    "graph": {
+        "directed": false,
+        "weighted": false
+    },
+    "kernel": "reachability",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 0,
+        "load_msg": "",
+        "net_name": "TinyDisconnected_Undir_N6_E4.paj",
+        "ok": true
+    },
+    "metrics": {
+        "density": "0.20000000000000001"
+    },
+    "reachability": {
+        "matrix": [
+            [
+                1,
+                1,
+                1,
+                0,
+                0,
+                0
+            ],
+            [
+                1,
+                1,
+                1,
+                0,
+                0,
+                0
+            ],
+            [
+                1,
+                1,
+                1,
+                0,
+                0,
+                0
+            ],
+            [
+                0,
+                0,
+                0,
+                1,
+                1,
+                0
+            ],
+            [
+                0,
+                0,
+                0,
+                1,
+                1,
+                0
+            ],
+            [
+                0,
+                0,
+                0,
+                0,
+                0,
+                1
+            ]
+        ],
+        "nodes": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+        ],
+        "reachable_density": "0.3888888888888889",
+        "reachable_pairs": 14
+    },
+    "run": {
+        "considerWeights": true,
+        "dropIsolates": false,
+        "inverseWeights": true,
+        "operation": "reachability_matrix"
+    },
+    "schema_version": 2
+}
