@@ -117,13 +117,21 @@ static bool cmpNumStrArray(const QJsonArray &e, const QJsonArray &a, QTextStream
     bool ok = true;
     for (int i = 0; i < e.size(); ++i)
     {
+        const QString es = e.at(i).toString();
+        const QString as = a.at(i).toString();
+
+        // Both sides legitimately "nan" (e.g. Pearson correlation on a zero-variance row) is a
+        // match, not a mismatch - see cli_common.cpp's cmpNumStrTol.
+        if (es.compare("nan", Qt::CaseInsensitive) == 0 && as.compare("nan", Qt::CaseInsensitive) == 0)
+            continue;
+
         bool ok1 = false, ok2 = false;
-        const double ev = e.at(i).toString().toDouble(&ok1);
-        const double av = a.at(i).toString().toDouble(&ok2);
+        const double ev = es.toDouble(&ok1);
+        const double av = as.toDouble(&ok2);
         if (!ok1 || !ok2 || !almostEqual(ev, av))
         {
-            err << "MISMATCH " << what << "[" << i << "] expected=" << e.at(i).toString()
-                << " got=" << a.at(i).toString() << "\n";
+            err << "MISMATCH " << what << "[" << i << "] expected=" << es
+                << " got=" << as << "\n";
             ok = false;
         }
     }

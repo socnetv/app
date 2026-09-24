@@ -237,6 +237,11 @@ namespace cli
             const QString es = e.value(k).toString();
             const QString as = a.value(k).toString();
 
+            // Both sides legitimately "nan" (a 0/0 ratio) is a match, not a mismatch - see
+            // cli_common.cpp's cmpNumStrTol.
+            if (es.compare("nan", Qt::CaseInsensitive) == 0 && as.compare("nan", Qt::CaseInsensitive) == 0)
+                return;
+
             bool ok1 = false, ok2 = false;
             const double ev = es.toDouble(&ok1);
             const double av = as.toDouble(&ok2);
