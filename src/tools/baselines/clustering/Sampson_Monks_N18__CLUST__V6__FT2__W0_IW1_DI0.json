@@ -22,10 +22,202 @@
         "directed": true,
         "weighted": false
     },
+    "hierarchical": {
+        "merge_count": 17,
+        "merges": [
+            {
+                "level": "0",
+                "members": [
+                    17,
+                    18
+                ],
+                "seq": 1
+            },
+            {
+                "level": "1",
+                "members": [
+                    2,
+                    12
+                ],
+                "seq": 2
+            },
+            {
+                "level": "1",
+                "members": [
+                    5,
+                    6
+                ],
+                "seq": 3
+            },
+            {
+                "level": "1",
+                "members": [
+                    7,
+                    15
+                ],
+                "seq": 4
+            },
+            {
+                "level": "1.2071067811865475",
+                "members": [
+                    5,
+                    6,
+                    8
+                ],
+                "seq": 5
+            },
+            {
+                "level": "1.2071067811865475",
+                "members": [
+                    7,
+                    15,
+                    16
+                ],
+                "seq": 6
+            },
+            {
+                "level": "1.4142135623730951",
+                "members": [
+                    1,
+                    14
+                ],
+                "seq": 7
+            },
+            {
+                "level": "1.4142135623730951",
+                "members": [
+                    9,
+                    11
+                ],
+                "seq": 8
+            },
+            {
+                "level": "1.4695787943777123",
+                "members": [
+                    5,
+                    6,
+                    8,
+                    10
+                ],
+                "seq": 9
+            },
+            {
+                "level": "1.5610851453238221",
+                "members": [
+                    2,
+                    7,
+                    12,
+                    15,
+                    16
+                ],
+                "seq": 10
+            },
+            {
+                "level": "1.7320508075688772",
+                "members": [
+                    3,
+                    17,
+                    18
+                ],
+                "seq": 11
+            },
+            {
+                "level": "1.7865660924854931",
+                "members": [
+                    4,
+                    5,
+                    6,
+                    8,
+                    10
+                ],
+                "seq": 12
+            },
+            {
+                "level": "1.865735141455918",
+                "members": [
+                    1,
+                    2,
+                    7,
+                    12,
+                    14,
+                    15,
+                    16
+                ],
+                "seq": 13
+            },
+            {
+                "level": "1.9689020354099571",
+                "members": [
+                    4,
+                    5,
+                    6,
+                    8,
+                    9,
+                    10,
+                    11
+                ],
+                "seq": 14
+            },
+            {
+                "level": "2.035470233220817",
+                "members": [
+                    4,
+                    5,
+                    6,
+                    8,
+                    9,
+                    10,
+                    11,
+                    13
+                ],
+                "seq": 15
+            },
+            {
+                "level": "2.268277980811078",
+                "members": [
+                    1,
+                    2,
+                    3,
+                    7,
+                    12,
+                    14,
+                    15,
+                    16,
+                    17,
+                    18
+                ],
+                "seq": 16
+            },
+            {
+                "level": "2.3073352304252097",
+                "members": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12,
+                    13,
+                    14,
+                    15,
+                    16,
+                    17,
+                    18
+                ],
+                "seq": 17
+            }
+        ]
+    },
     "kernel": "clustering",
     "load_report": {
         "fileType_signal": 2,
-        "load_ms": 3,
+        "load_ms": 0,
         "load_msg": "",
         "net_name": "Sampson_Monks_N18.net",
         "ok": true
@@ -145,7 +337,10 @@
         }
     ],
     "run": {
+        "clusteringInput": "adjacency",
+        "clusteringMethod": "average",
         "considerWeights": false,
+        "dissimilarityMeasure": "euclidean",
         "dropIsolates": false,
         "inverseWeights": true
     },

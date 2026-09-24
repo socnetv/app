@@ -22,10 +22,105 @@
         "directed": false,
         "weighted": false
     },
+    "hierarchical": {
+        "merge_count": 9,
+        "merges": [
+            {
+                "level": "1",
+                "members": [
+                    1,
+                    3
+                ],
+                "seq": 1
+            },
+            {
+                "level": "1",
+                "members": [
+                    2,
+                    5
+                ],
+                "seq": 2
+            },
+            {
+                "level": "1",
+                "members": [
+                    9,
+                    10
+                ],
+                "seq": 3
+            },
+            {
+                "level": "1.5731321849709863",
+                "members": [
+                    1,
+                    3,
+                    4
+                ],
+                "seq": 4
+            },
+            {
+                "level": "1.5731321849709863",
+                "members": [
+                    2,
+                    5,
+                    7
+                ],
+                "seq": 5
+            },
+            {
+                "level": "1.5731321849709863",
+                "members": [
+                    8,
+                    9,
+                    10
+                ],
+                "seq": 6
+            },
+            {
+                "level": "1.6525914962699317",
+                "members": [
+                    1,
+                    3,
+                    4,
+                    6
+                ],
+                "seq": 7
+            },
+            {
+                "level": "1.8461605759597022",
+                "members": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7
+                ],
+                "seq": 8
+            },
+            {
+                "level": "2.2118496172223669",
+                "members": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10
+                ],
+                "seq": 9
+            }
+        ]
+    },
     "kernel": "clustering",
     "load_report": {
         "fileType_signal": 2,
-        "load_ms": 2,
+        "load_ms": 1,
         "load_msg": "",
         "net_name": "Krackhardt_Kite_N10.paj",
         "ok": true
@@ -97,7 +192,10 @@
         }
     ],
     "run": {
+        "clusteringInput": "adjacency",
+        "clusteringMethod": "average",
         "considerWeights": false,
+        "dissimilarityMeasure": "euclidean",
         "dropIsolates": false,
         "inverseWeights": true
     },

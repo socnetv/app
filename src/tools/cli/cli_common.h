@@ -69,6 +69,16 @@ namespace cli
         // adjacency matrix - unlike similarity, dissimilarity has no separate "distances" input
         // mode since it's a numeric-distance measure, not a binary-match one.
         QString dissimilarityMeasure = "euclidean";
+
+        // "single"|"complete"|"average", for --kernel clustering's hierarchical clustering
+        // category (Graph::graphClusteringHierarchical()). Selects the linkage method used to
+        // compute distances between a newly merged cluster and the remaining clusters.
+        QString clusteringMethod = "average";
+
+        // "adjacency"|"distances", for --kernel clustering's hierarchical clustering category.
+        // Selects the structural-equivalence input matrix fed into graphClusteringHierarchical()
+        // (which then derives a dissimilarities matrix from it via dissimilarityMeasure).
+        QString clusteringInput = "adjacency";
     };
 
     // ---------------- printing ----------------

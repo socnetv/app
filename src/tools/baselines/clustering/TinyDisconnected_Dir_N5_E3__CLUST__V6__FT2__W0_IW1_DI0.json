@@ -20,6 +20,48 @@
         "directed": true,
         "weighted": false
     },
+    "hierarchical": {
+        "merge_count": 4,
+        "merges": [
+            {
+                "level": "0",
+                "members": [
+                    2,
+                    3
+                ],
+                "seq": 1
+            },
+            {
+                "level": "0",
+                "members": [
+                    4,
+                    5
+                ],
+                "seq": 2
+            },
+            {
+                "level": "0.85355339059327373",
+                "members": [
+                    2,
+                    3,
+                    4,
+                    5
+                ],
+                "seq": 3
+            },
+            {
+                "level": "1.1035533905932737",
+                "members": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5
+                ],
+                "seq": 4
+            }
+        ]
+    },
     "kernel": "clustering",
     "load_report": {
         "fileType_signal": 2,
@@ -65,7 +107,10 @@
         }
     ],
     "run": {
+        "clusteringInput": "adjacency",
+        "clusteringMethod": "average",
         "considerWeights": false,
+        "dissimilarityMeasure": "euclidean",
         "dropIsolates": false,
         "inverseWeights": true
     },

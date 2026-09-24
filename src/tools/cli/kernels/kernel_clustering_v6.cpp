@@ -8,6 +8,7 @@
 
 #include "graph.h"
 #include "graphvertex.h"
+#include "matrix.h"
 #include "tools/cli/cli_common.h"
 #include "tools/headless_graph_loader.h"
 
@@ -148,6 +149,44 @@ namespace cli
     }
 
     // ------------------------------
+    // Hierarchical clustering builder
+    // ------------------------------
+
+    // WS6.9: dumps Graph::graphClusteringHierarchical()'s merge sequence - the dendrogram
+    // as a flat, order-independent list of (seq, level, members) triples, one per merge
+    // stage. seq is 1-based and matches graphClusteringLevels()'s (seq-1) indexing.
+    static QJsonObject buildHierarchicalV6(Graph &g)
+    {
+        QJsonObject root;
+        QJsonArray merges;
+
+        const QMap<int, V_int> &perSeq = g.graphClustersPerSequence();
+        const QList<qreal> &levels = g.graphClusteringLevels();
+
+        for (auto it = perSeq.constBegin(); it != perSeq.constEnd(); ++it)
+        {
+            const int seq = it.key();
+            QJsonObject m;
+            m["seq"] = seq;
+            m["level"] = d2s(levels.at(seq - 1));
+
+            QList<int> members = it.value();
+            std::sort(members.begin(), members.end());
+            QJsonArray membersArr;
+            for (int id : members)
+                membersArr.append(id);
+            m["members"] = membersArr;
+
+            merges.append(m);
+        }
+
+        root["merges"] = merges;
+        root["merge_count"] = merges.size();
+
+        return root;
+    }
+
+    // ------------------------------
     // JSON builder
     // ------------------------------
 
@@ -173,6 +212,9 @@ namespace cli
         run["considerWeights"] = cfg.considerWeights;
         run["inverseWeights"] = cfg.inverseWeights;
         run["dropIsolates"] = cfg.dropIsolates;
+        run["clusteringMethod"] = cfg.clusteringMethod;
+        run["clusteringInput"] = cfg.clusteringInput;
+        run["dissimilarityMeasure"] = cfg.dissimilarityMeasure;
         root["run"] = run;
 
         const int ties_graph = load.tiesGraph; // canonical
@@ -193,6 +235,7 @@ namespace cli
         root["per_node"] = buildPerNodeArrayV6(g);
         root["triad_census"] = buildTriadCensusV6(g);
         root["cliques"] = buildCliquesV6(g);
+        root["hierarchical"] = buildHierarchicalV6(g);
 
         QJsonObject loadReport;
         loadReport["ok"] = load.ok;
@@ -336,6 +379,48 @@ namespace cli
         return ok;
     }
 
+    static bool cmpHierarchicalV6(const QJsonObject &eObj, const QJsonObject &aObj, QTextStream &err)
+    {
+        bool ok = true;
+
+        ok &= cmpInt(eObj, aObj, "merge_count", err);
+
+        const QJsonArray eMerges = eObj.value("merges").toArray();
+        const QJsonArray aMerges = aObj.value("merges").toArray();
+
+        if (eMerges.size() != aMerges.size())
+        {
+            err << "MISMATCH hierarchical.merges.size expected=" << eMerges.size()
+                << " got=" << aMerges.size() << "\n";
+            return false;
+        }
+
+        for (int i = 0; i < eMerges.size(); ++i)
+        {
+            const QJsonObject e = eMerges.at(i).toObject();
+            const QJsonObject a = aMerges.at(i).toObject();
+
+            const int eseq = e.value("seq").toInt();
+            const int aseq = a.value("seq").toInt();
+            if (eseq != aseq)
+            {
+                err << "MISMATCH hierarchical.merges ordering at index=" << i
+                    << " expected_seq=" << eseq << " got_seq=" << aseq << "\n";
+                ok = false;
+                continue;
+            }
+
+            ok &= cmpNumStrTol(e, a, "level", err);
+
+            const QJsonArray eMembers = e.value("members").toArray();
+            const QJsonArray aMembers = a.value("members").toArray();
+            ok &= cmpIntArray(eMembers, aMembers, err,
+                              QString("hierarchical.merges[seq=%1].members").arg(eseq));
+        }
+
+        return ok;
+    }
+
     static bool cmpCliquesBySizeV6(const QJsonObject &eObj, const QJsonObject &aObj, QTextStream &err)
     {
         bool ok = true;
@@ -393,6 +478,9 @@ namespace cli
         ok &= cmpBool(eRun, aRun, "considerWeights", err);
         ok &= cmpBool(eRun, aRun, "inverseWeights", err);
         ok &= cmpBool(eRun, aRun, "dropIsolates", err);
+        ok &= cmpStr(eRun, aRun, "clusteringMethod", err);
+        ok &= cmpStr(eRun, aRun, "clusteringInput", err);
+        ok &= cmpStr(eRun, aRun, "dissimilarityMeasure", err);
 
         const QJsonObject eCounts = expected.value("counts").toObject();
         const QJsonObject aCounts = actual.value("counts").toObject();
@@ -429,6 +517,10 @@ namespace cli
         ok &= cmpInt(eCliques, aCliques, "max_clique_size", err);
         ok &= cmpInt(eCliques, aCliques, "total_cliques", err);
 
+        const QJsonObject eHier = expected.value("hierarchical").toObject();
+        const QJsonObject aHier = actual.value("hierarchical").toObject();
+        ok &= cmpHierarchicalV6(eHier, aHier, err);
+
         if (!ok)
             return 1;
 
@@ -456,6 +548,36 @@ namespace cli
         }
 
         g.graphCliques(QSet<int>(), QSet<int>(), QSet<int>());
+
+        Matrix STR_EQUIV;
+        if (cfg.clusteringInput == "distances")
+        {
+            g.graphMatrixDistanceGeodesicCreate(cfg.considerWeights, cfg.inverseWeights, cfg.dropIsolates);
+            STR_EQUIV = g.matrixDistances();
+        }
+        else
+        {
+            g.createMatrixAdjacency();
+            STR_EQUIV = g.matrixAdjacency();
+        }
+
+        int dissimMetric = METRIC_EUCLIDEAN_DISTANCE;
+        if (cfg.dissimilarityMeasure == "manhattan") dissimMetric = METRIC_MANHATTAN_DISTANCE;
+        else if (cfg.dissimilarityMeasure == "jaccard") dissimMetric = METRIC_JACCARD_INDEX;
+        else if (cfg.dissimilarityMeasure == "hamming") dissimMetric = METRIC_HAMMING_DISTANCE;
+        else if (cfg.dissimilarityMeasure == "chebyshev") dissimMetric = METRIC_CHEBYSHEV_MAXIMUM;
+
+        int method = Graph::Average_Linkage;
+        if (cfg.clusteringMethod == "single") method = Graph::Single_Linkage;
+        else if (cfg.clusteringMethod == "complete") method = Graph::Complete_Linkage;
+
+        if (!g.graphClusteringHierarchical(STR_EQUIV, "Rows", dissimMetric, method,
+                                           false, false, cfg.considerWeights,
+                                           cfg.inverseWeights, cfg.dropIsolates))
+        {
+            QTextStream(stderr) << "ERROR: graphClusteringHierarchical failed\n";
+            return 2;
+        }
 
         const qint64 computeMs = t.elapsed();
         printKV("COMPUTE_MS", computeMs);

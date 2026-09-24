@@ -1319,6 +1319,14 @@ public:
                                      const bool &inverseWeights = false,
                                      const bool &dropIsolates = false);
 
+    // --- Hierarchical clustering results (read-only access for CLI / reports) ---
+    // Populated by graphClusteringHierarchical(); keyed by clustering stage/level sequence
+    // number (1-based). m_clustersPerSequence[seq] is the full member list of the cluster
+    // formed at that stage; m_clusteringLevel[seq-1] is the dissimilarity/distance value at
+    // which that merge happened.
+    const QMap<int, V_int> &graphClustersPerSequence() const { return m_clustersPerSequence; }
+    const QList<qreal> &graphClusteringLevels() const { return m_clusteringLevel; }
+
     qreal clusteringCoefficientLocal(const int &v1, const bool &isSymmetric);
 
     qreal clusteringCoefficient();

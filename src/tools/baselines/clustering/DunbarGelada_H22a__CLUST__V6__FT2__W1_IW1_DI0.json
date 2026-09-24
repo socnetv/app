@@ -22,6 +22,130 @@
         "directed": false,
         "weighted": true
     },
+    "hierarchical": {
+        "merge_count": 11,
+        "merges": [
+            {
+                "level": "4.4721359549995796",
+                "members": [
+                    11,
+                    12
+                ],
+                "seq": 1
+            },
+            {
+                "level": "5.7661145331385777",
+                "members": [
+                    9,
+                    11,
+                    12
+                ],
+                "seq": 2
+            },
+            {
+                "level": "8.4852813742385695",
+                "members": [
+                    7,
+                    8
+                ],
+                "seq": 3
+            },
+            {
+                "level": "10.076209628370119",
+                "members": [
+                    9,
+                    10,
+                    11,
+                    12
+                ],
+                "seq": 4
+            },
+            {
+                "level": "10.535653752852738",
+                "members": [
+                    1,
+                    2
+                ],
+                "seq": 5
+            },
+            {
+                "level": "12.288205727444508",
+                "members": [
+                    3,
+                    4
+                ],
+                "seq": 6
+            },
+            {
+                "level": "13.45362404707371",
+                "members": [
+                    5,
+                    6
+                ],
+                "seq": 7
+            },
+            {
+                "level": "15.399322779834478",
+                "members": [
+                    1,
+                    2,
+                    9,
+                    10,
+                    11,
+                    12
+                ],
+                "seq": 8
+            },
+            {
+                "level": "19.536926874308346",
+                "members": [
+                    1,
+                    2,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12
+                ],
+                "seq": 9
+            },
+            {
+                "level": "24.544997644993838",
+                "members": [
+                    1,
+                    2,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12
+                ],
+                "seq": 10
+            },
+            {
+                "level": "32.034707571231081",
+                "members": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12
+                ],
+                "seq": 11
+            }
+        ]
+    },
     "kernel": "clustering",
     "load_report": {
         "fileType_signal": 2,
@@ -109,7 +233,10 @@
         }
     ],
     "run": {
+        "clusteringInput": "adjacency",
+        "clusteringMethod": "average",
         "considerWeights": true,
+        "dissimilarityMeasure": "euclidean",
         "dropIsolates": false,
         "inverseWeights": true
     },

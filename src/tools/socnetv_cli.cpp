@@ -149,6 +149,16 @@ int main(int argc, char *argv[])
                                                "euclidean|manhattan|jaccard|hamming|chebyshev.",
                                                "measure", "euclidean");
 
+    QCommandLineOption clusteringMethodOpt(QStringList() << "clustering-method",
+                                           "Linkage method for --kernel clustering's hierarchical "
+                                           "clustering category: single|complete|average.",
+                                           "method", "average");
+
+    QCommandLineOption clusteringInputOpt(QStringList() << "clustering-input",
+                                          "Input matrix for --kernel clustering's hierarchical "
+                                          "clustering category: adjacency|distances.",
+                                          "input", "adjacency");
+
     cli.addOption(verboseOpt);
     cli.addOption(strictOpt);
     cli.addOption(fileOpt);
@@ -176,6 +186,8 @@ int main(int argc, char *argv[])
     cli.addOption(similarityMeasureOpt);
     cli.addOption(similarityInputOpt);
     cli.addOption(dissimilarityMeasureOpt);
+    cli.addOption(clusteringMethodOpt);
+    cli.addOption(clusteringInputOpt);
 
     cli.process(app);
 
@@ -248,6 +260,8 @@ int main(int argc, char *argv[])
     cfg.similarityMeasure = cli.value(similarityMeasureOpt).trimmed().toLower();
     cfg.similarityInput = cli.value(similarityInputOpt).trimmed().toLower();
     cfg.dissimilarityMeasure = cli.value(dissimilarityMeasureOpt).trimmed().toLower();
+    cfg.clusteringMethod = cli.value(clusteringMethodOpt).trimmed().toLower();
+    cfg.clusteringInput = cli.value(clusteringInputOpt).trimmed().toLower();
 
     if (cfg.inputPath.isEmpty())
     {
@@ -281,6 +295,20 @@ int main(int argc, char *argv[])
     {
         QTextStream(stderr) << "ERROR: --dissimilarity-measure must be one of "
                                 "euclidean|manhattan|jaccard|hamming|chebyshev\n";
+        return 2;
+    }
+
+    if (cfg.clusteringMethod != "single" && cfg.clusteringMethod != "complete"
+        && cfg.clusteringMethod != "average")
+    {
+        QTextStream(stderr) << "ERROR: --clustering-method must be one of "
+                                "single|complete|average\n";
+        return 2;
+    }
+
+    if (cfg.clusteringInput != "adjacency" && cfg.clusteringInput != "distances")
+    {
+        QTextStream(stderr) << "ERROR: --clustering-input must be one of adjacency|distances\n";
         return 2;
     }
 
