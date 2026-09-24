@@ -39,10 +39,27 @@
 #   2. Commit the baseline JSON
 #   3. Add a run_case_<k> call below in the appropriate section
 #
-# To regenerate a baseline after a deliberate semantic fix:
-#   Run the dump command again and commit the updated JSON.
+# To regenerate every registered baseline after a deliberate semantic fix:
+#   ./scripts/run_golden_compares.sh --update
+#   Review the diff, then commit the updated JSON files.
 #   Never regenerate baselines to silence a real regression.
 set -uo pipefail
+
+UPDATE=0
+for arg in "$@"; do
+  case "$arg" in
+    --update) UPDATE=1 ;;
+    -h|--help)
+      echo "Usage: $0 [--update]"
+      echo "  --update  Dump fresh JSON over every registered baseline instead of comparing."
+      exit 0
+      ;;
+    *)
+      echo "[ERROR] Unknown arg: $arg" >&2
+      exit 2
+      ;;
+  esac
+done
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_TYPE="${BUILD_TYPE:-Debug}"  # Debug|Release (hint only)
@@ -76,6 +93,13 @@ BASE_VCONN="${ROOT_DIR}/src/tools/baselines/vertex_connectivity"
 BASE_SIGNED="${ROOT_DIR}/src/tools/baselines/signed"
 DATA="${ROOT_DIR}/src/data"
 
+# --update dumps fresh JSON whose dataset.path field records whatever -i path was passed in
+# (informational only, never compared) - use a relative form there so it matches the existing
+# baseline corpus's convention instead of embedding this machine's absolute path.
+if (( UPDATE )); then
+  DATA="src/data"
+fi
+
 if [[ ! -x "$CLI" ]]; then
   echo "[ERROR] socnetv-cli not found/executable at: $CLI"
   echo "Build it first (e.g. cmake --build build -j)."
@@ -84,6 +108,9 @@ fi
 
 FAILS=0
 
+# Every run_case_* function below shares the same shape: with --update it dumps fresh JSON
+# over the baseline; otherwise it compares against the baseline as usual. The mode switch
+# lives in this one place so a `run_case_*` call site never needs to know about --update.
 run_case() {
   local input="$1"
   local ftype="$2"
@@ -91,6 +118,10 @@ run_case() {
   local baseline="${!#}"       # last arg
 
   echo "==> $(basename "$baseline")"
+  if (( UPDATE )); then
+    "$CLI" -i "$input" -f "$ftype" "${flags[@]}" --dump-json "$baseline"
+    return
+  fi
   if ! "$CLI" -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
@@ -104,6 +135,10 @@ run_case_reachability() {
   local baseline="${!#}"
 
   echo "==> $(basename "$baseline")"
+  if (( UPDATE )); then
+    "$CLI" --kernel reachability -i "$input" -f "$ftype" "${flags[@]}" --dump-json "$baseline"
+    return
+  fi
   if ! "$CLI" --kernel reachability -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
@@ -118,6 +153,10 @@ run_case_walks() {
   local baseline="${!#}"
 
   echo "==> $(basename "$baseline")"
+  if (( UPDATE )); then
+    "$CLI" --kernel walks_matrix --walks-length "$walks_len" -i "$input" -f "$ftype" "${flags[@]}" --dump-json "$baseline"
+    return
+  fi
   if ! "$CLI" --kernel walks_matrix --walks-length "$walks_len" -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
@@ -131,6 +170,10 @@ run_case_prominence() {
   local baseline="${!#}"
 
   echo "==> $(basename "$baseline")"
+  if (( UPDATE )); then
+    "$CLI" --kernel prominence -i "$input" -f "$ftype" "${flags[@]}" --dump-json "$baseline"
+    return
+  fi
   if ! "$CLI" --kernel prominence -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
@@ -144,6 +187,10 @@ run_case_clustering() {
   local baseline="${!#}"
 
   echo "==> $(basename "$baseline")"
+  if (( UPDATE )); then
+    "$CLI" --kernel clustering -i "$input" -f "$ftype" "${flags[@]}" --dump-json "$baseline"
+    return
+  fi
   if ! "$CLI" --kernel clustering -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
@@ -157,6 +204,10 @@ run_case_connectivity() {
   local baseline="${!#}"
 
   echo "==> $(basename "$baseline")"
+  if (( UPDATE )); then
+    "$CLI" --kernel connectivity -i "$input" -f "$ftype" "${flags[@]}" --dump-json "$baseline"
+    return
+  fi
   if ! "$CLI" --kernel connectivity -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
@@ -170,6 +221,10 @@ run_case_matrix() {
   local baseline="${!#}"
 
   echo "==> $(basename "$baseline")"
+  if (( UPDATE )); then
+    "$CLI" --kernel matrix -i "$input" -f "$ftype" -c 0 "${flags[@]}" --dump-json "$baseline"
+    return
+  fi
   if ! "$CLI" --kernel matrix -i "$input" -f "$ftype" -c 0 "${flags[@]}" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
@@ -183,6 +238,10 @@ run_case_vertex_connectivity() {
   local baseline="${!#}"
 
   echo "==> $(basename "$baseline")"
+  if (( UPDATE )); then
+    "$CLI" --kernel vertex_connectivity -i "$input" -f "$ftype" "${flags[@]}" --dump-json "$baseline"
+    return
+  fi
   if ! "$CLI" --kernel vertex_connectivity -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
@@ -196,6 +255,10 @@ run_case_signed() {
   local baseline="${!#}"
 
   echo "==> $(basename "$baseline")"
+  if (( UPDATE )); then
+    "$CLI" --kernel signed -i "$input" -f "$ftype" "${flags[@]}" --dump-json "$baseline"
+    return
+  fi
   if ! "$CLI" --kernel signed -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
@@ -214,6 +277,11 @@ run_case_io() {
   fi
 
   echo "==> $(basename "$baseline")"
+  if (( UPDATE )); then
+    "$CLI" --kernel io_roundtrip -i "$input" -f "$ftype" \
+         ${flags[@]+"${flags[@]}"} --dump-json "$baseline"
+    return
+  fi
   if ! "$CLI" --kernel io_roundtrip -i "$input" -f "$ftype" \
        ${flags[@]+"${flags[@]}"} --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
@@ -876,6 +944,10 @@ run_case_signed \
   "${BASE_SIGNED}/Signed_Dir_N3_NegCycle__SIGNED__V10__FT1__W1_IW0.json"
 
 echo
+if (( UPDATE )); then
+  echo "[UPDATE] All registered baselines regenerated. Review the diff before committing."
+  exit 0
+fi
 if [[ "$FAILS" -eq 0 ]]; then
   echo "[OK] All golden comparisons passed."
   exit 0
