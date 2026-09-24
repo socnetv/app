@@ -732,6 +732,37 @@ Rules:
 
 - add datasets incrementally; baseline additions must be reviewed (do not bulk-regenerate)
 
+### WS6.9 — Close CLI kernel coverage gaps found during the WS6.8 audit
+
+**Status: not started (2026-09-24)** — while auditing WS6.8's coverage matrix, checked every
+public `Graph` method that computes an analytical result against what the ten existing kernels
+(`distance`, `reachability`, `walks_matrix`, `prominence`, `io_roundtrip`, `clustering`,
+`connectivity`, `matrix`, `vertex_connectivity`, `signed`) actually call. Cohesion (cliques,
+connectivity) is fully covered; generators are correctly out of scope (they build graphs, they
+don't analyze them); no k-core algorithm exists anywhere in the codebase (not a gap — just absent
+from SocNetV). Five methods currently have **zero** kernel coverage — never dumped into a baseline,
+never independently verified, never protected against regression:
+
+| # | Algorithm | Source | What it computes | Natural home |
+|---|---|---|---|---|
+| 1 | `Graph::graphReciprocity()` | `src/graph/core/graph_structure_metrics.cpp` | Arc/dyad reciprocity ratios for the current relation | New lightweight check, or fold into `connectivity` |
+| 2 | `Graph::createMatrixDissimilarities()` | `src/graph/similarity/graph_similarity_matrices.cpp` | Actor dissimilarity matrix (complement of the already-covered similarity-matching/Pearson paths) | `matrix` kernel |
+| 3 | `Graph::graphClusteringHierarchical()` | `src/graph/clustering/graph_clustering_hierarchical.cpp` | Agglomerative structural-equivalence clustering (single/complete/average linkage), optional dendrogram | `clustering` kernel |
+| 4 | `Graph::estimateSpectralRadius()` | `src/graph/centrality/graph_centrality.cpp` | Dominant eigenvalue estimate — used internally by Katz/Bonacich but never independently checked on its own | `prominence` kernel, as an auxiliary value |
+| 5 | `Graph::isSymmetric()` | `src/graph/core/graph_state_flags.cpp` | Whether the adjacency matrix is symmetric | Smaller in kind — already printed as the top-level `SYMMETRIC` field on every kernel run via `socnetv_cli.cpp`, so it's present in every existing baseline; just never singled out as independently verified on its own |
+
+For each of #1–4: wire it into its natural-home kernel's JSON output, add at least one fixture,
+independently verify the dumped value against ground truth computed outside SocNetV (hand or a
+standalone script — same bar as WS6.8), same as every other WS6.8 entry. #5 needs no new wiring,
+just an explicit independent check against an existing baseline's `SYMMETRIC` field.
+
+Rules:
+
+- Same as WS6.8: independent verification only — never re-derive the expected value from SocNetV's
+  own source.
+- Wire one algorithm at a time into its kernel; don't bulk-add JSON fields across multiple gaps in
+  one commit.
+
 ### Open findings
 
 #### Windows/MSVC build warnings: C4458 shadowing, C4996 Qt6 deprecations
