@@ -365,13 +365,16 @@ QList<int> Graph::graphGeodesicShortestPath(const int &v1, const int &v2,
 
 /**
  * @brief Returns the diameter of the graph, aka the largest geodesic distance
- * between any two vertices
+ * between any two vertices. qreal, not int: on a weighted graph (considerWeights=true) this is
+ * the largest weighted shortest-path length, which is routinely fractional - same convention as
+ * avg_distance/CC/eccentricity. Only equal to a hop count when the graph is unweighted or
+ * considerWeights is false.
  * @param considerWeights
  * @param inverseWeights
  * @return
  */
-int Graph::graphDiameter(const bool considerWeights,
-                         const bool inverseWeights)
+qreal Graph::graphDiameter(const bool considerWeights,
+                           const bool inverseWeights)
 {
     qCDebug(lcDistances) << "Graph::graphDiameter()";
     graphDistancesGeodesic(false, considerWeights, inverseWeights, false);
@@ -383,7 +386,7 @@ int Graph::graphDiameter(const bool considerWeights,
  * refusing on a negative edge weight. Always considers weights (there is no unweighted variant
  * of this path). Still refuses - via negativeCycleDetected() - on a reachable negative cycle.
  */
-int Graph::graphDiameterSigned(const bool inverseWeights)
+qreal Graph::graphDiameterSigned(const bool inverseWeights)
 {
     qCDebug(lcDistances) << "Graph::graphDiameterSigned()";
     graphDistancesGeodesicSigned(false, inverseWeights, false);
@@ -462,10 +465,10 @@ qreal Graph::graphDistanceGeodesicAverageCached() const
     return m_graphAverageDistance;
 }
 /**
- * @brief Returns the number of geodesics (shortest paths) in the graph, without recalculating it.
- * @return int
+ * @brief Returns the diameter of the graph, without recalculating it.
+ * @return qreal
  */
-int Graph::graphDiameterCached() const
+qreal Graph::graphDiameterCached() const
 {
     return m_graphDiameter;
 }

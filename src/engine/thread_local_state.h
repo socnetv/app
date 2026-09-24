@@ -53,10 +53,10 @@ struct ThreadLocalState
     // Reduced into graph.addToDistanceSum() after the parallel loop.
     qreal totalDistanceSum = 0;
 
-    // Maximum geodesic distance (diameter) seen by this thread.
-    // Replaces graph.setDiameterCached() inside BFS / Dijkstra.
+    // Maximum geodesic distance (diameter) seen by this thread. qreal, not int: on a weighted
+    // graph this is routinely fractional, same as totalDistanceSum.
     // Post-loop: graph.setDiameterCached( max over all threads of maxDiameter )
-    int maxDiameter = 0;
+    qreal maxDiameter = 0;
 
     // Accumulated Power Centrality and Standardised Power Centrality sums.
     // Replaces direct graph.sumPC += and graph.sumSPC += inside the source loop

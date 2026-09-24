@@ -755,7 +755,7 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
         // ones) - tls.pss.dist[vi] already holds RAND_MAX for every unreached vi
         // (PerSourceScratch::resetPerSource() fills it before every source, unconditionally),
         // so this isn't new work - it reuses a reset that was already happening.
-        int sourceMaxDist = 0;
+        qreal sourceMaxDist = 0;
         qreal sourceDistanceSum = 0;
         for (int vi = 0; vi < totalV; ++vi)
         {
@@ -766,7 +766,7 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
             {
                 sourceDistanceSum += tls.pss.dist[vi];
                 if (tls.pss.dist[vi] > sourceMaxDist)
-                    sourceMaxDist = (int)tls.pss.dist[vi];
+                    sourceMaxDist = tls.pss.dist[vi];
             }
         }
         if (sourceMaxDist > tls.maxDiameter)

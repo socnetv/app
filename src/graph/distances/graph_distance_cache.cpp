@@ -179,7 +179,7 @@ void Graph::setConnectedCached(bool v) { m_graphIsConnected = v; }
 
 int Graph::graphWeaklyConnectedComponentsCached() const { return m_graphWeaklyConnectedComponents; }
 int Graph::graphStronglyConnectedComponentsCached() const { return m_graphStronglyConnectedComponents; }
-void Graph::setDiameterCached(int v) { m_graphDiameter = v; }
+void Graph::setDiameterCached(qreal v) { m_graphDiameter = v; }
 
 void Graph::resetDistanceAggregates()
 {

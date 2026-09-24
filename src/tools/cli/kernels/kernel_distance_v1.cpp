@@ -83,7 +83,7 @@ static QJsonObject buildGoldenJsonV1(
     bool inverseWeights,
     bool dropIsolates,
     double avgDist,
-    int diameter)
+    double diameter)
 {
     QJsonObject root;
     root["schema_version"] = 1;
@@ -122,7 +122,7 @@ static QJsonObject buildGoldenJsonV1(
     // ---------------- Metrics ----------------
     QJsonObject metrics;
     metrics["avg_distance"] = d2s(avgDist);
-    metrics["diameter"] = diameter;
+    metrics["diameter"] = d2s(diameter);
     metrics["disconnected_pairs"] = g.notConnectedPairsSize();
     metrics["connected"] = g.isConnectedCached();
 
@@ -269,7 +269,7 @@ static int compareGoldenV1(const QJsonObject &expected, const QJsonObject &actua
     const QJsonObject eMetrics = expected.value("metrics").toObject();
     const QJsonObject aMetrics = actual.value("metrics").toObject();
     ok &= cmpNumStrTol(eMetrics, aMetrics, "avg_distance", err, 1e-15);
-    ok &= cmpInt(eMetrics, aMetrics, "diameter", err);
+    ok &= cmpNumStrTol(eMetrics, aMetrics, "diameter", err, 1e-15);
     ok &= cmpInt(eMetrics, aMetrics, "disconnected_pairs", err);
     ok &= cmpBool(eMetrics, aMetrics, "connected", err);
 
@@ -349,12 +349,12 @@ int runKernelDistanceV1(const CliConfig &cfg,
     printKV("COMPUTE_MS", computeMs);
 
     const qreal avgDist = g.graphDistanceGeodesicAverageCached();
-    const int diameter = g.graphDiameterCached();
+    const qreal diameter = g.graphDiameterCached();
     const int discPairs = g.notConnectedPairsSize();
     const bool connected = g.isConnectedCached();
 
     printKV("AVG_DIST", QString::number(avgDist, 'g', 12));
-    printKV("DIAMETER", diameter);
+    printKV("DIAMETER", QString::number(diameter, 'g', 12));
     printKV("DISC_PAIRS", discPairs);
     printKV("CONNECTED", connected ? 1 : 0);
 
@@ -371,7 +371,7 @@ int runKernelDistanceV1(const CliConfig &cfg,
         cfg.inverseWeights,
         cfg.dropIsolates,
         static_cast<double>(avgDist),
-        diameter);
+        static_cast<double>(diameter));
 
     if (!cfg.dumpJsonPath.isEmpty())
     {

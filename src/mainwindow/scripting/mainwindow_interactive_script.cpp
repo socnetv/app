@@ -1085,7 +1085,7 @@ void MainWindow::processNextInteractiveCommand()
         const bool considerWeights = tokens.contains("weights");
         const bool inverseWeights = tokens.contains("inverse");
 
-        auto netDiameter = std::make_shared<int>(0);
+        auto netDiameter = std::make_shared<qreal>(0);
         auto negativeWeights = std::make_shared<bool>(false);
         auto timer = std::make_shared<QElapsedTimer>();
         timer->start();

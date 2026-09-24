@@ -1130,11 +1130,11 @@ public:
 
     void createMatrixReachability();
 
-    int graphDiameter(const bool considerWeights, const bool inverseWeights);
+    qreal graphDiameter(const bool considerWeights, const bool inverseWeights);
 
-    int graphDiameterSigned(const bool inverseWeights);
+    qreal graphDiameterSigned(const bool inverseWeights);
 
-    int graphDiameterCached() const;
+    qreal graphDiameterCached() const;
 
     qreal graphSumDistanceCached() const;
 
@@ -1198,7 +1198,7 @@ public:
     bool symmetricCached() const;
 
     void setConnectedCached(bool v);
-    void setDiameterCached(int v);
+    void setDiameterCached(qreal v);
 
     void resetDistanceAggregates(); // sets avg/sum/geodesics/diameter to 0
     void addToDistanceSum(qreal delta);
@@ -1646,7 +1646,8 @@ private:
 
     int m_graphModStatus;
     int m_reserveEdgesPerVertexSize;
-    int m_totalVertices, m_totalEdges, m_graphDiameter, initVertexSize;
+    int m_totalVertices, m_totalEdges, initVertexSize;
+    qreal m_graphDiameter;
     int initVertexLabelSize, initVertexNumberSize;
     int initVertexNumberDistance, initVertexLabelDistance;
     bool order;

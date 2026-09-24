@@ -157,7 +157,7 @@ void MainWindow::slotAnalyzeDiameter()
 
     const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
     const bool inverseWeightsFinal = inverseWeights;
-    auto netDiameter = std::make_shared<int>(0);
+    auto netDiameter = std::make_shared<qreal>(0);
     auto isWeighted = std::make_shared<bool>(false);
     auto negativeWeights = std::make_shared<bool>(false);
 
@@ -186,7 +186,7 @@ void MainWindow::slotAnalyzeDiameter()
 
                 if (response == QMessageBox::Yes)
                 {
-                    auto netDiameterSigned = std::make_shared<int>(0);
+                    auto netDiameterSigned = std::make_shared<qreal>(0);
                     auto negativeCycle = std::make_shared<bool>(false);
 
                     runGraphOperationAsync(
