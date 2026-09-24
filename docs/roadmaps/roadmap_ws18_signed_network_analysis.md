@@ -10,10 +10,11 @@ Harary structural balance analysis on triads.
 
 ## Status
 
-Tracked by #284. **P1 complete (2026-09-19, #277).** P0 filed (#285), not started. **P2 in
-progress**: algorithm choice and design decisions settled (Johnson's), `bellmanFordPotentials()`
-implemented and golden-tested standalone, not yet wired into `dijkstraSSSP()`/`runAllSources()` —
-see P2 below for exact status. P3-P4 not started — scoped only.
+Tracked by #284. **P1 complete (2026-09-19, #277).** P0 filed (#285), not started. **P2 engine
+work complete (2026-09-22)**: `bellmanFordPotentials()` threaded into `dijkstraSSSP()`/
+`runAllSources()`, un-reweighting handled, opt-in entry point
+(`Graph::graphDistancesGeodesicSigned()`) added — see P2 below for exact status and what's left
+(GUI-facing wiring, if any is wanted). P3-P4 not started — scoped only.
 
 **Unrelated fix found and landed along the way (#283):** while designing P2's Bellman-Ford engine
 path, cross-checking `dijkstraSSSP()`'s behavior against an independent library surfaced a real BC
@@ -148,23 +149,28 @@ propagation requirement once every weight it sees is non-negative).
   comparison) ahead of this phase, specifically to remove this as an open risk before Johnson's
   reweighting starts composing extra floating-point terms into every edge weight.
 
-**Status: engine work in progress.**
-- ✔ `DistanceEngine::bellmanFordPotentials()` — the reweighting/negative-cycle-detection pass
-  itself, implemented and golden-tested standalone via a new CLI kernel (`--kernel signed`, schema
-  v10; see WS6.1's `kernel_signed_v10` entry) ahead of being wired into the SSSP loop. Not yet
-  called from `compute()` — calling it unconditionally would cost every ordinary (non-negative-
-  weight) computation a wasted edge-relaxation pass.
-- ▶ **Next (not started): thread potentials into `dijkstraSSSP()`/`runAllSources()`.** New
-  `const QVector<qreal> &potentials` parameter on `dijkstraSSSP()`, reweighting applied inline at
-  the existing weight-read site (`distance_engine.cpp`, in `dijkstraSSSP()`'s edge loop); un-
-  reweight `tls.pss.dist[]` in `runAllSources()`'s per-source lambda immediately after
-  `dijkstraSSSP()` returns, before the CC/PC accumulation block and the `m_apspDist` write-back
-  (both read `dist[]` directly and need the true, not reweighted, value). For this step, `compute()`
-  keeps calling with an empty `potentials` vector (no live caller yet) so the change is provable
-  as a no-op on every existing golden baseline before anything starts consuming it.
-- Not started: the explicit opt-in flag threaded through `Graph`'s public distance-computation entry
-  points (supersedes P1's blanket refusal only when set); this is where P1's guard's fate above
-  actually gets implemented in code.
+**Status: engine work complete (2026-09-22, `e63a1f30`); no GUI menu wiring yet.**
+- ✔ `DistanceEngine::bellmanFordPotentials()` — the reweighting/negative-cycle-detection pass,
+  golden-tested standalone via `--kernel signed` (schema v10).
+- ✔ Potentials threaded into `dijkstraSSSP()`/`runAllSources()`: `dijkstraSSSP()` takes an optional
+  `const QVector<qreal> &potentials` and reweights each edge inline (`w' = w + h(u) - h(v)`);
+  `runAllSources()` un-reweights `tls.pss.dist[]` right after each source's run, before the
+  `m_apspDist` write-back and CC/PC accumulation (both need the true, not reweighted, value).
+- ✔ Opt-in entry point: `Graph::graphDistancesGeodesicSigned()` (separate method, not a parameter
+  on `graphDistancesGeodesic()` — none of that function's ~20 existing callers are touched) plus
+  `DistanceEngine::compute()`'s new `negativeWeightSafe` parameter (default `false`). Refuses
+  distinctly via `Graph::negativeCycleDetected()` on a genuine negative cycle.
+  `--kernel signed`/`--interactive-script`'s `bellman-ford` command both call it; the six signed
+  golden baselines cover BC/CC/distances from the real reweighted path, not just standalone
+  potentials.
+- Found and fixed a real pre-existing bug while exercising this end-to-end: `dijkstraSSSP()`'s
+  strict-improvement branch required `dist_w > 0`, silently dropping any relaxation landing on
+  exactly 0 — unreachable under plain Dijkstra (zero-weight edges are skipped earlier in the same
+  loop) but reachable once Johnson's reweighting can legitimately produce an exact 0. Fixed to
+  `dist_w >= 0`.
+- Not started: a GUI menu action / dialog calling `graphDistancesGeodesicSigned()` — currently
+  reachable only via `--kernel signed` and `--interactive-script`'s `bellman-ford` command, not
+  from anything a user clicks.
 
 ### P3 — Signed-specific centrality measures
 
