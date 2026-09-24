@@ -63,6 +63,12 @@ namespace cli
         // third node counted as a false-positive match - only reachable via the "distances"
         // input, hence this flag.
         QString similarityInput = "adjacency";
+
+        // "euclidean"|"manhattan"|"jaccard"|"hamming"|"chebyshev", for --kernel matrix's
+        // dissimilarity category (Graph::createMatrixDissimilarities()). Always runs on the
+        // adjacency matrix - unlike similarity, dissimilarity has no separate "distances" input
+        // mode since it's a numeric-distance measure, not a binary-match one.
+        QString dissimilarityMeasure = "euclidean";
     };
 
     // ---------------- printing ----------------

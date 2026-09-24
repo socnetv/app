@@ -68,6 +68,22 @@
             "dump_mode": "full",
             "rows": 2
         },
+        "dissimilarity": {
+            "cols": 2,
+            "data": [
+                [
+                    "0",
+                    "0"
+                ],
+                [
+                    "0",
+                    "0"
+                ]
+            ],
+            "dump_mode": "full",
+            "metric": "euclidean",
+            "rows": 2
+        },
         "distances": {
             "cols": 2,
             "data": [

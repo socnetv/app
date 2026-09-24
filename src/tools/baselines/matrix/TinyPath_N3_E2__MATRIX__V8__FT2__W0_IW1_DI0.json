@@ -16,7 +16,7 @@
     "kernel": "matrix",
     "load_report": {
         "fileType_signal": 2,
-        "load_ms": 1,
+        "load_ms": 3,
         "load_msg": "",
         "net_name": "TinyPath_N3_E2.paj",
         "ok": true
@@ -87,6 +87,29 @@
                 ]
             ],
             "dump_mode": "full",
+            "rows": 3
+        },
+        "dissimilarity": {
+            "cols": 3,
+            "data": [
+                [
+                    "0",
+                    "1",
+                    "0"
+                ],
+                [
+                    "1",
+                    "0",
+                    "1"
+                ],
+                [
+                    "0",
+                    "1",
+                    "0"
+                ]
+            ],
+            "dump_mode": "full",
+            "metric": "euclidean",
             "rows": 3
         },
         "distances": {

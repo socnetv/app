@@ -751,6 +751,17 @@ run_case_matrix \
   --similarity-measure jaccard --similarity-input distances \
   "${BASE_MATRIX}/TinyDisconnected_Undir_N6_E4__MATRIX__V8__FT2__W0_IW1_DI0__jaccard_distances.json"
 
+# WS6.9: dissimilarity category (Graph::createMatrixDissimilarities(), previously never dumped
+# into a baseline). Euclidean chosen as the default/most-common metric. Independently
+# hand-verified: dist(A,D)=sqrt(2), dist(B,D)=sqrt(3) derived by hand from the adjacency rows
+# (excluding the two diagonal columns per distancesMatrix()'s own diagonal=false rule), matching
+# the dumped output exactly.
+run_case_matrix \
+  "${DATA}/TinyDisconnected_Undir_N6_E4.paj" \
+  2 \
+  --dissimilarity-measure euclidean \
+  "${BASE_MATRIX}/TinyDisconnected_Undir_N6_E4__MATRIX__V8__FT2__W0_IW1_DI0__euclidean_dissimilarity.json"
+
 # VERTEX CONNECTIVITY (schema v9) - deliberately Tiny*/toy datasets only. The global mode's
 # pairwise-minimum algorithm is O(n^2) local-connectivity computations in the worst case (see
 # Graph::graphConnectivity()'s doc comment) - fine for a handful of nodes, not for the

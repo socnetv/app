@@ -275,7 +275,7 @@ static int compareGoldenV8(const QJsonObject &expected, const QJsonObject &actua
 
     static const QStringList kAlwaysPresent = {
         "adjacency", "adjacency_inverse", "distances", "shortest_paths", "similarity",
-        "reachability", "walks", "clique_comembership"
+        "dissimilarity", "reachability", "walks", "clique_comembership"
     };
     for (const QString &cat : kAlwaysPresent)
     {
@@ -297,6 +297,7 @@ static int compareGoldenV8(const QJsonObject &expected, const QJsonObject &actua
                   "invertible", err);
     ok &= cmpInt(eM.value("walks").toObject(), aM.value("walks").toObject(), "length", err);
     ok &= cmpStr(eM.value("similarity").toObject(), aM.value("similarity").toObject(), "metric", err);
+    ok &= cmpStr(eM.value("dissimilarity").toObject(), aM.value("dissimilarity").toObject(), "metric", err);
 
     // total_walks only exists for small fixtures - see kTotalWalksSkipThreshold.
     for (const QString &cat : {QStringLiteral("total_walks")})
@@ -400,6 +401,24 @@ int runKernelMatrixV8(const CliConfig &cfg,
     sim["metric"] = cfg.similarityMeasure;
     sim["input"] = cfg.similarityInput;
     matrices["similarity"] = sim;
+
+    // Dissimilarity: unlike similarity, always runs on the adjacency matrix (a numeric-distance
+    // measure, not a binary-match one - no separate "distances input" mode to select).
+    g.createMatrixAdjacency();
+    Matrix dissimilarity;
+    int dissimMetric = METRIC_EUCLIDEAN_DISTANCE;
+    if (cfg.dissimilarityMeasure == "manhattan")
+        dissimMetric = METRIC_MANHATTAN_DISTANCE;
+    else if (cfg.dissimilarityMeasure == "jaccard")
+        dissimMetric = METRIC_JACCARD_INDEX;
+    else if (cfg.dissimilarityMeasure == "hamming")
+        dissimMetric = METRIC_HAMMING_DISTANCE;
+    else if (cfg.dissimilarityMeasure == "chebyshev")
+        dissimMetric = METRIC_CHEBYSHEV_MAXIMUM;
+    g.createMatrixDissimilarities(g.matrixAdjacency(), dissimilarity, dissimMetric, "Rows", false, false);
+    QJsonObject dissim = dumpMatrixJson(dissimilarity, fullGrid);
+    dissim["metric"] = cfg.dissimilarityMeasure;
+    matrices["dissimilarity"] = dissim;
 
     g.createMatrixReachability();
     matrices["reachability"] = dumpMatrixJson(g.matrixReachability(), fullGrid);

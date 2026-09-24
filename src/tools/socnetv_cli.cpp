@@ -144,6 +144,11 @@ int main(int argc, char *argv[])
                                           "adjacency|distances.",
                                           "input", "adjacency");
 
+    QCommandLineOption dissimilarityMeasureOpt(QStringList() << "dissimilarity-measure",
+                                               "Measure for --kernel matrix's dissimilarity category: "
+                                               "euclidean|manhattan|jaccard|hamming|chebyshev.",
+                                               "measure", "euclidean");
+
     cli.addOption(verboseOpt);
     cli.addOption(strictOpt);
     cli.addOption(fileOpt);
@@ -170,6 +175,7 @@ int main(int argc, char *argv[])
     cli.addOption(bonacichBetaOpt);
     cli.addOption(similarityMeasureOpt);
     cli.addOption(similarityInputOpt);
+    cli.addOption(dissimilarityMeasureOpt);
 
     cli.process(app);
 
@@ -241,6 +247,7 @@ int main(int argc, char *argv[])
     cfg.connMode = cli.value(connModeOpt).trimmed().toLower();
     cfg.similarityMeasure = cli.value(similarityMeasureOpt).trimmed().toLower();
     cfg.similarityInput = cli.value(similarityInputOpt).trimmed().toLower();
+    cfg.dissimilarityMeasure = cli.value(dissimilarityMeasureOpt).trimmed().toLower();
 
     if (cfg.inputPath.isEmpty())
     {
@@ -265,6 +272,15 @@ int main(int argc, char *argv[])
     if (cfg.similarityInput != "adjacency" && cfg.similarityInput != "distances")
     {
         QTextStream(stderr) << "ERROR: --similarity-input must be one of adjacency|distances\n";
+        return 2;
+    }
+
+    if (cfg.dissimilarityMeasure != "euclidean" && cfg.dissimilarityMeasure != "manhattan"
+        && cfg.dissimilarityMeasure != "jaccard" && cfg.dissimilarityMeasure != "hamming"
+        && cfg.dissimilarityMeasure != "chebyshev")
+    {
+        QTextStream(stderr) << "ERROR: --dissimilarity-measure must be one of "
+                                "euclidean|manhattan|jaccard|hamming|chebyshev\n";
         return 2;
     }
 
