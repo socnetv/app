@@ -263,7 +263,9 @@ _Work in progress — more entries to come as the 3.8 cycle continues._
     edge. Every other format parser (Pajek, GraphML, GML, EdgeList, DOT) already created an edge
     on any non-zero weight; both gates now match. Found while building `kernel_signed_v10`'s
     golden coverage: a hand-built negative-cycle `.dl` fixture loaded with an edge silently
-    missing.
+    missing. Negative-weight golden coverage now spans all 7 supported formats, for both loading
+    (`socnetv-cli --kernel signed`) and round-tripping (`run_golden_io_roundtrip.sh`) — the latter
+    had no negative-weight coverage of its own before now.
 
 ### Testing / CI
 

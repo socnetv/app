@@ -84,7 +84,11 @@ gate.
 `Signed_Dir_N4_NoCycle` now has golden coverage in all 7 supported formats (added
 `.adj`/`.dl`/`.dot`/`.gml`/`.wlst`, alongside the pre-existing `.paj`/`.graphml`), each
 independently cross-checked to produce identical Bellman-Ford potentials before being committed
-as a baseline — `.dl`/`.adj` specifically exercise the two fixed parser branches.
+as a baseline — `.dl`/`.adj` specifically exercise the two fixed parser branches. Also closed an
+adjacent gap: `run_golden_io_roundtrip.sh` had zero coverage of a negative weight surviving a
+save/reload cycle (a different failure mode than the load-time drop above — e.g. a format writer
+mishandling the sign on export) — added the same network in all 7 formats there too, each
+verified to carry the negative weight through a real round-trip, not just the initial load.
 
 ### P1 — Guard existing distance-based measures against negative weights (#277) ✔ complete
 
