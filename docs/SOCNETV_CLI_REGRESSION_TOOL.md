@@ -180,6 +180,11 @@ Protects all node-level prominence indices.
 * PC / SPC
 * IC / SIC
 * EVC / SEVC
+* KC / SKC (Katz) — **optional**: only computed/present when `--katz-alpha` is given (`>= 0`);
+  echoed via `run.katzEnabled` and `run.katzAlpha`
+* BPC / SBPC (Bonacich Power Centrality) — **optional**: only computed/present when
+  `--bonacich-alpha` is given (`>= 0`); echoed via `run.bonacichEnabled`, `run.bonacichAlpha`,
+  `run.bonacichBeta`
 * eccentricity (+ eccentricity_inf)
 
 ### Prestige
@@ -187,6 +192,14 @@ Protects all node-level prominence indices.
 * DP / SDP (degree prestige)
 * PP / SPP (proximity prestige)
 * PRP / SPRP (PageRank)
+
+### Metrics (graph-level, not per-node)
+
+* `metrics.density`
+* `metrics.spectralRadius` — `Graph::estimateSpectralRadius()` on the adjacency matrix; see
+  `Matrix::spectralRadiusExact()`'s own doc comment for what this actually returns (only exact/
+  meaningful on a non-negative matrix - the Matrix Kernel's own `spectral_radius` block covers the
+  signed/Gerschgorin-bound case directly, this kernel doesn't dispatch between the two)
 
 Characteristics:
 
@@ -1267,6 +1280,8 @@ Graph-level:
 * links_sna
 * ties_graph
 * directed / weighted
+* metrics.density
+* metrics.spectralRadius
 
 Per-node:
 
@@ -1281,6 +1296,8 @@ Centrality:
 * PC / SPC
 * IC / SIC
 * EVC / SEVC
+* KC / SKC (optional, `--katz-alpha`)
+* BPC / SBPC (optional, `--bonacich-alpha`)
 * eccentricity (+ eccentricity_inf)
 
 Prestige:
