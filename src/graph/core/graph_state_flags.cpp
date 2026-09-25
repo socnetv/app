@@ -76,6 +76,61 @@ bool Graph::isWeighted()
 }
 
 /**
+ * @brief Returns true if the **current relation** has at least one edge with a negative weight.
+ *
+ * The result is cached via @c calculatedGraphHasNegativeWeight and invalidated the same way as
+ * isWeighted()'s own cache: on relation switch (relationSet()) and on any structural change
+ * (setModStatus() with a status greater than ModStatus::MajorChanges) - see those call sites for
+ * the full reset list. Deliberately its own independent edge scan, not derived from
+ * createMatrixAdjacency()'s AM: this needs to answer the question for any caller, including ones
+ * that never build an adjacency matrix at all (e.g. WS18 P1's negative-weight guard).
+ *
+ * Compare to: Matrix::hasNegativeEntry(), which answers the same kind of question but for an
+ * already-built Matrix in hand (e.g. AM), with no caching and thus no invalidation to get right -
+ * prefer that one when a Matrix is already available; prefer this one when it isn't.
+ *
+ * Complexity: O(n²) on cache miss, O(1) on hit.
+ */
+bool Graph::hasNegativeWeight()
+{
+    if (calculatedGraphHasNegativeWeight)
+    {
+        qCDebug(lcGraphCore) << "graph not modified. Returning hasNegativeWeight: "
+                 << m_graphHasNegativeWeight;
+        return m_graphHasNegativeWeight;
+    }
+
+    m_graphHasNegativeWeight = false;
+
+    qreal m_weight = 0;
+    VList::const_iterator it, it1;
+
+    QString pMsg = tr("Checking if the graph has negative edge weights. \nPlease wait...");
+    progressStatus(pMsg);
+
+    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    {
+        for (it1 = m_graph.cbegin(); it1 != m_graph.cend(); ++it1)
+        {
+            m_weight = edgeExists((*it1)->number(), (*it)->number());
+            if (m_weight < 0)
+            {
+                m_graphHasNegativeWeight = true;
+                break;
+            }
+        }
+        if (m_graphHasNegativeWeight)
+        {
+            break;
+        }
+    }
+    calculatedGraphHasNegativeWeight = true;
+    qCDebug(lcGraphCore) << "graph has negative weight:" << m_graphHasNegativeWeight;
+
+    return m_graphHasNegativeWeight;
+}
+
+/**
  * @brief Returns true if any relation in the graph has at least one edge
  *        with weight other than 0 or 1.
  *

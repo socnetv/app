@@ -170,6 +170,7 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW)
         calculatedGraphReciprocity = false;
         calculatedGraphSymmetry = false;
         calculatedGraphWeighted = false;
+        calculatedGraphHasNegativeWeight = false;
         calculatedGraphDensity = false;
         calculatedEdges = false;
         calculatedVertices = false;

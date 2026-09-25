@@ -101,6 +101,8 @@ public:
 
     void findMinMaxValues(qreal&min, qreal&max, bool &hasRealNumbers);
 
+    bool hasNegativeEntry();
+
     void NeighboursNearestFarthest(qreal&min,qreal&max,
                           int &imin, int &jmin,
                           int &imax, int &jmax);

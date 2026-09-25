@@ -108,6 +108,11 @@ void Graph::relationSet(int relNum, const bool &updateUI)
     calculatedGraphWeighted = false;
 
     //
+    // Same reasoning as above, for hasNegativeWeight()'s cache.
+    //
+    calculatedGraphHasNegativeWeight = false;
+
+    //
     // Invalidate the symmetry cache and recompute from actual edges of the new relation,
     // so m_graphIsSymmetric is correct for any subsequent setUndirected() call.
     //

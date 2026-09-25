@@ -121,6 +121,34 @@ void Matrix::resize (const int m, const int n) {
  * @param max Output: the largest value found.
  * @param hasRealNumbers Output: true if any cell has a non-zero fractional part.
  */
+/**
+ * @brief Returns true if any cell in this matrix is negative.
+ *
+ * Meaning: a cheap, always-fresh way to tell a plain (non-negative) matrix from a signed one -
+ * e.g. deciding whether Matrix::spectralRadiusExact() (Perron-Frobenius, non-negative only) or
+ * Matrix::spectralRadiusBound() (Gerschgorin, any matrix) is the correct one to call for a given
+ * matrix. Deliberately not cached on Graph: a cached "does this graph have negative weights"
+ * flag would need its own invalidation on every edge-weight-changing code path (same class of
+ * bug as this session's DistanceEngine cache-mode fix) - this stays a plain O(rows*cols) scan
+ * (with early exit) on the actual matrix in hand instead, so it's never stale.
+ * @return true on the first negative cell found, false if the matrix is empty or all entries
+ *         are >= 0.
+ */
+bool Matrix::hasNegativeEntry()
+{
+    for (int r = 0; r < rows(); ++r)
+    {
+        for (int c = 0; c < cols(); ++c)
+        {
+            if (item(r, c) < 0)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 void Matrix::findMinMaxValues (qreal &min, qreal & max, bool &hasRealNumbers){
     max=0;
     min=RAND_MAX;

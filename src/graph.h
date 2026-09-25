@@ -823,6 +823,7 @@ public:
 
     bool isWeighted();
     bool isAnyRelationWeighted();
+    bool hasNegativeWeight();
 
     void setWeighted(const bool &toggle = true);
 
@@ -1727,6 +1728,7 @@ private:
     bool calculatedTriad;
     bool calculatedGraphSymmetry, calculatedGraphReciprocity;
     bool calculatedGraphDensity, calculatedGraphWeighted;
+    bool calculatedGraphHasNegativeWeight;
     // Written by slotCancelComputation() (GUI thread, via Qt::DirectConnection) and read by
     // progressCanceled() (graphThread, mid-computation) - see WS15's P1 for why a plain bool and a
     // queued connection can't deliver this in time.
@@ -1740,6 +1742,7 @@ private:
     // m_negativeWeightsRefused above.
     std::atomic<bool> m_negativeCycleDetected;
     bool m_graphIsDirected, m_graphIsSymmetric, m_graphIsWeighted, m_graphIsConnected;
+    bool m_graphHasNegativeWeight;
     int m_graphWeaklyConnectedComponents;
     int m_graphStronglyConnectedComponents;
     QHash<int,int> m_vertexComponentId;
