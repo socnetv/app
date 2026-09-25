@@ -182,6 +182,7 @@ SOURCES += src/main.cpp \
     src/graph/centrality/graph_centrality.cpp \
     src/graph/centrality/graph_centrality_katz.cpp \
     src/graph/centrality/graph_centrality_bonacich.cpp \
+    src/graph/centrality/graph_centrality_signed_degree.cpp \
     src/graph/centrality/graph_prestige.cpp \
     src/graph/prominence/graph_prominence_distribution.cpp \
     src/graph/matrices/graph_matrix_adjacency.cpp \
