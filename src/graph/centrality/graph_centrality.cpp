@@ -271,9 +271,10 @@ void Graph::centralityInformation(const bool considerWeights,
  * separately because callers here (Katz, Bonacich, and their dialogs) only need the eigenvalue,
  * not the ranking eigenvector itself.
  *
- * Math: via power iteration (Matrix::powerIteration()), starting from a unit seed vector -
- * ||Ax|| approximates lambda_max once the iteration converges (Perron-Frobenius: for a
- * non-negative matrix like an adjacency matrix, this is exact for a connected network).
+ * Math: builds the adjacency matrix (createMatrixAdjacency()), then delegates to
+ * Matrix::spectralRadiusExact() for the actual power-iteration estimate - see that method's own
+ * doc comment (and Matrix::powerIteration()'s) for the mechanism and its Perron-Frobenius
+ * preconditions (non-negative, irreducible matrix; always true for a plain adjacency matrix).
  *
  * @param considerWeights
  * @param inverseWeights
@@ -299,25 +300,7 @@ qreal Graph::estimateSpectralRadius(const bool &considerWeights,
         return 0;
     }
 
-    qreal *seed = new (nothrow) qreal[N];
-    Q_CHECK_PTR(seed);
-    for (int k = 0; k < N; k++)
-        seed[k] = 1;
-    qreal dummySum = 0, dummyMax = 0, dummyMin = RAND_MAX;
-    int dummyMaxI = 0, dummyMinI = 0;
-    qreal lambdaMax = 0;
-    AM.powerIteration(seed, dummySum, dummyMax, dummyMaxI, dummyMin, dummyMinI,
-                      0.0000001, 500,
-                      [this] { return progressCanceled(); },
-                      &lambdaMax);
-    delete[] seed;
-
-    if (progressCanceled())
-    {
-        return 0;
-    }
-
-    return lambdaMax;
+    return AM.spectralRadiusExact(0.0000001, 500, [this] { return progressCanceled(); });
 }
 
 /**

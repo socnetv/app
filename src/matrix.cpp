@@ -770,6 +770,18 @@ qreal Matrix::distanceEuclidean(
  * unit length - the vector converges to the eigenvector for the matrix's largest eigenvalue
  * (lambda_max), which is exactly the vector eigenvector centrality reports.
  *
+ * Preconditions/guarantee: this only converges to a meaningful, correct result for a
+ * non-negative, irreducible matrix (e.g. a plain adjacency matrix - never a signed one, where
+ * some entries are negative). Under those conditions, the Perron-Frobenius theorem guarantees
+ * a single dominant eigenvalue that is real, positive, and strictly larger in magnitude than
+ * every other eigenvalue - that's the value this method converges to. Without non-negativity,
+ * that guarantee is gone: eigenvalues can be complex (e.g. a matrix like [[0,1],[-4,0]] has
+ * eigenvalues +-2i, not real numbers at all) or tied in magnitude with opposite sign (e.g.
+ * [[0,1],[1,0]] has +1 and -1 tied), and this method's iteration can oscillate forever instead
+ * of converging. Callers on a possibly-signed matrix need a different bound - see
+ * Matrix::spectralRadiusBound() (Gerschgorin's theorem), which works on any matrix but only
+ * returns a safe overestimate, not the exact value.
+ *
  * We use C arrays instead of std::vectors or anything else,
  * as we know from start the size (n) of vectors x and tmp
  * This approach is faster than using std::vector when n > 1000
@@ -781,14 +793,18 @@ qreal Matrix::distanceEuclidean(
  * Complexity: O(maxIter * n^2) - each iteration is one O(n^2) productByVector() call plus
  * a handful of O(n) passes; iterates until the vector's Manhattan distance to its previous
  * value drops below eps, or maxIter is reached.
- * @param x
- * @param xsum
- * @param xmax
- * @param xmaxi
- * @param xmin
- * @param xmini
- * @param eps
- * @param maxIter
+ * @param x In: the seed vector (any nonzero starting guess, e.g. all-ones - size must be
+ * rows()). Out: overwritten with the converged, unit-normalized eigenvector for the dominant
+ * eigenvalue (this is the ranking eigenvector centrality reports).
+ * @param xsum Out: sum of x's components after convergence (or after the last completed
+ * iteration, if canceled/maxIter reached first).
+ * @param xmax Out: the largest component value in the converged x.
+ * @param xmaxi Out: the 1-based index (vertex number) of that largest component.
+ * @param xmin Out: the smallest component value in the converged x.
+ * @param xmini Out: the 1-based index (vertex number) of that smallest component.
+ * @param eps Convergence threshold: the loop stops once the Manhattan distance between
+ * successive x vectors drops below this.
+ * @param maxIter Hard cap on iterations, in case eps is never reached.
  * @param cancelCheck Optional callback checked once per iteration; if it returns true, the
  * loop stops early (x/xsum/xmax/xmin reflect the last completed iteration, not a full result).
  * Defaults to nullptr (never cancels), so existing callers are unaffected.
@@ -913,6 +929,75 @@ void Matrix::powerIteration (
         *lambdaMax = trueNorm;
 
      delete [] tmp;
+}
+
+/**
+ * @brief Estimates this matrix's spectral radius (dominant eigenvalue magnitude) exactly, via
+ * power iteration from a unit seed vector.
+ *
+ * Meaning: see Matrix::powerIteration()'s own doc comment for the full mechanism and the
+ * Perron-Frobenius preconditions this relies on. In short: only trustworthy for a non-negative,
+ * irreducible matrix (a plain adjacency matrix, not a signed one) - the value this returns is
+ * the exact dominant eigenvalue for that case, not an estimate/bound.
+ *
+ * Compare to: Matrix::spectralRadiusBound(), which works on any matrix (signed included) but
+ * only returns a safe upper bound, not the exact value.
+ *
+ * @param eps Convergence threshold on successive iterations' Manhattan distance.
+ * @param maxIter Iteration cap if eps is never reached.
+ * @param cancelCheck Optional callback checked once per iteration; see powerIteration().
+ * @return the estimated spectral radius, or 0 for a nilpotent matrix (a genuine "no bound, any
+ *         value converges" answer - see powerIteration()'s own note on this) or if canceled.
+ */
+qreal Matrix::spectralRadiusExact(const qreal eps, const int maxIter, std::function<bool()> cancelCheck)
+{
+    const int n = rows();
+    if (n == 0)
+    {
+        return 0;
+    }
+
+#ifndef QT_NO_DEBUG
+    // Debug-only precondition check: this method is only meaningful for a non-negative matrix
+    // (Perron-Frobenius, see the doc comment above). A negative entry means the caller almost
+    // certainly wanted spectralRadiusBound() instead - warn loudly rather than silently
+    // returning a meaningless number. O(n^2), so kept out of release builds.
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < cols(); j++)
+        {
+            if (item(i, j) < 0)
+            {
+                qCWarning(lcMatrix) << "Matrix::spectralRadiusExact() called on a matrix with a "
+                                        "negative entry at" << i << j << "- the Perron-Frobenius "
+                                        "precondition this method relies on does not hold, so "
+                                        "the result is not meaningful. Use spectralRadiusBound() "
+                                        "for a signed matrix instead.";
+                i = n;
+                break;
+            }
+        }
+    }
+#endif
+
+    qreal *seed = new (nothrow) qreal[n];
+    Q_CHECK_PTR(seed);
+    for (int k = 0; k < n; k++)
+        seed[k] = 1;
+
+    qreal dummySum = 0, dummyMax = 0, dummyMin = RAND_MAX;
+    int dummyMaxI = 0, dummyMinI = 0;
+    qreal lambdaMax = 0;
+    powerIteration(seed, dummySum, dummyMax, dummyMaxI, dummyMin, dummyMinI,
+                   eps, maxIter, cancelCheck, &lambdaMax);
+    delete[] seed;
+
+    if (cancelCheck && cancelCheck())
+    {
+        return 0;
+    }
+
+    return lambdaMax;
 }
 
 
