@@ -617,8 +617,8 @@ void MainWindow::processNextInteractiveCommand()
     {
         // report-centrality-degree-signed [weights] [dropisolates] [csv] - WS18 P3 (#300): mirrors
         // slotAnalyzeCentralitySignedDegree() exactly, same shape as report-centrality-degree.
-        // Named after signnet's degree_signed() (an established R package for signed-network
-        // analysis, per WS12's naming-parity direction), reordered to keep this codebase's own
+        // Named after an established outside package's own degree_signed() function name (per
+        // WS12's naming-parity direction), reordered to keep this codebase's own
         // report-centrality-* prefix that every sibling command already follows.
         const QStringList tokens = line.mid(31).trimmed().split(' ', Qt::SkipEmptyParts);
         const bool considerWeights = tokens.contains("weights");

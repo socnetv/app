@@ -212,31 +212,49 @@ beyond what's needed here, and no roadmap slot yet. Each gets its own issue/PR p
 Rules; signed degree first (small, no open design questions), then PN centrality (bigger —
 convergence bound and directed-graph semantics both need resolving along the way).
 
-**Formula (PN centrality)**, corroborated across several independent secondary sources (a package
-vignette, a package reference doc, and a general-purpose search) rather than the paywalled original
-paper itself, so treat as reliable but not a verbatim primary-source quote:
+**Formula (PN centrality)** — confirmed directly from an established outside package's own
+source implementation (not a secondary summary this time). Three real differences from what was
+assumed earlier, all now settled:
 
-```
-PN = (I - βA)⁻¹ · 1          where   A = P - 2N,   β = 1 / (2n - 2)
-```
+1. **Strictly binary, no weighted mode at all.** `P = (A > 0)` and `N = (A < 0)` (as 0/1 masks) -
+   tie *magnitude* is discarded unconditionally, even if the input adjacency matrix is weighted.
+   The reference implementation additionally requires every edge's sign to be exactly `-1` or `1`,
+   so the whole model is ±1-only. No `considerWeights` toggle for PN - it doesn't apply.
+2. **Three distinct formulas depending on directedness/mode**, not one formula reused via a
+   transpose:
+   ```
+   mode = "all" (undirected):  PN = rowSums( (I - βA)⁻¹ )
+   mode = "out" (directed):    PN = rowSums( (I - β²·A·Aᵀ)⁻¹ · (I + β·A) )
+   mode = "in"  (directed):    PN = rowSums( (I - β²·Aᵀ·A)⁻¹ · (I + β·Aᵀ) )
+   ```
+   where `A = P - 2N` (built from the binary P/N above), `β = 1/(2n-2)` for `all`/the linear term
+   in `in`/`out`, and `β² = 1/(4(n-1)²)` for the quadratic term inside `in`/`out`'s inverse.
+   the `all` mode is rejected on a directed graph and vice versa (an undirected graph is forced to
+   `all`) - not a free combination.
+3. Final step is a row-sum of the fully-solved matrix - same operation as `PN = (...)⁻¹ · 1`
+   (row-sum against the all-ones vector), just expressed differently; matches the row-sum pattern
+   `graph_centrality_katz.cpp` already uses for `invM`.
 
-`P`/`N` are the positive/negative-tie adjacency matrices (magnitudes only, sign split out), `n` is
-vertex count, `1` is the all-ones column vector. Structurally this is the same closed-form
-"geometric series of walks" identity Katz centrality already uses
-(`C_Katz = ((I - alpha*A^T)^-1 - I) * 1`, see `graph_centrality_katz.cpp`) — same
-`(I - x·M)⁻¹ · 1` shape, just built from the signed matrix `A` with a fixed `β` instead of a
-user-tunable `α` on plain adjacency, and without the `- I` term. This resemblance is independently
-noted by at least one of the secondary sources, not just an observation made here.
+Structurally the `all`-mode formula is still the same closed-form "geometric series of walks"
+identity Katz centrality uses (`C_Katz = ((I - alpha*A^T)^-1 - I) * 1`) - same `(I - x·M)⁻¹ · 1`
+shape, fixed `β` instead of a user-tunable `α`, no `- I` term. The `in`/`out` directed forms are a
+different, more involved closed form specific to this measure, not a simple Katz analogue.
+
+**Scope for this pass**: binary only (matches the confirmed formula exactly), all three modes
+(`all`/`out`/`in`) implemented now rather than undirected-only-then-defer, since the formulas for
+all three are now confirmed rather than guesswork.
 
 #### Checklist
 
-- [ ] **`Matrix` gains public P/N split methods** — new methods on `Matrix` (not ad-hoc code in the
-      centrality slice) to build the positive-tie and negated-negative-tie matrices from a signed
-      adjacency matrix in one pass. Needed by PN centrality (which genuinely does matrix-level work
-      on `A = P - 2N`). Signed degree does **not** use this: `centralityDegree()`'s own existing
-      pattern is direct `edgeExists()` iteration parallelized via `QtConcurrent::blockingMap` (WS15
-      P4), never `Matrix`/`AM` - signed degree follows that same precedent instead, so building a
-      `Matrix` P/N split just to sum rows would be a detour from how this measure's family is
+- [ ] **`Matrix` gains a public signed-A-matrix build method** — new method on `Matrix` (not
+      ad-hoc code in the centrality slice) to build `A = P - 2N` directly from a signed adjacency
+      matrix in one pass (binary P/N per the confirmed formula, not materialized as separate
+      matrices - the per-cell rule folds directly into one pass: `+1` for a positive tie, `-2` for
+      a negative tie, `0` for none). Needed by PN centrality (which genuinely does matrix-level
+      work). Signed degree does **not** use this: `centralityDegree()`'s own existing pattern is
+      direct `edgeExists()` iteration parallelized via `QtConcurrent::blockingMap` (WS15 P4), never
+      `Matrix`/`AM` - signed degree follows that same precedent instead, so building a `Matrix`
+      P/N-derived matrix just to sum rows would be a detour from how that measure's family is
       actually implemented elsewhere in the codebase.
 - [x] **Signed degree centrality engine** — new `src/graph/centrality/graph_centrality_signed_degree.cpp`,
       `Graph::centralitySignedDegree(...)`. Four variants (pos / neg / ratio / net) stored
@@ -268,24 +286,27 @@ noted by at least one of the secondary sources, not just an observation made her
       GUI testing on `Signed_Dir_N4_NoCycle`, not just build success.
 - [x] **Signed degree WS12 interactive-script command** — `report-centrality-degree-signed
       [weights] [dropisolates] [csv]`, same two-step-dispatch pattern as `report-centrality-degree`.
-      Named after signnet's `degree_signed()` (established R package for signed-network analysis,
-      per WS12's naming-parity direction), reordered to keep this codebase's own
+      Named after an established outside package's own `degree_signed()` function name (per WS12's
+      naming-parity direction), reordered to keep this codebase's own
       `report-centrality-*` prefix. Verified headlessly against `Signed_Dir_N4_NoCycle` (CSV
       output): values match the manually-verified GUI report exactly.
 
 **Signed degree centrality (#300) is now fully wired** — engine, CLI kernel, GUI (menu + toolbox
 combo), reporting, and WS12 script command all done and verified. Next: PN centrality (#301).
 - [ ] **PN centrality** — new `src/graph/centrality/graph_centrality_pn.cpp`,
-      `Graph::centralityPN(...)`. Build `A = P - 2N` via the new `Matrix` methods, fixed
-      `β = 1/(2n-2)` (no user-facing parameter, unlike Katz's alpha), closed-form solve via
-      `(I - βA)⁻¹ · 1` reusing the same invert-and-multiply pattern Katz already has (different
-      matrix construction, no transpose, no `- I` term).
-- [ ] **Convergence/singularity guard for PN** — verify what condition (analogous to Katz's
-      `|alpha| < 1/lambda_max`) actually applies to `β·A`, since none of the secondary sources
-      stated one explicitly; don't assume the same bound transfers unchanged.
-- [ ] **Directed-graph semantics for PN** — undirected first (matches how the corroborating sources'
-      own examples are undirected); directed handling of `A`/`P`/`N` gets its own short design note
-      before extending, not an assumption either way.
+      `Graph::centralityPN(...)`. Build `A = P - 2N` (binary) via the new `Matrix` method, fixed
+      `β = 1/(2n-2)`, then all three modes per the confirmed formulas above:
+      undirected (`solve(I-βA)`), directed out (`solve(I-β²AAᵀ)·(I+βA)`), directed in
+      (`solve(I-β²AᵀA)·(I+βAᵀ)`) - row-sum of the solved matrix in every case. Mode selection:
+      undirected graphs are forced to the `all` formula; directed graphs choose `in`/`out` (`all`
+      isn't valid on a directed graph, matching the reference implementation's own hard error on
+      that combination).
+- [ ] **Convergence/singularity guard for PN** — now a matter of implementation, not open design:
+      the reference formula is a plain matrix inversion with no separate convergence check before
+      it - `Matrix::inverse()`'s own existing singularity detection (already used by Katz) is
+      sufficient; report "not defined: singular" on failure, same as Katz's own fallback.
+- [x] **Directed-graph semantics for PN** — resolved by the confirmed formula above: not a guess
+      or an extension, `in`/`out` are real, distinct, independently-confirmed formulas.
 - [ ] **Wiring**, same 8-touchpoint shape Katz used, for both measures: `Graph` façade method,
       `GraphVertex` storage, `MainWindow` dialog/menu action
       (`src/mainwindow/analyze/mainwindow_analyze_centrality.cpp`), CLI kernel
