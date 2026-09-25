@@ -238,7 +238,7 @@ noted by at least one of the secondary sources, not just an observation made her
       P4), never `Matrix`/`AM` - signed degree follows that same precedent instead, so building a
       `Matrix` P/N split just to sum rows would be a detour from how this measure's family is
       actually implemented elsewhere in the codebase.
-- [ ] **Signed degree centrality** — new `src/graph/centrality/graph_centrality_signed_degree.cpp`,
+- [x] **Signed degree centrality engine** — new `src/graph/centrality/graph_centrality_signed_degree.cpp`,
       `Graph::centralitySignedDegree(...)`. Four variants (pos / neg / ratio / net) stored
       simultaneously per vertex (one edge scan fills all four - cheap, and a signed-network report
       naturally wants all four side by side, not one re-run per variant). **Out-degree only for
@@ -247,6 +247,13 @@ noted by at least one of the secondary sources, not just an observation made her
       as its own later follow-on rather than silently doubling this step's scope to 8 stored
       values. Direct edge iteration filtered by sign, same parallelization shape as
       `centralityDegree()` above (`QtConcurrent::blockingMap`, per-vertex independent writes).
+- [x] **Signed degree CLI wiring** — `kernel_prominence_v4.cpp` computes it unconditionally
+      alongside DC (no gating flag needed, unlike Katz/Bonacich - no user-supplied parameter with
+      no meaningful default) and dumps `signedDegreePos`/`Neg`/`Ratio`/`Net` per node. New
+      `Signed_Dir_N4_NoCycle` prominence baseline gives real negative-split coverage (every other
+      prominence fixture is all-positive, so `pos==DC`/`neg==0` there - degenerate, not a
+      meaningful test of the split itself). GUI menu/dialog, reporting, and a WS12
+      interactive-script command still to come.
 - [ ] **PN centrality** — new `src/graph/centrality/graph_centrality_pn.cpp`,
       `Graph::centralityPN(...)`. Build `A = P - 2N` via the new `Matrix` methods, fixed
       `β = 1/(2n-2)` (no user-facing parameter, unlike Katz's alpha), closed-form solve via

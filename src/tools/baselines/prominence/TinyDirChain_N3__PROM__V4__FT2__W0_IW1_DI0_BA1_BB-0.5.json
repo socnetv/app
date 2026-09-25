@@ -55,7 +55,11 @@
             "eccentricity": "2",
             "eccentricity_inf": false,
             "id": 1,
-            "label": "A"
+            "label": "A",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "1",
+            "signedDegreePos": "1",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "1",
@@ -85,7 +89,11 @@
             "eccentricity": "2147483647",
             "eccentricity_inf": true,
             "id": 2,
-            "label": "B"
+            "label": "B",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "1",
+            "signedDegreePos": "1",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "0",
@@ -115,7 +123,11 @@
             "eccentricity": "2147483647",
             "eccentricity_inf": true,
             "id": 3,
-            "label": "C"
+            "label": "C",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "0",
+            "signedDegreePos": "0",
+            "signedDegreeRatio": "0"
         }
     ],
     "run": {

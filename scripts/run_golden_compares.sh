@@ -615,6 +615,16 @@ run_case_prominence \
   -w 1 -x 1 -k 0 --katz-alpha 1 --bonacich-alpha 1 --bonacich-beta 1 \
   "${BASE_PROM}/TinyDirWeighted_N3__PROM__V4__FT2__W1_IW1_DI0_KA1_BA1_BB1.json"
 
+# Signed_Dir_N4_NoCycle: the prominence kernel's only fixture with a negative edge weight, so
+# signedDegreePos/Neg/Ratio/Net (WS18 P3) actually get exercised with a real negative split
+# instead of every other fixture's degenerate all-positive case (pos==DC, neg==0 everywhere).
+# See WS18 P3 (docs/roadmaps/roadmap_ws18_signed_network_analysis.md).
+run_case_prominence \
+  "${DATA}/Signed_Dir_N4_NoCycle.paj" \
+  2 \
+  -w 1 -x 0 \
+  "${BASE_PROM}/Signed_Dir_N4_NoCycle__PROM__V4__FT2__W1_IW0_DI0.json"
+
 # IO ROUNDTRIP (schema v5)
 run_case_io "${DATA}/TinyAdj_Undir_N3.adj" 3 -d " " -l 0 "${BASE_IO}/TinyAdj_Undir_N3__FT3.json"
 run_case_io "${DATA}/TinyAdj_Weighted_Dir_N3.adj" 3 -d " " -l 0 "${BASE_IO}/TinyAdj_Weighted_Dir_N3__FT3.json"

@@ -60,6 +60,14 @@ namespace cli
             o["DC"] = d2s(gv->DC());
             o["SDC"] = d2s(gv->SDC());
 
+            // ---- Signed degree (WS18 P3) - always computed, no gating flag needed: unlike
+            // Katz/Bonacich there's no user-supplied parameter with no meaningful default, same
+            // cost/parameter profile as DC above. ----
+            o["signedDegreePos"] = d2s(gv->signedDegreePos());
+            o["signedDegreeNeg"] = d2s(gv->signedDegreeNeg());
+            o["signedDegreeRatio"] = d2s(gv->signedDegreeRatio());
+            o["signedDegreeNet"] = d2s(gv->signedDegreeNet());
+
             o["CC"] = d2s(gv->CC());
             o["SCC"] = d2s(gv->SCC());
 
@@ -284,6 +292,7 @@ namespace cli
             // Prominence v4 fields (centralities + prestige + eigenvector + pagerank + IRCC)
             const QStringList numFields = {
                 "DC", "SDC",
+                "signedDegreePos", "signedDegreeNeg", "signedDegreeRatio", "signedDegreeNet",
                 "CC", "SCC",
                 "IRCC", "SIRCC",
                 "BC", "SBC",
@@ -398,6 +407,7 @@ namespace cli
 
             // 2. Standalone centralities
             g.centralityDegree(cfg.considerWeights, cfg.dropIsolates);
+            g.centralitySignedDegree(cfg.considerWeights, cfg.dropIsolates);
             g.centralityInformation(cfg.considerWeights, cfg.inverseWeights);
             g.centralityEigenvector(cfg.considerWeights, cfg.inverseWeights, cfg.dropIsolates);
             g.centralityClosenessIR(cfg.considerWeights,

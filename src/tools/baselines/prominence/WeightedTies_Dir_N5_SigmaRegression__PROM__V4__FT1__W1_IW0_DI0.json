@@ -53,7 +53,11 @@
             "eccentricity": "3",
             "eccentricity_inf": false,
             "id": 1,
-            "label": "1"
+            "label": "1",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "9",
+            "signedDegreePos": "9",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "4.5",
@@ -81,7 +85,11 @@
             "eccentricity": "13",
             "eccentricity_inf": false,
             "id": 2,
-            "label": "2"
+            "label": "2",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "203",
+            "signedDegreePos": "203",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "0.25",
@@ -109,7 +117,11 @@
             "eccentricity": "13",
             "eccentricity_inf": false,
             "id": 3,
-            "label": "3"
+            "label": "3",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "490",
+            "signedDegreePos": "490",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "0.75",
@@ -137,7 +149,11 @@
             "eccentricity": "13",
             "eccentricity_inf": false,
             "id": 4,
-            "label": "4"
+            "label": "4",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "341",
+            "signedDegreePos": "341",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "1.5",
@@ -147,7 +163,7 @@
             "EVC": "0.20533194248762163",
             "IC": "128.86750836643373",
             "IRCC": "0.059701492537313432",
-            "PC": "0.29424461306483779",
+            "PC": "0.29424461306483773",
             "PP": "0.5714285714285714",
             "PRP": "0.20000000000000001",
             "SBC": "0.125",
@@ -158,14 +174,18 @@
             "SEVC": "0.30080238129082298",
             "SIC": "0.19157768657937191",
             "SIRCC": "0.059701492537313432",
-            "SPC": "0.049040768844139632",
+            "SPC": "0.049040768844139618",
             "SPP": "0.5714285714285714",
             "SPRP": "1",
             "SSC": "0.14285714285714285",
             "eccentricity": "22",
             "eccentricity_inf": false,
             "id": 5,
-            "label": "5"
+            "label": "5",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "178",
+            "signedDegreePos": "178",
+            "signedDegreeRatio": "1"
         }
     ],
     "run": {

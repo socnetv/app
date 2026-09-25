@@ -170,6 +170,9 @@ Protects all node-level prominence indices.
 ### Centrality
 
 * DC / SDC
+* signedDegreePos / signedDegreeNeg / signedDegreeRatio / signedDegreeNet (WS18 P3 - out-degree
+  split by tie sign; always computed, not gated behind a flag like Katz/Bonacich, since it has no
+  user-supplied parameter. No standardized/graph-wide statistics, unlike DC/SDC.)
 * CC / SCC (classic closeness)
 * IRCC / SIRCC (influence-range closeness)
 * BC / SBC
@@ -1270,6 +1273,7 @@ Per-node:
 Centrality:
 
 * DC / SDC
+* signedDegreePos / signedDegreeNeg / signedDegreeRatio / signedDegreeNet
 * CC / SCC
 * IRCC / SIRCC
 * BC / SBC
