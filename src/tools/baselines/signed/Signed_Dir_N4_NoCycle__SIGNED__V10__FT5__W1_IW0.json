@@ -1,0 +1,88 @@
+{
+    "counts": {
+        "links_sna": 4,
+        "nodes": 4,
+        "ties_graph": 4
+    },
+    "dataset": {
+        "filetype": 5,
+        "name": "Signed_Dir_N4_NoCycle.dl",
+        "path": "src/data/Signed_Dir_N4_NoCycle.dl"
+    },
+    "distances": {
+        "negative_cycle_detected": false,
+        "per_node": [
+            {
+                "BC": "0",
+                "CC": "0.1111111111111111",
+                "distance_sum": "9",
+                "eccentricity": "5",
+                "id": 1,
+                "label": ""
+            },
+            {
+                "BC": "2",
+                "CC": "0",
+                "distance_sum": "0",
+                "eccentricity": "2147483647",
+                "id": 2,
+                "label": ""
+            },
+            {
+                "BC": "2",
+                "CC": "0",
+                "distance_sum": "4",
+                "eccentricity": "2147483647",
+                "id": 3,
+                "label": ""
+            },
+            {
+                "BC": "0",
+                "CC": "0",
+                "distance_sum": "0",
+                "eccentricity": "2147483647",
+                "id": 4,
+                "label": ""
+            }
+        ]
+    },
+    "graph": {
+        "directed": true,
+        "symmetric": false,
+        "weighted": true
+    },
+    "kernel": "signed",
+    "load_report": {
+        "fileType_signal": 5,
+        "load_ms": 3,
+        "load_msg": "",
+        "net_name": "Signed_Dir_N4_NoCycle.dl",
+        "ok": true
+    },
+    "potentials": {
+        "negative_cycle_detected": false,
+        "per_node": [
+            {
+                "id": 1,
+                "label": "",
+                "potential": 0
+            },
+            {
+                "id": 2,
+                "label": "",
+                "potential": 0
+            },
+            {
+                "id": 3,
+                "label": "",
+                "potential": -2
+            },
+            {
+                "id": 4,
+                "label": "",
+                "potential": 0
+            }
+        ]
+    },
+    "schema_version": 10
+}

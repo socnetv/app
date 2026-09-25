@@ -635,7 +635,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                             qCDebug(lcParser) << "Diagonal element at (" << source << "," << target
                                      << ") with value " << edgeWeight;
 
-                            if (diagonalPresent && edgeWeight > 0)
+                            if (diagonalPresent && edgeWeight != 0)
                             {
                                 // Create self-loop only if DIAGONAL PRESENT and value is non-zero
                                 qCDebug(lcParser) << "Creating self-loop for node " << source;
@@ -650,7 +650,7 @@ bool Parser::parseAsDL(const QByteArray &rawData)
                         else
                         {
                             // Non-diagonal element - normal edge
-                            if (edgeWeight > 0)
+                            if (edgeWeight != 0)
                             {
                                 qCDebug(lcParser) << "relation" << relationCounter
                                          << "Adding edge from " << source << " to " << target

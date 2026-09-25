@@ -913,9 +913,11 @@ run_case_signed \
   "${BASE_SIGNED}/TinyDisconnectedWeighted_Dir_N5_E3__SIGNED__V10__FT2__W1_IW0.json"
 
 # Signed_Dir_N4_NoCycle: mixed positive/negative edges, no negative cycle - pins non-trivial
-# potentials (h = [A:0, B:0, C:-2, D:0]), independently verified by hand, a standalone Python
-# Bellman-Ford, and networkx's single_source_bellman_ford_path_length() from a virtual source.
-# No .dl variant yet - DL's fullmatrix parser silently drops negative-weight cells (#285).
+# potentials (h = [1:0, 2:0, 3:-2, 4:0]), independently verified by hand and a standalone
+# Bellman-Ford reimplementation. Covers all 7 supported formats - #285 (DL and Adjacency
+# silently dropping negative-weight cells) meant this network had no .dl/.adj coverage until
+# that fix landed; all 7 variants' potentials cross-checked identical to each other (labels
+# aside) before being committed as baselines.
 run_case_signed \
   "${DATA}/Signed_Dir_N4_NoCycle.paj" \
   2 \
@@ -927,6 +929,36 @@ run_case_signed \
   1 \
   -w 1 -x 0 \
   "${BASE_SIGNED}/Signed_Dir_N4_NoCycle__SIGNED__V10__FT1__W1_IW0.json"
+
+run_case_signed \
+  "${DATA}/Signed_Dir_N4_NoCycle.adj" \
+  3 \
+  -d " " -l 0 -w 1 -x 0 \
+  "${BASE_SIGNED}/Signed_Dir_N4_NoCycle__SIGNED__V10__FT3__W1_IW0.json"
+
+run_case_signed \
+  "${DATA}/Signed_Dir_N4_NoCycle.dot" \
+  4 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/Signed_Dir_N4_NoCycle__SIGNED__V10__FT4__W1_IW0.json"
+
+run_case_signed \
+  "${DATA}/Signed_Dir_N4_NoCycle.dl" \
+  5 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/Signed_Dir_N4_NoCycle__SIGNED__V10__FT5__W1_IW0.json"
+
+run_case_signed \
+  "${DATA}/Signed_Dir_N4_NoCycle.gml" \
+  6 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/Signed_Dir_N4_NoCycle__SIGNED__V10__FT6__W1_IW0.json"
+
+run_case_signed \
+  "${DATA}/Signed_Dir_N4_NoCycle.wlst" \
+  7 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/Signed_Dir_N4_NoCycle__SIGNED__V10__FT7__W1_IW0.json"
 
 # Signed_Dir_N3_NegCycle: A->B->C->A summing to -3 - pins negative_cycle_detected=true.
 # Same independent verification (hand, Python, networkx) confirms the cycle; per-vertex

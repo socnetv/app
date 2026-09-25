@@ -1,0 +1,6 @@
+digraph Signed_Dir_N4_NoCycle {
+    1 -> 2 [weight=3];
+    2 -> 3 [weight=-2];
+    3 -> 4 [weight=4];
+    1 -> 4 [weight=10];
+}
