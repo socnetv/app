@@ -169,7 +169,7 @@ bool Graph::isSymmetric()
  */
 void Graph::setSymmetric()
 {
-    qCDebug(lcGraphCore) << "Tranforming graph to symmetric...";
+    qCDebug(lcGraphCore) << "Transforming graph to symmetric...";
     VList::const_iterator it;
     int v2 = 0, v1 = 0, weight;
     qreal invertWeight = 0;
