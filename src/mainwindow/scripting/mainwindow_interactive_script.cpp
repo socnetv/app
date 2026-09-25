@@ -73,7 +73,8 @@ void MainWindow::runInteractiveScript(const QString &scriptPath)
  *   never outside/after the `invokeMethod()` call itself.
  * - **Two-step dispatch** (`filter-ego`, `filter-isolates`, `symmetrize-strongties`,
  *   `symmetrize-cocitation`, `unilateral`, `distances`, `distances-bench`,
- *   `report-centrality-degree`, `report-centrality-closeness`, `report-centrality-closeness-ir`,
+ *   `report-centrality-degree`, `report-centrality-degree-signed`, `report-centrality-closeness`,
+ *   `report-centrality-closeness-ir`,
  *   `report-centrality-betweenness`, `report-centrality-stress`, `report-centrality-eccentricity`,
  *   `report-centrality-power`, `report-centrality-information`, `report-centrality-eigenvector`,
  *   `report-prestige-degree`, `report-prestige-proximity`, `report-prestige-pagerank`): used when
@@ -605,6 +606,39 @@ void MainWindow::processNextInteractiveCommand()
             tr("Computing Degree Centralities. Please wait..."),
             [this, considerWeights, dropIsolates, success, timer]() {
                 qInfo() << "BENCH report-centrality-degree weights=" << considerWeights
+                        << "dropisolates=" << dropIsolates
+                        << "success=" << *success
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "report-centrality-degree-signed" || line.startsWith("report-centrality-degree-signed "))
+    {
+        // report-centrality-degree-signed [weights] [dropisolates] [csv] - WS18 P3 (#300): mirrors
+        // slotAnalyzeCentralitySignedDegree() exactly, same shape as report-centrality-degree.
+        // Named after signnet's degree_signed() (an established R package for signed-network
+        // analysis, per WS12's naming-parity direction), reordered to keep this codebase's own
+        // report-centrality-* prefix that every sibling command already follows.
+        const QStringList tokens = line.mid(31).trimmed().split(' ', Qt::SkipEmptyParts);
+        const bool considerWeights = tokens.contains("weights");
+        const bool dropIsolates = tokens.contains("dropisolates");
+        const int reportFormat = tokens.contains("csv") ? ReportFormat::Csv : ReportFormat::Html;
+
+        const QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+        const QString fn = appSettings["dataDir"] + "socnetv-report-centrality-signed-degree-" + dateTime + ext;
+        auto success = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, fn, considerWeights, dropIsolates, reportFormat, success]() {
+                *success = activeGraph->writeCentralitySignedDegree(fn, considerWeights, dropIsolates, reportFormat);
+            },
+            tr("Computing Signed Degree Centralities. Please wait..."),
+            [this, considerWeights, dropIsolates, success, timer]() {
+                qInfo() << "BENCH report-centrality-degree-signed weights=" << considerWeights
                         << "dropisolates=" << dropIsolates
                         << "success=" << *success
                         << "N=" << activeNodes() << "E=" << activeEdges()

@@ -266,7 +266,15 @@ noted by at least one of the secondary sources, not just an observation made her
       `isCentralityIndexComputed()`'s existing `default: return false` keeps the Filter-by-
       Centrality dialog's copy permanently (and correctly) disabled. All verified live via manual
       GUI testing on `Signed_Dir_N4_NoCycle`, not just build success.
-- [ ] **Signed degree WS12 interactive-script command** - still to come.
+- [x] **Signed degree WS12 interactive-script command** — `report-centrality-degree-signed
+      [weights] [dropisolates] [csv]`, same two-step-dispatch pattern as `report-centrality-degree`.
+      Named after signnet's `degree_signed()` (established R package for signed-network analysis,
+      per WS12's naming-parity direction), reordered to keep this codebase's own
+      `report-centrality-*` prefix. Verified headlessly against `Signed_Dir_N4_NoCycle` (CSV
+      output): values match the manually-verified GUI report exactly.
+
+**Signed degree centrality (#300) is now fully wired** — engine, CLI kernel, GUI (menu + toolbox
+combo), reporting, and WS12 script command all done and verified. Next: PN centrality (#301).
 - [ ] **PN centrality** — new `src/graph/centrality/graph_centrality_pn.cpp`,
       `Graph::centralityPN(...)`. Build `A = P - 2N` via the new `Matrix` methods, fixed
       `β = 1/(2n-2)` (no user-facing parameter, unlike Katz's alpha), closed-form solve via

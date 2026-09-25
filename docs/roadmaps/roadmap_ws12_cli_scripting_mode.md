@@ -125,6 +125,7 @@ command below, not just the ones originally added for benchmarking.
   equivalent (the GUI computes each centrality index via ~9 separate menu actions, not one combined
   action), so it lives here rather than on `distances`.
 - `report-centrality-degree [weights] [dropisolates] [csv]`,
+  `report-centrality-degree-signed [weights] [dropisolates] [csv]`,
   `report-centrality-closeness [weights] [inverse] [dropisolates] [csv]`,
   `report-centrality-closeness-ir [weights] [inverse] [dropisolates] [csv]`,
   `report-centrality-betweenness [weights] [inverse] [dropisolates] [csv]`,
@@ -143,7 +144,11 @@ command below, not just the ones originally added for benchmarking.
   support. `report-centrality-information` and `report-centrality-eigenvector` have no
   `dropisolates` token (the underlying functions don't take one, or - Eigenvector - never blank
   isolate rows regardless); `report-prestige-proximity` and `report-prestige-pagerank` have no
-  `weights`/`inverse` tokens (fixed in the real menu action too).
+  `weights`/`inverse` tokens (fixed in the real menu action too). `report-centrality-degree-signed`
+  (WS18 P3, #300) was added later, following the exact same pattern as
+  `report-centrality-degree` (no `inverse` token - `writeCentralitySignedDegree()` doesn't take
+  one either) - named after signnet's `degree_signed()` (an established R package for signed-
+  network analysis), reordered to keep this family's own `report-centrality-*` prefix.
 - `report-reciprocity [weights] [csv]`, `report-eccentricity [weights] [inverse] [dropisolates]
   [csv]`, `report-clustering-coefficient [csv]`, `report-triad-census [csv]` — added for WS16 Step
   3 (the long-tail reports), same mirroring pattern as the commands above.
