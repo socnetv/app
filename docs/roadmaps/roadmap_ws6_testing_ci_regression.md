@@ -640,7 +640,9 @@ Approach:
   the case is tractable that way** — a standalone script re-implementing an algorithm from its
   published definition remains the fallback for cases those tools don't cover natively (schema
   details specific to this app, e.g. `links_sna` vs `ties_graph` counts) or where using one would
-  be disproportionate. This matters for one non-obvious reason found live during the `clustering`
+  be disproportionate. Other established network-analysis packages are a reasonable choice for
+  this. This matters for one non-obvious reason found live during the
+  `clustering`
   work (2026-09-23): a metric can have more than one legitimate published definition — SocNetV's
   directed local clustering coefficient (union of in/out neighbourhood, ordered-pair denominator)
   and a well-known outside library's default directed clustering coefficient (Fagiolo 2007,

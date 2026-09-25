@@ -44,6 +44,12 @@ that would be hardest to retrofit later. What's actually missing:
   larger design question (a query/response command syntax, or a different transport entirely)
   than continuous command consumption, and not scoped yet.
 
+Also part of the long-term direction, and easy to lose track of alongside the above: every new
+command added from here on should follow **Command naming direction** (below) — named/shaped after
+the equivalent operation in established SNA scripting ecosystems where a clear equivalent exists.
+Called out here explicitly so it isn't only discoverable by reading all the way to "What Remains
+Open."
+
 ## What WS12 Delivered
 
 ### CLI flags

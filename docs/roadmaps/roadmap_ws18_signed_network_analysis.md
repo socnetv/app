@@ -205,16 +205,69 @@ propagation requirement once every weight it sees is non-negative).
 
 ### P3 — Signed-specific centrality measures
 
-- **PN centrality (Everett & Borgatti 2014)** — the standard purpose-built positive/negative
-  centrality measure for signed networks; not implementable by re-running an unsigned measure on
-  `|weight|`, it's defined directly in terms of signed adjacency. New
-  `src/graph/centrality/graph_centrality_pn.cpp`, following the existing per-measure file
-  convention (see Katz/Bonacich as the most recent examples of this pattern, including the doc
-  comment shape from `docs/README_DEVELOPER_NOTES.md`).
-- Audit whether any other existing measure has a natural signed extension worth adding here (e.g.
-  signed closeness via P2's engine) — deliberately not pre-committing to a list beyond PN centrality,
-  since matching Everett & Borgatti's actual scope (rather than SocNetV inventing variants) is the
-  right first target.
+Scope: **signed degree centrality** (#300) and **PN centrality** (#301, Everett & Borgatti 2014). A
+third measure covered by prior art in this space, signed eigenvector centrality, is explicitly
+deferred — it has real algorithmic complexity (dominant-eigenvalue existence/uniqueness checks)
+beyond what's needed here, and no roadmap slot yet. Each gets its own issue/PR per this doc's Work
+Rules; signed degree first (small, no open design questions), then PN centrality (bigger —
+convergence bound and directed-graph semantics both need resolving along the way).
+
+**Formula (PN centrality)**, corroborated across several independent secondary sources (a package
+vignette, a package reference doc, and a general-purpose search) rather than the paywalled original
+paper itself, so treat as reliable but not a verbatim primary-source quote:
+
+```
+PN = (I - βA)⁻¹ · 1          where   A = P - 2N,   β = 1 / (2n - 2)
+```
+
+`P`/`N` are the positive/negative-tie adjacency matrices (magnitudes only, sign split out), `n` is
+vertex count, `1` is the all-ones column vector. Structurally this is the same closed-form
+"geometric series of walks" identity Katz centrality already uses
+(`C_Katz = ((I - alpha*A^T)^-1 - I) * 1`, see `graph_centrality_katz.cpp`) — same
+`(I - x·M)⁻¹ · 1` shape, just built from the signed matrix `A` with a fixed `β` instead of a
+user-tunable `α` on plain adjacency, and without the `- I` term. This resemblance is independently
+noted by at least one of the secondary sources, not just an observation made here.
+
+#### Checklist
+
+- [ ] **`Matrix` gains public P/N split methods** — new methods on `Matrix` (not ad-hoc code in the
+      centrality slice) to build the positive-tie and negated-negative-tie matrices from a signed
+      adjacency matrix in one pass, since both signed degree and PN centrality need this same split
+      and it's a matrix-construction concern, not a centrality-specific one.
+- [ ] **Signed degree centrality** — new `src/graph/centrality/graph_centrality_signed_degree.cpp`,
+      `Graph::centralitySignedDegree(...)`. Four variants (pos / neg / ratio / net), directed
+      in/out handling matching existing degree centrality. No matrix inversion, no convergence
+      bound — direct edge iteration filtered by sign, using the new `Matrix` P/N split.
+- [ ] **PN centrality** — new `src/graph/centrality/graph_centrality_pn.cpp`,
+      `Graph::centralityPN(...)`. Build `A = P - 2N` via the new `Matrix` methods, fixed
+      `β = 1/(2n-2)` (no user-facing parameter, unlike Katz's alpha), closed-form solve via
+      `(I - βA)⁻¹ · 1` reusing the same invert-and-multiply pattern Katz already has (different
+      matrix construction, no transpose, no `- I` term).
+- [ ] **Convergence/singularity guard for PN** — verify what condition (analogous to Katz's
+      `|alpha| < 1/lambda_max`) actually applies to `β·A`, since none of the secondary sources
+      stated one explicitly; don't assume the same bound transfers unchanged.
+- [ ] **Directed-graph semantics for PN** — undirected first (matches how the corroborating sources'
+      own examples are undirected); directed handling of `A`/`P`/`N` gets its own short design note
+      before extending, not an assumption either way.
+- [ ] **Wiring**, same 8-touchpoint shape Katz used, for both measures: `Graph` façade method,
+      `GraphVertex` storage, `MainWindow` dialog/menu action
+      (`src/mainwindow/analyze/mainwindow_analyze_centrality.cpp`), CLI kernel
+      (`kernel_prominence_v4.cpp`), reporting (`graph_reports.cpp`), `graph_centrality.cpp`
+      dispatch, layout-by-prominence (`graph_layouts_basic.cpp` — PN's values can be negative,
+      same open framing question already flagged for Distance/Diameter under P2 applies here too).
+- [ ] **New `--interactive-script` command(s)** (WS12) for both measures, following WS12's Command
+      naming direction (name/shape after the equivalent operation in an established SNA scripting
+      ecosystem where one clearly exists) — every new algorithm added from here on needs this, not
+      just a GUI menu action and a CLI kernel flag.
+- [ ] **Doc comments** following the fixed Meaning/When to use/Weights/Compare to/Math shape (PN's
+      Compare-to section names Katz centrality explicitly, given the corroborated resemblance
+      above).
+- [ ] **Independent verification** for both measures against ground truth computed outside SocNetV
+      (see `docs/roadmaps/roadmap_ws6_testing_ci_regression.md`'s WS6.8/WS6.9 discipline — hand
+      derivation plus a second independent method, not self-consistency), on a small fixture with
+      hand/independently-computable `P`, `N`, `A`, and the closed-form result.
+- [ ] New golden baselines (`prominence` or `signed` kernel family, whichever fits once the wiring
+      is in place); `./scripts/run_golden_compares.sh` clean before each commit.
 
 ### P4 — Structural balance analysis (Heider / Cartwright-Harary)
 
