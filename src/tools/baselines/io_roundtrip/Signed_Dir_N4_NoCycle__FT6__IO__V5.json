@@ -1,0 +1,143 @@
+{
+    "counts": {
+        "links_sna": 4,
+        "nodes": 4,
+        "ties_graph": 4
+    },
+    "dataset": {
+        "filetype": 6,
+        "name": "Signed_Dir_N4_NoCycle.gml",
+        "path": "src/data/Signed_Dir_N4_NoCycle.gml"
+    },
+    "graph": {
+        "directed": true,
+        "relations": 1,
+        "symmetric": false,
+        "weighted": true
+    },
+    "kernel": "io_roundtrip",
+    "load_report": {
+        "fileType_signal": 6,
+        "load_ms": 0,
+        "load_msg": "",
+        "net_name": "Signed_Dir_N4_NoCycle.gml",
+        "ok": true
+    },
+    "metrics": {
+        "density": "0.33333333333333331"
+    },
+    "relations_bundle": [
+        {
+            "index": 0,
+            "name": "unnamed",
+            "signature": {
+                "edge_list": [
+                    {
+                        "label": "1->2",
+                        "u": 1,
+                        "v": 2,
+                        "w": "3"
+                    },
+                    {
+                        "label": "1->4",
+                        "u": 1,
+                        "v": 4,
+                        "w": "10"
+                    },
+                    {
+                        "label": "2->3",
+                        "u": 2,
+                        "v": 3,
+                        "w": "-2"
+                    },
+                    {
+                        "label": "3->4",
+                        "u": 3,
+                        "v": 4,
+                        "w": "4"
+                    }
+                ],
+                "hash_sha256": "d15cfb9dbf7d7f672663c6ddc99421fea958f43d9d92f0e20fbe8a6034425e09",
+                "node_custom_attributes": [
+                    {
+                    },
+                    {
+                    },
+                    {
+                    },
+                    {
+                    }
+                ],
+                "node_labels": [
+                    "1",
+                    "2",
+                    "3",
+                    "4"
+                ]
+            },
+            "ties_graph": 4
+        }
+    ],
+    "roundtrip_result": {
+        "equivalent": true,
+        "performed": false
+    },
+    "run": {
+        "considerWeights": false,
+        "dropIsolates": false,
+        "inverseWeights": true,
+        "operation": "io_roundtrip_same_format"
+    },
+    "schema_version": 5,
+    "signature": {
+        "edge_list": [
+            {
+                "label": "1->2",
+                "u": 1,
+                "v": 2,
+                "w": "3"
+            },
+            {
+                "label": "1->4",
+                "u": 1,
+                "v": 4,
+                "w": "10"
+            },
+            {
+                "label": "2->3",
+                "u": 2,
+                "v": 3,
+                "w": "-2"
+            },
+            {
+                "label": "3->4",
+                "u": 3,
+                "v": 4,
+                "w": "4"
+            }
+        ],
+        "hash_sha256": "d15cfb9dbf7d7f672663c6ddc99421fea958f43d9d92f0e20fbe8a6034425e09",
+        "node_custom_attributes": [
+            {
+            },
+            {
+            },
+            {
+            },
+            {
+            }
+        ],
+        "node_labels": [
+            "1",
+            "2",
+            "3",
+            "4"
+        ]
+    },
+    "timings": {
+        "load_ms": 0,
+        "reload_ms": 0,
+        "save_ms": 0,
+        "total_ms": 0
+    }
+}
