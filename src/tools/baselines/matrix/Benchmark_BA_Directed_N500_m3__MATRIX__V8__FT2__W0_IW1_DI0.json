@@ -8163,6 +8163,11 @@
             },
             "trace": "500"
         },
+        "spectral_radius": {
+            "bound": "3",
+            "exact": "0",
+            "has_negative_entry": false
+        },
         "walks": {
             "col_sums": [
                 "911",

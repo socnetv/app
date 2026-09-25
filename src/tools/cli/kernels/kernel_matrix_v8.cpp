@@ -301,6 +301,28 @@ static int compareGoldenV8(const QJsonObject &expected, const QJsonObject &actua
     ok &= cmpStr(eM.value("similarity").toObject(), aM.value("similarity").toObject(), "metric", err);
     ok &= cmpStr(eM.value("dissimilarity").toObject(), aM.value("dissimilarity").toObject(), "metric", err);
 
+    {
+        const QJsonObject eSR = eM.value("spectral_radius").toObject();
+        const QJsonObject aSR = aM.value("spectral_radius").toObject();
+        ok &= cmpBool(eSR, aSR, "has_negative_entry", err);
+        ok &= cmpStr(eSR, aSR, "bound", err);
+        // "exact" is only present when has_negative_entry is false (see runKernelMatrixV8()) -
+        // same optional-field shape as total_walks below, not the always-present kAlwaysPresent
+        // categories above.
+        const bool eHasExact = eSR.contains("exact");
+        const bool aHasExact = aSR.contains("exact");
+        if (eHasExact != aHasExact)
+        {
+            err << "MISMATCH spectral_radius.exact presence expected_present=" << eHasExact
+                << " actual_present=" << aHasExact << "\n";
+            ok = false;
+        }
+        else if (eHasExact)
+        {
+            ok &= cmpStr(eSR, aSR, "exact", err);
+        }
+    }
+
     // total_walks only exists for small fixtures - see kTotalWalksSkipThreshold.
     for (const QString &cat : {QStringLiteral("total_walks")})
     {
@@ -363,6 +385,24 @@ int runKernelMatrixV8(const CliConfig &cfg,
     // later steps' internal side effects on shared fields like AM.
     g.createMatrixAdjacency();
     matrices["adjacency"] = dumpMatrixJson(g.matrixAdjacency(), fullGrid);
+
+    // Spectral radius: also captured right after this AM build, same reasoning as adjacency
+    // above (createMatrixAdjacencyInverse() overwrites AM next). spectralRadiusExact() is only
+    // meaningful on a non-negative matrix (Perron-Frobenius - see its own doc comment), so it's
+    // only computed when hasNegativeEntry() is false; spectralRadiusBound() (Gerschgorin) has no
+    // such precondition and is always computed, giving every fixture at least one value to
+    // regression-check, and a signed fixture exercises the branch exact() can't handle.
+    {
+        QJsonObject sr;
+        const bool hasNeg = g.matrixAdjacency().hasNegativeEntry();
+        sr["has_negative_entry"] = hasNeg;
+        sr["bound"] = d2s(g.matrixAdjacency().spectralRadiusBound());
+        if (!hasNeg)
+        {
+            sr["exact"] = d2s(g.matrixAdjacency().spectralRadiusExact());
+        }
+        matrices["spectral_radius"] = sr;
+    }
 
     const bool invertible = g.createMatrixAdjacencyInverse("lu");
     QJsonObject inv = dumpMatrixJson(g.matrixAdjacencyInverse(), fullGrid);

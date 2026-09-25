@@ -203,6 +203,11 @@
             "metric": "simple_matching",
             "rows": 3
         },
+        "spectral_radius": {
+            "bound": "3",
+            "exact": "0",
+            "has_negative_entry": false
+        },
         "total_walks": {
             "cols": 3,
             "data": [

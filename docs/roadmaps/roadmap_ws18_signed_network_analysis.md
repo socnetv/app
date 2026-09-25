@@ -268,6 +268,16 @@ noted by at least one of the secondary sources, not just an observation made her
       hand/independently-computable `P`, `N`, `A`, and the closed-form result.
 - [ ] New golden baselines (`prominence` or `signed` kernel family, whichever fits once the wiring
       is in place); `./scripts/run_golden_compares.sh` clean before each commit.
+- [x] **Prerequisite groundwork, done ahead of the centrality wiring itself**: PN's convergence
+      guard needs `Matrix::spectralRadiusExact()` (Perron-Frobenius, extracted from
+      `Graph::estimateSpectralRadius()`), `Matrix::spectralRadiusBound()` (Gerschgorin, works on
+      any matrix including signed ones), and `Graph::hasNegativeWeight()`/
+      `Matrix::hasNegativeEntry()` to dispatch between them - all four added and golden-verified,
+      including a new `matrix`-kernel `spectral_radius` scalar block
+      (`has_negative_entry`/`bound`/`exact`) with dedicated coverage of the signed case via the
+      `Signed_Dir_N4_NoCycle` fixture (the only `matrix`-kernel baseline with a negative weight,
+      so `has_negative_entry: true` and the omitted `exact` field are both actually
+      regression-tested, not just the non-negative path every other fixture exercises).
 
 ### P4 — Structural balance analysis (Heider / Cartwright-Harary)
 

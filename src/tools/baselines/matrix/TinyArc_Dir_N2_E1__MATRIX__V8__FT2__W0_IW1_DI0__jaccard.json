@@ -147,6 +147,11 @@
             "metric": "jaccard",
             "rows": 2
         },
+        "spectral_radius": {
+            "bound": "1",
+            "exact": "0",
+            "has_negative_entry": false
+        },
         "total_walks": {
             "cols": 2,
             "data": [

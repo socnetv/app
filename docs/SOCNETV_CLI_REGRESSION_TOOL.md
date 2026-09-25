@@ -337,22 +337,41 @@ distance value, clique count) happens to read that matrix. See WS6.7 in
 `roadmap_ws6_testing_ci_regression.md` for the motivating gap and how the dump-mode split below was
 decided.
 
-Seven categories dumped:
+Nine categories dumped:
 
 * adjacency (`AM`)
 * adjacency inverse (`invAM`) — plus `invertible` (bool)
 * distances (`DM`)
+* shortest paths
 * similarity (`SCM`) — measure selectable via `--similarity-measure
   simple_matching|jaccard|pearson` (default `simple_matching`, unchanged from before); the chosen
   measure is echoed in `matrices.similarity.metric`. Added for #279 (NaN from divide-by-zero on
   Jaccard/Simple-Matching's `ties==0` and Pearson's `N-2<=0`/`M-4<=0` degenerate sample) so each
   measure's guarded path has its own golden coverage — see the `TinyArc_Dir_N2_E1` baselines below.
+* dissimilarity — measure selectable via `--dissimilarity-measure
+  euclidean|manhattan|jaccard|hamming|chebyshev` (default `euclidean`); always runs on the
+  adjacency matrix (a numeric-distance measure, not a binary-match one, so no separate "input"
+  mode like similarity's). Chosen measure echoed in `matrices.dissimilarity.metric`.
 * reachability (`XRM`)
 * walks, fixed length (`XM`)
 * total walks (`XSM`) — **skipped above N=50** (`kTotalWalksSkipThreshold`, `kernel_matrix_v8.cpp`);
   summing matrix powers up to N-1 measured ~9.2 minutes at N=500, so this category simply isn't
   emitted on larger fixtures rather than making every run pay that cost
 * clique co-membership (`CLQM`) — no size gate, stays cheap (single-digit ms) even at N=500
+
+Plus one scalar block, not a full matrix dump: `matrices.spectral_radius`, computed on `AM` right
+after it's built (WS18 P3 prep) —
+
+* `has_negative_entry` (bool) — `Matrix::hasNegativeEntry()` on `AM`
+* `bound` — `Matrix::spectralRadiusBound()` (Gerschgorin's theorem), a safe upper bound on the
+  spectral radius; always computed, works on any matrix, signed included
+* `exact` — `Matrix::spectralRadiusExact()` (power iteration), the true dominant eigenvalue; only
+  present/computed when `has_negative_entry` is false, since it relies on Perron-Frobenius and is
+  not meaningful on a signed matrix (see that method's own doc comment for why: complex or
+  magnitude-tied eigenvalues become possible). A baseline with a negative-weight fixture
+  (`Signed_Dir_N4_NoCycle`) exists specifically so `has_negative_entry: true` and the omitted
+  `exact` field both get regression coverage, not just the always-false/always-present case every
+  other fixture here exercises.
 
 Output fields:
 

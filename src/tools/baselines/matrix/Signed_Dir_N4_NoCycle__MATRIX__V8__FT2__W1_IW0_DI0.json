@@ -1,64 +1,82 @@
 {
     "counts": {
         "links_sna": 4,
-        "nodes": 3,
-        "ties_graph": 2
+        "nodes": 4,
+        "ties_graph": 4
     },
     "dataset": {
         "filetype": 2,
-        "name": "TinyPath_N3_E2.paj",
-        "path": "src/data/TinyPath_N3_E2.paj"
+        "name": "Signed_Dir_N4_NoCycle.paj",
+        "path": "src/data/Signed_Dir_N4_NoCycle.paj"
     },
     "graph": {
-        "directed": false,
-        "symmetric": true,
-        "weighted": false
+        "directed": true,
+        "symmetric": false,
+        "weighted": true
     },
     "kernel": "matrix",
     "load_report": {
         "fileType_signal": 2,
-        "load_ms": 0,
+        "load_ms": 1,
         "load_msg": "",
-        "net_name": "TinyPath_N3_E2.paj",
+        "net_name": "Signed_Dir_N4_NoCycle.paj",
         "ok": true
     },
     "matrices": {
         "adjacency": {
-            "cols": 3,
+            "cols": 4,
             "data": [
                 [
                     "0",
-                    "1",
+                    "3",
+                    "0",
+                    "10"
+                ],
+                [
+                    "0",
+                    "0",
+                    "-2",
                     "0"
                 ],
                 [
-                    "1",
                     "0",
-                    "1"
+                    "0",
+                    "0",
+                    "4"
                 ],
                 [
                     "0",
-                    "1",
+                    "0",
+                    "0",
                     "0"
                 ]
             ],
             "dump_mode": "full",
-            "rows": 3
+            "rows": 4
         },
         "adjacency_inverse": {
-            "cols": 3,
+            "cols": 4,
             "data": [
                 [
                     "0",
                     "0",
+                    "0",
                     "0"
                 ],
                 [
                     "0",
                     "0",
+                    "0",
                     "0"
                 ],
                 [
+                    "0",
+                    "0",
+                    "0",
+                    "0"
+                ],
+                [
+                    "0",
                     "0",
                     "0",
                     "0"
@@ -66,198 +84,221 @@
             ],
             "dump_mode": "full",
             "invertible": false,
-            "rows": 3
+            "rows": 4
         },
         "clique_comembership": {
-            "cols": 3,
+            "cols": 4,
             "data": [
                 [
                     "1",
-                    "1",
+                    "0",
+                    "0",
                     "0"
-                ],
-                [
-                    "1",
-                    "2",
-                    "1"
                 ],
                 [
                     "0",
                     "1",
+                    "0",
+                    "0"
+                ],
+                [
+                    "0",
+                    "0",
+                    "1",
+                    "0"
+                ],
+                [
+                    "0",
+                    "0",
+                    "0",
                     "1"
                 ]
             ],
             "dump_mode": "full",
-            "rows": 3
+            "rows": 4
         },
         "dissimilarity": {
-            "cols": 3,
+            "cols": 4,
             "data": [
                 [
                     "0",
-                    "1",
+                    "10.198039027185569",
+                    "6.7082039324993694",
+                    "3"
+                ],
+                [
+                    "10.198039027185569",
+                    "0",
+                    "4",
+                    "2"
+                ],
+                [
+                    "6.7082039324993694",
+                    "4",
+                    "0",
                     "0"
                 ],
                 [
-                    "1",
+                    "3",
+                    "2",
                     "0",
-                    "1"
-                ],
-                [
-                    "0",
-                    "1",
                     "0"
                 ]
             ],
             "dump_mode": "full",
             "metric": "euclidean",
-            "rows": 3
+            "rows": 4
         },
         "distances": {
-            "cols": 3,
+            "cols": 0,
             "data": [
-                [
-                    "0",
-                    "1",
-                    "2"
-                ],
-                [
-                    "1",
-                    "0",
-                    "1"
-                ],
-                [
-                    "2",
-                    "1",
-                    "0"
-                ]
             ],
             "dump_mode": "full",
-            "rows": 3
+            "rows": 0
         },
         "reachability": {
-            "cols": 3,
+            "cols": 4,
             "data": [
                 [
                     "1",
                     "1",
-                    "1"
-                ],
-                [
-                    "1",
                     "1",
                     "1"
                 ],
                 [
+                    "0",
                     "1",
                     "1",
+                    "1"
+                ],
+                [
+                    "0",
+                    "0",
+                    "1",
+                    "1"
+                ],
+                [
+                    "0",
+                    "0",
+                    "0",
                     "1"
                 ]
             ],
             "dump_mode": "full",
-            "rows": 3
+            "rows": 4
         },
         "shortest_paths": {
-            "cols": 3,
+            "cols": 0,
             "data": [
-                [
-                    "1",
-                    "1",
-                    "1"
-                ],
-                [
-                    "1",
-                    "1",
-                    "1"
-                ],
-                [
-                    "1",
-                    "1",
-                    "1"
-                ]
             ],
             "dump_mode": "full",
-            "rows": 3
+            "rows": 0
         },
         "similarity": {
-            "cols": 3,
+            "cols": 4,
             "data": [
                 [
                     "1",
                     "0",
+                    "0",
+                    "0.5"
+                ],
+                [
+                    "0",
+                    "1",
+                    "0.5",
+                    "0.5"
+                ],
+                [
+                    "0",
+                    "0.5",
+                    "1",
                     "1"
                 ],
                 [
-                    "0",
+                    "0.5",
+                    "0.5",
                     "1",
-                    "0"
-                ],
-                [
-                    "1",
-                    "0",
                     "1"
                 ]
             ],
             "dump_mode": "full",
             "input": "adjacency",
             "metric": "simple_matching",
-            "rows": 3
+            "rows": 4
         },
         "spectral_radius": {
-            "bound": "2",
-            "exact": "1.4142135623730949",
-            "has_negative_entry": false
+            "bound": "13",
+            "has_negative_entry": true
         },
         "total_walks": {
-            "cols": 3,
+            "cols": 4,
             "data": [
                 [
+                    "0",
                     "1",
+                    "1",
+                    "2"
+                ],
+                [
+                    "0",
+                    "0",
                     "1",
                     "1"
                 ],
                 [
-                    "1",
-                    "2",
+                    "0",
+                    "0",
+                    "0",
                     "1"
                 ],
                 [
-                    "1",
-                    "1",
-                    "1"
+                    "0",
+                    "0",
+                    "0",
+                    "0"
                 ]
             ],
             "dump_mode": "full",
-            "rows": 3
+            "rows": 4
         },
         "walks": {
-            "cols": 3,
+            "cols": 4,
             "data": [
                 [
+                    "0",
+                    "0",
                     "1",
-                    "0",
-                    "1"
-                ],
-                [
-                    "0",
-                    "2",
                     "0"
                 ],
                 [
-                    "1",
+                    "0",
+                    "0",
                     "0",
                     "1"
+                ],
+                [
+                    "0",
+                    "0",
+                    "0",
+                    "0"
+                ],
+                [
+                    "0",
+                    "0",
+                    "0",
+                    "0"
                 ]
             ],
             "dump_mode": "full",
             "length": 2,
-            "rows": 3
+            "rows": 4
         }
     },
     "run": {
-        "considerWeights": false,
+        "considerWeights": true,
         "dropIsolates": false,
-        "inverseWeights": true
+        "inverseWeights": false
     },
     "schema_version": 8
 }

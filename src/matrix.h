@@ -170,6 +170,8 @@ public:
     qreal spectralRadiusExact(const qreal eps = 0.0000001, const int maxIter = 500,
                               std::function<bool()> cancelCheck = nullptr);
 
+    qreal spectralRadiusBound();
+
     Matrix& degreeMatrix();
 
     Matrix& laplacianMatrix();

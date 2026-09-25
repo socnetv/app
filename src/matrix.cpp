@@ -1028,6 +1028,59 @@ qreal Matrix::spectralRadiusExact(const qreal eps, const int maxIter, std::funct
     return lambdaMax;
 }
 
+/**
+ * @brief Returns a safe upper bound on this matrix's spectral radius (max |eigenvalue|), via
+ * Gerschgorin's circle theorem. Works on any square matrix, signed entries included.
+ *
+ * Meaning: every eigenvalue of a matrix A - real or complex - lies within some "Gerschgorin
+ * disc": for row i, the disc centered at A(i,i) with radius equal to the sum of the absolute
+ * values of the rest of row i. So the magnitude of every eigenvalue is bounded by (that row's
+ * center distance from 0, plus its radius), and the largest such bound across all rows is a
+ * safe (if possibly loose) upper bound on the true spectral radius. Unlike
+ * Matrix::spectralRadiusExact(), this needs no iteration and no non-negativity precondition -
+ * it's a handful of row sums, always correct, just not always tight.
+ *
+ * When to use: as PN centrality's (WS18 P3) convergence bound - its A = P - 2N is a signed
+ * matrix, so spectralRadiusExact()'s Perron-Frobenius-based iteration can't be trusted (see that
+ * method's own doc comment for why: complex or tied eigenvalues are possible once entries go
+ * negative). Any matrix where spectralRadiusExact() applies could use this too, but would get a
+ * looser bound for no benefit - prefer spectralRadiusExact() whenever the matrix is known
+ * non-negative.
+ *
+ * Compare to: Matrix::spectralRadiusExact(), the exact value, but only trustworthy on a
+ * non-negative, irreducible matrix.
+ *
+ * Math: rho(A) <= max_i ( |A(i,i)| + sum_{j != i} |A(i,j)| ), i.e. the largest row sum of
+ * absolute values (using |A(i,i)| as the center's own distance from 0, plus the rest of the row
+ * as the disc's radius - equivalent to just summing |A(i,j)| over the whole row).
+ *
+ * @return the Gerschgorin bound, or 0 for an empty matrix.
+ */
+qreal Matrix::spectralRadiusBound()
+{
+    const int n = rows();
+    if (n == 0)
+    {
+        return 0;
+    }
+
+    qreal maxRowSum = 0;
+    for (int i = 0; i < n; i++)
+    {
+        qreal rowSum = 0;
+        for (int j = 0; j < cols(); j++)
+        {
+            rowSum += qAbs(item(i, j));
+        }
+        if (rowSum > maxRowSum)
+        {
+            maxRowSum = rowSum;
+        }
+    }
+
+    return maxRowSum;
+}
+
 
 
 /**

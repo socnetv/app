@@ -795,6 +795,17 @@ run_case_matrix \
   -w 1 -x 0 \
   "${BASE_MATRIX}/TinyDirWeighted_N3__MATRIX__V8__FT2__W1_IW0_DI0.json"
 
+# Signed_Dir_N4_NoCycle: the matrix kernel's only fixture with a negative edge weight, so
+# matrices.spectral_radius.has_negative_entry actually exercises true (every other matrix
+# baseline above is non-negative, so that branch would otherwise never be regression-tested) -
+# and matrices.spectral_radius.exact is correctly omitted rather than computed on a matrix
+# Perron-Frobenius doesn't apply to. See WS18 P3 (docs/roadmaps/roadmap_ws18_signed_network_analysis.md).
+run_case_matrix \
+  "${DATA}/Signed_Dir_N4_NoCycle.paj" \
+  2 \
+  -w 1 -x 0 \
+  "${BASE_MATRIX}/Signed_Dir_N4_NoCycle__MATRIX__V8__FT2__W1_IW0_DI0.json"
+
 # Fix #279: TinyArc_Dir_N2_E1 (N=2, one directed arc) is the minimal fixture that drives
 # similarityMatrix()/pearsonCorrelationCoefficients() into their degenerate empty-sample
 # case (ties==0 for Jaccard/Simple-Matching, N-2<=0 for Pearson) under the default

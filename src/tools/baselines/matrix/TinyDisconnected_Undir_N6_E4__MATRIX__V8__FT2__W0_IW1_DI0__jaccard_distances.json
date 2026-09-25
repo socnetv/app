@@ -454,6 +454,11 @@
             "metric": "jaccard",
             "rows": 6
         },
+        "spectral_radius": {
+            "bound": "2",
+            "exact": "1.4142135623730949",
+            "has_negative_entry": false
+        },
         "total_walks": {
             "cols": 6,
             "data": [
