@@ -258,6 +258,13 @@ _Work in progress — more entries to come as the 3.8 cycle continues._
     appearing at all for the rest of the session. Fixed via a new state flag that invalidates the
     cache on a mode mismatch. Reproduced and confirmed fixed via the GUI.
 
+  - **DL and Adjacency format parsers silently dropped negative-weight edges on import** (#285,
+    WS18 P0): both gated edge creation on `edgeWeight > 0` — no error, no warning, just a missing
+    edge. Every other format parser (Pajek, GraphML, GML, EdgeList, DOT) already created an edge
+    on any non-zero weight; both gates now match. Found while building `kernel_signed_v10`'s
+    golden coverage: a hand-built negative-cycle `.dl` fixture loaded with an edge silently
+    missing.
+
 ### Testing / CI
 
   - **`socnetv-cli`'s ten kernel families now cover directed/undirected × weighted/unweighted ×

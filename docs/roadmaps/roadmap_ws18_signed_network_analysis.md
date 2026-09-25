@@ -10,10 +10,11 @@ Harary structural balance analysis on triads.
 
 ## Status
 
-Tracked by #284. **P1 complete (2026-09-19, #277).** P0 filed (#285), not started. **P2 complete
-(2026-09-25)**: engine work (2026-09-22) plus GUI menu wiring across the four affected Graph-
-distances actions (2026-09-25) — see P2 below for the full account, including a real caching bug
-found and fixed along the way. P3-P4 not started — scoped only.
+Tracked by #284. **P0, P1, P2 all complete.** P1: 2026-09-19 (#277). P0: 2026-09-25 (#285) — DL/
+Adjacency parsers silently dropped negative-weight edges, now fixed with golden coverage in all
+7 supported formats. P2: engine work 2026-09-22 plus GUI menu wiring across the four affected
+Graph-distances actions 2026-09-25 — see P2 below for the full account, including a real caching
+bug found and fixed along the way. P3-P4 not started — scoped only.
 
 **Unrelated fix found and landed along the way (#283):** while designing P2's Bellman-Ford engine
 path, cross-checking `dijkstraSSSP()`'s behavior against an independent library surfaced a real BC
@@ -67,20 +68,23 @@ them are), but PN centrality specifically is not distance-based and could land b
 (structural balance) is independent of P2/P3 — it operates on triad sign patterns directly, not on
 distances.
 
-### P0 — Parser support for negative edge weights (#285)
+### P0 — Parser support for negative edge weights (#285) ✔ complete
 
-DL and Adjacency (one-mode) format parsers gate edge creation on `edgeWeight > 0`
+DL and Adjacency (one-mode) format parsers gated edge creation on `edgeWeight > 0`
 (`parser_dl.cpp`'s fullmatrix reader, both the diagonal and normal-edge branches;
-`parser_adjacency.cpp`'s one-mode branch — the two-mode/bipartite branch is unaffected, it
+`parser_adjacency.cpp`'s one-mode branch — the two-mode/bipartite branch was unaffected, it
 already gates on `cell != "0"`), silently dropping any negative-weight cell on import. Found
 while building the golden-coverage kernel for this workstream (`kernel_signed_v10`, WS6.1):
 a hand-built negative-cycle `.dl` fixture loaded with an edge missing, no error. Confirmed
-unaffected by checking every other parser's edge-creation call site: Pajek, GraphML, GML,
+every other parser's edge-creation call site was already unaffected: Pajek, GraphML, GML,
 EdgeList, and DOT all create an edge unconditionally once a weight is parsed, no positivity
 gate.
 
-Fix: create an edge on any non-zero weight in both parsers, matching the other five formats.
-Document each format's fix in CHANGELOG as it lands.
+**Fixed 2026-09-25**: both gates changed to `edgeWeight != 0`, matching the other five formats.
+`Signed_Dir_N4_NoCycle` now has golden coverage in all 7 supported formats (added
+`.adj`/`.dl`/`.dot`/`.gml`/`.wlst`, alongside the pre-existing `.paj`/`.graphml`), each
+independently cross-checked to produce identical Bellman-Ford potentials before being committed
+as a baseline — `.dl`/`.adj` specifically exercise the two fixed parser branches.
 
 ### P1 — Guard existing distance-based measures against negative weights (#277) ✔ complete
 
