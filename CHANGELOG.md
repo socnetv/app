@@ -80,6 +80,14 @@ _Work in progress — more entries to come as the 3.8 cycle continues._
     refuses if the network has a reachable negative cycle, since shortest paths are undefined
     then regardless of algorithm.
 
+  - **New Signed Degree Centrality measure** (WS18 P3, #300): for signed networks, splits
+    out-degree by tie sign into four scores per node — positive ties sent, negative ties sent,
+    their ratio, and their net (positive minus negative). Available via Analyze → Centrality and
+    Prestige indices, the Prominence toolbox combo, a new `report-centrality-degree-signed`
+    `--interactive-script` command, and the `prominence` CLI kernel
+    (`signedDegreePos`/`Neg`/`Ratio`/`Net`). Out-degree only for now; no standardized/graph-wide
+    statistics, unlike Degree Centrality.
+
 ### Bug Fixes
 
   - **Similarity/Pearson reports no longer produce NaN on small networks** (#279):
@@ -305,6 +313,16 @@ _Work in progress — more entries to come as the 3.8 cycle continues._
     verified against a standalone eigendecomposition on five fixtures spanning directed/undirected,
     weighted/unweighted, and isolated/disconnected graphs, including the degenerate nilpotent
     (all-zero-eigenvalue) case on a directed acyclic chain.
+
+  - **`matrix` kernel gains a `matrices.spectral_radius` block** (WS18 P3 prep): dumps
+    `has_negative_entry`, `bound` (a safe upper bound via Gerschgorin's theorem, valid on any
+    matrix including signed ones), and `exact` (the true dominant eigenvalue via power iteration,
+    only present when the matrix is non-negative — meaningless otherwise). New
+    `Matrix::spectralRadiusBound()`/`spectralRadiusExact()`/`hasNegativeEntry()` and
+    `Graph::hasNegativeWeight()` are prep for PN centrality's convergence guard, which needs to
+    dispatch between the two depending on whether the network is signed. Includes a dedicated
+    signed-fixture baseline so the signed/Gerschgorin branch actually gets regression-tested, not
+    just the non-negative path every other fixture exercises.
 
   - **`graph.symmetric` added to every kernel's JSON output** (WS6.9): `Graph::isSymmetric()` was
     printed to `socnetv-cli`'s console output (`SYMMETRIC=...`) but never actually written into
