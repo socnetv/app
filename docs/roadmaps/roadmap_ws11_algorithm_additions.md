@@ -181,7 +181,11 @@ Three follow-on visualizations surfaced by this work are noted below under What 
   (reject/warn Dijkstra-derived measures on negative weights, instead of silently misapplying) is
   unchanged, but the full signed-network picture (Bellman-Ford shortest paths, PN centrality,
   structural balance on triads) grew large enough to warrant its own workstream rather than staying
-  a single WS11 bullet. See WS18 for the complete design and phase breakdown.
+  a single WS11 bullet. **WS18 P0-P2 (parser support, the negative-weight guard, and Bellman-Ford/
+  Johnson's-algorithm negative-weight-safe distances) are complete as of 2026-09-25**; P3 (PN
+  centrality — the natural next WS11-style algorithm addition, once WS18's engine work landed) and
+  P4 (structural balance on triads, extending `graphTriadCensus()`) are next. See WS18 for the
+  complete design and phase breakdown.
 
 ### Similarity / Structural Equivalence — `src/graph/similarity/`
 
