@@ -71,6 +71,15 @@ _Work in progress — more entries to come as the 3.8 cycle continues._
     Verified identical results on every golden fixture plus 5 hand-picked networks with
     analytically-known κ(G).
 
+  - **Distance / Average Distance / Geodesic Distances Matrix now offer a negative-weight-safe
+    upgrade on refusal** (WS18 P2): previously only Diameter did this. On a network with negative
+    edge weights, these Analyze → Cohesion... actions now ask "Use the negative-weight-safe
+    algorithm instead?" and, on Yes, rerun via Bellman-Ford/Johnson's-algorithm reweighting
+    (`Graph::graphDistanceGeodesicSigned()`/`graphDistanceGeodesicAverageSigned()`/
+    `writeMatrix(..., allowNegativeWeights=true)`) instead of just refusing outright. Still
+    refuses if the network has a reachable negative cycle, since shortest paths are undefined
+    then regardless of algorithm.
+
 ### Bug Fixes
 
   - **Similarity/Pearson reports no longer produce NaN on small networks** (#279):
@@ -205,6 +214,12 @@ _Work in progress — more entries to come as the 3.8 cycle continues._
     everything else: hop count when unweighted, the true weighted geodesic distance when edge
     weights are considered.
 
+  - **Single-pair geodesic distance truncated to an integer on weighted networks** (#298): same
+    truncation bug as #294 (diameter), just in `Graph::graphDistanceGeodesic()` instead —
+    confirmed real on a weighted network with `inverseWeights`, where distances are routinely
+    fractional. Changed to `qreal` end to end, including the Analyze → Cohesion... → Distance
+    dialog that displays it.
+
   - **Hierarchical clustering corrupted every merge on any graph with an isolated vertex**
     (#295): Step 1's cluster-index population skipped isolated vertices, but the paired
     dissimilarity matrix always sizes itself to include every enabled vertex, isolates included.
@@ -232,6 +247,16 @@ _Work in progress — more entries to come as the 3.8 cycle continues._
     ties) — even when both the expected and actual baseline agreed it was `"nan"`. Never
     triggered before now since no existing baseline had hit that exact case. Both sides literally
     `"nan"` is now checked explicitly and treated as a match before the numeric parse.
+
+  - **A negative-weight-safe distance computation could silently mask the negative-weight
+    refusal for every later ordinary computation on the same graph** (WS18 P2): `DistanceEngine::
+    compute()`'s result cache recorded only that *some* distance/centrality result was cached,
+    not which mode (plain Dijkstra/BFS or negative-weight-safe Johnson's algorithm) produced it.
+    Switching modes on the same graph — e.g. upgrading one Analyze action to the negative-weight-
+    safe path, then requesting an ordinary computation from a different action — silently reused
+    the wrong mode's stale cached result instead of recomputing, so the refusal dialog stopped
+    appearing at all for the rest of the session. Fixed via a new state flag that invalidates the
+    cache on a mode mismatch. Reproduced and confirmed fixed via the GUI.
 
 ### Testing / CI
 
