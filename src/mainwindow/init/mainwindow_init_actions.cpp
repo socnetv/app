@@ -2277,6 +2277,29 @@ void MainWindow::initActions()
                "edges/outLinks attached to v."));
     connect(cDegreeAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityDegree()));
 
+    cSignedDegreeAct = new QAction(tr("Signed Degree Centrality"), this);
+    cSignedDegreeAct->setStatusTip(
+        tr("Compute Degree Centrality split by tie sign, for signed networks."));
+    cSignedDegreeAct->setWhatsThis(
+        tr("<p><b>Signed Degree Centrality</b></p>"
+           "<p><b>Meaning:</b> on a signed network, a plain degree count conflates \"liked by "
+           "many\" with \"disliked by many\" into one number - this splits it back apart into "
+           "four scores per node: <i>pos</i> (positive ties sent, or their summed strength if "
+           "weights are considered), <i>neg</i> (the same for negative ties), <i>ratio</i> "
+           "(pos / (pos+neg), the fraction of a node's ties that are positive), and <i>net</i> "
+           "(pos &minus; neg, a single signed balance score).</p>"
+           "<p><b>When to use:</b> a fast first-pass screen for who's positively vs. negatively "
+           "prominent on a signed network - the same role plain Degree Centrality plays on an "
+           "unsigned one. Cheap, easy to explain, no attention paid to indirect/structural "
+           "effects.</p>"
+           "<p><b>Weights:</b> when considered, a tie's absolute weight is summed into pos or "
+           "neg according to its sign, so a stronger tie always adds more regardless of which "
+           "side it falls on.</p>"
+           "<p><b>Compare to:</b> Degree Centrality (DC), the unsigned equivalent this splits "
+           "apart. Out-degree only, like DC itself - to compute in-degree, use the Degree "
+           "Prestige measure.</p>"));
+    connect(cSignedDegreeAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralitySignedDegree()));
+
     cClosenessAct = new QAction(tr("Closeness Centrality (CC)"), this);
     cClosenessAct->setShortcut(Qt::CTRL | Qt::Key_2);
     cClosenessAct

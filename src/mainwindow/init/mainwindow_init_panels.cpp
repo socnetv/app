@@ -428,7 +428,8 @@ void MainWindow::initPanels()
                         << "Degree Prestige"
                         << "PageRank Prestige"
                         << "Proximity Prestige"
-                        << "Clustering Coefficient";
+                        << "Clustering Coefficient"
+                        << "Signed Degree Centrality";
     // This list's order must match IndexType's enum values exactly, starting at DC=1:
     // toolBoxLayoutByIndexSelect's currentIndex syncing (mainwindow_layout.cpp's
     // setCurrentIndex(indexType + 1) calls) and vertexFindByIndexScore()/
@@ -442,6 +443,13 @@ void MainWindow::initPanels()
     // slotAnalyzeClusteringCoefficient() - a 3rd entry point would be pure duplication).
     // prominenceIndexList itself keeps it, for Node Find / layout-by-index / filter-by-
     // centrality, which all handle it correctly via their own dedicated code paths.
+    //
+    // Signed Degree Centrality (WS18 P3, IndexType::SIGNED_DEGREE) is the opposite case: it
+    // DOES have a toolBoxAnalysisProminenceSelectChanged() case (below), so it stays selectable
+    // here, but it has no standardized/max score (four variants, deliberately no aggregate
+    // stats - see centralitySignedDegree()'s own doc comment), so layoutByProminenceIndex(),
+    // vertexFindByIndexScore(), and vertexFilterByCentrality() don't have a case for it yet -
+    // selecting it opens the report and nothing more, same limited scope as the menu action.
     QStringList prominenceCommands;
     prominenceCommands << "Select" << prominenceIndexList;
     prominenceCommands.removeAll("Clustering Coefficient");
@@ -594,6 +602,10 @@ void MainWindow::initPanels()
     toolBoxLayoutByIndexSelect->setWhatsThis(helpMessage);
     QStringList layoutCommandsList;
     layoutCommandsList << "None" << "Random" << prominenceIndexList;
+    // Signed Degree Centrality (WS18 P3) has no single standardized score, so
+    // layoutByProminenceIndex() doesn't support it (see its own comment) - excluded here the
+    // same way "Clustering Coefficient" is excluded from the Prominence combo box above.
+    layoutCommandsList.removeAll("Signed Degree Centrality");
 
     toolBoxLayoutByIndexSelect->addItems(layoutCommandsList);
     toolBoxLayoutByIndexSelect->setMinimumWidth(100);

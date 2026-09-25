@@ -79,6 +79,55 @@ void MainWindow::slotAnalyzeCentralityDegree()
 }
 
 /**
+ *	Writes Signed Degree Centralities into a file, then displays it (WS18 P3).
+ *
+ *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
+ */
+void MainWindow::slotAnalyzeCentralitySignedDegree()
+{
+    if (!activeNodes())
+    {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    askAboutEdgeWeights(false);
+
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+    QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-centrality-signed-degree-" + dateTime + ext;
+
+    bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
+    bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
+    auto success = std::make_shared<bool>(false);
+
+    runGraphOperationAsync(
+        [this, fn, considerWeights, dropIsolates, reportFormat, success]() {
+            *success = activeGraph->writeCentralitySignedDegree(fn, considerWeights, dropIsolates, reportFormat);
+        },
+        tr("Computing Signed Degree Centralities. Please wait..."),
+        [this, fn, reportFormat, success]() {
+            if (!*success)
+            {
+                return;
+            }
+            statusMessage(tr("Opening Signed Degree Centralities report..."));
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Signed Degree Centralities report saved as: ") + QDir::toNativeSeparators(fn));
+        });
+}
+
+/**
  *	Writes Closeness Centralities into a file, then displays it.
  *
  *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.

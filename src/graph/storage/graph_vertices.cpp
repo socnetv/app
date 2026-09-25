@@ -974,6 +974,16 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
                            inverseWeights, dropIsolates);
         break;
     }
+    case IndexType::SIGNED_DEGREE:
+    {
+        // WS18 P3: four variants (pos/neg/ratio/net), no single standardized score to search
+        // by - explicit early return rather than falling through to default's
+        // graphDistancesGeodesic() (wrong computation) or the second switch below, which has
+        // no default and would silently reuse a stale score from whatever vertex/index ran
+        // last in that loop.
+        progressStatus(tr("Signed Degree Centrality has no single score to search by yet."));
+        return false;
+    }
     default:
         graphDistancesGeodesic(true, considerWeights,
                                inverseWeights, dropIsolates);

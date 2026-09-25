@@ -320,6 +320,17 @@ void Graph::layoutByProminenceIndex(int prominenceIndex, int layoutType,
         centralityBonacich(m_lastBonacichAlpha, m_lastBonacichBeta, considerWeights,
                            inverseWeights, dropIsolates);
     }
+    else if (prominenceIndex == IndexType::SIGNED_DEGREE)
+    {
+        // WS18 P3: four variants (pos/neg/ratio/net), no single standardized score to lay out
+        // by - explicit early return rather than falling through to the geodesic-distance
+        // branch below (wrong computation entirely) or the layoutType switch further down
+        // (which would silently reuse stale C/stdC/maxC from whatever last ran).
+        progressStatus(tr("Signed Degree Centrality has no single score to lay out by yet - "
+                          "use Analyze > Centrality and Prestige indices > Signed Degree "
+                          "Centrality for its report instead."));
+        return;
+    }
     else
     {
         graphDistancesGeodesic(true, considerWeights,

@@ -82,6 +82,12 @@ void MainWindow::toolBoxAnalysisProminenceSelectChanged(const int &selectedIndex
     case 14:
         slotAnalyzePrestigeProximity();
         break;
+    case 15:
+        // "Clustering Coefficient" (IndexType::CLC=15) is removed from this combo box's items
+        // (see mainwindow_init_panels.cpp) before it's populated, so combo index 15 lands on
+        // the next item added after it - "Signed Degree Centrality" (IndexType::SIGNED_DEGREE=16).
+        slotAnalyzeCentralitySignedDegree();
+        break;
     };
 
     qCDebug(lcMainWindow) << "Calling initComboBoxes() ";

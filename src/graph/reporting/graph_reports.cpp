@@ -1575,6 +1575,115 @@ bool Graph::writeCentralityDegree(const QString fileName,
 }
 
 /**
+ * @brief Writes the Signed Degree Centrality (WS18 P3) to a file
+ *
+ * Unlike writeCentralityDegree(), this is a minimal report: just the per-node score table for
+ * the four pos/neg/ratio/net variants. No distribution chart, no sum/mean/variance/classes
+ * section, no group centralization - centralitySignedDegree() deliberately doesn't compute any
+ * graph-wide/standardized statistics (see its own doc comment), so there is nothing to report
+ * beyond the raw per-vertex values.
+ *
+ * @param fileName
+ * @param considerWeights
+ * @param dropIsolates
+ */
+bool Graph::writeCentralitySignedDegree(const QString fileName,
+                                        const bool considerWeights,
+                                        const bool dropIsolates,
+                                        const int &format)
+{
+    qCDebug(lcReporting) << "Writing Signed Degree Centrality report to file:" << fileName
+             << "considerWeights:" << considerWeights
+             << "dropIsolates:" << dropIsolates;
+
+    QElapsedTimer computationTimer;
+    computationTimer.start();
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
+        progressStatus(tr("Error. Could not write to ") + fileName);
+        return false;
+    }
+    QTextStream outText(&file);
+
+    centralitySignedDegree(considerWeights, dropIsolates);
+    if (progressCanceled())
+    {
+        file.close();
+        progressStatus(tr("Computation canceled."));
+        return false;
+    }
+
+    auto rowValues = [](GraphVertex *v) -> QVector<qreal> {
+        return {v->signedDegreePos(), v->signedDegreeNeg(), v->signedDegreeRatio(), v->signedDegreeNet()};
+    };
+    auto isBlanked = [dropIsolates](GraphVertex *v) {
+        return dropIsolates && v->isIsolated();
+    };
+
+    if (format == ReportFormat::Csv)
+    {
+        writeScoreTableCSV(outText, {"pos", "neg", "ratio", "net"}, rowValues, isBlanked);
+        file.close();
+        return true;
+    }
+
+    int N = vertices();
+
+    outText << htmlHead;
+
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
+
+    progressStatus(tr("Writing Signed Degree Centralities. \nPlease wait..."));
+
+    outText << "<h1>";
+    outText << tr("SIGNED DEGREE CENTRALITY REPORT");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            << "</span>"
+            << getName()
+            << "<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            << "</span>"
+            << N
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("Out-degree split by tie sign, for signed networks. "
+                  "pos is how many positive ties a node sends (or their summed strength, if "
+                  "weights are considered); neg is the same for negative ties; "
+                  "ratio = pos / (pos+neg), the fraction of a node's ties that are positive "
+                  "(0 for a node with no ties either way); net = pos - neg, a single signed "
+                  "balance score.<br />"
+                  "Out-degree only: to compute in-degree, use the Degree Prestige measure.")
+            << "</p>";
+
+    writeScoreTableHTML(outText, {"pos", "neg", "ratio", "net"}, rowValues, isBlanked);
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Signed Degree Centrality report, <br />");
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+                   .arg(VERSION)
+                   .arg(actualDateTime.currentDateTime().toString(QString("ddd, dd.MMM.yyyy hh:mm:ss")));
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg(computationTimer.elapsed());
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+    file.close();
+
+    return true;
+}
+
+/**
  * @brief Writes the closeness centralities to a file
  * @param fileName
  * @param considerWeights

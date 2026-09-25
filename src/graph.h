@@ -1043,6 +1043,11 @@ public:
                                const bool dropIsolates,
                                const int &format = ReportFormat::Html);
 
+    bool writeCentralitySignedDegree(const QString,
+                                     const bool weights,
+                                     const bool dropIsolates,
+                                     const int &format = ReportFormat::Html);
+
     bool writeCentralityCloseness(const QString,
                                   const bool weights,
                                   const bool inverseWeights,

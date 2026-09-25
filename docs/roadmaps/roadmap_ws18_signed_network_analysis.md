@@ -252,8 +252,21 @@ noted by at least one of the secondary sources, not just an observation made her
       no meaningful default) and dumps `signedDegreePos`/`Neg`/`Ratio`/`Net` per node. New
       `Signed_Dir_N4_NoCycle` prominence baseline gives real negative-split coverage (every other
       prominence fixture is all-positive, so `pos==DC`/`neg==0` there - degenerate, not a
-      meaningful test of the split itself). GUI menu/dialog, reporting, and a WS12
-      interactive-script command still to come.
+      meaningful test of the split itself).
+- [x] **Signed degree GUI wiring** — new `Graph::writeCentralitySignedDegree()` (minimal
+      report: just the pos/neg/ratio/net score table, no distribution chart/sum/mean/variance,
+      matching the engine's own no-aggregate-stats scope), `MainWindow::slotAnalyzeCentralitySignedDegree()`,
+      a menu action under Analyze > Centrality and Prestige indices with a full Meaning/When to
+      use/Weights/Compare to What's This, and a new `IndexType::SIGNED_DEGREE` entry so it's also
+      selectable in the Prominence toolbox combo. Explicitly **not** wired into
+      `layoutByProminenceIndex()`/`vertexFindByIndexScore()`/`vertexFilterByCentrality()` (all
+      three assume one scalar + a standardized/max value per index, which this measure doesn't
+      have) - excluded from the "Visualize by prominence index" and Node Find dropdowns entirely
+      (same `removeAll()` pattern already used for Clustering Coefficient), and
+      `isCentralityIndexComputed()`'s existing `default: return false` keeps the Filter-by-
+      Centrality dialog's copy permanently (and correctly) disabled. All verified live via manual
+      GUI testing on `Signed_Dir_N4_NoCycle`, not just build success.
+- [ ] **Signed degree WS12 interactive-script command** - still to come.
 - [ ] **PN centrality** — new `src/graph/centrality/graph_centrality_pn.cpp`,
       `Graph::centralityPN(...)`. Build `A = P - 2N` via the new `Matrix` methods, fixed
       `β = 1/(2n-2)` (no user-facing parameter, unlike Katz's alpha), closed-form solve via
@@ -283,6 +296,14 @@ noted by at least one of the secondary sources, not just an observation made her
       naming direction (name/shape after the equivalent operation in an established SNA scripting
       ecosystem where one clearly exists) — every new algorithm added from here on needs this, not
       just a GUI menu action and a CLI kernel flag.
+
+**Found, deliberately deferred, not part of this checklist**: all 16 existing centrality/prestige
+`QAction`s' `setWhatsThis()`/`setStatusTip()` text predates the richer Meaning/When to
+use/Weights/Compare to/Math doc-comment convention now used in the source (confirmed concretely:
+Katz's source doc comment is much richer than its current What's This, which is short and has none
+of that shape). Signed degree's own new What's This should be written well from the start, but
+upgrading the other 15 pre-existing measures' GUI text to match is a separate, sizeable audit -
+worth its own tracked item once P3 lands, not a mid-task detour here.
 - [ ] **Doc comments** following the fixed Meaning/When to use/Weights/Compare to/Math shape (PN's
       Compare-to section names Katz centrality explicitly, given the corroborated resemblance
       above).

@@ -463,6 +463,7 @@ public slots:
     void slotAnalyzeConnectivity();
 
     void slotAnalyzeCentralityDegree();
+    void slotAnalyzeCentralitySignedDegree();
     void slotAnalyzeCentralityCloseness();
     void slotAnalyzeCentralityClosenessIR();
     void slotAnalyzeCentralityBetweenness();
@@ -795,7 +796,7 @@ private:
     QAction *analyzeMatrixDegreeAct, *analyzeMatrixLaplacianAct;
     QAction *analyzeStrEquivalenceClusteringHierarchicalAct, *analyzeStrEquivalencePearsonAct;
     QAction *analyzeStrEquivalenceMatchesAct;
-    QAction *cDegreeAct, *cInDegreeAct, *cClosenessAct, *cInfluenceRangeClosenessAct,
+    QAction *cDegreeAct, *cSignedDegreeAct, *cInDegreeAct, *cClosenessAct, *cInfluenceRangeClosenessAct,
     *cBetweennessAct, *cInformationAct, *cEigenvectorAct, *cPageRankAct,
     *cStressAct, *cPowerAct, *cEccentAct, *cProximityPrestigeAct, *cKatzAct, *cBonacichAct;
     QAction *layoutRandomAct, *layoutRandomRadialAct, *layoutEgoRadialAct, *layoutGuidesAct;
