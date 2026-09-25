@@ -186,6 +186,7 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW)
         m_vertexComponentId.clear();
         calculatedDP = false;
         calculatedDC = false;
+        calculatedSignedDegree = false;
         calculatedPP = false;
         calculatedIRCC = false;
         calculatedIC = false;

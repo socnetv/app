@@ -232,12 +232,21 @@ noted by at least one of the secondary sources, not just an observation made her
 
 - [ ] **`Matrix` gains public P/N split methods** — new methods on `Matrix` (not ad-hoc code in the
       centrality slice) to build the positive-tie and negated-negative-tie matrices from a signed
-      adjacency matrix in one pass, since both signed degree and PN centrality need this same split
-      and it's a matrix-construction concern, not a centrality-specific one.
+      adjacency matrix in one pass. Needed by PN centrality (which genuinely does matrix-level work
+      on `A = P - 2N`). Signed degree does **not** use this: `centralityDegree()`'s own existing
+      pattern is direct `edgeExists()` iteration parallelized via `QtConcurrent::blockingMap` (WS15
+      P4), never `Matrix`/`AM` - signed degree follows that same precedent instead, so building a
+      `Matrix` P/N split just to sum rows would be a detour from how this measure's family is
+      actually implemented elsewhere in the codebase.
 - [ ] **Signed degree centrality** — new `src/graph/centrality/graph_centrality_signed_degree.cpp`,
-      `Graph::centralitySignedDegree(...)`. Four variants (pos / neg / ratio / net), directed
-      in/out handling matching existing degree centrality. No matrix inversion, no convergence
-      bound — direct edge iteration filtered by sign, using the new `Matrix` P/N split.
+      `Graph::centralitySignedDegree(...)`. Four variants (pos / neg / ratio / net) stored
+      simultaneously per vertex (one edge scan fills all four - cheap, and a signed-network report
+      naturally wants all four side by side, not one re-run per variant). **Out-degree only for
+      this first pass** - `centralityDegree()`/DC itself is out-degree-only, with in-degree as an
+      entirely separate measure (`prestigeDegree()`/DP); signed in-degree is deliberately deferred
+      as its own later follow-on rather than silently doubling this step's scope to 8 stored
+      values. Direct edge iteration filtered by sign, same parallelization shape as
+      `centralityDegree()` above (`QtConcurrent::blockingMap`, per-vertex independent writes).
 - [ ] **PN centrality** — new `src/graph/centrality/graph_centrality_pn.cpp`,
       `Graph::centralityPN(...)`. Build `A = P - 2N` via the new `Matrix` methods, fixed
       `β = 1/(2n-2)` (no user-facing parameter, unlike Katz's alpha), closed-form solve via
@@ -255,6 +264,14 @@ noted by at least one of the secondary sources, not just an observation made her
       (`kernel_prominence_v4.cpp`), reporting (`graph_reports.cpp`), `graph_centrality.cpp`
       dispatch, layout-by-prominence (`graph_layouts_basic.cpp` — PN's values can be negative,
       same open framing question already flagged for Distance/Diameter under P2 applies here too).
+- [ ] **GUI "What's This"/tooltip text for PN**, not just the doc-comment Meaning section — plain-
+      language framing to carry over: *"it is worse to receive a negative tie from someone who is
+      highly popular (receives a lot of positive ties) than from someone who is marginalized;
+      receiving a negative tie from someone who is universally disliked might even be interpreted
+      as a positive indicator in structural dynamics."* This is the intuition for why PN weights a
+      negative tie by the sender's own positive standing, not just a flat penalty - worth landing
+      in the dialog's What's This help and/or its tooltip, not just this roadmap doc or the source
+      comment.
 - [ ] **New `--interactive-script` command(s)** (WS12) for both measures, following WS12's Command
       naming direction (name/shape after the equivalent operation in an established SNA scripting
       ecosystem where one clearly exists) — every new algorithm added from here on needs this, not

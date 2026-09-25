@@ -1270,6 +1270,9 @@ public:
     void centralityDegree(const bool &considerWeights = true,
                           const bool &dropIsolates = false);
 
+    void centralitySignedDegree(const bool &considerWeights = true,
+                                const bool &dropIsolates = false);
+
     void centralityInformation(const bool considerWeights = false,
                                const bool inverseWeights = false);
 
@@ -1724,6 +1727,7 @@ private:
     bool calculatedKC;
     bool calculatedBPC;
     bool calculatedDP, calculatedDC, calculatedPP;
+    bool calculatedSignedDegree;
     bool calculatedIRCC, calculatedIC, calculatedPRP;
     bool calculatedTriad;
     bool calculatedGraphSymmetry, calculatedGraphReciprocity;

@@ -197,6 +197,16 @@ public:
     qreal DC() { return m_DC;}          /* Returns vertex Degree Centrality*/
     qreal SDC() { return m_SDC;}		/* Returns standard vertex Degree Centrality*/
 
+    /* Signed degree centrality (WS18 P3) - out-degree only, no standardized/graph-wide stats. */
+    void setSignedDegreePos (const qreal &c) { m_signedDegreePos=c; }
+    void setSignedDegreeNeg (const qreal &c) { m_signedDegreeNeg=c; }
+    void setSignedDegreeRatio (const qreal &c) { m_signedDegreeRatio=c; }
+    void setSignedDegreeNet (const qreal &c) { m_signedDegreeNet=c; }
+    qreal signedDegreePos() { return m_signedDegreePos; }
+    qreal signedDegreeNeg() { return m_signedDegreeNeg; }
+    qreal signedDegreeRatio() { return m_signedDegreeRatio; }
+    qreal signedDegreeNet() { return m_signedDegreeNet; }
+
     void setDistanceSum (const qreal &c) { m_distanceSum = c; }
     qreal distanceSum () { return m_distanceSum; }
     void setCC (const qreal &c){ m_CC=c;}		/* sets vertex Closeness Centrality*/
@@ -291,6 +301,7 @@ private:
     qreal m_Eccentricity, m_CLC;
     qreal m_EC, m_SEC;
     qreal m_DC, m_SDC, m_DP, m_SDP, m_CC, m_SCC, m_BC, m_SBC, m_IRCC, m_SIRCC, m_SC, m_SSC;
+    qreal m_signedDegreePos, m_signedDegreeNeg, m_signedDegreeRatio, m_signedDegreeNet;
     qreal m_PC, m_SPC, m_SIC, m_IC, m_SPRC, m_PRC;
     qreal m_PP, m_SPP, m_EVC, m_SEVC;
     qreal m_KC, m_SKC, m_BPC, m_SBPC;
