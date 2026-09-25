@@ -123,7 +123,7 @@ void Graph::graphDistancesGeodesicSigned(const bool &computeCentralities,
                    /*considerWeights=*/true,
                    inverseWeights,
                    dropIsolates,
-                   /*negativeWeightSafe=*/true);
+                   /*allowNegativeWeights=*/true);
 }
 
 /**

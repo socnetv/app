@@ -161,7 +161,7 @@ DistanceEngine::DistanceEngine(Graph &g)
  * @param considerWeights      If true, uses edge weights (Dijkstra); otherwise BFS.
  * @param inverseWeights       If true, uses 1/weight as the distance metric.
  * @param dropIsolates         If true, excludes isolated vertices from all calculations.
- * @param negativeWeightSafe   If true, negative edge weights are not refused - instead, potentials
+ * @param allowNegativeWeights If true, negative edge weights are not refused - instead, potentials
  * are computed via bellmanFordPotentials() (Johnson's algorithm) and every source's Dijkstra run
  * is reweighted to be non-negative. Refuses instead if the network has a reachable negative cycle
  * (see Graph::negativeCycleDetected()), since shortest paths are then undefined regardless of
@@ -171,7 +171,7 @@ void DistanceEngine::compute(const bool computeCentralities,
                              const bool considerWeights,
                              const bool inverseWeights,
                              const bool dropIsolates,
-                             const bool negativeWeightSafe)
+                             const bool allowNegativeWeights)
 {
 
     qCDebug(lcEngine) << "DistanceEngine::compute() - "
@@ -179,19 +179,29 @@ void DistanceEngine::compute(const bool computeCentralities,
              << "considerWeights:" << considerWeights
              << "inverseWeights:" << inverseWeights
              << "dropIsolates:" << dropIsolates
-             << "negativeWeightSafe:" << negativeWeightSafe;
+             << "allowNegativeWeights:" << allowNegativeWeights;
 
-    if (computeCentralities)
+    // The calculatedDistances/calculatedCentralities cache only records that *some* result is
+    // cached, not which mode produced it - a plain Dijkstra/BFS run and an allowNegativeWeights
+    // (Johnson's algorithm) run can disagree (differently on a negative-weight graph, since only
+    // one of the two even attempts a real computation there), so a mode switch on the same graph
+    // must invalidate the cache rather than silently reuse the other mode's stale result.
+    const bool modeMatches = (graph.m_lastComputeWasNegativeWeightSafe == allowNegativeWeights);
+    if (modeMatches)
     {
-        if (graph.calculatedCentralities)
+        if (computeCentralities)
+        {
+            if (graph.calculatedCentralities)
+            {
+                return;
+            }
+        }
+        else if (graph.calculatedDistances)
         {
             return;
         }
     }
-    else if (graph.calculatedDistances)
-    {
-        return;
-    }
+    graph.m_lastComputeWasNegativeWeightSafe = allowNegativeWeights;
 
     DistanceScratch ds;
     CentralityScratchSSSP csssp;
@@ -207,13 +217,13 @@ void DistanceEngine::compute(const bool computeCentralities,
             considerWeights,
             inverseWeights,
             dropIsolates,
-            negativeWeightSafe,
+            allowNegativeWeights,
             ds,
             csssp,
             csfin,
             sink);
 
-    if (!negativeWeightSafe && graph.negativeWeightsDetected())
+    if (!allowNegativeWeights && graph.negativeWeightsDetected())
     {
         qCDebug(lcEngine) << "DistanceEngine::compute() - refused: negative edge weight(s) "
                               "detected, Dijkstra is undefined for those. Skipping computation.";
@@ -222,11 +232,11 @@ void DistanceEngine::compute(const bool computeCentralities,
 
     if (ds.E != 0)
     {
-        // negativeWeightSafe: compute potentials once, single-threaded, before any per-source
+        // allowNegativeWeights: compute potentials once, single-threaded, before any per-source
         // work starts - every parallel Dijkstra call in runAllSources() needs to read the same
         // frozen h(v) vector. A reachable negative cycle makes shortest paths undefined for any
         // algorithm, so refuse the whole computation rather than a partial/best-effort result.
-        if (negativeWeightSafe && considerWeights)
+        if (allowNegativeWeights && considerWeights)
         {
             graph.resetNegativeCycleDetected();
             if (!bellmanFordPotentials(inverseWeights, ds))
@@ -264,11 +274,29 @@ void DistanceEngine::compute(const bool computeCentralities,
     qCDebug(lcEngine) << "Graph::graphDistancesGeodesic()- FINISHED computing distances";
 }
 
+/**
+ * @brief Phase 0 of compute(): resets every scratch/aggregate field this run will populate,
+ * scans for a negative edge weight up front (refusing the whole computation via
+ * sink.reportNegativeWeights() unless allowNegativeWeights is set), and handles the zero-edges
+ * (E==0) case entirely on its own, since runAllSources()/finalize() have nothing to do then.
+ * @param computeCentralities Whether centrality scratch/aggregate fields need resetting too.
+ * @param considerWeights Whether the negative-weight scan below runs at all (BFS never sees
+ * weights, so there is nothing to detect).
+ * @param inverseWeights Only used for the E==0 branch's own bookkeeping.
+ * @param dropIsolates Exclude isolated vertices from the vertex count/E==0 population.
+ * @param allowNegativeWeights If true, a detected negative edge weight is not refused here - the
+ * caller (compute()) has opted into the negative-weight-safe (Johnson's-algorithm) path, which
+ * is defined for negative weights.
+ * @param ds Output: scratch state for this run (sizes, maxima, per-run accumulators).
+ * @param csssp Output: SSSP-phase centrality scratch, zeroed for this run.
+ * @param csfin Output: finalize-phase centrality scratch, zeroed for this run.
+ * @param sink Progress/cancellation/negative-weight-refusal callback.
+ */
 void DistanceEngine::initRun(const bool computeCentralities,
                              const bool considerWeights,
                              const bool inverseWeights,
                              const bool dropIsolates,
-                             const bool negativeWeightSafe,
+                             const bool allowNegativeWeights,
                              DistanceScratch &ds,
                              CentralityScratchSSSP &csssp,
                              CentralityScratchFinalize &csfin,
@@ -437,11 +465,11 @@ void DistanceEngine::initRun(const bool computeCentralities,
                     // per-vertex centrality zeroing) is mutated - Dijkstra is mathematically
                     // undefined for negative weights, so refuse the whole computation rather than
                     // leaving partially-mutated state that looks legitimately computed but isn't.
-                    // See #277/WS18 P1. Skipped when negativeWeightSafe is set: that caller has
+                    // See #277/WS18 P1. Skipped when allowNegativeWeights is set: that caller has
                     // opted into the Johnson's-algorithm path (see compute()), which is defined
                     // for negative weights - only a negative cycle is refused there, not this.
                     ds.tempEdgeWeight = (*ds.it)->hasEdgeTo((*ds.it1)->number());
-                    if (ds.tempEdgeWeight < 0 && !negativeWeightSafe)
+                    if (ds.tempEdgeWeight < 0 && !allowNegativeWeights)
                     {
                         sink.reportNegativeWeights();
                         return;
@@ -618,6 +646,20 @@ bool DistanceEngine::bellmanFordPotentials(const bool inverseWeights, DistanceSc
     return true;
 }
 
+/**
+ * @brief Phase 1+2 of compute(): runs SSSP (BFS or Dijkstra, per considerWeights) from every
+ * enabled vertex, in parallel across CPU cores via QtConcurrent::blockingMap. Each worker thread
+ * owns its own ThreadLocalState; graph-wide writes that aren't safe to make concurrently (BC,
+ * SC, distance sum, geodesics count, diameter) are accumulated into per-thread state during the
+ * map and reduced into graph-global state in a single-threaded step immediately after.
+ * @param computeCentralities Also accumulate BC/SC/CC/etc. per source, not just distances.
+ * @param considerWeights Dijkstra (true) vs. BFS (false).
+ * @param inverseWeights Use 1/weight as the per-edge distance metric.
+ * @param dropIsolates Exclude isolated vertices from the source loop.
+ * @param ds Scratch state populated by initRun() (potentials, if any, bounds, etc.); also where
+ * this phase's own per-run accumulators live.
+ * @param sink Progress/cancellation callback.
+ */
 void DistanceEngine::runAllSources(const bool computeCentralities,
                                    const bool considerWeights,
                                    const bool inverseWeights,
@@ -920,6 +962,18 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
     qCDebug(lcEngine) << "*********** MAIN LOOP (SSSP problem): FINISHED.";
 }
 
+/**
+ * @brief Phase 3 of compute(): single-threaded aggregation pass run after runAllSources()
+ * completes. Scans for vertex pairs left unreachable (populating notConnectedPairs and the
+ * infinite-eccentricity/zero-centrality bookkeeping that implies), determines overall graph
+ * connectedness, and finishes the graph-wide centrality aggregates (sums, min/max, normalized
+ * forms) that runAllSources() only partially accumulated per-source.
+ * @param computeCentralities Whether centrality aggregates need finishing at all.
+ * @param dropIsolates Exclude isolated vertices from the connectivity/aggregate scan.
+ * @param ds Scratch state carried over from initRun()/runAllSources().
+ * @param csf Centrality-aggregation scratch (sums, min/max trackers) to finish into graph state.
+ * @param sink Progress/cancellation callback.
+ */
 void DistanceEngine::finalize(const bool computeCentralities,
                               const bool dropIsolates,
                               DistanceScratch &ds,

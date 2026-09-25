@@ -5535,7 +5535,8 @@ bool Graph::writeMatrix(const QString &fn,
                         const bool &dropIsolates,
                         const QString &varLocation,
                         const bool &simpler,
-                        const int &format)
+                        const int &format,
+                        const bool &allowNegativeWeights)
 {
 
     qCDebug(lcReporting) << "Writing specified matrix:" << matrix << "to file:" << fn << " -- dropIsolates:" << dropIsolates;
@@ -5591,7 +5592,8 @@ bool Graph::writeMatrix(const QString &fn,
         progressStatus(tr("Adjacency recomputed. Writing Degree Matrix..."));
         break;
     case MATRIX_DISTANCES:
-        if (!graphMatrixDistanceGeodesicCreate(considerWeights, inverseWeights, dropIsolates))
+        if (!graphMatrixDistanceGeodesicCreate(considerWeights, inverseWeights, dropIsolates,
+                                               allowNegativeWeights))
         {
             file.close();
             progressStatus(tr("Computation canceled."));

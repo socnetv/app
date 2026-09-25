@@ -34,9 +34,9 @@
  * @param inverseWeights
  * @return
  */
-int Graph::graphDistanceGeodesic(const int &v1, const int &v2,
-                                 const bool &considerWeights,
-                                 const bool &inverseWeights)
+qreal Graph::graphDistanceGeodesic(const int &v1, const int &v2,
+                                   const bool &considerWeights,
+                                   const bool &inverseWeights)
 {
     qCDebug(lcDistances) << "Graph::graphDistanceGeodesic()";
     graphDistancesGeodesic(false, considerWeights, inverseWeights, false);
@@ -45,6 +45,25 @@ int Graph::graphDistanceGeodesic(const int &v1, const int &v2,
         // apspDistance() would otherwise return a stale value left over from a previous
         // successful computation on this relation (refusal never clears m_apspDist) - RAND_MAX
         // matches apspDistance()'s own "nothing computed for this relation" sentinel.
+        return RAND_MAX;
+    }
+    return apspDistance(v1, v2);
+}
+
+/**
+ * @brief Negative-weight-safe variant of graphDistanceGeodesic(), via Johnson's algorithm
+ * instead of refusing on a negative edge weight. Always considers weights. Still refuses - via
+ * negativeCycleDetected() - on a reachable negative cycle, since shortest paths are then
+ * undefined for any algorithm; returns RAND_MAX in that case, same sentinel as the ordinary
+ * refusal above.
+ */
+qreal Graph::graphDistanceGeodesicSigned(const int &v1, const int &v2,
+                                         const bool &inverseWeights)
+{
+    qCDebug(lcDistances) << "Graph::graphDistanceGeodesicSigned()";
+    graphDistancesGeodesicSigned(false, inverseWeights, false);
+    if (negativeCycleDetected())
+    {
         return RAND_MAX;
     }
     return apspDistance(v1, v2);
@@ -410,6 +429,31 @@ qreal Graph::graphDistanceGeodesicAverage(const bool considerWeights,
     graphDistancesGeodesic(false, considerWeights, inverseWeights, dropIsolates);
 
     qCDebug(lcDistances) << "Graph::graphDistanceGeodesicAverage() - "
+             << "average distance:"
+             << m_graphAverageDistance;
+
+    return m_graphAverageDistance;
+}
+
+/**
+ * @brief Negative-weight-safe variant of graphDistanceGeodesicAverage(), via Johnson's
+ * algorithm instead of refusing on a negative edge weight. Always considers weights. Still
+ * refuses - via negativeCycleDetected() - on a reachable negative cycle; returns 0 in that
+ * case, since the average distance is undefined then.
+ */
+qreal Graph::graphDistanceGeodesicAverageSigned(const bool inverseWeights,
+                                                const bool dropIsolates)
+{
+    qCDebug(lcDistances) << "Graph::graphDistanceGeodesicAverageSigned() - Computing distances...";
+
+    graphDistancesGeodesicSigned(false, inverseWeights, dropIsolates);
+
+    if (negativeCycleDetected())
+    {
+        return 0;
+    }
+
+    qCDebug(lcDistances) << "Graph::graphDistanceGeodesicAverageSigned() - "
              << "average distance:"
              << m_graphAverageDistance;
 

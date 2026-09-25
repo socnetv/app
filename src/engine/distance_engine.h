@@ -31,7 +31,7 @@ public:
                  const bool considerWeights,
                  const bool inverseWeights,
                  const bool dropIsolates,
-                 const bool negativeWeightSafe = false);
+                 const bool allowNegativeWeights = false);
 
     // Public probe for the potentials pass - see distance_engine.cpp for the doc comment.
     bool bellmanFordPotentials(const bool inverseWeights, QVector<qreal> &outPotentials);
@@ -39,11 +39,29 @@ public:
 private:
     Graph &graph;
 
+    /**
+     * @brief Phase 0 of compute(): resets every scratch/aggregate field this run will populate,
+     * scans for a negative edge weight up front (refusing the whole computation via
+     * sink.reportNegativeWeights() unless allowNegativeWeights is set), and handles the
+     * zero-edges (E==0) case entirely on its own since runAllSources() has nothing to do then.
+     * @param computeCentralities Whether centrality scratch/aggregate fields need resetting too.
+     * @param considerWeights Whether the negative-weight scan below runs at all (BFS never sees
+     * weights, so there is nothing to detect).
+     * @param inverseWeights Only used for the E==0 branch's own bookkeeping.
+     * @param dropIsolates Exclude isolated vertices from the vertex count/E==0 population.
+     * @param allowNegativeWeights If true, a detected negative edge weight is not refused here -
+     * the caller (compute()) has opted into the negative-weight-safe (Johnson's-algorithm) path,
+     * which is defined for negative weights.
+     * @param ds Output: scratch state for this run (sizes, maxima, per-run accumulators).
+     * @param csssp Output: SSSP-phase centrality scratch, zeroed for this run.
+     * @param csfin Output: finalize-phase centrality scratch, zeroed for this run.
+     * @param sink Progress/cancellation/negative-weight-refusal callback.
+     */
     void initRun(const bool computeCentralities,
                  const bool considerWeights,
                  const bool inverseWeights,
                  const bool dropIsolates,
-                 const bool negativeWeightSafe,
+                 const bool allowNegativeWeights,
                  struct DistanceScratch &ds,
                  struct CentralityScratchSSSP &csssp,
                  struct CentralityScratchFinalize &csfin,
@@ -52,11 +70,19 @@ private:
     // Bellman-Ford reweighting pass - see distance_engine.cpp for the doc comment.
     bool bellmanFordPotentials(const bool inverseWeights, struct DistanceScratch &ds);
 
-    // Parallel SSSP source loop (Phase 2).
-    // Distributes source vertices across CPU cores via QtConcurrent::blockingMap.
-    // Each thread owns a ThreadLocalState; unsafe graph writes (BC, SC, distance
-    // sum, geodesics count, diameter) are accumulated into per-thread state and
-    // reduced into graph-global state in a single-threaded step after the map.
+    /**
+     * @brief Runs SSSP (BFS or Dijkstra, per considerWeights) from every enabled vertex, in
+     * parallel across CPU cores via QtConcurrent::blockingMap. Each worker thread owns its own
+     * ThreadLocalState; graph-wide writes that aren't safe to make concurrently (BC, SC,
+     * distance sum, geodesics count, diameter) are accumulated into per-thread state during the
+     * map and reduced into graph-global state in a single-threaded step immediately after.
+     * @param computeCentralities Also accumulate BC/SC/CC/etc. per source, not just distances.
+     * @param considerWeights Dijkstra (true) vs. BFS (false).
+     * @param inverseWeights Use 1/weight as the per-edge distance metric.
+     * @param dropIsolates Exclude isolated vertices from the source loop.
+     * @param ds Scratch state populated by initRun() (potentials, if any, bounds, etc.).
+     * @param sink Progress/cancellation callback.
+     */
     void runAllSources(const bool computeCentralities,
                        const bool considerWeights,
                        const bool inverseWeights,
@@ -64,6 +90,19 @@ private:
                        struct DistanceScratch &ds,
                        IDistanceProgressSink &sink);
 
+    /**
+     * @brief Single-threaded aggregation pass run after runAllSources() completes: scans for
+     * vertex pairs left unreachable (populating notConnectedPairs and the infinite-eccentricity/
+     * zero-centrality bookkeeping that implies), determines overall graph connectedness, and
+     * finishes the graph-wide centrality aggregates (sums, min/max, normalized forms) that
+     * runAllSources() only partially accumulated per-source.
+     * @param computeCentralities Whether centrality aggregates need finishing at all.
+     * @param dropIsolates Exclude isolated vertices from the connectivity/aggregate scan.
+     * @param ds Scratch state carried over from initRun()/runAllSources().
+     * @param csfin Centrality-aggregation scratch (sums, min/max trackers) to finish into graph
+     * state.
+     * @param sink Progress/cancellation callback.
+     */
     void finalize(const bool computeCentralities,
                   const bool dropIsolates,
                   struct DistanceScratch &ds,

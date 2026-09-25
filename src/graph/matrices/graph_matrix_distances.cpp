@@ -152,19 +152,27 @@ void Graph::graphMatrixShortestPathsCreate(const bool &considerWeights,
  */
 bool Graph::graphMatrixDistanceGeodesicCreate(const bool &considerWeights,
                                               const bool &inverseWeights,
-                                              const bool &dropIsolates)
+                                              const bool &dropIsolates,
+                                              const bool &allowNegativeWeights)
 {
-    qCDebug(lcDistances) << "Graph::graphMatrixDistanceGeodesicCreate()";
+    qCDebug(lcDistances) << "Graph::graphMatrixDistanceGeodesicCreate()"
+             << "allowNegativeWeights" << allowNegativeWeights;
 
     // Phase 1: compute all geodesic distances via DistanceEngine.
-    graphDistancesGeodesic(false, considerWeights, inverseWeights, dropIsolates);
+    if (allowNegativeWeights)
+        graphDistancesGeodesicSigned(false, inverseWeights, dropIsolates);
+    else
+        graphDistancesGeodesic(false, considerWeights, inverseWeights, dropIsolates);
 
     if (progressCanceled())
     {
         calculatedDistances = false;
         return false;
     }
-    if (negativeWeightsDetected())
+    // allowNegativeWeights still refuses on a reachable negative cycle (shortest paths are
+    // undefined there for any algorithm) - checked via negativeCycleDetected(), not
+    // negativeWeightsDetected() (which only guards the non-signed path's own refusal).
+    if (allowNegativeWeights ? negativeCycleDetected() : negativeWeightsDetected())
     {
         calculatedDistances = false;
         return false;

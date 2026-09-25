@@ -964,7 +964,8 @@ public:
                      const bool &dropIsolates = false,
                      const QString &varLocation = "Rows",
                      const bool &simpler = false,
-                     const int &format = ReportFormat::Html);
+                     const int &format = ReportFormat::Html,
+                     const bool &allowNegativeWeights = false);
 
     void writeMatrixHTMLTable(QTextStream &outText, Matrix &M,
                               const bool &markDiag = true,
@@ -1163,10 +1164,14 @@ public:
 
     qreal graphGeodesicsCountCached() const;
 
-    int graphDistanceGeodesic(const int &v1,
-                              const int &v2,
-                              const bool &considerWeights = false,
-                              const bool &inverseWeights = true);
+    qreal graphDistanceGeodesic(const int &v1,
+                                const int &v2,
+                                const bool &considerWeights = false,
+                                const bool &inverseWeights = true);
+
+    qreal graphDistanceGeodesicSigned(const int &v1,
+                                      const int &v2,
+                                      const bool &inverseWeights = true);
 
     // WS5 A2: read-only accessors into m_apspDist/m_apspSigma (the flat-matrix APSP storage
     // DistanceEngine populates) for the current relation. Unlike graphDistanceGeodesic() above,
@@ -1191,6 +1196,9 @@ public:
     qreal graphDistanceGeodesicAverage(const bool considerWeights,
                                        const bool inverseWeights,
                                        const bool dropIsolates);
+
+    qreal graphDistanceGeodesicAverageSigned(const bool inverseWeights,
+                                             const bool dropIsolates);
 
     qreal graphDistanceGeodesicAverageCached() const;
 
@@ -1233,7 +1241,8 @@ public:
 
     bool graphMatrixDistanceGeodesicCreate(const bool &considerWeights = false,
                                            const bool &inverseWeights = false,
-                                           const bool &dropIsolates = false);
+                                           const bool &dropIsolates = false,
+                                           const bool &allowNegativeWeights = false);
 
     void graphMatrixShortestPathsCreate(const bool &considerWeights = false,
                                         const bool &inverseWeights = true,
@@ -1702,6 +1711,13 @@ private:
     bool calculatedVertices, calculatedVerticesList, calculatedVerticesSet;
     bool m_verticesCacheDropIsolates = false, m_verticesCacheCountAll = false;
     bool calculatedAdjacencyMatrix, calculatedDistances, calculatedCentralities;
+    // Which mode populated the calculatedDistances/calculatedCentralities cache above - a plain
+    // negative-weight-unsafe Dijkstra/BFS result, or an allowNegativeWeights (Johnson's
+    // algorithm) one. compute()'s early-return cache hit is only valid when the caller's
+    // requested mode matches this - switching modes on the same graph must force a fresh
+    // recompute, since the two modes can (and on a negative-weight graph, do) produce different
+    // results and different negativeWeightsDetected()/negativeCycleDetected() outcomes.
+    bool m_lastComputeWasNegativeWeightSafe = false;
     bool calculatedIsolates;
     bool calculatedEVC;
     bool calculatedKC;
