@@ -162,9 +162,9 @@ balance analysis on triads, building on the existing MAN triad census.
    #25, #57), none prioritised yet — #245 blocks on significant tab-UI infrastructure investment.
 8. **WS17** — bipartite/two-mode analysis. Just scoped; no code written yet.
 9. **WS18** — signed network analysis / structural balance. P1 (#277's negative-weight guard)
-   shipped 2026-09-19; P2's engine work (Bellman-Ford/Johnson's-algorithm distances) shipped
-   2026-09-22, reachable via `--kernel signed`/`--interactive-script` but not yet a GUI menu
-   action; P3-P4 (PN centrality, structural balance) just scoped, not prioritised yet.
+   shipped 2026-09-19; P2 (Bellman-Ford/Johnson's-algorithm negative-weight-safe distances)
+   complete 2026-09-25, including GUI menu wiring; P3-P4 (PN centrality, structural balance) just
+   scoped, not prioritised yet.
 
 ---
 

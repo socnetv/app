@@ -10,11 +10,10 @@ Harary structural balance analysis on triads.
 
 ## Status
 
-Tracked by #284. **P1 complete (2026-09-19, #277).** P0 filed (#285), not started. **P2 engine
-work complete (2026-09-22)**: `bellmanFordPotentials()` threaded into `dijkstraSSSP()`/
-`runAllSources()`, un-reweighting handled, opt-in entry point
-(`Graph::graphDistancesGeodesicSigned()`) added — see P2 below for exact status and what's left
-(GUI-facing wiring, if any is wanted). P3-P4 not started — scoped only.
+Tracked by #284. **P1 complete (2026-09-19, #277).** P0 filed (#285), not started. **P2 complete
+(2026-09-25)**: engine work (2026-09-22) plus GUI menu wiring across the four affected Graph-
+distances actions (2026-09-25) — see P2 below for the full account, including a real caching bug
+found and fixed along the way. P3-P4 not started — scoped only.
 
 **Unrelated fix found and landed along the way (#283):** while designing P2's Bellman-Ford engine
 path, cross-checking `dijkstraSSSP()`'s behavior against an independent library surfaced a real BC
@@ -116,7 +115,7 @@ existing command reached those two MainWindow slots). `./scripts/run_golden_comp
 throughout. Matrix-power measures (EVC, Katz, Bonacich, PRP) are not Dijkstra-based and were
 correctly left untouched — Bonacich already handles negative values by design (see Background).
 
-### P2 — Negative-weight-safe shortest paths (Johnson's algorithm)
+### P2 — Negative-weight-safe shortest paths (Johnson's algorithm) ✔ complete
 
 **Algorithm choice settled: Johnson's, not naive per-source Bellman-Ford.** A single global
 Bellman-Ford pass from a virtual source computes a potential `h(v)` per vertex; every edge is
@@ -149,7 +148,7 @@ propagation requirement once every weight it sees is non-negative).
   comparison) ahead of this phase, specifically to remove this as an open risk before Johnson's
   reweighting starts composing extra floating-point terms into every edge weight.
 
-**Status: engine work complete (2026-09-22, `e63a1f30`); no GUI menu wiring yet.**
+**Status: ✔ complete** — engine work (2026-09-22, `e63a1f30`), GUI menu wiring (2026-09-25).
 - ✔ `DistanceEngine::bellmanFordPotentials()` — the reweighting/negative-cycle-detection pass,
   golden-tested standalone via `--kernel signed` (schema v10).
 - ✔ Potentials threaded into `dijkstraSSSP()`/`runAllSources()`: `dijkstraSSSP()` takes an optional
@@ -168,9 +167,33 @@ propagation requirement once every weight it sees is non-negative).
   exactly 0 — unreachable under plain Dijkstra (zero-weight edges are skipped earlier in the same
   loop) but reachable once Johnson's reweighting can legitimately produce an exact 0. Fixed to
   `dist_w >= 0`.
-- Not started: a GUI menu action / dialog calling `graphDistancesGeodesicSigned()` — currently
-  reachable only via `--kernel signed` and `--interactive-script`'s `bellman-ford` command, not
-  from anything a user clicks.
+- ✔ GUI menu wiring (2026-09-25): the four Analyze → Cohesion... → Graph distances actions that
+  can hit a negative-weight refusal (Distance, Average Distance, Geodesic Distances Matrix,
+  Diameter - the last was the original pilot) now all offer the same "use the negative-weight-safe
+  algorithm instead?" upgrade on refusal, calling the new `graphDistanceGeodesicSigned()` /
+  `graphDistanceGeodesicAverageSigned()` / `writeMatrix(..., allowNegativeWeights=true)` wrappers.
+  Manually verified end-to-end via the GUI on `src/data/Signed_Dir_N4_NoCycle.paj`.
+- Found and fixed a real caching bug while doing this GUI wiring: `DistanceEngine::compute()`'s
+  `calculatedDistances`/`calculatedCentralities` early-return cache didn't record *which* mode
+  (plain vs. negative-weight-safe) produced the cached result - switching modes on the same graph
+  (e.g. upgrading to the signed path for one action, then requesting an ordinary computation for
+  another) silently reused the wrong mode's stale result instead of recomputing, permanently
+  masking the refusal dialog for every subsequent ordinary-mode call. Fixed via a new
+  `m_lastComputeWasNegativeWeightSafe` flag that invalidates the cache on a mode mismatch.
+  Independently reproduced via the GUI before the fix, and confirmed fixed after, by chaining a
+  signed Distance call into an ordinary Average Distance call on the same loaded graph.
+- Renamed the engine-level `negativeWeightSafe` parameter to `allowNegativeWeights` throughout
+  (`DistanceEngine::compute()`/`initRun()`, `Graph::writeMatrix()`,
+  `Graph::graphMatrixDistanceGeodesicCreate()`) - clearer about what the flag actually does (opts
+  in to negative weights being allowed, not a claim that the whole call is somehow "safe").
+- **Open question, not decided here**: on a signed graph, an individual geodesic distance can
+  itself be negative (Johnson's algorithm's whole point is that shortest paths are still
+  well-defined then) - confirmed on `Signed_Dir_N4_NoCycle.paj`, where B→C's shortest distance is
+  -2. Average Distance's `d = 2.16667` is the mathematically correct mean of the six reachable
+  pairs' (possibly-negative) distances, but whether "average distance" is even the right framing
+  for a signed graph, or needs different wording/caveats, is undecided - applies equally to
+  Distance/Diameter/Average Distance/the Distances Matrix, not just this GUI wiring pass. Revisit
+  during P3/P4 design.
 
 ### P3 — Signed-specific centrality measures
 
