@@ -343,31 +343,85 @@ void MainWindow::slotAnalyzeMatrixDistances()
     const bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
     const bool inverseWeightsFinal = inverseWeights;
     auto success = std::make_shared<bool>(false);
+    auto negativeWeights = std::make_shared<bool>(false);
+
+    auto openReport = [this, fn, reportFormat]() {
+        if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
+        {
+            QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+        }
+        else
+        {
+            TextEditor *ed = new TextEditor(fn, this, true);
+            ed->show();
+            m_textEditors << ed;
+        }
+        statusMessage(tr("Geodesic Distances matrix saved as: ") + QDir::toNativeSeparators(fn));
+    };
 
     runGraphOperationAsync(
-        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat, success]() {
+        [this, fn, considerWeights, inverseWeightsFinal, dropIsolates, reportFormat, success, negativeWeights]() {
             *success = activeGraph->writeMatrix(fn, MATRIX_DISTANCES,
                                                 considerWeights, inverseWeightsFinal, dropIsolates,
                                                 "Rows", false, reportFormat);
+            *negativeWeights = activeGraph->negativeWeightsDetected();
         },
         tr("Computing geodesic distances. Please wait..."),
-        [this, fn, reportFormat, success]() {
-            if (!*success)
+        [this, fn, dropIsolates, inverseWeightsFinal, reportFormat, success, negativeWeights, openReport]() {
+            if (*success)
+            {
+                openReport();
+                return;
+            }
+            if (!*negativeWeights)
             {
                 statusMessage(tr("Computation canceled."));
                 return;
             }
-            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
-            {
-                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
-            }
-            else
-            {
-                TextEditor *ed = new TextEditor(fn, this, true);
-                ed->show();
-                m_textEditors << ed;
-            }
-            statusMessage(tr("Geodesic Distances matrix saved as: ") + QDir::toNativeSeparators(fn));
+
+            statusMessage(tr("Computation refused: the network contains negative edge "
+                             "weight(s), which this measure does not support."));
+
+            const int response = slotHelpMessageToUser(
+                USER_MSG_QUESTION,
+                tr("Negative edge weights found"),
+                tr("Use the negative-weight-safe algorithm instead?"),
+                tr("The default algorithm (Dijkstra) cannot handle negative edge weights. "
+                   "A slower alternative (Bellman-Ford/Johnson's algorithm) can, as long as "
+                   "the network has no reachable negative cycle - in which case shortest "
+                   "paths are undefined and this will refuse as well."),
+                QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+
+            if (response != QMessageBox::Yes)
+                return;
+
+            auto successSigned = std::make_shared<bool>(false);
+            auto negativeCycle = std::make_shared<bool>(false);
+
+            runGraphOperationAsync(
+                [this, fn, inverseWeightsFinal, dropIsolates, reportFormat, successSigned, negativeCycle]() {
+                    *successSigned = activeGraph->writeMatrix(fn, MATRIX_DISTANCES,
+                                                              /*considerWeights=*/true, inverseWeightsFinal,
+                                                              dropIsolates, "Rows", false, reportFormat,
+                                                              /*allowNegativeWeights=*/true);
+                    *negativeCycle = activeGraph->negativeCycleDetected();
+                },
+                tr("Computing geodesic distances (negative-weight-safe). Please wait..."),
+                [this, successSigned, negativeCycle, openReport]() {
+                    if (*negativeCycle)
+                    {
+                        statusMessage(tr("Computation refused: the network contains a "
+                                         "reachable negative cycle, so shortest paths are "
+                                         "undefined."));
+                        return;
+                    }
+                    if (!*successSigned)
+                    {
+                        statusMessage(tr("Computation canceled."));
+                        return;
+                    }
+                    openReport();
+                });
         });
 }
 

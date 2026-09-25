@@ -84,48 +84,108 @@ void MainWindow::slotAnalyzeDistance()
 
     const bool considerWeights = optionsEdgeWeightConsiderAct->isChecked();
     const bool inverseWeightsFinal = inverseWeights;
-    auto distanceGeodesic = std::make_shared<int>(0);
+    auto distanceGeodesic = std::make_shared<qreal>(0);
+    auto negativeWeights = std::make_shared<bool>(false);
+
+    auto showPathAndResult = [this, sourceNum, targetNum, inverseWeightsFinal](qreal distance, bool pathConsidersWeights) {
+        qCDebug(lcMainWindow) << "geodesic distance" << sourceNum << "->" << targetNum << "=" << distance;
+
+        // Reconstruct the actual shortest path so the user sees the intermediate nodes.
+        // Cheap regardless of network size (single-source BFS/Dijkstra, not the full APSP
+        // the call above just triggered) - safe to run synchronously here.
+        const QList<int> path = activeGraph->graphGeodesicShortestPath(
+            sourceNum, targetNum, pathConsidersWeights, inverseWeightsFinal);
+
+        // Format the path as "v1 → v2 → … → vN" using node labels where available.
+        QString pathStr;
+        if (path.size() >= 2) {
+            for (int i = 0; i < path.size(); ++i) {
+                if (i > 0) pathStr += " \xE2\x86\x92 ";   // → (UTF-8 right arrow)
+                const QString lbl = activeGraph->vertexLabel(path[i]).trimmed();
+                pathStr += lbl.isEmpty() ? QString::number(path[i]) : lbl;
+            }
+        }
+
+        slotHelpMessageToUser(
+            USER_MSG_INFO,
+            tr("Geodesic Distance: %1").arg(distance),
+            tr("Geodesic Distance: %1").arg(distance),
+            tr("Nodes %1 and %2 are connected. The shortest path has length %3.\n\n"
+               "Shortest path:\n%4")
+                .arg(sourceNum)
+                .arg(targetNum)
+                .arg(distance)
+                .arg(pathStr.isEmpty() ? tr("(path unavailable)") : pathStr));
+
+        if (path.size() >= 2)
+            graphicsWidget->selectPath(path);
+    };
 
     runGraphOperationAsync(
-        [this, sourceNum, targetNum, considerWeights, inverseWeightsFinal, distanceGeodesic]() {
+        [this, sourceNum, targetNum, considerWeights, inverseWeightsFinal, distanceGeodesic, negativeWeights]() {
             *distanceGeodesic = activeGraph->graphDistanceGeodesic(
                 sourceNum, targetNum, considerWeights, inverseWeightsFinal);
+            *negativeWeights = activeGraph->negativeWeightsDetected();
         },
         tr("Computing geodesic distance. Please wait..."),
-        [this, sourceNum, targetNum, considerWeights, inverseWeightsFinal, distanceGeodesic]() {
-            if (*distanceGeodesic > 0 && *distanceGeodesic < RAND_MAX)
+        [this, sourceNum, targetNum, considerWeights, inverseWeightsFinal, distanceGeodesic, negativeWeights, showPathAndResult]() {
+            if (*negativeWeights)
             {
-                qCDebug(lcMainWindow) << "geodesic distance" << sourceNum << "->" << targetNum << "=" << *distanceGeodesic;
+                statusMessage(tr("Computation refused: the network contains negative edge "
+                                 "weight(s), which this measure does not support."));
 
-                // Reconstruct the actual shortest path so the user sees the intermediate nodes.
-                // Cheap regardless of network size (single-source BFS/Dijkstra, not the full
-                // APSP the call above just triggered) - safe to run synchronously here.
-                const QList<int> path = activeGraph->graphGeodesicShortestPath(
-                    sourceNum, targetNum, considerWeights, inverseWeightsFinal);
+                const int response = slotHelpMessageToUser(
+                    USER_MSG_QUESTION,
+                    tr("Negative edge weights found"),
+                    tr("Use the negative-weight-safe algorithm instead?"),
+                    tr("The default algorithm (Dijkstra) cannot handle negative edge weights. "
+                       "A slower alternative (Bellman-Ford/Johnson's algorithm) can, as long as "
+                       "the network has no reachable negative cycle - in which case the "
+                       "distance is undefined and this will refuse as well."),
+                    QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
 
-                // Format the path as "v1 → v2 → … → vN" using node labels where available.
-                QString pathStr;
-                if (path.size() >= 2) {
-                    for (int i = 0; i < path.size(); ++i) {
-                        if (i > 0) pathStr += " \xE2\x86\x92 ";   // → (UTF-8 right arrow)
-                        const QString lbl = activeGraph->vertexLabel(path[i]).trimmed();
-                        pathStr += lbl.isEmpty() ? QString::number(path[i]) : lbl;
-                    }
+                if (response == QMessageBox::Yes)
+                {
+                    auto distanceGeodesicSigned = std::make_shared<qreal>(0);
+                    auto negativeCycle = std::make_shared<bool>(false);
+
+                    runGraphOperationAsync(
+                        [this, sourceNum, targetNum, inverseWeightsFinal, distanceGeodesicSigned, negativeCycle]() {
+                            *distanceGeodesicSigned = activeGraph->graphDistanceGeodesicSigned(
+                                sourceNum, targetNum, inverseWeightsFinal);
+                            *negativeCycle = activeGraph->negativeCycleDetected();
+                        },
+                        tr("Computing geodesic distance (negative-weight-safe). Please wait..."),
+                        [this, sourceNum, targetNum, distanceGeodesicSigned, negativeCycle, showPathAndResult]() {
+                            if (*negativeCycle)
+                            {
+                                statusMessage(tr("Computation refused: the network contains a "
+                                                 "reachable negative cycle, so shortest paths "
+                                                 "are undefined."));
+                            }
+                            else if (*distanceGeodesicSigned > 0 && *distanceGeodesicSigned < RAND_MAX)
+                            {
+                                // The signed path always considers weights - there is no
+                                // unweighted variant of Johnson's-algorithm distances.
+                                showPathAndResult(*distanceGeodesicSigned, /*pathConsidersWeights=*/true);
+                            }
+                            else
+                            {
+                                slotHelpMessageToUser(
+                                    USER_MSG_INFO,
+                                    tr("Geodesic Distance: %1").arg(QString("\xE2\x88\x9E")),
+                                    tr("Geodesic Distance: %1").arg(QString("\xE2\x88\x9E")),
+                                    tr("Nodes %1 and %2 are not connected. "
+                                       "In this case, their geodesic distance is considered to be infinite.")
+                                        .arg(sourceNum)
+                                        .arg(targetNum));
+                            }
+                        });
                 }
-
-                slotHelpMessageToUser(
-                    USER_MSG_INFO,
-                    tr("Geodesic Distance: %1").arg(*distanceGeodesic),
-                    tr("Geodesic Distance: %1").arg(*distanceGeodesic),
-                    tr("Nodes %1 and %2 are connected. The shortest path has length %3.\n\n"
-                       "Shortest path:\n%4")
-                        .arg(sourceNum)
-                        .arg(targetNum)
-                        .arg(*distanceGeodesic)
-                        .arg(pathStr.isEmpty() ? tr("(path unavailable)") : pathStr));
-
-                if (path.size() >= 2)
-                    graphicsWidget->selectPath(path);
+            }
+            else if (*distanceGeodesic > 0 && *distanceGeodesic < RAND_MAX)
+            {
+                showPathAndResult(*distanceGeodesic, considerWeights);
             }
             else
             {
@@ -295,11 +355,78 @@ void MainWindow::slotAnalyzeDistanceAverage()
                 *isConnected = activeGraph->isConnected();
         },
         tr("Computing Average Graph Distance. Please wait..."),
-        [this, averGraphDistance, isConnected, negativeWeights]() {
+        [this, inverseWeightsFinal, dropIsolates, averGraphDistance, isConnected, negativeWeights]() {
             if (*negativeWeights)
             {
                 statusMessage(tr("Computation refused: the network contains negative edge "
                                  "weight(s), which this measure does not support."));
+
+                const int response = slotHelpMessageToUser(
+                    USER_MSG_QUESTION,
+                    tr("Negative edge weights found"),
+                    tr("Use the negative-weight-safe algorithm instead?"),
+                    tr("The default algorithm (Dijkstra) cannot handle negative edge weights. "
+                       "A slower alternative (Bellman-Ford/Johnson's algorithm) can, as long as "
+                       "the network has no reachable negative cycle - in which case the "
+                       "average distance is undefined and this will refuse as well."),
+                    QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+
+                if (response == QMessageBox::Yes)
+                {
+                    auto averGraphDistanceSigned = std::make_shared<qreal>(0);
+                    auto isConnectedSigned = std::make_shared<bool>(false);
+                    auto negativeCycle = std::make_shared<bool>(false);
+
+                    runGraphOperationAsync(
+                        [this, inverseWeightsFinal, dropIsolates, averGraphDistanceSigned, isConnectedSigned, negativeCycle]() {
+                            *averGraphDistanceSigned = activeGraph->graphDistanceGeodesicAverageSigned(
+                                inverseWeightsFinal, dropIsolates);
+                            *negativeCycle = activeGraph->negativeCycleDetected();
+                            if (!*negativeCycle)
+                                *isConnectedSigned = activeGraph->isConnected();
+                        },
+                        tr("Computing Average Graph Distance (negative-weight-safe). Please wait..."),
+                        [this, averGraphDistanceSigned, isConnectedSigned, negativeCycle]() {
+                            if (*negativeCycle)
+                            {
+                                statusMessage(tr("Computation refused: the network contains a "
+                                                 "reachable negative cycle, so shortest paths "
+                                                 "(and average distance) are undefined."));
+                            }
+                            else if (*isConnectedSigned)
+                            {
+                                slotHelpMessageToUser(
+                                    USER_MSG_INFO,
+                                    tr("Average graph distance computed."),
+                                    tr("Average graph distance computed. \n\n"
+                                       "d = %1")
+                                        .arg(*averGraphDistanceSigned),
+                                    tr("The average graph distance is the average length of shortest paths (geodesics) "
+                                       "for all possible pairs of nodes.\n\n"
+                                       "The average distance in this connected network "
+                                       "is the sum of pair-wise distances divided by N * (N - 1).\n\n"
+                                       "Note, this network has negative edge weights, so the "
+                                       "negative-weight-safe algorithm was used instead of the "
+                                       "default one."));
+                            }
+                            else
+                            {
+                                slotHelpMessageToUser(
+                                    USER_MSG_INFO,
+                                    tr("Average distance computed."),
+                                    tr("Average distance computed. \n\n"
+                                       "d = %1")
+                                        .arg(*averGraphDistanceSigned),
+                                    tr("The average graph distance is the average length of shortest paths (geodesics) "
+                                       "for all possible pairs of nodes.\n\n"
+                                       "The average distance in this disconnected network "
+                                       "is the sum of pair-wise distances divided by the number of existing geodesics.\n\n"
+                                       "Note, this network has negative edge weights, so the "
+                                       "negative-weight-safe algorithm was used instead of the "
+                                       "default one."));
+                            }
+                        });
+                }
             }
             else if (*isConnected)
             {
