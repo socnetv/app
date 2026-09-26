@@ -27,7 +27,7 @@ namespace cli
     // Per-node builder
     // ------------------------------
 
-    static QJsonArray buildPerNodeArrayV4(Graph &g, bool katzEnabled, bool bonacichEnabled)
+    static QJsonArray buildPerNodeArrayV4(Graph &g, bool katzEnabled, bool bonacichEnabled, bool pnEnabled)
     {
         QJsonArray arr;
 
@@ -54,6 +54,12 @@ namespace cli
             {
                 o["BPC"] = d2s(gv->BPC());
                 o["SBPC"] = d2s(gv->SBPC());
+            }
+
+            // ---- PN Centrality (WS18 P3, optional - only computed/valid when pnEnabled) ----
+            if (pnEnabled)
+            {
+                o["PN"] = d2s(gv->PN());
             }
 
             // ---- Centrality ----
@@ -132,6 +138,7 @@ namespace cli
 
         const bool katzEnabled = (cfg.katzAlpha >= 0);
         const bool bonacichEnabled = (cfg.bonacichAlpha >= 0);
+        const bool pnEnabled = (cfg.pnMode != "off");
 
         QJsonObject run;
         run["considerWeights"] = cfg.considerWeights;
@@ -146,6 +153,9 @@ namespace cli
             run["bonacichAlpha"] = d2s(cfg.bonacichAlpha);
             run["bonacichBeta"] = d2s(cfg.bonacichBeta);
         }
+        run["pnEnabled"] = pnEnabled;
+        if (pnEnabled)
+            run["pnMode"] = cfg.pnMode;
         root["run"] = run;
 
         const int ties_graph = load.tiesGraph; // canonical, already correct
@@ -172,7 +182,7 @@ namespace cli
                                                                   cfg.dropIsolates));
         root["metrics"] = metrics;
 
-        root["per_node"] = buildPerNodeArrayV4(g, katzEnabled, bonacichEnabled);
+        root["per_node"] = buildPerNodeArrayV4(g, katzEnabled, bonacichEnabled, pnEnabled);
 
         QJsonObject loadReport;
         loadReport["ok"] = load.ok;
@@ -191,7 +201,7 @@ namespace cli
 
     // ---- schema v4 compare ----
 
-    static bool cmpPerNodeArrayV4(const QJsonArray &eArr, const QJsonArray &aArr, bool katzEnabled, bool bonacichEnabled, QTextStream &err)
+    static bool cmpPerNodeArrayV4(const QJsonArray &eArr, const QJsonArray &aArr, bool katzEnabled, bool bonacichEnabled, bool pnEnabled, QTextStream &err)
     {
         if (eArr.size() != aArr.size())
         {
@@ -314,6 +324,8 @@ namespace cli
                 allFields << "KC" << "SKC";
             if (bonacichEnabled)
                 allFields << "BPC" << "SBPC";
+            if (pnEnabled)
+                allFields << "PN";
 
             for (const QString &f : allFields)
                 cmpNodeFieldNumStrTol(e, a, f, eid, TOL);
@@ -353,6 +365,8 @@ namespace cli
         const bool katzEnabled = aRun.value("katzEnabled").toBool();
         ok &= cmpBool(eRun, aRun, "bonacichEnabled", err);
         const bool bonacichEnabled = aRun.value("bonacichEnabled").toBool();
+        ok &= cmpBool(eRun, aRun, "pnEnabled", err);
+        const bool pnEnabled = aRun.value("pnEnabled").toBool();
 
         const QJsonObject eCounts = expected.value("counts").toObject();
         const QJsonObject aCounts = actual.value("counts").toObject();
@@ -374,7 +388,7 @@ namespace cli
         // Per-node (always present in v4)
         const QJsonArray ePN = expected.value("per_node").toArray();
         const QJsonArray aPN = actual.value("per_node").toArray();
-        ok &= cmpPerNodeArrayV4(ePN, aPN, katzEnabled, bonacichEnabled, err);
+        ok &= cmpPerNodeArrayV4(ePN, aPN, katzEnabled, bonacichEnabled, pnEnabled, err);
 
         if (!ok)
             return 1;
@@ -421,6 +435,14 @@ namespace cli
             if (cfg.bonacichAlpha >= 0)
                 g.centralityBonacich(cfg.bonacichAlpha, cfg.bonacichBeta, cfg.considerWeights,
                                      cfg.inverseWeights, cfg.dropIsolates);
+
+            if (cfg.pnMode != "off")
+            {
+                const PNMode mode = (cfg.pnMode == "out") ? PNMode::Out
+                                   : (cfg.pnMode == "in") ? PNMode::In
+                                                           : PNMode::All;
+                g.centralityPN(mode, cfg.dropIsolates);
+            }
 
             // 3. Prestige
             g.prestigeDegree(cfg.considerWeights, cfg.dropIsolates);

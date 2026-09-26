@@ -48,6 +48,10 @@ namespace cli
         qreal bonacichAlpha = -1; // >= 0 enables Bonacich Power Centrality for --kernel prominence
         qreal bonacichBeta = 0;
 
+        // "off"|"all"|"out"|"in" - enables PN Centrality (WS18 P3) for --kernel prominence when
+        // not "off". "all" is undirected-only, "out"/"in" are directed-only - matches PNMode.
+        QString pnMode = "off";
+
         // "simple_matching"|"jaccard"|"pearson", for --kernel matrix's similarity category.
         // Fix #279: selects which similarity/correlation measure the kernel dumps, so the
         // NaN-guard fix on each measure's degenerate (empty-sample) path can be covered by

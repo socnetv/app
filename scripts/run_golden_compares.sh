@@ -625,6 +625,28 @@ run_case_prominence \
   -w 1 -x 0 \
   "${BASE_PROM}/Signed_Dir_N4_NoCycle__PROM__V4__FT2__W1_IW0_DI0.json"
 
+# PN Centrality (WS18 P3, #301) - out/in modes need a directed signed fixture (reusing
+# Signed_Dir_N4_NoCycle), all mode needs an undirected one (new Signed_Undir_N4, same edge
+# weights/signs, just undirected - no other undirected signed fixture exists yet). All three
+# independently verified against a from-scratch Python solve, not just self-consistency.
+run_case_prominence \
+  "${DATA}/Signed_Dir_N4_NoCycle.paj" \
+  2 \
+  -w 1 -x 0 --pn-mode out \
+  "${BASE_PROM}/Signed_Dir_N4_NoCycle__PROM__V4__FT2__W1_IW0_DI0__pn_out.json"
+
+run_case_prominence \
+  "${DATA}/Signed_Dir_N4_NoCycle.paj" \
+  2 \
+  -w 1 -x 0 --pn-mode in \
+  "${BASE_PROM}/Signed_Dir_N4_NoCycle__PROM__V4__FT2__W1_IW0_DI0__pn_in.json"
+
+run_case_prominence \
+  "${DATA}/Signed_Undir_N4.paj" \
+  2 \
+  -w 1 -x 0 --pn-mode all \
+  "${BASE_PROM}/Signed_Undir_N4__PROM__V4__FT2__W1_IW0_DI0__pn_all.json"
+
 # IO ROUNDTRIP (schema v5)
 run_case_io "${DATA}/TinyAdj_Undir_N3.adj" 3 -d " " -l 0 "${BASE_IO}/TinyAdj_Undir_N3__FT3.json"
 run_case_io "${DATA}/TinyAdj_Weighted_Dir_N3.adj" 3 -d " " -l 0 "${BASE_IO}/TinyAdj_Weighted_Dir_N3__FT3.json"

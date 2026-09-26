@@ -134,6 +134,12 @@ int main(int argc, char *argv[])
                                        "be all-zero). May be negative.",
                                        "beta", "0");
 
+    QCommandLineOption pnModeOpt(QStringList() << "pn-mode",
+                                "Mode for --kernel prominence's PN Centrality (WS18 P3): "
+                                "off|all|out|in. \"all\" is undirected-only, \"out\"/\"in\" are "
+                                "directed-only. Omit (\"off\") to skip PN Centrality entirely.",
+                                "mode", "off");
+
     QCommandLineOption similarityMeasureOpt(QStringList() << "similarity-measure",
                                             "Measure for --kernel matrix's similarity category: "
                                             "simple_matching|jaccard|pearson.",
@@ -185,6 +191,7 @@ int main(int argc, char *argv[])
     cli.addOption(katzAlphaOpt);
     cli.addOption(bonacichAlphaOpt);
     cli.addOption(bonacichBetaOpt);
+    cli.addOption(pnModeOpt);
     cli.addOption(similarityMeasureOpt);
     cli.addOption(similarityInputOpt);
     cli.addOption(dissimilarityMeasureOpt);
@@ -264,6 +271,7 @@ int main(int argc, char *argv[])
     cfg.dissimilarityMeasure = cli.value(dissimilarityMeasureOpt).trimmed().toLower();
     cfg.clusteringMethod = cli.value(clusteringMethodOpt).trimmed().toLower();
     cfg.clusteringInput = cli.value(clusteringInputOpt).trimmed().toLower();
+    cfg.pnMode = cli.value(pnModeOpt).trimmed().toLower();
 
     if (cfg.inputPath.isEmpty())
     {
@@ -288,6 +296,12 @@ int main(int argc, char *argv[])
     if (cfg.similarityInput != "adjacency" && cfg.similarityInput != "distances")
     {
         QTextStream(stderr) << "ERROR: --similarity-input must be one of adjacency|distances\n";
+        return 2;
+    }
+
+    if (cfg.pnMode != "off" && cfg.pnMode != "all" && cfg.pnMode != "out" && cfg.pnMode != "in")
+    {
+        QTextStream(stderr) << "ERROR: --pn-mode must be one of off|all|out|in\n";
         return 2;
     }
 

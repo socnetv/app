@@ -307,11 +307,13 @@ combo), reporting, and WS12 script command all done and verified. Next: PN centr
       `Matrix::inverse()`'s own existing singularity detection (already used by Katz) - "not
       defined: singular" on failure, same as Katz's own fallback; the reference formula itself has
       no separate convergence check before solving, so nothing more was needed.
-      **Independently verified against a from-scratch Python solve (not derived from this C++)
-      for all three modes**: Out/In on the existing `Signed_Dir_N4_NoCycle` (directed), All on a
-      new `Signed_Undir_N4` fixture (no undirected signed fixture existed before) - all three
-      match to float precision. Both invalid mode/directedness combinations confirmed to refuse
-      cleanly (all-zero, no crash), not just the valid paths.
+      **Independently verified two ways, for all three modes**: (1) a from-scratch Python solve
+      (not derived from this C++), and (2) the actual established reference implementation itself,
+      run directly against the same fixtures. Out/In on the existing `Signed_Dir_N4_NoCycle`
+      (directed), All on a new `Signed_Undir_N4` fixture (no undirected signed fixture existed
+      before) - all three modes match both independent checks to float precision. Both invalid
+      mode/directedness combinations confirmed to refuse cleanly (all-zero, no crash), not just
+      the valid paths.
 - [x] **Directed-graph semantics for PN** — resolved by the confirmed formula above: not a guess
       or an extension, `in`/`out` are real, distinct, independently-confirmed formulas.
 - [ ] **Wiring**, same 8-touchpoint shape Katz used, for both measures: `Graph` façade method,
