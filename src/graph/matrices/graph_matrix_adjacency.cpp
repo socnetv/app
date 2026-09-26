@@ -126,6 +126,82 @@ void Graph::createMatrixAdjacency(const bool dropIsolates,
 }
 
 /**
+ * @brief Builds the signed-network matrix A = P - 2N (WS18 P3, PN centrality) into PNM, where
+ * P/N are the positive/negative-tie adjacency matrices.
+ *
+ * Meaning: PNM(i,j) = +1 if there's a positive-weight tie i->j, -2 if there's a negative-weight
+ * tie, 0 if there's none. Strictly binary (tie sign only) - matches the confirmed reference
+ * formula for PN centrality exactly: tie magnitude is deliberately discarded, even on a weighted
+ * network, so there is no considerWeights parameter here (unlike createMatrixAdjacency()).
+ *
+ * Compare to: createMatrixAdjacency(), which this closely mirrors structurally (same
+ * QtConcurrent::blockingMap upper-triangle-scan shape, since a directed graph still needs
+ * independent (i,j)/(j,i) cells) - but that one is a generic weighted/unweighted adjacency
+ * matrix, this one bakes in PN's specific ±1/-2 sign rule and has no considerWeights choice.
+ *
+ * Parallelization: same shape as createMatrixAdjacency() - QtConcurrent::blockingMap over vertex
+ * positions via compactedMatrixIndex(), each worker thread writing row i and column i in one pass.
+ *
+ * @param dropIsolates
+ */
+void Graph::createMatrixSignedPN(const bool dropIsolates)
+{
+    qCDebug(lcGraphMatrices) << "Graph::createMatrixSignedPN() "
+             << "dropIsolates" << dropIsolates;
+    int N = vertices(dropIsolates, false, true);
+
+    PNM.resize(N, N);
+
+    QString pMsg = tr("Creating signed A = P - 2N matrix. \nPlease wait...");
+    progressStatus(pMsg);
+
+    if (progressCanceled())
+    {
+        return;
+    }
+
+    const QVector<int> rowOf = compactedMatrixIndex(dropIsolates);
+    const int total = m_graph.size();
+
+    QList<int> positions;
+    positions.reserve(total);
+    for (int p = 0; p < total; ++p)
+        positions.append(p);
+
+    auto signedCell = [](qreal weight) -> qreal {
+        if (weight > 0)
+            return 1;
+        if (weight < 0)
+            return -2;
+        return 0;
+    };
+
+    QtConcurrent::blockingMap(positions, [&](int p1) {
+        const int i = rowOf[p1];
+        if (i < 0)
+            return;
+
+        GraphVertex *v1 = m_graph.at(p1);
+
+        for (int p2 = p1; p2 < total; ++p2)
+        {
+            const int j = rowOf[p2];
+            if (j < 0)
+                continue;
+
+            GraphVertex *v2 = m_graph.at(p2);
+
+            PNM.setItem(i, j, signedCell(edgeExists(v1->number(), v2->number())));
+
+            if (i != j)
+            {
+                PNM.setItem(j, i, signedCell(edgeExists(v2->number(), v1->number())));
+            }
+        }
+    });
+}
+
+/**
  * @brief Computes the inverse of the current adjacency matrix
  * @param method
  * @return

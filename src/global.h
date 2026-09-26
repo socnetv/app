@@ -140,6 +140,20 @@ enum IndexType
 };
 
 /**
+ * @enum PNMode
+ * @brief Directedness mode for PN Centrality (WS18 P3, Everett & Borgatti 2014). An undirected
+ * graph is only ever valid with All; a directed graph must pick Out or In (not All) - the three
+ * modes use genuinely different closed-form formulas, not the same one with a transpose swapped
+ * in. See Graph::centralityPN()'s own doc comment for the formulas themselves.
+ */
+enum class PNMode
+{
+    All,  ///< Undirected graphs only.
+    Out,  ///< Directed graphs: PN based on outgoing ties.
+    In    ///< Directed graphs: PN based on incoming ties.
+};
+
+/**
  * @enum ChartType
  * @brief Chart style for prominence distribution visualizations.
  */

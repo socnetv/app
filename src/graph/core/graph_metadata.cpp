@@ -193,6 +193,7 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW)
         calculatedEVC = false;
         calculatedKC = false;
         calculatedBPC = false;
+        calculatedPN = false;
         calculatedPRP = false;
 
         if (signalMW)

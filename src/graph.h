@@ -915,6 +915,7 @@ public:
     Matrix &matrixWalks() { return XM; }
     Matrix &matrixTotalWalks() { return XSM; }
     Matrix &matrixCliqueCoMembership() { return CLQM; }
+    Matrix &matrixSignedPN() { return PNM; }
 
     void createMatrixAdjacency(const bool dropIsolates = false,
                                const bool considerWeights = true,
@@ -922,6 +923,8 @@ public:
                                const bool symmetrize = false);
 
     bool createMatrixAdjacencyInverse(const QString &method = "lu");
+
+    void createMatrixSignedPN(const bool dropIsolates = false);
 
     void createMatrixSimilarityMatching(Matrix &AM,
                                         Matrix &SEM,
@@ -1300,6 +1303,9 @@ public:
                             const bool &inverseWeights = false,
                             const bool &dropIsolates = false);
 
+    void centralityPN(const PNMode mode = PNMode::All,
+                      const bool &dropIsolates = false);
+
     void centralityClosenessIR(const bool considerWeights = false,
                                const bool inverseWeights = false,
                                const bool dropIsolates = false);
@@ -1611,6 +1617,7 @@ private:
 
     Matrix SIGMA, DM, invAM, AM, invM, WM;
     Matrix XM, XSM, XRM, CLQM;
+    Matrix PNM;
 
     // WS5 A2: relation-keyed flat-matrix APSP storage, replacing GraphVertex's per-vertex
     // QHash<int, QPair<int,qreal>>. Row = source vertex position, column = target vertex
@@ -1670,6 +1677,10 @@ private:
                                     ///< positive-only by the dialog so this sentinel is safe -
                                     ///< beta (which can be negative) has no sentinel role.
     qreal m_lastBonacichBeta = 0;
+    PNMode m_lastPNMode = PNMode::All; ///< Cache of the last mode used to compute PN Centrality
+                                       ///< (WS18 P3) - same caching purpose as m_lastKatzAlpha,
+                                       ///< read by isCentralityIndexComputed()-style callers to
+                                       ///< know whether a mode switch needs a recompute.
     qreal minPRP, maxPRP, nomPRC, denomPRC, sumPC, t_sumPRP, sumPRP;
     qreal minPP, maxPP, nomPP, denomPP, sumPP, groupPP;
 
@@ -1731,6 +1742,7 @@ private:
     bool calculatedEVC;
     bool calculatedKC;
     bool calculatedBPC;
+    bool calculatedPN;
     bool calculatedDP, calculatedDC, calculatedPP;
     bool calculatedSignedDegree;
     bool calculatedIRCC, calculatedIC, calculatedPRP;

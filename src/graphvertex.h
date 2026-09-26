@@ -278,6 +278,11 @@ public:
     qreal BPC() { return m_BPC;}		/* Returns vertex Bonacich Power Centrality */
     qreal SBPC() { return m_SBPC;}		/* Returns standard vertex Bonacich Power Centrality */
 
+    /* PN Centrality (WS18 P3, Everett & Borgatti 2014) - single raw score, no standardized
+     * variant (the reference formula doesn't define one). */
+    void setPN (const qreal &c) { m_PN = c; }
+    qreal PN() { return m_PN; }
+
 
     int cliques (const int &ofSize);
 
@@ -305,6 +310,7 @@ private:
     qreal m_PC, m_SPC, m_SIC, m_IC, m_SPRC, m_PRC;
     qreal m_PP, m_SPP, m_EVC, m_SEVC;
     qreal m_KC, m_SKC, m_BPC, m_SBPC;
+    qreal m_PN;
     qreal m_distanceSum;
 
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape, m_iconPath;

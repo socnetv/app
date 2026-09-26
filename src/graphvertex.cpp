@@ -78,6 +78,7 @@ GraphVertex::GraphVertex(Graph* parentGraph,
     m_SC=0; m_SSC=0; m_IRCC=0; m_SIRCC=0;
     m_EC=0; m_SEC=0; m_PC=0; m_SPC=0; m_IC=0; m_SIC=0; m_PRC=0; m_SPRC=0;
     m_PP=0; m_SPP=0; m_EVC=0; m_SEVC=0; m_KC=0; m_SKC=0; m_BPC=0; m_SBPC=0;
+    m_PN=0;
     m_CLC=0; m_hasCLC=false;
     m_curRelation=relation;
     m_enabled = true;

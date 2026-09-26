@@ -246,16 +246,18 @@ all three are now confirmed rather than guesswork.
 
 #### Checklist
 
-- [ ] **`Matrix` gains a public signed-A-matrix build method** — new method on `Matrix` (not
-      ad-hoc code in the centrality slice) to build `A = P - 2N` directly from a signed adjacency
-      matrix in one pass (binary P/N per the confirmed formula, not materialized as separate
-      matrices - the per-cell rule folds directly into one pass: `+1` for a positive tie, `-2` for
-      a negative tie, `0` for none). Needed by PN centrality (which genuinely does matrix-level
-      work). Signed degree does **not** use this: `centralityDegree()`'s own existing pattern is
-      direct `edgeExists()` iteration parallelized via `QtConcurrent::blockingMap` (WS15 P4), never
-      `Matrix`/`AM` - signed degree follows that same precedent instead, so building a `Matrix`
-      P/N-derived matrix just to sum rows would be a detour from how that measure's family is
-      actually implemented elsewhere in the codebase.
+- [x] **`Graph` gains a signed-A-matrix build method** — new `Graph::createMatrixSignedPN(...)`
+      filling a new `Graph`-owned `PNM` member (algorithm-slice method, same pattern as
+      `createMatrixAdjacency()` filling `AM` - not a `Matrix`-class method itself, since building
+      it needs `edgeExists()`/`m_graph` access that `Matrix` deliberately doesn't have) to build
+      `A = P - 2N` directly from the graph's signed edges in one pass (binary P/N per the confirmed
+      formula, not materialized as separate matrices - the per-cell rule folds directly into one
+      pass: `+1` for a positive tie, `-2` for a negative tie, `0` for none). Signed degree does
+      **not** use this: `centralityDegree()`'s own existing pattern is direct `edgeExists()`
+      iteration parallelized via `QtConcurrent::blockingMap` (WS15 P4), never `Matrix`/`AM` -
+      signed degree follows that same precedent instead, so building a `Matrix` P/N-derived matrix
+      just to sum rows would be a detour from how that measure's family is actually implemented
+      elsewhere in the codebase.
 - [x] **Signed degree centrality engine** — new `src/graph/centrality/graph_centrality_signed_degree.cpp`,
       `Graph::centralitySignedDegree(...)`. Four variants (pos / neg / ratio / net) stored
       simultaneously per vertex (one edge scan fills all four - cheap, and a signed-network report
@@ -293,18 +295,23 @@ all three are now confirmed rather than guesswork.
 
 **Signed degree centrality (#300) is now fully wired** — engine, CLI kernel, GUI (menu + toolbox
 combo), reporting, and WS12 script command all done and verified. Next: PN centrality (#301).
-- [ ] **PN centrality** — new `src/graph/centrality/graph_centrality_pn.cpp`,
-      `Graph::centralityPN(...)`. Build `A = P - 2N` (binary) via the new `Matrix` method, fixed
-      `β = 1/(2n-2)`, then all three modes per the confirmed formulas above:
-      undirected (`solve(I-βA)`), directed out (`solve(I-β²AAᵀ)·(I+βA)`), directed in
-      (`solve(I-β²AᵀA)·(I+βAᵀ)`) - row-sum of the solved matrix in every case. Mode selection:
-      undirected graphs are forced to the `all` formula; directed graphs choose `in`/`out` (`all`
-      isn't valid on a directed graph, matching the reference implementation's own hard error on
-      that combination).
-- [ ] **Convergence/singularity guard for PN** — now a matter of implementation, not open design:
-      the reference formula is a plain matrix inversion with no separate convergence check before
-      it - `Matrix::inverse()`'s own existing singularity detection (already used by Katz) is
-      sufficient; report "not defined: singular" on failure, same as Katz's own fallback.
+- [x] **PN centrality engine** — new `src/graph/centrality/graph_centrality_pn.cpp`,
+      `Graph::centralityPN(mode, dropIsolates)`, new `PNMode {All, Out, In}` enum (`global.h`).
+      Builds `A = P - 2N` (binary) via `createMatrixSignedPN()`, fixed `β = 1/(2n-2)`, then all
+      three modes per the confirmed formulas above: undirected (`solve(I-βA)`), directed out
+      (`solve(I-β²AAᵀ)·(I+βA)`), directed in (`solve(I-β²AᵀA)·(I+βAᵀ)`) - row-sum of the solved
+      matrix in every case. Mode/directedness mismatch (undirected+Out/In, directed+All) refuses
+      cleanly (all-zero scores, status message) rather than computing something wrong. New
+      `GraphVertex::PN()` storage, single raw score - no standardized variant, matching the
+      confirmed formula (it doesn't define one). Convergence/singularity guard: reuses
+      `Matrix::inverse()`'s own existing singularity detection (already used by Katz) - "not
+      defined: singular" on failure, same as Katz's own fallback; the reference formula itself has
+      no separate convergence check before solving, so nothing more was needed.
+      **Independently verified against a from-scratch Python solve (not derived from this C++)
+      for all three modes**: Out/In on the existing `Signed_Dir_N4_NoCycle` (directed), All on a
+      new `Signed_Undir_N4` fixture (no undirected signed fixture existed before) - all three
+      match to float precision. Both invalid mode/directedness combinations confirmed to refuse
+      cleanly (all-zero, no crash), not just the valid paths.
 - [x] **Directed-graph semantics for PN** — resolved by the confirmed formula above: not a guess
       or an extension, `in`/`out` are real, distinct, independently-confirmed formulas.
 - [ ] **Wiring**, same 8-touchpoint shape Katz used, for both measures: `Graph` façade method,
