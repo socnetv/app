@@ -33,6 +33,7 @@ field data from a file in a supported format (GraphML, GraphViz, EdgeList, GML, 
 - Vertex connectivity: the minimum number of nodes that must be removed to disconnect two chosen actors (Node Connectivity), or to disconnect the network at its weakest point (Graph Connectivity) — a measure of robustness to node removal.
 - Matrix routines: Adjacency, Laplacian, Degree, Cocitation, and more.
 - Advanced centrality and prestige indices: eigenvector, closeness, betweenness, information, power, Katz, Bonacich power centrality, PageRank prestige, and more.
+- Signed network support: negative edge weights (parsing, guarded computation, and Bellman-Ford/Johnson's-algorithm negative-weight-safe shortest paths), plus Signed Degree Centrality for actors split by tie sign (positive/negative/ratio/net).
 - Community detection algorithms: triad census, clique census, and more.
 - Structural equivalence analysis using hierarchical clustering, actor similarities, and Pearson coefficients.
 - Multiple layout algorithms: prominence-based (circular, nodal sizes by centrality), force-directed (Kamada-Kawai, Fruchterman-Reingold), and ego-centered radial layout. Node colors can also be assigned by connected component, making disconnected sub-networks immediately visible.

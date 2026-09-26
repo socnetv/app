@@ -185,6 +185,13 @@ Protects all node-level prominence indices.
 * BPC / SBPC (Bonacich Power Centrality) — **optional**: only computed/present when
   `--bonacich-alpha` is given (`>= 0`); echoed via `run.bonacichEnabled`, `run.bonacichAlpha`,
   `run.bonacichBeta`
+* PN (PN Centrality, WS18 P3, Everett & Borgatti 2014) — **optional**: only computed/present
+  when `--pn-mode` is `all`/`out`/`in` (not the default `off`); echoed via `run.pnEnabled` and
+  `run.pnMode`. `all` is undirected-only, `out`/`in` are directed-only — the wrong mode for the
+  loaded network's directedness refuses cleanly (PN comes back 0 for every node) rather than
+  computing something wrong. Strictly binary (tie sign only, magnitude discarded) — no
+  `considerWeights`/`inverseWeights` choice, unlike every other measure here. No standardized
+  variant.
 * eccentricity (+ eccentricity_inf)
 
 ### Prestige
@@ -469,8 +476,10 @@ Notes:
 Protects Johnson's-algorithm potentials (`DistanceEngine::bellmanFordPotentials()`) and the
 negative-weight-safe distance path (`Graph::graphDistancesGeodesicSigned()`) — see WS18 in
 `roadmap_ws18_signed_network_analysis.md` for the algorithm design. Designed to grow: later
-signed-network measures (PN centrality, structural balance ratio) are expected to add new JSON
-sections to this same kernel rather than spawning new ones.
+signed-network measures on triads/structural balance are expected to add new JSON sections to
+this same kernel rather than spawning new ones — PN centrality (WS18 P3) landed in the
+`prominence` kernel instead (see its own section below), since it's a per-node centrality score
+like every other measure that kernel already covers, not a distance-path or triad-level concern.
 
 Two sections:
 
@@ -1298,6 +1307,7 @@ Centrality:
 * EVC / SEVC
 * KC / SKC (optional, `--katz-alpha`)
 * BPC / SBPC (optional, `--bonacich-alpha`)
+* PN (optional, `--pn-mode all|out|in`)
 * eccentricity (+ eccentricity_inf)
 
 Prestige:

@@ -88,6 +88,15 @@ _Work in progress — more entries to come as the 3.8 cycle continues._
     (`signedDegreePos`/`Neg`/`Ratio`/`Net`). Out-degree only for now; no standardized/graph-wide
     statistics, unlike Degree Centrality.
 
+  - **New PN Centrality measure, engine + CLI** (WS18 P3, #301, Everett & Borgatti 2014): the
+    standard purpose-built centrality measure for signed networks — a negative tie from someone
+    themselves highly prominent hurts more than one from someone marginalized, propagated through
+    indirect connections the same way Katz Centrality propagates ordinary ties. Three modes:
+    undirected, and directed out/in (genuinely different closed-form formulas, not a simple
+    transpose of one another). Strictly binary (tie sign only, magnitude discarded), matching the
+    confirmed reference formula. Available now via the `prominence` CLI kernel (`--pn-mode
+    off|all|out|in`); GUI menu/report wiring lands separately.
+
 ### Bug Fixes
 
   - **Similarity/Pearson reports no longer produce NaN on small networks** (#279):
