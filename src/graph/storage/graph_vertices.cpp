@@ -984,6 +984,14 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
         progressStatus(tr("Signed Degree Centrality has no single score to search by yet."));
         return false;
     }
+    case IndexType::PN:
+    {
+        // WS18 P3: same reasoning as SIGNED_DEGREE above - PN has a single raw score, but no
+        // standardized/max variant and (via centralityPN()'s own mode parameter) no fixed
+        // meaning without a mode choice this dialog doesn't collect either.
+        progressStatus(tr("PN Centrality has no single score to search by yet."));
+        return false;
+    }
     default:
         graphDistancesGeodesic(true, considerWeights,
                                inverseWeights, dropIsolates);
