@@ -58,13 +58,7 @@ active focus right now.
 
 Roadmap: [`docs/roadmaps/roadmap_ws6_testing_ci_regression.md`](roadmaps/roadmap_ws6_testing_ci_regression.md)
 
-Expand golden baselines, dataset coverage, and benchmarking, supporting every other workstream.
-
-**WS6.8** (independently audit every algorithm's correctness, not just self-consistency) and
-**WS6.9** (close the CLI kernel coverage gaps WS6.8's audit found) are both done (2026-09-25) —
-all ten kernel families independently verified across directed/undirected, weighted/unweighted,
-and isolates/disconnection, with several real bugs found and fixed along the way. See the WS6
-roadmap doc for the full per-kernel status and bug list.
+Golden baselines, dataset coverage, and benchmarking, supporting every other workstream.
 
 ---
 
@@ -147,25 +141,26 @@ balance analysis on triads, building on the existing MAN triad census.
 
 # Priorities
 
-1. **WS6** — regression safety (ongoing support — continuously active underneath every other
-   workstream, not "next in queue").
-2. **WS10** — GraphicsWidget canvas rendering & features. Phase 1 (#250), #260, and the
-   rendering-perf regression kernel (WS6.6) all shipped; the rest of the Performance/Feature
-   checklists remain scoped but not prioritised yet.
-3. **WS8** — IO layer stabilization. Roadmap scoped; zero code written yet.
-4. **WS11** — algorithm additions. Started: #7 and #272 shipped; rest of the backlog not
-   prioritised yet.
-5. **WS12** — CLI scripting mode. Thirty-four commands shipped across several passes since
-   #261/#262; further commands added on demand, not prioritised as a standing backlog.
-6. **WS13** — undo/redo. Just created; not prioritised yet, no code written.
-7. **WS9** — graph exploration debt backlog. Core shipped; five open issues (#245, #229, #222,
-   #25, #57), none prioritised yet — #245 blocks on significant tab-UI infrastructure investment.
-8. **WS17** — bipartite/two-mode analysis. Just scoped; no code written yet.
-9. **WS18** — signed network analysis / structural balance. P0-P2 all complete: P1 (#277's
-   negative-weight guard) 2026-09-19; P0 (#285, DL/Adjacency parsers silently dropping negative
-   weights) and P2 (Bellman-Ford/Johnson's-algorithm negative-weight-safe distances, including
-   GUI menu wiring) both 2026-09-25; P3-P4 (PN centrality, structural balance) just scoped, not
-   prioritised yet.
+No workstream is pinned as "the" active focus — work happens on whichever's issue is picked up
+next. `gh issue list --milestone <3.8|3.9|4.0>` is the authoritative view of what's queued where
+(as of 2026-09-28: 3.8 has 19 open/9 closed, 3.9 has 18 open, 4.0 has 3 open); this is a
+workstream-level summary of the same picture, not a ranking.
+
+**In flight now (3.8):** WS6 (regression safety) runs continuously underneath every other
+workstream. WS18 (signed networks) is otherwise done for this cycle — P0-P3 shipped, only P4's
+3.8 slice (#305, undirected triad balance) is still open.
+
+**Scoped, not started:** WS8 (IO layer stabilization/`FormatHandler` registry) — roadmap exists,
+zero code written.
+
+**Ongoing, demand-driven (no fixed end state):** WS10 (canvas rendering — Phase 1/#250/#260
+shipped, rest of the checklist open-ended), WS11 (algorithm additions — #7/#272 shipped, backlog
+open-ended), WS12 (CLI scripting — 34 commands shipped, more added on demand), WS9's debt backlog
+(#229, #222, #25, #57 — core already shipped v3.5-v3.6).
+
+**Major/4.0-scoped, larger lifts, none started:** WS13 (undo/redo, #31), WS9's #245 (tab-based
+multi-graph UI), WS17 (bipartite/two-mode analysis, #282) — each its own standalone workstream
+investment, not a small patch.
 
 ---
 
