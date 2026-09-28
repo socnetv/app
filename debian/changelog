@@ -1,3 +1,17 @@
+socnetv (3.8-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Signed network support: negative edge weights, negative-weight-safe
+    shortest paths, and signed-specific centrality measures (Signed
+    Degree Centrality, PN Centrality).
+  * Degree Centrality and isSymmetric() parallelized for large networks.
+  * Several correctness fixes: Betweenness/Stress Centrality on directed
+    reciprocal-tie networks, weighted-graph diameter/distance precision,
+    disconnected-network average distance, hierarchical clustering with
+    isolated vertices and UPGMA linkage.
+
+ -- Dimitris Kalamaras <dimitris.kalamaras@gmail.com>  Mon, 28 Sep 2026 12:00:00 +0300
+
 socnetv (3.7-1) unstable; urgency=medium
 
   * New upstream release.
