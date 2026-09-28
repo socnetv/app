@@ -2,9 +2,7 @@
 
 All notable changes to this project are documented in this file. 
 
-## [3.8] – Oct 2026
-
-_Work in progress — more entries to come as the 3.8 cycle continues._
+## [3.8] – Sep 2026
 
 ### Improvements
 
