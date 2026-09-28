@@ -9,10 +9,12 @@ SocNetV as a live component.
 
 ## Status
 
-🚧 In progress. Thirty-four commands shipped across #261/#262/WS14/WS6.6/WS16 — see What WS12
-Delivered below; every command now logs a uniform `BENCH` line on completion. Eventually most of
-SocNetV's functions should be reachable through interactive mode — see Background for where this
-is headed.
+🚧 In progress. Thirty-four commands shipped across #261/#262/WS14/WS6.6/WS16; every command logs
+a uniform `BENCH` line on completion. **Current-state command reference now lives in
+[`docs/SOCNETV_INTERACTIVE_SCRIPT.md`](../SOCNETV_INTERACTIVE_SCRIPT.md)** (and the [website
+manual](https://socnetv.org)) — this doc stays the design/decision log: why things were built the
+way they were, and what's still open. Eventually most of SocNetV's functions should be reachable
+through interactive mode — see Background for where this is headed.
 
 ## Background
 
@@ -52,126 +54,37 @@ Open."
 
 ## What WS12 Delivered
 
-### CLI flags
+Full current-state command reference: **[`docs/SOCNETV_INTERACTIVE_SCRIPT.md`](../SOCNETV_INTERACTIVE_SCRIPT.md)**.
+This section keeps only the design decisions behind that surface.
 
 - `--encoding <name>` — loads the startup file with a given text codec, bypassing the "Preview
   file & Choose Encoding" dialog.
 - `--interactive-script <path>` — runs a plain-text script after startup, one command per line.
   Implementation in `MainWindow::runInteractiveScript()`/`processNextInteractiveCommand()`
-  (`mainwindow.cpp`). Three dispatch shapes recur, all documented in the Doxygen comment on
-  `processNextInteractiveCommand()` itself. Whichever shape a command uses, the rule is always the
-  same: only advance to the next command once this command's own work has genuinely finished,
-  never merely queued or triggered — getting this wrong is a real, reproducible bug, not a style
-  preference (see below).
-  - **No dispatch** (`new`, `render`, `bulk-node-size`, `bulk-edge-color`): a direct, blocking call
-    on the GUI thread, no cross-thread queuing — genuinely done by the time the call returns, so
-    advancing immediately afterward is correct as-is.
-  - **Single-step** (`relation`, `erdos`, `erdos-m`, `save`, `add-node`, `add-edge`,
-    `add-relation`, `click-node`, `move`): `QMetaObject::invokeMethod(activeGraph, lambda,
-    Qt::QueuedConnection)` queues a lambda onto `activeGraph`'s own thread and returns immediately,
-    without waiting for it to finish — so `BENCH` logging *and* the call advancing to the next
-    script command (via a nested `QMetaObject::invokeMethod(this, ..., Qt::QueuedConnection)` back
-    to the GUI thread) both happen *inside* that lambda, at actual completion, never around the
-    `invokeMethod` call itself. Advancing outside the lambda let the next script command (e.g.
-    `quit`, or another queued command) race ahead while the previous one's queued work was still
-    running, confirmed via an out-of-bounds crash when `quit` ran immediately after `erdos` with no
-    `delay` between them. Found and fixed across all 9 affected commands during the WS15
-    investigation that also produced Finding 8's fix — see
-    `roadmap_ws15_cancellation_progress_unification.md`.
-  - **Two-step** (`filter-ego`, `filter-isolates`, `symmetrize-strongties`,
-    `symmetrize-cocitation`, `unilateral`, `distances`, `distances-bench` — anything long enough to
-    want a progress dialog): `runGraphOperationAsync(operation, waitMessage, onComplete)` — one
-    lambda does the (possibly slow) work, a second runs only once that's genuinely finished, to log
-    `BENCH` and advance the script. Both lambdas share timer/result state via `std::shared_ptr`,
-    since a plain local variable wouldn't survive between two separate lambdas.
-
-### Output format
-
-Every command logs exactly one line on completion:
-```
-BENCH <command> [command-specific fields] N=<node count> E=<edge count> elapsed_ms=<N>
-```
-via `qInfo()` — deliberately not `qDebug()`/`qCDebug()`, so these lines keep printing regardless of
-logging-category filter state (quiet-by-default, `-d` flags, etc.). This is uniform across every
-command below, not just the ones originally added for benchmarking.
-
-### Commands
-
-- `delay X` — wait X seconds before the next command. `elapsed_ms` in its `BENCH` line should read
-  ~= the requested delay — a cheap sanity check that scripted delays aren't drifting under load.
-- `new` — File → New.
-- `relation N` — switch to relation N.
-- `unilateral` — toggle unilateral edges. Calls `Graph::edgeFilterUnilateral()` directly via
-  `runGraphOperationAsync`, matching `slotEditFilterEdgesUnilateral()`'s own dispatch (two-step
-  pattern, see above) rather than triggering the real `QAction`.
-- `erdos N p directed|undirected` — generates an Erdős–Rényi `G(n,p)` network.
-- `save path` — saves the current network as GraphML.
-- `add-node` — adds a node at a random position.
-- `add-edge source target [weight]` — adds a directed edge (default weight 1).
-- `add-relation name` — adds a new relation and switches to it.
-- `distances [weights] [inverse] [dropisolates] [csv]` — mirrors the real Cohesion → Distances
-  Matrix menu action (`slotAnalyzeMatrixDistances()`) exactly: same computation (`writeMatrix()` →
-  `graphMatrixDistanceGeodesicCreate()`), same `runGraphOperationAsync()` dispatch, same output
-  file — just without opening a `TextEditor` afterward, and without `askAboutEdgeWeights()`'s modal
-  prompt (the tokens answer what it would ask). Trailing tokens are order-independent; presence of
-  a token means true, absence means false. `csv` selects `ReportFormat::Csv` explicitly (WS16,
-  #113) rather than reading the persisted Settings preference — a script has no Settings dialog to
-  reflect. Previously called `graphDistancesGeodesic()` directly and crashed on some networks
-  (`DistanceEngine::initRun` → `Graph::isSymmetric` → `edgeExists` → `GraphVertex::hasEdgeTo`,
-  invalid `QMultiHash` access) — the real menu action, computing via `writeMatrix()`, did not crash
-  on the same network, so this command now goes through that path instead.
-- `distances-bench [weights] [inverse] [dropisolates] [centralities]` — benchmarking-only sibling
-  of `distances`: same dispatch and computation, no disk write. `centralities` has no real-menu
-  equivalent (the GUI computes each centrality index via ~9 separate menu actions, not one combined
-  action), so it lives here rather than on `distances`.
-- `report-centrality-degree [weights] [dropisolates] [csv]`,
-  `report-centrality-degree-signed [weights] [dropisolates] [csv]`,
-  `report-centrality-pn [all|out|in] [dropisolates] [csv]`,
-  `report-centrality-closeness [weights] [inverse] [dropisolates] [csv]`,
-  `report-centrality-closeness-ir [weights] [inverse] [dropisolates] [csv]`,
-  `report-centrality-betweenness [weights] [inverse] [dropisolates] [csv]`,
-  `report-centrality-stress [weights] [inverse] [dropisolates] [csv]`,
-  `report-centrality-eccentricity [weights] [inverse] [dropisolates] [csv]`,
-  `report-centrality-power [weights] [inverse] [dropisolates] [csv]`,
-  `report-centrality-information [weights] [inverse] [csv]`,
-  `report-centrality-eigenvector [weights] [inverse] [csv]`,
-  `report-prestige-degree [weights] [dropisolates] [csv]`,
-  `report-prestige-proximity [dropisolates] [csv]`,
-  `report-prestige-pagerank [dropisolates] [csv]` — each mirrors its real `Analyze` menu action
-  exactly (`slotAnalyzeCentralityDegree()`, `slotAnalyzeCentralityCloseness()`, etc.), same
-  `distances`-style pattern and `csv` token. `report-centrality-degree` was added for WS16 (#113,
-  CSV report export) Step 0 as the first centrality/prestige report ever exercised headlessly; the
-  other 11 followed in Step 2, once every `writeCentrality*`/`writePrestige*` function gained CSV
-  support. `report-centrality-information` and `report-centrality-eigenvector` have no
-  `dropisolates` token (the underlying functions don't take one, or - Eigenvector - never blank
-  isolate rows regardless); `report-prestige-proximity` and `report-prestige-pagerank` have no
-  `weights`/`inverse` tokens (fixed in the real menu action too). `report-centrality-degree-signed`
-  (WS18 P3, #300) was added later, following the exact same pattern as
-  `report-centrality-degree` (no `inverse` token - `writeCentralitySignedDegree()` doesn't take
-  one either) - named after an established outside package's own `degree_signed()` function name,
-  reordered to keep this family's own `report-centrality-*` prefix. `report-centrality-pn` (WS18
-  P3, #301) follows the same naming-parity direction, after that package's own `pn_index()`
-  function name. Its mode is a required 3-way choice, not an optional flag like the others here,
-  so it's a bare positional token (`all`/`out`/`in`, defaulting to `all` if omitted) rather than
-  the `weights`/`inverse`-style boolean tokens every sibling command uses - no other command here
-  needed a value-carrying token before this one. No `weights` token either:
-  `writeCentralityPN()`/`centralityPN()` consider tie sign only, never weights.
-- `report-reciprocity [weights] [csv]`, `report-eccentricity [weights] [inverse] [dropisolates]
-  [csv]`, `report-clustering-coefficient [csv]`, `report-triad-census [csv]` — added for WS16 Step
-  3 (the long-tail reports), same mirroring pattern as the commands above.
-  `report-clustering-coefficient` and `report-triad-census` have no `weights` token (both fixed
-  `considerWeights = true` in their real menu action).
-- `render` — forces a synchronous `graphicsWidget->viewport()->repaint()` (unlike `update()`,
-  which only schedules one). Added for WS6.6's canvas rendering-perf kernel
-  (`roadmap_ws6_testing_ci_regression.md`).
-- `bulk-node-size <N>` — calls `slotEditNodeSizeAll(N)` directly (nonzero `N` skips its modal
-  `QInputDialog`).
-- `bulk-edge-color <name>` — calls `slotEditEdgeColorAll(QColor(name))` directly (a valid color
-  skips its modal `QColorDialog`).
-- `move <node> <x> <y>` — sets an absolute canvas position via `Graph::vertexPosSet()`. Graduated
-  from the backlog for WS6.6.
-- `quit` — ends the script and the app (`close()`, with the save-changes prompt bypassed since no
-  one is present to answer it), so a scripted run doesn't need to be killed externally.
+  (`mainwindow.cpp`). Three dispatch shapes recur, documented in the Doxygen comment on
+  `processNextInteractiveCommand()` itself and in the reference doc above. Whichever shape a
+  command uses, the rule is always the same: only advance to the next command once this command's
+  own work has genuinely finished, never merely queued or triggered — getting this wrong is a
+  real, reproducible bug, not a style preference. **Found and fixed**: advancing outside a
+  single-step command's lambda let the next script command (e.g. `quit`) race ahead while the
+  previous one's queued work was still running, confirmed via an out-of-bounds crash when `quit`
+  ran immediately after `erdos` with no `delay` between them. Found and fixed across all 9 affected
+  commands during the WS15 investigation that also produced Finding 8's fix — see
+  `roadmap_ws15_cancellation_progress_unification.md`.
+- **Output format**: every command logs exactly one `BENCH ...` line via `qInfo()` on completion —
+  deliberately not `qDebug()`/`qCDebug()`, so these lines keep printing regardless of
+  logging-category filter state (quiet-by-default, `-d` flags, etc.).
+- **`distances`** previously called `graphDistancesGeodesic()` directly and crashed on some
+  networks (`DistanceEngine::initRun` → `Graph::isSymmetric` → `edgeExists` →
+  `GraphVertex::hasEdgeTo`, invalid `QMultiHash` access) — the real menu action, computing via
+  `writeMatrix()`, did not crash on the same network, so the command now goes through that path
+  instead.
+- **`report-centrality-degree-signed`** (WS18 P3, #300) and **`report-centrality-pn`** (WS18 P3,
+  #301) are named after an established outside package's own `degree_signed()`/`pn_index()`
+  function names, per the naming-parity direction below. `report-centrality-pn`'s mode is a
+  required 3-way choice, not an optional flag — the first command here needing a value-carrying
+  positional token instead of the `weights`/`inverse`-style boolean tokens every sibling command
+  uses.
 
 ## What Remains Open
 
