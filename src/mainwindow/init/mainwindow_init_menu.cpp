@@ -285,7 +285,6 @@ void MainWindow::initMenuBar()
     analysisMenu->addMenu(centrlMenu);
 
     centrlMenu->addAction(cDegreeAct);
-    centrlMenu->addAction(cSignedDegreeAct);
     centrlMenu->addAction(cClosenessAct);
     centrlMenu->addAction(cInfluenceRangeClosenessAct);
     centrlMenu->addAction(cBetweennessAct);
@@ -300,6 +299,9 @@ void MainWindow::initMenuBar()
     centrlMenu->addAction(cInDegreeAct);
     centrlMenu->addAction(cPageRankAct);
     centrlMenu->addAction(cProximityPrestigeAct);
+    centrlMenu->addSeparator();
+    centrlMenu->addAction(cSignedDegreeAct);
+    centrlMenu->addAction(cPNAct);
 
     analysisMenu->addSeparator();
     // COMMUNITIES & SUBGROUPS
