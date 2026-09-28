@@ -130,10 +130,11 @@ two-mode layouts, bipartite generators, Robins-Alexander clustering, bipartite m
 
 Roadmap: [`docs/roadmaps/roadmap_ws18_signed_network_analysis.md`](roadmaps/roadmap_ws18_signed_network_analysis.md)
 
-First-class support for signed networks (edge sign, not just magnitude): guard existing
-distance-based measures against negative weights (#277, P1), Bellman-Ford-based negative-weight-safe
-shortest paths, signed-specific centrality (PN centrality), and Heider/Cartwright-Harary structural
-balance analysis on triads, building on the existing MAN triad census.
+First-class support for signed networks (edge sign, not just magnitude). P0-P3 shipped in v3.8:
+negative-weight parser support, guarding existing distance-based measures against negative
+weights, Bellman-Ford/Johnson's-algorithm negative-weight-safe shortest paths, and signed-specific
+centrality (Signed Degree, PN Centrality). P4 (Heider/Cartwright-Harary structural balance
+analysis on triads, building on the existing MAN triad census) remains, tracked in 3.9.
 
 ---
 
@@ -143,12 +144,12 @@ balance analysis on triads, building on the existing MAN triad census.
 
 No workstream is pinned as "the" active focus — work happens on whichever's issue is picked up
 next. `gh issue list --milestone <3.8|3.9|4.0>` is the authoritative view of what's queued where
-(as of 2026-09-28: 3.8 has 19 open/9 closed, 3.9 has 18 open, 4.0 has 3 open); this is a
-workstream-level summary of the same picture, not a ranking.
+(as of 2026-09-28, v3.8 tagged and released: 3.8 has 0 open/25 closed, 3.9 has 17 open, 4.0 has 6
+open); this is a workstream-level summary of the same picture, not a ranking.
 
-**In flight now (3.8):** WS6 (regression safety) runs continuously underneath every other
-workstream. WS18 (signed networks) is otherwise done for this cycle — P0-P3 shipped, only P4's
-3.8 slice (#305, undirected triad balance) is still open.
+**v3.8 shipped.** WS6 (regression safety) runs continuously underneath every other workstream.
+WS18 (signed networks) tracking (#284) moved to 3.9 for its remaining P4 work (#303, #304, #305 —
+structural balance), since P0-P3 already shipped in 3.8.
 
 **Scoped, not started:** WS8 (IO layer stabilization/`FormatHandler` registry) — roadmap exists,
 zero code written.
@@ -156,11 +157,12 @@ zero code written.
 **Ongoing, demand-driven (no fixed end state):** WS10 (canvas rendering — Phase 1/#250/#260
 shipped, rest of the checklist open-ended), WS11 (algorithm additions — #7/#272 shipped, backlog
 open-ended), WS12 (CLI scripting — 34 commands shipped, more added on demand), WS9's debt backlog
-(#229, #222, #25, #57 — core already shipped v3.5-v3.6).
+(#229, #25, #57 — core already shipped v3.5-v3.6).
 
 **Major/4.0-scoped, larger lifts, none started:** WS13 (undo/redo, #31), WS9's #245 (tab-based
-multi-graph UI), WS17 (bipartite/two-mode analysis, #282) — each its own standalone workstream
-investment, not a small patch.
+multi-graph UI) and #222 (temporal attributes/timeline), WS17 (bipartite/two-mode analysis, #282),
+WS11's #3 (cohesive subgroups — n-cliques/n-clans/k-plexes) and #181 (structural equivalence —
+MDS/blockmodelling/CONCOR) — each its own standalone workstream investment, not a small patch.
 
 ---
 
