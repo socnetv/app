@@ -2300,6 +2300,32 @@ void MainWindow::initActions()
            "Prestige measure.</p>"));
     connect(cSignedDegreeAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralitySignedDegree()));
 
+    cPNAct = new QAction(tr("PN Centrality"), this);
+    cPNAct->setStatusTip(
+        tr("Compute PN Centrality (Everett & Borgatti 2014) for signed networks."));
+    cPNAct->setWhatsThis(
+        tr("<p><b>PN Centrality</b></p>"
+           "<p><b>Meaning:</b> a purpose-built centrality measure for signed networks. It is "
+           "worse to receive a negative tie from someone who is highly popular (receives a lot "
+           "of positive ties) than from someone who is marginalized - conversely, receiving a "
+           "negative tie from someone who is universally disliked might even be interpreted as "
+           "a positive indicator. PN captures this by weighting each negative tie by the "
+           "sender's own positive standing, propagated through indirect connections the same "
+           "way Katz Centrality propagates ordinary ties.</p>"
+           "<p><b>When to use:</b> the standard choice for centrality on a signed network, when "
+           "re-computing an unsigned measure on tie magnitude alone would throw away the sign "
+           "information that's the whole point of the network being signed in the first "
+           "place.</p>"
+           "<p><b>Weights:</b> considers tie sign only (positive/negative) - tie strength is "
+           "never used, even on a weighted network. There is no weights choice, unlike every "
+           "other centrality measure here.</p>"
+           "<p><b>Compare to:</b> Katz Centrality (KC) - PN's undirected-mode formula is the "
+           "exact same closed-form \"geometric series of walks\" identity Katz uses, just built "
+           "from the signed tie-sign matrix with a fixed attenuation factor instead of a "
+           "user-tunable alpha. Signed Degree Centrality (a simpler, direct-ties-only measure) "
+           "is the natural first step before this one.</p>"));
+    connect(cPNAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityPN()));
+
     cClosenessAct = new QAction(tr("Closeness Centrality (CC)"), this);
     cClosenessAct->setShortcut(Qt::CTRL | Qt::Key_2);
     cClosenessAct

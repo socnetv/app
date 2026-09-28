@@ -25,6 +25,7 @@
 #include "forms/dialogclusteringhierarchical.h"
 #include "forms/dialogcentralitykatz.h"
 #include "forms/dialogcentralitybonacich.h"
+#include "forms/dialogcentralitypn.h"
 
 #include <QtWidgets>
 #include <QtCharts>
@@ -125,6 +126,66 @@ void MainWindow::slotAnalyzeCentralitySignedDegree()
             }
             statusMessage(tr("Signed Degree Centralities report saved as: ") + QDir::toNativeSeparators(fn));
         });
+}
+
+/**
+ *	Writes PN Centrality (WS18 P3, Everett & Borgatti 2014) into a file, then displays it.
+ *
+ *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
+ *
+ *  Unlike signed degree/Katz/Bonacich, no askAboutEdgeWeights() call: PN considers tie sign
+ *  only, never weights, so that question doesn't apply here. The mode dialog needs no
+ *  async pre-computation step either (unlike Katz's eigenvalue estimate) - directedness is
+ *  already known synchronously.
+ */
+void MainWindow::slotAnalyzeCentralityPN()
+{
+    if (!activeNodes())
+    {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    const bool dropIsolates = editFilterNodesIsolatesAct->isChecked();
+    const bool isDirected = activeGraph->isDirected();
+
+    DialogCentralityPN dlg(this, isDirected);
+
+    connect(&dlg, &DialogCentralityPN::userChoices,
+            this, [this, dropIsolates](const PNMode mode) {
+        const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+        QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+        QString fn = appSettings["dataDir"] + "socnetv-report-centrality-pn-" + dateTime + ext;
+
+        auto success = std::make_shared<bool>(false);
+
+        runGraphOperationAsync(
+            [this, fn, mode, dropIsolates, reportFormat, success]() {
+                *success = activeGraph->writeCentralityPN(fn, mode, dropIsolates, reportFormat);
+            },
+            tr("Computing PN Centralities. Please wait..."),
+            [this, fn, reportFormat, success]() {
+                if (!*success)
+                {
+                    return;
+                }
+                statusMessage(tr("Opening PN Centralities report..."));
+                if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
+                {
+                    QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+                }
+                else
+                {
+                    TextEditor *ed = new TextEditor(fn, this, true);
+                    ed->show();
+                    m_textEditors << ed;
+                }
+                statusMessage(tr("PN Centralities report saved as: ") + QDir::toNativeSeparators(fn));
+            });
+    });
+
+    dlg.exec();
 }
 
 /**

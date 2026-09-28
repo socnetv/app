@@ -1113,6 +1113,11 @@ public:
                                  const bool &dropIsolates = false,
                                  const int &format = ReportFormat::Html);
 
+    bool writeCentralityPN(const QString,
+                           const PNMode mode = PNMode::All,
+                           const bool &dropIsolates = false,
+                           const int &format = ReportFormat::Html);
+
     bool writePrestigeDegree(const QString, const bool weights,
                              const bool dropIsolates,
                              const int &format = ReportFormat::Html);

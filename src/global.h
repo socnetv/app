@@ -131,12 +131,17 @@ enum IndexType
     PRP = 13, ///< PageRank Prestige
     PP = 14,  ///< Proximity Prestige
     CLC = 15,  ///< Clustering Coefficient (Watts-Strogatz)
-    SIGNED_DEGREE = 16  ///< Signed Degree Centrality (WS18 P3) - four variants (pos/neg/ratio/net),
+    SIGNED_DEGREE = 16, ///< Signed Degree Centrality (WS18 P3) - four variants (pos/neg/ratio/net),
                         ///< no standardized/max score, so layoutByProminenceIndex(),
                         ///< vertexFindByIndexScore(), and vertexFilterByCentrality() don't have a
                         ///< case for this value (same as how CLC is absent from
                         ///< toolBoxAnalysisProminenceSelectChanged()'s switch) - selectable in the
                         ///< Prominence combo box, opens the report, nothing more yet.
+    PN = 17             ///< PN Centrality (WS18 P3, Everett & Borgatti 2014) - single raw score,
+                        ///< no standardized/max score either, same exclusion as SIGNED_DEGREE
+                        ///< above from layoutByProminenceIndex()/vertexFindByIndexScore()/
+                        ///< vertexFilterByCentrality(). Selecting it in the Prominence combo box
+                        ///< opens the same mode dialog as the menu action.
 };
 
 /**

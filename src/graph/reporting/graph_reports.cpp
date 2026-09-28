@@ -1684,6 +1684,121 @@ bool Graph::writeCentralitySignedDegree(const QString fileName,
 }
 
 /**
+ * @brief Writes PN Centrality (WS18 P3, Everett & Borgatti 2014) to a file
+ *
+ * Minimal report, same shape as writeCentralitySignedDegree(): just the per-node score table -
+ * no distribution chart, no sum/mean/variance/classes section. centralityPN() computes a single
+ * raw score with no standardized variant (the reference formula doesn't define one), so there is
+ * nothing to report beyond that.
+ *
+ * @param fileName
+ * @param mode
+ * @param dropIsolates
+ */
+bool Graph::writeCentralityPN(const QString fileName,
+                              const PNMode mode,
+                              const bool &dropIsolates,
+                              const int &format)
+{
+    qCDebug(lcReporting) << "Writing PN Centrality report to file:" << fileName
+             << "mode:" << static_cast<int>(mode)
+             << "dropIsolates:" << dropIsolates;
+
+    QElapsedTimer computationTimer;
+    computationTimer.start();
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
+        progressStatus(tr("Error. Could not write to ") + fileName);
+        return false;
+    }
+    QTextStream outText(&file);
+
+    centralityPN(mode, dropIsolates);
+    if (progressCanceled())
+    {
+        file.close();
+        progressStatus(tr("Computation canceled."));
+        return false;
+    }
+
+    auto rowValues = [](GraphVertex *v) -> QVector<qreal> {
+        return {v->PN()};
+    };
+    auto isBlanked = [dropIsolates](GraphVertex *v) {
+        return dropIsolates && v->isIsolated();
+    };
+
+    if (format == ReportFormat::Csv)
+    {
+        writeScoreTableCSV(outText, {"PN"}, rowValues, isBlanked);
+        file.close();
+        return true;
+    }
+
+    int N = vertices();
+
+    outText << htmlHead;
+
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
+
+    progressStatus(tr("Writing PN Centrality scores. \nPlease wait..."));
+
+    outText << "<h1>";
+    outText << tr("PN CENTRALITY REPORT");
+    outText << "</h1>";
+
+    const QString modeStr = (mode == PNMode::Out) ? tr("Out") : (mode == PNMode::In) ? tr("In") : tr("All");
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            << "</span>"
+            << getName()
+            << "<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            << "</span>"
+            << N
+            << "<br />"
+            << "<span class=\"info\">"
+            << tr("Mode: ")
+            << "</span>"
+            << modeStr
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("A centrality measure built for signed networks: a negative tie from someone "
+                  "who is themselves highly (positively) prominent hurts more than one from "
+                  "someone marginalized - a negative tie from someone universally disliked can "
+                  "even read as a positive signal. Considers tie sign only (positive/negative); "
+                  "tie strength is not used.<br />"
+                  "Everett, M. and Borgatti, S. (2014). Networks containing negative ties. "
+                  "Social Networks 38, 111-120.")
+            << "</p>";
+
+    writeScoreTableHTML(outText, {"PN"}, rowValues, isBlanked);
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("PN Centrality report, <br />");
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+                   .arg(VERSION)
+                   .arg(actualDateTime.currentDateTime().toString(QString("ddd, dd.MMM.yyyy hh:mm:ss")));
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg(computationTimer.elapsed());
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+    file.close();
+
+    return true;
+}
+
+/**
  * @brief Writes the closeness centralities to a file
  * @param fileName
  * @param considerWeights

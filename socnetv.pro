@@ -55,7 +55,8 @@ FORMS += src/forms/dialogfilteredgesbyweight.ui \
     src/forms/dialogexportimage.ui \
     src/forms/dialogbulkedit.ui \
     src/forms/dialogcentralitykatz.ui \
-    src/forms/dialogcentralitybonacich.ui
+    src/forms/dialogcentralitybonacich.ui \
+    src/forms/dialogcentralitypn.ui
 
 HEADERS += src/mainwindow.h \
     src/texteditor.h \
@@ -118,6 +119,7 @@ HEADERS += src/mainwindow.h \
     src/forms/dialogbulkedit.h \
     src/forms/dialogcentralitykatz.h \
     src/forms/dialogcentralitybonacich.h \
+    src/forms/dialogcentralitypn.h \
     src/global.h
 
 SOURCES += src/main.cpp \
@@ -254,7 +256,8 @@ SOURCES += src/main.cpp \
     src/forms/dialogsysteminfo.cpp \
     src/forms/dialogbulkedit.cpp \
     src/forms/dialogcentralitykatz.cpp \
-    src/forms/dialogcentralitybonacich.cpp
+    src/forms/dialogcentralitybonacich.cpp \
+    src/forms/dialogcentralitypn.cpp
 
 
 RESOURCES = src/images.qrc \

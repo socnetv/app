@@ -88,6 +88,11 @@ void MainWindow::toolBoxAnalysisProminenceSelectChanged(const int &selectedIndex
         // the next item added after it - "Signed Degree Centrality" (IndexType::SIGNED_DEGREE=16).
         slotAnalyzeCentralitySignedDegree();
         break;
+    case 16:
+        // Same shift as case 15 above - "PN Centrality" (IndexType::PN=17) lands at combo
+        // index 16, one after Signed Degree Centrality.
+        slotAnalyzeCentralityPN();
+        break;
     };
 
     qCDebug(lcMainWindow) << "Calling initComboBoxes() ";
