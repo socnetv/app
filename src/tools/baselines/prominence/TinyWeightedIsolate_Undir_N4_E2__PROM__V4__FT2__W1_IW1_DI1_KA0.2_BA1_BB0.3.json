@@ -11,6 +11,7 @@
     },
     "graph": {
         "directed": false,
+        "symmetric": true,
         "weighted": true
     },
     "kernel": "prominence",
@@ -22,7 +23,8 @@
         "ok": true
     },
     "metrics": {
-        "density": "0.33333333333333331"
+        "density": "0.33333333333333331",
+        "spectralRadius": "0.77746025264604002"
     },
     "per_node": [
         {
@@ -51,11 +53,15 @@
             "SPC": "1.71875",
             "SPP": "1.3636363636363635",
             "SPRP": "0.52778030060034231",
-            "SSC": "nan",
+            "SSC": "0",
             "eccentricity": "2147483647",
             "eccentricity_inf": true,
             "id": 1,
-            "label": "A"
+            "label": "A",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "2.5",
+            "signedDegreePos": "2.5",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "1",
@@ -72,7 +78,7 @@
             "PRP": "0.48650678785472834",
             "SBC": "1",
             "SBPC": "1",
-            "SC": "0",
+            "SC": "1",
             "SCC": "0",
             "SDC": "0.5",
             "SDP": "0.5",
@@ -83,11 +89,15 @@
             "SPC": "2",
             "SPP": "1.875",
             "SPRP": "1",
-            "SSC": "nan",
+            "SSC": "1",
             "eccentricity": "2147483647",
             "eccentricity_inf": true,
             "id": 2,
-            "label": "B"
+            "label": "B",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "4",
+            "signedDegreePos": "4",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "0",
@@ -115,11 +125,15 @@
             "SPC": "1.21875",
             "SPP": "1.1538461538461537",
             "SPRP": "0.52777348897941812",
-            "SSC": "nan",
+            "SSC": "0",
             "eccentricity": "2147483647",
             "eccentricity_inf": true,
             "id": 3,
-            "label": "C"
+            "label": "C",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "1.5",
+            "signedDegreePos": "1.5",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "0",
@@ -151,7 +165,11 @@
             "eccentricity": "2147483647",
             "eccentricity_inf": true,
             "id": 4,
-            "label": "D"
+            "label": "D",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "0",
+            "signedDegreePos": "0",
+            "signedDegreeRatio": "0"
         }
     ],
     "run": {

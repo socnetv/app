@@ -8,8 +8,9 @@ and structured (table/CSV/JSON) data workflows.
 
 ## Status
 
-✅ Complete. All three feature tracks shipped in v3.5–v3.6. Current filter-layer architecture lives
-in [`README_DEVELOPER_NOTES.md`](../README_DEVELOPER_NOTES.md)'s "Filter Layer" section, not here.
+Core delivered (v3.5–v3.6): all three feature tracks below shipped. Debt backlog (#245, #229,
+#222, #25, #57) still open — see What Remains Open. Current filter-layer architecture lives in
+[`README_DEVELOPER_NOTES.md`](../README_DEVELOPER_NOTES.md)'s "Filter Layer" section, not here.
 
 ## What WS9 Delivered
 
@@ -49,3 +50,6 @@ in [`README_DEVELOPER_NOTES.md`](../README_DEVELOPER_NOTES.md)'s "Filter Layer" 
   what's missing.
 - **Attribute inspector panel / persistent filter panel** as real docked widgets (currently
   dialog-driven) — deferred until WS7's MainWindow decomposition is underway.
+- **Node removal in multirelational networks** (#57) — the app currently refuses to remove a node
+  when multiple relations are present. Needs a decision: remove the node from all relations, or
+  allow relations to have different node sets. Data-model limitation, not a Feature 1/2/3 gap.

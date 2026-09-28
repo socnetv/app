@@ -315,8 +315,8 @@ bool Parser::createEdgesForRow(const QStringList &currentRow, int rowIndex)
             return false;
         }
 
-        // If the weight is greater than 0, create a directed edge.
-        if (edgeWeight > 0)
+        // Create a directed edge for any non-zero weight (including negative).
+        if (edgeWeight != 0)
         {
             qCDebug(lcParser) << "Signaling to create new edge:" << rowIndex << "->" << colIndex
                      << "weight:" << edgeWeight << "TotalLinks:" << totalLinks + 1;

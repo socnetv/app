@@ -151,6 +151,13 @@ bool cmpNumStrTol(const QJsonObject &e, const QJsonObject &a,
     const QString es = e.value(k).toString();
     const QString as = a.value(k).toString();
 
+    // d2s()/QString::number('g', ...) renders a NaN result (a legitimate 0/0 ratio, e.g. SSC or
+    // reciprocity on a graph with no ties) as the literal string "nan", which QString::toDouble()
+    // correctly refuses to parse as a number. Both sides saying "nan" is a genuine match, not a
+    // mismatch - checked before falling through to the numeric parse below.
+    if (es.compare("nan", Qt::CaseInsensitive) == 0 && as.compare("nan", Qt::CaseInsensitive) == 0)
+        return true;
+
     bool ok1 = false, ok2 = false;
     const double ev = es.toDouble(&ok1);
     const double av = as.toDouble(&ok2);

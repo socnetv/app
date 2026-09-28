@@ -38,3 +38,8 @@ bool GraphDistanceProgressSink::progressCanceled() const
 {
     return graph.progressCanceled();
 }
+
+void GraphDistanceProgressSink::reportNegativeWeights()
+{
+    graph.setNegativeWeightsDetected();
+}

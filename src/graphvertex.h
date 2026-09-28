@@ -197,6 +197,16 @@ public:
     qreal DC() { return m_DC;}          /* Returns vertex Degree Centrality*/
     qreal SDC() { return m_SDC;}		/* Returns standard vertex Degree Centrality*/
 
+    /* Signed degree centrality (WS18 P3) - out-degree only, no standardized/graph-wide stats. */
+    void setSignedDegreePos (const qreal &c) { m_signedDegreePos=c; }
+    void setSignedDegreeNeg (const qreal &c) { m_signedDegreeNeg=c; }
+    void setSignedDegreeRatio (const qreal &c) { m_signedDegreeRatio=c; }
+    void setSignedDegreeNet (const qreal &c) { m_signedDegreeNet=c; }
+    qreal signedDegreePos() { return m_signedDegreePos; }
+    qreal signedDegreeNeg() { return m_signedDegreeNeg; }
+    qreal signedDegreeRatio() { return m_signedDegreeRatio; }
+    qreal signedDegreeNet() { return m_signedDegreeNet; }
+
     void setDistanceSum (const qreal &c) { m_distanceSum = c; }
     qreal distanceSum () { return m_distanceSum; }
     void setCC (const qreal &c){ m_CC=c;}		/* sets vertex Closeness Centrality*/
@@ -268,6 +278,11 @@ public:
     qreal BPC() { return m_BPC;}		/* Returns vertex Bonacich Power Centrality */
     qreal SBPC() { return m_SBPC;}		/* Returns standard vertex Bonacich Power Centrality */
 
+    /* PN Centrality (WS18 P3, Everett & Borgatti 2014) - single raw score, no standardized
+     * variant (the reference formula doesn't define one). */
+    void setPN (const qreal &c) { m_PN = c; }
+    qreal PN() { return m_PN; }
+
 
     int cliques (const int &ofSize);
 
@@ -286,21 +301,22 @@ private:
     int m_outEdgesNonSym, m_inEdgesNonSym, m_outEdgesSym;
     int m_size, m_labelSize, m_numberSize, m_numberDistance, m_labelDistance;
     int m_curRelation;
-    bool m_reciprocalLinked, m_enabled, m_hasCLC, m_isolated;
+    bool m_enabled, m_hasCLC, m_isolated;
     double m_x, m_y;
     qreal m_Eccentricity, m_CLC;
     qreal m_EC, m_SEC;
     qreal m_DC, m_SDC, m_DP, m_SDP, m_CC, m_SCC, m_BC, m_SBC, m_IRCC, m_SIRCC, m_SC, m_SSC;
+    qreal m_signedDegreePos, m_signedDegreeNeg, m_signedDegreeRatio, m_signedDegreeNet;
     qreal m_PC, m_SPC, m_SIC, m_IC, m_SPRC, m_PRC;
     qreal m_PP, m_SPP, m_EVC, m_SEVC;
     qreal m_KC, m_SKC, m_BPC, m_SBPC;
+    qreal m_PN;
     qreal m_distanceSum;
 
     QString m_color, m_numberColor, m_label, m_labelColor, m_shape, m_iconPath;
     QPointF m_disp;
 
     QHash<QString,QString> m_customAttributes;
-    QHash<int,qreal> m_reciprocalEdges;
     QMultiHash <int, L_int> m_cliques;
     H_IntToStr m_outLinkColors, m_outEdgeLabels;
     QHash<int, QHash<QString,QString>> m_outEdgeCustomAttributes;

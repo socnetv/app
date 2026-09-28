@@ -74,9 +74,11 @@ GraphVertex::GraphVertex(Graph* parentGraph,
     m_Eccentricity = 0;
     m_distanceSum = 0;
     m_DC=0; m_SDC=0; m_DP=0; m_SDP=0; m_CC=0; m_SCC=0; m_BC=0; m_SBC=0;
+    m_signedDegreePos=0; m_signedDegreeNeg=0; m_signedDegreeRatio=0; m_signedDegreeNet=0;
     m_SC=0; m_SSC=0; m_IRCC=0; m_SIRCC=0;
     m_EC=0; m_SEC=0; m_PC=0; m_SPC=0; m_IC=0; m_SIC=0; m_PRC=0; m_SPRC=0;
     m_PP=0; m_SPP=0; m_EVC=0; m_SEVC=0; m_KC=0; m_SKC=0; m_BPC=0; m_SBPC=0;
+    m_PN=0;
     m_CLC=0; m_hasCLC=false;
     m_curRelation=relation;
     m_enabled = true;
@@ -896,10 +898,15 @@ QHash<int, qreal>* GraphVertex::outEdgesAllRelationsUniqueHash() {
 /**
  * @brief Returns a qhash of all reciprocal edges to neighbors in the active relation
  *
+ * Thread-safety (WS15 P4): pure function - the result hash is a local, not member state
+ * (m_reciprocalEdges used to be a GraphVertex-instance field used as scratch space, which
+ * was never read externally; converted to a local), so this is safe to call concurrently
+ * across worker threads, e.g. from QtConcurrent::blockingMap loops.
+ *
  * @return  QHash<int,qreal>*
  */
 QHash<int, qreal> GraphVertex::reciprocalEdgesHash(){
-    m_reciprocalEdges.clear();
+    QHash<int, qreal> reciprocalEdges;
     qreal m_weight=0;
     int relation = 0;
     bool edgeStatus=false;
@@ -911,15 +918,14 @@ QHash<int, qreal> GraphVertex::reciprocalEdgesHash(){
             if ( edgeStatus == true) {
                 m_weight=it1.value().second.first;
                 if (this->hasEdgeFrom (it1.key()) == m_weight ) {
-                    m_reciprocalEdges.insert(it1.key(), m_weight);
+                    reciprocalEdges.insert(it1.key(), m_weight);
                 }
             }
         }
         ++it1;
     }
 
-
-    return m_reciprocalEdges;
+    return reciprocalEdges;
 }
 
 
@@ -1182,8 +1188,6 @@ GraphVertex::~GraphVertex() {
     m_outEdges.squeeze();
     m_inEdges.clear();
     m_inEdges.squeeze();
-    m_reciprocalEdges.clear();
-    m_reciprocalEdges.squeeze();
 
     m_outLinkColors.clear();
     m_outLinkColors.squeeze();

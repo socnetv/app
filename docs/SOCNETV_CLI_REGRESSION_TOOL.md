@@ -45,6 +45,7 @@ The CLI is modular.
 * `cli/kernels/kernel_connectivity_v7.cpp`
 * `cli/kernels/kernel_matrix_v8.cpp`
 * `cli/kernels/kernel_vertex_connectivity_v9.cpp`
+* `cli/kernels/kernel_signed_v10.cpp`
 
 Each kernel owns:
 
@@ -169,6 +170,9 @@ Protects all node-level prominence indices.
 ### Centrality
 
 * DC / SDC
+* signedDegreePos / signedDegreeNeg / signedDegreeRatio / signedDegreeNet (WS18 P3 - out-degree
+  split by tie sign; always computed, not gated behind a flag like Katz/Bonacich, since it has no
+  user-supplied parameter. No standardized/graph-wide statistics, unlike DC/SDC.)
 * CC / SCC (classic closeness)
 * IRCC / SIRCC (influence-range closeness)
 * BC / SBC
@@ -176,6 +180,18 @@ Protects all node-level prominence indices.
 * PC / SPC
 * IC / SIC
 * EVC / SEVC
+* KC / SKC (Katz) — **optional**: only computed/present when `--katz-alpha` is given (`>= 0`);
+  echoed via `run.katzEnabled` and `run.katzAlpha`
+* BPC / SBPC (Bonacich Power Centrality) — **optional**: only computed/present when
+  `--bonacich-alpha` is given (`>= 0`); echoed via `run.bonacichEnabled`, `run.bonacichAlpha`,
+  `run.bonacichBeta`
+* PN (PN Centrality, WS18 P3, Everett & Borgatti 2014) — **optional**: only computed/present
+  when `--pn-mode` is `all`/`out`/`in` (not the default `off`); echoed via `run.pnEnabled` and
+  `run.pnMode`. `all` is undirected-only, `out`/`in` are directed-only — the wrong mode for the
+  loaded network's directedness refuses cleanly (PN comes back 0 for every node) rather than
+  computing something wrong. Strictly binary (tie sign only, magnitude discarded) — no
+  `considerWeights`/`inverseWeights` choice, unlike every other measure here. No standardized
+  variant.
 * eccentricity (+ eccentricity_inf)
 
 ### Prestige
@@ -183,6 +199,14 @@ Protects all node-level prominence indices.
 * DP / SDP (degree prestige)
 * PP / SPP (proximity prestige)
 * PRP / SPRP (PageRank)
+
+### Metrics (graph-level, not per-node)
+
+* `metrics.density`
+* `metrics.spectralRadius` — `Graph::estimateSpectralRadius()` on the adjacency matrix; see
+  `Matrix::spectralRadiusExact()`'s own doc comment for what this actually returns (only exact/
+  meaningful on a non-negative matrix - the Matrix Kernel's own `spectral_radius` block covers the
+  signed/Gerschgorin-bound case directly, this kernel doesn't dispatch between the two)
 
 Characteristics:
 
@@ -336,18 +360,41 @@ distance value, clique count) happens to read that matrix. See WS6.7 in
 `roadmap_ws6_testing_ci_regression.md` for the motivating gap and how the dump-mode split below was
 decided.
 
-Seven categories dumped:
+Nine categories dumped:
 
 * adjacency (`AM`)
 * adjacency inverse (`invAM`) — plus `invertible` (bool)
 * distances (`DM`)
-* similarity (`SCM`, simple-matching metric)
+* shortest paths
+* similarity (`SCM`) — measure selectable via `--similarity-measure
+  simple_matching|jaccard|pearson` (default `simple_matching`, unchanged from before); the chosen
+  measure is echoed in `matrices.similarity.metric`. Added for #279 (NaN from divide-by-zero on
+  Jaccard/Simple-Matching's `ties==0` and Pearson's `N-2<=0`/`M-4<=0` degenerate sample) so each
+  measure's guarded path has its own golden coverage — see the `TinyArc_Dir_N2_E1` baselines below.
+* dissimilarity — measure selectable via `--dissimilarity-measure
+  euclidean|manhattan|jaccard|hamming|chebyshev` (default `euclidean`); always runs on the
+  adjacency matrix (a numeric-distance measure, not a binary-match one, so no separate "input"
+  mode like similarity's). Chosen measure echoed in `matrices.dissimilarity.metric`.
 * reachability (`XRM`)
 * walks, fixed length (`XM`)
 * total walks (`XSM`) — **skipped above N=50** (`kTotalWalksSkipThreshold`, `kernel_matrix_v8.cpp`);
   summing matrix powers up to N-1 measured ~9.2 minutes at N=500, so this category simply isn't
   emitted on larger fixtures rather than making every run pay that cost
 * clique co-membership (`CLQM`) — no size gate, stays cheap (single-digit ms) even at N=500
+
+Plus one scalar block, not a full matrix dump: `matrices.spectral_radius`, computed on `AM` right
+after it's built (WS18 P3 prep) —
+
+* `has_negative_entry` (bool) — `Matrix::hasNegativeEntry()` on `AM`
+* `bound` — `Matrix::spectralRadiusBound()` (Gerschgorin's theorem), a safe upper bound on the
+  spectral radius; always computed, works on any matrix, signed included
+* `exact` — `Matrix::spectralRadiusExact()` (power iteration), the true dominant eigenvalue; only
+  present/computed when `has_negative_entry` is false, since it relies on Perron-Frobenius and is
+  not meaningful on a signed matrix (see that method's own doc comment for why: complex or
+  magnitude-tied eigenvalues become possible). A baseline with a negative-weight fixture
+  (`Signed_Dir_N4_NoCycle`) exists specifically so `has_negative_entry: true` and the omitted
+  `exact` field both get regression coverage, not just the always-false/always-present case every
+  other fixture here exercises.
 
 Output fields:
 
@@ -418,6 +465,47 @@ Notes:
 * The `status`/`value` split (rather than a single int with a sentinel like `-1`) is deliberate —
   see #271, a real bug this session caused by exactly that pattern (a sentinel silently misused as
   a bool/count)
+
+---
+
+## Signed-Network Kernel
+
+* Kernel: `signed`
+* JSON schema: `schema_version = 10`
+
+Protects Johnson's-algorithm potentials (`DistanceEngine::bellmanFordPotentials()`) and the
+negative-weight-safe distance path (`Graph::graphDistancesGeodesicSigned()`) — see WS18 in
+`roadmap_ws18_signed_network_analysis.md` for the algorithm design. Designed to grow: later
+signed-network measures on triads/structural balance are expected to add new JSON sections to
+this same kernel rather than spawning new ones — PN centrality (WS18 P3) landed in the
+`prominence` kernel instead (see its own section below), since it's a per-node centrality score
+like every other measure that kernel already covers, not a distance-path or triad-level concern.
+
+Two sections:
+
+* `potentials` — the standalone `bellmanFordPotentials()` probe: per-vertex potential `h(v)` and
+  `negative_cycle_detected`, independent of any SSSP run.
+* `distances` — BC/CC/`distance_sum`/`eccentricity` per vertex from the real negative-weight-safe
+  SSSP path (`graphDistancesGeodesicSigned()`), plus its own `negative_cycle_detected` (should
+  always agree with the `potentials` section's, since both run the same underlying algorithm on
+  the same graph — reported separately because they come from two different calls).
+
+On a negative cycle, per-vertex values in both sections are not meaningful (h(v) left incomplete,
+BC/CC/etc. left at 0) — the JSON shape stays uniform either way, but callers must check
+`negative_cycle_detected` before trusting any value.
+
+Characteristics:
+
+* deterministic vertex ordering
+* always considers weights (there is no unweighted variant of this path — a caller wanting plain
+  BFS distances should use the `distance` kernel instead)
+* no UI involvement
+
+Notes:
+
+* `-w`/`-x` control `inverseWeights`; `-c`/`-k` are not applicable (centralities are always
+  computed, drop-isolates is not currently exposed)
+* `--bench` not supported
 
 ---
 
@@ -797,6 +885,8 @@ Notes:
 Allowed:
 
 * `-w`, `-x`, `-k`
+* `--similarity-measure simple_matching|jaccard|pearson` (default `simple_matching`)
+* `--similarity-input adjacency|distances` (default `adjacency`)
 * `--dump-json`, `--compare-json`
 
 Not applicable / required:
@@ -813,6 +903,17 @@ Notes:
 * Dump mode (full grid vs. row/col-sum summary) is chosen internally based on fixture size, not a
   flag.
 * `total_walks` is omitted above N=50 (`kTotalWalksSkipThreshold`) — see the kernel section above.
+* `--similarity-measure` selects which measure the `similarity` category runs
+  (`createMatrixSimilarityMatching()` for `simple_matching`/`jaccard`,
+  `createMatrixSimilarityPearson()` for `pearson`); an invalid value is rejected before the graph
+  even loads.
+* `--similarity-input` selects which `Matrix`-producing operation feeds the `similarity`
+  category: the adjacency matrix (`AM`, default — never contains `RAND_MAX`) or the geodesic
+  distances matrix (`DM`, computed unconditionally just before this category runs — contains
+  `RAND_MAX` for unreachable pairs on a disconnected network). Needed to exercise a fix where
+  `similarityMatrix()`'s Jaccard branch didn't exclude `RAND_MAX` from its match/ties count the
+  way `distancesMatrix()` does — invisible when similarity runs on `AM`, only reachable via
+  `distances`. The chosen input is echoed in `matrices.similarity.input`.
 
 ### `--kernel vertex_connectivity` (schema v9)
 
@@ -836,6 +937,27 @@ Notes:
 * Local mode's `status` field distinguishes `"ok"` (a real value, including 0 for unreachable),
   `"adjacent"` (no finite cut exists — not a numeric answer), and `"invalid"` (bad source/target).
 
+### `--kernel signed` (schema v10)
+
+Allowed:
+
+* `-w`, `-x` (`-w` has no real effect — this kernel always considers weights; `-x` controls
+  `inverseWeights`)
+* `--dump-json`, `--compare-json`
+
+Not applicable:
+
+* `-c`, `-k` — centralities are always computed, drop-isolates is not currently exposed
+* `--bench` not supported
+
+Notes:
+
+* Reports both the standalone `bellmanFordPotentials()` probe (`potentials` section) and the real
+  negative-weight-safe SSSP path (`distances` section, BC/CC/`distance_sum`/`eccentricity`) — see
+  the kernel's own section above.
+* On a negative cycle, per-vertex values in both sections are not meaningful — check
+  `negative_cycle_detected` in each section before trusting any value there.
+
 ---
 
 ## Baseline naming convention (recommended)
@@ -847,8 +969,11 @@ When you dump JSON, bake the run flags into the filename (as already used in thi
 * Reachability v2 / Walks v3 / IO v5: include kernel + schema label and any required parameters (e.g. `__WALKS_K6__V3`, `__FT2__...`, etc.)
 * Clustering v6: `__CLUST__V6__FT{n}__W{0|1}_IW{0|1}_DI{0|1}`
 * Connectivity v7: `__CONN__V7__FT{n}` (no flag suffixes — topology-only; add `__STRONG` for `--connectivity-type strong`)
-* Matrix v8: `__MATRIX__V8__FT{n}__W{0|1}_IW{0|1}_DI{0|1}`
+* Matrix v8: `__MATRIX__V8__FT{n}__W{0|1}_IW{0|1}_DI{0|1}`, plus a trailing `__{measure}` suffix
+  (e.g. `__jaccard`, `__pearson`) whenever `--similarity-measure` is not the default
+  `simple_matching` — see the `TinyArc_Dir_N2_E1` baselines added for #279
 * Vertex Connectivity v9: `__VCONN__V9__FT{n}` (no flag suffixes — topology-only; suffix with mode/pair, e.g. `__global` or `__local_1_3`)
+* Signed v10: `__SIGNED__V10__FT{n}__W{0|1}_IW{0|1}`
 
 This keeps baselines self-describing and prevents "wrong flags, right file" mistakes.
 
@@ -1034,6 +1159,17 @@ IW1    = inverseWeights=1
 DI0    = dropIsolates=0
 ```
 
+`--similarity-measure` example (Fix #279 — the degenerate N=2 case that used to produce NaN):
+
+```bash
+./socnetv-cli \
+  --kernel matrix \
+  -i src/data/TinyArc_Dir_N2_E1.paj \
+  -f 2 -c 0 \
+  --similarity-measure jaccard \
+  --dump-json src/tools/baselines/matrix/TinyArc_Dir_N2_E1__MATRIX__V8__FT2__W0_IW1_DI0__jaccard.json
+```
+
 Baseline directory:
 
 ```
@@ -1153,12 +1289,15 @@ Graph-level:
 * links_sna
 * ties_graph
 * directed / weighted
+* metrics.density
+* metrics.spectralRadius
 
 Per-node:
 
 Centrality:
 
 * DC / SDC
+* signedDegreePos / signedDegreeNeg / signedDegreeRatio / signedDegreeNet
 * CC / SCC
 * IRCC / SIRCC
 * BC / SBC
@@ -1166,6 +1305,9 @@ Centrality:
 * PC / SPC
 * IC / SIC
 * EVC / SEVC
+* KC / SKC (optional, `--katz-alpha`)
+* BPC / SBPC (optional, `--bonacich-alpha`)
+* PN (optional, `--pn-mode all|out|in`)
 * eccentricity (+ eccentricity_inf)
 
 Prestige:
@@ -1277,7 +1419,9 @@ Per-category (`matrices.*`), each with `dump_mode` (`"full"` or `"summary"`), `r
 * `adjacency` — raw `AM`
 * `adjacency_inverse` — raw `invAM`, plus `invertible` (bool; false for a singular matrix, #269)
 * `distances` — raw `DM`
-* `similarity` — raw `SCM` (simple-matching metric)
+* `similarity` — raw `SCM` (or `PCC` for `--similarity-measure pearson`); measure selectable via
+  `--similarity-measure simple_matching|jaccard|pearson` (default `simple_matching`), echoed in
+  `matrices.similarity.metric`
 * `reachability` — raw `XRM`
 * `walks` — raw `XM` (fixed length)
 * `total_walks` — raw `XSM`; omitted above N=50 (`kTotalWalksSkipThreshold`)

@@ -11,15 +11,50 @@ workstream). CI integration (WS6.5) is explicitly last and not started.
 
 ## Background
 
+### What `socnetv-cli` is, and why it exists
+
+SocNetV has no unit-test framework. Instead, correctness is checked by running the actual
+computation code (the same `Graph`/`DistanceEngine`/algorithm-slice code the GUI calls) against a
+real network file, capturing the numeric result as JSON, and comparing that JSON against a
+committed "known good" copy on every future run. If a refactor accidentally changes a result, the
+comparison fails immediately — this is what "golden testing" / "regression testing" means in this
+codebase.
+
+`socnetv-cli` is the tool that runs those computations headlessly — no window, no `QApplication`,
+just `QCoreApplication` plus whatever `Graph` machinery a given computation needs. It's built
+alongside the main app (`cmake ... -DBUILD_CLI=ON`) as a separate small binary. Concretely:
+
+```bash
+./build/socnetv-cli -i src/data/Padgett.graphml -f graphml --kernel clustering \
+  --compare-json src/tools/baselines/clustering/padgett_clustering.json
+```
+
+This loads `Padgett.graphml`, runs the `clustering` kernel's computation, and compares the result
+against the committed baseline file — exiting non-zero (and printing what differs) if anything
+doesn't match.
+
+**A kernel** is one self-contained computation family exposed via `--kernel <name>` — `distance`,
+`clustering`, `matrix`, `signed`, etc. Each kernel owns its own JSON schema (`schema_version`,
+versioned independently per kernel) and its own compare logic; kernels don't share a schema, since
+they protect entirely different parts of the codebase (BC/CC vs. raw matrix contents vs.
+connectivity component counts, etc.). The full kernel list, CLI flags, and exact JSON schemas live
+in [`docs/SOCNETV_CLI_REGRESSION_TOOL.md`](../SOCNETV_CLI_REGRESSION_TOOL.md) — not duplicated
+here; this file is about the *testing strategy* (what to cover, how it's organized, what's still
+missing), that one is the *reference* (what each kernel's flags/output actually are).
+
+**A baseline** is the committed "known good" JSON file a kernel run is compared against — one file
+per (dataset, kernel, flag combination), stored under `src/tools/baselines/<kernel>/`. A baseline
+is only as trustworthy as how it was produced: dumping one from the app's *current* output only
+proves *self-consistency* (today's output matches itself later) — it says nothing about whether
+that output was ever *correct*. WS6.8 (below) exists specifically to close that gap: a baseline
+should ideally be checked, at least once, against a result computed independently of SocNetV
+entirely (by hand, or a short standalone script), not just accepted as "whatever the app printed."
+
 Both GUI and CLI load graphs through the same IO mutation pipeline introduced in WS4
 (`Parser` → `IGraphParseSink` → `Graph`), via `tools/headless_graph_loader.h`, which blocks on
 `Graph::signalGraphLoaded` (falling back to `Parser::finished`). This is what makes CLI kernel
 output valid regression evidence for GUI-triggered behavior, rather than a separate code path
 being tested in isolation.
-
-`socnetv-cli` itself is a thin façade (argument parsing + dispatch only) over kernel translation
-units under `src/tools/cli/kernels/`. The full kernel list, CLI flags, and JSON schemas live in
-[`docs/SOCNETV_CLI_REGRESSION_TOOL.md`](../SOCNETV_CLI_REGRESSION_TOOL.md) — not duplicated here.
 
 > **Before committing any change described in this file:** run
 > `./scripts/run_golden_compares.sh`. All golden JSON baselines must still pass.
@@ -46,9 +81,14 @@ Key properties:
 - IO roundtrip baselines are committed in-repo under `src/tools/baselines/io_roundtrip/`.
 
 Perf baselines (`scripts/perf_baselines/<platform>/perf_expected.env`) are re-recorded from a clean
-`v3.6` tag checkout, not arbitrary `develop` HEAD — a stale pre-M1-speedup baseline once made every
+tagged release, not arbitrary `develop` HEAD — a stale pre-M1-speedup baseline once made every
 benchmark misleadingly report "30-70% faster than baseline" regardless of what was actually being
-tested. All three platform sets (macOS arm64/M5, Linux x86_64) are current as of this writing.
+tested (same failure mode recurred with WS15 P4's parallelization work, discovered when
+`develop`'s benchmarks kept reporting large "faster than baseline" numbers against baselines that
+predated all of WS15 P4). Current baseline provenance: macOS `arm64`/`m5` (compute + render, all
+four `.env` files) re-recorded from `v3.7` (2026-09-15); Linux `x86_64` (compute only, no render
+baseline exists for that platform) recorded from `v3.7` at the time of its own commit (2026-08-27),
+still current.
 
 ### WS6.6 — Canvas rendering performance kernel (#240) ✅ Done (v3.7)
 
@@ -219,6 +259,50 @@ matrix baselines went red, plus several pre-existing kernels that also read `Mat
 indirectly (distance, prominence, reachability, walks). Reverted; suite is clean again. WS5's A3
 now has the safety net it was waiting on.
 
+**Extended for #279 (v3.8)**: the `similarity` category originally only ever ran Simple Matching
+(hardcoded `METRIC_SIMPLE_MATCHING`), so `similarityMatrix()`'s Jaccard path and
+`pearsonCorrelationCoefficients()` (a separate `Graph` method, never called by this kernel at
+all) had zero golden coverage — exactly the gap that let #279's divide-by-zero/NaN bug on both
+go unnoticed. Added a `--similarity-measure simple_matching|jaccard|pearson` CLI flag
+(`cli_common.h`, `socnetv_cli.cpp`) so the kernel can select and dump each one; `pearson` routes
+to `createMatrixSimilarityPearson()` instead of `createMatrixSimilarityMatching()`. Three new
+baselines on `TinyArc_Dir_N2_E1` (N=2, one directed arc) pin the fix: with the default
+`diagonal=false`, comparing the network's only pair excludes every sampled column, driving
+Jaccard/Simple-Matching's `ties` and Pearson's effective sample size to exactly zero — verified
+directly (not assumed) by building the pre-#279-fix commit in a scratch worktree and confirming
+`nan` in the dumped JSON there vs. `0` post-fix on the same fixture/measure.
+
+**Extended again for the Jaccard `RAND_MAX` fix (v3.8)**: a follow-on audit of `matrix.cpp`
+(same pass that produced #279/#280) found `similarityMatrix()`'s Jaccard branch didn't exclude
+`RAND_MAX` (the "unreachable" sentinel) from its match/ties count the way `distancesMatrix()`
+does — invisible when similarity runs on the adjacency matrix (`AM`, never contains
+`RAND_MAX`), only reachable when it runs on the geodesic distances matrix (`DM`,
+`graph_reports.cpp`'s `createMatrixSimilarityMatching(DM, ...)` path) on a disconnected
+network. Added a `--similarity-input adjacency|distances` CLI flag (mirroring
+`--similarity-measure`) so the kernel can select which matrix feeds the `similarity` category;
+`DM` is already computed unconditionally earlier in the kernel, so no extra work is needed to
+supply it. One new baseline on `TinyDisconnected_Undir_N6_E4` (already used above as the
+full-grid small fixture) with `--similarity-measure jaccard --similarity-input distances`
+pins the fix. Verified live impact
+before fixing (not assumed): cell (D,F) read `0.75` pre-fix (a false-positive similarity from
+three shared-unreachable sample columns) vs. `0.0` post-fix, confirmed via a scratch worktree
+comparison the same way #279 was.
+
+Three smaller, currently-unreachable `Matrix` issues found during the same audit were hardened
+alongside the Jaccard fix, with no dedicated golden coverage (no real caller reaches either
+path today, so there's no natural kernel entry point without inventing a synthetic harness
+disproportionate to the fix):
+- `product(A, B, symmetry=true)` wrote out of bounds if `A.rows() != B.cols()` — now guarded
+  with an early return, matching the existing `A.cols() != B.rows()` incompatibility check in
+  the same function.
+- `productByVector(..., leftMultiply=true)` computed the wrong output length and read past
+  `cols()` for non-square input — fixed to match the loop bounds its own doc comment already
+  specified (`out` has `cols()` elements, `in` has `rows()`, for the left-multiply case).
+- `distancesMatrix()`/`similarityMatrix()`/`pearsonCorrelationCoefficients()` all assume a
+  square input (`N` taken from `rows()` for every axis, in every `varLocation` mode) — true for
+  every current caller (`AM`/`DM`, always square), now documented explicitly via `@note` rather
+  than left implicit.
+
 ### `kernel_connectivity_v7` — weak/strong connected components (#85, #272) ✅ Done
 
 - `Graph::graphWeaklyConnectedComponents()` — BFS treating all edges as undirected (weak connectivity); caches count in `m_graphWeaklyConnectedComponents` and per-node IDs in `m_vertexComponentId`. Cache invalidated with `resetDistanceCentralityCacheFlags()`.
@@ -296,6 +380,23 @@ Examples of high-value additions:
   above: no automated check exists today that `GraphicsWidget` state (visible/hidden edges, node
   positions) after a fixed operation sequence matches expectations, only manual
   `--interactive-script` testing. Could share WS6.6's harness scaffolding or be a sibling kernel.
+- **kernel_signed_v10** (not yet built, in progress — WS18 P2) — signed-network analysis outputs,
+  starting from `DistanceEngine::computePotentials()` (Johnson's-algorithm reweighting pass, added
+  but not yet wired into `dijkstraSSSP()`/`runAllSources()`):
+  - New `Graph::graphComputePotentials(inverseWeights, outPotentials)` — constructs a
+    `DistanceEngine`, calls the already-private `computePotentials()`, copies out the per-vertex
+    potential vector, returns whether a negative cycle was detected. `Graph` is already a friend of
+    `DistanceEngine`; no new friendship needed. Kept as a standalone probe, not part of the
+    refuse-and-compute pipeline `graphDistancesGeodesic()` drives.
+  - `src/tools/cli/kernels/kernel_signed_v10.{h,cpp}`, `--kernel signed`: dumps per-vertex
+    potentials and `negative_cycle_detected`, same `dataset`/`counts`/`graph` boilerplate every
+    other kernel emits. Registered in `socnetv_cli.cpp` and `CMakeLists.txt`.
+  - Baselines: `WeightedTies_Dir_N5_SigmaRegression` (already has an independently hand-verified
+    ground truth from #283) plus a new small fixture with a genuine negative cycle.
+  - **Designed to grow, not be replaced**, as WS18's later phases land: P3 (PN centrality) and P4
+    (structural balance ratio) add new JSON sections to this same kernel rather than spawning
+    `kernel_pn_v11`/`kernel_balance_v12` — all outputs describe the same "signed-network analysis
+    of this dataset" concept, on the same dataset shape (fixtures with signed edge weights).
 - **kernel_attribute_import_v7** (not yet built) — CSV/JSON attribute import + export roundtrip (#227, #232):
   - Use `src/data/TinyDir_N2_E1_Attributes.graphml` as the seed graph (2 nodes, 1 edge; heterogeneous custom attrs `Age`/`Party` using `d1000+` keys — also covers #208 regression)
   - Export nodes and edges to CSV and JSON via `TableExport`
@@ -346,7 +447,7 @@ This is currently absorbed by the harness: per-node fields compare with a **rela
 
 The concern is the margin. Worst observed relative spread across 25 runs: **3.4e-16** against a
 `1e-15` tolerance — **2.9× headroom**, no more. That margin shrinks as thread count and accumulation
-chain length grow, and WS6.2 explicitly plans to add *larger* datasets. A `geom.net`-scale baseline
+chain length grow, and WS6.8 explicitly plans to add *larger* datasets. A `geom.net`-scale baseline
 (7343 nodes) could plausibly exceed `1e-15` and turn the suite intermittently red, which is the
 worst possible failure mode for a regression harness — flaky, unreproducible, and easy to
 misattribute to whatever change happened to be in flight.
@@ -408,29 +509,10 @@ the tolerance argument above resolves the problem without touching the engine at
 fallback, not the first move.
 
 **Suggested order:** widen the tolerance with the reasoning recorded → then measure the actual
-spread at `geom.net` scale (7343 nodes) to confirm the new margin holds where WS6.2 is heading.
+spread at `geom.net` scale (7343 nodes) to confirm the new margin holds where WS6.8 is heading.
 
 Reproduce: run the same `--dump-json` invocation N times and hash the output with `_ms` fields
 stripped.
-
-### WS6.2 — Systematically expand datasets and coverage
-
-Goal:
-
-Increase confidence by testing more networks and more edge cases in a structured way.
-
-Approach:
-
-- grow the dataset suite gradually
-- include representative small/medium/large graphs
-- include tricky parser edge cases per format (GraphML/DOT/Pajek quirks)
-- where formats lack exporters, keep using export-skipped baseline locking
-- prefer shipped datasets under `src/data` where possible; add external datasets only if licensing permits
-
-Rules:
-
-- add datasets incrementally
-- baseline additions must be reviewed (do not bulk-regenerate)
 
 ### WS6.3 — Refactor the golden harness scripts for modularity
 
@@ -460,6 +542,11 @@ Direction:
   - `--skip <suite1,suite2,...>`
   - default: run all
 
+- reformat output as a human-readable summary table (case, kernel, pass/fail, timing) instead of
+  the current flat `==> filename` / raw CLI output / `OK`/`FAIL` stream - the detailed streaming
+  output is fine to keep for diagnosing one failing case, but the default end-of-run view should
+  be scannable at a glance, especially as the baseline count keeps growing.
+
 Outcome:
 
 Faster local workflows and easier diagnosis when one suite fails.
@@ -482,52 +569,216 @@ CI should run a carefully chosen subset by default:
 
 Heavier suites can run nightly or on-demand.
 
-### WS6.8 — Independently audit pre-existing golden baselines for mathematical correctness
+### WS6.8 — Independently verify every algorithm's correctness, not just its self-consistency
 
-**Status: deferred until after the v3.7 release** — queued during the Katz/Bonacich work (2026-08)
-but explicitly postponed given the v3.7 release deadline; pick this up first thing once v3.7 ships.
+**Status: active priority (2026-09-22)** — originally queued during the Katz/Bonacich work
+(2026-08), deferred past v3.7. Two more real bugs found the same way since (#283, #286, both
+2026-09) make this no longer a someday-audit: it's the standing bar every algorithm needs to clear.
+**Absorbs the former WS6.2** ("systematically expand datasets and coverage") — that section's goal
+(more networks/edge cases, tested in a structured way) was a looser, less concrete restatement of
+what this section now demands precisely; keeping both risked them drifting apart or contradicting
+each other. Its dataset-breadth concerns (parser edge cases per format, small/medium/large scale)
+are folded into the Approach below as a distinct dimension from independent-verification coverage,
+not dropped.
 
 Goal:
 
 Golden baselines catch *regressions* (today's output differs from yesterday's), but say nothing
 about whether the *original* baseline was ever mathematically correct. Every baseline currently in
 `src/tools/baselines/` was accepted once, at dump time, without independent verification against a
-hand-computable ground truth.
+hand-computable ground truth. **Every kernel/algorithm family should have at least one baseline
+independently verified against ground truth computed outside SocNetV** (by hand, or a short
+standalone script — never by re-deriving the expected value from SocNetV's own code) — not just a
+risk-based sample. A risk-based order (below) still decides which cases get done first; it no
+longer decides whether a case gets done at all.
 
-Motivating precedent: the Katz/Bonacich verification work this session (2026-08) caught two real
-bugs this way that ordinary regression testing had already been passing cleanly against its own
-(silently wrong) baselines:
+Motivating precedent — three separate incidents now, same failure shape each time: a bug baked
+into the very first implementation, invisible for years because every later golden run only ever
+checked self-consistency (today's output vs. yesterday's), never against an outside ground truth:
 
 - The `Matrix::powerIteration()` divide-by-zero substitution (`norm = 1`) leaking into the reported
-  `lambdaMax` on nilpotent (directed, cycle-free) matrices — every golden run agreed with itself,
-  because the bug was baked into the baseline from the start.
-- A stale-cache bug where a rejected alpha/beta silently short-circuited every later recompute —
-  invisible to golden compares since each baseline is dumped once, not re-run with changing inputs.
+  `lambdaMax` on nilpotent (directed, cycle-free) matrices (2026-08, Katz/Bonacich work).
+- A stale-cache bug where a rejected alpha/beta silently short-circuited every later recompute
+  (2026-08, same work) — invisible to golden compares since each baseline is dumped once, not
+  re-run with changing inputs.
+- `dijkstraSSSP()`'s tie-breaking bookkeeping not fully updated on a strictly-improved relaxation
+  (#283, 2026-09) — inflated BC/SBC on any weighted network where a vertex is relaxed more than
+  once. Dated to the original 2014 Dijkstra implementation.
+- Diameter tracked as a running max over relaxation *events* instead of each vertex's *final*
+  distance (#286, 2026-09) — same 2014 origin commit as #283, same "vertex relaxed more than once"
+  precondition, found only because a WS18 GUI-testing session happened to hand-verify a diameter
+  value and it didn't match.
 
-Both were found only by hand-deriving expected values independently (plain Python, Gauss-Jordan
-elimination, no numpy) against small, deliberately-constructed test networks, then comparing
-against what the app actually produced — not by trusting the existing baseline as ground truth.
+All four were found only by hand-deriving or independently scripting the expected value against a
+small, deliberately-constructed test network, then comparing against what the app actually
+produced — never by trusting the existing baseline, and never by re-deriving the expected value
+from SocNetV's own algorithm (that would just re-confirm the same bug, not catch it).
 
-Suggested approach (risk-based, not exhaustive — see below):
+Approach:
 
 - Prioritize edge cases most likely to hide latent bugs, per the pattern above: directed +
   nilpotent/cyclic structure, isolates, self-loops, zero-weight edges, disconnected components,
-  weighted + inverted-weight combinations, and any kernel that recently changed
-  (`vertex_connectivity`, `connectivity`, `matrix` are the newest families and haven't had this
-  treatment at all yet).
-- For each flagged case, hand-derive the expected result independently (small enough networks that
-  this is tractable by hand or a short verification script) and compare against the current
-  baseline — not just against the app's current output, since the app could be self-consistently
-  wrong.
+  weighted + inverted-weight combinations, any network where some vertex is relaxed more than once
+  during Dijkstra (the exact precondition #283/#286 both needed), and any kernel that recently
+  changed (`vertex_connectivity`, `connectivity`, `matrix`, `signed` are the newest families and
+  haven't had this treatment at all yet).
+- For each kernel, hand-derive the expected result independently (small enough networks that this
+  is tractable by hand or a short verification script) and compare against the current baseline —
+  not just against the app's current output, since the app could be self-consistently wrong.
+- **A single hand-derivation attempt is not automatically trustworthy — use a second independent
+  method when the first result is at all surprising.** Found live during the `matrix` weighted
+  baseline work (2026-09-23): a first hand-derivation of `similarity`'s simple-matching values
+  guessed the wrong column-exclusion rule (assumed "skip the diagonal cell", the actual rule is
+  "skip column j whenever j equals either actor being compared") and produced plausible-looking but
+  wrong expected values. A second, independent method — a short standalone script implementing the
+  measure from its algorithmic definition (not copied from SocNetV's C++), separate from external
+  tools used elsewhere for cross-checking (see this repo's own conventions for that) — caught the
+  mismatch and confirmed the app's output, not the first hand-derivation, was correct. The lesson:
+  "independently verified" means the verification method must itself be checked, not just run once
+  and trusted because it produced *a* number.
+- **Prefer cross-checking against established outside scripting tools over hand derivation when
+  the case is tractable that way** — a standalone script re-implementing an algorithm from its
+  published definition remains the fallback for cases those tools don't cover natively (schema
+  details specific to this app, e.g. `links_sna` vs `ties_graph` counts) or where using one would
+  be disproportionate. Other established network-analysis packages are a reasonable choice for
+  this. This matters for one non-obvious reason found live during the
+  `clustering`
+  work (2026-09-23): a metric can have more than one legitimate published definition — SocNetV's
+  directed local clustering coefficient (union of in/out neighbourhood, ordered-pair denominator)
+  and a well-known outside library's default directed clustering coefficient (Fagiolo 2007,
+  geometric-triangle based) are **both correct, but different metrics**, and comparing against the
+  wrong one produces a false mismatch. When an outside-tool cross-check disagrees, check whether the
+  two sides are actually computing the same defined quantity before concluding either is wrong —
+  read SocNetV's own doc comment for the formula it claims to implement, then independently
+  reimplement *that specific formula* (not the outside tool's default) as the real check.
 - Where a baseline is found to be wrong, follow the same discipline used for the `powerIteration`
-  fix: confirm the fix is unambiguously correct, understand exactly what changes and why, get
-  explicit sign-off before touching previously-"passing" baselines, then re-dump with a clear
-  commit explaining what was wrong and how it was verified.
-- Given the scope (9 kernel families, ~78 baseline files as of 2026-08), decide the audit's actual
-  depth (representative sample vs. exhaustive vs. risk-based-only) when this is picked back up,
-  rather than assuming exhaustive coverage is the goal by default.
+  fix and #283/#286: confirm the fix is unambiguously correct, understand exactly what changes and
+  why, get explicit sign-off before touching previously-"passing" baselines, then re-dump with a
+  clear commit explaining what was wrong and how it was verified.
+- Given the scope (9 kernel families, ~78 baseline files as of 2026-08, growing), this is
+  incremental work threaded through ordinary development, not a single dedicated pass — every new
+  algorithm/measure added from now on gets independent verification as part of landing it (see
+  WS6's own Work Rules below), and existing kernels get worked through opportunistically in the
+  risk-based order above.
+- **Dataset/format breadth** (former WS6.2), a distinct dimension from independent-verification
+  coverage above but pursued alongside it: grow the dataset suite gradually; include representative
+  small/medium/large graphs; include tricky parser edge cases per format (GraphML/DOT/Pajek
+  quirks); where formats lack exporters, keep using export-skipped baseline locking; prefer shipped
+  datasets under `src/data` where possible, add external datasets only if licensing permits.
+
+#### Coverage matrix (living checklist — update as work lands)
+
+**First finding, worth internalizing before adding fixtures anywhere below: not every kernel has
+a meaningful weighted axis.** Several families operate purely on edge *existence*, never read a
+weight value, so a "weighted vs unweighted" baseline pair for them would be identical output by
+construction — a wasted baseline, not real coverage. Checked by reading the actual algorithm
+source (not assumed):
+
+| Kernel | Reads edge weight values? | Where checked |
+|---|---|---|
+| `connectivity` | No — `graphWeaklyConnectedComponents()`/`graphStronglyConnectedComponents()` are pure BFS/DFS over edge presence | `graph_distance_facade.cpp` |
+| `vertex_connectivity` | No — Menger's-theorem max-flow via vertex-split, no edge capacities used | `graph_connectivity.cpp` |
+| `reachability` | No — `apspDistance() != RAND_MAX`, path existence only | `kernel_reachability_v2.cpp` |
+| `walks` | No — `walksBetween()` is adjacency-matrix power, binary | `kernel_walks_v3.cpp` |
+| `matrix` | **Yes** — `createMatrixAdjacency(considerWeights=true)` stores real weight values in `AM`/`DM`/similarity | `graph_matrix_adjacency.cpp` |
+| `clustering` | No — `clusteringCoefficientLocal()` only checks edge *presence* to build the neighbourhood; `considerWeights` merely gates a zero-weight-edge exclusion filter already active regardless, so a weighted vs. unweighted run only differs when the fixture has an edge that becomes weight-zero — none of the 8 existing fixtures do. Confirmed 2026-09-23: `DunbarGelada_H22a` and `StokmanZiegler_Netherlands`'s `W0`/`W1` baseline pairs are byte-identical apart from the `run`/timing fields. | `graph_clustering_coefficients.cpp` |
+| `prominence`, `distance`, `signed` | Yes | (established, weighted baselines already exist) |
+
+So for `connectivity`/`vertex_connectivity`/`reachability`/`walks`/`clustering`, the
+directed/undirected axis is the only topology axis that matters — a weighted variant is not
+missing coverage, it's a no-op. Don't add one.
+
+**Status per family, as of 2026-09-23** (Dir/Undir = at least one baseline of each topology exists;
+Weighted col is N/A where the table above says the kernel doesn't read weights):
+
+| Kernel | Dir+Undir? | Weighted axis | Isolates/disconnection? | Independently verified? |
+|---|---|---|---|---|
+| `connectivity` | ✅ yes | N/A (topology-only) | ✅ yes (pre-existing — `TinyDisconnected_*`, `TinyIsolated_*` fixtures) | ✅ done 2026-09-23 — all 10 baselines hand-derived from `.paj` source and matched exactly (component counts, weak vs. strong) |
+| `matrix` | ✅ yes | ✅ done 2026-09-23 | ✅ yes (pre-existing — `TinyDisconnected_Undir_N6_E4`) | ✅ done 2026-09-23 — `adjacency`/`distances`/`reachability`/`clique_comembership` on `TinyPath_N3_E2` hand-verified; `Benchmark_BA_Directed_N500_m3`'s adjacency (row/col sums, trace, 5 sampled cells) cross-checked via independent `.paj` parse, all match; `similarity` already verified for #279/#280. New weighted baseline `TinyDirWeighted_N3` (A→B:2, B→C:3, directed, one-way only) added and independently verified two ways: hand-derived adjacency/distances/reachability, and a from-scratch Python reimplementation of simple-matching similarity's algorithm (not copied from SocNetV source) cross-checked against the dumped `similarity` category. Also confirms `clique_comembership` correctly requires **reciprocal** ties for adjacency (`reciprocalNeighborhoodList()`) — a one-directional arc doesn't count, so this fixture's expected result is the identity matrix (no shared cliques), not what a naive undirected-adjacency assumption would predict. |
+| `vertex_connectivity` | ✅ yes | N/A (topology-only) | ✅ yes (pre-existing — `TinyDisconnected_Undir_N6_E4`) | ✅ done (pre-existing) — Petersen graph kappa(G)=3 textbook cross-check + live GUI cross-check |
+| `reachability` | ✅ yes (1 dir + 1 undir) | N/A (topology-only) | ✅ done 2026-09-24 — `TinyDisconnected_Undir_N6_E4`/`TinyDisconnected_Dir_N5_E3` | ✅ done 2026-09-23 — both original baselines cross-checked cell-by-cell against a standalone Python BFS reimplementation (not SocNetV code). `DunbarGelada_H22a` (undirected, N=12): fully connected, all 144 pairs reachable, density 1.0, every matrix cell independently confirmed 1. `StokmanZiegler_Netherlands` (directed per DL FULLMATRIX loading, though the underlying matrix happens to be symmetric; N=16, node 16/NSU fully isolated): 226/256 reachable pairs, density 0.8828125, full 16×16 matrix matched cell-by-cell. Disconnection fixtures (2026-09-24) hand-verified: block-structured reachability matrix and pair counts (14/36 undirected, 9/25 directed) derived from the topology by hand. |
+| `walks` | ✅ yes (1 dir + 1 undir + 1 tiny) | N/A (topology-only) | ✅ done 2026-09-24 — `TinyDisconnected_Undir_N6_E4`/`TinyDisconnected_Dir_N5_E3`, K=2 | ✅ done 2026-09-23 — all 3 original baselines cross-checked cell-by-cell against a standalone Python adjacency-matrix-power reimplementation (not SocNetV code). `TinyPath_N3_E2` (K=2, undirected N=3): total 6, matrix matched. `DunbarGelada_H22a` (K=6, undirected N=12): total 136644, all 144 cells matched. `StokmanZiegler_Netherlands` (K=6, directed load path over a symmetric binarized matrix, N=16): total 5129002, all 256 cells matched. Disconnection fixtures (2026-09-24) hand-verified: zero cross-component cells by construction, every within-component cell derived by hand. |
+| `clustering` | ✅ yes | N/A (topology-only, see finding above) | ✅ done 2026-09-24 — `TinyDisconnected_Undir_N6_E4`/`TinyDisconnected_Dir_N5_E3` | ✅ done 2026-09-23 — all 8 original baselines cross-checked against an outside-tool reimplementation. `TinyPath_N3_E2`, `TinyDirChain_N3`, `Krackhardt_Kite_N10`, and `DunbarGelada_H22a`'s undirected CLC/cliques/triad-census all matched a standalone networkx script directly. `Sampson_Monks_N18` (mixed `*Arcs`+`*Edges`, directed) and both `StokmanZiegler_Netherlands` variants matched on cliques and triad census, but directed CLC first came back *mismatched* against `nx.clustering()` — turned out to be two different legitimate formulas, not a bug: SocNetV uses union-of-in/out-neighbourhood with an ordered-pair denominator `k*(k-1)` (documented directly in `clusteringCoefficientLocal()`), while networkx's directed CLC defaults to the Fagiolo (2007) geometric-triangle formula. Reimplementing SocNetV's own documented formula from scratch (independently, not copied from its C++) matched the baseline exactly, confirming the baseline itself is correct for what it claims to measure. Weighted variants (`DunbarGelada_H22a`, `StokmanZiegler_Netherlands`) reconfirmed byte-identical to their unweighted counterparts, consistent with the no-weighted-axis finding above. Disconnection fixtures (2026-09-24) cross-checked against a standalone networkx script: cliques/CLC/full 16-class triad census all matched exactly. |
+| `distance` | ✅ yes, all four combinations | ✅ yes | ✅ done 2026-09-24 — new weighted fixtures `TinyDisconnectedWeighted_Undir_N6_E4`/`TinyDisconnectedWeighted_Dir_N5_E3` (two components + one true isolate / two components with dead-end sinks) | ✅ done 2026-09-23 — `DunbarGelada_H22a` (undirected, W0+W1) and `StokmanZiegler_Netherlands` (directed, W0+W1) together cover directed/undirected × considerWeights on/off, all four independently verified (hand + standalone script, later networkx). Found and fixed **five** real bugs along the way, all filed and re-verified: #287 (graph-wide distance sum double-counted whenever centralities run), #288 (per-vertex eccentricity overstated — same relaxation-event-tracking shape as #286), #289 (Dijkstra's priority queue truncated fractional tentative distances to `int`, corrupting pop order and permanently losing later, correct relaxations), #290 (reachable-pairs count inflated on disconnected graphs, same relaxation-event shape as #287/#288), #291 (BC/SC undirected-halving gated on tie reciprocity instead of the graph's actual directed/undirected mode). Wiring the two new disconnection fixtures in (2026-09-24) surfaced **three more** bugs, all hand-verified against ground truth and fixed: #292 (Dijkstra's SC missing the increment entirely on strict-improvement relaxations — undercounted, often to 0), #293 (SC still wrong after #292's fix — it counted relaxation events that were later superseded by a shorter path in the same run; fixed by computing SC post-hoc from the settled `Ps[]` DAG in the same Brandes back-propagation loop BC already uses, not live during relaxation), #294 (`diameter` silently truncated to `int` on weighted graphs — changed to `qreal` end to end, matching `avg_distance`/`CC`/`eccentricity`'s existing convention). |
+| `prominence` | ✅ yes, all four combinations (27 baselines cover the full matrix) | ✅ yes | ✅ done 2026-09-24 — `TinyDisconnectedWeighted_Undir_N6_E4`/`TinyDisconnectedWeighted_Dir_N5_E3` (genuine multi-component disconnection, distinct from the pre-existing single-isolate `TinyWeightedIsolate_Undir_N4_E2`) | ✅ done 2026-09-24 — distance-derived measures (BC/SC/CC/eccentricity + standardized forms) verified via #287–#291's fixes, since `prominence` shares `finalize()` with `distance`. Prestige/eigenvector-family measures independently verified this session: DP/SDP (in-degree/prestige), PRP (PageRank prestige, hand power-iteration reimplementation), PP (Lin's Proximity Prestige), IC/SIC (Stephenson-Zelen Information Centrality, from-scratch Gauss-Jordan matrix inverse), EVC/SEVC (power-iteration eigenvector centrality) — all cross-checked against `Sampson_Monks_N18` (mixed directed+undirected) or `Krackhardt_Kite_N10` (undirected) via a standalone script, matching to float precision. KC (Katz) and BPC (Bonacich) hand-derived by direct 3×3 matrix inversion on `TinyDirWeighted_N3` (chain 1→2→3, weights 2 and 3): both give [0, 2, 9], matching the baseline exactly. Disconnection fixtures: DC/DP/BC/SC cross-checked against this fixture's already-verified `distance`-kernel baseline; IC=0 everywhere confirmed correct (genuinely singular symmetrized weight matrix on a disconnected graph, hand-verified via determinant, not a silent failure); PRP(isolate)=1/N and PP(isolate)=0 match their documented isolate-handling behavior. |
+| `signed` | directed only (signed implies weighted; undirected signed ties are not a modeled case) | N/A (weight required by definition) | ✅ done 2026-09-24 — `TinyDisconnectedWeighted_Dir_N5_E3` | ✅ done — this session's WS18 work (hand + independent script). Disconnection fixture: potentials confirmed correctly all-zero (no negative weights), distance_sum/BC/eccentricity match the already-verified `distance`-kernel baseline for the same graph. |
+| `io_roundtrip` | per-format | per-format | N/A — fidelity check, not a numeric algorithm | N/A — fidelity check, not a numeric algorithm |
+
+**Next actions implied by this table**, in the risk-based order from Approach above:
+1. ~~Add the missing weighted `matrix` baseline~~ — done 2026-09-23 (`TinyDirWeighted_N3`).
+2. ~~Independently verify `reachability`'s 2 existing baselines~~ — done 2026-09-23.
+3. ~~Independently verify `walks`'s 3 existing baselines~~ — done 2026-09-23.
+4. ~~Independently verify `clustering`'s 8 baselines~~ — done 2026-09-23.
+5. ~~Extend `distance`/`prominence` verification to full breadth~~ — done 2026-09-24.
+6. ~~Add the disconnected-graph coverage axis~~ — done 2026-09-24, every kernel family.
+
+**Third coverage axis: isolates / disconnection — done 2026-09-24.** Directed/undirected and
+weighted/unweighted are covered per-kernel above; isolated vertices (degree 0) and disconnected
+non-trivial components — two distinct states — are now covered for every kernel family. This
+mattered in practice: three of this session's bugs (#287, #288, #290) only manifested, or
+manifested worse, on graphs with unreachable pairs (the `RAND_MAX` sentinel path), and wiring the
+new disconnection fixtures into `distance` surfaced three more (#292, #293, #294) before the axis
+was even fully wired in. `prominence` (the last kernel without dedicated coverage) closed this
+axis out, reusing the same two fixtures already verified for `distance` rather than adding new
+datasets.
+
+All three WS6.8 coverage axes (directed/undirected, weighted/unweighted, isolates/disconnection)
+are now ✅ complete across every kernel family. WS6.8 itself remains open as a standing bar for
+any *new* algorithm/fixture added in the future (see the Goal statement above), not as a
+one-time checklist to re-open.
+
+Rules:
+
+- add datasets incrementally; baseline additions must be reviewed (do not bulk-regenerate)
+
+### WS6.9 — Close CLI kernel coverage gaps found during the WS6.8 audit
+
+**Status: ✅ done (2/5 as of 2026-09-24, 5/5 as of 2026-09-25)** — while auditing WS6.8's coverage matrix, checked every
+public `Graph` method that computes an analytical result against what the ten existing kernels
+(`distance`, `reachability`, `walks_matrix`, `prominence`, `io_roundtrip`, `clustering`,
+`connectivity`, `matrix`, `vertex_connectivity`, `signed`) actually call. Cohesion (cliques,
+connectivity) is fully covered; generators are correctly out of scope (they build graphs, they
+don't analyze them); no k-core algorithm exists anywhere in the codebase (not a gap — just absent
+from SocNetV). Five methods currently have **zero** kernel coverage — never dumped into a baseline,
+never independently verified, never protected against regression:
+
+| # | Algorithm | Source | What it computes | Natural home | Status |
+|---|---|---|---|---|---|
+| 1 | `Graph::graphReciprocity()` | `src/graph/core/graph_structure_metrics.cpp` | Arc/dyad reciprocity ratios for the current relation | `connectivity` kernel | ✅ done 2026-09-24 — new accessors added, wired into a `reciprocity` JSON block, all 10 existing `connectivity` baselines re-dumped. Independently verified: `StokmanZiegler_Netherlands`'s fully-reciprocal ties (166/166 ties, 60/60 pairs) and `Sampson_Monks_N18`'s partial reciprocity (32/57 ties, 16/41 pairs) both hand-derived from source and matched exactly. Surfaced and fixed a pre-existing golden-compare harness gap along the way: `"nan"` (a legitimate 0/0 ratio, e.g. on a zero-edge fixture) was always a hard mismatch, even against another `"nan"` — fixed centrally in `cmpNumStrTol` and its per-kernel variants. |
+| 2 | `Graph::createMatrixDissimilarities()` | `src/graph/similarity/graph_similarity_matrices.cpp` | Actor dissimilarity matrix (complement of the already-covered similarity-matching/Pearson paths) | `matrix` kernel | ✅ done 2026-09-24 — new `--dissimilarity-measure` flag (euclidean/manhattan/jaccard/hamming/chebyshev, mirroring `--similarity-measure`) and a `dissimilarity` JSON category, all 8 existing `matrix` baselines re-dumped. Independently verified: `TinyDisconnected_Undir_N6_E4`'s dist(A,D)=√2, dist(B,D)=√3 hand-derived from the adjacency rows; `Benchmark_BA_Directed_N500_m3`'s summary-mode sample cell dist(node0,node499)=1.0 independently recomputed from the raw `.paj` source. |
+| 3 | `Graph::graphClusteringHierarchical()` | `src/graph/clustering/graph_clustering_hierarchical.cpp` | Agglomerative structural-equivalence clustering (single/complete/average/UPGMA linkage), merge sequence | `clustering` kernel | ✅ done 2026-09-25 — new `--clustering-method`/`--clustering-input` flags (reusing `--dissimilarity-measure` for the metric) and a `hierarchical` JSON block (merge sequence + linkage levels), all 10 existing `clustering` baselines re-dumped plus one new dedicated UPGMA baseline. Found and fixed two real bugs along the way, both filed and independently re-verified via a standalone hierarchical-clustering reimplementation: #295 (Step 1's cluster-index population skipped isolated vertices while the paired dissimilarity matrix always sized itself to include them, leaving an unindexed matrix row that corrupted every merge decision on any disconnected graph — isolates now get their own singleton entry), #296 (the sole "average-linkage" method was WPGMA — unweighted mean of prior cluster distances — mislabeled "UPGMA" in the GUI/docs; added a genuinely size-weighted `Average_Linkage_UPGMA` method alongside it rather than changing the existing one, so both are now independently selectable). Also filed #297 (pre-existing, separate: unreachable/`RAND_MAX` pairs in a distances-matrix input aren't special-cased by the clustering loop) and documented the algorithm's full linkage-method semantics in the function's doc comment and the `Clustering` enum. |
+| 4 | `Graph::estimateSpectralRadius()` | `src/graph/centrality/graph_centrality.cpp` | Dominant eigenvalue estimate — used internally by Katz/Bonacich but never independently checked on its own | `prominence` kernel, as an auxiliary value | ✅ done 2026-09-25 — new `metrics.spectralRadius` field, always computed (reuses existing considerWeights/inverseWeights/dropIsolates, no new flag). Independently verified against a standalone eigendecomposition on 5 fixtures covering all three axes: `TinyPath_N3_E2`/`Krackhardt_Kite_N10` (undirected unweighted), `TinyDisconnectedWeighted_Undir_N6_E4` (weighted, disconnected + isolate), `TinyWeightedIsolate_Undir_N4_E2` (weighted, inverseWeights, isolate), `TinyDirChain_N3` (directed, nilpotent — all-zero eigenvalues). Also closed a latent gap found along the way: `metrics.density` was dumped by both `prominence` and `distance` but never actually compared in either kernel — added the missing compare calls and independently re-verified `density` by hand on two fixtures, confirming the values were already correct. |
+| 5 | `Graph::isSymmetric()` | `src/graph/core/graph_state_flags.cpp` | Whether the adjacency matrix is symmetric | Turned out to need full wiring, not just a verification note — see below | ✅ done 2026-09-25 — the `SYMMETRIC` stdout line in `socnetv_cli.cpp` was never actually in any kernel's JSON, so it was never regression-tested despite appearing present in every run's console output. Added `graph.symmetric` (alongside the existing `graph.directed`/`graph.weighted`) to all 9 kernels that have a `graph` block, plus the missing compare call in each — closing 3 pre-existing `weighted`-compare gaps (`connectivity`/`signed`/`vertex_connectivity`) and a `metrics.density`-compare gap (`walks_matrix`/`reachability`, same shape as item #4's `prominence`/`distance` fix) found along the way. Independently verified: undirected graphs are always symmetric by construction; `StokmanZiegler_Netherlands` (100% reciprocal directed ties per item #1's already-verified reciprocity baseline) correctly reports `symmetric=true` despite being directed; `TinyDirChain_N3` (no reciprocal arcs) reports `symmetric=false`. All ~116 affected baselines regenerated via a new `--update` flag added to `run_golden_compares.sh` (mirroring `run_golden_io_roundtrip.sh`'s existing `--update` mode) to make future baseline regeneration a first-class, reviewable operation instead of ad hoc script patching. |
+
+All five items are done. Each was wired into its natural-home kernel's JSON output (#5 turned out
+to need full wiring too, not just a verification note — see its row above), with at least one
+fixture and independent verification against ground truth computed outside SocNetV (hand or a
+standalone script — same bar as WS6.8).
+
+Rules:
+
+- Same as WS6.8: independent verification only — never re-derive the expected value from SocNetV's
+  own source.
+- Wire one algorithm at a time into its kernel; don't bulk-add JSON fields across multiple gaps in
+  one commit.
 
 ### Open findings
+
+#### Windows/MSVC build warnings: C4458 shadowing, C4996 Qt6 deprecations
+
+**Status: deferred until after the v3.7 release** — noticed during the v3.7 `Release SocNetV`
+workflow run (2026-08), Windows leg takes noticeably longer than macOS/Linux and is noisy with
+warnings not seen on the other two platforms.
+
+- `C4458` ("declaration of 'x' hides class member") — worth checking whether any of these are in
+  the same family as this session's `GraphVertex` uninitialized-member findings (#274): shadowed
+  member names are exactly the kind of thing that makes "did this actually set the member, or a
+  local shadowing it?" hard to eyeball. Could be entirely benign constructor-parameter shadowing
+  too - needs an actual look at the specific sites, not assumed either way.
+- `C4996` ("`QCheckBox::stateChanged` is deprecated: Use `checkStateChanged()` instead") - plain
+  Qt6 API migration debt, unrelated to the above.
+
+Not investigated further yet - just captured here so it isn't lost. Pick up post-3.7.
 
 #### `run_benchmarks.sh` reports `BUILD_TYPE=Debug` even against a Release binary
 
@@ -555,3 +806,8 @@ text — worth including once this is revisited.
 - Baseline regeneration should be treated as exceptional.
 - Any "FAIL" in benchmarks must be investigated; if it is noise, prefer mitigation via more stable measurement rather than loosening thresholds by default.
 - WS6 work should remain incremental: small changes, deterministic evidence, and consistent scripts.
+- **New algorithm/measure work must independently verify at least one result before its first
+  golden baseline is trusted** (see WS6.8) — a fixture whose expected value was hand-derived or
+  computed by a standalone script outside SocNetV, not just "the app agrees with itself." A
+  self-consistent golden baseline proves nothing about correctness on its own; three separate
+  bugs (`powerIteration`, #283, #286) shipped silently for years hiding behind exactly that gap.

@@ -11,6 +11,7 @@
     },
     "graph": {
         "directed": false,
+        "symmetric": true,
         "weighted": false
     },
     "kernel": "prominence",
@@ -22,7 +23,8 @@
         "ok": true
     },
     "metrics": {
-        "density": "0.40000000000000002"
+        "density": "0.40000000000000002",
+        "spectralRadius": "4.306403794615755"
     },
     "per_node": [
         {
@@ -34,7 +36,7 @@
             "IC": "1.1821086261980831",
             "IRCC": "0.52941176470588236",
             "KC": "0.71759360924738824",
-            "PC": "6.0833333333333339",
+            "PC": "6.083333333333333",
             "PP": "0.52941176470588236",
             "PRP": "0.10193628067552184",
             "SBC": "0.023148148148148147",
@@ -46,14 +48,18 @@
             "SIC": "0.10938702044459107",
             "SIRCC": "0.52941176470588236",
             "SKC": "0.69715126436155506",
-            "SPC": "0.67592592592592593",
+            "SPC": "0.67592592592592582",
             "SPP": "0.52941176470588236",
             "SPRP": "0.69265056101565703",
             "SSC": "0.054054054054054057",
             "eccentricity": "4",
             "eccentricity_inf": false,
             "id": 1,
-            "label": "Andre"
+            "label": "Andre",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "4",
+            "signedDegreePos": "4",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "0.83333333333333326",
@@ -64,9 +70,9 @@
             "IC": "1.1821086261980831",
             "IRCC": "0.52941176470588236",
             "KC": "0.71759360924738846",
-            "PC": "6.0833333333333339",
+            "PC": "6.083333333333333",
             "PP": "0.52941176470588236",
-            "PRP": "0.10193441184414075",
+            "PRP": "0.10193441184414073",
             "SBC": "0.023148148148148147",
             "SC": "2",
             "SCC": "0.52941176470588236",
@@ -76,14 +82,18 @@
             "SIC": "0.10938702044459107",
             "SIRCC": "0.52941176470588236",
             "SKC": "0.69715126436155528",
-            "SPC": "0.67592592592592593",
+            "SPC": "0.67592592592592582",
             "SPP": "0.52941176470588236",
-            "SPRP": "0.69263786242496905",
+            "SPRP": "0.69263786242496894",
             "SSC": "0.054054054054054057",
             "eccentricity": "4",
             "eccentricity_inf": false,
             "id": 2,
-            "label": "Beverley"
+            "label": "Beverley",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "4",
+            "signedDegreePos": "4",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "0",
@@ -94,7 +104,7 @@
             "IC": "1.0787172011661808",
             "IRCC": "0.5",
             "KC": "0.5614487356794442",
-            "PC": "5.5833333333333339",
+            "PC": "5.583333333333333",
             "PP": "0.5",
             "PRP": "0.079429331031323006",
             "SBC": "0",
@@ -113,7 +123,11 @@
             "eccentricity": "4",
             "eccentricity_inf": false,
             "id": 3,
-            "label": "Carol"
+            "label": "Carol",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "3",
+            "signedDegreePos": "3",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "3.6666666666666665",
@@ -143,7 +157,11 @@
             "eccentricity": "4",
             "eccentricity_inf": false,
             "id": 4,
-            "label": "Diane"
+            "label": "Diane",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "6",
+            "signedDegreePos": "6",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "0",
@@ -154,7 +172,7 @@
             "IC": "1.0787172011661808",
             "IRCC": "0.5",
             "KC": "0.56144873567944398",
-            "PC": "5.5833333333333339",
+            "PC": "5.583333333333333",
             "PP": "0.5",
             "PRP": "0.079427463831839476",
             "SBC": "0",
@@ -173,7 +191,11 @@
             "eccentricity": "4",
             "eccentricity_inf": false,
             "id": 5,
-            "label": "Ed"
+            "label": "Ed",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "3",
+            "signedDegreePos": "3",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "8.3333333333333339",
@@ -203,7 +225,11 @@
             "eccentricity": "3",
             "eccentricity_inf": false,
             "id": 6,
-            "label": "Fernando"
+            "label": "Fernando",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "5",
+            "signedDegreePos": "5",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "8.3333333333333339",
@@ -233,7 +259,11 @@
             "eccentricity": "3",
             "eccentricity_inf": false,
             "id": 7,
-            "label": "Garth"
+            "label": "Garth",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "5",
+            "signedDegreePos": "5",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "14",
@@ -263,7 +293,11 @@
             "eccentricity": "2",
             "eccentricity_inf": false,
             "id": 8,
-            "label": "Heather"
+            "label": "Heather",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "3",
+            "signedDegreePos": "3",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "8",
@@ -274,7 +308,7 @@
             "IC": "0.6867749419953596",
             "IRCC": "0.42857142857142855",
             "KC": "0.26260349113200143",
-            "PC": "4.6666666666666661",
+            "PC": "4.666666666666667",
             "PP": "0.42857142857142855",
             "PRP": "0.085698313648475438",
             "SBC": "0.22222222222222221",
@@ -286,14 +320,18 @@
             "SIC": "0.063551067098203254",
             "SIRCC": "0.42857142857142855",
             "SKC": "0.25512261189232371",
-            "SPC": "0.51851851851851838",
+            "SPC": "0.51851851851851849",
             "SPP": "0.42857142857142855",
             "SPRP": "0.58231460509787114",
             "SSC": "0.12162162162162163",
             "eccentricity": "3",
             "eccentricity_inf": false,
             "id": 9,
-            "label": "Ike"
+            "label": "Ike",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "2",
+            "signedDegreePos": "2",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "0",
@@ -323,10 +361,15 @@
             "eccentricity": "4",
             "eccentricity_inf": false,
             "id": 10,
-            "label": "Jane"
+            "label": "Jane",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "1",
+            "signedDegreePos": "1",
+            "signedDegreeRatio": "1"
         }
     ],
     "run": {
+        "bonacichEnabled": false,
         "considerWeights": false,
         "dropIsolates": false,
         "inverseWeights": true,

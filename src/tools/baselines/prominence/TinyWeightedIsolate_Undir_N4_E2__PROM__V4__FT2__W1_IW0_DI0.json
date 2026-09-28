@@ -11,6 +11,7 @@
     },
     "graph": {
         "directed": false,
+        "symmetric": true,
         "weighted": true
     },
     "kernel": "prominence",
@@ -22,7 +23,8 @@
         "ok": true
     },
     "metrics": {
-        "density": "0.33333333333333331"
+        "density": "0.33333333333333331",
+        "spectralRadius": "2.9154759474226504"
     },
     "per_node": [
         {
@@ -47,11 +49,15 @@
             "SPC": "0.32500000000000001",
             "SPP": "0.20512820512820512",
             "SPRP": "0.52778126951775151",
-            "SSC": "nan",
+            "SSC": "0",
             "eccentricity": "2147483647",
             "eccentricity_inf": true,
             "id": 1,
-            "label": "A"
+            "label": "A",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "2.5",
+            "signedDegreePos": "2.5",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "1",
@@ -65,7 +71,7 @@
             "PP": "0.33333333333333331",
             "PRP": "0.36488593894954491",
             "SBC": "0.33333333333333331",
-            "SC": "0",
+            "SC": "1",
             "SCC": "0",
             "SDC": "0.5",
             "SDP": "0.5",
@@ -75,11 +81,15 @@
             "SPC": "0.53333333333333333",
             "SPP": "0.33333333333333331",
             "SPRP": "1",
-            "SSC": "nan",
+            "SSC": "1",
             "eccentricity": "2147483647",
             "eccentricity_inf": true,
             "id": 2,
-            "label": "B"
+            "label": "B",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "4",
+            "signedDegreePos": "4",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "0",
@@ -103,11 +113,15 @@
             "SPC": "0.45833333333333331",
             "SPP": "0.2424242424242424",
             "SPRP": "0.5277718418198224",
-            "SSC": "nan",
+            "SSC": "0",
             "eccentricity": "2147483647",
             "eccentricity_inf": true,
             "id": 3,
-            "label": "C"
+            "label": "C",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "1.5",
+            "signedDegreePos": "1.5",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "0",
@@ -131,14 +145,19 @@
             "SPC": "0",
             "SPP": "0",
             "SPRP": "0.68514561213214931",
-            "SSC": "nan",
+            "SSC": "0",
             "eccentricity": "2147483647",
             "eccentricity_inf": true,
             "id": 4,
-            "label": "D"
+            "label": "D",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "0",
+            "signedDegreePos": "0",
+            "signedDegreeRatio": "0"
         }
     ],
     "run": {
+        "bonacichEnabled": false,
         "considerWeights": true,
         "dropIsolates": false,
         "inverseWeights": false,

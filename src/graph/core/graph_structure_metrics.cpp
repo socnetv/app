@@ -194,11 +194,17 @@ int Graph::verticesWithReciprocalEdges()
 }
 
 /**
- * @brief Gets the arc reciprocity of the graph.
+ * @brief Computes the graph's reciprocity and returns the arc (tie-level) ratio.
  *
- * Also computes the dyad reciprocity and fills parameters with values.
-
- * @return qreal
+ * Arc reciprocity: reciprocated ties / total ties, where a tie from v1 to v2 counts as
+ * reciprocated only if v2 has an edge back to v1 with the exact same weight. Also computes dyad
+ * reciprocity (reciprocated pairs / total tied pairs - a pair counts once regardless of how many
+ * parallel/weighted ties exist between the two actors) and the raw counts behind both ratios,
+ * cached in m_graphReciprocity* members and readable via graphReciprocityDyad()/
+ * graphReciprocityTiesReciprocated()/graphReciprocityTiesTotal()/
+ * graphReciprocityPairsReciprocated()/graphReciprocityPairsTotal().
+ *
+ * @return qreal the arc reciprocity ratio
  */
 qreal Graph::graphReciprocity()
 {
@@ -342,6 +348,22 @@ qreal Graph::graphReciprocity()
 
     return m_graphReciprocityArc;
 }
+
+/**
+ * @brief Dyad reciprocity: fraction of tied actor pairs whose connection is reciprocated.
+ * Distinct from graphReciprocity()'s tie-level ratio - a pair counts once here regardless of
+ * how many parallel/weighted ties exist between the two actors. Call graphReciprocity() first;
+ * this reads its cached result rather than recomputing.
+ */
+qreal Graph::graphReciprocityDyad() const { return m_graphReciprocityDyad; }
+
+int Graph::graphReciprocityTiesReciprocated() const { return m_graphReciprocityTiesReciprocated; }
+
+int Graph::graphReciprocityTiesTotal() const { return m_graphReciprocityTiesTotal; }
+
+int Graph::graphReciprocityPairsReciprocated() const { return m_graphReciprocityPairsReciprocated; }
+
+int Graph::graphReciprocityPairsTotal() const { return m_graphReciprocityPairsTotal; }
 
 /**
  * @brief Creates a new binary relation in a valued network using edge

@@ -62,6 +62,7 @@ static QJsonObject buildGoldenJsonV2Reachability(
     QJsonObject graph;
     graph["directed"] = g.isDirected();
     graph["weighted"] = g.isWeighted();
+    graph["symmetric"] = g.isSymmetric();
     root["graph"] = graph;
 
     // Metrics (add density so golden JSONs carry it)
@@ -129,6 +130,9 @@ static int compareGoldenV2Reachability(const QJsonObject &expected, const QJsonO
 
     ok &= cmpBool(expected.value("graph").toObject(), actual.value("graph").toObject(), "directed", err);
     ok &= cmpBool(expected.value("graph").toObject(), actual.value("graph").toObject(), "weighted", err);
+    ok &= cmpBool(expected.value("graph").toObject(), actual.value("graph").toObject(), "symmetric", err);
+
+    ok &= cmpNumStrTol(expected.value("metrics").toObject(), actual.value("metrics").toObject(), "density", err);
 
     const QJsonObject eR = expected.value("reachability").toObject();
     const QJsonObject aR = actual.value("reachability").toObject();

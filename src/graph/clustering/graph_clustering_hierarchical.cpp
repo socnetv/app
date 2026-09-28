@@ -17,15 +17,23 @@
 #include <QDebug>
 
 /**
- * @brief Performs an hierarchical clustering process (Johnson, 1967) on a given
- * NxN distance/dissimilarity matrix. The input matrix can be the
- * the adjacency matrix, the geodesic distance matrix or a derived from them
- * dissimilarities matrix using a user-specified metric, i.e. euclidean distance.
- * The method parameter defines how to compute distances (similarities) between
- * a new cluster the old clusters. Valid values can be:
- * - Clustering::Single_Linkage: "single-link" or "connectedness" or "minimum"
- * - Clustering::Complete_Linkage: "complete-link" or "diameter" or "maximum"
- * - Clustering::Average_Linkage: "average-link" or UPGMA
+ * @brief Performs agglomerative hierarchical clustering (Johnson, 1967) on a given NxN
+ * distance/dissimilarity matrix. Starting from N singleton clusters (one per enabled
+ * vertex, isolates included), each stage merges the two nearest remaining clusters -
+ * found via Matrix::NeighboursNearestFarthest() - and records the merge in
+ * m_clustersPerSequence/m_clusteringLevel, until a single cluster of size N remains.
+ * The input matrix (STR_EQUIV) can be the adjacency matrix, the geodesic distance
+ * matrix, or a dissimilarities matrix derived from either via a user-specified metric
+ * (e.g. Euclidean distance) - see the metric parameter/createMatrixDissimilarities().
+ * The method parameter selects how the distance from a newly merged cluster to each
+ * remaining cluster is computed. Valid values:
+ * - Clustering::Single_Linkage: distance to the nearest member of the merged cluster
+ * - Clustering::Complete_Linkage: distance to the farthest member of the merged cluster
+ * - Clustering::Average_Linkage (WPGMA): unweighted mean of the two prior cluster
+ *   distances - equal-sized clusters agree with UPGMA, unequal-sized ones diverge
+ * - Clustering::Average_Linkage_UPGMA: mean of the two prior cluster distances weighted
+ *   by each old cluster's member count (equivalent to averaging every raw pairwise
+ *   distance between the two merging clusters)
  * @param matrix
  * @param metric
  * @param method
@@ -78,7 +86,8 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
 
     Matrix DSM; // dissimilarities matrix. Note: will be destroyed in the end.
 
-    // TODO: needs fix when distances matrix with -1 (infinity) elements is used.
+    // Unreachable pairs (RAND_MAX sentinel) in a distances-matrix input aren't special-cased
+    // here - see https://github.com/socnetv/app/issues/297.
 
     // compute, if needed, the dissimilarities matrix
     switch (metric)
@@ -145,20 +154,16 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
     int clustersLeft = N;
     int seq = 1; // clustering stage/level sequence number
 
+    // STR_EQUIV/DSM has one row/column per enabled vertex (isolates included unless the
+    // caller built it with dropIsolates=true), so m_clustersIndex must assign exactly one
+    // entry per matrix row/column too - skipping isolates here without also removing their
+    // row/column from DSM leaves an unindexed matrix row that Step 2/3 below still scan and
+    // fold into every merge decision.
     VList::const_iterator vit;
     int i = 0;
     for (vit = m_graph.cbegin(); vit != m_graph.cend(); ++vit)
     {
-        //        if (dropIsolates) {
-        //            if ((*vit)->isIsolated()) {
-        //                continue;
-        //            }
-        //        }
-        //         if (!(*vit)->isEnabled()) {
-        //            continue;
-        //         }
-
-        if ((*vit)->isEnabled() && (!(*vit)->isIsolated()))
+        if ((*vit)->isEnabled())
         {
             clusteredItems.clear();
             clusteredItems << (*vit)->number();
@@ -192,6 +197,11 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
         DSM.NeighboursNearestFarthest(min, max, imin, jmin, imax, jmax);
         mergedClusterIndex = (imin < jmin) ? imin : jmin;
         deletedClusterIndex = (mergedClusterIndex == imin) ? jmin : imin;
+
+        // UPGMA needs each pre-merge cluster's member count, captured before
+        // m_clustersIndex[mergedClusterIndex] is overwritten with the merged list below.
+        const int sizeAtImin = m_clustersIndex[imin].size();
+        const int sizeAtJmin = m_clustersIndex[jmin].size();
 
         m_clusteringLevel << min;
 
@@ -330,7 +340,7 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
                          << " ? maximum DSM(" << i + 1 << "," << j + 1 << " =" << distanceNewCluster;
                 break;
 
-            case Clustering::Average_Linkage: // mean or "average-linkage" or UPGMA
+            case Clustering::Average_Linkage: // WPGMA: unweighted mean of the two prior distances
                 if (i == j)
                 {
                     distanceNewCluster = 0;
@@ -342,7 +352,25 @@ bool Graph::graphClusteringHierarchical(Matrix &STR_EQUIV,
                 qCDebug(lcClustering) << "Graph::graphClusteringHierarchical() - "
                          << "  DSM(" << i + 1 << "," << imin + 1 << ") =" << DSM.item(i, imin)
                          << "  DSM(" << i + 1 << "," << jmin + 1 << ") =" << DSM.item(i, jmin)
-                         << " ? average DSM(" << i + 1 << "," << j + 1 << " =" << distanceNewCluster;
+                         << " ? average (WPGMA) DSM(" << i + 1 << "," << j + 1 << " =" << distanceNewCluster;
+                break;
+
+            case Clustering::Average_Linkage_UPGMA: // UPGMA: mean weighted by old cluster sizes
+                if (i == j)
+                {
+                    distanceNewCluster = 0;
+                }
+                else
+                {
+                    distanceNewCluster = (sizeAtImin * DSM.item(i, imin) + sizeAtJmin * DSM.item(i, jmin))
+                                         / (qreal)(sizeAtImin + sizeAtJmin);
+                }
+                qCDebug(lcClustering) << "Graph::graphClusteringHierarchical() - "
+                         << "  DSM(" << i + 1 << "," << imin + 1 << ") =" << DSM.item(i, imin)
+                         << "(size" << sizeAtImin << ")"
+                         << "  DSM(" << i + 1 << "," << jmin + 1 << ") =" << DSM.item(i, jmin)
+                         << "(size" << sizeAtJmin << ")"
+                         << " ? average (UPGMA) DSM(" << i + 1 << "," << j + 1 << " =" << distanceNewCluster;
                 break;
 
             default:

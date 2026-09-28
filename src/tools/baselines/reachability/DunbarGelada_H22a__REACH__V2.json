@@ -11,15 +11,19 @@
     },
     "graph": {
         "directed": false,
+        "symmetric": true,
         "weighted": true
     },
     "kernel": "reachability",
     "load_report": {
         "fileType_signal": 2,
-        "load_ms": 1,
+        "load_ms": 0,
         "load_msg": "",
         "net_name": "Dunbar&Dunbar_Gelada_baboon_colony_H22a",
         "ok": true
+    },
+    "metrics": {
+        "density": "0.36363636363636365"
     },
     "reachability": {
         "matrix": [

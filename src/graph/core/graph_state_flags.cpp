@@ -15,6 +15,8 @@
  */
 
 #include "graph.h"
+#include <QAtomicInteger>
+#include <QtConcurrent/QtConcurrent>
 
 /**
  * @brief Returns true if the **current relation** has at least one edge
@@ -74,6 +76,61 @@ bool Graph::isWeighted()
 }
 
 /**
+ * @brief Returns true if the **current relation** has at least one edge with a negative weight.
+ *
+ * The result is cached via @c calculatedGraphHasNegativeWeight and invalidated the same way as
+ * isWeighted()'s own cache: on relation switch (relationSet()) and on any structural change
+ * (setModStatus() with a status greater than ModStatus::MajorChanges) - see those call sites for
+ * the full reset list. Deliberately its own independent edge scan, not derived from
+ * createMatrixAdjacency()'s AM: this needs to answer the question for any caller, including ones
+ * that never build an adjacency matrix at all (e.g. WS18 P1's negative-weight guard).
+ *
+ * Compare to: Matrix::hasNegativeEntry(), which answers the same kind of question but for an
+ * already-built Matrix in hand (e.g. AM), with no caching and thus no invalidation to get right -
+ * prefer that one when a Matrix is already available; prefer this one when it isn't.
+ *
+ * Complexity: O(n²) on cache miss, O(1) on hit.
+ */
+bool Graph::hasNegativeWeight()
+{
+    if (calculatedGraphHasNegativeWeight)
+    {
+        qCDebug(lcGraphCore) << "graph not modified. Returning hasNegativeWeight: "
+                 << m_graphHasNegativeWeight;
+        return m_graphHasNegativeWeight;
+    }
+
+    m_graphHasNegativeWeight = false;
+
+    qreal m_weight = 0;
+    VList::const_iterator it, it1;
+
+    QString pMsg = tr("Checking if the graph has negative edge weights. \nPlease wait...");
+    progressStatus(pMsg);
+
+    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    {
+        for (it1 = m_graph.cbegin(); it1 != m_graph.cend(); ++it1)
+        {
+            m_weight = edgeExists((*it1)->number(), (*it)->number());
+            if (m_weight < 0)
+            {
+                m_graphHasNegativeWeight = true;
+                break;
+            }
+        }
+        if (m_graphHasNegativeWeight)
+        {
+            break;
+        }
+    }
+    calculatedGraphHasNegativeWeight = true;
+    qCDebug(lcGraphCore) << "graph has negative weight:" << m_graphHasNegativeWeight;
+
+    return m_graphHasNegativeWeight;
+}
+
+/**
  * @brief Returns true if any relation in the graph has at least one edge
  *        with weight other than 0 or 1.
  *
@@ -109,6 +166,16 @@ void Graph::setWeighted(const bool &toggle)
 
 /**
  * @brief Returns TRUE if the adjacency matrix of the current relation is symmetric
+ *
+ * Parallelization (WS15 P4): each vertex's out-edges are checked independently against
+ * their reverse arc via edgeExists() (read-only, thread-safe since WS15 P4's edgeExists()
+ * fix) - same per-vertex shape as centralityDegree(). Can't short-circuit on first
+ * asymmetry found under QtConcurrent::blockingMap (no shared control flow across worker
+ * threads), so instead every vertex is always checked and the result is OR-reduced via
+ * QAtomicInteger - strictly more work than the old early-exit in the asymmetric case, but
+ * never wrong, and no slower than before in the common (symmetric) case where every vertex
+ * had to be checked anyway.
+ *
  * @return bool
  */
 bool Graph::isSymmetric()
@@ -122,43 +189,35 @@ bool Graph::isSymmetric()
                  << m_graphIsSymmetric;
         return m_graphIsSymmetric;
     }
-    m_graphIsSymmetric = true;
-    int v2 = 0, v1 = 0;
-    qreal weight = 0;
 
-    QHash<int, qreal> enabledOutEdges;
+    // QAtomicInteger<bool>: a bool that's safe for multiple worker threads (below) to write
+    // to at the same time - a plain bool would be a data race here.
+    QAtomicInteger<bool> asymmetric{false};
 
-    QHash<int, qreal>::const_iterator hit;
-    VList::const_iterator lit;
+    QtConcurrent::blockingMap(m_graph, [&](GraphVertex *v) {
+        if (!v->isEnabled())
+            return;
 
-    for (lit = m_graph.cbegin(); lit != m_graph.cend(); ++lit)
-    {
-        v1 = (*lit)->number();
+        const int v1 = v->number();
+        const QHash<int, qreal> enabledOutEdges = v->outEdgesEnabledHash();
 
-        if (!(*lit)->isEnabled())
-            continue;
-
-        enabledOutEdges = (*lit)->outEdgesEnabledHash();
-
-        hit = enabledOutEdges.cbegin();
-
-        while (hit != enabledOutEdges.cend())
+        for (auto hit = enabledOutEdges.cbegin(); hit != enabledOutEdges.cend(); ++hit)
         {
-
-            v2 = hit.key();
-            weight = hit.value();
+            const int v2 = hit.key();
+            const qreal weight = hit.value();
 
             if (edgeExists(v2, v1) != weight)
             {
-
-                m_graphIsSymmetric = false;
-
+                // storeRelease(): safely write true from this worker thread.
+                asymmetric.storeRelease(true);
                 break;
             }
-            ++hit;
         }
-    }
-    // delete enabledOutEdges;
+    });
+
+    // loadAcquire(): safely read the final value now that all worker threads are done
+    // (blockingMap only returns once every one of them has finished).
+    m_graphIsSymmetric = !asymmetric.loadAcquire();
     qCDebug(lcGraphCore) << "Graph: isSymmetric() - Finished. Result:" << m_graphIsSymmetric;
     calculatedGraphSymmetry = true;
     return m_graphIsSymmetric;
@@ -169,7 +228,7 @@ bool Graph::isSymmetric()
  */
 void Graph::setSymmetric()
 {
-    qCDebug(lcGraphCore) << "Tranforming graph to symmetric...";
+    qCDebug(lcGraphCore) << "Transforming graph to symmetric...";
     VList::const_iterator it;
     int v2 = 0, v1 = 0, weight;
     qreal invertWeight = 0;

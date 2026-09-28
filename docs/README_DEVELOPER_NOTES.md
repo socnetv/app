@@ -463,13 +463,16 @@ The harness is organized around **kernel modules**. Each kernel covers a specifi
 Current kernels:
 
 ```
-kernel_distance_v1      — geodesic distances + centralities
-kernel_reachability_v2  — reachability matrix
-kernel_walks_v3         — walks matrix A^K
-kernel_prominence_v4    — all node-level centrality + prestige indices
-kernel_io_roundtrip_v5  — load → export → reload signature comparison
-kernel_clustering_v6    — clustering coefficient, triad census, clique census
-kernel_connectivity_v7  — weakly connected components count + per-node IDs
+kernel_distance_v1            — geodesic distances + centralities
+kernel_reachability_v2        — reachability matrix
+kernel_walks_v3               — walks matrix A^K
+kernel_prominence_v4          — all node-level centrality + prestige indices
+kernel_io_roundtrip_v5        — load → export → reload signature comparison
+kernel_clustering_v6          — clustering coefficient, triad census, clique census
+kernel_connectivity_v7        — weakly connected components count + per-node IDs
+kernel_matrix_v8              — matrix operations (inverse, spectral radius, ...)
+kernel_vertex_connectivity_v9 — vertex connectivity (kappa(G))
+kernel_signed_v10             — signed-graph Bellman-Ford potentials/negative cycles
 ```
 
 Each kernel owns its execution logic, JSON schema, and comparison logic.
@@ -526,6 +529,19 @@ block and `graph_centrality_katz.cpp` for one example of each), **Compare to** (
 measure(s) it's most easily confused with, and how it differs — skip this section only if there's
 genuinely no close neighbor), then **Math** (the formula). See
 `src/graph/centrality/graph_centrality.cpp` for the reference examples.
+
+---
+
+# Math Notation in Markdown Files (CHANGELOG.md, docs/*.md)
+
+GitHub does **not** render bare `$ ... $` as inline math — that's a LaTeX/Astro-KaTeX convention,
+not GitHub's. Left as bare `$ ... $`, GitHub falls through to plain Markdown parsing, where
+underscores and carets inside the expression (e.g. `\lambda_{max}`) get misread as emphasis
+markers, mangling the text instead of rendering a formula.
+
+GitHub's actual supported syntax:
+- Inline: `` $`...`$ `` (backtick-wrapped, no space after the opening backtick-dollar)
+- Block: a fenced ` ```math ` code block, for anything long enough to warrant its own line(s)
 
 ---
 
@@ -596,6 +612,7 @@ After any structural change:
 ```
 ./scripts/run_golden_compares.sh
 ./scripts/run_benchmarks.sh
+./scripts/run_golden_io_roundtrip.sh
 ```
 
 Golden outputs and performance must remain stable.

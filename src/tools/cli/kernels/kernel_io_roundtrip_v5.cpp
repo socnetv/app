@@ -363,6 +363,7 @@ namespace cli
             // graph is reported as weighted if at least one relation has non-unit weights,
             // regardless of which relation is currently active.
             graph["weighted"] = g.isAnyRelationWeighted();
+            graph["symmetric"] = g.isSymmetric();
             graph["relations"] = g.relations();
             root["graph"] = graph;
 
@@ -493,6 +494,7 @@ namespace cli
             const QJsonObject aG = actual.value("graph").toObject();
             ok &= cmpBool(eG, aG, "directed", err);
             ok &= cmpBool(eG, aG, "weighted", err);
+            ok &= cmpBool(eG, aG, "symmetric", err);
             ok &= cmpInt(eG, aG, "relations", err);
 
             const QJsonObject eC = expected.value("counts").toObject();

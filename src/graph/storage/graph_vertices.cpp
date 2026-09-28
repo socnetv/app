@@ -859,7 +859,7 @@ bool Graph::vertexFindByLabel(const QStringList &labelList)
     if (!foundList.isEmpty())
     {
         searchResult = true;
-        qCDebug(lcStorage) << "One or more matchin nodes found. Signaling to GW to highlight them...";
+        qCDebug(lcStorage) << "One or more matching nodes found. Signaling to GW to highlight them...";
         progressStatus(tr("Found %1 matching nodes.").arg(foundList.size()));
         emit signalNodesFound(foundList);
     }
@@ -974,10 +974,35 @@ bool Graph::vertexFindByIndexScore(const int &index, const QStringList &threshol
                            inverseWeights, dropIsolates);
         break;
     }
+    case IndexType::SIGNED_DEGREE:
+    {
+        // WS18 P3: four variants (pos/neg/ratio/net), no single standardized score to search
+        // by - explicit early return rather than falling through to default's
+        // graphDistancesGeodesic() (wrong computation) or the second switch below, which has
+        // no default and would silently reuse a stale score from whatever vertex/index ran
+        // last in that loop.
+        progressStatus(tr("Signed Degree Centrality has no single score to search by yet."));
+        return false;
+    }
+    case IndexType::PN:
+    {
+        // WS18 P3: same reasoning as SIGNED_DEGREE above - PN has a single raw score, but no
+        // standardized/max variant and (via centralityPN()'s own mode parameter) no fixed
+        // meaning without a mode choice this dialog doesn't collect either.
+        progressStatus(tr("PN Centrality has no single score to search by yet."));
+        return false;
+    }
     default:
         graphDistancesGeodesic(true, considerWeights,
                                inverseWeights, dropIsolates);
         break;
+    }
+
+    if (negativeWeightsDetected())
+    {
+        progressStatus(tr("Computation refused: the network contains negative edge weight(s), "
+                          "which this measure does not support."));
+        return false;
     }
 
     // Parse threshold user input

@@ -105,6 +105,40 @@ void Graph::graphDistancesGeodesic(const bool &computeCentralities,
                    dropIsolates);
 }
 
+/**
+ * @brief Negative-weight-safe variant of graphDistancesGeodesic(), via Johnson's algorithm
+ * (DistanceEngine::bellmanFordPotentials()) instead of refusing on a negative edge weight. Still
+ * refuses - via Graph::negativeCycleDetected(), not negativeWeightsDetected() - if the network has
+ * a reachable negative cycle, since shortest paths are then undefined for any algorithm. Separate
+ * entry point rather than a new parameter on graphDistancesGeodesic() itself, so none of that
+ * function's ~20 existing callers are touched by this - each can opt in individually later once
+ * this path has real-world coverage (WS18 P2/P3).
+ */
+void Graph::graphDistancesGeodesicSigned(const bool &computeCentralities,
+                                         const bool &inverseWeights,
+                                         const bool &dropIsolates)
+{
+    DistanceEngine engine(*this);
+    engine.compute(computeCentralities,
+                   /*considerWeights=*/true,
+                   inverseWeights,
+                   dropIsolates,
+                   /*allowNegativeWeights=*/true);
+}
+
+/**
+ * @brief Computes Johnson's-algorithm potentials h(v) for every vertex - a standalone probe,
+ * not part of graphDistancesGeodesic()'s refuse-and-compute pipeline. Returns false (and
+ * leaves outPotentials not meaningful) if the graph has a reachable negative cycle, which makes
+ * shortest paths undefined; true with outPotentials fully populated (indexed by vertex position,
+ * same order as verticesList()) otherwise.
+ */
+bool Graph::graphBellmanFordPotentials(const bool inverseWeights, QVector<qreal> &outPotentials)
+{
+    DistanceEngine engine(*this);
+    return engine.bellmanFordPotentials(inverseWeights, outPotentials);
+}
+
 //
 // DISCONNECTED PAIRS CACHE
 // During SSSP, we may find pairs of vertices that are not connected.
@@ -145,7 +179,7 @@ void Graph::setConnectedCached(bool v) { m_graphIsConnected = v; }
 
 int Graph::graphWeaklyConnectedComponentsCached() const { return m_graphWeaklyConnectedComponents; }
 int Graph::graphStronglyConnectedComponentsCached() const { return m_graphStronglyConnectedComponents; }
-void Graph::setDiameterCached(int v) { m_graphDiameter = v; }
+void Graph::setDiameterCached(qreal v) { m_graphDiameter = v; }
 
 void Graph::resetDistanceAggregates()
 {

@@ -12,10 +12,11 @@
     "dataset": {
         "filetype": 2,
         "name": "TinyPath_N3_E2.paj",
-        "path": "/home/dimitris/socnetv/app/src/data/TinyPath_N3_E2.paj"
+        "path": "src/data/TinyPath_N3_E2.paj"
     },
     "graph": {
         "directed": false,
+        "symmetric": true,
         "weighted": false
     },
     "kernel": "connectivity",
@@ -43,5 +44,13 @@
             "label": "C"
         }
     ],
+    "reciprocity": {
+        "arc": "1",
+        "arc_ties_reciprocated": 4,
+        "arc_ties_total": 4,
+        "dyad": "1",
+        "dyad_pairs_reciprocated": 2,
+        "dyad_pairs_total": 2
+    },
     "schema_version": 7
 }

@@ -99,6 +99,7 @@ Graph::Graph(const int &reserveVerticesSize, const int &reserveEdgesPerVertexSiz
 
     m_graphIsDirected = true;
     m_graphIsWeighted = false;
+    m_graphHasNegativeWeight = false;
     m_graphIsConnected = true; // empty/null graph is considered connected
     m_graphIsSymmetric = true;
     m_graphWeaklyConnectedComponents = 0;
@@ -111,6 +112,7 @@ Graph::Graph(const int &reserveVerticesSize, const int &reserveEdgesPerVertexSiz
     calculatedGraphReciprocity = false;
     calculatedGraphSymmetry = false;
     calculatedGraphWeighted = false;
+    calculatedGraphHasNegativeWeight = false;
     calculatedGraphDensity = false;
     calculatedEdges = false;
     calculatedVertices = false;
@@ -122,16 +124,20 @@ Graph::Graph(const int &reserveVerticesSize, const int &reserveEdgesPerVertexSiz
     calculatedIsolates = false;
     calculatedDP = false;
     calculatedDC = false;
+    calculatedSignedDegree = false;
     calculatedIC = false;
     calculatedEVC = false;
     calculatedKC = false;
     calculatedBPC = false;
+    calculatedPN = false;
     calculatedCentralities = false;
     calculatedIRCC = false;
     calculatedPP = false;
     calculatedPRP = false;
     calculatedTriad = false;
     m_progressCanceled = false;
+    m_negativeWeightsRefused = false;
+    m_negativeCycleDetected = false;
 
     m_reportsDataDir = "";
     m_reportsRealPrecision = 6;
@@ -398,6 +404,7 @@ void Graph::clear(const QString &reason)
 
     m_graphIsDirected = true;
     m_graphIsWeighted = false;
+    m_graphHasNegativeWeight = false;
     m_graphIsConnected = true; // empty/null graph is considered connected.
     m_graphIsSymmetric = true;
     m_graphWeaklyConnectedComponents = 0;
@@ -415,6 +422,7 @@ void Graph::clear(const QString &reason)
     calculatedGraphReciprocity = false;
     calculatedGraphSymmetry = false;
     calculatedGraphWeighted = false;
+    calculatedGraphHasNegativeWeight = false;
     calculatedGraphDensity = false;
     calculatedEdges = false;
     calculatedVertices = false;
@@ -428,15 +436,19 @@ void Graph::clear(const QString &reason)
     calculatedCentralities = false;
     calculatedDP = false;
     calculatedDC = false;
+    calculatedSignedDegree = false;
     calculatedIC = false;
     calculatedEVC = false;
     calculatedKC = false;
     calculatedBPC = false;
+    calculatedPN = false;
     calculatedIRCC = false;
     calculatedPP = false;
     calculatedPRP = false;
     calculatedTriad = false;
     m_progressCanceled = false;
+    m_negativeWeightsRefused = false;
+    m_negativeCycleDetected = false;
 
     m_graphModStatus = ModStatus::NewNet;
 

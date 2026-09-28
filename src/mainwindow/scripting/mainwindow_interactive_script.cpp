@@ -71,9 +71,10 @@ void MainWindow::runInteractiveScript(const QString &scriptPath)
  *   `QMetaObject::invokeMethod(this, ..., Qt::QueuedConnection)` back to the GUI thread) must
  *   therefore both happen *inside* that same lambda, at the point the work is genuinely done -
  *   never outside/after the `invokeMethod()` call itself.
- * - **Two-step dispatch** (`filter_ego`, `filter_isolates`, `symmetrize_strongties`,
- *   `symmetrize_cocitation`, `unilateral`, `distances`, `distances_bench`,
- *   `report-centrality-degree`, `report-centrality-closeness`, `report-centrality-closeness-ir`,
+ * - **Two-step dispatch** (`filter-ego`, `filter-isolates`, `symmetrize-strongties`,
+ *   `symmetrize-cocitation`, `unilateral`, `distances`, `distances-bench`,
+ *   `report-centrality-degree`, `report-centrality-degree-signed`, `report-centrality-pn`,
+ *   `report-centrality-closeness`, `report-centrality-closeness-ir`,
  *   `report-centrality-betweenness`, `report-centrality-stress`, `report-centrality-eccentricity`,
  *   `report-centrality-power`, `report-centrality-information`, `report-centrality-eigenvector`,
  *   `report-prestige-degree`, `report-prestige-proximity`, `report-prestige-pagerank`): used when
@@ -242,7 +243,7 @@ void MainWindow::processNextInteractiveCommand()
     {
         // Direct Graph::edgeFilterUnilateral() call via runGraphOperationAsync, matching
         // slotEditFilterEdgesUnilateral()'s own dispatch - same convention as
-        // 'filter_isolates'/'symmetrize_strongties' below. Previously triggered the real
+        // 'filter-isolates'/'symmetrize-strongties' below. Previously triggered the real
         // QAction instead, then advanced immediately without waiting for the (already async,
         // since WS15 P3) slot to actually finish - the same race class confirmed on 'erdos'.
         const bool toggleTo = !editFilterEdgesUnilateralAct->isChecked();
@@ -342,7 +343,7 @@ void MainWindow::processNextInteractiveCommand()
         // click-node <id> - sets Graph::vertexClicked() without going through GraphicsWidget's
         // real mouse-press/selection-changed chain (which also gates filterNodesByEgoNetworkAct's
         // enabled state - irrelevant here since the commands below call Graph:: methods directly,
-        // not via that QAction). Prerequisite for 'filter_ego'.
+        // not via that QAction). Prerequisite for 'filter-ego'.
         bool ok = false;
         const int id = line.mid(11).trimmed().toInt(&ok);
         if (!ok)
@@ -358,17 +359,17 @@ void MainWindow::processNextInteractiveCommand()
             qInfo() << "BENCH click-node id=" << id << "elapsed_ms=" << timer.elapsed();
             // Advance only after this queued lambda actually finishes on graphThread - see the
             // matching comment on 'erdos' above for why (a reproducible crash otherwise). Also
-            // makes 'filter_ego' below's own FIFO-ordering workaround belt-and-braces rather
+            // makes 'filter-ego' below's own FIFO-ordering workaround belt-and-braces rather
             // than load-bearing, since vertexClickedSet() is now guaranteed complete before the
             // next command starts.
             QMetaObject::invokeMethod(this, &MainWindow::processNextInteractiveCommand, Qt::QueuedConnection);
         }, Qt::QueuedConnection);
     }
-    else if (line == "filter_ego")
+    else if (line == "filter-ego")
     {
         // WS15 P3 Group C test aid: mirrors slotFilterNodesByEgoNetwork()'s real
         // vertexFilterByEgoNetwork() call and runGraphOperationAsync dispatch, skipping only the
-        // GUI-only filter-chip/filter-bar bookkeeping (same philosophy as distances_bench skipping
+        // GUI-only filter-chip/filter-bar bookkeeping (same philosophy as distances-bench skipping
         // the disk write) - added specifically to reproduce and verify the fix for the reported
         // multi-minute freeze on a large network (2000+ nodes) with only the OS beachball as
         // feedback. Needs 'click-node <id>' first.
@@ -391,21 +392,21 @@ void MainWindow::processNextInteractiveCommand()
             },
             tr("Filtering ego network (script)..."),
             [this, v1, timer]() {
-                qInfo() << "BENCH filter_ego v1=" << *v1
+                qInfo() << "BENCH filter-ego v1=" << *v1
                         << "N=" << activeNodes() << "E=" << activeEdges()
                         << "elapsed_ms=" << timer->elapsed();
                 QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
             });
     }
-    else if (line.startsWith("filter_isolates "))
+    else if (line.startsWith("filter-isolates "))
     {
-        // filter_isolates <on|off> - direct Graph::vertexIsolatedAllToggle() call via
+        // filter-isolates <on|off> - direct Graph::vertexIsolatedAllToggle() call via
         // runGraphOperationAsync, same dispatch as the real editFilterNodesIsolatesAct-driven
         // slotEditFilterNodesIsolates(), skipping only the QAction/status-message side effects.
         const QString arg = line.mid(16).trimmed();
         if (arg != "on" && arg != "off")
         {
-            qWarning() << "Malformed 'filter_isolates' command, skipping:" << line;
+            qWarning() << "Malformed 'filter-isolates' command, skipping:" << line;
             processNextInteractiveCommand();
             return;
         }
@@ -416,15 +417,15 @@ void MainWindow::processNextInteractiveCommand()
             [this, disableIsolates]() { activeGraph->vertexIsolatedAllToggle(disableIsolates); },
             tr("Filtering isolate nodes (script)..."),
             [this, disableIsolates, timer]() {
-                qInfo() << "BENCH filter_isolates disable=" << disableIsolates
+                qInfo() << "BENCH filter-isolates disable=" << disableIsolates
                         << "N=" << activeNodes() << "E=" << activeEdges()
                         << "elapsed_ms=" << timer->elapsed();
                 QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
             });
     }
-    else if (line.startsWith("symmetrize_strongties "))
+    else if (line.startsWith("symmetrize-strongties "))
     {
-        // symmetrize_strongties <all|current> - direct Graph::addRelationSymmetricStrongTies()
+        // symmetrize-strongties <all|current> - direct Graph::addRelationSymmetricStrongTies()
         // call via runGraphOperationAsync. Only safe to script on a single-relation network - the
         // real slotEditEdgeSymmetrizeStrongTies() shows a modal chooser dialog when multiple
         // relations exist, which would block an unattended script (same reason 'erdos'/'save'
@@ -432,7 +433,7 @@ void MainWindow::processNextInteractiveCommand()
         const QString arg = line.mid(22).trimmed();
         if (arg != "all" && arg != "current")
         {
-            qWarning() << "Malformed 'symmetrize_strongties' command, skipping:" << line;
+            qWarning() << "Malformed 'symmetrize-strongties' command, skipping:" << line;
             processNextInteractiveCommand();
             return;
         }
@@ -443,13 +444,13 @@ void MainWindow::processNextInteractiveCommand()
             [this, allRelations]() { activeGraph->addRelationSymmetricStrongTies(allRelations); },
             tr("Symmetrizing strong ties (script)..."),
             [this, allRelations, timer]() {
-                qInfo() << "BENCH symmetrize_strongties all=" << allRelations
+                qInfo() << "BENCH symmetrize-strongties all=" << allRelations
                         << "N=" << activeNodes() << "E=" << activeEdges()
                         << "elapsed_ms=" << timer->elapsed();
                 QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
             });
     }
-    else if (line == "symmetrize_cocitation")
+    else if (line == "symmetrize-cocitation")
     {
         // Direct Graph::relationAddCocitation() call via runGraphOperationAsync - no modal
         // dialog in the real slot for this one, so no bypass needed.
@@ -459,7 +460,7 @@ void MainWindow::processNextInteractiveCommand()
             [this]() { activeGraph->relationAddCocitation(); },
             tr("Computing cocitation relation (script)..."),
             [this, timer]() {
-                qInfo() << "BENCH symmetrize_cocitation N=" << activeNodes()
+                qInfo() << "BENCH symmetrize-cocitation N=" << activeNodes()
                         << "E=" << activeEdges() << "elapsed_ms=" << timer->elapsed();
                 QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
             });
@@ -504,9 +505,9 @@ void MainWindow::processNextInteractiveCommand()
                 QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
             });
     }
-    else if (line == "distances_bench" || line.startsWith("distances_bench "))
+    else if (line == "distances-bench" || line.startsWith("distances-bench "))
     {
-        // distances_bench [weights] [inverse] [dropisolates] [centralities] - benchmarking-only
+        // distances-bench [weights] [inverse] [dropisolates] [centralities] - benchmarking-only
         // variant of 'distances' above: same dispatch mechanism (runGraphOperationAsync) and
         // same underlying computation, but skips the disk write entirely, for isolating pure
         // computation cost. 'centralities' has no real-menu equivalent (the GUI computes each
@@ -528,9 +529,49 @@ void MainWindow::processNextInteractiveCommand()
             },
             tr("Computing geodesic distances (benchmark, no disk write). Please wait..."),
             [this, considerWeights, inverseWeights, dropIsolates, computeCentralities, timer]() {
-                qInfo() << "BENCH distances_bench weights=" << considerWeights
+                qInfo() << "BENCH distances-bench weights=" << considerWeights
                         << "inverse=" << inverseWeights << "dropisolates=" << dropIsolates
                         << "centralities=" << computeCentralities
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "bellman-ford" || line.startsWith("bellman-ford "))
+    {
+        // bellman-ford [inverse] [dropisolates] - verification aid for the negative-weight-safe
+        // distance path (Graph::graphDistancesGeodesicSigned(), Johnson's algorithm): same
+        // dispatch shape as distances-bench above, but always computes centralities and always
+        // considers weights (there is no unweighted variant of this path - a caller wanting plain
+        // BFS distances should use 'distances'/'distances-bench' instead), and reports
+        // negativeCycleDetected() instead of negativeWeightsDetected() - a negative cycle, not a
+        // negative weight, is the only thing this path refuses on.
+        const QStringList tokens = line.mid(12).trimmed().split(' ', Qt::SkipEmptyParts);
+        const bool inverseWeights = tokens.contains("inverse");
+        const bool dropIsolates = tokens.contains("dropisolates");
+
+        auto negativeCycle = std::make_shared<bool>(false);
+        auto sumBC = std::make_shared<qreal>(0);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, inverseWeights, dropIsolates, negativeCycle, sumBC]() {
+                activeGraph->graphDistancesGeodesicSigned(/*computeCentralities=*/true,
+                                                           inverseWeights, dropIsolates);
+                *negativeCycle = activeGraph->negativeCycleDetected();
+                if (!*negativeCycle)
+                {
+                    for (const int v : activeGraph->verticesList())
+                        *sumBC += activeGraph->vertexPtr(v)->BC();
+                }
+            },
+            tr("Computing geodesic distances (negative-weight-safe). Please wait..."),
+            [this, inverseWeights, dropIsolates, negativeCycle, sumBC, timer]() {
+                qInfo() << "BENCH bellman-ford inverse=" << inverseWeights
+                        << "dropisolates=" << dropIsolates
+                        << "negative_cycle=" << *negativeCycle
+                        << "sumBC=" << *sumBC
                         << "N=" << activeNodes() << "E=" << activeEdges()
                         << "elapsed_ms=" << timer->elapsed();
                 QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
@@ -565,6 +606,78 @@ void MainWindow::processNextInteractiveCommand()
             tr("Computing Degree Centralities. Please wait..."),
             [this, considerWeights, dropIsolates, success, timer]() {
                 qInfo() << "BENCH report-centrality-degree weights=" << considerWeights
+                        << "dropisolates=" << dropIsolates
+                        << "success=" << *success
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "report-centrality-degree-signed" || line.startsWith("report-centrality-degree-signed "))
+    {
+        // report-centrality-degree-signed [weights] [dropisolates] [csv] - WS18 P3 (#300): mirrors
+        // slotAnalyzeCentralitySignedDegree() exactly, same shape as report-centrality-degree.
+        // Named after an established outside package's own degree_signed() function name (per
+        // WS12's naming-parity direction), reordered to keep this codebase's own
+        // report-centrality-* prefix that every sibling command already follows.
+        const QStringList tokens = line.mid(31).trimmed().split(' ', Qt::SkipEmptyParts);
+        const bool considerWeights = tokens.contains("weights");
+        const bool dropIsolates = tokens.contains("dropisolates");
+        const int reportFormat = tokens.contains("csv") ? ReportFormat::Csv : ReportFormat::Html;
+
+        const QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+        const QString fn = appSettings["dataDir"] + "socnetv-report-centrality-signed-degree-" + dateTime + ext;
+        auto success = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, fn, considerWeights, dropIsolates, reportFormat, success]() {
+                *success = activeGraph->writeCentralitySignedDegree(fn, considerWeights, dropIsolates, reportFormat);
+            },
+            tr("Computing Signed Degree Centralities. Please wait..."),
+            [this, considerWeights, dropIsolates, success, timer]() {
+                qInfo() << "BENCH report-centrality-degree-signed weights=" << considerWeights
+                        << "dropisolates=" << dropIsolates
+                        << "success=" << *success
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "report-centrality-pn" || line.startsWith("report-centrality-pn "))
+    {
+        // report-centrality-pn [all|out|in] [dropisolates] [csv] - WS18 P3 (#301): mirrors
+        // slotAnalyzeCentralityPN() exactly, but with the mode passed directly as a token instead
+        // of a dialog choice (default "all" if omitted). Named after the established reference
+        // implementation's own pn_index() function name (per WS12's naming-parity direction),
+        // reordered to keep this codebase's own report-centrality-* prefix. No weights token:
+        // PN considers tie sign only, never weights - same reasoning as
+        // report-centrality-degree-signed having no inverse token.
+        const QStringList tokens = line.mid(20).trimmed().split(' ', Qt::SkipEmptyParts);
+        PNMode mode = PNMode::All;
+        if (tokens.contains("out"))
+            mode = PNMode::Out;
+        else if (tokens.contains("in"))
+            mode = PNMode::In;
+        const bool dropIsolates = tokens.contains("dropisolates");
+        const int reportFormat = tokens.contains("csv") ? ReportFormat::Csv : ReportFormat::Html;
+
+        const QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+        const QString fn = appSettings["dataDir"] + "socnetv-report-centrality-pn-" + dateTime + ext;
+        auto success = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, fn, mode, dropIsolates, reportFormat, success]() {
+                *success = activeGraph->writeCentralityPN(fn, mode, dropIsolates, reportFormat);
+            },
+            tr("Computing PN Centralities. Please wait..."),
+            [this, mode, dropIsolates, success, timer]() {
+                qInfo() << "BENCH report-centrality-pn mode=" << static_cast<int>(mode)
                         << "dropisolates=" << dropIsolates
                         << "success=" << *success
                         << "N=" << activeNodes() << "E=" << activeEdges()
@@ -1026,6 +1139,75 @@ void MainWindow::processNextInteractiveCommand()
             [this, success, timer]() {
                 qInfo() << "BENCH report-triad-census"
                         << "success=" << *success
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "diameter" || line.startsWith("diameter "))
+    {
+        // diameter [weights] [inverse] - #277/WS18 P1 verification aid: exercises
+        // Graph::graphDiameter() plus the same negativeWeightsDetected()-refusal branch
+        // MainWindow::slotAnalyzeDiameter() gained alongside its existing *isWeighted branching
+        // (that slot has no script-command equivalent to call directly, since every existing
+        // report-* command deliberately calls the underlying Graph method rather than the slot,
+        // to skip askAboutEdgeWeights()'s modal prompt - this replicates the slot's own
+        // negativeWeights check rather than the slot itself, same shape, so a negative-weight
+        // fixture can be scripted end-to-end).
+        const QStringList tokens = line.mid(8).trimmed().split(' ', Qt::SkipEmptyParts);
+        const bool considerWeights = tokens.contains("weights");
+        const bool inverseWeights = tokens.contains("inverse");
+
+        auto netDiameter = std::make_shared<qreal>(0);
+        auto negativeWeights = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, considerWeights, inverseWeights, netDiameter, negativeWeights]() {
+                *netDiameter = activeGraph->graphDiameter(considerWeights, inverseWeights);
+                *negativeWeights = activeGraph->negativeWeightsDetected();
+            },
+            tr("Computing graph diameter (script). Please wait..."),
+            [this, considerWeights, inverseWeights, netDiameter, negativeWeights, timer]() {
+                qInfo() << "BENCH diameter weights=" << considerWeights
+                        << "inverse=" << inverseWeights
+                        << "refused=" << *negativeWeights
+                        << "D=" << *netDiameter
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "average-distance" || line.startsWith("average-distance "))
+    {
+        // average-distance [weights] [inverse] [dropisolates] - #277/WS18 P1 verification aid,
+        // same rationale as 'diameter' above: exercises Graph::graphDistanceGeodesicAverage()
+        // plus the negativeWeightsDetected()-refusal branch
+        // MainWindow::slotAnalyzeDistanceAverage() gained alongside its existing *isConnected
+        // branching.
+        const QStringList tokens = line.mid(17).trimmed().split(' ', Qt::SkipEmptyParts);
+        const bool considerWeights = tokens.contains("weights");
+        const bool inverseWeights = tokens.contains("inverse");
+        const bool dropIsolates = tokens.contains("dropisolates");
+
+        auto averGraphDistance = std::make_shared<qreal>(0);
+        auto negativeWeights = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, considerWeights, inverseWeights, dropIsolates, averGraphDistance, negativeWeights]() {
+                *averGraphDistance = activeGraph->graphDistanceGeodesicAverage(
+                    considerWeights, inverseWeights, dropIsolates);
+                *negativeWeights = activeGraph->negativeWeightsDetected();
+            },
+            tr("Computing Average Graph Distance (script). Please wait..."),
+            [this, considerWeights, inverseWeights, dropIsolates, averGraphDistance, negativeWeights, timer]() {
+                qInfo() << "BENCH average-distance weights=" << considerWeights
+                        << "inverse=" << inverseWeights << "dropisolates=" << dropIsolates
+                        << "refused=" << *negativeWeights
+                        << "d=" << *averGraphDistance
                         << "N=" << activeNodes() << "E=" << activeEdges()
                         << "elapsed_ms=" << timer->elapsed();
                 QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);

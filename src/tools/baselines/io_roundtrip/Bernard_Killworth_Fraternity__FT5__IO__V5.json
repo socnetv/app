@@ -12,12 +12,13 @@
     "graph": {
         "directed": true,
         "relations": 2,
+        "symmetric": true,
         "weighted": true
     },
     "kernel": "io_roundtrip",
     "load_report": {
         "fileType_signal": 5,
-        "load_ms": 19,
+        "load_ms": 11,
         "load_msg": "",
         "net_name": "Bernard_Killworth_Fraternity.dl",
         "ok": true
@@ -36468,9 +36469,9 @@
         ]
     },
     "timings": {
-        "load_ms": 19,
-        "reload_ms": 18,
-        "save_ms": 6,
-        "total_ms": 54
+        "load_ms": 11,
+        "reload_ms": 9,
+        "save_ms": 7,
+        "total_ms": 48
     }
 }

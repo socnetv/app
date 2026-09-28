@@ -11,6 +11,7 @@
     },
     "graph": {
         "directed": true,
+        "symmetric": false,
         "weighted": false
     },
     "kernel": "prominence",
@@ -20,6 +21,10 @@
         "load_msg": "",
         "net_name": "TinyDirChain_N3.paj",
         "ok": true
+    },
+    "metrics": {
+        "density": "0.33333333333333331",
+        "spectralRadius": "0"
     },
     "per_node": [
         {
@@ -48,7 +53,11 @@
             "eccentricity": "2",
             "eccentricity_inf": false,
             "id": 1,
-            "label": "A"
+            "label": "A",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "1",
+            "signedDegreePos": "1",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "1",
@@ -60,7 +69,7 @@
             "IRCC": "0.5",
             "PC": "1",
             "PP": "0.5",
-            "PRP": "0.092500000000000027",
+            "PRP": "0.092500000000000013",
             "SBC": "0.5",
             "SC": "1",
             "SCC": "0",
@@ -71,12 +80,16 @@
             "SIRCC": "0.5",
             "SPC": "1",
             "SPP": "0.5",
-            "SPRP": "0.71914480077745391",
+            "SPRP": "0.7191448007774538",
             "SSC": "1",
             "eccentricity": "2147483647",
             "eccentricity_inf": true,
             "id": 2,
-            "label": "B"
+            "label": "B",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "1",
+            "signedDegreePos": "1",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "0",
@@ -104,13 +117,19 @@
             "eccentricity": "2147483647",
             "eccentricity_inf": true,
             "id": 3,
-            "label": "C"
+            "label": "C",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "0",
+            "signedDegreePos": "0",
+            "signedDegreeRatio": "0"
         }
     ],
     "run": {
+        "bonacichEnabled": false,
         "considerWeights": false,
         "dropIsolates": false,
-        "inverseWeights": true
+        "inverseWeights": true,
+        "katzEnabled": false
     },
     "schema_version": 4
 }

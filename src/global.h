@@ -38,7 +38,7 @@ SOCNETV_BEGIN_NAMESPACE
 // Version
 // ============================================================================
 
-static const QString VERSION = "3.7";
+static const QString VERSION = "3.8";
 
 // ============================================================================
 // Math constants (define only if not already provided by <cmath>)
@@ -130,7 +130,32 @@ enum IndexType
     DP = 12,  ///< Degree Prestige
     PRP = 13, ///< PageRank Prestige
     PP = 14,  ///< Proximity Prestige
-    CLC = 15  ///< Clustering Coefficient (Watts-Strogatz)
+    CLC = 15,  ///< Clustering Coefficient (Watts-Strogatz)
+    SIGNED_DEGREE = 16, ///< Signed Degree Centrality (WS18 P3) - four variants (pos/neg/ratio/net),
+                        ///< no standardized/max score, so layoutByProminenceIndex(),
+                        ///< vertexFindByIndexScore(), and vertexFilterByCentrality() don't have a
+                        ///< case for this value (same as how CLC is absent from
+                        ///< toolBoxAnalysisProminenceSelectChanged()'s switch) - selectable in the
+                        ///< Prominence combo box, opens the report, nothing more yet.
+    PN = 17             ///< PN Centrality (WS18 P3, Everett & Borgatti 2014) - single raw score,
+                        ///< no standardized/max score either, same exclusion as SIGNED_DEGREE
+                        ///< above from layoutByProminenceIndex()/vertexFindByIndexScore()/
+                        ///< vertexFilterByCentrality(). Selecting it in the Prominence combo box
+                        ///< opens the same mode dialog as the menu action.
+};
+
+/**
+ * @enum PNMode
+ * @brief Directedness mode for PN Centrality (WS18 P3, Everett & Borgatti 2014). An undirected
+ * graph is only ever valid with All; a directed graph must pick Out or In (not All) - the three
+ * modes use genuinely different closed-form formulas, not the same one with a transpose swapped
+ * in. See Graph::centralityPN()'s own doc comment for the formulas themselves.
+ */
+enum class PNMode
+{
+    All,  ///< Undirected graphs only.
+    Out,  ///< Directed graphs: PN based on outgoing ties.
+    In    ///< Directed graphs: PN based on incoming ties.
 };
 
 /**
@@ -283,14 +308,18 @@ public:
 /**
  * @class GraphDistance
  * @brief Holds a (target, distance) pair for use in Dijkstra's priority queue.
+ *
+ * distance is qreal, not int: with inverseWeights or Johnson's-algorithm reweighting, a
+ * tentative distance is routinely fractional (e.g. 0.25, 0.75), and the priority queue's
+ * pop order depends on comparing these values exactly.
  */
 class GraphDistance
 {
 public:
     int target;
-    int distance;
+    qreal distance;
 
-    GraphDistance(int t, int dist)
+    GraphDistance(int t, qreal dist)
         : target(t), distance(dist) {}
 };
 

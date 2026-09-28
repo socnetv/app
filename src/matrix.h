@@ -101,6 +101,8 @@ public:
 
     void findMinMaxValues(qreal&min, qreal&max, bool &hasRealNumbers);
 
+    bool hasNegativeEntry();
+
     void NeighboursNearestFarthest(qreal&min,qreal&max,
                           int &imin, int &jmin,
                           int &imax, int &jmax);
@@ -116,17 +118,17 @@ public:
     Matrix& subtractFromI () ;
 
 
-    Matrix& operator =(Matrix & a);
+    Matrix& operator =(const Matrix & a);
 
     void sum(Matrix &a, Matrix &b) ;
 
     void operator +=(Matrix & b);
 
-    Matrix& operator +(Matrix & b);
+    Matrix operator +(Matrix & b);
 
-    Matrix& operator -(Matrix & b);
+    Matrix operator -(Matrix & b);
 
-    Matrix& operator *(Matrix & b);
+    Matrix operator *(Matrix & b);
     void operator *=(Matrix & b);
 
     void product( Matrix &A, Matrix & B, bool symmetry=false) ;
@@ -143,8 +145,8 @@ public:
             qreal out[],
             const bool &leftMultiply=false);
 
-    Matrix & pow (int n, bool symmetry=false)  ;
-    Matrix & expBySquaring2 (Matrix &Y, Matrix &X, int n, bool symmetry=false);
+    Matrix pow (int n, bool symmetry=false)  ;
+    Matrix expBySquaring2 (Matrix &Y, Matrix &X, int n, bool symmetry=false);
 
     qreal distanceManhattan(
             qreal x[],
@@ -164,6 +166,11 @@ public:
             const qreal eps, const int &maxIter,
             std::function<bool()> cancelCheck = nullptr,
             qreal *lambdaMax = nullptr);
+
+    qreal spectralRadiusExact(const qreal eps = 0.0000001, const int maxIter = 500,
+                              std::function<bool()> cancelCheck = nullptr);
+
+    qreal spectralRadiusBound();
 
     Matrix& degreeMatrix();
 

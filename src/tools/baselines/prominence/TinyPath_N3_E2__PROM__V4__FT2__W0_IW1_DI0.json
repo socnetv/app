@@ -11,6 +11,7 @@
     },
     "graph": {
         "directed": false,
+        "symmetric": true,
         "weighted": false
     },
     "kernel": "prominence",
@@ -20,6 +21,10 @@
         "load_msg": "",
         "net_name": "TinyPath_N3_E2.paj",
         "ok": true
+    },
+    "metrics": {
+        "density": "0.66666666666666663",
+        "spectralRadius": "1.4142135623730949"
     },
     "per_node": [
         {
@@ -32,7 +37,7 @@
             "IRCC": "0.66666666666666663",
             "PC": "1.5",
             "PP": "0.66666666666666663",
-            "PRP": "0.2567686987380754",
+            "PRP": "0.25676869873807551",
             "SBC": "0",
             "SC": "0",
             "SCC": "0.66666666666666663",
@@ -48,7 +53,11 @@
             "eccentricity": "2",
             "eccentricity_inf": false,
             "id": 1,
-            "label": "A"
+            "label": "A",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "1",
+            "signedDegreePos": "1",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "1",
@@ -60,7 +69,7 @@
             "IRCC": "1",
             "PC": "2",
             "PP": "1",
-            "PRP": "0.48650678785472817",
+            "PRP": "0.48650678785472834",
             "SBC": "1",
             "SC": "1",
             "SCC": "1",
@@ -76,7 +85,11 @@
             "eccentricity": "1",
             "eccentricity_inf": false,
             "id": 2,
-            "label": "B"
+            "label": "B",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "2",
+            "signedDegreePos": "2",
+            "signedDegreeRatio": "1"
         },
         {
             "BC": "0",
@@ -88,7 +101,7 @@
             "IRCC": "0.66666666666666663",
             "PC": "1.5",
             "PP": "0.66666666666666663",
-            "PRP": "0.25676538483825945",
+            "PRP": "0.25676538483825956",
             "SBC": "0",
             "SC": "0",
             "SCC": "0.66666666666666663",
@@ -99,18 +112,24 @@
             "SIRCC": "0.66666666666666663",
             "SPC": "0.75",
             "SPP": "0.66666666666666663",
-            "SPRP": "0.527773488979418",
+            "SPRP": "0.52777348897941812",
             "SSC": "0",
             "eccentricity": "2",
             "eccentricity_inf": false,
             "id": 3,
-            "label": "C"
+            "label": "C",
+            "signedDegreeNeg": "0",
+            "signedDegreeNet": "1",
+            "signedDegreePos": "1",
+            "signedDegreeRatio": "1"
         }
     ],
     "run": {
+        "bonacichEnabled": false,
         "considerWeights": false,
         "dropIsolates": false,
-        "inverseWeights": true
+        "inverseWeights": true,
+        "katzEnabled": false
     },
     "schema_version": 4
 }

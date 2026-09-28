@@ -409,7 +409,19 @@ void MainWindow::initPanels()
                      "<p><em>Proximity Prestige (PP):</em></p>"
                      "<p>The ratio of the proportion of nodes who can reach each node <em>u</em> "
                      "to the average distance these nodes are from it. Similar to Closeness Centrality "
-                     "but it counts only inbound distances to each actor, thus it is a measure of actor prestige.</p>");
+                     "but it counts only inbound distances to each actor, thus it is a measure of actor prestige.</p>"
+
+                     "<p><em>Signed Degree Centrality:</em></p>"
+                     "<p>For signed networks: out-degree split by tie sign into four scores per "
+                     "node <em>u</em> - pos (positive ties sent), neg (negative ties sent), "
+                     "ratio (pos / (pos+neg)), and net (pos &minus; neg). No single standardized "
+                     "score, unlike the other measures above.</p>"
+
+                     "<p><em>PN Centrality:</em></p>"
+                     "<p>For signed networks: a negative tie from someone who is themselves "
+                     "highly (positively) prominent hurts more than one from someone "
+                     "marginalized, propagated through indirect connections. Considers tie "
+                     "sign only, never tie strength. No single standardized score.</p>");
     toolBoxAnalysisProminenceSelect->setToolTip(helpMessage);
     toolBoxAnalysisProminenceSelect->setWhatsThis(helpMessage);
 
@@ -428,7 +440,9 @@ void MainWindow::initPanels()
                         << "Degree Prestige"
                         << "PageRank Prestige"
                         << "Proximity Prestige"
-                        << "Clustering Coefficient";
+                        << "Clustering Coefficient"
+                        << "Signed Degree Centrality"
+                        << "PN Centrality";
     // This list's order must match IndexType's enum values exactly, starting at DC=1:
     // toolBoxLayoutByIndexSelect's currentIndex syncing (mainwindow_layout.cpp's
     // setCurrentIndex(indexType + 1) calls) and vertexFindByIndexScore()/
@@ -442,6 +456,13 @@ void MainWindow::initPanels()
     // slotAnalyzeClusteringCoefficient() - a 3rd entry point would be pure duplication).
     // prominenceIndexList itself keeps it, for Node Find / layout-by-index / filter-by-
     // centrality, which all handle it correctly via their own dedicated code paths.
+    //
+    // Signed Degree Centrality (WS18 P3, IndexType::SIGNED_DEGREE) and PN Centrality (WS18 P3,
+    // IndexType::PN) are the opposite case: both DO have a toolBoxAnalysisProminenceSelectChanged()
+    // case (below), so they stay selectable here, but neither has a standardized/max score (see
+    // centralitySignedDegree()'s/centralityPN()'s own doc comments), so layoutByProminenceIndex(),
+    // vertexFindByIndexScore(), and vertexFilterByCentrality() don't have a case for either yet -
+    // selecting them opens their report and nothing more, same limited scope as their menu action.
     QStringList prominenceCommands;
     prominenceCommands << "Select" << prominenceIndexList;
     prominenceCommands.removeAll("Clustering Coefficient");
@@ -594,6 +615,12 @@ void MainWindow::initPanels()
     toolBoxLayoutByIndexSelect->setWhatsThis(helpMessage);
     QStringList layoutCommandsList;
     layoutCommandsList << "None" << "Random" << prominenceIndexList;
+    // Signed Degree Centrality and PN Centrality (both WS18 P3) have no single standardized
+    // score, so layoutByProminenceIndex() doesn't support either (see their own comments) -
+    // excluded here the same way "Clustering Coefficient" is excluded from the Prominence combo
+    // box above.
+    layoutCommandsList.removeAll("Signed Degree Centrality");
+    layoutCommandsList.removeAll("PN Centrality");
 
     toolBoxLayoutByIndexSelect->addItems(layoutCommandsList);
     toolBoxLayoutByIndexSelect->setMinimumWidth(100);

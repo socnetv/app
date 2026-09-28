@@ -24,10 +24,29 @@
 #include <QMutex>
 #include <QThread>
 #include <QtConcurrent/QtConcurrent>
+#include <algorithm>
+#include <cmath>
 #include <cstdlib>
 #include <queue>
 
 Q_LOGGING_CATEGORY(lcEngine, "socnetv.engine")
+
+namespace {
+
+// Relative-tolerance comparison for two accumulated path-length sums. Plain qreal == is fragile
+// once a distance is a sum of several independently-rounded edge weights - two paths that are
+// mathematically tied can land a bit or two apart after summation, especially once WS18's
+// Johnson's-reweighting path composes an extra per-edge potential term into every weight before
+// this comparison runs. eps is fixed and relative to the larger operand's magnitude, so it scales
+// sensibly across the wide range of edge-weight magnitudes real SNA datasets use, rather than
+// being too loose for small weights or too tight for large ones.
+bool distancesNearlyEqual(qreal a, qreal b)
+{
+    constexpr qreal eps = 1e-9;
+    return std::abs(a - b) <= eps * std::max({qreal(1.0), std::abs(a), std::abs(b)});
+}
+
+} // namespace
 
 /**
  * @brief Per-run scratch state for DistanceEngine::compute(), scoped to one compute() call.
@@ -62,6 +81,14 @@ struct DistanceScratch
 
     // Used during finalize/connectivity scan
     qreal pairDistance = 0;
+
+    // Johnson's-algorithm potentials, one entry per vertex position (same indexing as
+    // PerSourceScratch::dist), computed once per compute() call by bellmanFordPotentials() and
+    // shared read-only across every parallel per-source Dijkstra call. Empty/unused until
+    // this reweighting is actually wired into dijkstraSSSP() - for now this is only computed
+    // and validated, not consumed yet.
+    QVector<qreal> potentials;
+    bool negativeCycleDetected = false;
 };
 
 /**
@@ -134,30 +161,47 @@ DistanceEngine::DistanceEngine(Graph &g)
  * @param considerWeights      If true, uses edge weights (Dijkstra); otherwise BFS.
  * @param inverseWeights       If true, uses 1/weight as the distance metric.
  * @param dropIsolates         If true, excludes isolated vertices from all calculations.
+ * @param allowNegativeWeights If true, negative edge weights are not refused - instead, potentials
+ * are computed via bellmanFordPotentials() (Johnson's algorithm) and every source's Dijkstra run
+ * is reweighted to be non-negative. Refuses instead if the network has a reachable negative cycle
+ * (see Graph::negativeCycleDetected()), since shortest paths are then undefined regardless of
+ * algorithm. Has no effect unless considerWeights is also true.
  */
 void DistanceEngine::compute(const bool computeCentralities,
                              const bool considerWeights,
                              const bool inverseWeights,
-                             const bool dropIsolates)
+                             const bool dropIsolates,
+                             const bool allowNegativeWeights)
 {
 
     qCDebug(lcEngine) << "DistanceEngine::compute() - "
              << "centralities" << computeCentralities
              << "considerWeights:" << considerWeights
              << "inverseWeights:" << inverseWeights
-             << "dropIsolates:" << dropIsolates;
+             << "dropIsolates:" << dropIsolates
+             << "allowNegativeWeights:" << allowNegativeWeights;
 
-    if (computeCentralities)
+    // The calculatedDistances/calculatedCentralities cache only records that *some* result is
+    // cached, not which mode produced it - a plain Dijkstra/BFS run and an allowNegativeWeights
+    // (Johnson's algorithm) run can disagree (differently on a negative-weight graph, since only
+    // one of the two even attempts a real computation there), so a mode switch on the same graph
+    // must invalidate the cache rather than silently reuse the other mode's stale result.
+    const bool modeMatches = (graph.m_lastComputeWasNegativeWeightSafe == allowNegativeWeights);
+    if (modeMatches)
     {
-        if (graph.calculatedCentralities)
+        if (computeCentralities)
+        {
+            if (graph.calculatedCentralities)
+            {
+                return;
+            }
+        }
+        else if (graph.calculatedDistances)
         {
             return;
         }
     }
-    else if (graph.calculatedDistances)
-    {
-        return;
-    }
+    graph.m_lastComputeWasNegativeWeightSafe = allowNegativeWeights;
 
     DistanceScratch ds;
     CentralityScratchSSSP csssp;
@@ -173,13 +217,38 @@ void DistanceEngine::compute(const bool computeCentralities,
             considerWeights,
             inverseWeights,
             dropIsolates,
+            allowNegativeWeights,
             ds,
             csssp,
             csfin,
             sink);
 
+    if (!allowNegativeWeights && graph.negativeWeightsDetected())
+    {
+        qCDebug(lcEngine) << "DistanceEngine::compute() - refused: negative edge weight(s) "
+                              "detected, Dijkstra is undefined for those. Skipping computation.";
+        return;
+    }
+
     if (ds.E != 0)
     {
+        // allowNegativeWeights: compute potentials once, single-threaded, before any per-source
+        // work starts - every parallel Dijkstra call in runAllSources() needs to read the same
+        // frozen h(v) vector. A reachable negative cycle makes shortest paths undefined for any
+        // algorithm, so refuse the whole computation rather than a partial/best-effort result.
+        if (allowNegativeWeights && considerWeights)
+        {
+            graph.resetNegativeCycleDetected();
+            if (!bellmanFordPotentials(inverseWeights, ds))
+            {
+                graph.setNegativeCycleDetected();
+                qCDebug(lcEngine) << "DistanceEngine::compute() - refused: reachable negative "
+                                      "cycle detected, shortest paths are undefined. Skipping "
+                                      "computation.";
+                return;
+            }
+        }
+
         // ---- Phase 1+2: SSSP loop + per-source accumulation ----
         runAllSources(computeCentralities,
                       considerWeights,
@@ -205,10 +274,29 @@ void DistanceEngine::compute(const bool computeCentralities,
     qCDebug(lcEngine) << "Graph::graphDistancesGeodesic()- FINISHED computing distances";
 }
 
+/**
+ * @brief Phase 0 of compute(): resets every scratch/aggregate field this run will populate,
+ * scans for a negative edge weight up front (refusing the whole computation via
+ * sink.reportNegativeWeights() unless allowNegativeWeights is set), and handles the zero-edges
+ * (E==0) case entirely on its own, since runAllSources()/finalize() have nothing to do then.
+ * @param computeCentralities Whether centrality scratch/aggregate fields need resetting too.
+ * @param considerWeights Whether the negative-weight scan below runs at all (BFS never sees
+ * weights, so there is nothing to detect).
+ * @param inverseWeights Only used for the E==0 branch's own bookkeeping.
+ * @param dropIsolates Exclude isolated vertices from the vertex count/E==0 population.
+ * @param allowNegativeWeights If true, a detected negative edge weight is not refused here - the
+ * caller (compute()) has opted into the negative-weight-safe (Johnson's-algorithm) path, which
+ * is defined for negative weights.
+ * @param ds Output: scratch state for this run (sizes, maxima, per-run accumulators).
+ * @param csssp Output: SSSP-phase centrality scratch, zeroed for this run.
+ * @param csfin Output: finalize-phase centrality scratch, zeroed for this run.
+ * @param sink Progress/cancellation/negative-weight-refusal callback.
+ */
 void DistanceEngine::initRun(const bool computeCentralities,
                              const bool considerWeights,
                              const bool inverseWeights,
                              const bool dropIsolates,
+                             const bool allowNegativeWeights,
                              DistanceScratch &ds,
                              CentralityScratchSSSP &csssp,
                              CentralityScratchFinalize &csfin,
@@ -222,6 +310,7 @@ void DistanceEngine::initRun(const bool computeCentralities,
 
     sink.statusMessage(ds.pMsg);
     sink.resetCancellation();
+    graph.resetNegativeWeightsDetected();
 
     graph.setSymmetricCached(graph.isSymmetric());
 
@@ -289,8 +378,6 @@ void DistanceEngine::initRun(const bool computeCentralities,
         csfin.tempVariancePC = 0;
 
         ds.pairDistance = 0;
-
-        graph.setConnectedCached(true);
 
         graph.maxSCC = 0;
         graph.minSCC = RAND_MAX;
@@ -370,13 +457,27 @@ void DistanceEngine::initRun(const bool computeCentralities,
         {
             for (ds.it1 = graph.verticesBegin(); ds.it1 != graph.verticesEnd(); ++ds.it1)
             {
-                if (considerWeights && inverseWeights)
+                if (considerWeights)
                 {
-                    // find the max weight in the network.
-                    // it will be used for maxCC below
+                    // hasEdgeTo() returns exactly 0 for "no edge" (see its own doc comment), so a
+                    // negative return is unambiguously a real negative-weight edge, never a
+                    // nonexistent one. Checked first, before any state below (setConnectedCached(),
+                    // per-vertex centrality zeroing) is mutated - Dijkstra is mathematically
+                    // undefined for negative weights, so refuse the whole computation rather than
+                    // leaving partially-mutated state that looks legitimately computed but isn't.
+                    // See #277/WS18 P1. Skipped when allowNegativeWeights is set: that caller has
+                    // opted into the Johnson's-algorithm path (see compute()), which is defined
+                    // for negative weights - only a negative cycle is refused there, not this.
                     ds.tempEdgeWeight = (*ds.it)->hasEdgeTo((*ds.it1)->number());
-                    if (ds.tempEdgeWeight > ds.maxEdgeWeightInNetwork)
+                    if (ds.tempEdgeWeight < 0 && !allowNegativeWeights)
                     {
+                        sink.reportNegativeWeights();
+                        return;
+                    }
+                    if (inverseWeights && ds.tempEdgeWeight > ds.maxEdgeWeightInNetwork)
+                    {
+                        // find the max weight in the network.
+                        // it will be used for maxCC below
                         ds.maxEdgeWeightInNetwork = ds.tempEdgeWeight;
                     }
                 }
@@ -395,7 +496,12 @@ void DistanceEngine::initRun(const bool computeCentralities,
             }
         }
 
-        if (graph.symmetricCached())
+        graph.setConnectedCached(true);
+
+        // maxIndexBC/maxIndexSC are the SBC/SSC normalization denominators; gated on the
+        // graph's directed/undirected mode (not tie reciprocity) to match the halving the raw
+        // BC/SC values get further down in this function.
+        if (graph.isUndirected())
         {
             graph.maxIndexBC = (ds.N == 2) ? 1 : (ds.N - 1.0) * (ds.N - 2.0) / 2.0;
             graph.maxIndexSC = (ds.N == 2) ? 1 : (ds.N - 1.0) * (ds.N - 2.0) / 2.0;
@@ -417,6 +523,143 @@ void DistanceEngine::initRun(const bool computeCentralities,
     }
 }
 
+/**
+ * @brief Public entry point for the potentials pass below, for callers with no DistanceScratch
+ * of their own (currently just the "signed" CLI kernel). Owns a throwaway DistanceScratch and
+ * copies its result out. Not part of compute()'s pipeline and not yet threaded into
+ * dijkstraSSSP()/runAllSources() - see the overload below for the algorithm and status.
+ * @param inverseWeights invert each edge weight before relaxing, same convention as elsewhere
+ * @param outPotentials filled with h(v) per vertex (indexed by vertex position) on success;
+ * not meaningful if this returns false
+ * @return false if a reachable negative cycle was found, true otherwise
+ */
+bool DistanceEngine::bellmanFordPotentials(const bool inverseWeights, QVector<qreal> &outPotentials)
+{
+    DistanceScratch ds;
+    const bool ok = bellmanFordPotentials(inverseWeights, ds);
+    outPotentials = ds.potentials;
+    return ok;
+}
+
+/**
+ * @brief Bellman-Ford reweighting pass computing a potential h(v) for every vertex, so that
+ * edges can later be reweighted as w'(u,v) = w(u,v) + h(u) - h(v) and handed to dijkstraSSSP()
+ * unmodified on a graph guaranteed to have no negative edges. Every real vertex starts at
+ * potential 0 - this is exactly the result an implicit virtual source with a zero-weight edge
+ * to every real vertex would produce on round 0, so that virtual source never needs to be
+ * materialized. Also detects negative cycles as a by-product of the same pass (the standard
+ * "does relaxation round V still improve anything" check) - a negative cycle makes shortest
+ * paths undefined, so ds.potentials is left incomplete/unusable and this returns false.
+ * Not yet called from compute() or wired into dijkstraSSSP()/runAllSources() - calling it
+ * unconditionally would cost every ordinary (non-negative-weight) computation a wasted full
+ * edge relaxation pass; it should be gated behind an explicit opt-in once its result is
+ * actually consumed by the SSSP loop.
+ * @param inverseWeights invert each edge weight before relaxing, same convention as elsewhere
+ * @param ds run-scratch state; ds.potentials/ds.negativeCycleDetected are written here
+ * @return false if a reachable negative cycle was found, true otherwise
+ */
+bool DistanceEngine::bellmanFordPotentials(const bool inverseWeights, DistanceScratch &ds)
+{
+    int totalV = 0;
+    for (auto it = graph.verticesBegin(); it != graph.verticesEnd(); ++it)
+        ++totalV;
+
+    // Every real vertex starts at potential 0. This is exactly the result a zero-weight edge
+    // from an implicit virtual source to each real vertex would produce on round 0 of
+    // Bellman-Ford, so the virtual source never needs to be materialized as an actual vertex.
+    ds.potentials.assign(totalV, 0.0);
+    ds.negativeCycleDetected = false;
+
+    const int relation = graph.relationCurrent();
+
+    // Standard Bellman-Ford: V-1 rounds of relaxing every edge is enough to find every
+    // shortest path from the virtual source (which reaches every vertex directly), then one
+    // more round checks whether anything still improves - if so, a negative cycle is
+    // reachable and shortest paths (hence potentials) are undefined.
+    for (int round = 0; round < totalV; ++round)
+    {
+        bool anyRelaxed = false;
+
+        for (auto it = graph.verticesBegin(); it != graph.verticesEnd(); ++it)
+        {
+            const int u  = (*it)->number();
+            const int ui = graph.vertexIndexByNumber(u);
+
+            if (ds.potentials[ui] == RAND_MAX)
+            {
+                // u itself unreachable from the virtual source so far this round - can't relax
+                // anything through it yet. Never true in practice since every real vertex starts
+                // reachable from the virtual source at potential 0, kept only for safety.
+                continue;
+            }
+
+            auto it1 = graph.vertexAtIndex(ui)->outEdges().cbegin();
+            while (it1 != graph.vertexAtIndex(ui)->outEdges().cend())
+            {
+                if (it1.value().first != relation || it1.value().second.second != true)
+                {
+                    ++it1;
+                    continue;
+                }
+
+                const int w  = it1.key();
+                const int wi = graph.vertexIndexByNumber(w);
+
+                qreal weight = it1.value().second.first;
+
+                // Same zero-weight-edge and inverse-weight handling as dijkstraSSSP(), so the
+                // graph this pass reasons about is exactly the one dijkstraSSSP() will traverse.
+                if (weight == 0)
+                {
+                    ++it1;
+                    continue;
+                }
+                if (inverseWeights)
+                {
+                    weight = 1.0 / weight;
+                }
+
+                if (ds.potentials[ui] + weight < ds.potentials[wi])
+                {
+                    if (round == totalV - 1)
+                    {
+                        // This is the extra (Vth) round: relaxation still finding an
+                        // improvement here means a negative cycle is reachable.
+                        ds.negativeCycleDetected = true;
+                        return false;
+                    }
+                    ds.potentials[wi] = ds.potentials[ui] + weight;
+                    anyRelaxed = true;
+                }
+
+                ++it1;
+            }
+        }
+
+        if (!anyRelaxed)
+        {
+            // Converged early - no need to run the remaining rounds.
+            break;
+        }
+    }
+
+    return true;
+}
+
+/**
+ * @brief Phase 1+2 of compute(): runs SSSP (BFS or Dijkstra, per considerWeights) from every
+ * enabled vertex, in parallel across CPU cores via QtConcurrent::blockingMap. Each worker thread
+ * owns its own ThreadLocalState; graph-wide writes that aren't safe to make concurrently (BC,
+ * SC, distance sum, geodesics count, diameter) are accumulated into per-thread state during the
+ * map and reduced into graph-global state in a single-threaded step immediately after.
+ * @param computeCentralities Also accumulate BC/SC/CC/etc. per source, not just distances.
+ * @param considerWeights Dijkstra (true) vs. BFS (false).
+ * @param inverseWeights Use 1/weight as the per-edge distance metric.
+ * @param dropIsolates Exclude isolated vertices from the source loop.
+ * @param ds Scratch state populated by initRun() (potentials, if any, bounds, etc.); also where
+ * this phase's own per-run accumulators live.
+ * @param sink Progress/cancellation callback.
+ */
 void DistanceEngine::runAllSources(const bool computeCentralities,
                                    const bool considerWeights,
                                    const bool inverseWeights,
@@ -505,36 +748,72 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
         qCDebug(lcEngine) << "***** PHASE 1 (SSSP) [thread slot" << mySlot << "]: source s" << s << "vpos" << si;
 
         // Reset per-source scratch (dist, sigma, and optionally Stack/Ps/nthOrder).
-        // Also resets pss.sourceDistanceSum / sourceGeodesicsCount / sourceDiameter.
         tls.pss.resetPerSource(computeCentralities);
 
-        // Run BFS or Dijkstra; unsafe graph calls go to tls.pss scratch fields / tls.partialSC.
+        // Run BFS or Dijkstra; unsafe graph calls go to tls.pss scratch fields.
+        // ds.potentials is read-only from here on (populated once, single-threaded, before this
+        // parallel loop starts - see bellmanFordPotentials()) so concurrent reads across source
+        // threads are safe; empty unless a caller explicitly requested Johnson's reweighting.
         if (!considerWeights)
-            bfsSSSP(s, si, computeCentralities, dropIsolates, tls.pss, tls.partialSC);
+            bfsSSSP(s, si, computeCentralities, dropIsolates, tls.pss);
         else
-            dijkstraSSSP(s, si, computeCentralities, inverseWeights, dropIsolates, tls.pss, tls.partialSC);
+            dijkstraSSSP(s, si, computeCentralities, inverseWeights, dropIsolates, tls.pss,
+                        ds.potentials);
 
-        // Accumulate per-source aggregates into thread-local running totals.
-        // These will be reduced into graph-global state after the parallel loop.
-        tls.totalDistanceSum    += tls.pss.sourceDistanceSum;
-        tls.totalGeodesicsCount += tls.pss.sourceGeodesicsCount;
-        if (tls.pss.sourceDiameter > tls.maxDiameter)
-            tls.maxDiameter = tls.pss.sourceDiameter;
+        // Distance sum and geodesics (reachable-pair) count are NOT accumulated here from
+        // per-source scratch - both are computed once, after every source has settled, from
+        // the final APSP matrix (distance sum in the write-back loop just below; geodesics
+        // count in finalize()).
 
         qCDebug(lcEngine) << "***** PHASE 1 (SSSP): FINISHED BFS/DIJKSTRA for s" << s
                  << "— writing APSP results back to vertex" << si;
 
-        // APSP write-back: persist tls.pss.dist / sigma into row si of the flat matrices.
-        // Safe: si is unique across all concurrent lambda invocations, so no two sources ever
-        // write the same row. Unconditional (every column vi, not just reached ones) -
-        // tls.pss.dist[vi] already holds RAND_MAX for every unreached vi
+        // Un-reweight before anything below reads tls.pss.dist[]: d(s,v) = d'(s,v) - h(s) + h(v).
+        // Must happen before both the APSP write-back just below and the CC/PC accumulation
+        // further down, since both consume tls.pss.dist[] directly. A no-op when ds.potentials
+        // is empty (plain Dijkstra/BFS, no Johnson's reweighting requested). RAND_MAX (unreached)
+        // is left untouched - it's a sentinel, not a real distance to un-reweight.
+        if (!ds.potentials.isEmpty())
+        {
+            for (int vi = 0; vi < totalV; ++vi)
+            {
+                if (tls.pss.dist[vi] != RAND_MAX)
+                    tls.pss.dist[vi] += ds.potentials[vi] - ds.potentials[si];
+            }
+        }
+
+        // APSP write-back: persist tls.pss.dist / sigma into row si of the flat matrices, and
+        // (same pass, since it's already walking every final, un-reweighted distance) find this
+        // source's own diameter contribution and its own distance-sum contribution - both from
+        // FINAL per-vertex distances, not a running/duplicated sum sampled during or right after
+        // relaxation, since a vertex can be relaxed to a smaller distance after an earlier,
+        // larger one (per-vertex eccentricity and the graph-wide geodesics count need the same
+        // final-state treatment, computed separately in finalize()). RAND_MAX (unreached) is
+        // excluded from both, matching graphSumDistanceCached()'s existing disconnected-graph
+        // handling (divides by the reachable-pair count, not N*(N-1), when the graph isn't fully
+        // connected - see runAllSources() below). Safe: si is unique across all concurrent
+        // lambda invocations, so
+        // no two sources ever write the same row. Unconditional (every column vi, not just reached
+        // ones) - tls.pss.dist[vi] already holds RAND_MAX for every unreached vi
         // (PerSourceScratch::resetPerSource() fills it before every source, unconditionally),
         // so this isn't new work - it reuses a reset that was already happening.
+        qreal sourceMaxDist = 0;
+        qreal sourceDistanceSum = 0;
         for (int vi = 0; vi < totalV; ++vi)
         {
             graph.m_apspDist[relation].setItem(si, vi, tls.pss.dist[vi]);
             graph.m_apspSigma[relation].setItem(si, vi, (qreal)tls.pss.sigma[vi]);
+
+            if (tls.pss.dist[vi] != RAND_MAX)
+            {
+                sourceDistanceSum += tls.pss.dist[vi];
+                if (tls.pss.dist[vi] > sourceMaxDist)
+                    sourceMaxDist = tls.pss.dist[vi];
+            }
         }
+        if (sourceMaxDist > tls.maxDiameter)
+            tls.maxDiameter = sourceMaxDist;
+        tls.totalDistanceSum += sourceDistanceSum;
 
         if (computeCentralities)
         {
@@ -564,14 +843,16 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
             // Walk every vertex position to zero delta[] (needed for BC back-propagation)
             // and simultaneously sum distances for CC.  RAND_MAX propagates the
             // disconnected-graph sentinel so CC becomes 0 when s cannot reach all others.
+            // This sum is local to CC only - it deliberately includes RAND_MAX (unlike the
+            // graph-wide distance sum accumulated in the APSP write-back loop above), so it
+            // must never also feed graph.addToDistanceSum() - doing so would duplicate the
+            // graph-wide sum on top of the one already accumulated above.
             qreal distances_sum_for_s = 0;
             for (int vi1 = 0; vi1 < totalV; ++vi1)
             {
                 tls.pss.delta[vi1] = 0.0;
                 distances_sum_for_s += tls.pss.dist[vi1];
             }
-            // Accumulate into thread-local total; graph.addToDistanceSum() in reduction.
-            tls.totalCCDistanceSum += distances_sum_for_s;
 
             qreal cc = (distances_sum_for_s != 0 && distances_sum_for_s < RAND_MAX)
                            ? 1.0 / distances_sum_for_s
@@ -580,11 +861,20 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
 
             qCDebug(lcEngine) << "***** PHASE 2 (CENTRALITIES): s" << s << "vpos" << si << "CC" << cc;
 
-            // ---- Brandes BC back-propagation ----
+            // ---- Brandes BC back-propagation, also feeds SC ----
             // Visit vertices in reverse BFS/Dijkstra order (deepest first) and propagate
             // dependency deltas up the shortest-path DAG.  Instead of writing to
             // vertex->BC() directly (which would race across threads for intermediate
             // vertices), accumulate into tls.partialBC[wi]; the reduction step merges all.
+            //
+            // Stress Centrality: SC(u) = number of (s,w) ordered pairs, s != w != u, where u is
+            // a direct predecessor of w on the final, settled shortest-path DAG from s. Ps[wi]
+            // holds exactly those predecessors, so SC is accumulated here from the settled DAG,
+            // once per confirmed edge - never live during relaxation, since a relaxation event
+            // can be superseded by an even shorter path discovered later in the same run.
+            // Undirected graphs: each undirected edge is stored as two directed DAG entries, so
+            // the raw sum here is halved for SC (and BC) further down in finalize(), gated on
+            // graph.isUndirected().
             qCDebug(lcEngine) << "***** PHASE 2 (BC/ACCUMULATION): back-propagating from s" << s
                      << "Stack size" << (int)tls.pss.Stack.size();
 
@@ -604,6 +894,11 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
                         tls.pss.delta[ui] += (1.0 + tls.pss.delta[wi]) *
                                              ((qreal)tls.pss.sigma[ui] /
                                               (qreal)tls.pss.sigma[wi]);
+                    }
+
+                    if (s != w && s != u && u != w)
+                    {
+                        tls.partialSC[ui] += 1.0;
                     }
                 }
 
@@ -627,14 +922,12 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
     // thread after blockingMap returns; no concurrent access, no mutexes needed.
     for (auto &tls : allStates)
     {
-        // Distance sum from BFS inner-loop discoveries (0 for Dijkstra).
+        // Distance sum from the APSP write-back loop's final-distance walk - the single
+        // source of truth for the graph-wide sum, correct for both BFS and Dijkstra.
         graph.addToDistanceSum(tls.totalDistanceSum);
-        if (computeCentralities)
-            // Distance sum from the CC-denominator accumulation in the centralities block.
-            graph.addToDistanceSum(tls.totalCCDistanceSum);
 
-        // Geodesics count (reachable source-target pairs found by BFS / Dijkstra).
-        graph.addGeodesicsCount(tls.totalGeodesicsCount);
+        // Geodesics count is NOT reduced here; finalize() computes the true reachable-pair
+        // count from the final APSP matrix instead of a per-thread total.
 
         // Diameter: keep the overall maximum across all threads.
         if (tls.maxDiameter > graph.graphDiameterCached())
@@ -669,6 +962,18 @@ void DistanceEngine::runAllSources(const bool computeCentralities,
     qCDebug(lcEngine) << "*********** MAIN LOOP (SSSP problem): FINISHED.";
 }
 
+/**
+ * @brief Phase 3 of compute(): single-threaded aggregation pass run after runAllSources()
+ * completes. Scans for vertex pairs left unreachable (populating notConnectedPairs and the
+ * infinite-eccentricity/zero-centrality bookkeeping that implies), determines overall graph
+ * connectedness, and finishes the graph-wide centrality aggregates (sums, min/max, normalized
+ * forms) that runAllSources() only partially accumulated per-source.
+ * @param computeCentralities Whether centrality aggregates need finishing at all.
+ * @param dropIsolates Exclude isolated vertices from the connectivity/aggregate scan.
+ * @param ds Scratch state carried over from initRun()/runAllSources().
+ * @param csf Centrality-aggregation scratch (sums, min/max trackers) to finish into graph state.
+ * @param sink Progress/cancellation callback.
+ */
 void DistanceEngine::finalize(const bool computeCentralities,
                               const bool dropIsolates,
                               DistanceScratch &ds,
@@ -692,6 +997,13 @@ void DistanceEngine::finalize(const bool computeCentralities,
         ++totalV;
     const int relation = graph.relationCurrent();
 
+    // True count of distinct reachable ordered pairs, used as avg_distance's denominator on a
+    // disconnected graph - computed here, once, from the final settled APSP matrix, not
+    // accumulated by incrementing a counter once per relaxation EVENT during the source loop
+    // (that over-counts whenever a pair is relaxed more than once before settling on its true
+    // shortest distance).
+    int reachablePairsCount = 0;
+
     for (ds.it = graph.verticesBegin(); ds.it != graph.verticesEnd(); ++ds.it)
     {
         if (!(*ds.it)->isEnabled())
@@ -702,6 +1014,14 @@ void DistanceEngine::finalize(const bool computeCentralities,
 
         ds.pairDistance = 0;
         const int i = graph.vertexIndexByNumber((*ds.it)->number());
+        // Eccentricity = max geodesic distance from i to any reachable j, computed here from
+        // the final settled APSP matrix - not trusted from eccentricity() (the live value the
+        // parallel source loop wrote), which tracks a running max sampled during/after each
+        // relaxation event, not each vertex's FINAL distance. A vertex can be relaxed to a
+        // smaller distance after an earlier, larger one, so that running max can overstate the
+        // true eccentricity.
+        bool disconnectedFromSome = false;
+        qreal maxReachableDist = 0;
 
         for (int j = 0; j < totalV; ++j)
         {
@@ -723,7 +1043,7 @@ void DistanceEngine::finalize(const bool computeCentralities,
             if (ds.pairDistance == RAND_MAX)
             {
                 graph.notConnectedPairsInsert((*ds.it)->number(), v1->number());
-                (*ds.it)->setEccentricity(RAND_MAX);
+                disconnectedFromSome = true;
                 graph.setConnectedCached(false);
 
                 qCDebug(lcEngine) << "actor i" << (*ds.it)->number()
@@ -736,8 +1056,13 @@ void DistanceEngine::finalize(const bool computeCentralities,
                 qCDebug(lcEngine) << "actor i" << (*ds.it)->number()
                          << "distanceSum" << (*ds.it)->distanceSum();
                 (*ds.it)->setDistanceSum((*ds.it)->distanceSum() + ds.pairDistance);
+                if (ds.pairDistance > maxReachableDist)
+                    maxReachableDist = ds.pairDistance;
+                ++reachablePairsCount;
             }
         } // end for
+
+        (*ds.it)->setEccentricity(disconnectedFromSome ? (qreal)RAND_MAX : maxReachableDist);
 
         qCDebug(lcEngine) << "actor i" << (*ds.it)->number()
                  << "Final distanceSum" << (*ds.it)->distanceSum();
@@ -790,6 +1115,10 @@ void DistanceEngine::finalize(const bool computeCentralities,
 
     } // end for disconnected checking
 
+    // The true count of distinct reachable ordered pairs, just computed above from the final
+    // settled APSP matrix.
+    graph.addGeodesicsCount(reachablePairsCount);
+
     // Compute average path length...
     if (graph.notConnectedPairsSize() == 0)
     {
@@ -830,7 +1159,14 @@ void DistanceEngine::finalize(const bool computeCentralities,
             graph.minmax(csf.SPC, (*ds.it), graph.maxSPC, graph.minSPC, graph.maxNodeSPC, graph.minNodeSPC);
 
             // Compute std BC, classes and min/maxSBC
-            if (graph.symmetricCached())
+            //
+            // Gated on the graph's directed/undirected mode, not tie reciprocity: a directed
+            // graph can have every tie reciprocated (e.g. a corporate-interlocks network where
+            // every link happens to be mutual) while Brandes' algorithm still visits (s,t) and
+            // (t,s) as distinct ordered pairs, as it should for a directed network. Only a
+            // graph genuinely undirected collapses (s,t)/(t,s) into one unordered pair needing
+            // the /2 correction.
+            if (graph.isUndirected())
             {
                 qCDebug(lcEngine) << "Betweenness centrality must be divided by"
                          << " two if the graph is undirected";
@@ -855,7 +1191,8 @@ void DistanceEngine::finalize(const bool computeCentralities,
 
             // prepare to compute stdSC
             csf.SC = (*ds.it)->SC();
-            if (graph.symmetricCached())
+            // Same reasoning as BC just above: gate on isUndirected(), not symmetricCached().
+            if (graph.isUndirected())
             {
                 (*ds.it)->setSC(csf.SC / 2.0);
                 csf.SC = (*ds.it)->SC();
@@ -1005,17 +1342,17 @@ void DistanceEngine::finalize(const bool computeCentralities,
                 it calculates CC(s) as the sum of its distances from every other vertex.
                 it calculates eccentricity(s) as the maximum distance from all other vertices.
                 it increases pss.nthOrder[ N ] by one, to store the number of nodes at distance n from source s
-            b) For every vertex u:
-                it increases SC(u) by one, when it finds a new shor. path from s to t through u.
-                appends each neighbor y of u to pss.Ps[y], thus Ps stores all predecessors of y on all shortest paths from s
+            b) For every vertex u on a shortest path from s to w:
+                appends u to pss.Ps[w], thus Ps stores all predecessors of w on all shortest paths from s.
+                BC and SC are both derived from Ps/sigma afterward, in runAllSources()'s Brandes
+                back-propagation loop - not accumulated here.
             c) Each vertex u popped from Q is pushed to pss.Stack
 
 */
 void DistanceEngine::bfsSSSP(const int &s, const int &si,
                              const bool &computeCentralities,
                              const bool &dropIsolates,
-                             PerSourceScratch &pss,
-                             QVector<qreal> &partialSC)
+                             PerSourceScratch &pss)
 {
     Q_UNUSED(dropIsolates);
 
@@ -1108,10 +1445,11 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si,
                 // Multiple threads run bfsSSSP concurrently; these graph methods
                 // are not thread-safe.  The owning thread reduces the scratch totals
                 // into graph state after QtConcurrent::blockingMap returns.
-                pss.sourceDistanceSum += dist_w;
-                ++pss.sourceGeodesicsCount;
-                if (dist_w > pss.sourceDiameter)
-                    pss.sourceDiameter = dist_w;
+                // Distance sum and geodesics count are NOT accumulated here - both are summed
+                // once, after SSSP settles, from the final settled APSP data (distance sum in
+                // runAllSources()'s write-back loop, geodesics count in finalize()) - safe for
+                // both BFS and Dijkstra, since a vertex can be re-relaxed to a smaller distance
+                // later (Dijkstra) and only the final value should count.
 
                 qCDebug(lcEngine) << "== BFS  - d("
                          << s << "," << w
@@ -1127,9 +1465,8 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si,
                     // Source-vertex writes (si is unique per thread): safe for parallelism.
                     graph.vertexAtIndex(si)->setCC(graph.vertexAtIndex(si)->CC() + dist_w);
 
-                    qCDebug(lcEngine) << "BFS: Calculate Eccentricity: the maximum distance ";
-                    if (graph.vertexAtIndex(si)->eccentricity() < dist_w)
-                        graph.vertexAtIndex(si)->setEccentricity(dist_w);
+                    // Eccentricity is NOT tracked here - finalize() computes it from each
+                    // vertex's final settled APSP row instead, the single source of truth.
                 }
             }
 
@@ -1150,15 +1487,9 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si,
                 }
                 if (computeCentralities)
                 {
-                    qCDebug(lcEngine) << "BFS/SC: Computing centralities: Computing SC ";
-                    if (s != w && s != u && u != w)
-                    {
-                        qCDebug(lcEngine) << "BFS: partialSC[ui=" << ui << "] += 1";
-                        // Intermediate vertex ui may be processed by concurrent threads
-                        // (other sources pass through the same u).  Write to partialSC[ui]
-                        // — a per-thread array — instead of vertex->setSC() to avoid races.
-                        partialSC[ui] += 1.0;
-                    }
+                    // SC is NOT accumulated here - it's computed post-hoc from the final Ps[]
+                    // predecessor DAG in runAllSources()'s Brandes back-propagation loop, the
+                    // same data this Ps[wi].append(u) below feeds BC from.
                     qCDebug(lcEngine) << "BFS: appending u" << u << " to list Ps[w=" << w
                              << "] with the predecessors of w on all shortest paths from s ";
                     pss.Ps[wi].append(u);
@@ -1188,8 +1519,9 @@ void DistanceEngine::bfsSSSP(const int &s, const int &si,
                 it calculates eccentricity(s) as the maximum distance from all other vertices.
                 it increases pss.nthOrder[ N ] by one, to store the number of nodes at distance n from source s
             b) For every vertex u:
-                it increases SC(u) by one, when it finds a new shor. path from s to t through u.
-                appends each neighbor y of u to pss.Ps[y], thus Ps stores all predecessors of y on all shortest paths from s
+                appends each predecessor u of w to pss.Ps[w], thus Ps stores all predecessors of w
+                on all shortest paths from s. BC and SC are both derived from Ps/sigma afterward,
+                in runAllSources()'s Brandes back-propagation loop - not accumulated here.
             c) Each vertex u popped from prQ is pushed to pss.Stack
 
 */
@@ -1198,7 +1530,7 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                                   const bool &inverseWeights,
                                   const bool &dropIsolates,
                                   PerSourceScratch &pss,
-                                  QVector<qreal> &partialSC)
+                                  const QVector<qreal> &potentials)
 {
 
     Q_UNUSED(dropIsolates);
@@ -1330,6 +1662,16 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                 qCDebug(lcEngine) << "    --- dijkstra: inverting weight to " << weight;
             }
 
+            // Johnson's-algorithm reweighting: w'(u,v) = w(u,v) + h(u) - h(v). Applied after
+            // inverseWeights above, since potentials reweight the actual edge cost being
+            // minimized, not the pre-inversion raw weight. potentials is empty for a plain
+            // Dijkstra run, so this is a no-op unless a caller explicitly opted in.
+            if (!potentials.isEmpty())
+            {
+                weight = weight + potentials[ui] - potentials[wi];
+                qCDebug(lcEngine) << "    --- dijkstra: reweighted to " << weight;
+            }
+
             // Start path discovery
             qCDebug(lcEngine) << "    --- dijkstra: Start path discovery";
 
@@ -1357,7 +1699,7 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                      << "  shorter than current d(s=" << s << ",w=" << w << ")="
                      << cur_dist_w;
 
-            if ((dist_w == cur_dist_w) && dist_w < RAND_MAX)
+            if (distancesNearlyEqual(dist_w, cur_dist_w) && dist_w < RAND_MAX)
             {
 
                 qCDebug(lcEngine) << "    --- dijkstra: dist_w : " << dist_w
@@ -1365,8 +1707,10 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
 
                 sp_w = pss.sigma[wi] + pss.sigma[ui];
 
-                // WRONG! We do not know for sure that we are in a shortest path!!!
-                qCDebug(lcEngine) << "    --- dijkstra: (POSSIBLE BUG?) Found ANOTHER SP from s ="
+                // This branch only runs when dist_w == cur_dist_w, i.e. (u,w) is confirmed to lie
+                // on a shortest path from s to w that ties the current best - so accumulating
+                // sigma(s,u) into sigma(s,w) here is correct, not speculative.
+                qCDebug(lcEngine) << "    --- dijkstra: Found ANOTHER SP from s ="
                          << s
                          << " to w=" << w << " via u=" << u
                          << " - Setting Sigma(s, w) = " << sp_w;
@@ -1378,19 +1722,9 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
 
                 if (computeCentralities)
                 {
-                    if (s != w && s != u && u != w)
-                    {
-                        qCDebug(lcEngine) << "    --- dijkstra: Compute Centralities: partialSC[ui=" << ui << "] += 1";
-                        // Intermediate vertex: use partialSC to avoid race with other threads.
-                        partialSC[ui] += 1.0;
-                    }
-                    else
-                    {
-                        qCDebug(lcEngine) << "    --- dijkstra: Compute Centralities: "
-                                    "Skipping SC of u, because s="
-                                 << s << " w=" << w << " u=" << u;
-                    }
-
+                    // SC is NOT accumulated here - it's computed post-hoc from the final Ps[]
+                    // predecessor DAG in runAllSources()'s Brandes back-propagation loop, the
+                    // same data this Ps[wi].append(u) below feeds BC from.
                     qCDebug(lcEngine) << "    --- dijkstra: Compute Centralities: "
                                 "Appending u="
                              << u << " to list Ps[w =" << w
@@ -1399,7 +1733,18 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                 }
             }
 
-            else if (dist_w > 0 && dist_w < cur_dist_w)
+            // Reached only when the tie check above didn't match, so dist_w is guaranteed to be
+            // outside distancesNearlyEqual()'s tolerance of cur_dist_w here - a genuine strict
+            // improvement, not a near-tie that happens to round slightly lower.
+            //
+            // >= 0, not > 0: dist_w == 0 for w != s is impossible under plain Dijkstra (the
+            // #30 fix above already skips every zero-weight edge, so a non-source vertex can
+            // never land at exactly 0), but is a legitimate relaxed distance once Johnson's
+            // reweighting is in play - w'(u,v) = w(u,v) + h(u) - h(v) is only guaranteed >= 0,
+            // not > 0, so an ordinary positive-weight edge can reweight to exactly 0. A strict
+            // dist_w > 0 here silently drops that relaxation, which is a real, pre-existing bug
+            // this reweighting path is the first thing to actually reach.
+            else if (dist_w >= 0 && dist_w < cur_dist_w)
             {
 
                 qCDebug(lcEngine) << "    --- dijkstra: dist_w " << dist_w
@@ -1413,23 +1758,13 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
 
                 pss.dist[wi] = dist_w;
 
-                // Accumulate into scratch instead of calling graph.incGeodesicsCount() /
-                // graph.setDiameterCached() directly — those are not thread-safe.
-                ++pss.sourceGeodesicsCount;
+                // Geodesics count is NOT accumulated here - finalize() computes the true
+                // reachable-pair count from the final settled APSP matrix instead.
 
                 qCDebug(lcEngine) << "    --- dijkstra: "
                             "Set d ( s="
                          << s << ", w=" << w
                          << " ) = " << dist_w << "=" << pss.dist[wi];
-
-                if (dist_w > (qreal)pss.sourceDiameter)
-                {
-                    pss.sourceDiameter = (int)dist_w;
-
-                    qCDebug(lcEngine) << "    --- dijkstra: "
-                                "New thread-local diameter ="
-                             << pss.sourceDiameter;
-                }
 
                 if (s != w)
                 {
@@ -1437,8 +1772,11 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                                 "Found NEW shortest path from s ="
                              << s
                              << " to w =" << w << " via u =" << u
-                             << " - Setting Sigma(s, w) = 1 ";
-                    pss.sigma[wi] = 1;
+                             << " - Setting Sigma(s, w) = Sigma(s, u) =" << pss.sigma[ui];
+                    // w's only shortest path so far is through u, so w inherits u's shortest-
+                    // path count - not a hardcoded 1, which silently discards u's own tie count
+                    // whenever u itself was reached via more than one tied shortest path.
+                    pss.sigma[wi] = pss.sigma[ui];
                 }
 
                 if (computeCentralities)
@@ -1451,19 +1789,24 @@ void DistanceEngine::dijkstraSSSP(const int &s, const int &si,
                              << dist_w << "from s is "
                              << pss.nthOrder.value(dist_w, 0);
 
-                    if (graph.vertexAtIndex(si)->eccentricity() < dist_w)
-                    {
-                        graph.vertexAtIndex(si)->setEccentricity(dist_w);
-                        qCDebug(lcEngine) << "    --- dijkstra: Compute Centralities: "
-                                    "For EC: max distance ="
-                                 << graph.vertexAtIndex(si)->eccentricity();
-                    }
+                    // Eccentricity is NOT tracked here - a running max sampled during/after
+                    // relaxation events can overstate a vertex's true eccentricity when some
+                    // other vertex is relaxed to a smaller distance later. finalize() computes
+                    // it from each vertex's final settled APSP row instead, the single source
+                    // of truth.
+
+                    // SC is NOT accumulated here either, for the same reason: a strict
+                    // improvement recorded now can itself be superseded by an even shorter path
+                    // found later in this same run, so counting it here would count edges that
+                    // never make it into the final shortest-path DAG. Computed post-hoc from the
+                    // final Ps[] in runAllSources()'s Brandes back-propagation loop instead.
 
                     qCDebug(lcEngine) << "    --- dijkstra: Compute Centralities: "
-                                "Appending u="
-                             << u << " to list Ps[w =" << w
-                             << "] with the predecessors of w on all shortest paths from s ";
-                    pss.Ps[wi].append(u);
+                                "Resetting Ps[w =" << w << "] to [u =" << u
+                             << "], the sole predecessor of w on the new strictly-shorter "
+                                "path from s - any predecessor recorded here from a prior, "
+                                "now-superseded relaxation of w must not survive.";
+                    pss.Ps[wi] = QList<int>{u};
                 }
             }
             else

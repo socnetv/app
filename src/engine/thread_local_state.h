@@ -9,14 +9,16 @@
  *    sources, so BC/SC are NOT written to GraphVertex directly inside the loop.
  *    Instead each thread accumulates into partialBC / partialSC, and a single-threaded
  *    reduction step at the end writes the totals to the vertex objects.
- *  - Running totals for graph-wide aggregates (distance sum, geodesics count, diameter,
- *    PC/SPC sums) that would otherwise require a mutex around every graph call.
+ *  - Running totals for graph-wide aggregates (distance sum, diameter, PC/SPC sums) that
+ *    would otherwise require a mutex around every graph call. Geodesics (reachable-pair)
+ *    count is NOT among these - it's computed once in finalize() from the final APSP
+ *    matrix, not accumulated per-source.
  *
  * Lifecycle:
  *   allocate(totalV)   — called once per thread before the parallel loop
  *   (partialBC / partialSC are zeroed at allocation; pss is reset per source)
- *   Post-loop reduction reads totalDistanceSum, totalGeodesicsCount, maxDiameter,
- *   totalSumPC, totalSumSPC, partialBC[*], partialSC[*] and merges into graph state.
+ *   Post-loop reduction reads totalDistanceSum, maxDiameter, totalSumPC, totalSumSPC,
+ *   partialBC[*], partialSC[*] and merges into graph state.
  */
 
 #ifndef SOCNETV_THREAD_LOCAL_STATE_H
@@ -39,30 +41,22 @@ struct ThreadLocalState
     QVector<qreal> partialBC;
 
     // Partial stress centrality sums, indexed by vertex position.
-    // Each new shortest path through vertex ui increments partialSC[ui] by 1
-    // instead of calling vertex->setSC() directly.
+    // Each vertex ui that is a direct predecessor of some w on the final settled shortest-path
+    // DAG from a source increments partialSC[ui] by 1 - accumulated in the same Brandes
+    // back-propagation loop that computes partialBC, from pss.Ps/pss.sigma, not during relaxation.
     // Post-loop: vertex[ui]->setSC( sum over all threads of partialSC[ui] )
     QVector<qreal> partialSC;
 
-    // Sum of pss.sourceDistanceSum across all sources this thread has processed.
-    // Originates from BFS inner-loop "dist_w" accumulation (not used by Dijkstra).
+    // Sum, across all sources this thread has processed, of each source's final-distance sum
+    // (accumulated in the APSP write-back loop from tls.pss.dist[], after SSSP has fully
+    // settled - correct for both BFS and Dijkstra).
     // Reduced into graph.addToDistanceSum() after the parallel loop.
     qreal totalDistanceSum = 0;
 
-    // Sum of per-source distances_sum_for_s (computeCentralities path only).
-    // This is the CC-denominator sum that also goes into graphSumDistance.
-    // Reduced into graph.addToDistanceSum() after the parallel loop.
-    qreal totalCCDistanceSum = 0;
-
-    // Total geodesic-path count across all sources this thread has processed.
-    // Replaces repeated graph.incGeodesicsCount() calls inside BFS / Dijkstra.
-    // Reduced via graph.addGeodesicsCount() after the parallel loop.
-    int totalGeodesicsCount = 0;
-
-    // Maximum geodesic distance (diameter) seen by this thread.
-    // Replaces graph.setDiameterCached() inside BFS / Dijkstra.
+    // Maximum geodesic distance (diameter) seen by this thread. qreal, not int: on a weighted
+    // graph this is routinely fractional, same as totalDistanceSum.
     // Post-loop: graph.setDiameterCached( max over all threads of maxDiameter )
-    int maxDiameter = 0;
+    qreal maxDiameter = 0;
 
     // Accumulated Power Centrality and Standardised Power Centrality sums.
     // Replaces direct graph.sumPC += and graph.sumSPC += inside the source loop

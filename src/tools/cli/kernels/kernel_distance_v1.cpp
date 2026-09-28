@@ -83,7 +83,7 @@ static QJsonObject buildGoldenJsonV1(
     bool inverseWeights,
     bool dropIsolates,
     double avgDist,
-    int diameter)
+    double diameter)
 {
     QJsonObject root;
     root["schema_version"] = 1;
@@ -117,12 +117,13 @@ static QJsonObject buildGoldenJsonV1(
     QJsonObject graph;
     graph["directed"] = g.isDirected();
     graph["weighted"] = g.isWeighted();
+    graph["symmetric"] = g.isSymmetric();
     root["graph"] = graph;
 
     // ---------------- Metrics ----------------
     QJsonObject metrics;
     metrics["avg_distance"] = d2s(avgDist);
-    metrics["diameter"] = diameter;
+    metrics["diameter"] = d2s(diameter);
     metrics["disconnected_pairs"] = g.notConnectedPairsSize();
     metrics["connected"] = g.isConnectedCached();
 
@@ -172,6 +173,12 @@ static bool cmpPerNodeArray(const QJsonArray &eArr, const QJsonArray &aArr, QTex
     {
         const QString es = e.value(k).toString();
         const QString as = a.value(k).toString();
+
+        // Both sides legitimately "nan" (a 0/0 ratio, e.g. SSC on a graph with no shortest paths
+        // through any vertex) is a match, not a mismatch - see cli_common.cpp's cmpNumStrTol.
+        if (es.compare("nan", Qt::CaseInsensitive) == 0 && as.compare("nan", Qt::CaseInsensitive) == 0)
+            return;
+
         bool ok1 = false, ok2 = false;
         const double ev = es.toDouble(&ok1);
         const double av = as.toDouble(&ok2);
@@ -265,13 +272,15 @@ static int compareGoldenV1(const QJsonObject &expected, const QJsonObject &actua
     const QJsonObject aGraph = actual.value("graph").toObject();
     ok &= cmpBool(eGraph, aGraph, "directed", err);
     ok &= cmpBool(eGraph, aGraph, "weighted", err);
+    ok &= cmpBool(eGraph, aGraph, "symmetric", err);
 
     const QJsonObject eMetrics = expected.value("metrics").toObject();
     const QJsonObject aMetrics = actual.value("metrics").toObject();
     ok &= cmpNumStrTol(eMetrics, aMetrics, "avg_distance", err, 1e-15);
-    ok &= cmpInt(eMetrics, aMetrics, "diameter", err);
+    ok &= cmpNumStrTol(eMetrics, aMetrics, "diameter", err, 1e-15);
     ok &= cmpInt(eMetrics, aMetrics, "disconnected_pairs", err);
     ok &= cmpBool(eMetrics, aMetrics, "connected", err);
+    ok &= cmpNumStrTol(eMetrics, aMetrics, "density", err, 1e-15);
 
     const bool wantPerNode = expected.value("run").toObject().value("computeCentralities").toBool();
     if (wantPerNode)
@@ -349,12 +358,12 @@ int runKernelDistanceV1(const CliConfig &cfg,
     printKV("COMPUTE_MS", computeMs);
 
     const qreal avgDist = g.graphDistanceGeodesicAverageCached();
-    const int diameter = g.graphDiameterCached();
+    const qreal diameter = g.graphDiameterCached();
     const int discPairs = g.notConnectedPairsSize();
     const bool connected = g.isConnectedCached();
 
     printKV("AVG_DIST", QString::number(avgDist, 'g', 12));
-    printKV("DIAMETER", diameter);
+    printKV("DIAMETER", QString::number(diameter, 'g', 12));
     printKV("DISC_PAIRS", discPairs);
     printKV("CONNECTED", connected ? 1 : 0);
 
@@ -371,7 +380,7 @@ int runKernelDistanceV1(const CliConfig &cfg,
         cfg.inverseWeights,
         cfg.dropIsolates,
         static_cast<double>(avgDist),
-        diameter);
+        static_cast<double>(diameter));
 
     if (!cfg.dumpJsonPath.isEmpty())
     {

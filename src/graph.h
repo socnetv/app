@@ -17,6 +17,7 @@
 #define GRAPH_H
 
 #include <QObject>
+#include <QAtomicInteger>
 #include <QList>
 #include <QQueue>
 #include <QHash>
@@ -26,6 +27,7 @@
 #include <QTextStream>
 #include <QThread>
 #include <QStack>
+#include <QVector>
 #include <QLoggingCategory>
 #include <atomic>
 #include <functional>
@@ -435,12 +437,26 @@ public:
         VertexEdgeCount = 13,
     };
 
+    // Linkage methods for graphClusteringHierarchical() - how the distance from a newly
+    // merged cluster to each remaining cluster is derived from the two prior distances.
     enum Clustering
     {
-        Single_Linkage = 0,   //"single-link" or minimum
-        Complete_Linkage = 1, // "complete-link or maximum
-        Average_Linkage = 2,  // mean or "average-linkage" or UPGMA
-
+        // Single-link/"minimum"/"connectedness": distance to the nearest member of the
+        // merged cluster, i.e. min(dist to old cluster A, dist to old cluster B).
+        Single_Linkage = 0,
+        // Complete-link/"maximum"/"diameter": distance to the farthest member of the
+        // merged cluster, i.e. max(dist to old cluster A, dist to old cluster B).
+        Complete_Linkage = 1,
+        // Average-link, WPGMA (Weighted Pair Group Method with Arithmetic mean - the
+        // "weighted" here refers to the algorithm's own historical name, not to weighting
+        // by cluster size): unweighted mean of the two prior cluster distances, (dA+dB)/2.
+        // Matches true UPGMA only when the two merging clusters happen to be equal-sized.
+        Average_Linkage = 2,
+        // Average-link, UPGMA (Unweighted Pair Group Method with Arithmetic mean - despite
+        // the name, this is the one that size-weights): mean of the two prior cluster
+        // distances weighted by each old cluster's member count, equivalent to averaging
+        // every raw pairwise distance between the two merging clusters.
+        Average_Linkage_UPGMA = 3,
     };
 
     // --------------------------------------------------------------------------
@@ -807,10 +823,20 @@ public:
 
     bool isWeighted();
     bool isAnyRelationWeighted();
+    bool hasNegativeWeight();
 
     void setWeighted(const bool &toggle = true);
 
     qreal graphReciprocity();
+
+    // Cached alongside graphReciprocity() (a single call computes all of these); dyad reciprocity
+    // is a distinct pair-level ratio from the tie-level arc ratio graphReciprocity() itself
+    // returns - both are meaningful, independently reported quantities (see writeReciprocity()).
+    qreal graphReciprocityDyad() const;
+    int graphReciprocityTiesReciprocated() const;
+    int graphReciprocityTiesTotal() const;
+    int graphReciprocityPairsReciprocated() const;
+    int graphReciprocityPairsTotal() const;
 
     bool isSymmetric();
 
@@ -863,17 +889,33 @@ public:
 
     NodeConnectivityResult graphNodeConnectivity(int source, int target, bool respectDirection);
 
-    int graphConnectivity(bool respectDirection);
+    enum class GraphConnectivityStatus
+    {
+        Ok,       // value holds kappa(G), the true minimum over every pair actually tested
+        Canceled  // value holds the best (lowest) local connectivity found among pairs tested
+                  // before cancellation - a valid upper bound on kappa(G), not necessarily exact
+    };
+
+    struct GraphConnectivityResult
+    {
+        GraphConnectivityStatus status = GraphConnectivityStatus::Ok;
+        int value = 0;
+    };
+
+    GraphConnectivityResult graphConnectivity(bool respectDirection);
+    GraphConnectivityResult graphConnectivityNaive(bool respectDirection);
 
     // WS6.7: read-only-by-convention accessors for kernel_matrix_v8's golden coverage.
     // Non-const because Matrix::item()/rows()/cols() are themselves non-const throughout.
     Matrix &matrixAdjacency() { return AM; }
     Matrix &matrixAdjacencyInverse() { return invAM; }
     Matrix &matrixDistances() { return DM; }
+    Matrix &matrixShortestPaths() { return SIGMA; }
     Matrix &matrixReachability() { return XRM; }
     Matrix &matrixWalks() { return XM; }
     Matrix &matrixTotalWalks() { return XSM; }
     Matrix &matrixCliqueCoMembership() { return CLQM; }
+    Matrix &matrixSignedPN() { return PNM; }
 
     void createMatrixAdjacency(const bool dropIsolates = false,
                                const bool considerWeights = true,
@@ -881,6 +923,8 @@ public:
                                const bool symmetrize = false);
 
     bool createMatrixAdjacencyInverse(const QString &method = "lu");
+
+    void createMatrixSignedPN(const bool dropIsolates = false);
 
     void createMatrixSimilarityMatching(Matrix &AM,
                                         Matrix &SEM,
@@ -924,7 +968,8 @@ public:
                      const bool &dropIsolates = false,
                      const QString &varLocation = "Rows",
                      const bool &simpler = false,
-                     const int &format = ReportFormat::Html);
+                     const int &format = ReportFormat::Html,
+                     const bool &allowNegativeWeights = false);
 
     void writeMatrixHTMLTable(QTextStream &outText, Matrix &M,
                               const bool &markDiag = true,
@@ -1001,6 +1046,11 @@ public:
                                const bool dropIsolates,
                                const int &format = ReportFormat::Html);
 
+    bool writeCentralitySignedDegree(const QString,
+                                     const bool weights,
+                                     const bool dropIsolates,
+                                     const int &format = ReportFormat::Html);
+
     bool writeCentralityCloseness(const QString,
                                   const bool weights,
                                   const bool inverseWeights,
@@ -1063,6 +1113,11 @@ public:
                                  const bool &dropIsolates = false,
                                  const int &format = ReportFormat::Html);
 
+    bool writeCentralityPN(const QString,
+                           const PNMode mode = PNMode::All,
+                           const bool &dropIsolates = false,
+                           const int &format = ReportFormat::Html);
+
     bool writePrestigeDegree(const QString, const bool weights,
                              const bool dropIsolates,
                              const int &format = ReportFormat::Html);
@@ -1113,18 +1168,24 @@ public:
 
     void createMatrixReachability();
 
-    int graphDiameter(const bool considerWeights, const bool inverseWeights);
+    qreal graphDiameter(const bool considerWeights, const bool inverseWeights);
 
-    int graphDiameterCached() const;
+    qreal graphDiameterSigned(const bool inverseWeights);
+
+    qreal graphDiameterCached() const;
 
     qreal graphSumDistanceCached() const;
 
     qreal graphGeodesicsCountCached() const;
 
-    int graphDistanceGeodesic(const int &v1,
-                              const int &v2,
-                              const bool &considerWeights = false,
-                              const bool &inverseWeights = true);
+    qreal graphDistanceGeodesic(const int &v1,
+                                const int &v2,
+                                const bool &considerWeights = false,
+                                const bool &inverseWeights = true);
+
+    qreal graphDistanceGeodesicSigned(const int &v1,
+                                      const int &v2,
+                                      const bool &inverseWeights = true);
 
     // WS5 A2: read-only accessors into m_apspDist/m_apspSigma (the flat-matrix APSP storage
     // DistanceEngine populates) for the current relation. Unlike graphDistanceGeodesic() above,
@@ -1150,12 +1211,21 @@ public:
                                        const bool inverseWeights,
                                        const bool dropIsolates);
 
+    qreal graphDistanceGeodesicAverageSigned(const bool inverseWeights,
+                                             const bool dropIsolates);
+
     qreal graphDistanceGeodesicAverageCached() const;
 
     void graphDistancesGeodesic(const bool &computeCentralities = false,
                                 const bool &considerWeights = false,
                                 const bool &inverseWeights = true,
                                 const bool &dropIsolates = false);
+
+    void graphDistancesGeodesicSigned(const bool &computeCentralities = false,
+                                      const bool &inverseWeights = true,
+                                      const bool &dropIsolates = false);
+
+    bool graphBellmanFordPotentials(const bool inverseWeights, QVector<qreal> &outPotentials);
 
     // ============================================================================
     // --- Connectivity bookkeeping ---
@@ -1173,7 +1243,7 @@ public:
     bool symmetricCached() const;
 
     void setConnectedCached(bool v);
-    void setDiameterCached(int v);
+    void setDiameterCached(qreal v);
 
     void resetDistanceAggregates(); // sets avg/sum/geodesics/diameter to 0
     void addToDistanceSum(qreal delta);
@@ -1185,7 +1255,8 @@ public:
 
     bool graphMatrixDistanceGeodesicCreate(const bool &considerWeights = false,
                                            const bool &inverseWeights = false,
-                                           const bool &dropIsolates = false);
+                                           const bool &dropIsolates = false,
+                                           const bool &allowNegativeWeights = false);
 
     void graphMatrixShortestPathsCreate(const bool &considerWeights = false,
                                         const bool &inverseWeights = true,
@@ -1212,6 +1283,9 @@ public:
     void centralityDegree(const bool &considerWeights = true,
                           const bool &dropIsolates = false);
 
+    void centralitySignedDegree(const bool &considerWeights = true,
+                                const bool &dropIsolates = false);
+
     void centralityInformation(const bool considerWeights = false,
                                const bool inverseWeights = false);
 
@@ -1233,6 +1307,9 @@ public:
                             const bool &considerWeights = false,
                             const bool &inverseWeights = false,
                             const bool &dropIsolates = false);
+
+    void centralityPN(const PNMode mode = PNMode::All,
+                      const bool &dropIsolates = false);
 
     void centralityClosenessIR(const bool considerWeights = false,
                                const bool inverseWeights = false,
@@ -1285,13 +1362,22 @@ public:
                                      const bool &inverseWeights = false,
                                      const bool &dropIsolates = false);
 
-    qreal clusteringCoefficientLocal(const int &v1);
+    // --- Hierarchical clustering results (read-only access for CLI / reports) ---
+    // Populated by graphClusteringHierarchical(); keyed by clustering stage/level sequence
+    // number (1-based). m_clustersPerSequence[seq] is the full member list of the cluster
+    // formed at that stage; m_clusteringLevel[seq-1] is the dissimilarity/distance value at
+    // which that merge happened.
+    const QMap<int, V_int> &graphClustersPerSequence() const { return m_clustersPerSequence; }
+    const QList<qreal> &graphClusteringLevels() const { return m_clusteringLevel; }
+
+    qreal clusteringCoefficientLocal(const int &v1, const bool &isSymmetric);
 
     qreal clusteringCoefficient();
 
     bool graphTriadCensus();
 
-    void triadType_examine_MAN_label(int, int, int, GraphVertex *, GraphVertex *, GraphVertex *);
+    void triadType_examine_MAN_label(int, int, int, GraphVertex *, GraphVertex *, GraphVertex *,
+                                     QVector<QAtomicInteger<int>> &);
     // --- Triad census results (read-only access for CLI / reports) ---
     const QList<int> &graphTriadTypeFreqs() const { return triadTypeFreqs; }
     bool hasCalculatedTriadCensus() const { return calculatedTriad; }
@@ -1393,6 +1479,24 @@ public:
     bool progressCanceled() const;
     void resetProgressCanceled();
 
+    // Set by DistanceEngine (via GraphDistanceProgressSink) when the default (Dijkstra) distance
+    // computation refuses to run because the network contains a negative edge weight - Dijkstra
+    // is undefined for those. See #277/WS18 P1. Does not fire for a negative-weight-safe
+    // computation (see negativeCycleDetected() below for that path's own refusal). Same
+    // read/reset shape as progressCanceled() above.
+    bool negativeWeightsDetected() const;
+    void resetNegativeWeightsDetected();
+    void setNegativeWeightsDetected();
+
+    // Set by DistanceEngine when a negative-weight-safe (Johnson's algorithm) computation finds
+    // a reachable negative cycle, which makes shortest paths undefined. Distinct from
+    // negativeWeightsDetected() above: that flag means "negative weight, wrong algorithm
+    // (Dijkstra)"; this one means "no algorithm can answer this, the graph itself has no
+    // well-defined shortest paths." Same read/reset shape as progressCanceled() above.
+    bool negativeCycleDetected() const;
+    void resetNegativeCycleDetected();
+    void setNegativeCycleDetected();
+
     /**  vpos stores the real position of each vertex inside m_graph.
      *  It starts at zero (0).
      *   We need to know the place of a vertex inside m_graph after adding
@@ -1472,6 +1576,8 @@ private:
                         H_StrToInt &discreteClasses,
                         int &classes, int name);
 
+    QVector<int> compactedMatrixIndex(const bool &dropIsolates) const;
+
     void layoutRandomInMemory();
 
     VList m_graph; // List of pointers to the vertices. Each vertex stores all info: links, colors, etc
@@ -1516,6 +1622,7 @@ private:
 
     Matrix SIGMA, DM, invAM, AM, invM, WM;
     Matrix XM, XSM, XRM, CLQM;
+    Matrix PNM;
 
     // WS5 A2: relation-keyed flat-matrix APSP storage, replacing GraphVertex's per-vertex
     // QHash<int, QPair<int,qreal>>. Row = source vertex position, column = target vertex
@@ -1539,7 +1646,6 @@ private:
 
     MyEdge m_clickedEdge;
 
-    qreal edgeWeightTemp, edgeReverseWeightTemp;
     qreal meanSDC, varianceSDC;
     qreal meanSCC, varianceSCC;
     qreal meanIRCC, varianceIRCC;
@@ -1576,6 +1682,10 @@ private:
                                     ///< positive-only by the dialog so this sentinel is safe -
                                     ///< beta (which can be negative) has no sentinel role.
     qreal m_lastBonacichBeta = 0;
+    PNMode m_lastPNMode = PNMode::All; ///< Cache of the last mode used to compute PN Centrality
+                                       ///< (WS18 P3) - same caching purpose as m_lastKatzAlpha,
+                                       ///< read by isCentralityIndexComputed()-style callers to
+                                       ///< know whether a mode switch needs a recompute.
     qreal minPRP, maxPRP, nomPRC, denomPRC, sumPC, t_sumPRP, sumPRP;
     qreal minPP, maxPP, nomPP, denomPP, sumPP, groupPP;
 
@@ -1601,7 +1711,8 @@ private:
 
     int m_graphModStatus;
     int m_reserveEdgesPerVertexSize;
-    int m_totalVertices, m_totalEdges, m_graphDiameter, initVertexSize;
+    int m_totalVertices, m_totalEdges, initVertexSize;
+    qreal m_graphDiameter;
     int initVertexLabelSize, initVertexNumberSize;
     int initVertexNumberDistance, initVertexLabelDistance;
     bool order;
@@ -1625,20 +1736,39 @@ private:
     bool calculatedVertices, calculatedVerticesList, calculatedVerticesSet;
     bool m_verticesCacheDropIsolates = false, m_verticesCacheCountAll = false;
     bool calculatedAdjacencyMatrix, calculatedDistances, calculatedCentralities;
+    // Which mode populated the calculatedDistances/calculatedCentralities cache above - a plain
+    // negative-weight-unsafe Dijkstra/BFS result, or an allowNegativeWeights (Johnson's
+    // algorithm) one. compute()'s early-return cache hit is only valid when the caller's
+    // requested mode matches this - switching modes on the same graph must force a fresh
+    // recompute, since the two modes can (and on a negative-weight graph, do) produce different
+    // results and different negativeWeightsDetected()/negativeCycleDetected() outcomes.
+    bool m_lastComputeWasNegativeWeightSafe = false;
     bool calculatedIsolates;
     bool calculatedEVC;
     bool calculatedKC;
     bool calculatedBPC;
+    bool calculatedPN;
     bool calculatedDP, calculatedDC, calculatedPP;
+    bool calculatedSignedDegree;
     bool calculatedIRCC, calculatedIC, calculatedPRP;
     bool calculatedTriad;
     bool calculatedGraphSymmetry, calculatedGraphReciprocity;
     bool calculatedGraphDensity, calculatedGraphWeighted;
+    bool calculatedGraphHasNegativeWeight;
     // Written by slotCancelComputation() (GUI thread, via Qt::DirectConnection) and read by
     // progressCanceled() (graphThread, mid-computation) - see WS15's P1 for why a plain bool and a
     // queued connection can't deliver this in time.
     std::atomic<bool> m_progressCanceled;
+    // Written by DistanceEngine::initRun() (graphThread) via GraphDistanceProgressSink, read by
+    // negativeWeightsDetected() from whichever thread issued the computation - same cross-thread
+    // shape as m_progressCanceled above, so same atomic-bool treatment.
+    std::atomic<bool> m_negativeWeightsRefused;
+    // Written by DistanceEngine::compute() (graphThread) when its negative-weight-safe path finds
+    // a reachable negative cycle, read by negativeCycleDetected() - same cross-thread shape as
+    // m_negativeWeightsRefused above.
+    std::atomic<bool> m_negativeCycleDetected;
     bool m_graphIsDirected, m_graphIsSymmetric, m_graphIsWeighted, m_graphIsConnected;
+    bool m_graphHasNegativeWeight;
     int m_graphWeaklyConnectedComponents;
     int m_graphStronglyConnectedComponents;
     QHash<int,int> m_vertexComponentId;

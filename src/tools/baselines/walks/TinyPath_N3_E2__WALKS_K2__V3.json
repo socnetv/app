@@ -11,15 +11,19 @@
     },
     "graph": {
         "directed": false,
+        "symmetric": true,
         "weighted": false
     },
     "kernel": "walks_matrix",
     "load_report": {
         "fileType_signal": 2,
-        "load_ms": 1,
+        "load_ms": 0,
         "load_msg": "",
         "net_name": "TinyPath_N3_E2.paj",
         "ok": true
+    },
+    "metrics": {
+        "density": "0.66666666666666663"
     },
     "run": {
         "considerWeights": true,

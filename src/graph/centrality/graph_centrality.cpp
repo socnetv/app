@@ -14,7 +14,9 @@
  */
 
 #include "graph.h"
+#include <QAtomicInteger>
 #include <QDebug>
+#include <QtConcurrent/QtConcurrent>
 
 /**
  * @brief Computes the Information centrality of each vertex - diagonal included
@@ -269,9 +271,10 @@ void Graph::centralityInformation(const bool considerWeights,
  * separately because callers here (Katz, Bonacich, and their dialogs) only need the eigenvalue,
  * not the ranking eigenvector itself.
  *
- * Math: via power iteration (Matrix::powerIteration()), starting from a unit seed vector -
- * ||Ax|| approximates lambda_max once the iteration converges (Perron-Frobenius: for a
- * non-negative matrix like an adjacency matrix, this is exact for a connected network).
+ * Math: builds the adjacency matrix (createMatrixAdjacency()), then delegates to
+ * Matrix::spectralRadiusExact() for the actual power-iteration estimate - see that method's own
+ * doc comment (and Matrix::powerIteration()'s) for the mechanism and its Perron-Frobenius
+ * preconditions (non-negative, irreducible matrix; always true for a plain adjacency matrix).
  *
  * @param considerWeights
  * @param inverseWeights
@@ -297,25 +300,7 @@ qreal Graph::estimateSpectralRadius(const bool &considerWeights,
         return 0;
     }
 
-    qreal *seed = new (nothrow) qreal[N];
-    Q_CHECK_PTR(seed);
-    for (int k = 0; k < N; k++)
-        seed[k] = 1;
-    qreal dummySum = 0, dummyMax = 0, dummyMin = RAND_MAX;
-    int dummyMaxI = 0, dummyMinI = 0;
-    qreal lambdaMax = 0;
-    AM.powerIteration(seed, dummySum, dummyMax, dummyMaxI, dummyMin, dummyMinI,
-                      0.0000001, 500,
-                      [this] { return progressCanceled(); },
-                      &lambdaMax);
-    delete[] seed;
-
-    if (progressCanceled())
-    {
-        return 0;
-    }
-
-    return lambdaMax;
+    return AM.spectralRadiusExact(0.0000001, 500, [this] { return progressCanceled(); });
 }
 
 /**
@@ -514,6 +499,11 @@ void Graph::centralityEigenvector(const bool &considerWeights,
  * considered). Standardized SDC(i) = DC(i) / (N-1), the fraction of all other actors i is
  * directly tied to.
  *
+ * Parallelization (WS15 P4): each vertex's DC only reads edges and writes its own GraphVertex
+ * (setDC) - independent, read-mostly, same per-source shape as DistanceEngine's APSP. The one
+ * shared write, m_graphIsSymmetric, is reduced via QAtomicInteger OR instead of a plain bool to
+ * avoid a data race across worker threads. sumDC is reduced sequentially after the parallel step.
+ *
  * @param considerWeights
  * @param dropIsolates
  */
@@ -526,7 +516,6 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
         return;
     }
     qreal DC = 0, nom = 0, denom = 0, SDC = 0;
-    qreal weight;
     classesSDC = 0;
     discreteSDCs.clear();
     sumSDC = 0;
@@ -537,7 +526,7 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
     meanSDC = 0;
     int N = vertices(dropIsolates);
 
-    VList::const_iterator it, it1;
+    VList::const_iterator it;
 
     QString pMsg = tr("Computing out-Degree Centralities for %1 nodes. \nPlease wait...").arg(N);
     qCDebug(lcCentrality) << pMsg;
@@ -547,17 +536,23 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
     {
         return;
     }
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
 
-        DC = 0;
-
-        if (!(*it)->isEnabled() || (dropIsolates && (*it)->isIsolated()))
+    // Cancel signals cannot be delivered while graphThread's event loop is blocked in
+    // blockingMap, so (like DistanceEngine) we skip the cancel check inside the lambda.
+    //
+    // QAtomicInteger<bool>: a bool that's safe for multiple worker threads (below) to write
+    // to at the same time - a plain bool would be a data race here.
+    QAtomicInteger<bool> asymmetric{m_graphIsSymmetric ? false : true};
+    QtConcurrent::blockingMap(m_graph, [&](GraphVertex *v) {
+        if (!v->isEnabled() || (dropIsolates && v->isIsolated()))
         {
-            continue;
+            return;
         }
 
-        for (it1 = m_graph.cbegin(); it1 != m_graph.cend(); ++it1)
+        qreal DC = 0;
+        qreal weight;
+
+        for (VList::const_iterator it1 = m_graph.cbegin(); it1 != m_graph.cend(); ++it1)
         {
 
             if (!(*it1)->isEnabled() || (dropIsolates && (*it1)->isIsolated()))
@@ -565,7 +560,7 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
                 continue;
             }
 
-            if ((weight = edgeExists((*it)->number(), (*it1)->number())) != 0.0)
+            if ((weight = edgeExists(v->number(), (*it1)->number())) != 0.0)
             {
                 if (considerWeights)
                     DC += weight;
@@ -573,14 +568,25 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
                     DC++;
 
                 // check here if the matrix is symmetric - we need this below
-                if (weight != edgeExists((*it1)->number(), (*it)->number()))
-                    m_graphIsSymmetric = false;
+                if (weight != edgeExists((*it1)->number(), v->number()))
+                    // storeRelease(): safely write true from this worker thread.
+                    asymmetric.storeRelease(true);
             }
         }
 
-        (*it)->setDC(DC); // Set OutDegree
+        v->setDC(DC); // Set OutDegree
+    });
+    // loadAcquire(): safely read the final value now that all worker threads are done
+    // (blockingMap only returns once every one of them has finished).
+    m_graphIsSymmetric = !asymmetric.loadAcquire();
 
-        sumDC += DC; // store sumDC (for std calc below)
+    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    {
+        if (!(*it)->isEnabled() || (dropIsolates && (*it)->isIsolated()))
+        {
+            continue;
+        }
+        sumDC += (*it)->DC(); // store sumDC (for std calc below)
     }
 
     if (progressCanceled())
@@ -690,6 +696,15 @@ void Graph::centralityDegree(const bool &considerWeights, const bool &dropIsolat
  * IRCC(i) = [ |J_i| / (N-1) ] / [ (sum of d(i,j) for j in J_i) / |J_i| ] - the fraction of
  * the network i can reach, divided by the average distance to that reachable set.
  *
+ * Parallelization (WS15 P4): the per-vertex IRCC computation maps via
+ * QtConcurrent::blockingMap - each worker thread only reads the already-computed APSP cache
+ * (apspDistance(), warmed sequentially by graphDistancesGeodesic() above before the parallel
+ * step starts) and writes its own vertex's IRCC/SIRCC, independent of every other vertex.
+ * sumIRCC, resolveClasses(), and minmax() used to run inline in the same loop - all three
+ * mutate shared state that would race across worker threads - so they're now a separate
+ * sequential pass right after blockingMap, reading back each vertex's now-cached IRCC(), same
+ * split as clusteringCoefficient()'s.
+ *
  * @param considerWeights
  * @param inverseWeights
  * @param dropIsolates
@@ -712,13 +727,13 @@ void Graph::centralityClosenessIR(const bool considerWeights,
     {
         return;
     }
+    if (negativeWeightsDetected())
+    {
+        return;
+    }
     // calculate centralities
-    VList::const_iterator it, jt;
+    VList::const_iterator it;
     qreal IRCC = 0, SIRCC = 0;
-    qreal Ji = 0;
-    qreal dist = 0;
-    qreal sumD = 0;
-    qreal averageD = 0;
     qreal N = vertices(dropIsolates, false, true);
     classesIRCC = 0;
     discreteIRCCs.clear();
@@ -735,24 +750,18 @@ void Graph::centralityClosenessIR(const bool considerWeights,
     qCDebug(lcCentrality) << "dropIsolates" << dropIsolates;
     qCDebug(lcCentrality) << "computing scores for actors: " << N;
 
-    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
-    {
-
-        if (progressCanceled())
-        {
+    QtConcurrent::blockingMap(m_graph, [&](GraphVertex *v) {
+        if (v->isIsolated())
             return;
-        }
-        IRCC = 0;
-        sumD = 0;
-        Ji = 0;
-        if ((*it)->isIsolated())
-        {
-            continue;
-        }
-        for (jt = m_graph.cbegin(); jt != m_graph.cend(); ++jt)
+
+        qreal IRCC = 0;
+        qreal sumD = 0;
+        qreal Ji = 0;
+
+        for (auto jt = m_graph.cbegin(); jt != m_graph.cend(); ++jt)
         {
 
-            if ((*it)->number() == (*jt)->number())
+            if (v->number() == (*jt)->number())
             {
                 continue;
             }
@@ -761,34 +770,44 @@ void Graph::centralityClosenessIR(const bool considerWeights,
                 continue;
             }
 
-            dist = apspDistance((*it)->number(), (*jt)->number());
+            const qreal dist = apspDistance(v->number(), (*jt)->number());
 
             if (dist != RAND_MAX)
             {
                 sumD += dist;
                 Ji++; // compute |Ji|
             }
-            qCDebug(lcCentrality) << "dist(" << (*it)->number()
+            qCDebug(lcCentrality) << "dist(" << v->number()
                      << "," << (*jt)->number() << ") =" << dist << "sumD" << sumD << " Ji" << Ji;
         }
 
-        qCDebug(lcCentrality) << "" << (*it)->number()
+        qCDebug(lcCentrality) << "" << v->number()
                  << " sumD" << sumD
-                 << "distanceSum" << (*it)->distanceSum();
+                 << "distanceSum" << v->distanceSum();
 
         // sanity check for sumD=0 (=> node is disconnected)
         if (sumD != 0)
         {
-            averageD = sumD / Ji;
+            const qreal averageD = sumD / Ji;
             qCDebug(lcCentrality) << "averageD = sumD /  Ji" << averageD;
             qCDebug(lcCentrality) << "Ji / (N-1)" << Ji << "/" << N - 1;
             IRCC = (Ji / (qreal)(N - 1)) / averageD;
             qCDebug(lcCentrality) << "[ Ji / (N-1) ] / [ sumD / Ji]" << IRCC;
         }
 
+        v->setIRCC(IRCC);
+        v->setSIRCC(IRCC); // IRCC is a ratio, already std
+    });
+
+    for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+    {
+        if ((*it)->isIsolated())
+        {
+            continue;
+        }
+
+        IRCC = (*it)->IRCC();
         sumIRCC += IRCC;
-        (*it)->setIRCC(IRCC);
-        (*it)->setSIRCC(IRCC); // IRCC is a ratio, already std
         resolveClasses(IRCC, discreteIRCCs, classesIRCC);
         minmax(IRCC, (*it), maxIRCC, minIRCC, maxNodeIRCC, minNodeIRCC);
     }

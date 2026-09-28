@@ -2277,6 +2277,55 @@ void MainWindow::initActions()
                "edges/outLinks attached to v."));
     connect(cDegreeAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityDegree()));
 
+    cSignedDegreeAct = new QAction(tr("Signed Degree Centrality"), this);
+    cSignedDegreeAct->setStatusTip(
+        tr("Compute Degree Centrality split by tie sign, for signed networks."));
+    cSignedDegreeAct->setWhatsThis(
+        tr("<p><b>Signed Degree Centrality</b></p>"
+           "<p><b>Meaning:</b> on a signed network, a plain degree count conflates \"liked by "
+           "many\" with \"disliked by many\" into one number - this splits it back apart into "
+           "four scores per node: <i>pos</i> (positive ties sent, or their summed strength if "
+           "weights are considered), <i>neg</i> (the same for negative ties), <i>ratio</i> "
+           "(pos / (pos+neg), the fraction of a node's ties that are positive), and <i>net</i> "
+           "(pos &minus; neg, a single signed balance score).</p>"
+           "<p><b>When to use:</b> a fast first-pass screen for who's positively vs. negatively "
+           "prominent on a signed network - the same role plain Degree Centrality plays on an "
+           "unsigned one. Cheap, easy to explain, no attention paid to indirect/structural "
+           "effects.</p>"
+           "<p><b>Weights:</b> when considered, a tie's absolute weight is summed into pos or "
+           "neg according to its sign, so a stronger tie always adds more regardless of which "
+           "side it falls on.</p>"
+           "<p><b>Compare to:</b> Degree Centrality (DC), the unsigned equivalent this splits "
+           "apart. Out-degree only, like DC itself - to compute in-degree, use the Degree "
+           "Prestige measure.</p>"));
+    connect(cSignedDegreeAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralitySignedDegree()));
+
+    cPNAct = new QAction(tr("PN Centrality"), this);
+    cPNAct->setStatusTip(
+        tr("Compute PN Centrality (Everett & Borgatti 2014) for signed networks."));
+    cPNAct->setWhatsThis(
+        tr("<p><b>PN Centrality</b></p>"
+           "<p><b>Meaning:</b> a purpose-built centrality measure for signed networks. It is "
+           "worse to receive a negative tie from someone who is highly popular (receives a lot "
+           "of positive ties) than from someone who is marginalized - conversely, receiving a "
+           "negative tie from someone who is universally disliked might even be interpreted as "
+           "a positive indicator. PN captures this by weighting each negative tie by the "
+           "sender's own positive standing, propagated through indirect connections the same "
+           "way Katz Centrality propagates ordinary ties.</p>"
+           "<p><b>When to use:</b> the standard choice for centrality on a signed network, when "
+           "re-computing an unsigned measure on tie magnitude alone would throw away the sign "
+           "information that's the whole point of the network being signed in the first "
+           "place.</p>"
+           "<p><b>Weights:</b> considers tie sign only (positive/negative) - tie strength is "
+           "never used, even on a weighted network. There is no weights choice, unlike every "
+           "other centrality measure here.</p>"
+           "<p><b>Compare to:</b> Katz Centrality (KC) - PN's undirected-mode formula is the "
+           "exact same closed-form \"geometric series of walks\" identity Katz uses, just built "
+           "from the signed tie-sign matrix with a fixed attenuation factor instead of a "
+           "user-tunable alpha. Signed Degree Centrality (a simpler, direct-ties-only measure) "
+           "is the natural first step before this one.</p>"));
+    connect(cPNAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCentralityPN()));
+
     cClosenessAct = new QAction(tr("Closeness Centrality (CC)"), this);
     cClosenessAct->setShortcut(Qt::CTRL | Qt::Key_2);
     cClosenessAct

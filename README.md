@@ -33,6 +33,7 @@ field data from a file in a supported format (GraphML, GraphViz, EdgeList, GML, 
 - Vertex connectivity: the minimum number of nodes that must be removed to disconnect two chosen actors (Node Connectivity), or to disconnect the network at its weakest point (Graph Connectivity) — a measure of robustness to node removal.
 - Matrix routines: Adjacency, Laplacian, Degree, Cocitation, and more.
 - Advanced centrality and prestige indices: eigenvector, closeness, betweenness, information, power, Katz, Bonacich power centrality, PageRank prestige, and more.
+- Signed network support: negative edge weights, negative-weight-safe shortest paths, and signed-specific centrality measures (Signed Degree Centrality, PN Centrality).
 - Community detection algorithms: triad census, clique census, and more.
 - Structural equivalence analysis using hierarchical clustering, actor similarities, and Pearson coefficients.
 - Multiple layout algorithms: prominence-based (circular, nodal sizes by centrality), force-directed (Kamada-Kawai, Fruchterman-Reingold), and ego-centered radial layout. Node colors can also be assigned by connected component, making disconnected sub-networks immediately visible.
@@ -190,7 +191,7 @@ Download the archive with the source code of the latest version from
 
 #### Build with CMake (recommended)
 
-CMake is the recommended build system for SocNetV 3.7. Replace `3.X` with the version you downloaded.
+CMake is the recommended build system for SocNetV 3.8. Replace `3.X` with the version you downloaded.
 
 ```bash
 tar zxfv app-3.X.tar.gz
@@ -261,6 +262,10 @@ For example, type:
 ```
 
 to start SocNetV and immediately load network file named 'net.graphml' (in current folder).
+
+For the full `--interactive-script` command reference, see
+[`docs/SOCNETV_INTERACTIVE_SCRIPT.md`](docs/SOCNETV_INTERACTIVE_SCRIPT.md) or the
+[online manual](https://socnetv.org/manual/interactive-script/).
 
 ### Headless CLI (socnetv-cli)
 

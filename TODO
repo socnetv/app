@@ -1,9 +1,3 @@
-KNOWN ISSUES
-============
-
-- Negative weights break centralities
-
-
 TODO
 ====
 To request a feature and/or see the TODO list of SocNetV, open a new report at our github Issues page:

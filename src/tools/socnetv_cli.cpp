@@ -24,6 +24,41 @@
 #include "tools/cli/kernels/kernel_connectivity_v7.h"
 #include "tools/cli/kernels/kernel_vertex_connectivity_v9.h"
 #include "tools/cli/kernels/kernel_matrix_v8.h"
+#include "tools/cli/kernels/kernel_signed_v10.h"
+
+namespace
+{
+    // QString::toInt()/toDouble() silently return 0 on unparseable input (e.g. "-f graphml"
+    // instead of "-f 1") instead of failing - the caller can't tell a genuine 0 from a typo,
+    // and a value like "-f" happened to still "work" here since the loader falls back to
+    // file-extension auto-detection, masking the mistake entirely. These wrappers use the
+    // ok-flag overloads to reject bad input outright instead of silently defaulting to 0.
+    bool parseIntArg(const QCommandLineParser &cli, const QCommandLineOption &opt, int &out)
+    {
+        bool ok = false;
+        const QString raw = cli.value(opt);
+        out = raw.toInt(&ok);
+        if (!ok)
+        {
+            QTextStream(stderr) << "ERROR: --" << opt.names().last() << " expects an integer, got \""
+                                 << raw << "\"\n";
+        }
+        return ok;
+    }
+
+    bool parseDoubleArg(const QCommandLineParser &cli, const QCommandLineOption &opt, qreal &out)
+    {
+        bool ok = false;
+        const QString raw = cli.value(opt);
+        out = raw.toDouble(&ok);
+        if (!ok)
+        {
+            QTextStream(stderr) << "ERROR: --" << opt.names().last() << " expects a number, got \""
+                                 << raw << "\"\n";
+        }
+        return ok;
+    }
+}
 
 int main(int argc, char *argv[])
 {
@@ -54,7 +89,7 @@ int main(int argc, char *argv[])
                                 "N", "0");
 
     QCommandLineOption kernelOpt(QStringList() << "kernel",
-                                 "Kernel: distance|reachability|walks_matrix|prominence|io_roundtrip|clustering|connectivity|matrix|vertex_connectivity",
+                                 "Kernel: distance|reachability|walks_matrix|prominence|io_roundtrip|clustering|connectivity|matrix|vertex_connectivity|signed",
                                  "name", "distance");
 
     QCommandLineOption walksLenOpt(QStringList() << "walks-length",
@@ -75,6 +110,12 @@ int main(int argc, char *argv[])
                                      "Target node number for --kernel vertex_connectivity --conn-mode local.",
                                      "int", "-1");
 
+    QCommandLineOption verifyNaiveOpt(QStringList() << "verify-naive",
+                                      "For --kernel vertex_connectivity --conn-mode global: also runs "
+                                      "graphConnectivityNaive() (the full O(n^2) pairwise sweep) and "
+                                      "reports a mismatch against graphConnectivity() (Esfahanian-Hakimi, "
+                                      "#281) if the two disagree.");
+
     QCommandLineOption katzAlphaOpt(QStringList() << "katz-alpha",
                                     "Attenuation factor alpha for --kernel prominence's Katz Centrality "
                                     "(must satisfy |alpha| < 1/lambda_max or the report will be all-zero). "
@@ -92,6 +133,39 @@ int main(int argc, char *argv[])
                                        "Centrality (must satisfy |beta| < 1/lambda_max or the report will "
                                        "be all-zero). May be negative.",
                                        "beta", "0");
+
+    QCommandLineOption pnModeOpt(QStringList() << "pn-mode",
+                                "Mode for --kernel prominence's PN Centrality (WS18 P3): "
+                                "off|all|out|in. \"all\" is undirected-only, \"out\"/\"in\" are "
+                                "directed-only. Omit (\"off\") to skip PN Centrality entirely.",
+                                "mode", "off");
+
+    QCommandLineOption similarityMeasureOpt(QStringList() << "similarity-measure",
+                                            "Measure for --kernel matrix's similarity category: "
+                                            "simple_matching|jaccard|pearson.",
+                                            "measure", "simple_matching");
+
+    QCommandLineOption similarityInputOpt(QStringList() << "similarity-input",
+                                          "Input matrix for --kernel matrix's similarity category: "
+                                          "adjacency|distances.",
+                                          "input", "adjacency");
+
+    QCommandLineOption dissimilarityMeasureOpt(QStringList() << "dissimilarity-measure",
+                                               "Measure for --kernel matrix's dissimilarity category: "
+                                               "euclidean|manhattan|jaccard|hamming|chebyshev.",
+                                               "measure", "euclidean");
+
+    QCommandLineOption clusteringMethodOpt(QStringList() << "clustering-method",
+                                           "Linkage method for --kernel clustering's hierarchical "
+                                           "clustering category: single|complete|average|upgma. "
+                                           "'average' is WPGMA (unweighted mean of prior cluster "
+                                           "distances); 'upgma' weights by each old cluster's size.",
+                                           "method", "average");
+
+    QCommandLineOption clusteringInputOpt(QStringList() << "clustering-input",
+                                          "Input matrix for --kernel clustering's hierarchical "
+                                          "clustering category: adjacency|distances.",
+                                          "input", "adjacency");
 
     cli.addOption(verboseOpt);
     cli.addOption(strictOpt);
@@ -113,9 +187,16 @@ int main(int argc, char *argv[])
     cli.addOption(connModeOpt);
     cli.addOption(connSourceOpt);
     cli.addOption(connTargetOpt);
+    cli.addOption(verifyNaiveOpt);
     cli.addOption(katzAlphaOpt);
     cli.addOption(bonacichAlphaOpt);
     cli.addOption(bonacichBetaOpt);
+    cli.addOption(pnModeOpt);
+    cli.addOption(similarityMeasureOpt);
+    cli.addOption(similarityInputOpt);
+    cli.addOption(dissimilarityMeasureOpt);
+    cli.addOption(clusteringMethodOpt);
+    cli.addOption(clusteringInputOpt);
 
     cli.process(app);
 
@@ -145,31 +226,52 @@ int main(int argc, char *argv[])
                                          "socnetv.*.debug=false");
     }
     cfg.inputPath = cli.value(fileOpt);
-    cfg.fileFormat = cli.value(typeOpt).toInt();
     cfg.delimiter = cli.value(delimOpt);
-    cfg.twoMode = cli.value(twoModeOpt).toInt();
-    cfg.hasLabels = (cli.value(labelsOpt).toInt() != 0);
 
-    cfg.computeCentralities = (cli.value(centralitiesOpt).toInt() != 0);
-    cfg.considerWeights = (cli.value(weightsOpt).toInt() != 0);
-    cfg.inverseWeights = (cli.value(invWeightsOpt).toInt() != 0);
-    cfg.dropIsolates = (cli.value(dropIsoOpt).toInt() != 0);
+    int hasLabelsRaw = 0, computeCentralitiesRaw = 0, considerWeightsRaw = 0,
+        inverseWeightsRaw = 0, dropIsolatesRaw = 0, benchRunsRaw = 0, walksLength = 0;
+
+    bool argsOk = true;
+    argsOk &= parseIntArg(cli, typeOpt, cfg.fileFormat);
+    argsOk &= parseIntArg(cli, twoModeOpt, cfg.twoMode);
+    argsOk &= parseIntArg(cli, labelsOpt, hasLabelsRaw);
+    argsOk &= parseIntArg(cli, centralitiesOpt, computeCentralitiesRaw);
+    argsOk &= parseIntArg(cli, weightsOpt, considerWeightsRaw);
+    argsOk &= parseIntArg(cli, invWeightsOpt, inverseWeightsRaw);
+    argsOk &= parseIntArg(cli, dropIsoOpt, dropIsolatesRaw);
+    argsOk &= parseIntArg(cli, benchOpt, benchRunsRaw);
+    argsOk &= parseIntArg(cli, walksLenOpt, walksLength);
+    argsOk &= parseIntArg(cli, connSourceOpt, cfg.connSource);
+    argsOk &= parseIntArg(cli, connTargetOpt, cfg.connTarget);
+    cfg.verifyNaive = cli.isSet(verifyNaiveOpt);
+    argsOk &= parseDoubleArg(cli, katzAlphaOpt, cfg.katzAlpha);
+    argsOk &= parseDoubleArg(cli, bonacichAlphaOpt, cfg.bonacichAlpha);
+    argsOk &= parseDoubleArg(cli, bonacichBetaOpt, cfg.bonacichBeta);
+    if (!argsOk)
+    {
+        return 2;
+    }
+
+    cfg.hasLabels = (hasLabelsRaw != 0);
+    cfg.computeCentralities = (computeCentralitiesRaw != 0);
+    cfg.considerWeights = (considerWeightsRaw != 0);
+    cfg.inverseWeights = (inverseWeightsRaw != 0);
+    cfg.dropIsolates = (dropIsolatesRaw != 0);
 
     cfg.dumpJsonPath = cli.value(dumpJsonOpt);
     cfg.compareJsonPath = cli.value(compareJsonOpt);
 
-    const int benchRunsRaw = cli.value(benchOpt).toInt();
     cfg.benchRuns = (benchRunsRaw > 0) ? benchRunsRaw : 0;
 
     cfg.kernel = cli.value(kernelOpt).trimmed().toLower();
-    const int walksLength = cli.value(walksLenOpt).toInt();
     cfg.connectivityType = cli.value(connTypeOpt).trimmed().toLower();
     cfg.connMode = cli.value(connModeOpt).trimmed().toLower();
-    cfg.connSource = cli.value(connSourceOpt).toInt();
-    cfg.connTarget = cli.value(connTargetOpt).toInt();
-    cfg.katzAlpha = cli.value(katzAlphaOpt).toDouble();
-    cfg.bonacichAlpha = cli.value(bonacichAlphaOpt).toDouble();
-    cfg.bonacichBeta = cli.value(bonacichBetaOpt).toDouble();
+    cfg.similarityMeasure = cli.value(similarityMeasureOpt).trimmed().toLower();
+    cfg.similarityInput = cli.value(similarityInputOpt).trimmed().toLower();
+    cfg.dissimilarityMeasure = cli.value(dissimilarityMeasureOpt).trimmed().toLower();
+    cfg.clusteringMethod = cli.value(clusteringMethodOpt).trimmed().toLower();
+    cfg.clusteringInput = cli.value(clusteringInputOpt).trimmed().toLower();
+    cfg.pnMode = cli.value(pnModeOpt).trimmed().toLower();
 
     if (cfg.inputPath.isEmpty())
     {
@@ -180,6 +282,49 @@ int main(int argc, char *argv[])
     if (cfg.benchRuns > 0 && cfg.kernel != "distance" && cfg.kernel != "prominence")
     {
         QTextStream(stderr) << "ERROR: --bench is only supported with --kernel distance or prominence\n";
+        return 2;
+    }
+
+    if (cfg.similarityMeasure != "simple_matching" && cfg.similarityMeasure != "jaccard"
+        && cfg.similarityMeasure != "pearson")
+    {
+        QTextStream(stderr) << "ERROR: --similarity-measure must be one of "
+                                "simple_matching|jaccard|pearson\n";
+        return 2;
+    }
+
+    if (cfg.similarityInput != "adjacency" && cfg.similarityInput != "distances")
+    {
+        QTextStream(stderr) << "ERROR: --similarity-input must be one of adjacency|distances\n";
+        return 2;
+    }
+
+    if (cfg.pnMode != "off" && cfg.pnMode != "all" && cfg.pnMode != "out" && cfg.pnMode != "in")
+    {
+        QTextStream(stderr) << "ERROR: --pn-mode must be one of off|all|out|in\n";
+        return 2;
+    }
+
+    if (cfg.dissimilarityMeasure != "euclidean" && cfg.dissimilarityMeasure != "manhattan"
+        && cfg.dissimilarityMeasure != "jaccard" && cfg.dissimilarityMeasure != "hamming"
+        && cfg.dissimilarityMeasure != "chebyshev")
+    {
+        QTextStream(stderr) << "ERROR: --dissimilarity-measure must be one of "
+                                "euclidean|manhattan|jaccard|hamming|chebyshev\n";
+        return 2;
+    }
+
+    if (cfg.clusteringMethod != "single" && cfg.clusteringMethod != "complete"
+        && cfg.clusteringMethod != "average" && cfg.clusteringMethod != "upgma")
+    {
+        QTextStream(stderr) << "ERROR: --clustering-method must be one of "
+                                "single|complete|average|upgma\n";
+        return 2;
+    }
+
+    if (cfg.clusteringInput != "adjacency" && cfg.clusteringInput != "distances")
+    {
+        QTextStream(stderr) << "ERROR: --clustering-input must be one of adjacency|distances\n";
         return 2;
     }
 
@@ -246,6 +391,9 @@ int main(int argc, char *argv[])
 
     if (cfg.kernel == "vertex_connectivity")
         return cli::runKernelVertexConnectivityV9(cfg, load, g);
+
+    if (cfg.kernel == "signed")
+        return cli::runKernelSignedV10(cfg, load, g);
 
     QTextStream(stderr) << "ERROR: unsupported --kernel: " << cfg.kernel << "\n";
     return 2;

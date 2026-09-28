@@ -39,10 +39,27 @@
 #   2. Commit the baseline JSON
 #   3. Add a run_case_<k> call below in the appropriate section
 #
-# To regenerate a baseline after a deliberate semantic fix:
-#   Run the dump command again and commit the updated JSON.
+# To regenerate every registered baseline after a deliberate semantic fix:
+#   ./scripts/run_golden_compares.sh --update
+#   Review the diff, then commit the updated JSON files.
 #   Never regenerate baselines to silence a real regression.
 set -uo pipefail
+
+UPDATE=0
+for arg in "$@"; do
+  case "$arg" in
+    --update) UPDATE=1 ;;
+    -h|--help)
+      echo "Usage: $0 [--update]"
+      echo "  --update  Dump fresh JSON over every registered baseline instead of comparing."
+      exit 0
+      ;;
+    *)
+      echo "[ERROR] Unknown arg: $arg" >&2
+      exit 2
+      ;;
+  esac
+done
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_TYPE="${BUILD_TYPE:-Debug}"  # Debug|Release (hint only)
@@ -73,7 +90,15 @@ BASE_CLUST="${ROOT_DIR}/src/tools/baselines/clustering"
 BASE_CONN="${ROOT_DIR}/src/tools/baselines/connectivity"
 BASE_MATRIX="${ROOT_DIR}/src/tools/baselines/matrix"
 BASE_VCONN="${ROOT_DIR}/src/tools/baselines/vertex_connectivity"
+BASE_SIGNED="${ROOT_DIR}/src/tools/baselines/signed"
 DATA="${ROOT_DIR}/src/data"
+
+# --update dumps fresh JSON whose dataset.path field records whatever -i path was passed in
+# (informational only, never compared) - use a relative form there so it matches the existing
+# baseline corpus's convention instead of embedding this machine's absolute path.
+if (( UPDATE )); then
+  DATA="src/data"
+fi
 
 if [[ ! -x "$CLI" ]]; then
   echo "[ERROR] socnetv-cli not found/executable at: $CLI"
@@ -83,6 +108,9 @@ fi
 
 FAILS=0
 
+# Every run_case_* function below shares the same shape: with --update it dumps fresh JSON
+# over the baseline; otherwise it compares against the baseline as usual. The mode switch
+# lives in this one place so a `run_case_*` call site never needs to know about --update.
 run_case() {
   local input="$1"
   local ftype="$2"
@@ -90,6 +118,10 @@ run_case() {
   local baseline="${!#}"       # last arg
 
   echo "==> $(basename "$baseline")"
+  if (( UPDATE )); then
+    "$CLI" -i "$input" -f "$ftype" "${flags[@]}" --dump-json "$baseline"
+    return
+  fi
   if ! "$CLI" -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
@@ -103,6 +135,10 @@ run_case_reachability() {
   local baseline="${!#}"
 
   echo "==> $(basename "$baseline")"
+  if (( UPDATE )); then
+    "$CLI" --kernel reachability -i "$input" -f "$ftype" "${flags[@]}" --dump-json "$baseline"
+    return
+  fi
   if ! "$CLI" --kernel reachability -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
@@ -117,6 +153,10 @@ run_case_walks() {
   local baseline="${!#}"
 
   echo "==> $(basename "$baseline")"
+  if (( UPDATE )); then
+    "$CLI" --kernel walks_matrix --walks-length "$walks_len" -i "$input" -f "$ftype" "${flags[@]}" --dump-json "$baseline"
+    return
+  fi
   if ! "$CLI" --kernel walks_matrix --walks-length "$walks_len" -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
@@ -130,6 +170,10 @@ run_case_prominence() {
   local baseline="${!#}"
 
   echo "==> $(basename "$baseline")"
+  if (( UPDATE )); then
+    "$CLI" --kernel prominence -i "$input" -f "$ftype" "${flags[@]}" --dump-json "$baseline"
+    return
+  fi
   if ! "$CLI" --kernel prominence -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
@@ -143,6 +187,10 @@ run_case_clustering() {
   local baseline="${!#}"
 
   echo "==> $(basename "$baseline")"
+  if (( UPDATE )); then
+    "$CLI" --kernel clustering -i "$input" -f "$ftype" "${flags[@]}" --dump-json "$baseline"
+    return
+  fi
   if ! "$CLI" --kernel clustering -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
@@ -156,6 +204,10 @@ run_case_connectivity() {
   local baseline="${!#}"
 
   echo "==> $(basename "$baseline")"
+  if (( UPDATE )); then
+    "$CLI" --kernel connectivity -i "$input" -f "$ftype" "${flags[@]}" --dump-json "$baseline"
+    return
+  fi
   if ! "$CLI" --kernel connectivity -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
@@ -165,10 +217,15 @@ run_case_connectivity() {
 run_case_matrix() {
   local input="$1"
   local ftype="$2"
+  local flags=("${@:3:${#}-3}")
   local baseline="${!#}"
 
   echo "==> $(basename "$baseline")"
-  if ! "$CLI" --kernel matrix -i "$input" -f "$ftype" -c 0 --compare-json "$baseline"; then
+  if (( UPDATE )); then
+    "$CLI" --kernel matrix -i "$input" -f "$ftype" -c 0 "${flags[@]}" --dump-json "$baseline"
+    return
+  fi
+  if ! "$CLI" --kernel matrix -i "$input" -f "$ftype" -c 0 "${flags[@]}" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
   fi
@@ -181,7 +238,28 @@ run_case_vertex_connectivity() {
   local baseline="${!#}"
 
   echo "==> $(basename "$baseline")"
+  if (( UPDATE )); then
+    "$CLI" --kernel vertex_connectivity -i "$input" -f "$ftype" "${flags[@]}" --dump-json "$baseline"
+    return
+  fi
   if ! "$CLI" --kernel vertex_connectivity -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
+    echo "[FAIL] $(basename "$baseline")"
+    FAILS=$((FAILS+1))
+  fi
+}
+
+run_case_signed() {
+  local input="$1"
+  local ftype="$2"
+  local flags=("${@:3:${#}-3}")
+  local baseline="${!#}"
+
+  echo "==> $(basename "$baseline")"
+  if (( UPDATE )); then
+    "$CLI" --kernel signed -i "$input" -f "$ftype" "${flags[@]}" --dump-json "$baseline"
+    return
+  fi
+  if ! "$CLI" --kernel signed -i "$input" -f "$ftype" "${flags[@]}" --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
     FAILS=$((FAILS+1))
   fi
@@ -199,6 +277,11 @@ run_case_io() {
   fi
 
   echo "==> $(basename "$baseline")"
+  if (( UPDATE )); then
+    "$CLI" --kernel io_roundtrip -i "$input" -f "$ftype" \
+         ${flags[@]+"${flags[@]}"} --dump-json "$baseline"
+    return
+  fi
   if ! "$CLI" --kernel io_roundtrip -i "$input" -f "$ftype" \
        ${flags[@]+"${flags[@]}"} --compare-json "$baseline"; then
     echo "[FAIL] $(basename "$baseline")"
@@ -233,6 +316,34 @@ run_case \
   -c 1 -w 1 -x 1 -k 0 \
   "${BASE_DISTANCE}/StokmanZiegler_Netherlands__FT5__C1_W1_IW1_DI0.json"
 
+# WeightedTies_Dir_N5_SigmaRegression (#283's fixture) had no distance-kernel coverage until now -
+# only prominence/signed used it, neither of which reports diameter/avg_distance. That gap let
+# #286 (diameter tracked from relaxation events instead of final per-vertex distances) ship
+# undetected. diameter=22, avg_distance=8.8 independently verified before this baseline was
+# committed - see #286.
+run_case \
+  "${DATA}/WeightedTies_Dir_N5_SigmaRegression.paj" \
+  2 \
+  -c 1 -w 1 -x 0 -k 0 \
+  "${BASE_DISTANCE}/WeightedTies_Dir_N5_SigmaRegression__FT2__C1_W1_IW0_DI0.json"
+
+# Isolates/disconnection coverage: undirected, weighted, two components + one true isolate
+# (vertex F, degree 0). Independently hand-verified (avg_distance, diameter, disconnected_pairs,
+# per-node distance_sum/BC/SC/eccentricity_inf all derived by hand from the topology).
+run_case \
+  "${DATA}/TinyDisconnectedWeighted_Undir_N6_E4.paj" \
+  2 \
+  -c 1 -w 1 -x 0 -k 0 \
+  "${BASE_DISTANCE}/TinyDisconnectedWeighted_Undir_N6_E4__FT2__C1_W1_IW0_DI0.json"
+
+# Same isolates/disconnection coverage, directed: two components, no isolate (every vertex has
+# degree >= 1) but two dead-end sinks (C, E) with distance_sum=0. Independently hand-verified.
+run_case \
+  "${DATA}/TinyDisconnectedWeighted_Dir_N5_E3.paj" \
+  2 \
+  -c 1 -w 1 -x 0 -k 0 \
+  "${BASE_DISTANCE}/TinyDisconnectedWeighted_Dir_N5_E3__FT2__C1_W1_IW0_DI0.json"
+
 # REACHABILITY (schema v2)
 run_case_reachability \
   "${DATA}/Stephenson_Zelen_Dunbar_Dunbar_Gelada_baboon_colony_H22a_IC.paj" \
@@ -245,6 +356,21 @@ run_case_reachability \
   5 \
   -w 1 -x 1 -k 0 -c 0 \
   "${BASE_REACH}/StokmanZiegler_Netherlands__REACH__V2.json"
+
+# Isolates/disconnection coverage (topology-only kernel, no weighted axis - see coverage matrix
+# in the WS6.8 roadmap doc). Independently hand-verified: reachable_pairs/density and the full
+# block-structured matrix derived from the topology by hand.
+run_case_reachability \
+  "${DATA}/TinyDisconnected_Undir_N6_E4.paj" \
+  2 \
+  -w 1 -x 1 -k 0 -c 0 \
+  "${BASE_REACH}/TinyDisconnected_Undir_N6_E4__REACH__V2.json"
+
+run_case_reachability \
+  "${DATA}/TinyDisconnected_Dir_N5_E3.paj" \
+  2 \
+  -w 1 -x 1 -k 0 -c 0 \
+  "${BASE_REACH}/TinyDisconnected_Dir_N5_E3__REACH__V2.json"
 
 # WALKS MATRIX (schema v3)
 run_case_walks \
@@ -267,6 +393,23 @@ run_case_walks \
   2 \
   -w 1 -x 1 -k 0 -c 0 \
   "${BASE_WALKS}/TinyPath_N3_E2__WALKS_K2__V3.json"
+
+# Isolates/disconnection coverage. Independently hand-verified: the K=2 walk matrix has zero
+# cross-component cells by construction (no walk of any length can cross a disconnected boundary),
+# and every within-component cell derived by hand from the topology.
+run_case_walks \
+  "${DATA}/TinyDisconnected_Undir_N6_E4.paj" \
+  2 \
+  2 \
+  -w 1 -x 1 -k 0 -c 0 \
+  "${BASE_WALKS}/TinyDisconnected_Undir_N6_E4__WALKS_K2__V3.json"
+
+run_case_walks \
+  "${DATA}/TinyDisconnected_Dir_N5_E3.paj" \
+  2 \
+  2 \
+  -w 1 -x 1 -k 0 -c 0 \
+  "${BASE_WALKS}/TinyDisconnected_Dir_N5_E3__WALKS_K2__V3.json"
 
 # PROMINENCE (schema v4)
 run_case_prominence \
@@ -292,6 +435,29 @@ run_case_prominence \
   2 \
   -w 1 -x 1 -k 0 \
   "${BASE_PROM}/Krackhardt_Kite_N10__PROM__V4__FT2__W1_IW1_DI0.json"
+
+# Small directed, weighted, ties-heavy fixture: a vertex is relaxed to a strictly shorter
+# distance more than once within a single source's Dijkstra pass, and predecessors that were
+# only tentatively best now need replacing rather than accumulating - the specific shape
+# regular random/complete-graph fixtures don't reliably exercise. Same network in three formats
+# (Pajek, GraphML, UCINET DL) so the fix is protected regardless of which parser path is used.
+run_case_prominence \
+  "${DATA}/WeightedTies_Dir_N5_SigmaRegression.paj" \
+  2 \
+  -c 1 -w 1 -x 0 -k 0 \
+  "${BASE_PROM}/WeightedTies_Dir_N5_SigmaRegression__PROM__V4__FT2__W1_IW0_DI0.json"
+
+run_case_prominence \
+  "${DATA}/WeightedTies_Dir_N5_SigmaRegression.graphml" \
+  1 \
+  -c 1 -w 1 -x 0 -k 0 \
+  "${BASE_PROM}/WeightedTies_Dir_N5_SigmaRegression__PROM__V4__FT1__W1_IW0_DI0.json"
+
+run_case_prominence \
+  "${DATA}/WeightedTies_Dir_N5_SigmaRegression.dl" \
+  5 \
+  -c 1 -w 1 -x 0 -k 0 \
+  "${BASE_PROM}/WeightedTies_Dir_N5_SigmaRegression__PROM__V4__FT5__W1_IW0_DI0.json"
 
 run_case_prominence \
   "${DATA}/Sampson_Monks_N18.net" \
@@ -343,6 +509,25 @@ run_case_prominence \
   2 \
   -w 1 -x 1 -k 1 --katz-alpha 0.2 --bonacich-alpha 1 --bonacich-beta 0.3 \
   "${BASE_PROM}/TinyWeightedIsolate_Undir_N4_E2__PROM__V4__FT2__W1_IW1_DI1_KA0.2_BA1_BB0.3.json"
+
+# Isolates/disconnection coverage: a genuine multi-component disconnected graph (not just a
+# single isolate, unlike TinyWeightedIsolate_Undir_N4_E2 above). Reuses the distance kernel's
+# already-verified fixtures. Independently verified: DC/DP (out/in-degree) and BC/SC match this
+# fixture's already-verified distance-kernel baseline; IC=0 for every node confirmed correct via
+# a hand-computed determinant of the symmetrized weight matrix (genuinely singular on a
+# disconnected graph, not a silent failure); PRP(isolate)=1/N and PP(isolate)=0 match their
+# documented isolate-handling behavior.
+run_case_prominence \
+  "${DATA}/TinyDisconnectedWeighted_Undir_N6_E4.paj" \
+  2 \
+  -w 1 -x 0 -k 0 \
+  "${BASE_PROM}/TinyDisconnectedWeighted_Undir_N6_E4__PROM__V4__FT2__W1_IW0_DI0.json"
+
+run_case_prominence \
+  "${DATA}/TinyDisconnectedWeighted_Dir_N5_E3.paj" \
+  2 \
+  -w 1 -x 0 -k 0 \
+  "${BASE_PROM}/TinyDisconnectedWeighted_Dir_N5_E3__PROM__V4__FT2__W1_IW0_DI0.json"
 
 # Katz Centrality (WS11, #10) - each value independently cross-checked against a hand-derived
 # reference computation (Gauss-Jordan elimination of (I - alpha*A^T) in plain Python) before
@@ -430,6 +615,38 @@ run_case_prominence \
   -w 1 -x 1 -k 0 --katz-alpha 1 --bonacich-alpha 1 --bonacich-beta 1 \
   "${BASE_PROM}/TinyDirWeighted_N3__PROM__V4__FT2__W1_IW1_DI0_KA1_BA1_BB1.json"
 
+# Signed_Dir_N4_NoCycle: the prominence kernel's only fixture with a negative edge weight, so
+# signedDegreePos/Neg/Ratio/Net (WS18 P3) actually get exercised with a real negative split
+# instead of every other fixture's degenerate all-positive case (pos==DC, neg==0 everywhere).
+# See WS18 P3 (docs/roadmaps/roadmap_ws18_signed_network_analysis.md).
+run_case_prominence \
+  "${DATA}/Signed_Dir_N4_NoCycle.paj" \
+  2 \
+  -w 1 -x 0 \
+  "${BASE_PROM}/Signed_Dir_N4_NoCycle__PROM__V4__FT2__W1_IW0_DI0.json"
+
+# PN Centrality (WS18 P3, #301) - out/in modes need a directed signed fixture (reusing
+# Signed_Dir_N4_NoCycle), all mode needs an undirected one (new Signed_Undir_N4, same edge
+# weights/signs, just undirected - no other undirected signed fixture exists yet). All three
+# independently verified against a from-scratch Python solve, not just self-consistency.
+run_case_prominence \
+  "${DATA}/Signed_Dir_N4_NoCycle.paj" \
+  2 \
+  -w 1 -x 0 --pn-mode out \
+  "${BASE_PROM}/Signed_Dir_N4_NoCycle__PROM__V4__FT2__W1_IW0_DI0__pn_out.json"
+
+run_case_prominence \
+  "${DATA}/Signed_Dir_N4_NoCycle.paj" \
+  2 \
+  -w 1 -x 0 --pn-mode in \
+  "${BASE_PROM}/Signed_Dir_N4_NoCycle__PROM__V4__FT2__W1_IW0_DI0__pn_in.json"
+
+run_case_prominence \
+  "${DATA}/Signed_Undir_N4.paj" \
+  2 \
+  -w 1 -x 0 --pn-mode all \
+  "${BASE_PROM}/Signed_Undir_N4__PROM__V4__FT2__W1_IW0_DI0__pn_all.json"
+
 # IO ROUNDTRIP (schema v5)
 run_case_io "${DATA}/TinyAdj_Undir_N3.adj" 3 -d " " -l 0 "${BASE_IO}/TinyAdj_Undir_N3__FT3.json"
 run_case_io "${DATA}/TinyAdj_Weighted_Dir_N3.adj" 3 -d " " -l 0 "${BASE_IO}/TinyAdj_Weighted_Dir_N3__FT3.json"
@@ -460,6 +677,31 @@ run_case_clustering \
   2 \
   -w 0 -x 1 -k 0 \
   "${BASE_CLUST}/TinyDirChain_N3__CLUST__V6__FT2__W0_IW1_DI0.json"
+
+# Isolates/disconnection coverage. Independently verified: cliques/CLC/triad_census all
+# cross-checked against a standalone networkx script (not SocNetV's own code).
+run_case_clustering \
+  "${DATA}/TinyDisconnected_Undir_N6_E4.paj" \
+  2 \
+  -w 0 -x 1 -k 0 \
+  "${BASE_CLUST}/TinyDisconnected_Undir_N6_E4__CLUST__V6__FT2__W0_IW1_DI0.json"
+
+# Fix #296: dedicated UPGMA coverage. Earlier merges here involve equal-sized clusters,
+# where UPGMA and the default WPGMA formula agree - see the baseline above for the
+# identical-up-to-that-point WPGMA result on the same fixture. The final merge level does
+# differ (unweighted vs size-weighted averaging over the accumulated cluster distances).
+# Independently verified via a standalone size-weighted-average-linkage reimplementation.
+run_case_clustering \
+  "${DATA}/TinyDisconnected_Undir_N6_E4.paj" \
+  2 \
+  -w 0 -x 1 -k 0 --clustering-method upgma \
+  "${BASE_CLUST}/TinyDisconnected_Undir_N6_E4__CLUST__V6__FT2__W0_IW1_DI0__upgma.json"
+
+run_case_clustering \
+  "${DATA}/TinyDisconnected_Dir_N5_E3.paj" \
+  2 \
+  -w 0 -x 1 -k 0 \
+  "${BASE_CLUST}/TinyDisconnected_Dir_N5_E3__CLUST__V6__FT2__W0_IW1_DI0.json"
 
 run_case_clustering \
   "${DATA}/TinyPath_N3_E2.paj" \
@@ -573,6 +815,75 @@ run_case_matrix \
   2 \
   "${BASE_MATRIX}/Benchmark_BA_Directed_N500_m3__MATRIX__V8__FT2__W0_IW1_DI0.json"
 
+# WS6.8: first weighted matrix baseline (adjacency/distances/similarity/etc. all read real
+# weight values when considerWeights=true, unlike connectivity/vertex_connectivity/
+# reachability/walks, which are edge-existence-only - see the coverage matrix in
+# roadmap_ws6_testing_ci_regression.md). Also exercises the reciprocal-ties-only rule for
+# clique co-membership: A->B, B->C are one-directional, so no pair is mutually tied and the
+# expected clique_comembership is the identity matrix (each vertex its own singleton clique).
+run_case_matrix \
+  "${DATA}/TinyDirWeighted_N3.paj" \
+  2 \
+  -w 1 -x 0 \
+  "${BASE_MATRIX}/TinyDirWeighted_N3__MATRIX__V8__FT2__W1_IW0_DI0.json"
+
+# Signed_Dir_N4_NoCycle: the matrix kernel's only fixture with a negative edge weight, so
+# matrices.spectral_radius.has_negative_entry actually exercises true (every other matrix
+# baseline above is non-negative, so that branch would otherwise never be regression-tested) -
+# and matrices.spectral_radius.exact is correctly omitted rather than computed on a matrix
+# Perron-Frobenius doesn't apply to. See WS18 P3 (docs/roadmaps/roadmap_ws18_signed_network_analysis.md).
+run_case_matrix \
+  "${DATA}/Signed_Dir_N4_NoCycle.paj" \
+  2 \
+  -w 1 -x 0 \
+  "${BASE_MATRIX}/Signed_Dir_N4_NoCycle__MATRIX__V8__FT2__W1_IW0_DI0.json"
+
+# Fix #279: TinyArc_Dir_N2_E1 (N=2, one directed arc) is the minimal fixture that drives
+# similarityMatrix()/pearsonCorrelationCoefficients() into their degenerate empty-sample
+# case (ties==0 for Jaccard/Simple-Matching, N-2<=0 for Pearson) under the default
+# diagonal=false - before the fix this produced NaN entries; these three baselines pin the
+# post-fix fallback value (0) for each measure.
+run_case_matrix \
+  "${DATA}/TinyArc_Dir_N2_E1.paj" \
+  2 \
+  --similarity-measure simple_matching \
+  "${BASE_MATRIX}/TinyArc_Dir_N2_E1__MATRIX__V8__FT2__W0_IW1_DI0__simple_matching.json"
+
+run_case_matrix \
+  "${DATA}/TinyArc_Dir_N2_E1.paj" \
+  2 \
+  --similarity-measure jaccard \
+  "${BASE_MATRIX}/TinyArc_Dir_N2_E1__MATRIX__V8__FT2__W0_IW1_DI0__jaccard.json"
+
+run_case_matrix \
+  "${DATA}/TinyArc_Dir_N2_E1.paj" \
+  2 \
+  --similarity-measure pearson \
+  "${BASE_MATRIX}/TinyArc_Dir_N2_E1__MATRIX__V8__FT2__W0_IW1_DI0__pearson.json"
+
+# similarityMatrix()'s Jaccard branch didn't exclude RAND_MAX (the "unreachable" sentinel)
+# from its match/ties count the way distancesMatrix() does, so two actors both unreachable
+# from some third node counted as a false-positive match - invisible on the adjacency matrix
+# (never contains RAND_MAX), only reachable via --similarity-input distances. Verified live
+# impact before fixing: on this fixture, cell (D,F) [0-indexed (3,5)] read 0.75 pre-fix
+# (false-positive similarity from shared unreachability) vs. 0.0 post-fix.
+run_case_matrix \
+  "${DATA}/TinyDisconnected_Undir_N6_E4.paj" \
+  2 \
+  --similarity-measure jaccard --similarity-input distances \
+  "${BASE_MATRIX}/TinyDisconnected_Undir_N6_E4__MATRIX__V8__FT2__W0_IW1_DI0__jaccard_distances.json"
+
+# WS6.9: dissimilarity category (Graph::createMatrixDissimilarities(), previously never dumped
+# into a baseline). Euclidean chosen as the default/most-common metric. Independently
+# hand-verified: dist(A,D)=sqrt(2), dist(B,D)=sqrt(3) derived by hand from the adjacency rows
+# (excluding the two diagonal columns per distancesMatrix()'s own diagonal=false rule), matching
+# the dumped output exactly.
+run_case_matrix \
+  "${DATA}/TinyDisconnected_Undir_N6_E4.paj" \
+  2 \
+  --dissimilarity-measure euclidean \
+  "${BASE_MATRIX}/TinyDisconnected_Undir_N6_E4__MATRIX__V8__FT2__W0_IW1_DI0__euclidean_dissimilarity.json"
+
 # VERTEX CONNECTIVITY (schema v9) - deliberately Tiny*/toy datasets only. The global mode's
 # pairwise-minimum algorithm is O(n^2) local-connectivity computations in the worst case (see
 # Graph::graphConnectivity()'s doc comment) - fine for a handful of nodes, not for the
@@ -619,7 +930,99 @@ run_case_vertex_connectivity \
   --conn-mode global \
   "${BASE_VCONN}/TinyComplete_Undir_N4_E6__VCONN__V9__FT2__global.json"
 
+# SIGNED (schema v10) - Johnson's-algorithm potentials / negative-cycle detection (WS18 P2).
+# WeightedTies_Dir_N5_SigmaRegression is all-positive-weight (reused from #283's BC fixture) -
+# potentials degenerate to all-zero here, which is the correct Bellman-Ford-from-virtual-source
+# result on a graph with no negative edges, not a placeholder/weak case.
+run_case_signed \
+  "${DATA}/WeightedTies_Dir_N5_SigmaRegression.paj" \
+  2 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/WeightedTies_Dir_N5_SigmaRegression__SIGNED__V10__FT2__W1_IW0.json"
+
+run_case_signed \
+  "${DATA}/WeightedTies_Dir_N5_SigmaRegression.graphml" \
+  1 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/WeightedTies_Dir_N5_SigmaRegression__SIGNED__V10__FT1__W1_IW0.json"
+
+# Isolates/disconnection coverage: two components, all-positive weights (potentials correctly
+# all-zero, same reasoning as WeightedTies_Dir_N5_SigmaRegression above). distance_sum/BC/
+# eccentricity values match this fixture's independently hand-verified distance-kernel baseline.
+run_case_signed \
+  "${DATA}/TinyDisconnectedWeighted_Dir_N5_E3.paj" \
+  2 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/TinyDisconnectedWeighted_Dir_N5_E3__SIGNED__V10__FT2__W1_IW0.json"
+
+# Signed_Dir_N4_NoCycle: mixed positive/negative edges, no negative cycle - pins non-trivial
+# potentials (h = [1:0, 2:0, 3:-2, 4:0]), independently verified by hand and a standalone
+# Bellman-Ford reimplementation. Covers all 7 supported formats - #285 (DL and Adjacency
+# silently dropping negative-weight cells) meant this network had no .dl/.adj coverage until
+# that fix landed; all 7 variants' potentials cross-checked identical to each other (labels
+# aside) before being committed as baselines.
+run_case_signed \
+  "${DATA}/Signed_Dir_N4_NoCycle.paj" \
+  2 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/Signed_Dir_N4_NoCycle__SIGNED__V10__FT2__W1_IW0.json"
+
+run_case_signed \
+  "${DATA}/Signed_Dir_N4_NoCycle.graphml" \
+  1 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/Signed_Dir_N4_NoCycle__SIGNED__V10__FT1__W1_IW0.json"
+
+run_case_signed \
+  "${DATA}/Signed_Dir_N4_NoCycle.adj" \
+  3 \
+  -d " " -l 0 -w 1 -x 0 \
+  "${BASE_SIGNED}/Signed_Dir_N4_NoCycle__SIGNED__V10__FT3__W1_IW0.json"
+
+run_case_signed \
+  "${DATA}/Signed_Dir_N4_NoCycle.dot" \
+  4 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/Signed_Dir_N4_NoCycle__SIGNED__V10__FT4__W1_IW0.json"
+
+run_case_signed \
+  "${DATA}/Signed_Dir_N4_NoCycle.dl" \
+  5 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/Signed_Dir_N4_NoCycle__SIGNED__V10__FT5__W1_IW0.json"
+
+run_case_signed \
+  "${DATA}/Signed_Dir_N4_NoCycle.gml" \
+  6 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/Signed_Dir_N4_NoCycle__SIGNED__V10__FT6__W1_IW0.json"
+
+run_case_signed \
+  "${DATA}/Signed_Dir_N4_NoCycle.wlst" \
+  7 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/Signed_Dir_N4_NoCycle__SIGNED__V10__FT7__W1_IW0.json"
+
+# Signed_Dir_N3_NegCycle: A->B->C->A summing to -3 - pins negative_cycle_detected=true.
+# Same independent verification (hand, Python, networkx) confirms the cycle; per-vertex
+# potentials aren't meaningful once a cycle is found, so the kernel reports 0 for all of them.
+run_case_signed \
+  "${DATA}/Signed_Dir_N3_NegCycle.paj" \
+  2 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/Signed_Dir_N3_NegCycle__SIGNED__V10__FT2__W1_IW0.json"
+
+run_case_signed \
+  "${DATA}/Signed_Dir_N3_NegCycle.graphml" \
+  1 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/Signed_Dir_N3_NegCycle__SIGNED__V10__FT1__W1_IW0.json"
+
 echo
+if (( UPDATE )); then
+  echo "[UPDATE] All registered baselines regenerated. Review the diff before committing."
+  exit 0
+fi
 if [[ "$FAILS" -eq 0 ]]; then
   echo "[OK] All golden comparisons passed."
   exit 0

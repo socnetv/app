@@ -223,6 +223,9 @@ QString Graph::graphClusteringMethodTypeToString(const int &methodType) const
         methodStr = "Complete-linkage (maximum)";
         break;
     case Clustering::Average_Linkage:
+        methodStr = "Average-linkage (WPGMA)";
+        break;
+    case Clustering::Average_Linkage_UPGMA:
         methodStr = "Average-linkage (UPGMA)";
         break;
     default:
@@ -247,7 +250,11 @@ int Graph::graphClusteringMethodStrToType(const QString &method) const
     {
         methodType = Clustering::Complete_Linkage;
     }
-    else if (method.contains("Average", Qt::CaseInsensitive))
+    else if (method.contains("UPGMA", Qt::CaseInsensitive))
+    {
+        methodType = Clustering::Average_Linkage_UPGMA;
+    }
+    else if (method.contains("Average", Qt::CaseInsensitive) || method.contains("WPGMA", Qt::CaseInsensitive))
     {
         methodType = Clustering::Average_Linkage;
     }

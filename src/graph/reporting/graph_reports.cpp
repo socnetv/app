@@ -253,6 +253,13 @@ bool Graph::writeEccentricity(const QString fileName, const bool considerWeights
         progressStatus(tr("Computation canceled."));
         return false;
     }
+    if (negativeWeightsDetected())
+    {
+        file.close();
+        progressStatus(tr("Computation refused: the network contains negative edge weight(s), "
+                          "which this measure does not support."));
+        return false;
+    }
 
     if (format == ReportFormat::Csv)
     {
@@ -1568,6 +1575,230 @@ bool Graph::writeCentralityDegree(const QString fileName,
 }
 
 /**
+ * @brief Writes the Signed Degree Centrality (WS18 P3) to a file
+ *
+ * Unlike writeCentralityDegree(), this is a minimal report: just the per-node score table for
+ * the four pos/neg/ratio/net variants. No distribution chart, no sum/mean/variance/classes
+ * section, no group centralization - centralitySignedDegree() deliberately doesn't compute any
+ * graph-wide/standardized statistics (see its own doc comment), so there is nothing to report
+ * beyond the raw per-vertex values.
+ *
+ * @param fileName
+ * @param considerWeights
+ * @param dropIsolates
+ */
+bool Graph::writeCentralitySignedDegree(const QString fileName,
+                                        const bool considerWeights,
+                                        const bool dropIsolates,
+                                        const int &format)
+{
+    qCDebug(lcReporting) << "Writing Signed Degree Centrality report to file:" << fileName
+             << "considerWeights:" << considerWeights
+             << "dropIsolates:" << dropIsolates;
+
+    QElapsedTimer computationTimer;
+    computationTimer.start();
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
+        progressStatus(tr("Error. Could not write to ") + fileName);
+        return false;
+    }
+    QTextStream outText(&file);
+
+    centralitySignedDegree(considerWeights, dropIsolates);
+    if (progressCanceled())
+    {
+        file.close();
+        progressStatus(tr("Computation canceled."));
+        return false;
+    }
+
+    auto rowValues = [](GraphVertex *v) -> QVector<qreal> {
+        return {v->signedDegreePos(), v->signedDegreeNeg(), v->signedDegreeRatio(), v->signedDegreeNet()};
+    };
+    auto isBlanked = [dropIsolates](GraphVertex *v) {
+        return dropIsolates && v->isIsolated();
+    };
+
+    if (format == ReportFormat::Csv)
+    {
+        writeScoreTableCSV(outText, {"pos", "neg", "ratio", "net"}, rowValues, isBlanked);
+        file.close();
+        return true;
+    }
+
+    int N = vertices();
+
+    outText << htmlHead;
+
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
+
+    progressStatus(tr("Writing Signed Degree Centralities. \nPlease wait..."));
+
+    outText << "<h1>";
+    outText << tr("SIGNED DEGREE CENTRALITY REPORT");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            << "</span>"
+            << getName()
+            << "<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            << "</span>"
+            << N
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("Out-degree split by tie sign, for signed networks. "
+                  "pos is how many positive ties a node sends (or their summed strength, if "
+                  "weights are considered); neg is the same for negative ties; "
+                  "ratio = pos / (pos+neg), the fraction of a node's ties that are positive "
+                  "(0 for a node with no ties either way); net = pos - neg, a single signed "
+                  "balance score.<br />"
+                  "Out-degree only: to compute in-degree, use the Degree Prestige measure.")
+            << "</p>";
+
+    writeScoreTableHTML(outText, {"pos", "neg", "ratio", "net"}, rowValues, isBlanked);
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Signed Degree Centrality report, <br />");
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+                   .arg(VERSION)
+                   .arg(actualDateTime.currentDateTime().toString(QString("ddd, dd.MMM.yyyy hh:mm:ss")));
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg(computationTimer.elapsed());
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+    file.close();
+
+    return true;
+}
+
+/**
+ * @brief Writes PN Centrality (WS18 P3, Everett & Borgatti 2014) to a file
+ *
+ * Minimal report, same shape as writeCentralitySignedDegree(): just the per-node score table -
+ * no distribution chart, no sum/mean/variance/classes section. centralityPN() computes a single
+ * raw score with no standardized variant (the reference formula doesn't define one), so there is
+ * nothing to report beyond that.
+ *
+ * @param fileName
+ * @param mode
+ * @param dropIsolates
+ */
+bool Graph::writeCentralityPN(const QString fileName,
+                              const PNMode mode,
+                              const bool &dropIsolates,
+                              const int &format)
+{
+    qCDebug(lcReporting) << "Writing PN Centrality report to file:" << fileName
+             << "mode:" << static_cast<int>(mode)
+             << "dropIsolates:" << dropIsolates;
+
+    QElapsedTimer computationTimer;
+    computationTimer.start();
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
+        progressStatus(tr("Error. Could not write to ") + fileName);
+        return false;
+    }
+    QTextStream outText(&file);
+
+    centralityPN(mode, dropIsolates);
+    if (progressCanceled())
+    {
+        file.close();
+        progressStatus(tr("Computation canceled."));
+        return false;
+    }
+
+    auto rowValues = [](GraphVertex *v) -> QVector<qreal> {
+        return {v->PN()};
+    };
+    auto isBlanked = [dropIsolates](GraphVertex *v) {
+        return dropIsolates && v->isIsolated();
+    };
+
+    if (format == ReportFormat::Csv)
+    {
+        writeScoreTableCSV(outText, {"PN"}, rowValues, isBlanked);
+        file.close();
+        return true;
+    }
+
+    int N = vertices();
+
+    outText << htmlHead;
+
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
+
+    progressStatus(tr("Writing PN Centrality scores. \nPlease wait..."));
+
+    outText << "<h1>";
+    outText << tr("PN CENTRALITY REPORT");
+    outText << "</h1>";
+
+    const QString modeStr = (mode == PNMode::Out) ? tr("Out") : (mode == PNMode::In) ? tr("In") : tr("All");
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            << "</span>"
+            << getName()
+            << "<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            << "</span>"
+            << N
+            << "<br />"
+            << "<span class=\"info\">"
+            << tr("Mode: ")
+            << "</span>"
+            << modeStr
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("A centrality measure built for signed networks: a negative tie from someone "
+                  "who is themselves highly (positively) prominent hurts more than one from "
+                  "someone marginalized - a negative tie from someone universally disliked can "
+                  "even read as a positive signal. Considers tie sign only (positive/negative); "
+                  "tie strength is not used.<br />"
+                  "Everett, M. and Borgatti, S. (2014). Networks containing negative ties. "
+                  "Social Networks 38, 111-120.")
+            << "</p>";
+
+    writeScoreTableHTML(outText, {"PN"}, rowValues, isBlanked);
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("PN Centrality report, <br />");
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+                   .arg(VERSION)
+                   .arg(actualDateTime.currentDateTime().toString(QString("ddd, dd.MMM.yyyy hh:mm:ss")));
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg(computationTimer.elapsed());
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+    file.close();
+
+    return true;
+}
+
+/**
  * @brief Writes the closeness centralities to a file
  * @param fileName
  * @param considerWeights
@@ -1604,6 +1835,13 @@ bool Graph::writeCentralityCloseness(const QString fileName,
     {
         file.close();
         progressStatus(tr("Computation canceled."));
+        return false;
+    }
+    if (negativeWeightsDetected())
+    {
+        file.close();
+        progressStatus(tr("Computation refused: the network contains negative edge weight(s), "
+                          "which this measure does not support."));
         return false;
     }
 
@@ -2032,6 +2270,13 @@ bool Graph::writeCentralityBetweenness(const QString fileName,
         progressStatus(tr("Computation canceled."));
         return false;
     }
+    if (negativeWeightsDetected())
+    {
+        file.close();
+        progressStatus(tr("Computation refused: the network contains negative edge weight(s), "
+                          "which this measure does not support."));
+        return false;
+    }
 
     if (format == ReportFormat::Csv)
     {
@@ -2266,6 +2511,13 @@ bool Graph::writeCentralityStress(const QString fileName,
         progressStatus(tr("Computation canceled."));
         return false;
     }
+    if (negativeWeightsDetected())
+    {
+        file.close();
+        progressStatus(tr("Computation refused: the network contains negative edge weight(s), "
+                          "which this measure does not support."));
+        return false;
+    }
 
     if (format == ReportFormat::Csv)
     {
@@ -2458,6 +2710,13 @@ bool Graph::writeCentralityEccentricity(const QString fileName,
         progressStatus(tr("Computation canceled."));
         return false;
     }
+    if (negativeWeightsDetected())
+    {
+        file.close();
+        progressStatus(tr("Computation refused: the network contains negative edge weight(s), "
+                          "which this measure does not support."));
+        return false;
+    }
 
     if (format == ReportFormat::Csv)
     {
@@ -2637,6 +2896,13 @@ bool Graph::writeCentralityPower(const QString fileName,
     {
         file.close();
         progressStatus(tr("Computation canceled."));
+        return false;
+    }
+    if (negativeWeightsDetected())
+    {
+        file.close();
+        progressStatus(tr("Computation refused: the network contains negative edge weight(s), "
+                          "which this measure does not support."));
         return false;
     }
 
@@ -5493,7 +5759,8 @@ bool Graph::writeMatrix(const QString &fn,
                         const bool &dropIsolates,
                         const QString &varLocation,
                         const bool &simpler,
-                        const int &format)
+                        const int &format,
+                        const bool &allowNegativeWeights)
 {
 
     qCDebug(lcReporting) << "Writing specified matrix:" << matrix << "to file:" << fn << " -- dropIsolates:" << dropIsolates;
@@ -5549,7 +5816,8 @@ bool Graph::writeMatrix(const QString &fn,
         progressStatus(tr("Adjacency recomputed. Writing Degree Matrix..."));
         break;
     case MATRIX_DISTANCES:
-        if (!graphMatrixDistanceGeodesicCreate(considerWeights, inverseWeights, dropIsolates))
+        if (!graphMatrixDistanceGeodesicCreate(considerWeights, inverseWeights, dropIsolates,
+                                               allowNegativeWeights))
         {
             file.close();
             progressStatus(tr("Computation canceled."));

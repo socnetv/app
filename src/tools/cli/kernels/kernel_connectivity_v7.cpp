@@ -26,7 +26,9 @@ static QJsonObject buildGoldenJsonV7(
     const HeadlessLoadResult &load,
     Graph             &g,
     int                componentCount,
-    const QString     &connectivityTypeLabel)
+    const QString     &connectivityTypeLabel,
+    qreal              reciprocityArc,
+    qreal              reciprocityDyad)
 {
     QJsonObject root;
     root["schema_version"] = 7;
@@ -50,6 +52,7 @@ static QJsonObject buildGoldenJsonV7(
     QJsonObject graph;
     graph["directed"] = g.isDirected();
     graph["weighted"] = g.isWeighted();
+    graph["symmetric"] = g.isSymmetric();
     root["graph"] = graph;
 
     QJsonObject conn;
@@ -57,6 +60,18 @@ static QJsonObject buildGoldenJsonV7(
     conn["component_count"] = componentCount;
     conn["type"] = connectivityTypeLabel;
     root["connectivity"] = conn;
+
+    // Reciprocity: tie- and pair-level ratios, plus the raw counts each ratio is derived from.
+    // arc: reciprocated ties / total ties. dyad: reciprocated pairs / total pairs - a pair counts
+    // once regardless of how many parallel/weighted ties exist between the two actors.
+    QJsonObject recip;
+    recip["arc"] = d2s(reciprocityArc);
+    recip["arc_ties_reciprocated"] = g.graphReciprocityTiesReciprocated();
+    recip["arc_ties_total"] = g.graphReciprocityTiesTotal();
+    recip["dyad"] = d2s(reciprocityDyad);
+    recip["dyad_pairs_reciprocated"] = g.graphReciprocityPairsReciprocated();
+    recip["dyad_pairs_total"] = g.graphReciprocityPairsTotal();
+    root["reciprocity"] = recip;
 
     // Per-node component IDs (deterministic: BFS visits vertices in list order). Only meaningful
     // for weak/undirected mode - Graph::vertexComponentId() is populated by
@@ -115,12 +130,25 @@ static int compareGoldenV7(const QJsonObject &expected, const QJsonObject &actua
 
     ok &= cmpBool(expected.value("graph").toObject(),
                   actual.value("graph").toObject(),    "directed", err);
+    ok &= cmpBool(expected.value("graph").toObject(),
+                  actual.value("graph").toObject(),    "weighted", err);
+    ok &= cmpBool(expected.value("graph").toObject(),
+                  actual.value("graph").toObject(),    "symmetric", err);
 
     const QJsonObject eConn = expected.value("connectivity").toObject();
     const QJsonObject aConn = actual.value("connectivity").toObject();
     ok &= cmpBool(eConn, aConn, "connected",       err);
     ok &= cmpInt (eConn, aConn, "component_count", err);
     ok &= cmpStr (eConn, aConn, "type",            err);
+
+    const QJsonObject eRecip = expected.value("reciprocity").toObject();
+    const QJsonObject aRecip = actual.value("reciprocity").toObject();
+    ok &= cmpNumStrTol(eRecip, aRecip, "arc",  err, 1e-15);
+    ok &= cmpInt(eRecip, aRecip, "arc_ties_reciprocated", err);
+    ok &= cmpInt(eRecip, aRecip, "arc_ties_total",        err);
+    ok &= cmpNumStrTol(eRecip, aRecip, "dyad", err, 1e-15);
+    ok &= cmpInt(eRecip, aRecip, "dyad_pairs_reciprocated", err);
+    ok &= cmpInt(eRecip, aRecip, "dyad_pairs_total",        err);
 
     // Per-node component IDs
     const QJsonArray ePN = expected.value("per_node").toArray();
@@ -176,8 +204,14 @@ int runKernelConnectivityV7(const CliConfig &cfg,
     printKV("CONNECTED",  connected ? 1 : 0);
     printKV("TYPE", typeLabel);
 
+    const qreal reciprocityArc = g.graphReciprocity();
+    const qreal reciprocityDyad = g.graphReciprocityDyad();
+    printKV("RECIPROCITY_ARC", QString::number(reciprocityArc, 'g', 12));
+    printKV("RECIPROCITY_DYAD", QString::number(reciprocityDyad, 'g', 12));
+
     const QJsonObject actual = buildGoldenJsonV7(
-        cfg.inputPath, cfg.fileFormat, load, g, components, typeLabel);
+        cfg.inputPath, cfg.fileFormat, load, g, components, typeLabel,
+        reciprocityArc, reciprocityDyad);
 
     if (!cfg.dumpJsonPath.isEmpty()) {
         QString err;

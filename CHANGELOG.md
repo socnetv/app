@@ -2,6 +2,353 @@
 
 All notable changes to this project are documented in this file. 
 
+## [3.8] – Sep 2026
+
+### Improvements
+
+  - **`centralityDegree()` parallelized** (WS15 P4): Degree Centrality's per-vertex computation
+    now runs via `QtConcurrent::blockingMap`, the same pattern used by `DistanceEngine`'s
+    shortest-path engine — first implementation from WS15's parallelization audit. Found and
+    fixed a real thread-safety bug along the way: `Graph::edgeExists()` wrote its result through
+    two `Graph`-instance member fields instead of local variables, which is safe single-threaded
+    but races once called concurrently — converted to locals, benefiting every future concurrent
+    edge-reading code, not just this one caller.
+
+  - **`isSymmetric()` parallelized** (WS15 P4): checking whether the current relation's adjacency
+    matrix is symmetric now checks every vertex's edges concurrently instead of one at a time.
+    Found and fixed the same class of thread-safety bug as above, this time in
+    `GraphVertex::reciprocalEdgesHash()`. Also removes a pre-existing duplication where
+    `centralityDegree()` had to reimplement this same symmetry check inline instead of calling
+    `isSymmetric()` directly, since it's now safe to call from a parallel context too.
+
+  - **`clusteringCoefficient()` parallelized** (WS15 P4): the Clustering Coefficient computation
+    now computes each vertex's local coefficient concurrently, then reduces the network-wide
+    average/min/max/variance sequentially. Measured (not assumed) on a 2000-node/40,000-edge
+    network: 499ms sequential vs. 84ms parallel, roughly 6x faster — the first of these three
+    parallelization passes with an actually measurable wall-clock win, since each vertex's
+    computation is quadratic in its neighbourhood size rather than a flat per-vertex cost.
+
+  - **`graphTriadCensus()` parallelized** (WS15 P4): the Triad Census's O(N³) outer vertex loop
+    now runs via `QtConcurrent::blockingMap`, with the 16 triad-type frequency counters reduced
+    through atomics instead of a shared list. Measured on a 1000-node/10,000-edge network: 68.2s
+    sequential vs. 15.4s parallel, roughly 4.4x faster — the biggest measured win of WS15 P4's
+    parallelization work so far, matching this candidate's cubic complexity.
+
+  - **Four matrix-fill operations parallelized** (WS15 P4): `graphMatrixShortestPathsCreate()`,
+    `graphMatrixDistanceGeodesicCreate()`, `createMatrixReachability()`, and
+    `createMatrixAdjacency()` now fill their respective matrices (SIGMA, DM, XRM, AM) via
+    `QtConcurrent::blockingMap`, using a new `compactedMatrixIndex()` helper to precompute each
+    vertex's row/column index instead of the old sequential-counter approach. Measured on a
+    1000-node/10,000-edge network: 28.2s sequential vs. 14.6s parallel for the full matrix
+    kernel, roughly 1.9x faster. Also closes a real testing gap found along the way:
+    `graphMatrixShortestPathsCreate()`'s SIGMA matrix had no golden/CLI coverage at all before
+    this (no accessor existed) — added `Graph::matrixShortestPaths()` and wired it into the
+    matrix kernel's golden coverage.
+
+  - **`centralityClosenessIR()`, `prestigeDegree()`, and `prestigeProximity()` parallelized**
+    (WS15 P4 — final three candidates from the parallelization audit): each vertex's score now
+    computes concurrently via `QtConcurrent::blockingMap`; the class-frequency/sum/min/max
+    bookkeeping these three used to mutate inline (a real thread-safety hazard not present in
+    earlier WS15 P4 work) now runs in a deferred sequential pass afterward, reading back each
+    vertex's cached score — same split already used for `clusteringCoefficient()`.
+    `prestigeDegree()` also had its own inline symmetry-check race, fixed the same way as
+    `centralityDegree()`'s earlier fix. Measured on a 1000-node/10,000-edge network: IRCC+PP
+    combined 297ms sequential vs. 64ms parallel (~4.6x); `prestigeDegree()` itself showed no
+    measurable win at this scale (2ms vs. 9ms, both trivial), same conclusion as
+    `centralityDegree()`'s. All three verified bit-identical against sequential output.
+
+  - **`graphConnectivity()` (Graph Connectivity, κ(G)) now uses Esfahanian-Hakimi (1984)
+    instead of a full O(N²) pairwise sweep** (#281): fixes a min-degree vertex `v`, tests `v`
+    against every other non-adjacent vertex, then tests every non-adjacent pair among `v`'s own
+    neighbors against each other — provably exact (Menger's theorem plus a pigeonhole argument),
+    O(n + δ²) max-flow calls instead of O(n²). A synthetic N=2000/E=8000 small-world network that
+    previously hung 30+ minutes uncancellable (#278, fixed earlier this cycle) now completes in
+    ~9 seconds. The previous full-sweep algorithm is kept as `graphConnectivityNaive()` for
+    correctness cross-checking (not used by any production path); a new `--verify-naive` CLI flag
+    on `--kernel vertex_connectivity --conn-mode global` runs both and reports any mismatch.
+    Verified identical results on every golden fixture plus 5 hand-picked networks with
+    analytically-known κ(G).
+
+  - **Distance / Average Distance / Geodesic Distances Matrix now offer a negative-weight-safe
+    upgrade on refusal** (WS18 P2): previously only Diameter did this. On a network with negative
+    edge weights, these Analyze → Cohesion... actions now ask "Use the negative-weight-safe
+    algorithm instead?" and, on Yes, rerun via Bellman-Ford/Johnson's-algorithm reweighting
+    (`Graph::graphDistanceGeodesicSigned()`/`graphDistanceGeodesicAverageSigned()`/
+    `writeMatrix(..., allowNegativeWeights=true)`) instead of just refusing outright. Still
+    refuses if the network has a reachable negative cycle, since shortest paths are undefined
+    then regardless of algorithm.
+
+  - **New Signed Degree Centrality measure** (WS18 P3, #300): for signed networks, splits
+    out-degree by tie sign into four scores per node — positive ties sent, negative ties sent,
+    their ratio, and their net (positive minus negative). Available via Analyze → Centrality and
+    Prestige indices, the Prominence toolbox combo, a new `report-centrality-degree-signed`
+    `--interactive-script` command, and the `prominence` CLI kernel
+    (`signedDegreePos`/`Neg`/`Ratio`/`Net`). Out-degree only for now; no standardized/graph-wide
+    statistics, unlike Degree Centrality.
+
+  - **New PN Centrality measure** (WS18 P3, #301, Everett & Borgatti 2014): the standard
+    purpose-built centrality measure for signed networks — a negative tie from someone themselves
+    highly prominent hurts more than one from someone marginalized, propagated through indirect
+    connections the same way Katz Centrality propagates ordinary ties. Three modes: undirected, and
+    directed out/in (genuinely different closed-form formulas, not a simple transpose of one
+    another). Strictly binary (tie sign only, magnitude discarded), matching the confirmed
+    reference formula. Available via Analyze → Centrality and Prestige indices (mode dialog
+    disables whichever choice the loaded network's directedness rules out), the Prominence toolbox
+    combo, a new `report-centrality-pn` `--interactive-script` command, and the `prominence` CLI
+    kernel (`--pn-mode off|all|out|in`).
+
+### Bug Fixes
+
+  - **Similarity/Pearson reports no longer produce NaN on small networks** (#279):
+    `Matrix::similarityMatrix()` (Jaccard, Simple-Matching) and
+    `Matrix::pearsonCorrelationCoefficients()` divided by a sample-size denominator (`ties`,
+    `N-2`, `M-4`) with no guard against it being zero or negative — unlike the sibling
+    `distancesMatrix()`, which already guarded this case. Since **exclude diagonal** is the
+    default for the Similarity and Pearson reports, any pair whose comparison sample was fully
+    excluded (e.g. a 2-actor network) produced NaN entries in the exported report instead of a
+    defined value. Both methods now fall back to 0 (no evidence of similarity/correlation) when
+    the sample is empty, matching the existing convention used elsewhere in the same methods
+    (e.g. cosine similarity's zero-magnitude fallback).
+
+  - **Fixed heap-allocation leaks in `Matrix` operators, `pow()`, and `ludcmp()`** (#280):
+    `operator+`/`operator-`/`operator*`/`operator*=`, `product()`, `pow()`, and
+    `expBySquaring2()` all leaked a heap-allocated `Matrix` on every call — `pow()` in
+    particular is used by the "Walks of given length" report (`XM = AM.pow(length)`), so every
+    such report leaked. Converted to return by value (RVO) instead of `new` + reference return;
+    `operator=` now takes its argument by `const&` so it can bind the resulting temporaries.
+    Also fixed a smaller, unrelated leak in `ludcmp()`'s zero-row early return, which — unlike
+    its sibling early-return paths — didn't free its scaling buffer before returning. Measured
+    with `leaks` on the walks kernel: 137 leaks (4784 bytes) before the fix, 56 leaks (896
+    bytes) after — the remainder is unrelated pre-existing allocations, not part of this fix.
+
+  - **`similarityMatrix()`'s Jaccard measure no longer false-positives on shared unreachability**:
+    unlike `distancesMatrix()`, `similarityMatrix()`'s Jaccard branch didn't exclude `RAND_MAX`
+    (the "unreachable" sentinel) from its match/ties count. Invisible when similarity runs on
+    the adjacency matrix (never contains `RAND_MAX`), but real when run on a Distances matrix
+    (`graph_reports.cpp`'s `DM` path) on a disconnected network — two actors both unreachable
+    from some third node counted as a positive match instead of being excluded. Verified live
+    impact before fixing: on a 6-node network with an isolated vertex, one cell read `0.75`
+    (a false-positive similarity from three shared-unreachable columns) pre-fix vs. `0.0`
+    post-fix. Also hardened three smaller `Matrix` issues found during the same audit, none
+    currently reachable by any caller: `product(..., symmetry=true)` could write out of bounds
+    if `A.rows() != B.cols()` (now guarded, matching the existing dimension-mismatch check);
+    `productByVector(..., leftMultiply=true)` computed the wrong output length and read out of
+    bounds for non-square input (fixed to match its own documented contract); and
+    `distancesMatrix()`/`similarityMatrix()`/`pearsonCorrelationCoefficients()`'s assumption
+    that the input is always square is now documented explicitly.
+
+  - **`prestigeDegree()` no longer leaks one `QHash` per vertex**: `inEdgesEnabledHash()`
+    heap-allocates a fresh `QHash` on every call, but the loop reassigned the same pointer
+    variable each iteration without freeing the previous one — only the last iteration's
+    allocation was ever freed. Found while auditing this function as a WS15 P4 parallelization
+    candidate; fixed independently of that work since it's a real bug regardless.
+
+  - **`socnetv-cli` no longer silently misparses invalid numeric flag values**: `-f`/`--format`
+    and every other integer/double-valued option (`--two-mode`, `--labels`, `--centralities`,
+    `--weights`, `--inverse-weights`, `--drop-isolates`, `--bench`, `--walks-length`,
+    `--conn-source`, `--conn-target`, `--katz-alpha`, `--bonacich-alpha`, `--bonacich-beta`) used
+    `QString::toInt()`/`toDouble()`, which silently return `0` on unparseable input instead of
+    failing — e.g. `-f graphml` (instead of `-f 1`) silently became `-f 0`, and the loader still
+    "worked" via its file-extension auto-detection fallback, completely masking the mistake.
+    All of these now reject invalid input with a clear error naming the flag and the bad value.
+
+  - **Betweenness Centrality (BC/SBC) could come out slightly too high on some weighted
+    networks** (#283): `DistanceEngine::dijkstraSSSP()`'s tie-breaking bookkeeping wasn't fully
+    updated when a vertex's distance was revised to a strictly shorter value during the same
+    source's traversal — its predecessor list could retain an entry from an earlier, superseded
+    relaxation, and its shortest-path count was set to a fixed value instead of inherited from
+    the relaxing predecessor. Only affects weighted networks where a vertex can be relaxed more
+    than once before reaching its final distance; distances and every other measure are
+    unaffected. Found by cross-checking BC output against an independent library on a new
+    hand-built regression fixture (`WeightedTies_Dir_N5_SigmaRegression`, added in Pajek/
+    GraphML/DL). Three existing golden baselines (`DunbarGelada_H22a`,
+    `StokmanZiegler_Netherlands`, `Krackhardt_Kite_N10`) carried the old, slightly-too-high
+    values and are corrected — every other field in all three is unchanged. Also replaced
+    `dijkstraSSSP()`'s exact-equality tie comparison with a relative-tolerance one, closing a
+    related (separately latent) floating-point-precision risk in the same neighborhood of code.
+
+  - **Weighted-network diameter could come out too high** (#286): diameter was tracked as a
+    running max over every relaxation event during `dijkstraSSSP()`'s traversal, not the max of
+    each vertex's final distance — a vertex relaxed more than once could leave a stale, larger
+    intermediate value as "the diameter." Fixed by computing diameter from final per-vertex
+    distances after each source's SSSP run completes. Confirmed on `WeightedTies_Dir_N5_
+    SigmaRegression`: reported diameter 289 (the largest raw edge weight in the network) instead
+    of the correct 22, independently verified. Only `graphDiameter()` was affected — BC, CC, and
+    every other distance-derived measure read final distances directly and were already correct.
+    New golden baseline pins the fix; the network had prior golden coverage for other measures
+    but none that exercised diameter specifically, which is how this went undetected.
+
+  - **Graph-wide average distance could be roughly doubled, or far worse on disconnected
+    networks** (#287): the distance sum feeding `avg_distance` was accumulated twice — once
+    inline during BFS/Dijkstra relaxation, and again independently inside the Closeness
+    Centrality computation, which (correctly, for CC's own purposes) includes the "unreachable"
+    sentinel in its running sum. Both values fed the same graph-wide total. Fixed by accumulating
+    the sum exactly once, from each vertex's final settled distances, after SSSP completes.
+
+  - **Per-vertex Eccentricity Centrality (EC/SEC) could be overstated** (#288): same
+    relaxation-event-tracking shape as #286's diameter bug, just per-vertex instead of
+    graph-wide — eccentricity was updated live during relaxation instead of computed once from
+    each vertex's final settled distances. Affects any weighted network where a vertex is relaxed
+    more than once before reaching its true distance.
+
+  - **Dijkstra could silently drop correct, shorter paths on weighted networks with fractional
+    distances** (#289): `GraphDistance`, the priority queue's node type, stored `distance` as
+    `int` — routine with `inverseWeights` or Johnson's-algorithm reweighting, where tentative
+    distances are usually fractional. Any distance under 1.0 truncated to 0, corrupting the
+    min-heap's pop order and permanently losing later, correct relaxations through a vertex
+    popped too early. Fixed by widening to `qreal`.
+
+  - **Reachable-pair count inflated on disconnected networks** (#290): same relaxation-event
+    shape as #287/#288 — the geodesics/reachable-pair counter incremented once per relaxation
+    event rather than being derived from final settled state, over-counting whenever a pair was
+    relaxed more than once before settling. Fixed by computing it once, post-hoc, from the final
+    distance matrix.
+
+  - **Betweenness and Stress Centrality (BC/SC) could be exactly double their correct value on
+    directed networks with fully reciprocal ties** (#291): the undirected-halving step (dividing
+    by 2 to correct for each undirected edge appearing as two directed DAG entries) was gated on
+    whether every tie happened to have a reciprocal counterpart, not on whether the graph's
+    declared mode is actually undirected. A genuinely directed network (e.g. corporate interlocks
+    with mutual ties) has every edge reciprocal without being undirected, so BC/SC — which should
+    treat `(s,t)`/`(t,s)` as distinct ordered pairs there — were incorrectly halved.
+
+  - **Stress Centrality (SC) could read as 0 almost everywhere on weighted networks** (#292):
+    Dijkstra's SC accumulator was only incremented on a *tied* shortest path, never on a vertex's
+    first, strictly-shorter relaxation — the overwhelmingly common case. Unweighted (BFS) graphs
+    were unaffected.
+
+  - **Stress Centrality (SC) could still be wrong after #292's fix, even where it wasn't zero**
+    (#293): incrementing SC live during relaxation counts edges from paths that are later
+    superseded by an even shorter path discovered in the same run — the same "relaxation event,
+    not final state" shape as #287/#288/#290. Fixed by computing SC post-hoc from the settled
+    shortest-path predecessor DAG, in the same Brandes back-propagation pass Betweenness
+    Centrality already uses, instead of a live counter.
+
+  - **Graph diameter truncated to an integer on weighted networks** (#294): `diameter` was the
+    one distance-derived metric still typed `int` — `avg_distance`, Closeness Centrality, and
+    eccentricity all already reported the exact fractional weighted value. Changed to `qreal`
+    end to end (engine, `Graph` API, CLI, GUI dialogs) so diameter tracks the same metric as
+    everything else: hop count when unweighted, the true weighted geodesic distance when edge
+    weights are considered.
+
+  - **Single-pair geodesic distance truncated to an integer on weighted networks** (#298): same
+    truncation bug as #294 (diameter), just in `Graph::graphDistanceGeodesic()` instead —
+    confirmed real on a weighted network with `inverseWeights`, where distances are routinely
+    fractional. Changed to `qreal` end to end, including the Analyze → Cohesion... → Distance
+    dialog that displays it.
+
+  - **Hierarchical clustering corrupted every merge on any graph with an isolated vertex**
+    (#295): Step 1's cluster-index population skipped isolated vertices, but the paired
+    dissimilarity matrix always sizes itself to include every enabled vertex, isolates included.
+    The mismatch left an unindexed matrix row that every subsequent merge decision and
+    linkage-distance update still scanned and folded in, corrupting the whole dendrogram — up to
+    and including a spurious merge where a cluster was merged with itself. Fixed by giving every
+    enabled vertex, isolates included, its own singleton cluster entry, matching the matrix.
+    Independently verified via a standalone hierarchical-clustering reimplementation.
+
+  - **Hierarchical clustering's "average-linkage (UPGMA)" method was actually WPGMA** (#296):
+    the linkage-update formula — an unweighted mean of the two prior cluster distances — is
+    WPGMA (Weighted Pair Group Method with Arithmetic mean), not true UPGMA (which weights by
+    each old cluster's member count). The two formulas only agree when the merging clusters
+    happen to be equal-sized, so simple test cases looked correct while real UPGMA use diverged
+    silently. Relabeled the existing method "WPGMA" and added a genuinely size-weighted
+    `Average_Linkage_UPGMA` method alongside it, so both are now independently selectable (GUI
+    dialog and `--clustering-method single|complete|average|upgma`). Independently verified
+    via a standalone size-weighted-average-linkage reimplementation.
+
+  - **`socnetv-cli` golden-compare harness silently hard-failed on a legitimate `"nan"` value**:
+    every numeric-string comparison helper (`cmpNumStrTol` and its per-kernel
+    `cmpNodeFieldNumStrTol`/`cmpNumStrArray` variants) treated a non-parseable string as a
+    mismatch, including the literal `"nan"` a 0/0 ratio legitimately renders as (e.g. Stress
+    Centrality when no shortest path passes through a vertex, or reciprocity on a graph with no
+    ties) — even when both the expected and actual baseline agreed it was `"nan"`. Never
+    triggered before now since no existing baseline had hit that exact case. Both sides literally
+    `"nan"` is now checked explicitly and treated as a match before the numeric parse.
+
+  - **A negative-weight-safe distance computation could silently mask the negative-weight
+    refusal for every later ordinary computation on the same graph** (WS18 P2): `DistanceEngine::
+    compute()`'s result cache recorded only that *some* distance/centrality result was cached,
+    not which mode (plain Dijkstra/BFS or negative-weight-safe Johnson's algorithm) produced it.
+    Switching modes on the same graph — e.g. upgrading one Analyze action to the negative-weight-
+    safe path, then requesting an ordinary computation from a different action — silently reused
+    the wrong mode's stale cached result instead of recomputing, so the refusal dialog stopped
+    appearing at all for the rest of the session. Fixed via a new state flag that invalidates the
+    cache on a mode mismatch. Reproduced and confirmed fixed via the GUI.
+
+  - **DL and Adjacency format parsers silently dropped negative-weight edges on import** (#285,
+    WS18 P0): both gated edge creation on `edgeWeight > 0` — no error, no warning, just a missing
+    edge. Every other format parser (Pajek, GraphML, GML, EdgeList, DOT) already created an edge
+    on any non-zero weight; both gates now match. Found while building `kernel_signed_v10`'s
+    golden coverage: a hand-built negative-cycle `.dl` fixture loaded with an edge silently
+    missing. Negative-weight golden coverage now spans all 7 supported formats, for both loading
+    (`socnetv-cli --kernel signed`) and round-tripping (`run_golden_io_roundtrip.sh`) — the latter
+    had no negative-weight coverage of its own before now.
+
+### Testing / CI
+
+  - **`socnetv-cli`'s ten kernel families now cover directed/undirected × weighted/unweighted ×
+    isolates/disconnected-components for every kernel** (WS6.8): closes a coverage gap where
+    baselines were accepted once, at dump time, without independent verification against a
+    hand-computable ground truth, and where disconnected graphs/isolated vertices had no
+    dedicated fixtures at all despite being exactly the condition several of the bugs above
+    (#287, #288, #290, #292–#294) needed to manifest. Every kernel family's baselines are now
+    independently verified against ground truth computed outside SocNetV (by hand or a standalone
+    script), not just accepted as self-consistent with a prior run.
+
+  - **`connectivity` kernel gains a `reciprocity` JSON block** (WS6.9): `Graph::graphReciprocity()`
+    (the arc-level ratio) and its companion dyad-level ratio and raw tie/pair counts previously
+    had no CLI coverage at all — computed, used by the HTML report, but never independently
+    verified or protected against regression. New public accessors
+    (`graphReciprocityDyad()`/`graphReciprocityTiesReciprocated()`/`graphReciprocityTiesTotal()`/
+    `graphReciprocityPairsReciprocated()`/`graphReciprocityPairsTotal()`) plus a new JSON block on
+    every `connectivity` kernel run, independently verified against hand-derived tie/pair counts
+    on two networks with differing reciprocity profiles.
+
+  - **`matrix` kernel gains a `dissimilarity` JSON category** (WS6.9): `Graph::createMatrixDissimilarities()`
+    had no CLI coverage. New `--dissimilarity-measure euclidean|manhattan|jaccard|hamming|chebyshev`
+    flag (mirroring the existing `--similarity-measure`), independently verified by hand-deriving
+    Euclidean distances from a small fixture's adjacency rows and by independently recomputing a
+    sample cell from raw source data on a 500-node fixture.
+
+  - **`clustering` kernel gains a `hierarchical` JSON block** (WS6.9): `Graph::graphClusteringHierarchical()`
+    had no CLI coverage. New `--clustering-method single|complete|average|upgma` and
+    `--clustering-input adjacency|distances` flags (reusing `--dissimilarity-measure` for the
+    metric) dump the full merge sequence and linkage levels. Wiring this in surfaced #295 and
+    #296 above. Independently verified via a standalone hierarchical-clustering reimplementation.
+
+  - **`prominence` kernel gains a `metrics.spectralRadius` field** (WS6.9): `Graph::estimateSpectralRadius()`
+    — the dominant-eigenvalue estimate Katz/Bonacich Centrality depend on internally — had no CLI
+    coverage of its own. Always computed alongside the existing centralities; independently
+    verified against a standalone eigendecomposition on five fixtures spanning directed/undirected,
+    weighted/unweighted, and isolated/disconnected graphs, including the degenerate nilpotent
+    (all-zero-eigenvalue) case on a directed acyclic chain.
+
+  - **`matrix` kernel gains a `matrices.spectral_radius` block** (WS18 P3 prep): dumps
+    `has_negative_entry`, `bound` (a safe upper bound via Gerschgorin's theorem, valid on any
+    matrix including signed ones), and `exact` (the true dominant eigenvalue via power iteration,
+    only present when the matrix is non-negative — meaningless otherwise). New
+    `Matrix::spectralRadiusBound()`/`spectralRadiusExact()`/`hasNegativeEntry()` and
+    `Graph::hasNegativeWeight()` are prep for PN centrality's convergence guard, which needs to
+    dispatch between the two depending on whether the network is signed. Includes a dedicated
+    signed-fixture baseline so the signed/Gerschgorin branch actually gets regression-tested, not
+    just the non-negative path every other fixture exercises.
+
+  - **`graph.symmetric` added to every kernel's JSON output** (WS6.9): `Graph::isSymmetric()` was
+    printed to `socnetv-cli`'s console output (`SYMMETRIC=...`) but never actually written into
+    any kernel's JSON, so it was never regression-tested despite looking present in every run.
+    Added alongside the existing `graph.directed`/`graph.weighted` in all nine kernels that carry
+    a `graph` block, closing three pre-existing `weighted`-compare gaps (`connectivity`/`signed`/
+    `vertex_connectivity` dumped it but never compared it) and a `metrics.density`-compare gap
+    (`walks_matrix`/`reachability`) found along the way. Independently verified against the
+    already-verified reciprocity baselines: a directed network with 100% reciprocal ties reports
+    `symmetric=true`; one with no reciprocal ties reports `symmetric=false`.
+
+  - **`run_golden_compares.sh` gains an `--update` flag**: regenerating a registered baseline
+    after a deliberate semantic change previously required either hand-retyping each case's exact
+    CLI flags or temporarily hand-patching the script itself. `--update` dumps fresh JSON over
+    every registered baseline in one run, using a relative dataset path consistent with the
+    existing baseline corpus — mirrors `run_golden_io_roundtrip.sh`'s existing `--update` mode.
+
 ## [3.7] – Aug 2026
 
 ### New Features
@@ -18,10 +365,10 @@ All notable changes to this project are documented in this file.
     dialog asks for alpha; the computation rejects and explains itself if
     alpha is too large to converge (must be smaller than 1 / the network's
     largest eigenvalue). Computed in closed form via the matrix identity
-    $ I + \alpha A + \alpha^2 A^2 + \dots = (I - \alpha A)^{-1} $ (valid for
-    $ |\alpha| < 1/\lambda_{max} $, the same geometric-series identity used
+    $`I + \alpha A + \alpha^2 A^2 + \dots = (I - \alpha A)^{-1}`$ (valid for
+    $`|\alpha| < 1/\lambda_{max}`$, the same geometric-series identity used
     for ordinary numbers, applied to matrices):
-    $ C_{Katz} = \left( (I - \alpha A^T)^{-1} - I \right) \cdot \mathbf{1} $.
+    $`C_{Katz} = \left( (I - \alpha A^T)^{-1} - I \right) \cdot \mathbf{1}`$.
 
   - **Bonacich Power Centrality** (#39): new **Analyze → Centrality →
     Bonacich Power Centrality (BPC)** measure, with the same full parity as
@@ -35,10 +382,10 @@ All notable changes to this project are documented in this file.
     power the more powerful those sellers are), and per-node scores can
     come out negative, unlike every other measure in the app. alpha is a
     free overall scale factor with no convergence bound; only beta must
-    satisfy $ |\beta| < 1/\lambda_{max} $. Distinct from the existing
+    satisfy $`|\beta| < 1/\lambda_{max}`$. Distinct from the existing
     Gil-Schmidt "Power Centrality (PC)". Computed via
-    $ b = \alpha (I - \beta R)^{-1} R \cdot \mathbf{1} $, where
-    $ R = A^T $ (same directional convention as Katz).
+    $`b = \alpha (I - \beta R)^{-1} R \cdot \mathbf{1}`$, where
+    $`R = A^T`$ (same directional convention as Katz).
 
   - **Node and Graph Connectivity** (#7): two new analyses under **Analyze →
     Cohesion**. **Node Connectivity** computes the minimum number of nodes
@@ -75,9 +422,9 @@ All notable changes to this project are documented in this file.
     level. Small networks are never scaled beyond 100%.
 
   - **Tomita pivot selection in clique census** (#64): the Bron–Kerbosch
-    algorithm now selects a pivot vertex $ u \in P \cup X $ that maximises
-    $ |N(u) \cap P| $ before each recursive level, and iterates only over
-    $ P \setminus N(u) $. This can reduce branch count to a single candidate
+    algorithm now selects a pivot vertex $`u \in P \cup X`$ that maximises
+    $`|N(u) \cap P|`$ before each recursive level, and iterates only over
+    $`P \setminus N(u)`$. This can reduce branch count to a single candidate
     per level on dense graphs, giving dramatic speedups on real-world networks
     without changing the set of maximal cliques reported.
 

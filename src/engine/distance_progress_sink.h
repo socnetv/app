@@ -25,4 +25,8 @@ public:
     virtual void statusMessage(const QString &msg) = 0;
     virtual void resetCancellation() = 0;
     virtual bool progressCanceled() const = 0;
+
+    // Called once by DistanceEngine when it detects a negative edge weight and refuses to run
+    // Dijkstra (mathematically undefined for negative weights) - see #277/WS18 P1.
+    virtual void reportNegativeWeights() = 0;
 };

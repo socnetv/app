@@ -12,7 +12,7 @@ TEMPLATE = app
 CONFIG  += qt thread $${ALLOW_WARNINGS} $${MY_TARGET_BUILD}
 CONFIG  += c++17
 TARGET = socnetv
-VERSION=3.7
+VERSION=3.8
 LANGUAGE = C++
 
 
@@ -55,7 +55,8 @@ FORMS += src/forms/dialogfilteredgesbyweight.ui \
     src/forms/dialogexportimage.ui \
     src/forms/dialogbulkedit.ui \
     src/forms/dialogcentralitykatz.ui \
-    src/forms/dialogcentralitybonacich.ui
+    src/forms/dialogcentralitybonacich.ui \
+    src/forms/dialogcentralitypn.ui
 
 HEADERS += src/mainwindow.h \
     src/texteditor.h \
@@ -118,6 +119,7 @@ HEADERS += src/mainwindow.h \
     src/forms/dialogbulkedit.h \
     src/forms/dialogcentralitykatz.h \
     src/forms/dialogcentralitybonacich.h \
+    src/forms/dialogcentralitypn.h \
     src/global.h
 
 SOURCES += src/main.cpp \
@@ -182,6 +184,8 @@ SOURCES += src/main.cpp \
     src/graph/centrality/graph_centrality.cpp \
     src/graph/centrality/graph_centrality_katz.cpp \
     src/graph/centrality/graph_centrality_bonacich.cpp \
+    src/graph/centrality/graph_centrality_signed_degree.cpp \
+    src/graph/centrality/graph_centrality_pn.cpp \
     src/graph/centrality/graph_prestige.cpp \
     src/graph/prominence/graph_prominence_distribution.cpp \
     src/graph/matrices/graph_matrix_adjacency.cpp \
@@ -252,7 +256,8 @@ SOURCES += src/main.cpp \
     src/forms/dialogsysteminfo.cpp \
     src/forms/dialogbulkedit.cpp \
     src/forms/dialogcentralitykatz.cpp \
-    src/forms/dialogcentralitybonacich.cpp
+    src/forms/dialogcentralitybonacich.cpp \
+    src/forms/dialogcentralitypn.cpp
 
 
 RESOURCES = src/images.qrc \
@@ -261,8 +266,8 @@ RESOURCES = src/images.qrc \
 
 # This is Windows only
 win32 {
-  VERSION = 3.7.0.1           # major.minor.patch.build
-  VERSION_PE_HEADER = 3.7     # MSVC link.exe option /VERSION:x.y expects two numeric components (major.minor)
+  VERSION = 3.8.0.1           # major.minor.patch.build
+  VERSION_PE_HEADER = 3.8     # MSVC link.exe option /VERSION:x.y expects two numeric components (major.minor)
 
   #RC_FILE = src/icon.rc
   RC_ICONS = src/images/socnetv.ico

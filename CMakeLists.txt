@@ -56,7 +56,7 @@ set(APP_NAME SocNetV)
 set(APP_NAME_LOWER socnetv)
 
 project(SocNetV 
-    VERSION 3.7
+    VERSION 3.8
     DESCRIPTION "SocNetV: Open-source social network analysis application based on Qt."
     HOMEPAGE_URL "https://socnetv.org"
     LANGUAGES CXX
@@ -131,6 +131,8 @@ set(GRAPH_SOURCES
     src/graph/centrality/graph_centrality.cpp
     src/graph/centrality/graph_centrality_katz.cpp
     src/graph/centrality/graph_centrality_bonacich.cpp
+    src/graph/centrality/graph_centrality_signed_degree.cpp
+    src/graph/centrality/graph_centrality_pn.cpp
     src/graph/centrality/graph_prestige.cpp
     src/graph/prominence/graph_prominence_distribution.cpp
     src/graph/matrices/graph_matrix_adjacency.cpp
@@ -211,6 +213,7 @@ set(CLI_SOURCES
     src/tools/cli/kernels/kernel_connectivity_v7.cpp
     src/tools/cli/kernels/kernel_matrix_v8.cpp
     src/tools/cli/kernels/kernel_vertex_connectivity_v9.cpp
+    src/tools/cli/kernels/kernel_signed_v10.cpp
 )
 
 
@@ -241,6 +244,7 @@ set (FORMS
     src/forms/dialogexportimage.ui
     src/forms/dialogcentralitykatz.ui
     src/forms/dialogcentralitybonacich.ui
+    src/forms/dialogcentralitypn.ui
     # Other UI files
 )
 
@@ -295,6 +299,7 @@ set(SOURCES
     src/forms/dialogsysteminfo.cpp
     src/forms/dialogcentralitykatz.cpp
     src/forms/dialogcentralitybonacich.cpp
+    src/forms/dialogcentralitypn.cpp
     # Add remaining source files here
 )
 

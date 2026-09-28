@@ -18,9 +18,11 @@
 #include <QDebug>
 #include <QHash>
 #include <QList>
+#include <QPair>
 #include <QQueue>
 #include <QSet>
 #include <QVector>
+#include <QtConcurrent/QtConcurrent>
 #include <algorithm>
 #include <climits>
 #include <limits>
@@ -226,6 +228,67 @@ int localVertexConnectivityFlow(Graph &g, const QList<int> &verts, int source, i
     return static_cast<int>(totalFlow);
 }
 
+// ----------------------------------------------------------------------------
+// Shared cancel-checkable, parallel pair-testing loop, used by both
+// Graph::graphConnectivity() (Esfahanian-Hakimi) and Graph::graphConnectivityNaive() (the
+// full O(n^2) sweep). Both algorithms boil down to "run localVertexConnectivityFlow() over a
+// list of non-adjacent pairs, keep the smallest result" - only the *list of pairs* differs
+// between them (Esfahanian-Hakimi tests a much smaller, cleverly-chosen list; the naive
+// algorithm tests literally every non-adjacent pair). Factoring this out means the
+// parallelization/cancellation/early-exit machinery only needs to be written and verified once.
+//
+// Pairs are processed in fixed-size batches via QtConcurrent::blockingMap - each worker
+// computes one pair's independent, read-only localVertexConnectivityFlow() call and writes
+// into a batch-local results vector (no shared accumulator during the parallel step itself,
+// unlike a plain int written from multiple threads at once, which would race). Each batch's
+// results are reduced into the running minimum sequentially right after blockingMap returns,
+// then progressCanceled() is checked between batches - a real, responsive check, since this
+// loop is not itself further parallelized beyond one batch at a time: checking between batches
+// actually interrupts the sweep within roughly one batch's duration, unlike an all-or-nothing
+// single parallel step. The early exit once the running minimum hits 0 is preserved at batch
+// granularity (stop dispatching further batches, not mid-batch) rather than per-pair.
+//
+// Returns true if the sweep completed (best now holds the true minimum over every pair in
+// `pairs`, combined with whatever `best` already held on entry), or false if canceled partway
+// (best holds the minimum found among pairs tested so far - a valid upper bound, not
+// necessarily exact).
+bool testPairsForMinimum(Graph &g, const QList<QPair<int, int>> &pairs, const QList<int> &verts,
+                          int currentRelation, bool respectDirection, int &best)
+{
+    // Batch size: large enough that blockingMap's per-batch dispatch overhead is negligible
+    // next to the actual max-flow work, small enough that Cancel responds within a few
+    // batches' worth of time rather than needing to wait for the whole (potentially huge)
+    // pair list.
+    constexpr int kBatchSize = 200;
+
+    const int totalPairs = static_cast<int>(pairs.size());
+    for (int batchStart = 0; batchStart < totalPairs && best > 0; batchStart += kBatchSize) {
+        const int batchEnd = std::min(batchStart + kBatchSize, totalPairs);
+        const int batchSize = batchEnd - batchStart;
+
+        QVector<int> batchResults(batchSize);
+
+        QList<int> batchIndices;
+        batchIndices.reserve(batchSize);
+        for (int k = 0; k < batchSize; ++k)
+            batchIndices.append(k);
+
+        QtConcurrent::blockingMap(batchIndices, [&](int k) {
+            const QPair<int, int> &pair = pairs[batchStart + k];
+            batchResults[k] = localVertexConnectivityFlow(
+                g, verts, pair.first, pair.second, currentRelation, respectDirection);
+        });
+
+        for (int result : batchResults)
+            best = std::min(best, result);
+
+        if (g.progressCanceled())
+            return false;
+    }
+
+    return true;
+}
+
 } // namespace
 
 /**
@@ -273,20 +336,193 @@ Graph::NodeConnectivityResult Graph::graphNodeConnectivity(int source, int targe
 }
 
 /**
- * @brief Global vertex connectivity kappa(G): the minimum, over every non-adjacent pair of
- * vertices, of their local vertex connectivity (graphNodeConnectivity()) - the network's
- * worst-case robustness to node removal, i.e. the fewest nodes that would need to be removed to
- * disconnect the network at its weakest point.
+ * @brief Global vertex connectivity kappa(G), computed via Esfahanian & Hakimi's (1984)
+ * reduced-pair-set algorithm - O(n + delta^2) max-flow calls instead of the O(n^2) a full
+ * pairwise sweep needs (see graphConnectivityNaive() below for that sweep, kept as a
+ * comparative/correctness cross-check, not for production use).
  *
- * Naive pairwise-minimum algorithm: iterate all non-adjacent pairs, tracking the minimum local
- * connectivity seen so far, starting that minimum at the cheap degree bound below and pruning
- * with an early exit once it can't go any lower. This is O(n^2) local-connectivity computations
- * in the worst case (O(n) for directed "strong" mode, since kappa(s,t) can differ from kappa(t,s)
- * so ordered pairs must be tested) - deliberately the simple approach rather than the smarter
- * O(n) algorithm (Even 1975, which fixes one vertex and reuses far fewer max-flow computations):
- * SocNetV's networks and this feature's usage pattern (an occasional, user-triggered analysis,
- * not a hot path) don't call for that extra complexity yet, and the two pruning steps below
- * already cut the common cases down a lot in practice.
+ * kappa(G) is the minimum, over every non-adjacent pair of vertices, of their local vertex
+ * connectivity (graphNodeConnectivity()) - the network's worst-case robustness to node removal,
+ * i.e. the fewest nodes that would need to be removed to disconnect the network at its weakest
+ * point.
+ *
+ * ---- The algorithm, in plain terms ----
+ *
+ * Testing every single non-adjacent pair (the naive approach) is wasteful: Esfahanian & Hakimi
+ * proved that checking just TWO carefully-chosen groups of pairs is provably enough to find the
+ * true global minimum, no matter how large the network is:
+ *
+ *   1. Pick any vertex v of minimum degree (delta(G)) - the same vertex the cheap degree-bound
+ *      trick already identifies "for free". Removing all of v's neighbors always disconnects v
+ *      from the rest of the graph, so kappa(G) can never exceed delta(G) - this is exactly
+ *      Whitney's inequality, already used elsewhere in this file as a cheap upper bound.
+ *   2. k1 = the smallest kappa(v, w) found by testing v against every OTHER vertex w it isn't
+ *      already adjacent to. This alone would already catch the true kappa(G) in the common case
+ *      where v happens to be on the "weak side" of the network's worst cut.
+ *   3. k2 = the smallest kappa(u, w) found by testing every pair of v's OWN neighbors against
+ *      each other (only the non-adjacent pairs among them - same rule as everywhere else in this
+ *      file). This is the clever part: it turns out that IF the worst cut in the whole network
+ *      does not involve v directly (so step 2 could miss it), that cut must still separate at
+ *      least two of v's own neighbors from each other - so testing pairs among v's neighbors is
+ *      guaranteed to catch it instead. (Why: a vertex cut smaller than v's own degree can't
+ *      possibly contain every one of v's neighbors - there are too few "removal slots" for that
+ *      many neighbors - so at least two neighbors must survive on opposite sides of the split.)
+ *   4. kappa(G) = min(k1, k2). Since we don't know in advance which of the two cases above
+ *      actually applies to this specific network, both k1 and k2 are always computed - one of
+ *      them is guaranteed to find the true answer, and taking the smaller of the two is safe
+ *      regardless of which one it turns out to be.
+ *
+ * ---- Why this is correct (the proof, in brief) ----
+ *
+ * Let S be a true minimum vertex cutset of G, |S| = kappa(G) - the actual smallest set of
+ * vertices whose removal disconnects the network at its single weakest point. Exactly one of two
+ * cases must hold for our chosen vertex v:
+ *
+ *   - Case A: v is NOT in S. Then S still disconnects some other pair, and since v itself
+ *     survives the cut, v ends up on one side of the resulting split. That means removing S also
+ *     disconnects v from whichever vertex w landed on the other side - so kappa(v, w) <= |S| =
+ *     kappa(G). Since k1 tests v against literally every other vertex, it is guaranteed to find
+ *     this w (or something at least as good), so k1 <= kappa(G).
+ *   - Case B: v IS in S (v belongs to every minimum cutset of G). Removing S (which includes v)
+ *     splits the rest of the graph into at least two pieces. v had delta(G) neighbors before
+ *     removal; since |S| = kappa(G) <= delta(G) (Whitney's inequality) and v itself already
+ *     accounts for one member of S, there are strictly fewer than delta(G) OTHER vertices left in
+ *     S to "use up" on v's neighbors - too few removal slots to contain every one of v's
+ *     delta(G) neighbors. So at least two of v's neighbors, call them u and w, must survive on
+ *     opposite sides of the split, meaning S \ {v} (or a subset of it) disconnects u from w:
+ *     kappa(u, w) <= |S| - 1 < kappa(G), or at worst kappa(u,w) <= kappa(G). Since k2 tests every
+ *     pair of v's neighbors against each other, it is guaranteed to find this (u, w) pair, so
+ *     k2 <= kappa(G).
+ *
+ * Either way, min(k1, k2) <= kappa(G). And since k1/k2 are themselves local connectivity values
+ * between real, non-adjacent vertex pairs in G, neither can ever be smaller than the true global
+ * minimum: min(k1, k2) >= kappa(G) by definition of kappa(G) as that minimum. Both inequalities
+ * together give min(k1, k2) = kappa(G) exactly - not an approximation or a heuristic bound.
+ *
+ * Step 2 is O(n) max-flow calls (one per other vertex); step 3 is O(delta^2) max-flow calls
+ * (every pair among v's delta neighbors) - both far smaller than the O(n^2) the naive sweep
+ * needs, especially once n grows into the thousands while delta (typical for sparse, realistic
+ * social networks) stays in the tens at most. See
+ * `docs/roadmaps/roadmap_ws11_algorithm_additions.md` and the manual's Graph Connectivity
+ * section for a plainer-language walkthrough of the same idea.
+ *
+ * ---- Implementation notes ----
+ *
+ * Reuses the same degree-bound loop that already existed for the cheap upper-bound trick, just
+ * additionally remembering *which* vertex achieved the minimum degree (not only the minimum
+ * value) so it can be used as `v` above. Both step 2's and step 3's pair lists are handed to the
+ * same testPairsForMinimum() helper graphConnectivityNaive() also uses - same batched
+ * parallelization (QtConcurrent::blockingMap, kBatchSize-sized chunks) and the same
+ * between-batches progressCanceled() check inherited from #278's fix, applied here to a vastly
+ * smaller pair list. The disconnected-graph fast path (kappa(G)=0, no max-flow at all) is kept
+ * unchanged from the naive version.
+ *
+ * @param respectDirection true for strong connectivity (ordered pairs, directed reachability);
+ *        false for weak (unordered pairs, every edge treated as bidirectional). Only meaningful
+ *        to vary on a directed graph.
+ * @return GraphConnectivityResult - Ok with the true kappa(G), or Canceled with the best (lowest)
+ *         value found among pairs tested before cancellation (a valid upper bound on kappa(G),
+ *         not necessarily exact - step 2 or step 3 may not have finished yet).
+ *
+ * @note Precondition: at least 2 enabled vertices. Callers (the GUI's Graph Connectivity action)
+ *       special-case 0/1-vertex networks the same way Connectedness already does, so this is
+ *       never invoked otherwise.
+ */
+Graph::GraphConnectivityResult Graph::graphConnectivity(bool respectDirection)
+{
+    const int currentRelation = relationCurrent();
+    const QList<int> verts = enabledVertexNumbers(*this);
+
+    const bool graphIsConnected = respectDirection
+        ? (graphStronglyConnectedComponents() == 1)
+        : (graphWeaklyConnectedComponents() == 1);
+    if (!graphIsConnected) {
+        qCDebug(lcCohesion) << "Graph::graphConnectivity() - graph disconnected, kappa(G)=0";
+        return {GraphConnectivityStatus::Ok, 0};
+    }
+
+    // Degree-bound pass: same trick as graphConnectivityNaive(), but also remembers which
+    // vertex achieved the minimum - that vertex becomes `v` in the algorithm's own terms above.
+    int best = INT_MAX;
+    int v = verts.isEmpty() ? -1 : verts.first();
+    for (int candidate : verts) {
+        int deg;
+        if (respectDirection)
+            deg = std::min(outNeighborsOf(*this, candidate, currentRelation).size(),
+                            inNeighborsOf(*this, candidate, currentRelation).size());
+        else
+            deg = neighborsOf(*this, candidate, currentRelation, false).size();
+        if (deg < best) {
+            best = deg;
+            v = candidate;
+        }
+    }
+    qCDebug(lcCohesion) << "Graph::graphConnectivity() - degree bound:" << best
+             << "achieved by vertex" << v;
+
+    // Step 2 (k1): v against every other non-adjacent vertex.
+    QList<QPair<int, int>> vPairs;
+    for (int w : verts) {
+        if (w == v) continue;
+        if (adjacent(*this, v, w, currentRelation, respectDirection))
+            continue;
+        vPairs.append({v, w});
+    }
+    qCDebug(lcCohesion) << "Graph::graphConnectivity() - step 2 (k1) pairs:" << vPairs.size();
+
+    if (!testPairsForMinimum(*this, vPairs, verts, currentRelation, respectDirection, best)) {
+        qCDebug(lcCohesion) << "Graph::graphConnectivity() - canceled during step 2, best so far:" << best;
+        return {GraphConnectivityStatus::Canceled, best};
+    }
+
+    if (best == 0) {
+        qCDebug(lcCohesion) << "Graph::graphConnectivity() - kappa(G):" << best << "(found in step 2)";
+        return {GraphConnectivityStatus::Ok, best};
+    }
+
+    // Step 3 (k2): every non-adjacent pair among v's own neighbors (not v's neighbors against
+    // the rest of the graph - just against each other).
+    const QSet<int> vNeighbors = neighborsOf(*this, v, currentRelation, respectDirection);
+    const QList<int> vNeighborsList(vNeighbors.cbegin(), vNeighbors.cend());
+
+    QList<QPair<int, int>> neighborPairs;
+    for (int i = 0; i < vNeighborsList.size(); ++i) {
+        const int jStart = respectDirection ? 0 : i + 1;
+        for (int j = jStart; j < vNeighborsList.size(); ++j) {
+            if (i == j) continue;
+            const int u = vNeighborsList[i];
+            const int w = vNeighborsList[j];
+            if (adjacent(*this, u, w, currentRelation, respectDirection))
+                continue;
+            neighborPairs.append({u, w});
+        }
+    }
+    qCDebug(lcCohesion) << "Graph::graphConnectivity() - step 3 (k2) pairs among"
+             << vNeighborsList.size() << "neighbors of v:" << neighborPairs.size();
+
+    if (!testPairsForMinimum(*this, neighborPairs, verts, currentRelation, respectDirection, best)) {
+        qCDebug(lcCohesion) << "Graph::graphConnectivity() - canceled during step 3, best so far:" << best;
+        return {GraphConnectivityStatus::Canceled, best};
+    }
+
+    qCDebug(lcCohesion) << "Graph::graphConnectivity() - kappa(G):" << best;
+    return {GraphConnectivityStatus::Ok, best};
+}
+
+/**
+ * @brief Global vertex connectivity kappa(G), computed via the naive full-pairwise-minimum
+ * sweep: iterate every non-adjacent pair of vertices, tracking the minimum local connectivity
+ * seen so far. O(n^2) local-connectivity computations in the worst case (O(n) for directed
+ * "strong" mode's ordered pairs, since kappa(s,t) can differ from kappa(t,s)).
+ *
+ * Kept deliberately alongside the faster graphConnectivity() (Esfahanian & Hakimi, 1984, see its
+ * own doc comment) as a comparative/correctness cross-check: this function's "test literally
+ * everything" approach is trivially, structurally correct by construction, which makes it a
+ * trustworthy ground truth for verifying the faster algorithm's cleverer (and therefore more
+ * failure-prone) reduced pair selection produces the same answer. Not used by any production
+ * code path (the GUI's Graph Connectivity menu action and the CLI's vertex_connectivity kernel
+ * both call graphConnectivity() instead) - this is intentionally the slow, obviously-correct
+ * reference implementation, kept for possible future cross-checking rather than deleted.
  *
  * Two pruning steps, both used here:
  * - Fast path: if the graph is already disconnected (per graphWeaklyConnectedComponents() /
@@ -304,16 +540,24 @@ Graph::NodeConnectivityResult Graph::graphNodeConnectivity(int source, int targe
  *   executes, leaving the initial degree bound as the final answer, which is exactly correct
  *   (kappa(K_n) = n-1, the minimum degree of K_n).
  *
+ * Parallelization + cancellation (#278, WS11): confirmed hanging 30+ minutes uncancellable on a
+ * real N=2000 sparse network, with zero progressCanceled() checks anywhere in this file. Every
+ * non-adjacent pair is enumerated up front into a flat list, then handed to the same
+ * testPairsForMinimum() helper graphConnectivity() (Esfahanian-Hakimi) also uses - see that
+ * helper's own comment for the batching/parallelization/cancellation mechanics.
+ *
  * @param respectDirection true for strong connectivity (ordered pairs, directed reachability);
  *        false for weak (unordered pairs, every edge treated as bidirectional). Only meaningful
  *        to vary on a directed graph.
- * @return kappa(G).
+ * @return GraphConnectivityResult - Ok with the true kappa(G), or Canceled with the best (lowest)
+ *         value found among pairs tested before cancellation (a valid upper bound on kappa(G),
+ *         not necessarily exact).
  *
  * @note Precondition: at least 2 enabled vertices. Callers (the GUI's Graph Connectivity action)
  *       special-case 0/1-vertex networks the same way Connectedness already does, so this is
  *       never invoked otherwise.
  */
-int Graph::graphConnectivity(bool respectDirection)
+Graph::GraphConnectivityResult Graph::graphConnectivityNaive(bool respectDirection)
 {
     const int currentRelation = relationCurrent();
     const QList<int> verts = enabledVertexNumbers(*this);
@@ -323,8 +567,8 @@ int Graph::graphConnectivity(bool respectDirection)
         ? (graphStronglyConnectedComponents() == 1)
         : (graphWeaklyConnectedComponents() == 1);
     if (!graphIsConnected) {
-        qCDebug(lcCohesion) << "Graph::graphConnectivity() - graph disconnected, kappa(G)=0";
-        return 0;
+        qCDebug(lcCohesion) << "Graph::graphConnectivityNaive() - graph disconnected, kappa(G)=0";
+        return {GraphConnectivityStatus::Ok, 0};
     }
 
     int best = INT_MAX;
@@ -337,22 +581,29 @@ int Graph::graphConnectivity(bool respectDirection)
             deg = neighborsOf(*this, v, currentRelation, false).size();
         best = std::min(best, deg);
     }
-    qCDebug(lcCohesion) << "Graph::graphConnectivity() - degree bound:" << best;
+    qCDebug(lcCohesion) << "Graph::graphConnectivityNaive() - degree bound:" << best;
 
-    for (int i = 0; i < n && best > 0; ++i) {
+    // Enumerate every non-adjacent pair up front (cheap - adjacency lookups only, no max-flow
+    // yet), so the expensive part below can be dispatched in fixed-size, cancel-checkable batches.
+    QList<QPair<int, int>> pairs;
+    for (int i = 0; i < n; ++i) {
         const int jStart = respectDirection ? 0 : i + 1;
-        for (int j = jStart; j < n && best > 0; ++j) {
+        for (int j = jStart; j < n; ++j) {
             if (i == j) continue;
             const int u = verts[i];
             const int w = verts[j];
             if (adjacent(*this, u, w, currentRelation, respectDirection))
                 continue;
-
-            const int k = localVertexConnectivityFlow(*this, verts, u, w, currentRelation, respectDirection);
-            best = std::min(best, k);
+            pairs.append({u, w});
         }
     }
+    qCDebug(lcCohesion) << "Graph::graphConnectivityNaive() - non-adjacent pairs to test:" << pairs.size();
 
-    qCDebug(lcCohesion) << "Graph::graphConnectivity() - kappa(G):" << best;
-    return best;
+    if (!testPairsForMinimum(*this, pairs, verts, currentRelation, respectDirection, best)) {
+        qCDebug(lcCohesion) << "Graph::graphConnectivityNaive() - canceled, best so far:" << best;
+        return {GraphConnectivityStatus::Canceled, best};
+    }
+
+    qCDebug(lcCohesion) << "Graph::graphConnectivityNaive() - kappa(G):" << best;
+    return {GraphConnectivityStatus::Ok, best};
 }

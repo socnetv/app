@@ -170,6 +170,7 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW)
         calculatedGraphReciprocity = false;
         calculatedGraphSymmetry = false;
         calculatedGraphWeighted = false;
+        calculatedGraphHasNegativeWeight = false;
         calculatedGraphDensity = false;
         calculatedEdges = false;
         calculatedVertices = false;
@@ -185,12 +186,14 @@ void Graph::setModStatus(const int &graphNewStatus, const bool &signalMW)
         m_vertexComponentId.clear();
         calculatedDP = false;
         calculatedDC = false;
+        calculatedSignedDegree = false;
         calculatedPP = false;
         calculatedIRCC = false;
         calculatedIC = false;
         calculatedEVC = false;
         calculatedKC = false;
         calculatedBPC = false;
+        calculatedPN = false;
         calculatedPRP = false;
 
         if (signalMW)

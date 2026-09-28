@@ -121,6 +121,34 @@ void Matrix::resize (const int m, const int n) {
  * @param max Output: the largest value found.
  * @param hasRealNumbers Output: true if any cell has a non-zero fractional part.
  */
+/**
+ * @brief Returns true if any cell in this matrix is negative.
+ *
+ * Meaning: a cheap, always-fresh way to tell a plain (non-negative) matrix from a signed one -
+ * e.g. deciding whether Matrix::spectralRadiusExact() (Perron-Frobenius, non-negative only) or
+ * Matrix::spectralRadiusBound() (Gerschgorin, any matrix) is the correct one to call for a given
+ * matrix. Deliberately not cached on Graph: a cached "does this graph have negative weights"
+ * flag would need its own invalidation on every edge-weight-changing code path (same class of
+ * bug as this session's DistanceEngine cache-mode fix) - this stays a plain O(rows*cols) scan
+ * (with early exit) on the actual matrix in hand instead, so it's never stale.
+ * @return true on the first negative cell found, false if the matrix is empty or all entries
+ *         are >= 0.
+ */
+bool Matrix::hasNegativeEntry()
+{
+    for (int r = 0; r < rows(); ++r)
+    {
+        for (int c = 0; c < cols(); ++c)
+        {
+            if (item(r, c) < 0)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 void Matrix::findMinMaxValues (qreal &min, qreal & max, bool &hasRealNumbers){
     max=0;
     min=RAND_MAX;
@@ -356,7 +384,7 @@ void Matrix::multiplyRow(int row, qreal value) {
 * @param a
 * @return
 */
-Matrix& Matrix::operator = (Matrix & a) {
+Matrix& Matrix::operator = (const Matrix & a) {
     qCDebug(lcMatrix)<< "Matrix::operator asignment =";
     if (this != &a){
         // Both dimensions must match before reusing the existing buffer - a shared buffer
@@ -414,13 +442,13 @@ void Matrix::operator +=(Matrix & b) {
  * @param b
  * @return Matrix S
  */
-Matrix& Matrix::operator +(Matrix & b) {
-    Matrix *S = new Matrix(rows(), cols());
+Matrix Matrix::operator +(Matrix & b) {
+    Matrix S(rows(), cols());
     qCDebug(lcMatrix)<< "Matrix::operator +";
     for (int i=0;i< rows();i++)
         for (int j=0;j<cols();j++)
-            S->setItem(i,j, item(i,j)+b.item(i,j));
-    return *S;
+            S.setItem(i,j, item(i,j)+b.item(i,j));
+    return S;
 }
 
 
@@ -430,13 +458,13 @@ Matrix& Matrix::operator +(Matrix & b) {
  * @param b
  * @return Matrix S
  */
-Matrix& Matrix::operator -(Matrix & b) {
-    Matrix *S = new Matrix(rows(), cols() );
+Matrix Matrix::operator -(Matrix & b) {
+    Matrix S(rows(), cols() );
     qCDebug(lcMatrix)<< "Matrix::operator -";
     for (int i=0;i< rows();i++)
         for (int j=0;j<cols();j++)
-            S->setItem(i,j, item(i,j)-b.item(i,j));
-    return *S;
+            S.setItem(i,j, item(i,j)-b.item(i,j));
+    return S;
 }
 
 
@@ -448,29 +476,29 @@ Matrix& Matrix::operator -(Matrix & b) {
  * @param b
  * @return Matrix P
  */
-Matrix& Matrix::operator *(Matrix & b) {
+Matrix Matrix::operator *(Matrix & b) {
 
     qCDebug(lcMatrix)<< "Matrix::operator *";
 
-    Matrix *P = new Matrix(rows(), b.cols());
+    Matrix P(rows(), b.cols());
 
     if ( cols() != b.rows() ) {
         qCDebug(lcMatrix)<< "Matrix::product() - ERROR! Non compatible input matrices:"
                    " this("
                 << rows() << "," << cols()
                 << ") and b(" << b.rows() << ","<< b.cols();
-        return *P;
+        return P;
     }
 
     for (int i=0;i< rows();i++)
         for (int j=0;j<b.cols();j++) {
-            P->setItem(i,j,0);
+            P.setItem(i,j,0);
             for (int k=0;k< cols();k++) {
-                    P->setItem(i,j, P->item(i,j) + item(i,k)*b.item(k,j) );
+                    P.setItem(i,j, P.item(i,j) + item(i,k)*b.item(k,j) );
 
             }
         }
-    return *P;
+    return P;
 }
 
 
@@ -492,17 +520,17 @@ void Matrix::operator *=(Matrix & b) {
         return;
     }
 
-    Matrix *P = new Matrix(rows(), b.cols());
+    Matrix P(rows(), b.cols());
 
     for (int i=0;i< rows();i++) {
         for (int j=0;j<b.cols();j++) {
-            P->setItem(i,j,0);
+            P.setItem(i,j,0);
             for (int k=0;k < cols();k++) {
-                    P->setItem(i,j, P->item(i,j) + item(i,k)*b.item(k,j) );
+                    P.setItem(i,j, P.item(i,j) + item(i,k)*b.item(k,j) );
             }
         }
     }
-    *this = *P;
+    *this = P;
 }
 
 
@@ -532,7 +560,17 @@ void Matrix::product(Matrix &A, Matrix & B, bool symmetry)  {
         return;
     }
 
-    Matrix *P = new Matrix(A.rows(), B.cols());
+    // symmetry=true mirrors P(i,j) into P(j,i) for j up to B.cols()-1, which is only an
+    // in-bounds row index of P (sized A.rows() x B.cols()) when A.rows()==B.cols().
+    if (symmetry && A.rows() != B.cols() ) {
+        qCDebug(lcMatrix)<< "Matrix::product() - ERROR! symmetry=true requires A.rows()==B.cols():"
+                   " a("
+                << A.rows() << "," << A.cols()
+                << ") and b(" << B.rows() << ","<< B.cols();
+        return;
+    }
+
+    Matrix P(A.rows(), B.cols());
 
     qreal prod = 0;
 
@@ -543,13 +581,13 @@ void Matrix::product(Matrix &A, Matrix & B, bool symmetry)  {
             for (int k=0;k<A.cols();k++) {
                 prod += A.item(i,k)*B.item(k,j);
             }
-            P->setItem(i,j, prod);
+            P.setItem(i,j, prod);
             if (symmetry) {
-               P->setItem(j,i, prod );
+               P.setItem(j,i, prod );
             }
         }
     }
-    *this = *P;
+    *this = P;
 
     //this->printMatrixConsole();
 }
@@ -598,7 +636,7 @@ Matrix& Matrix::productSym( Matrix &a, Matrix & b)  {
  * @return This matrix, raised to the n-th power.
  * Complexity: O(log(n)) matrix multiplications, each O(rows()^3) - see expBySquaring2().
  */
-Matrix& Matrix::pow (int n, bool symmetry)  {
+Matrix Matrix::pow (int n, bool symmetry)  {
     if (rows()!= cols()) {
         qCDebug(lcMatrix)<< "Matrix::pow() - Error. This works only for square matrix";
         return *this;
@@ -632,16 +670,16 @@ Matrix& Matrix::pow (int n, bool symmetry)  {
  * For n > 4 it is more efficient than naively multiplying the base with itself repeatedly:
  * O(log(n)) matrix multiplications instead of O(n), each multiplication itself O(rows()^3).
  */
-Matrix& Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
+Matrix Matrix::expBySquaring2 (Matrix &Y, Matrix &X,  int n, bool symmetry) {
     if (n==1) {
         qCDebug(lcMatrix) <<"Matrix::expBySquaring2() - n = 1. Computing PM = X*Y where "
                    "X = " ;
         //X.printMatrixConsole();
         //Y.printMatrixConsole();
-        Matrix *PM = new Matrix(rows(), cols());
-        PM->product(X, Y, symmetry);
-        //PM->printMatrixConsole();
-        return *PM;
+        Matrix PM(rows(), cols());
+        PM.product(X, Y, symmetry);
+        //PM.printMatrixConsole();
+        return PM;
     }
     else if ( n%2 == 0 ) { //even
         qCDebug(lcMatrix)<<"Matrix::expBySquaring2() - even n =" << n
@@ -681,22 +719,29 @@ void Matrix::productByVector (
         qreal out[],
         const bool &leftMultiply) {
 
-    int n = rows();
-    int m = cols();
+    // leftMultiply computes x^T * A (x a row vector of rows() elements), so out has cols()
+    // elements and in has rows() elements - the reverse of the non-left case below.
+    if (leftMultiply) {
+        const int outLen = cols();
+        const int inLen = rows();
+        for (int i = 0; i < outLen; i++) {
+            out[i] = 0;
+            for (int j = 0; j < inLen; j++) {
+                // dot product of row vector 'in' with the i-th column of this matrix
+                out[i] += item(j, i) * in[j];
+            }
+        }
+        return;
+    }
 
-    for(int i = 0; i < n; i++) {
-         out[i] = 0;
-         for (int j = 0; j < m; j++) {
-             if (leftMultiply) {
-              // dot product of row vector b with j-th column in A
-              out[i] += item (j, i) * in[j];
-             }
-             else {
-               // dot product of i-th row in A with the column vector b
-               out[i] += item (i, j) * in[j];
-             }
-
-         }
+    const int n = rows();
+    const int m = cols();
+    for (int i = 0; i < n; i++) {
+        out[i] = 0;
+        for (int j = 0; j < m; j++) {
+            // dot product of i-th row in this matrix with the column vector 'in'
+            out[i] += item(i, j) * in[j];
+        }
     }
 }
 
@@ -753,6 +798,18 @@ qreal Matrix::distanceEuclidean(
  * unit length - the vector converges to the eigenvector for the matrix's largest eigenvalue
  * (lambda_max), which is exactly the vector eigenvector centrality reports.
  *
+ * Preconditions/guarantee: this only converges to a meaningful, correct result for a
+ * non-negative, irreducible matrix (e.g. a plain adjacency matrix - never a signed one, where
+ * some entries are negative). Under those conditions, the Perron-Frobenius theorem guarantees
+ * a single dominant eigenvalue that is real, positive, and strictly larger in magnitude than
+ * every other eigenvalue - that's the value this method converges to. Without non-negativity,
+ * that guarantee is gone: eigenvalues can be complex (e.g. a matrix like [[0,1],[-4,0]] has
+ * eigenvalues +-2i, not real numbers at all) or tied in magnitude with opposite sign (e.g.
+ * [[0,1],[1,0]] has +1 and -1 tied), and this method's iteration can oscillate forever instead
+ * of converging. Callers on a possibly-signed matrix need a different bound - see
+ * Matrix::spectralRadiusBound() (Gerschgorin's theorem), which works on any matrix but only
+ * returns a safe overestimate, not the exact value.
+ *
  * We use C arrays instead of std::vectors or anything else,
  * as we know from start the size (n) of vectors x and tmp
  * This approach is faster than using std::vector when n > 1000
@@ -764,14 +821,18 @@ qreal Matrix::distanceEuclidean(
  * Complexity: O(maxIter * n^2) - each iteration is one O(n^2) productByVector() call plus
  * a handful of O(n) passes; iterates until the vector's Manhattan distance to its previous
  * value drops below eps, or maxIter is reached.
- * @param x
- * @param xsum
- * @param xmax
- * @param xmaxi
- * @param xmin
- * @param xmini
- * @param eps
- * @param maxIter
+ * @param x In: the seed vector (any nonzero starting guess, e.g. all-ones - size must be
+ * rows()). Out: overwritten with the converged, unit-normalized eigenvector for the dominant
+ * eigenvalue (this is the ranking eigenvector centrality reports).
+ * @param xsum Out: sum of x's components after convergence (or after the last completed
+ * iteration, if canceled/maxIter reached first).
+ * @param xmax Out: the largest component value in the converged x.
+ * @param xmaxi Out: the 1-based index (vertex number) of that largest component.
+ * @param xmin Out: the smallest component value in the converged x.
+ * @param xmini Out: the 1-based index (vertex number) of that smallest component.
+ * @param eps Convergence threshold: the loop stops once the Manhattan distance between
+ * successive x vectors drops below this.
+ * @param maxIter Hard cap on iterations, in case eps is never reached.
  * @param cancelCheck Optional callback checked once per iteration; if it returns true, the
  * loop stops early (x/xsum/xmax/xmin reflect the last completed iteration, not a full result).
  * Defaults to nullptr (never cancels), so existing callers are unaffected.
@@ -896,6 +957,128 @@ void Matrix::powerIteration (
         *lambdaMax = trueNorm;
 
      delete [] tmp;
+}
+
+/**
+ * @brief Estimates this matrix's spectral radius (dominant eigenvalue magnitude) exactly, via
+ * power iteration from a unit seed vector.
+ *
+ * Meaning: see Matrix::powerIteration()'s own doc comment for the full mechanism and the
+ * Perron-Frobenius preconditions this relies on. In short: only trustworthy for a non-negative,
+ * irreducible matrix (a plain adjacency matrix, not a signed one) - the value this returns is
+ * the exact dominant eigenvalue for that case, not an estimate/bound.
+ *
+ * Compare to: Matrix::spectralRadiusBound(), which works on any matrix (signed included) but
+ * only returns a safe upper bound, not the exact value.
+ *
+ * @param eps Convergence threshold on successive iterations' Manhattan distance.
+ * @param maxIter Iteration cap if eps is never reached.
+ * @param cancelCheck Optional callback checked once per iteration; see powerIteration().
+ * @return the estimated spectral radius, or 0 for a nilpotent matrix (a genuine "no bound, any
+ *         value converges" answer - see powerIteration()'s own note on this) or if canceled.
+ */
+qreal Matrix::spectralRadiusExact(const qreal eps, const int maxIter, std::function<bool()> cancelCheck)
+{
+    const int n = rows();
+    if (n == 0)
+    {
+        return 0;
+    }
+
+#ifndef QT_NO_DEBUG
+    // Debug-only precondition check: this method is only meaningful for a non-negative matrix
+    // (Perron-Frobenius, see the doc comment above). A negative entry means the caller almost
+    // certainly wanted spectralRadiusBound() instead - warn loudly rather than silently
+    // returning a meaningless number. O(n^2), so kept out of release builds.
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < cols(); j++)
+        {
+            if (item(i, j) < 0)
+            {
+                qCWarning(lcMatrix) << "Matrix::spectralRadiusExact() called on a matrix with a "
+                                        "negative entry at" << i << j << "- the Perron-Frobenius "
+                                        "precondition this method relies on does not hold, so "
+                                        "the result is not meaningful. Use spectralRadiusBound() "
+                                        "for a signed matrix instead.";
+                i = n;
+                break;
+            }
+        }
+    }
+#endif
+
+    qreal *seed = new (nothrow) qreal[n];
+    Q_CHECK_PTR(seed);
+    for (int k = 0; k < n; k++)
+        seed[k] = 1;
+
+    qreal dummySum = 0, dummyMax = 0, dummyMin = RAND_MAX;
+    int dummyMaxI = 0, dummyMinI = 0;
+    qreal lambdaMax = 0;
+    powerIteration(seed, dummySum, dummyMax, dummyMaxI, dummyMin, dummyMinI,
+                   eps, maxIter, cancelCheck, &lambdaMax);
+    delete[] seed;
+
+    if (cancelCheck && cancelCheck())
+    {
+        return 0;
+    }
+
+    return lambdaMax;
+}
+
+/**
+ * @brief Returns a safe upper bound on this matrix's spectral radius (max |eigenvalue|), via
+ * Gerschgorin's circle theorem. Works on any square matrix, signed entries included.
+ *
+ * Meaning: every eigenvalue of a matrix A - real or complex - lies within some "Gerschgorin
+ * disc": for row i, the disc centered at A(i,i) with radius equal to the sum of the absolute
+ * values of the rest of row i. So the magnitude of every eigenvalue is bounded by (that row's
+ * center distance from 0, plus its radius), and the largest such bound across all rows is a
+ * safe (if possibly loose) upper bound on the true spectral radius. Unlike
+ * Matrix::spectralRadiusExact(), this needs no iteration and no non-negativity precondition -
+ * it's a handful of row sums, always correct, just not always tight.
+ *
+ * When to use: as PN centrality's (WS18 P3) convergence bound - its A = P - 2N is a signed
+ * matrix, so spectralRadiusExact()'s Perron-Frobenius-based iteration can't be trusted (see that
+ * method's own doc comment for why: complex or tied eigenvalues are possible once entries go
+ * negative). Any matrix where spectralRadiusExact() applies could use this too, but would get a
+ * looser bound for no benefit - prefer spectralRadiusExact() whenever the matrix is known
+ * non-negative.
+ *
+ * Compare to: Matrix::spectralRadiusExact(), the exact value, but only trustworthy on a
+ * non-negative, irreducible matrix.
+ *
+ * Math: rho(A) <= max_i ( |A(i,i)| + sum_{j != i} |A(i,j)| ), i.e. the largest row sum of
+ * absolute values (using |A(i,i)| as the center's own distance from 0, plus the rest of the row
+ * as the disc's radius - equivalent to just summing |A(i,j)| over the whole row).
+ *
+ * @return the Gerschgorin bound, or 0 for an empty matrix.
+ */
+qreal Matrix::spectralRadiusBound()
+{
+    const int n = rows();
+    if (n == 0)
+    {
+        return 0;
+    }
+
+    qreal maxRowSum = 0;
+    for (int i = 0; i < n; i++)
+    {
+        qreal rowSum = 0;
+        for (int j = 0; j < cols(); j++)
+        {
+            rowSum += qAbs(item(i, j));
+        }
+        if (rowSum > maxRowSum)
+        {
+            maxRowSum = rowSum;
+        }
+    }
+
+    return maxRowSum;
 }
 
 
@@ -1128,6 +1311,7 @@ bool Matrix::ludcmp (Matrix &a, const int &n, int indx[], qreal &d, std::functio
         if (big == 0)  //       No nonzero largest element.
         {
             qCDebug(lcMatrix) << "Matrix::ludcmp() - Singular matrix in routine ludcmp";
+            delete[] vv;
             return false;
         }
         vv[i]=1.0/big;  //  Save the scaling.
@@ -1422,6 +1606,10 @@ bool Matrix::solve(qreal b[])
  * Complexity: O(N^2 * M), where N is the number of variables being compared and M is the
  * length of each variable's sample (the other axis) - a triple-nested loop, effectively
  * O(N^3) when varLocation is "Rows" or "Columns" (M==N there).
+ * @note Assumes a square input (rows()==cols()): N is always taken from rows(), including as
+ * the bound for the "other axis" in every varLocation mode. Every current caller passes the
+ * (always-square) adjacency or distances matrix; a non-square input would read/write past the
+ * intended bounds.
  * @return Matrix T, the dissimilarities matrix.
  */
 Matrix& Matrix::distancesMatrix(const int &metric,
@@ -1819,6 +2007,7 @@ Matrix& Matrix::distancesMatrix(const int &metric,
  * @return Matrix SCM, N x N (N = number of variables being compared), with a similarity
  * score for every pair.
  * Complexity: O(N^2 * M), same shape as distancesMatrix() - see its complexity note.
+ * @note Assumes a square AM (rows()==cols()) - see distancesMatrix()'s @note for why.
  */
 Matrix& Matrix::similarityMatrix(Matrix &AM,
                                    const int &measure,
@@ -1873,10 +2062,16 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
                         ties++;
                         break;
                     case METRIC_JACCARD_INDEX:
-                        if (AM.item(i,j) == AM.item(k,j)  && AM.item(i,j) != 0) {
+                        // RAND_MAX is the "unreachable" sentinel (AM here can be a Distances
+                        // matrix, e.g. graph_reports.cpp's DM -> createMatrixSimilarityMatching()
+                        // path, not just the adjacency matrix) - treated like zero here, same
+                        // as distancesMatrix()'s Jaccard branch.
+                        if (AM.item(i,j) == AM.item(k,j)
+                            && (AM.item(i,j) != 0 && AM.item(i,j) != RAND_MAX)) {
                             matches++;
                         }
-                        if (AM.item(i,j) != 0  || AM.item(k,j)  ) {
+                        if ((AM.item(i,j) != 0 && AM.item(i,j) != RAND_MAX)
+                            || (AM.item(k,j) != 0 && AM.item(k,j) != RAND_MAX)) {
                            ties++;
                         }
                         break;
@@ -1901,11 +2096,13 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
 
                 switch (measure) {
                 case METRIC_SIMPLE_MATCHING :
-                    matchRatio=   matches/  ( ( ties  ) ) ;
+                    // Fix #279: ties==0 means the sample was empty (e.g. diagonal=false
+                    // with N<=2), which would otherwise divide 0/0 into NaN. No comparable
+                    // columns means no evidence of similarity, so fall back to 0.
+                    matchRatio = (ties != 0) ? matches / ties : 0;
                     break;
                 case METRIC_JACCARD_INDEX:
-                    matchRatio=   matches/  ( ( ties ) ) ;
-
+                    matchRatio = (ties != 0) ? matches / ties : 0;
                     break;
                 case METRIC_HAMMING_DISTANCE:
                     matchRatio = matches;
@@ -1927,7 +2124,6 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
                 default:
                     break;
                 }
-
 
                 qCDebug(lcMatrix) << "matches("<<i+1<<","<<k+1<<") =" << matches
 
@@ -1977,10 +2173,14 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
                         ties++;
                         break;
                     case METRIC_JACCARD_INDEX:
-                        if (AM.item(j,i) == AM.item(j,k)  && AM.item(j,i) != 0) {
+                        // See the "Rows" branch above for why RAND_MAX (unreachable
+                        // sentinel) is excluded here just like distancesMatrix() does.
+                        if (AM.item(j,i) == AM.item(j,k)
+                            && (AM.item(j,i) != 0 && AM.item(j,i) != RAND_MAX)) {
                             matches++;
                         }
-                        if (AM.item(j,i) != 0  || AM.item(j,k) !=0 ) {
+                        if ((AM.item(j,i) != 0 && AM.item(j,i) != RAND_MAX)
+                            || (AM.item(j,k) != 0 && AM.item(j,k) != RAND_MAX)) {
                            ties++;
                         }
 
@@ -2007,11 +2207,13 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
 
                 switch (measure) {
                 case METRIC_SIMPLE_MATCHING :
-                    matchRatio=   matches/  ( ( ties  ) ) ;
+                    // Fix #279: ties==0 means the sample was empty (e.g. diagonal=false
+                    // with N<=2), which would otherwise divide 0/0 into NaN. No comparable
+                    // columns means no evidence of similarity, so fall back to 0.
+                    matchRatio = (ties != 0) ? matches / ties : 0;
                     break;
                 case METRIC_JACCARD_INDEX:
-                    matchRatio=   matches/  ( ( ties ) ) ;
-
+                    matchRatio = (ties != 0) ? matches / ties : 0;
                     break;
                 case METRIC_HAMMING_DISTANCE:
                     matchRatio = matches;
@@ -2097,10 +2299,14 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
                         ties++;
                         break;
                     case METRIC_JACCARD_INDEX:
-                        if (CM.item(j,i) == CM.item(j,k)  && CM.item(j,i) != 0) {
+                        // See the "Rows" branch above for why RAND_MAX (unreachable
+                        // sentinel) is excluded here just like distancesMatrix() does.
+                        if (CM.item(j,i) == CM.item(j,k)
+                            && (CM.item(j,i) != 0 && CM.item(j,i) != RAND_MAX)) {
                             matches++;
                         }
-                        if (CM.item(j,i) != 0  || CM.item(j,k) !=0 ) {
+                        if ((CM.item(j,i) != 0 && CM.item(j,i) != RAND_MAX)
+                            || (CM.item(j,k) != 0 && CM.item(j,k) != RAND_MAX)) {
                            ties++;
                         }
                         break;
@@ -2126,11 +2332,13 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
 
                 switch (measure) {
                 case METRIC_SIMPLE_MATCHING :
-                    matchRatio=   matches/  ( ( ties  ) ) ;
+                    // Fix #279: ties==0 means the sample was empty (e.g. diagonal=false
+                    // with N<=2), which would otherwise divide 0/0 into NaN. No comparable
+                    // columns means no evidence of similarity, so fall back to 0.
+                    matchRatio = (ties != 0) ? matches / ties : 0;
                     break;
                 case METRIC_JACCARD_INDEX:
-                    matchRatio=   matches/  ( ( ties ) ) ;
-
+                    matchRatio = (ties != 0) ? matches / ties : 0;
                     break;
                 case METRIC_HAMMING_DISTANCE:
                     matchRatio = matches;
@@ -2189,6 +2397,7 @@ Matrix& Matrix::similarityMatrix(Matrix &AM,
  * a variable is never compared against itself.
  * @return Matrix N x N (N = number of variables being compared) of Pearson r values.
  * Complexity: O(N^2 * M), same shape as distancesMatrix() - see its complexity note.
+ * @note Assumes a square AM (rows()==cols()) - see distancesMatrix()'s @note for why.
  */
 Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                                                const QString &varLocation,
@@ -2236,8 +2445,19 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                     sumi += AM.item(i,j);
                     sumk += AM.item(k,j);
                 }
-                mean[i] = sumi / ( (diagonal) ? (qreal) N : (qreal) (N-2) ) ;
-                mean[k] = sumk / ( (diagonal) ? (qreal) N : (qreal) (N-2) ) ;
+                // Fix #279: with diagonal=false the sample size is N-2; for N<=2 that's
+                // <=0, so sumi/sumk (always 0, since the loop above excluded everything)
+                // would divide 0/0 into NaN and poison sigma/pcc downstream. Treat an
+                // empty sample the same as the existing sigma==0 case: no correlation.
+                qreal sampleSizeIK = (diagonal) ? (qreal) N : (qreal) (N-2) ;
+                if (sampleSizeIK <= 0) {
+                    pcc = 0;
+                    setItem(i,k, pcc);
+                    setItem(k,i, pcc);
+                    continue;
+                }
+                mean[i] = sumi / sampleSizeIK ;
+                mean[k] = sumk / sampleSizeIK ;
                 varianceTimesNi = 0;
                 varianceTimesNk = 0;
                 for (int j = 0 ; j < N ; j++ ) {
@@ -2324,8 +2544,17 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                     sumi += AM.item(j,i);
                     sumk += AM.item(j,k);
                 }
-                mean[i] = sumi / ( (diagonal) ? (qreal) N : (qreal) (N-2) ) ;
-                mean[k] = sumk / ( (diagonal) ? (qreal) N : (qreal) (N-2) ) ;
+                // Fix #279: see the "Rows" branch above for why an empty sample
+                // (N<=2 with diagonal=false) must be guarded before dividing.
+                qreal sampleSizeIK = (diagonal) ? (qreal) N : (qreal) (N-2) ;
+                if (sampleSizeIK <= 0) {
+                    pcc = 0;
+                    setItem(i,k, pcc);
+                    setItem(k,i, pcc);
+                    continue;
+                }
+                mean[i] = sumi / sampleSizeIK ;
+                mean[k] = sumk / sampleSizeIK ;
                 varianceTimesNi = 0;
                 varianceTimesNk = 0;
                 for (int j = 0 ; j < N ; j++ ) {
@@ -2414,8 +2643,17 @@ Matrix& Matrix::pearsonCorrelationCoefficients(Matrix &AM,
                     sumi += CM.item(j,i);
                     sumk += CM.item(j,k);
                 }
-                mean[i] = sumi / ( (diagonal) ? (qreal) M : (qreal) (M-4) ) ;
-                mean[k] = sumk / ( (diagonal) ? (qreal) M : (qreal) (M-4) ) ;
+                // Fix #279: see the "Rows" branch above for why an empty sample
+                // (M<=4 with diagonal=false) must be guarded before dividing.
+                qreal sampleSizeIK = (diagonal) ? (qreal) M : (qreal) (M-4) ;
+                if (sampleSizeIK <= 0) {
+                    pcc = 0;
+                    setItem(i,k, pcc);
+                    setItem(k,i, pcc);
+                    continue;
+                }
+                mean[i] = sumi / sampleSizeIK ;
+                mean[k] = sumk / sampleSizeIK ;
                 varianceTimesNi = 0;
                 varianceTimesNk = 0;
                 for (int j = 0 ; j < M; j++ ) {

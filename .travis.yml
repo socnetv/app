@@ -14,7 +14,7 @@ language: cpp
 
 env:
   global:
-    - SOCNETV_VERSION=3.7
+    - SOCNETV_VERSION=3.8
     - UPLOADTOOL_ISPRERELEASE=true
 
 jobs:

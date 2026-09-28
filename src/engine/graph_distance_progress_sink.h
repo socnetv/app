@@ -27,6 +27,7 @@ public:
     void statusMessage(const QString &msg) override;
     void resetCancellation() override;
     bool progressCanceled() const override;
+    void reportNegativeWeights() override;
 
 private:
     Graph &graph;

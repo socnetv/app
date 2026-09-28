@@ -36,6 +36,12 @@ DialogNodeFind::DialogNodeFind(QWidget *parent, QStringList indexList) :
 
     ui->numbersRadioBtn->setChecked(true);
 
+    // Signed Degree Centrality and PN Centrality (both WS18 P3) have no single standardized
+    // score, so vertexFindByIndexScore() doesn't support either - excluded here the same way
+    // "Clustering Coefficient" is excluded from the Prominence combo box
+    // (mainwindow_init_panels.cpp).
+    indexList.removeAll("Signed Degree Centrality");
+    indexList.removeAll("PN Centrality");
     ui->indexCombo->insertItems(0, indexList);
     ui->indexLabel->setEnabled(false);
     ui->indexCombo->setEnabled(false);

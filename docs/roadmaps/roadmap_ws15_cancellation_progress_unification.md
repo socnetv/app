@@ -25,92 +25,122 @@ not something to paper over.
 
 ## Status
 
-🚧 In progress. P1-P3 ✅ done — linear progress-dialog system retired, exactly one progress dialog
-now exists app-wide. P4's audit done; implementation not started. See What WS15 Delivered below.
+✅ Complete. All four properties delivered across the whole `src/graph/` algorithm surface.
 
 ## What WS15 Delivered
 
-### P1 — Atomic flag + `Qt::DirectConnection` ✅ Done
+### P1 — Working cancellation
 
-`Graph::m_progressCanceled` is now `std::atomic<bool>`; the Cancel button's `canceled()` signal
-uses `Qt::DirectConnection` instead of the default queued cross-thread connection, so it lands
-synchronously instead of waiting for a busy `graphThread` event loop that never frees up.
-`Matrix::ludcmp()` (the O(n³) core of `inverse()`) got its own `cancelCheck`, since `inverse()`'s
-own check is only reached after `ludcmp()` returns.
+`Graph::m_progressCanceled` is `std::atomic<bool>`; the Cancel button's `canceled()` signal uses
+`Qt::DirectConnection` so it lands synchronously instead of waiting on a busy `graphThread` event
+loop. `Matrix::ludcmp()` (the O(n³) core of `inverse()`) got its own `cancelCheck`.
 
 Known residual gaps: `Matrix::solve()`'s own `ludcmp()` call isn't wired, and `DistanceEngine`'s
-parallel BFS deliberately skips cancellation in worker threads (performance-motivated).
+parallel BFS deliberately skips cancellation in worker threads (performance-motivated, same
+tradeoff P4 later adopted everywhere else too).
 
-### P2 — Global "graph busy" guard ✅ Done
+### P2 — Global "graph busy" guard
 
-`MainWindow::setAppBusy()` disables `menuBar()`/`toolBar()`/`graphicsWidget`/`leftPanel` (the
-toolbox panel) and every reachable `QAction`, for the duration of every `runGraphOperationAsync`
-call — snapshotting and restoring only what it itself disabled, so state legitimately disabled
-elsewhere isn't clobbered. Covers container-level `setEnabled(false)`, individual `QAction`s
-(whose own `isEnabled()`, e.g. keyboard shortcuts, a container disable alone doesn't reach), and
-the toolbox's `QComboBox`es specifically (not `QAction`s, so outside that sweep otherwise — see
+`MainWindow::setAppBusy()` disables `menuBar()`/`toolBar()`/`graphicsWidget`/`leftPanel` and every
+reachable `QAction` for the duration of every `runGraphOperationAsync` call, snapshotting and
+restoring only what it itself disabled. Covers container-level disables, individual `QAction`s
+(keyboard shortcuts), and the toolbox's `QComboBox`es specifically (see
 `roadmap_ws5_matrices_modernization.md`'s A6 section).
 
-### P3 — Retire the linear progress-dialog system ✅ Done
+### P3 — Retired the linear progress-dialog system
 
-Every `Graph::` operation reachable from the GUI now dispatches through `runGraphOperationAsync()`'s
-single indeterminate busy dialog. The legacy linear system (`Graph::progressCreate()`/
-`progressUpdate()`/`progressFinish()` → a separate numeric `QProgressDialog`) is fully retired,
-including `DistanceEngine`'s own nested dialog — `DistanceEngine::compute()` already self-closes
-its dialog internally, so removing dialog creation there left `resetCancellation()` (renamed from
-`progressCreate()`) as its only remaining job. `randomNetErdosCreate()`'s `--interactive-script
-erdos`/`erdos-m` benchmark path, the one caller that bypasses `runGraphOperationAsync`, calls
-`resetProgressCanceled()` directly instead, since it has no other reset point. Exactly one progress
-dialog exists in the app now, always — and it stays visible through Cancel: Qt's
-`QProgressDialog::cancel()`, wired to the built-in Cancel button, unconditionally hides the dialog
-before emitting `canceled()` (`setAutoClose`/`setAutoReset` don't gate that path), so a second
-`canceled()` connection re-shows it, relabels it "Canceling...", and disables it until the
-operation's own completion continuation tears it down for real.
+Every `Graph::` operation reachable from the GUI dispatches through `runGraphOperationAsync()`'s
+single indeterminate busy dialog. The legacy linear system
+(`progressCreate()`/`progressUpdate()`/`progressFinish()` → a numeric `QProgressDialog`) is fully
+retired, including `DistanceEngine`'s own nested dialog. Exactly one progress dialog exists in the
+app now, and it stays visible through Cancel (relabels "Canceling...", disables itself until the
+operation's completion continuation tears it down).
 
-### P4 — Parallelization audit ✅ Audit done, implementation not started
+### P4 — Parallelization: audit + 11 functions converted
 
-Audited every long-running operation in `src/graph/`'s algorithm slices against all four contract
-properties, judging property 4 by real algorithm structure (independent per-source/per-node work
-vs. an inherently sequential dependency chain), not a grep pass.
+Audited every long-running operation in `src/graph/`'s algorithm slices against real algorithm
+structure (independent per-source/per-node work vs. an inherently sequential dependency chain),
+then parallelized every candidate the audit named, via `QtConcurrent::blockingMap`:
 
-**Best parallelization candidates** (clear win, APSP-shaped, per-vertex/per-row independent,
-read-mostly): `centralityDegree`, `graphTriadCensus`, `clusteringCoefficient`, the O(N²)
-matrix-fill loops following `graphDistancesGeodesic()` (`graphMatrixShortestPathsCreate`,
-`graphMatrixDistanceGeodesicCreate`, `createMatrixReachability`, `createMatrixAdjacency`),
-`centralityClosenessIR`/`prestigeDegree`/`prestigeProximity`. `createMatrixSimilarityMatching`/
-`Matrix::distancesMatrix()`/`pearsonCorrelationCoefficients()` are good fits too but need a
-`cancelCheck`-style `Matrix` API change first.
+- `centralityDegree`, `isSymmetric`, `clusteringCoefficient`, `graphTriadCensus`
+- The four matrix-fill operations following `graphDistancesGeodesic()`: `graphMatrixShortestPathsCreate`,
+  `graphMatrixDistanceGeodesicCreate`, `createMatrixReachability`, `createMatrixAdjacency`
+- `centralityClosenessIR`, `prestigeDegree`, `prestigeProximity`
 
-**Poor candidates** (inherently sequential): `Matrix::inverse()`/LU decomposition,
-`graphClusteringHierarchical` (agglomerative merging), the outer particle-selection loop in
-`layoutForceDirectedKamadaKawai`, preferential-attachment growth in `randomNetScaleFreeCreate`.
-The random generators generally split into a parallelizable "decide" phase and a serial "apply"
-phase (`edgeCreate()` mutates shared state) — not a drop-in `blockingMap`.
+**Recurring hazard classes found and fixed** (the real substance of this work — each was a
+pre-existing bug, independent of parallelization, only surfaced by attempting it):
 
-**Worst remaining cancellation gaps** (long-running, coarse-only or zero mid-loop checks):
-`prestigePageRank`'s convergence loop, `graphTriadCensus`'s O(N³) inner loops,
-`createMatrixSimilarityMatching` (one opaque uncancellable step), `randomNetRegularCreate`'s
-unbounded edge-randomization retry loop, `graphCliques`' Bron-Kerbosch recursion (checked only at
-recursion depth 1, deliberately, to avoid flooding the event loop — an accepted trade-off).
+- **Member fields used as scratch/return storage** instead of locals — safe single-threaded, a
+  data race once read/written from worker threads. Hit in `Graph::edgeExists()`
+  (`edgeWeightTemp`/`edgeReverseWeightTemp`) and `GraphVertex::reciprocalEdgesHash()`
+  (`m_reciprocalEdges`); both converted to locals. Also removed one genuinely dead field found
+  along the way (`GraphVertex::m_reciprocalLinked`, unused anywhere).
+- **Lazy compute-and-cache methods called concurrently on first use** — `isSymmetric()`'s
+  internal cache and the inline `m_graphIsSymmetric` flag it duplicated in `centralityDegree()`/
+  `prestigeDegree()` would race if every worker thread's first call landed at once. Fixed with
+  `QAtomicInteger<bool>` OR-reduce (no shared control flow across `blockingMap` workers, so every
+  vertex is always checked rather than short-circuiting on first asymmetry — strictly more work
+  in the asymmetric case, never wrong). `clusteringCoefficientLocal()` instead takes `isSymmetric`
+  as a parameter, computed once sequentially before the parallel step.
+- **Shared accumulators mutated inline during the per-vertex loop** — `sum*`, `resolveClasses()`
+  (mutates a shared `QHash`), and min/max tracking (plain compare-and-assign) all race under
+  concurrent writers. Fixed by computing only the per-vertex value inside `blockingMap` and moving
+  all bookkeeping to a sequential pass afterward, reading back each vertex's now-cached score —
+  the pattern used by `clusteringCoefficient`, `centralityClosenessIR`, `prestigeDegree`,
+  `prestigeProximity`.
+- **Sequential row/column counters** in the four matrix-fill functions blocked mapping the outer
+  loop over threads (not a `Matrix` data race — confirmed safe for concurrent writes to disjoint
+  cells, flat raw-array storage, no locking/COW). Fixed with a new helper,
+  `Graph::compactedMatrixIndex(dropIsolates)`, computed once sequentially: maps each vertex's
+  position to its compacted row/column index, so each worker thread looks up its own index
+  independently. `graphTriadCensus()`'s 16-bucket `triadTypeFreqs` accumulator got the same
+  treatment via `QAtomicInteger<int>` counters instead (a genuine reduction, not an index lookup).
 
-Already parallel: `graphDistancesGeodesic` (→ `DistanceEngine`, `QtConcurrent::blockingMap`);
-Betweenness/Brandes centrality rides along in the same pass.
+**Also fixed along the way, independent of parallelization**: `Graph::prestigeDegree()` leaked one
+`QHash` per vertex (reused pointer overwritten each iteration without freeing the previous
+allocation); `socnetv-cli`'s numeric CLI options (`-f`/`--format` and 13 others) silently
+misparsed invalid input via `QString::toInt()`/`toDouble()` instead of failing.
+`graphMatrixShortestPathsCreate()`'s SIGMA matrix had no golden/CLI coverage at all before this
+work (no accessor existed) — added `Graph::matrixShortestPaths()` and a `"shortest_paths"`
+category to `kernel_matrix_v8`'s golden coverage.
 
-Not yet decided whether/when to act on any of this — it's a map, not a commitment. Any
-parallelization work still needs its own golden/benchmark evidence (same discipline as WS5
-A2.0/A3) before being called a real improvement.
+**Measured, not assumed** (1000-node/10,000-edge network unless noted; isolated via temporary
+kernel-timer edits or `git stash`, reverted before committing; correctness verified via bit-identical
+JSON diffs against sequential output):
+
+| Function(s) | Sequential | Parallel | Speedup |
+|---|---|---|---|
+| `graphTriadCensus` (O(N³)) | 68.2s | 15.4s | ~4.4x |
+| 4 matrix-fill operations (full kernel) | 28.2s | 14.6s | ~1.9x |
+| `centralityClosenessIR` + `prestigeProximity` | 297ms | 64ms | ~4.6x |
+| `clusteringCoefficient` (2000-node/40,000-edge) | 499ms | 84ms | ~5.9x |
+| `centralityDegree`, `prestigeDegree` | — | — | No measurable win — O(N) hash-lookup, too cheap to register at this scale |
+
+**Poor candidates, not parallelized** (inherently sequential): `Matrix::inverse()`/LU
+decomposition, `graphClusteringHierarchical` (agglomerative merging), the outer particle-selection
+loop in `layoutForceDirectedKamadaKawai`, preferential-attachment growth in
+`randomNetScaleFreeCreate`. The random generators generally split into a parallelizable "decide"
+phase and a serial "apply" phase (`edgeCreate()` mutates shared state) — not a drop-in
+`blockingMap`.
+
+**Cancellation gaps found by the same audit, tracked elsewhere**: `prestigePageRank`'s convergence
+loop, `graphTriadCensus`'s O(N³) inner loops (now single-checked before the parallel step, same as
+every P4 candidate), `createMatrixSimilarityMatching` (one opaque uncancellable step),
+`randomNetRegularCreate`'s unbounded retry loop, `graphCliques`' Bron-Kerbosch recursion (checked
+only at recursion depth 1 deliberately). `graphConnectivity()` was the worst — zero
+`progressCanceled()` checks on an O(N²) max-flow sweep, confirmed hanging 30+ minutes uncancellable
+on a real N=2000 network — filed as #278, tracked in WS11.
+
+**Not parallelized, needs its own API work first**: `createMatrixSimilarityMatching`,
+`Matrix::distancesMatrix()`, `pearsonCorrelationCoefficients()` are good `blockingMap` fits but
+need a `cancelCheck`-style `Matrix` API change before that's worth doing.
+
+A crash found while tracing a distance-based analysis end to end during P3 (an
+`--interactive-script` command-dispatcher script-ordering race, unrelated to cancellation) is
+documented in `roadmap_ws12_cli_scripting_mode.md`, not here.
 
 ## What Remains Open
 
-- **P4 implementation**: decide which parallelization candidates to act on, if any.
-
-While investigating P3's Cancel-button fix, tracing a distance-based analysis end to end also
-surfaced a reproducible crash in the `--interactive-script` command dispatcher (a script-ordering
-race, independent of anything above) — found, fixed, and documented in
-`roadmap_ws12_cli_scripting_mode.md`, not here.
-
-## Work Rules
-
-- No GitHub issue for any of this (unreleased 3.7-cycle behavior) — fix directly.
-- Once P4 lands (or is explicitly parked): add a changelog entry, update WS5's A5 section and
-  WS7's status line to point here instead of duplicating content.
+Nothing from this workstream's own scope. Any future parallelization work
+(`createMatrixSimilarityMatching` and friends, above) would be a new, separately-scoped effort,
+not a continuation of this list.

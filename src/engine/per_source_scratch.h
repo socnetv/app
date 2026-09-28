@@ -50,15 +50,12 @@ struct PerSourceScratch
     // Size of the connected component reachable from s (used for SPC normalisation).
     int componentSize = 0;
 
-    // Per-source graph-aggregate accumulators.
-    // Phase 2: SSSP functions write here instead of calling graph.addToDistanceSum() /
-    // graph.incGeodesicsCount() / graph.setDiameterCached() directly, which would be
-    // unsafe when multiple threads process different sources concurrently.
-    // The owning thread accumulates these into ThreadLocalState totals after each source,
-    // and the post-loop reduction merges them into the graph-level aggregates.
-    qreal sourceDistanceSum    = 0;  // replaces graph.addToDistanceSum(dist_w) in BFS
-    int   sourceGeodesicsCount = 0;  // replaces graph.incGeodesicsCount() in BFS / Dijkstra
-    int   sourceDiameter       = 0;  // replaces graph.setDiameterCached() in BFS / Dijkstra
+    // No per-source graph-aggregate accumulators live here: diameter, distance sum, and
+    // geodesics (reachable-pair) count must all be computed from each vertex's FINAL
+    // distance, not a running/duplicated accumulation sampled during or right after
+    // relaxation (a vertex can be relaxed to a smaller distance after an earlier, larger
+    // one) - computed directly from dist[] / the final APSP matrix in runAllSources() and
+    // finalize() instead, after a source's SSSP run has fully settled.
 
     // Allocate all containers once for totalVertices positions.
     // Call this once before the source loop.
@@ -76,10 +73,6 @@ struct PerSourceScratch
     {
         dist.fill((qreal)RAND_MAX);
         sigma.fill(0);
-        // Reset per-source graph-aggregate accumulators so they reflect only this source.
-        sourceDistanceSum    = 0;
-        sourceGeodesicsCount = 0;
-        sourceDiameter       = 0;
         if (computeCentralities)
         {
             while (!Stack.empty())

@@ -117,13 +117,21 @@ static bool cmpNumStrArray(const QJsonArray &e, const QJsonArray &a, QTextStream
     bool ok = true;
     for (int i = 0; i < e.size(); ++i)
     {
+        const QString es = e.at(i).toString();
+        const QString as = a.at(i).toString();
+
+        // Both sides legitimately "nan" (e.g. Pearson correlation on a zero-variance row) is a
+        // match, not a mismatch - see cli_common.cpp's cmpNumStrTol.
+        if (es.compare("nan", Qt::CaseInsensitive) == 0 && as.compare("nan", Qt::CaseInsensitive) == 0)
+            continue;
+
         bool ok1 = false, ok2 = false;
-        const double ev = e.at(i).toString().toDouble(&ok1);
-        const double av = a.at(i).toString().toDouble(&ok2);
+        const double ev = es.toDouble(&ok1);
+        const double av = as.toDouble(&ok2);
         if (!ok1 || !ok2 || !almostEqual(ev, av))
         {
-            err << "MISMATCH " << what << "[" << i << "] expected=" << e.at(i).toString()
-                << " got=" << a.at(i).toString() << "\n";
+            err << "MISMATCH " << what << "[" << i << "] expected=" << es
+                << " got=" << as << "\n";
             ok = false;
         }
     }
@@ -217,6 +225,7 @@ static QJsonObject buildGoldenJsonV8(
     QJsonObject graph;
     graph["directed"] = g.isDirected();
     graph["weighted"] = g.isWeighted();
+    graph["symmetric"] = g.isSymmetric();
     root["graph"] = graph;
 
     QJsonObject run;
@@ -261,13 +270,14 @@ static int compareGoldenV8(const QJsonObject &expected, const QJsonObject &actua
     ok &= cmpInt(expected.value("counts").toObject(), actual.value("counts").toObject(), "nodes", err);
     ok &= cmpBool(expected.value("graph").toObject(), actual.value("graph").toObject(), "directed", err);
     ok &= cmpBool(expected.value("graph").toObject(), actual.value("graph").toObject(), "weighted", err);
+    ok &= cmpBool(expected.value("graph").toObject(), actual.value("graph").toObject(), "symmetric", err);
 
     const QJsonObject eM = expected.value("matrices").toObject();
     const QJsonObject aM = actual.value("matrices").toObject();
 
     static const QStringList kAlwaysPresent = {
-        "adjacency", "adjacency_inverse", "distances", "similarity", "reachability", "walks",
-        "clique_comembership"
+        "adjacency", "adjacency_inverse", "distances", "shortest_paths", "similarity",
+        "dissimilarity", "reachability", "walks", "clique_comembership"
     };
     for (const QString &cat : kAlwaysPresent)
     {
@@ -289,6 +299,29 @@ static int compareGoldenV8(const QJsonObject &expected, const QJsonObject &actua
                   "invertible", err);
     ok &= cmpInt(eM.value("walks").toObject(), aM.value("walks").toObject(), "length", err);
     ok &= cmpStr(eM.value("similarity").toObject(), aM.value("similarity").toObject(), "metric", err);
+    ok &= cmpStr(eM.value("dissimilarity").toObject(), aM.value("dissimilarity").toObject(), "metric", err);
+
+    {
+        const QJsonObject eSR = eM.value("spectral_radius").toObject();
+        const QJsonObject aSR = aM.value("spectral_radius").toObject();
+        ok &= cmpBool(eSR, aSR, "has_negative_entry", err);
+        ok &= cmpStr(eSR, aSR, "bound", err);
+        // "exact" is only present when has_negative_entry is false (see runKernelMatrixV8()) -
+        // same optional-field shape as total_walks below, not the always-present kAlwaysPresent
+        // categories above.
+        const bool eHasExact = eSR.contains("exact");
+        const bool aHasExact = aSR.contains("exact");
+        if (eHasExact != aHasExact)
+        {
+            err << "MISMATCH spectral_radius.exact presence expected_present=" << eHasExact
+                << " actual_present=" << aHasExact << "\n";
+            ok = false;
+        }
+        else if (eHasExact)
+        {
+            ok &= cmpStr(eSR, aSR, "exact", err);
+        }
+    }
 
     // total_walks only exists for small fixtures - see kTotalWalksSkipThreshold.
     for (const QString &cat : {QStringLiteral("total_walks")})
@@ -315,9 +348,9 @@ static int compareGoldenV8(const QJsonObject &expected, const QJsonObject &actua
 
 // ---- exported runner ----
 
-// Builds every Matrix-producing category (adjacency, inverse, distances, similarity,
-// reachability, walks, total walks, clique co-membership) in turn, dumping each one's
-// contents right after it's constructed, then writes/compares the resulting JSON per
+// Builds every Matrix-producing category (adjacency, inverse, distances, shortest paths,
+// similarity, reachability, walks, total walks, clique co-membership) in turn, dumping each
+// one's contents right after it's constructed, then writes/compares the resulting JSON per
 // --dump-json/--compare-json.
 int runKernelMatrixV8(const CliConfig &cfg,
                       const HeadlessLoadResult &load,
@@ -353,6 +386,24 @@ int runKernelMatrixV8(const CliConfig &cfg,
     g.createMatrixAdjacency();
     matrices["adjacency"] = dumpMatrixJson(g.matrixAdjacency(), fullGrid);
 
+    // Spectral radius: also captured right after this AM build, same reasoning as adjacency
+    // above (createMatrixAdjacencyInverse() overwrites AM next). spectralRadiusExact() is only
+    // meaningful on a non-negative matrix (Perron-Frobenius - see its own doc comment), so it's
+    // only computed when hasNegativeEntry() is false; spectralRadiusBound() (Gerschgorin) has no
+    // such precondition and is always computed, giving every fixture at least one value to
+    // regression-check, and a signed fixture exercises the branch exact() can't handle.
+    {
+        QJsonObject sr;
+        const bool hasNeg = g.matrixAdjacency().hasNegativeEntry();
+        sr["has_negative_entry"] = hasNeg;
+        sr["bound"] = d2s(g.matrixAdjacency().spectralRadiusBound());
+        if (!hasNeg)
+        {
+            sr["exact"] = d2s(g.matrixAdjacency().spectralRadiusExact());
+        }
+        matrices["spectral_radius"] = sr;
+    }
+
     const bool invertible = g.createMatrixAdjacencyInverse("lu");
     QJsonObject inv = dumpMatrixJson(g.matrixAdjacencyInverse(), fullGrid);
     inv["invertible"] = invertible;
@@ -361,15 +412,55 @@ int runKernelMatrixV8(const CliConfig &cfg,
     g.graphMatrixDistanceGeodesicCreate(cfg.considerWeights, cfg.inverseWeights, cfg.dropIsolates);
     matrices["distances"] = dumpMatrixJson(g.matrixDistances(), fullGrid);
 
+    g.graphMatrixShortestPathsCreate(cfg.considerWeights, cfg.inverseWeights, cfg.dropIsolates);
+    matrices["shortest_paths"] = dumpMatrixJson(g.matrixShortestPaths(), fullGrid);
+
     // Similarity needs a fresh adjacency input - createMatrixAdjacencyInverse() already
     // overwrote AM with its own dropIsolates=true policy, so rebuild once more here.
     g.createMatrixAdjacency();
     Matrix similarity;
-    g.createMatrixSimilarityMatching(g.matrixAdjacency(), similarity,
-                                     METRIC_SIMPLE_MATCHING, "Rows", false, false);
+    // Fix #279: which measure runs is selectable via --similarity-measure (default
+    // simple_matching, unchanged from before) so the NaN-guard fix on Jaccard's and
+    // Pearson's degenerate (empty-sample, diagonal=false) path can each get their own
+    // golden baseline instead of only ever exercising simple_matching.
+    // --similarity-input selects which matrix feeds similarityMatrix(): the default
+    // adjacency (AM, never contains RAND_MAX) or the geodesic distances matrix just
+    // computed above (DM, which does for unreachable pairs) - needed to cover Jaccard's
+    // RAND_MAX-exclusion fix, whose effect is invisible on AM.
+    Matrix &similarityInput = (cfg.similarityInput == "distances") ? g.matrixDistances()
+                                                                   : g.matrixAdjacency();
+    if (cfg.similarityMeasure == "pearson")
+    {
+        g.createMatrixSimilarityPearson(similarityInput, similarity, "Rows", false);
+    }
+    else
+    {
+        const int measure = (cfg.similarityMeasure == "jaccard") ? METRIC_JACCARD_INDEX
+                                                                  : METRIC_SIMPLE_MATCHING;
+        g.createMatrixSimilarityMatching(similarityInput, similarity, measure, "Rows", false, false);
+    }
     QJsonObject sim = dumpMatrixJson(similarity, fullGrid);
-    sim["metric"] = "simple_matching";
+    sim["metric"] = cfg.similarityMeasure;
+    sim["input"] = cfg.similarityInput;
     matrices["similarity"] = sim;
+
+    // Dissimilarity: unlike similarity, always runs on the adjacency matrix (a numeric-distance
+    // measure, not a binary-match one - no separate "distances input" mode to select).
+    g.createMatrixAdjacency();
+    Matrix dissimilarity;
+    int dissimMetric = METRIC_EUCLIDEAN_DISTANCE;
+    if (cfg.dissimilarityMeasure == "manhattan")
+        dissimMetric = METRIC_MANHATTAN_DISTANCE;
+    else if (cfg.dissimilarityMeasure == "jaccard")
+        dissimMetric = METRIC_JACCARD_INDEX;
+    else if (cfg.dissimilarityMeasure == "hamming")
+        dissimMetric = METRIC_HAMMING_DISTANCE;
+    else if (cfg.dissimilarityMeasure == "chebyshev")
+        dissimMetric = METRIC_CHEBYSHEV_MAXIMUM;
+    g.createMatrixDissimilarities(g.matrixAdjacency(), dissimilarity, dissimMetric, "Rows", false, false);
+    QJsonObject dissim = dumpMatrixJson(dissimilarity, fullGrid);
+    dissim["metric"] = cfg.dissimilarityMeasure;
+    matrices["dissimilarity"] = dissim;
 
     g.createMatrixReachability();
     matrices["reachability"] = dumpMatrixJson(g.matrixReachability(), fullGrid);

@@ -42,10 +42,10 @@ The `Graph` object is a façade and state coordinator — not a monolith. Algori
 | WS3  | Architecture & Performance          | ✔ complete (v3.6/v3.7)        | [`roadmap_ws3_architecture_performance.md`](roadmaps/roadmap_ws3_architecture_performance.md) |
 | WS4  | IO / Parser modernization           | ✔ complete                    | [`roadmap_ws4_io_parser_refactor.md`](roadmaps/roadmap_ws4_io_parser_refactor.md) |
 | WS5  | Matrices Modernization              | ✔ complete (v3.7)             | [`roadmap_ws5_matrices_modernization.md`](roadmaps/roadmap_ws5_matrices_modernization.md) |
-| WS9  | Graph exploration & data workflows  | ✔ shipped v3.5/v3.6           | [`roadmap_ws9_graph_exploration.md`](roadmaps/roadmap_ws9_graph_exploration.md) |
 | WS14 | Logging Cost & Release-Build Hygiene| ✔ complete (v3.7, #268)       | [`roadmap_ws14_logging_cost.md`](roadmaps/roadmap_ws14_logging_cost.md) |
 | WS16 | Report CSV Export                   | ✔ complete (v3.7, #113)       | [`roadmap_ws16_report_csv_export.md`](roadmaps/roadmap_ws16_report_csv_export.md) |
 | WS7  | MainWindow Decomposition (MW0)      | ✔ complete (v3.7, #257)       | [`roadmap_ws7_mainwindow_decomposition.md`](roadmaps/roadmap_ws7_mainwindow_decomposition.md) |
+| WS15 | App Responsiveness Contract         | ✔ complete (3.8-cycle)        | [`roadmap_ws15_cancellation_progress_unification.md`](roadmaps/roadmap_ws15_cancellation_progress_unification.md) |
 
 ---
 
@@ -58,10 +58,7 @@ active focus right now.
 
 Roadmap: [`docs/roadmaps/roadmap_ws6_testing_ci_regression.md`](roadmaps/roadmap_ws6_testing_ci_regression.md)
 
-Expand golden baselines, dataset coverage, and benchmarking, supporting every other workstream.
-
-**Queued, deferred to post-v3.7**: WS6.8 — independently audit pre-existing golden baselines for
-mathematical correctness (not just regression-stability). See the WS6 roadmap doc for why and how.
+Golden baselines, dataset coverage, and benchmarking, supporting every other workstream.
 
 ---
 
@@ -79,6 +76,16 @@ hand-maintained per-format switch statements.
 Roadmap: [`docs/roadmaps/roadmap_ws10_graphicswidget_overhaul.md`](roadmaps/roadmap_ws10_graphicswidget_overhaul.md)
 
 Ongoing GraphicsWidget canvas rendering and feature work, separate from WS3.
+
+---
+
+## WS9 — Graph Exploration & Data Workflows
+
+Roadmap: [`docs/roadmaps/roadmap_ws9_graph_exploration.md`](roadmaps/roadmap_ws9_graph_exploration.md)
+
+Core (filtering, subgraph extraction, table/CSV/JSON data workflows) shipped v3.5–v3.6. Debt
+backlog still open: tab-based multi-graph UI (#245), attribute transformations (#229), temporal
+attributes/timeline (#222), dynamic networks (#25), multirelational node removal (#57).
 
 ---
 
@@ -109,31 +116,51 @@ to structural mutations and attribute edits.
 
 ---
 
-## WS15 — App Responsiveness Contract (Dispatch, Cancellation, Busy-Guard & Parallelization)
+## WS17 — Bipartite / Two-Mode Network Analysis
 
-Roadmap: [`docs/roadmaps/roadmap_ws15_cancellation_progress_unification.md`](roadmaps/roadmap_ws15_cancellation_progress_unification.md)
+Roadmap: [`docs/roadmaps/roadmap_ws17_bipartite_analysis.md`](roadmaps/roadmap_ws17_bipartite_analysis.md)
 
-App responsiveness contract — non-blocking dispatch, working cancellation, busy-guard coverage, and
-internal parallelization — checked independently per operation, so fixing one property can't be
-mistaken for having fixed all four.
+Persistent bipartite/partition model, two-mode GraphML/Pajek round-trip and `.2sm` export,
+two-mode layouts, bipartite generators, Robins-Alexander clustering, bipartite matching
+(Hopcroft-Karp). No external dependencies — hand-rolled, consistent with the rest of the codebase.
+
+---
+
+## WS18 — Signed Network Analysis / Structural Balance
+
+Roadmap: [`docs/roadmaps/roadmap_ws18_signed_network_analysis.md`](roadmaps/roadmap_ws18_signed_network_analysis.md)
+
+First-class support for signed networks (edge sign, not just magnitude): guard existing
+distance-based measures against negative weights (#277, P1), Bellman-Ford-based negative-weight-safe
+shortest paths, signed-specific centrality (PN centrality), and Heider/Cartwright-Harary structural
+balance analysis on triads, building on the existing MAN triad census.
+
+---
 
 ---
 
 # Priorities
 
-1. **WS15** — app responsiveness contract. P1-P3 done and live-verified; P4's parallelization audit
-   done, implementation not started.
-2. **WS6** — regression safety (ongoing support — continuously active underneath every other
-   workstream, not "next in queue").
-3. **WS10** — GraphicsWidget canvas rendering & features. Phase 1 (#250), #260, and the
-   rendering-perf regression kernel (WS6.6) all shipped; the rest of the Performance/Feature
-   checklists remain scoped but not prioritised yet.
-4. **WS8** — IO layer stabilization. Roadmap scoped; zero code written yet.
-5. **WS11** — algorithm additions. Started: #7 and #272 shipped; rest of the backlog not
-   prioritised yet.
-6. **WS12** — CLI scripting mode. Thirty-four commands shipped across several passes since
-   #261/#262; further commands added on demand, not prioritised as a standing backlog.
-7. **WS13** — undo/redo. Just created; not prioritised yet, no code written.
+No workstream is pinned as "the" active focus — work happens on whichever's issue is picked up
+next. `gh issue list --milestone <3.8|3.9|4.0>` is the authoritative view of what's queued where
+(as of 2026-09-28: 3.8 has 19 open/9 closed, 3.9 has 18 open, 4.0 has 3 open); this is a
+workstream-level summary of the same picture, not a ranking.
+
+**In flight now (3.8):** WS6 (regression safety) runs continuously underneath every other
+workstream. WS18 (signed networks) is otherwise done for this cycle — P0-P3 shipped, only P4's
+3.8 slice (#305, undirected triad balance) is still open.
+
+**Scoped, not started:** WS8 (IO layer stabilization/`FormatHandler` registry) — roadmap exists,
+zero code written.
+
+**Ongoing, demand-driven (no fixed end state):** WS10 (canvas rendering — Phase 1/#250/#260
+shipped, rest of the checklist open-ended), WS11 (algorithm additions — #7/#272 shipped, backlog
+open-ended), WS12 (CLI scripting — 34 commands shipped, more added on demand), WS9's debt backlog
+(#229, #222, #25, #57 — core already shipped v3.5-v3.6).
+
+**Major/4.0-scoped, larger lifts, none started:** WS13 (undo/redo, #31), WS9's #245 (tab-based
+multi-graph UI), WS17 (bipartite/two-mode analysis, #282) — each its own standalone workstream
+investment, not a small patch.
 
 ---
 

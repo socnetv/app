@@ -428,24 +428,36 @@ void MainWindow::slotAnalyzeConnectivity()
 
     qCDebug(lcMainWindow) << "Computing graph connectivity, respectDirection:" << respectDirection;
 
-    auto kappa = std::make_shared<int>(0);
+    auto result = std::make_shared<Graph::GraphConnectivityResult>();
 
     runGraphOperationAsync(
-        [this, respectDirection, kappa]() {
-            *kappa = activeGraph->graphConnectivity(respectDirection);
+        [this, respectDirection, result]() {
+            *result = activeGraph->graphConnectivity(respectDirection);
         },
         tr("Computing graph connectivity. Please wait..."),
-        [this, kappa]() {
-            if (*kappa > 0)
+        [this, result]() {
+            const int kappa = result->value;
+            if (result->status == Graph::GraphConnectivityStatus::Canceled)
             {
                 slotHelpMessageToUser(
                     USER_MSG_INFO,
-                    tr("Graph Connectivity: %1").arg(*kappa),
-                    tr("Graph Connectivity: %1").arg(*kappa),
+                    tr("Graph Connectivity: canceled"),
+                    tr("Graph connectivity calculation canceled."),
+                    tr("Canceled before finishing. The lowest value found among the pairs "
+                       "already tested was %1 - the true answer can only be lower or equal, "
+                       "not higher.")
+                        .arg(kappa));
+            }
+            else if (kappa > 0)
+            {
+                slotHelpMessageToUser(
+                    USER_MSG_INFO,
+                    tr("Graph Connectivity: %1").arg(kappa),
+                    tr("Graph Connectivity: %1").arg(kappa),
                     tr("At least %1 node(s) must be removed to disconnect some pair "
                        "of nodes in this network - its worst-case robustness to "
                        "node removal.")
-                        .arg(*kappa));
+                        .arg(kappa));
             }
             else
             {

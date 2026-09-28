@@ -14,28 +14,70 @@
  */
 
 #include "graph.h"
+#include <QAtomicInteger>
 #include <QDebug>
+#include <QtConcurrent/QtConcurrent>
 
 /**
  * @brief Conducts a triad census and updates QList::triadTypeFreqs,
  * 		which is the list carrying all triad type frequencies
  *  Complexity: O(n³) — three nested loops each bounded by N.
+ *
+ * Parallelization (WS15 P4): the outer vertex (v1) loop is mapped via
+ * QtConcurrent::blockingMap over vertex positions, each worker thread running its own
+ * v2/v3 loops exactly as before - every (v1,v2,v3) triad classification only reads edges
+ * (GraphVertex::hasEdgeTo(), read-only) and is independent of every other triad, so there's
+ * no cross-iteration dependency to preserve. The one shared state is the result itself:
+ * triadTypeFreqs[16] used to be incremented directly by triadType_examine_MAN_label(),
+ * which is a data race (non-atomic read-modify-write) once multiple worker threads reach it
+ * concurrently. Fixed by having it increment a QAtomicInteger<int> counter per triad type
+ * instead; a sequential pass after blockingMap returns copies each counter's final value
+ * into triadTypeFreqs. Cancel signals cannot be delivered while graphThread's event loop is
+ * blocked in blockingMap (same tradeoff as centralityDegree()/isSymmetric()/
+ * clusteringCoefficient()), so the progressCanceled() check only runs once, before the
+ * parallel step starts, not per-iteration as before.
+ *
  * @return
  */
 bool Graph::graphTriadCensus()
 {
-    int mut = 0, asy = 0, nul = 0;
-    int temp_mut = 0, temp_asy = 0, temp_nul = 0, counter_021 = 0;
-    int ver1, ver2, ver3;
-    VList::const_iterator v1;
-    VList::const_iterator v2;
-    VList::const_iterator v3;
-
     qCDebug(lcClustering) << "Graph::graphTriadCensus()";
     /*
      * QList::triadTypeFreqs stores triad type frequencies with the following order:
      * 0	1	2	3		4	5	6	7	8		9	10	11	12		13	14	15
      * 003 012 102	021D 021U 021C 111D	111U 030T 030C 201 	120D 120U 120C 210 300
+     *
+     * What each of the 16 MAN-labeled types means (Davis, Leinhardt & Holland's scheme - see
+     * the manual's Triad Census section for the sociological "why", this is just the structural
+     * "what"). M/A/N = count of Mutual/Asymmetric/Null dyads among the triad's 3 pairs; a 4th
+     * letter (D/U/C/T) disambiguates types that share the same M-A-N counts but differ in shape:
+     *
+     *   003  no ties at all.
+     *   012  one one-way tie, third actor isolated: a->b, c alone.
+     *   102  one reciprocated tie, third actor isolated: a<->b, c alone.
+     *   021D "Down"/divergent: one actor sends to both others: a<-b->c (b is the source).
+     *   021U "Up"/convergent: one actor receives from both others: a->b<-c (b is the sink).
+     *   021C "Chain": an open 2-step path, not closed: a->b->c.
+     *   111D one reciprocated pair plus one more one-way tie pointing INTO one member of that
+     *        pair from the third (otherwise-isolated) actor: b->c, a<->c - one actor (c) ends up
+     *        receiving ties from both a reciprocal partner and a one-way sender.
+     *   111U mirror of 111D: the one-way tie points OUT of a member of the mutual pair toward
+     *        the third actor instead of into it: b<-c, a<->c.
+     *   030T "Transitive": the classic hierarchy triad: a->b, b->c, a->c (if a beats b and b
+     *        beats c, a also beats c - no cycle).
+     *   030C "Cyclic": a closed 3-cycle, no transitivity: a->b->c->a.
+     *   201  two reciprocated ties sharing one actor, third pair null: a<->b, a<->c, b/c not tied.
+     *   120D "Down" version of 201 plus one more asymmetric tie added in the divergent direction
+     *        (mirrors 021D's shape with one dyad upgraded to mutual).
+     *   120U "Up" version, mirrors 021U's convergent shape with one dyad upgraded to mutual.
+     *   120C "Cyclic" version, mirrors 021C/030C's chain/cycle shape with one dyad upgraded to
+     *        mutual.
+     *   210  two reciprocated ties plus one more one-way tie (only one pair left non-mutual).
+     *   300  fully reciprocated triangle: a<->b, b<->c, a<->c.
+     *
+     * The D/U/C/T letters recur across rows (021/111/120/030) because the same structural
+     * distinction - which direction the "extra" asymmetric tie(s) point relative to a hub actor,
+     * or whether they form a closed cycle vs. a transitive chain - applies at each M-A-N level.
      */
     triadTypeFreqs.clear();
     for (int i = 0; i <= 15; ++i)
@@ -47,81 +89,88 @@ bool Graph::graphTriadCensus()
     QString pMsg = tr("Computing Triad Census. \nPlease wait...");
     progressStatus(pMsg);
 
-    for (v1 = m_graph.cbegin(); v1 != m_graph.cend(); v1++)
+    if (progressCanceled())
     {
+        calculatedTriad = false;
+        return false;
+    }
 
-        if (progressCanceled())
+    const int N = m_graph.size();
+
+    // One QAtomicInteger<int> counter per triad type (0-15) - safe for multiple worker
+    // threads (below) to increment concurrently, unlike a plain QList<int>.
+    QVector<QAtomicInteger<int>> triadTypeCounts(16);
+
+    QList<int> positions;
+    positions.reserve(N);
+    for (int i = 0; i < N; ++i)
+        positions.append(i);
+
+    QtConcurrent::blockingMap(positions, [&](int i) {
+        GraphVertex *v1vert = m_graph.at(i);
+        const int ver1 = v1vert->number();
+
+        for (int j = i + 1; j < N; ++j)
         {
-            calculatedTriad = false;
-            return false;
-        }
-        for (v2 = (v1 + 1); v2 != m_graph.cend(); v2++)
-        {
+            GraphVertex *v2vert = m_graph.at(j);
+            const int ver2 = v2vert->number();
 
-            ver1 = (*v1)->number();
-            ver2 = (*v2)->number();
+            int temp_mut = 0, temp_asy = 0, temp_nul = 0;
 
-            temp_mut = 0, temp_asy = 0, temp_nul = 0;
-
-            if ((*v1)->hasEdgeTo(ver2))
+            if (v1vert->hasEdgeTo(ver2))
             {
-                if ((*v2)->hasEdgeTo(ver1))
+                if (v2vert->hasEdgeTo(ver1))
                     temp_mut++;
                 else
                     temp_asy++;
             }
-            else if ((*v2)->hasEdgeTo(ver1))
+            else if (v2vert->hasEdgeTo(ver1))
                 temp_asy++;
             else
                 temp_nul++;
 
-            for (v3 = (v2 + 1); v3 != m_graph.cend(); v3++)
+            for (int k = j + 1; k < N; ++k)
             {
+                GraphVertex *v3vert = m_graph.at(k);
+                int mut = temp_mut, asy = temp_asy, nul = temp_nul;
 
-                mut = temp_mut;
-                asy = temp_asy;
-                nul = temp_nul;
+                const int ver3 = v3vert->number();
 
-                ver3 = (*v3)->number();
-
-                if ((*v1)->hasEdgeTo(ver3))
+                if (v1vert->hasEdgeTo(ver3))
                 {
-                    if ((*v3)->hasEdgeTo(ver1))
+                    if (v3vert->hasEdgeTo(ver1))
                         mut++;
                     else
                         asy++;
                 }
-                else if ((*v3)->hasEdgeTo(ver1))
+                else if (v3vert->hasEdgeTo(ver1))
                     asy++;
                 else
                     nul++;
 
-                if ((*v2)->hasEdgeTo(ver3))
+                if (v2vert->hasEdgeTo(ver3))
                 {
-                    if ((*v3)->hasEdgeTo(ver2))
+                    if (v3vert->hasEdgeTo(ver2))
                         mut++;
                     else
                         asy++;
                 }
-                else if ((*v3)->hasEdgeTo(ver2))
+                else if (v3vert->hasEdgeTo(ver2))
                     asy++;
                 else
                     nul++;
 
                 qCDebug(lcClustering) << "triad of (" << ver1 << "," << ver2 << "," << ver3
                          << ") = (" << mut << "," << asy << "," << nul << ")";
-                triadType_examine_MAN_label(mut, asy, nul, (*v1), (*v2), (*v3));
+                triadType_examine_MAN_label(mut, asy, nul, v1vert, v2vert, v3vert, triadTypeCounts);
+            } // end 3rd loop
+        } // end 2nd loop
+    });
 
-                if (mut == 3 && asy == 0 && nul == 0)
-                {
-                    counter_021++;
-                }
-            } // end 3rd for
-
-        } // end 2rd for
-
-    } // end 1rd for
-    qCDebug(lcClustering) << " ****** 003 COUNTER: " << counter_021;
+    // Every worker thread is done now (blockingMap only returns once all of them have
+    // finished) - safe to read the final counts and copy them into triadTypeFreqs.
+    for (int i = 0; i <= 15; ++i)
+        triadTypeFreqs[i] = triadTypeCounts[i].loadAcquire();
 
     calculatedTriad = true;
 
@@ -130,13 +179,18 @@ bool Graph::graphTriadCensus()
 
 /**
     Examines the triad type (in Mutual-Asymmetric-Null label format)
-    and increases by one the proper frequency element
-    inside QList::triadTypeFreqs
+    and increases by one the proper frequency element inside triadTypeCounts.
+    See graphTriadCensus()'s own doc comment for what each of the 16 MAN-labeled types means.
+ *
+ * Thread-safety (WS15 P4): increments triadTypeCounts (QAtomicInteger<int>, one per triad
+ * type) instead of writing Graph::triadTypeFreqs directly, since this is called from
+ * multiple worker threads concurrently by graphTriadCensus() - see its own doc comment.
 */
 void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
                                         GraphVertex *vert1,
                                         GraphVertex *vert2,
-                                        GraphVertex *vert3)
+                                        GraphVertex *vert3,
+                                        QVector<QAtomicInteger<int>> &triadTypeCounts)
 {
     VList m_triad;
     bool isDown = false, isUp = false, isCycle = false, isTrans = false;
@@ -154,10 +208,10 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
         switch (asy)
         {
         case 0: //"003";
-            triadTypeFreqs[0]++;
+            triadTypeCounts[0].fetchAndAddOrdered(1);
             break;
         case 1: //"012";
-            triadTypeFreqs[1]++;
+            triadTypeCounts[1].fetchAndAddOrdered(1);
             break;
         case 2:
             // "021?" - find out!
@@ -175,12 +229,12 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
                     {
                         if (isOutLinked)
                         {
-                            triadTypeFreqs[3]++; //"021D"
+                            triadTypeCounts[3].fetchAndAddOrdered(1); //"021D"
                             break;
                         }
                         else if (isInLinked)
                         {
-                            triadTypeFreqs[5]++; //"021C"
+                            triadTypeCounts[5].fetchAndAddOrdered(1); //"021C"
                             break;
                         }
                         else
@@ -192,12 +246,12 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
                     {
                         if (isInLinked)
                         {
-                            triadTypeFreqs[4]++; //"021U"
+                            triadTypeCounts[4].fetchAndAddOrdered(1); //"021U"
                             break;
                         }
                         else if (isOutLinked)
                         {
-                            triadTypeFreqs[5]++; //"021C"
+                            triadTypeCounts[5].fetchAndAddOrdered(1); //"021C"
                             break;
                         }
                         else
@@ -227,7 +281,7 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
 
                         if (isOutLinked)
                         {
-                            triadTypeFreqs[8]++; //"030T"
+                            triadTypeCounts[8].fetchAndAddOrdered(1); //"030T"
                             isTrans = true;
                             break;
                         }
@@ -240,7 +294,7 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
             }
             if (!isTrans)
             { //"030C"
-                triadTypeFreqs[9]++;
+                triadTypeCounts[9].fetchAndAddOrdered(1);
             }
             break;
         }
@@ -250,7 +304,7 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
         switch (asy)
         {
         case 0: //"102";
-            triadTypeFreqs[2]++;
+            triadTypeCounts[2].fetchAndAddOrdered(1);
             break;
         case 1:
             isUp = false;
@@ -269,7 +323,7 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
 
                         if (isInLinked)
                         {
-                            triadTypeFreqs[6]++; //"030T"
+                            triadTypeCounts[6].fetchAndAddOrdered(1); //"111D"
                             isUp = true;
                             break;
                         }
@@ -282,7 +336,7 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
             }
             if (!isUp)
             { //"111U"
-                triadTypeFreqs[7]++;
+                triadTypeCounts[7].fetchAndAddOrdered(1);
             }
             break;
         case 2:
@@ -313,7 +367,7 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
                         }
                         else if (isOutLinked && !isInLinked)
                         {
-                            triadTypeFreqs[11]++; //"120D"
+                            triadTypeCounts[11].fetchAndAddOrdered(1); //"120D"
                             isDown = true;
                             isCycle = false;
                             break;
@@ -333,7 +387,7 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
                         }
                         else if (isInLinked && !isOutLinked)
                         {
-                            triadTypeFreqs[12]++; //"120U"
+                            triadTypeCounts[12].fetchAndAddOrdered(1); //"120U"
                             isUp = true;
                             isCycle = false;
                             break;
@@ -349,7 +403,7 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
             }
             if (isCycle)
             { //"120C"
-                triadTypeFreqs[13]++;
+                triadTypeCounts[13].fetchAndAddOrdered(1);
             }
             break;
         case 3:
@@ -362,16 +416,16 @@ void Graph::triadType_examine_MAN_label(int mut, int asy, int nul,
         switch (asy)
         {
         case 0: // "201"
-            triadTypeFreqs[10]++;
+            triadTypeCounts[10].fetchAndAddOrdered(1);
             break;
         case 1: // "210"
-            triadTypeFreqs[14]++;
+            triadTypeCounts[14].fetchAndAddOrdered(1);
             break;
         }
         break;
     case 3: // "300"
         if (asy == 0 && nul == 0)
-            triadTypeFreqs[15]++;
+            triadTypeCounts[15].fetchAndAddOrdered(1);
         break;
     }
 }

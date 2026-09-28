@@ -27,7 +27,7 @@ namespace cli
     // Per-node builder
     // ------------------------------
 
-    static QJsonArray buildPerNodeArrayV4(Graph &g, bool katzEnabled, bool bonacichEnabled)
+    static QJsonArray buildPerNodeArrayV4(Graph &g, bool katzEnabled, bool bonacichEnabled, bool pnEnabled)
     {
         QJsonArray arr;
 
@@ -56,9 +56,23 @@ namespace cli
                 o["SBPC"] = d2s(gv->SBPC());
             }
 
+            // ---- PN Centrality (WS18 P3, optional - only computed/valid when pnEnabled) ----
+            if (pnEnabled)
+            {
+                o["PN"] = d2s(gv->PN());
+            }
+
             // ---- Centrality ----
             o["DC"] = d2s(gv->DC());
             o["SDC"] = d2s(gv->SDC());
+
+            // ---- Signed degree (WS18 P3) - always computed, no gating flag needed: unlike
+            // Katz/Bonacich there's no user-supplied parameter with no meaningful default, same
+            // cost/parameter profile as DC above. ----
+            o["signedDegreePos"] = d2s(gv->signedDegreePos());
+            o["signedDegreeNeg"] = d2s(gv->signedDegreeNeg());
+            o["signedDegreeRatio"] = d2s(gv->signedDegreeRatio());
+            o["signedDegreeNet"] = d2s(gv->signedDegreeNet());
 
             o["CC"] = d2s(gv->CC());
             o["SCC"] = d2s(gv->SCC());
@@ -124,6 +138,7 @@ namespace cli
 
         const bool katzEnabled = (cfg.katzAlpha >= 0);
         const bool bonacichEnabled = (cfg.bonacichAlpha >= 0);
+        const bool pnEnabled = (cfg.pnMode != "off");
 
         QJsonObject run;
         run["considerWeights"] = cfg.considerWeights;
@@ -138,6 +153,9 @@ namespace cli
             run["bonacichAlpha"] = d2s(cfg.bonacichAlpha);
             run["bonacichBeta"] = d2s(cfg.bonacichBeta);
         }
+        run["pnEnabled"] = pnEnabled;
+        if (pnEnabled)
+            run["pnMode"] = cfg.pnMode;
         root["run"] = run;
 
         const int ties_graph = load.tiesGraph; // canonical, already correct
@@ -153,14 +171,18 @@ namespace cli
         QJsonObject graph;
         graph["directed"] = g.isDirected();
         graph["weighted"] = g.isWeighted();
+        graph["symmetric"] = g.isSymmetric();
         root["graph"] = graph;
 
         // Metrics (add density so golden JSONs carry it)
         QJsonObject metrics;
         metrics["density"] = d2s(g.graphDensity());
+        metrics["spectralRadius"] = d2s(g.estimateSpectralRadius(cfg.considerWeights,
+                                                                  cfg.inverseWeights,
+                                                                  cfg.dropIsolates));
         root["metrics"] = metrics;
 
-        root["per_node"] = buildPerNodeArrayV4(g, katzEnabled, bonacichEnabled);
+        root["per_node"] = buildPerNodeArrayV4(g, katzEnabled, bonacichEnabled, pnEnabled);
 
         QJsonObject loadReport;
         loadReport["ok"] = load.ok;
@@ -179,7 +201,7 @@ namespace cli
 
     // ---- schema v4 compare ----
 
-    static bool cmpPerNodeArrayV4(const QJsonArray &eArr, const QJsonArray &aArr, bool katzEnabled, bool bonacichEnabled, QTextStream &err)
+    static bool cmpPerNodeArrayV4(const QJsonArray &eArr, const QJsonArray &aArr, bool katzEnabled, bool bonacichEnabled, bool pnEnabled, QTextStream &err)
     {
         if (eArr.size() != aArr.size())
         {
@@ -205,6 +227,11 @@ namespace cli
         {
             const QString es = e.value(k).toString();
             const QString as = a.value(k).toString();
+
+            // Both sides legitimately "nan" (a 0/0 ratio) is a match, not a mismatch - see
+            // cli_common.cpp's cmpNumStrTol.
+            if (es.compare("nan", Qt::CaseInsensitive) == 0 && as.compare("nan", Qt::CaseInsensitive) == 0)
+                return;
 
             bool ok1 = false, ok2 = false;
             const double ev = es.toDouble(&ok1);
@@ -275,6 +302,7 @@ namespace cli
             // Prominence v4 fields (centralities + prestige + eigenvector + pagerank + IRCC)
             const QStringList numFields = {
                 "DC", "SDC",
+                "signedDegreePos", "signedDegreeNeg", "signedDegreeRatio", "signedDegreeNet",
                 "CC", "SCC",
                 "IRCC", "SIRCC",
                 "BC", "SBC",
@@ -296,6 +324,8 @@ namespace cli
                 allFields << "KC" << "SKC";
             if (bonacichEnabled)
                 allFields << "BPC" << "SBPC";
+            if (pnEnabled)
+                allFields << "PN";
 
             for (const QString &f : allFields)
                 cmpNodeFieldNumStrTol(e, a, f, eid, TOL);
@@ -335,6 +365,8 @@ namespace cli
         const bool katzEnabled = aRun.value("katzEnabled").toBool();
         ok &= cmpBool(eRun, aRun, "bonacichEnabled", err);
         const bool bonacichEnabled = aRun.value("bonacichEnabled").toBool();
+        ok &= cmpBool(eRun, aRun, "pnEnabled", err);
+        const bool pnEnabled = aRun.value("pnEnabled").toBool();
 
         const QJsonObject eCounts = expected.value("counts").toObject();
         const QJsonObject aCounts = actual.value("counts").toObject();
@@ -346,11 +378,17 @@ namespace cli
         const QJsonObject aGraph = actual.value("graph").toObject();
         ok &= cmpBool(eGraph, aGraph, "directed", err);
         ok &= cmpBool(eGraph, aGraph, "weighted", err);
+        ok &= cmpBool(eGraph, aGraph, "symmetric", err);
+
+        const QJsonObject eMetrics = expected.value("metrics").toObject();
+        const QJsonObject aMetrics = actual.value("metrics").toObject();
+        ok &= cmpNumStrTol(eMetrics, aMetrics, "density", err);
+        ok &= cmpNumStrTol(eMetrics, aMetrics, "spectralRadius", err);
 
         // Per-node (always present in v4)
         const QJsonArray ePN = expected.value("per_node").toArray();
         const QJsonArray aPN = actual.value("per_node").toArray();
-        ok &= cmpPerNodeArrayV4(ePN, aPN, katzEnabled, bonacichEnabled, err);
+        ok &= cmpPerNodeArrayV4(ePN, aPN, katzEnabled, bonacichEnabled, pnEnabled, err);
 
         if (!ok)
             return 1;
@@ -383,6 +421,7 @@ namespace cli
 
             // 2. Standalone centralities
             g.centralityDegree(cfg.considerWeights, cfg.dropIsolates);
+            g.centralitySignedDegree(cfg.considerWeights, cfg.dropIsolates);
             g.centralityInformation(cfg.considerWeights, cfg.inverseWeights);
             g.centralityEigenvector(cfg.considerWeights, cfg.inverseWeights, cfg.dropIsolates);
             g.centralityClosenessIR(cfg.considerWeights,
@@ -396,6 +435,14 @@ namespace cli
             if (cfg.bonacichAlpha >= 0)
                 g.centralityBonacich(cfg.bonacichAlpha, cfg.bonacichBeta, cfg.considerWeights,
                                      cfg.inverseWeights, cfg.dropIsolates);
+
+            if (cfg.pnMode != "off")
+            {
+                const PNMode mode = (cfg.pnMode == "out") ? PNMode::Out
+                                   : (cfg.pnMode == "in") ? PNMode::In
+                                                           : PNMode::All;
+                g.centralityPN(mode, cfg.dropIsolates);
+            }
 
             // 3. Prestige
             g.prestigeDegree(cfg.considerWeights, cfg.dropIsolates);
