@@ -316,24 +316,37 @@ combo), reporting, and WS12 script command all done and verified. Next: PN centr
       the valid paths.
 - [x] **Directed-graph semantics for PN** — resolved by the confirmed formula above: not a guess
       or an extension, `in`/`out` are real, distinct, independently-confirmed formulas.
-- [ ] **Wiring**, same 8-touchpoint shape Katz used, for both measures: `Graph` façade method,
-      `GraphVertex` storage, `MainWindow` dialog/menu action
-      (`src/mainwindow/analyze/mainwindow_analyze_centrality.cpp`), CLI kernel
-      (`kernel_prominence_v4.cpp`), reporting (`graph_reports.cpp`), `graph_centrality.cpp`
-      dispatch, layout-by-prominence (`graph_layouts_basic.cpp` — PN's values can be negative,
-      same open framing question already flagged for Distance/Diameter under P2 applies here too).
-- [ ] **GUI "What's This"/tooltip text for PN**, not just the doc-comment Meaning section — plain-
-      language framing to carry over: *"it is worse to receive a negative tie from someone who is
-      highly popular (receives a lot of positive ties) than from someone who is marginalized;
-      receiving a negative tie from someone who is universally disliked might even be interpreted
-      as a positive indicator in structural dynamics."* This is the intuition for why PN weights a
-      negative tie by the sender's own positive standing, not just a flat penalty - worth landing
-      in the dialog's What's This help and/or its tooltip, not just this roadmap doc or the source
-      comment.
-- [ ] **New `--interactive-script` command(s)** (WS12) for both measures, following WS12's Command
-      naming direction (name/shape after the equivalent operation in an established SNA scripting
-      ecosystem where one clearly exists) — every new algorithm added from here on needs this, not
-      just a GUI menu action and a CLI kernel flag.
+- [x] **PN CLI kernel wiring** — new `--pn-mode off|all|out|in` flag (`kernel_prominence_v4.cpp`),
+      mirroring `--katz-alpha`'s opt-in pattern (off by default). Dumps `PN` per node when enabled,
+      echoed via `run.pnEnabled`/`run.pnMode`. Three new baselines cover all three modes
+      (`Signed_Dir_N4_NoCycle` for out/in, `Signed_Undir_N4` for all).
+- [x] **PN GUI wiring** — new `DialogCentralityPN` (mode radio buttons, disabling whichever the
+      loaded network's directedness rules out), new `Graph::writeCentralityPN()` (minimal report,
+      same shape as signed degree's), `MainWindow::slotAnalyzeCentralityPN()`, a menu action (moved
+      to the end of Analyze > Centrality and Prestige indices, after Prestige, per manual-testing
+      feedback - both signed measures were originally interleaved with the unsigned ones near the
+      top), and a new `IndexType::PN` entry so it's selectable in the Prominence toolbox combo too.
+      Explicitly excluded from "Visualize by prominence index" and Node Find's index dropdown (both
+      found live during manual testing - Node Find's exclusion was initially missed and needed a
+      follow-up fix, same `vertexFindByIndexScore()` guard-case pattern as signed degree's own).
+- [x] **GUI "What's This"/tooltip text for PN** — landed on both the menu action's own What's This
+      and the mode dialog's top label, carrying the plain-language framing: *"it is worse to
+      receive a negative tie from someone who is highly popular... than from someone who is
+      marginalized; receiving a negative tie from someone who is universally disliked might even be
+      interpreted as a positive indicator."*
+- [x] **New `--interactive-script` command** (WS12) for both measures:
+      `report-centrality-degree-signed [weights] [dropisolates] [csv]` and
+      `report-centrality-pn [all|out|in] [dropisolates] [csv]` (the first command in this codebase
+      needing a value-carrying token, not just boolean flags - mode is a required 3-way choice).
+      Both named after the naming-parity direction (their respective established-implementation
+      function names, reordered to this codebase's own `report-centrality-*` prefix). Verified
+      headlessly for all three PN modes: values match the independently-verified GUI reports
+      exactly.
+
+**PN centrality (#301) is now fully wired** — engine, CLI kernel, GUI (menu + toolbox combo),
+reporting, WS12 script command, and a filed follow-up issue (#302, adjacency-import dialog UX,
+found incidentally while testing) all done. **P3 (signed degree + PN centrality) is complete.**
+Next: P4 (structural balance).
 
 **Found, deliberately deferred, not part of this checklist**: all 16 existing centrality/prestige
 `QAction`s' `setWhatsThis()`/`setStatusTip()` text predates the richer Meaning/When to

@@ -73,8 +73,8 @@ void MainWindow::runInteractiveScript(const QString &scriptPath)
  *   never outside/after the `invokeMethod()` call itself.
  * - **Two-step dispatch** (`filter-ego`, `filter-isolates`, `symmetrize-strongties`,
  *   `symmetrize-cocitation`, `unilateral`, `distances`, `distances-bench`,
- *   `report-centrality-degree`, `report-centrality-degree-signed`, `report-centrality-closeness`,
- *   `report-centrality-closeness-ir`,
+ *   `report-centrality-degree`, `report-centrality-degree-signed`, `report-centrality-pn`,
+ *   `report-centrality-closeness`, `report-centrality-closeness-ir`,
  *   `report-centrality-betweenness`, `report-centrality-stress`, `report-centrality-eccentricity`,
  *   `report-centrality-power`, `report-centrality-information`, `report-centrality-eigenvector`,
  *   `report-prestige-degree`, `report-prestige-proximity`, `report-prestige-pagerank`): used when
@@ -639,6 +639,45 @@ void MainWindow::processNextInteractiveCommand()
             tr("Computing Signed Degree Centralities. Please wait..."),
             [this, considerWeights, dropIsolates, success, timer]() {
                 qInfo() << "BENCH report-centrality-degree-signed weights=" << considerWeights
+                        << "dropisolates=" << dropIsolates
+                        << "success=" << *success
+                        << "N=" << activeNodes() << "E=" << activeEdges()
+                        << "elapsed_ms=" << timer->elapsed();
+                QTimer::singleShot(0, this, &MainWindow::processNextInteractiveCommand);
+            });
+    }
+    else if (line == "report-centrality-pn" || line.startsWith("report-centrality-pn "))
+    {
+        // report-centrality-pn [all|out|in] [dropisolates] [csv] - WS18 P3 (#301): mirrors
+        // slotAnalyzeCentralityPN() exactly, but with the mode passed directly as a token instead
+        // of a dialog choice (default "all" if omitted). Named after the established reference
+        // implementation's own pn_index() function name (per WS12's naming-parity direction),
+        // reordered to keep this codebase's own report-centrality-* prefix. No weights token:
+        // PN considers tie sign only, never weights - same reasoning as
+        // report-centrality-degree-signed having no inverse token.
+        const QStringList tokens = line.mid(20).trimmed().split(' ', Qt::SkipEmptyParts);
+        PNMode mode = PNMode::All;
+        if (tokens.contains("out"))
+            mode = PNMode::Out;
+        else if (tokens.contains("in"))
+            mode = PNMode::In;
+        const bool dropIsolates = tokens.contains("dropisolates");
+        const int reportFormat = tokens.contains("csv") ? ReportFormat::Csv : ReportFormat::Html;
+
+        const QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+        const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+        const QString fn = appSettings["dataDir"] + "socnetv-report-centrality-pn-" + dateTime + ext;
+        auto success = std::make_shared<bool>(false);
+        auto timer = std::make_shared<QElapsedTimer>();
+        timer->start();
+
+        runGraphOperationAsync(
+            [this, fn, mode, dropIsolates, reportFormat, success]() {
+                *success = activeGraph->writeCentralityPN(fn, mode, dropIsolates, reportFormat);
+            },
+            tr("Computing PN Centralities. Please wait..."),
+            [this, mode, dropIsolates, success, timer]() {
+                qInfo() << "BENCH report-centrality-pn mode=" << static_cast<int>(mode)
                         << "dropisolates=" << dropIsolates
                         << "success=" << *success
                         << "N=" << activeNodes() << "E=" << activeEdges()

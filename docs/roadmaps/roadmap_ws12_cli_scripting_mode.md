@@ -126,6 +126,7 @@ command below, not just the ones originally added for benchmarking.
   action), so it lives here rather than on `distances`.
 - `report-centrality-degree [weights] [dropisolates] [csv]`,
   `report-centrality-degree-signed [weights] [dropisolates] [csv]`,
+  `report-centrality-pn [all|out|in] [dropisolates] [csv]`,
   `report-centrality-closeness [weights] [inverse] [dropisolates] [csv]`,
   `report-centrality-closeness-ir [weights] [inverse] [dropisolates] [csv]`,
   `report-centrality-betweenness [weights] [inverse] [dropisolates] [csv]`,
@@ -148,7 +149,13 @@ command below, not just the ones originally added for benchmarking.
   (WS18 P3, #300) was added later, following the exact same pattern as
   `report-centrality-degree` (no `inverse` token - `writeCentralitySignedDegree()` doesn't take
   one either) - named after an established outside package's own `degree_signed()` function name,
-  reordered to keep this family's own `report-centrality-*` prefix.
+  reordered to keep this family's own `report-centrality-*` prefix. `report-centrality-pn` (WS18
+  P3, #301) follows the same naming-parity direction, after that package's own `pn_index()`
+  function name. Its mode is a required 3-way choice, not an optional flag like the others here,
+  so it's a bare positional token (`all`/`out`/`in`, defaulting to `all` if omitted) rather than
+  the `weights`/`inverse`-style boolean tokens every sibling command uses - no other command here
+  needed a value-carrying token before this one. No `weights` token either:
+  `writeCentralityPN()`/`centralityPN()` consider tie sign only, never weights.
 - `report-reciprocity [weights] [csv]`, `report-eccentricity [weights] [inverse] [dropisolates]
   [csv]`, `report-clustering-coefficient [csv]`, `report-triad-census [csv]` — added for WS16 Step
   3 (the long-tail reports), same mirroring pattern as the commands above.
