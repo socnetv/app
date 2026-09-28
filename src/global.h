@@ -38,7 +38,7 @@ SOCNETV_BEGIN_NAMESPACE
 // Version
 // ============================================================================
 
-static const QString VERSION = "3.8";
+static const QString VERSION = "3.9";
 
 // ============================================================================
 // Math constants (define only if not already provided by <cmath>)
