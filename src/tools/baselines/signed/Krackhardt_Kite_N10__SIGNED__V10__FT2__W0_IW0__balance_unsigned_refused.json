@@ -1,0 +1,180 @@
+{
+    "counts": {
+        "links_sna": 36,
+        "nodes": 10,
+        "ties_graph": 18
+    },
+    "dataset": {
+        "filetype": 2,
+        "name": "Krackhardt_Kite_N10.paj",
+        "path": "src/data/Krackhardt_Kite_N10.paj"
+    },
+    "distances": {
+        "negative_cycle_detected": false,
+        "per_node": [
+            {
+                "BC": "0.83333333333333326",
+                "CC": "0.058823529411764705",
+                "distance_sum": "17",
+                "eccentricity": "4",
+                "id": 1,
+                "label": "Andre"
+            },
+            {
+                "BC": "0.83333333333333326",
+                "CC": "0.058823529411764705",
+                "distance_sum": "17",
+                "eccentricity": "4",
+                "id": 2,
+                "label": "Beverley"
+            },
+            {
+                "BC": "0",
+                "CC": "0.055555555555555552",
+                "distance_sum": "18",
+                "eccentricity": "4",
+                "id": 3,
+                "label": "Carol"
+            },
+            {
+                "BC": "3.6666666666666665",
+                "CC": "0.066666666666666666",
+                "distance_sum": "15",
+                "eccentricity": "4",
+                "id": 4,
+                "label": "Diane"
+            },
+            {
+                "BC": "0",
+                "CC": "0.055555555555555552",
+                "distance_sum": "18",
+                "eccentricity": "4",
+                "id": 5,
+                "label": "Ed"
+            },
+            {
+                "BC": "8.3333333333333339",
+                "CC": "0.071428571428571425",
+                "distance_sum": "14",
+                "eccentricity": "3",
+                "id": 6,
+                "label": "Fernando"
+            },
+            {
+                "BC": "8.3333333333333339",
+                "CC": "0.071428571428571425",
+                "distance_sum": "14",
+                "eccentricity": "3",
+                "id": 7,
+                "label": "Garth"
+            },
+            {
+                "BC": "14",
+                "CC": "0.066666666666666666",
+                "distance_sum": "15",
+                "eccentricity": "2",
+                "id": 8,
+                "label": "Heather"
+            },
+            {
+                "BC": "8",
+                "CC": "0.047619047619047616",
+                "distance_sum": "21",
+                "eccentricity": "3",
+                "id": 9,
+                "label": "Ike"
+            },
+            {
+                "BC": "0",
+                "CC": "0.034482758620689655",
+                "distance_sum": "29",
+                "eccentricity": "4",
+                "id": 10,
+                "label": "Jane"
+            }
+        ]
+    },
+    "graph": {
+        "directed": false,
+        "symmetric": true,
+        "weighted": false
+    },
+    "kernel": "signed",
+    "load_report": {
+        "fileType_signal": 2,
+        "load_ms": 1,
+        "load_msg": "",
+        "net_name": "Krackhardt_Kite_N10.paj",
+        "ok": true
+    },
+    "potentials": {
+        "negative_cycle_detected": false,
+        "per_node": [
+            {
+                "id": 1,
+                "label": "Andre",
+                "potential": 0
+            },
+            {
+                "id": 2,
+                "label": "Beverley",
+                "potential": 0
+            },
+            {
+                "id": 3,
+                "label": "Carol",
+                "potential": 0
+            },
+            {
+                "id": 4,
+                "label": "Diane",
+                "potential": 0
+            },
+            {
+                "id": 5,
+                "label": "Ed",
+                "potential": 0
+            },
+            {
+                "id": 6,
+                "label": "Fernando",
+                "potential": 0
+            },
+            {
+                "id": 7,
+                "label": "Garth",
+                "potential": 0
+            },
+            {
+                "id": 8,
+                "label": "Heather",
+                "potential": 0
+            },
+            {
+                "id": 9,
+                "label": "Ike",
+                "potential": 0
+            },
+            {
+                "id": 10,
+                "label": "Jane",
+                "potential": 0
+            }
+        ]
+    },
+    "schema_version": 10,
+    "structural_balance": {
+        "balance_computed": false,
+        "balance_ratio": "0",
+        "balanced_triads": 0,
+        "classes": {
+            "+++": 0,
+            "++-": 0,
+            "+--": 0,
+            "---": 0
+        },
+        "closed_triads": 0,
+        "open_triads": 0,
+        "unbalanced_triads": 0
+    }
+}

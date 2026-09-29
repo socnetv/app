@@ -1040,6 +1040,17 @@ run_case_signed \
   -w 1 -x 0 \
   "${BASE_SIGNED}/Signed_Undir_N6_Mixed__SIGNED__V10__FT2__W1_IW0.json"
 
+# graphStructuralBalance() also refuses on an undirected graph with no negative-weight edge at
+# all (every edge implicitly positive would trivially classify every closed triad as "+++",
+# a misleading 100%-balanced result for a caller with no signed-network intent - see its own
+# doc comment). Krackhardt_Kite_N10 is undirected and unweighted/unsigned, pinning this second
+# refusal path distinctly from the directed-refusal case above.
+run_case_signed \
+  "${DATA}/Krackhardt_Kite_N10.paj" \
+  2 \
+  -w 0 -x 0 \
+  "${BASE_SIGNED}/Krackhardt_Kite_N10__SIGNED__V10__FT2__W0_IW0__balance_unsigned_refused.json"
+
 echo
 if (( UPDATE )); then
   echo "[UPDATE] All registered baselines regenerated. Review the diff before committing."

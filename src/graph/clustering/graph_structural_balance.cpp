@@ -29,12 +29,19 @@
  * Undirected only: Cartwright-Harary balance theory is classically defined for undirected
  * signed graphs. Directed-graph semantics are a separate, deferred design question (#303).
  *
+ * Signed only: also refuses on a graph with no negative-weight edge at all. Every edge would
+ * implicitly be positive, so every closed triad would trivially classify as "+++"/balanced -
+ * a mathematically correct but misleading 100%-balanced result for a caller with no
+ * signed-network intent, not an actual finding about the network's structure. Uses
+ * hasNegativeWeight() (cached O(n^2)/O(1)), same guard style as P1's negative-weight refusal.
+ *
  * Complexity: O(n^3), same shape as graphTriadCensus() - three nested loops each bounded by N,
  * parallelized the same way (QtConcurrent::blockingMap over the outer vertex loop, one
  * QAtomicInteger<int> counter per classification bucket to avoid a data race across worker
  * threads).
  *
- * @return false if the graph is directed (refuses cleanly, does not compute), true otherwise
+ * @return false if the graph is directed or has no negative-weight edge (refuses cleanly, does
+ * not compute), true otherwise
  */
 bool Graph::graphStructuralBalance()
 {
@@ -44,6 +51,14 @@ bool Graph::graphStructuralBalance()
     {
         qCDebug(lcClustering) << "Graph::graphStructuralBalance() - graph is directed, refusing. "
                                   "Structural balance is defined for undirected signed graphs only.";
+        calculatedStructuralBalance = false;
+        return false;
+    }
+
+    if (!hasNegativeWeight())
+    {
+        qCDebug(lcClustering) << "Graph::graphStructuralBalance() - graph has no negative-weight "
+                                  "edge, refusing. Structural balance requires a signed network.";
         calculatedStructuralBalance = false;
         return false;
     }
