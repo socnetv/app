@@ -1018,6 +1018,28 @@ run_case_signed \
   -w 1 -x 0 \
   "${BASE_SIGNED}/Signed_Dir_N3_NegCycle__SIGNED__V10__FT1__W1_IW0.json"
 
+# Structural balance (WS18 P4, #305). structural_balance is now part of every signed-kernel
+# run's JSON (all baselines above were re-dumped to include it), so the directed
+# Signed_Dir_N4_NoCycle case above already pins the undirected-only refusal path
+# (balance_computed=false, all counts 0 - graphStructuralBalance() refuses cleanly on a
+# directed graph). The two fixtures below cover the two meaningful undirected shapes:
+# Signed_Undir_N4 has zero closed triads (degenerate all-open case, pins balance_ratio=0
+# without division by zero), Signed_Undir_N6_Mixed has 13 closed triads spanning all 4 sign
+# sub-types (+++/++-/+--/---) plus 7 open ones. Expected values independently verified against
+# a from-scratch Python triad enumeration, not just self-consistency: balanced=7 unbalanced=6
+# ratio=0.538 classes={+++:1 ++-:4 +--:6 ---:2}.
+run_case_signed \
+  "${DATA}/Signed_Undir_N4.paj" \
+  2 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/Signed_Undir_N4__SIGNED__V10__FT2__W1_IW0__balance_open.json"
+
+run_case_signed \
+  "${DATA}/Signed_Undir_N6_Mixed.paj" \
+  2 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/Signed_Undir_N6_Mixed__SIGNED__V10__FT2__W1_IW0.json"
+
 echo
 if (( UPDATE )); then
   echo "[UPDATE] All registered baselines regenerated. Review the diff before committing."

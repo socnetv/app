@@ -54,7 +54,7 @@
     "kernel": "signed",
     "load_report": {
         "fileType_signal": 5,
-        "load_ms": 3,
+        "load_ms": 0,
         "load_msg": "",
         "net_name": "Signed_Dir_N4_NoCycle.dl",
         "ok": true
@@ -84,5 +84,19 @@
             }
         ]
     },
-    "schema_version": 10
+    "schema_version": 10,
+    "structural_balance": {
+        "balance_computed": false,
+        "balance_ratio": "0",
+        "balanced_triads": 0,
+        "classes": {
+            "+++": 0,
+            "++-": 0,
+            "+--": 0,
+            "---": 0
+        },
+        "closed_triads": 0,
+        "open_triads": 0,
+        "unbalanced_triads": 0
+    }
 }

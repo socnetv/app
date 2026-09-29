@@ -3,10 +3,10 @@
 //
 // Signed-network analysis kernel (schema v10) for socnetv-cli.
 // Computes Johnson's-algorithm potentials h(v) via Graph::graphBellmanFordPotentials() and reports
-// negative-cycle detection, so both can be covered by golden-baseline regression testing.
-// Designed to grow: later signed-network measures (PN centrality, structural balance ratio) are
-// expected to add new JSON sections to this same kernel rather than spawning new ones, since they
-// all describe the same "signed-network analysis of this dataset" concept.
+// negative-cycle detection, plus (WS18 P4) structural balance triad classification, so both can be
+// covered by golden-baseline regression testing. Signed centrality (Signed Degree, PN) lives in
+// the prominence kernel (kernel_prominence_v4.cpp) instead, alongside the other prominence
+// measures, not here.
 
 #include "kernel_signed_v10.h"
 
@@ -43,6 +43,42 @@ static QJsonArray buildDistancesPerNodeArray(Graph &g, bool negativeCycleDetecte
         arr.append(o);
     }
     return arr;
+}
+
+// WS18 P4: structural balance is undirected-only (Graph::graphStructuralBalance() refuses
+// cleanly and returns false on a directed graph - see its own doc comment). When refused,
+// emits a uniform-shaped block with balance_computed=false and all counts 0, rather than
+// omitting the "structural_balance" key, so callers don't need a separate existence check.
+static QJsonObject buildStructuralBalanceObj(Graph &g)
+{
+    QJsonObject obj;
+    const bool ok = g.graphStructuralBalance();
+    obj["balance_computed"] = ok;
+
+    const QList<int> &c = g.graphStructuralBalanceCounts();
+    const int cPPP = ok && c.size() > 0 ? c[0] : 0;
+    const int cPPM = ok && c.size() > 1 ? c[1] : 0;
+    const int cPMM = ok && c.size() > 2 ? c[2] : 0;
+    const int cMMM = ok && c.size() > 3 ? c[3] : 0;
+    const int cOpen = ok && c.size() > 4 ? c[4] : 0;
+    const int balanced = cPPP + cPMM;
+    const int unbalanced = cPPM + cMMM;
+    const int closed = balanced + unbalanced;
+
+    QJsonObject classes;
+    classes["+++"] = cPPP;
+    classes["++-"] = cPPM;
+    classes["+--"] = cPMM;
+    classes["---"] = cMMM;
+    obj["classes"] = classes;
+
+    obj["open_triads"] = cOpen;
+    obj["balanced_triads"] = balanced;
+    obj["unbalanced_triads"] = unbalanced;
+    obj["closed_triads"] = closed;
+    obj["balance_ratio"] = d2s((closed > 0) ? (qreal(balanced) / qreal(closed)) : 0.0);
+
+    return obj;
 }
 
 static QJsonObject buildGoldenJsonV10(
@@ -108,6 +144,8 @@ static QJsonObject buildGoldenJsonV10(
     distancesObj["negative_cycle_detected"] = distancesNegativeCycleDetected;
     distancesObj["per_node"] = buildDistancesPerNodeArray(g, distancesNegativeCycleDetected);
     root["distances"] = distancesObj;
+
+    root["structural_balance"] = buildStructuralBalanceObj(g);
 
     QJsonObject loadReport;
     loadReport["ok"]               = load.ok;
@@ -207,6 +245,19 @@ static int compareGoldenV10(const QJsonObject &expected, const QJsonObject &actu
                 ok &= cmpNumStrTol(e, a, f, err, 1e-15);
         }
     }
+
+    const QJsonObject eBal = expected.value("structural_balance").toObject();
+    const QJsonObject aBal = actual.value("structural_balance").toObject();
+    ok &= cmpBool(eBal, aBal, "balance_computed", err);
+    ok &= cmpInt(eBal, aBal, "open_triads", err);
+    ok &= cmpInt(eBal, aBal, "balanced_triads", err);
+    ok &= cmpInt(eBal, aBal, "unbalanced_triads", err);
+    ok &= cmpInt(eBal, aBal, "closed_triads", err);
+    ok &= cmpNumStrTol(eBal, aBal, "balance_ratio", err, 1e-15);
+    const QJsonObject eClasses = eBal.value("classes").toObject();
+    const QJsonObject aClasses = aBal.value("classes").toObject();
+    for (const QString &k : {"+++", "++-", "+--", "---"})
+        ok &= cmpInt(eClasses, aClasses, k, err);
 
     if (!ok) return 1;
 

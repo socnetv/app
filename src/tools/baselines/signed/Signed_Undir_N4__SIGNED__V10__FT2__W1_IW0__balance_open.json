@@ -1,92 +1,92 @@
 {
     "counts": {
-        "links_sna": 4,
+        "links_sna": 8,
         "nodes": 4,
         "ties_graph": 4
     },
     "dataset": {
-        "filetype": 6,
-        "name": "Signed_Dir_N4_NoCycle.gml",
-        "path": "src/data/Signed_Dir_N4_NoCycle.gml"
+        "filetype": 2,
+        "name": "Signed_Undir_N4.paj",
+        "path": "src/data/Signed_Undir_N4.paj"
     },
     "distances": {
-        "negative_cycle_detected": false,
+        "negative_cycle_detected": true,
         "per_node": [
             {
                 "BC": "0",
-                "CC": "0.1111111111111111",
-                "distance_sum": "9",
-                "eccentricity": "5",
-                "id": 1,
-                "label": "1"
-            },
-            {
-                "BC": "2",
                 "CC": "0",
                 "distance_sum": "0",
-                "eccentricity": "2147483647",
-                "id": 2,
-                "label": "2"
-            },
-            {
-                "BC": "2",
-                "CC": "0",
-                "distance_sum": "4",
-                "eccentricity": "2147483647",
-                "id": 3,
-                "label": "3"
+                "eccentricity": "0",
+                "id": 1,
+                "label": "A"
             },
             {
                 "BC": "0",
                 "CC": "0",
                 "distance_sum": "0",
-                "eccentricity": "2147483647",
+                "eccentricity": "0",
+                "id": 2,
+                "label": "B"
+            },
+            {
+                "BC": "0",
+                "CC": "0",
+                "distance_sum": "0",
+                "eccentricity": "0",
+                "id": 3,
+                "label": "C"
+            },
+            {
+                "BC": "0",
+                "CC": "0",
+                "distance_sum": "0",
+                "eccentricity": "0",
                 "id": 4,
-                "label": "4"
+                "label": "D"
             }
         ]
     },
     "graph": {
-        "directed": true,
-        "symmetric": false,
+        "directed": false,
+        "symmetric": true,
         "weighted": true
     },
     "kernel": "signed",
     "load_report": {
-        "fileType_signal": 6,
+        "fileType_signal": 2,
         "load_ms": 0,
         "load_msg": "",
-        "net_name": "Signed_Dir_N4_NoCycle.gml",
+        "net_name": "Signed_Undir_N4.paj",
         "ok": true
     },
     "potentials": {
-        "negative_cycle_detected": false,
+        "negative_cycle_detected": true,
         "per_node": [
             {
                 "id": 1,
-                "label": "1",
+                "label": "A",
                 "potential": 0
             },
             {
                 "id": 2,
-                "label": "2",
+                "label": "B",
                 "potential": 0
             },
             {
                 "id": 3,
-                "label": "3",
-                "potential": -2
+                "label": "C",
+                "potential": 0
             },
             {
                 "id": 4,
-                "label": "4",
+                "label": "D",
                 "potential": 0
             }
         ]
     },
     "schema_version": 10,
     "structural_balance": {
-        "balance_computed": false,
+        "balance_computed": true,
         "balance_ratio": "0",
         "balanced_triads": 0,
         "classes": {
@@ -96,7 +96,7 @@
             "---": 0
         },
         "closed_triads": 0,
-        "open_triads": 0,
+        "open_triads": 4,
         "unbalanced_triads": 0
     }
 }

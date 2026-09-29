@@ -97,5 +97,19 @@
             }
         ]
     },
-    "schema_version": 10
+    "schema_version": 10,
+    "structural_balance": {
+        "balance_computed": false,
+        "balance_ratio": "0",
+        "balanced_triads": 0,
+        "classes": {
+            "+++": 0,
+            "++-": 0,
+            "+--": 0,
+            "---": 0
+        },
+        "closed_triads": 0,
+        "open_triads": 0,
+        "unbalanced_triads": 0
+    }
 }

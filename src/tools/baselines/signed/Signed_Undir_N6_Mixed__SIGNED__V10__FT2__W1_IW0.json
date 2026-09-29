@@ -1,13 +1,13 @@
 {
     "counts": {
-        "links_sna": 3,
-        "nodes": 3,
-        "ties_graph": 3
+        "links_sna": 26,
+        "nodes": 6,
+        "ties_graph": 13
     },
     "dataset": {
         "filetype": 2,
-        "name": "Signed_Dir_N3_NegCycle.paj",
-        "path": "src/data/Signed_Dir_N3_NegCycle.paj"
+        "name": "Signed_Undir_N6_Mixed.paj",
+        "path": "src/data/Signed_Undir_N6_Mixed.paj"
     },
     "distances": {
         "negative_cycle_detected": true,
@@ -35,12 +35,36 @@
                 "eccentricity": "0",
                 "id": 3,
                 "label": "C"
+            },
+            {
+                "BC": "0",
+                "CC": "0",
+                "distance_sum": "0",
+                "eccentricity": "0",
+                "id": 4,
+                "label": "D"
+            },
+            {
+                "BC": "0",
+                "CC": "0",
+                "distance_sum": "0",
+                "eccentricity": "0",
+                "id": 5,
+                "label": "E"
+            },
+            {
+                "BC": "0",
+                "CC": "0",
+                "distance_sum": "0",
+                "eccentricity": "0",
+                "id": 6,
+                "label": "F"
             }
         ]
     },
     "graph": {
-        "directed": true,
-        "symmetric": false,
+        "directed": false,
+        "symmetric": true,
         "weighted": true
     },
     "kernel": "signed",
@@ -48,7 +72,7 @@
         "fileType_signal": 2,
         "load_ms": 0,
         "load_msg": "",
-        "net_name": "Signed_Dir_N3_NegCycle.paj",
+        "net_name": "Signed_Undir_N6_Mixed.paj",
         "ok": true
     },
     "potentials": {
@@ -68,22 +92,37 @@
                 "id": 3,
                 "label": "C",
                 "potential": 0
+            },
+            {
+                "id": 4,
+                "label": "D",
+                "potential": 0
+            },
+            {
+                "id": 5,
+                "label": "E",
+                "potential": 0
+            },
+            {
+                "id": 6,
+                "label": "F",
+                "potential": 0
             }
         ]
     },
     "schema_version": 10,
     "structural_balance": {
-        "balance_computed": false,
-        "balance_ratio": "0",
-        "balanced_triads": 0,
+        "balance_computed": true,
+        "balance_ratio": "0.53846153846153844",
+        "balanced_triads": 7,
         "classes": {
-            "+++": 0,
-            "++-": 0,
-            "+--": 0,
-            "---": 0
+            "+++": 1,
+            "++-": 4,
+            "+--": 6,
+            "---": 2
         },
-        "closed_triads": 0,
-        "open_triads": 0,
-        "unbalanced_triads": 0
+        "closed_triads": 13,
+        "open_triads": 7,
+        "unbalanced_triads": 6
     }
 }
