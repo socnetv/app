@@ -1160,6 +1160,8 @@ public:
     bool writeTriadCensus(const QString, const bool,
                           const int &format = ReportFormat::Html);
 
+    bool writeStructuralBalance(const QString, const int &format = ReportFormat::Html);
+
     /* DISTANCES, CENTRALITIES & PROMINENCE MEASURES */
 
     int graphConnectednessFull(const bool updateProgress = false);
@@ -1382,6 +1384,14 @@ public:
     const QList<int> &graphTriadTypeFreqs() const { return triadTypeFreqs; }
     bool hasCalculatedTriadCensus() const { return calculatedTriad; }
 
+    bool graphStructuralBalance();
+
+    // --- Structural balance results (read-only access for CLI / reports) ---
+    // Bucket order: 0="+++" 1="++-" 2="+--" 3="---" 4="open" (fewer than 3 dyads present) -
+    // see graph_structural_balance.cpp's own doc comment.
+    const QList<int> &graphStructuralBalanceCounts() const { return structuralBalanceCounts; }
+    bool hasCalculatedStructuralBalance() const { return calculatedStructuralBalance; }
+
     //	void eccentr_JordanCenter();    // TODO
 
     /* LAYOUTS */
@@ -1597,6 +1607,7 @@ private:
     QList<int> m_graphFileFormatExportSupported;
 
     QList<int> triadTypeFreqs; // stores triad type frequencies
+    QList<int> structuralBalanceCounts; // stores structural balance bucket counts (+++/++-/+--/---/open)
 
     QList<int> m_verticesList;
     QList<int> m_verticesIsolatedList;
@@ -1752,6 +1763,7 @@ private:
     bool calculatedSignedDegree;
     bool calculatedIRCC, calculatedIC, calculatedPRP;
     bool calculatedTriad;
+    bool calculatedStructuralBalance;
     bool calculatedGraphSymmetry, calculatedGraphReciprocity;
     bool calculatedGraphDensity, calculatedGraphWeighted;
     bool calculatedGraphHasNegativeWeight;

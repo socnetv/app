@@ -135,6 +135,7 @@ Graph::Graph(const int &reserveVerticesSize, const int &reserveEdgesPerVertexSiz
     calculatedPP = false;
     calculatedPRP = false;
     calculatedTriad = false;
+    calculatedStructuralBalance = false;
     m_progressCanceled = false;
     m_negativeWeightsRefused = false;
     m_negativeCycleDetected = false;
@@ -446,6 +447,7 @@ void Graph::clear(const QString &reason)
     calculatedPP = false;
     calculatedPRP = false;
     calculatedTriad = false;
+    calculatedStructuralBalance = false;
     m_progressCanceled = false;
     m_negativeWeightsRefused = false;
     m_negativeCycleDetected = false;

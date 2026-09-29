@@ -4163,6 +4163,168 @@ bool Graph::writeTriadCensus(const QString fileName,
 }
 
 /**
+ * @brief Writes structural balance (Heider/Cartwright-Harary, WS18 P4) to a file.
+ *
+ * Small fixed-shape table, same shape as writeTriadCensus(): 4 sign sub-types of closed triads
+ * (+++/++-/+--/---), plus the open-triad count, plus the collapsed balanced/unbalanced totals
+ * and balance ratio. Undirected graphs only - see graphStructuralBalance()'s own doc comment.
+ *
+ * @param fileName
+ * @param format
+ */
+bool Graph::writeStructuralBalance(const QString fileName, const int &format)
+{
+    qCDebug(lcReporting) << "Graph::writeStructuralBalance()";
+
+    QElapsedTimer computationTimer;
+    computationTimer.start();
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
+        progressStatus(tr("Error. Could not write to ") + fileName);
+        return false;
+    }
+
+    QTextStream outText(&file);
+
+    progressStatus(tr("Computing structural balance. Please wait...."));
+
+    if (!calculatedStructuralBalance)
+    {
+        if (!graphStructuralBalance())
+        {
+            qCDebug(lcReporting) << "Error in graphStructuralBalance() - graph may be directed. "
+                                     "Structural balance requires an undirected graph. Exiting...";
+            file.close();
+            return false;
+        }
+        if (progressCanceled())
+        {
+            file.close();
+            progressStatus(tr("Computation canceled."));
+            return false;
+        }
+    }
+
+    int N = vertices();
+
+    const QList<int> &c = structuralBalanceCounts;
+    const int cPPP = c.size() > 0 ? c[0] : 0;
+    const int cPPM = c.size() > 1 ? c[1] : 0;
+    const int cPMM = c.size() > 2 ? c[2] : 0;
+    const int cMMM = c.size() > 3 ? c[3] : 0;
+    const int cOpen = c.size() > 4 ? c[4] : 0;
+    const int balanced = cPPP + cPMM;
+    const int unbalanced = cPPM + cMMM;
+    const int closed = balanced + unbalanced;
+    const qreal balanceRatio = (closed > 0) ? (qreal(balanced) / qreal(closed)) : 0.0;
+
+    if (format == ReportFormat::Csv)
+    {
+        // Small fixed-shape table - not per-node, so this doesn't go through
+        // writeScoreTableCSV(). Type strings are fixed known values with no commas/quotes, so
+        // no escaping is needed.
+        outText << tr("Type") << "," << tr("Count") << "\n";
+        outText << "+++" << "," << cPPP << "\n";
+        outText << "++-" << "," << cPPM << "\n";
+        outText << "+--" << "," << cPMM << "\n";
+        outText << "---" << "," << cMMM << "\n";
+        outText << tr("open") << "," << cOpen << "\n";
+        outText << tr("balanced") << "," << balanced << "\n";
+        outText << tr("unbalanced") << "," << unbalanced << "\n";
+        outText << tr("balance_ratio") << "," << balanceRatio << "\n";
+        file.close();
+        return true;
+    }
+
+    QString pMsg = tr("Writing Structural Balance to file. \nPlease wait...");
+    progressStatus(pMsg);
+
+    outText << htmlHead;
+
+    outText.setRealNumberPrecision(m_reportsRealPrecision);
+
+    outText << "<h1>";
+    outText << tr("STRUCTURAL BALANCE REPORT");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            << "</span>"
+            << getName()
+            << "<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            << "</span>"
+            << N
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("Classifies every closed triad (all 3 ties present) of an undirected signed "
+                  "network as balanced or unbalanced, following Heider/Cartwright-Harary "
+                  "structural balance theory: a triad is balanced if the product of its 3 tie "
+                  "signs is positive (0 or 2 negative ties), unbalanced if negative (1 or 3 "
+                  "negative ties). Triads with fewer than 3 ties present (\"open\") are not "
+                  "classifiable and excluded from the balance ratio below.<br />")
+            << "</p>";
+
+    outText << "<table class=\"stripes\">";
+
+    outText << "<thead>"
+            << "<tr>"
+            << "<th>"
+            << tr("Type")
+            << "</th><th>"
+            << tr("Count")
+            << "</th>"
+            << "</tr>"
+            << "</thead>"
+            << "<tbody>";
+
+    const QList<QPair<QString, int>> rows = {
+        {"+++", cPPP}, {"++-", cPPM}, {"+--", cPMM}, {"---", cMMM},
+        {tr("open"), cOpen}, {tr("balanced"), balanced}, {tr("unbalanced"), unbalanced}
+    };
+    int rowCount = 0;
+    for (const auto &row : rows)
+    {
+        ++rowCount;
+        outText << "<tr class=" << ((rowCount % 2 == 0) ? "even" : "odd") << ">"
+                << "<td>" << row.first << "</td><td>" << row.second << "</td>"
+                << "</tr>";
+    }
+
+    outText << "</tbody></table>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Balance ratio: ")
+            << "</span>"
+            << balanceRatio
+            << tr(" (fraction of closed triads that are balanced)")
+            << "</p>";
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Structural Balance report, <br />");
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+                   .arg(VERSION)
+                   .arg(actualDateTime.currentDateTime().toString(QString("ddd, dd.MMM.yyyy hh:mm:ss")));
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg(computationTimer.elapsed());
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+    file.close();
+
+    return true;
+}
+
+/**
  * @brief Calls graphCliques() to compute all cliques (maximal connected subgraphs) of the network.
  * Then writes the results into a file, along with the Actor by clique analysis,
  * the Co-membership matrix and the Hierarchical clustering of overlap matrix

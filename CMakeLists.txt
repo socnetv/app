@@ -146,6 +146,7 @@ set(GRAPH_SOURCES
     src/graph/cohesion/graph_cliques.cpp
     src/graph/cohesion/graph_connectivity.cpp
     src/graph/clustering/graph_triad_census.cpp
+    src/graph/clustering/graph_structural_balance.cpp
     src/graph/clustering/graph_clustering_coefficients.cpp
     src/graph/clustering/graph_clustering_hierarchical.cpp
     src/graph/similarity/graph_similarity_matrices.cpp
