@@ -550,10 +550,9 @@ bool DistanceEngine::bellmanFordPotentials(const bool inverseWeights, QVector<qr
  * materialized. Also detects negative cycles as a by-product of the same pass (the standard
  * "does relaxation round V still improve anything" check) - a negative cycle makes shortest
  * paths undefined, so ds.potentials is left incomplete/unusable and this returns false.
- * Not yet called from compute() or wired into dijkstraSSSP()/runAllSources() - calling it
- * unconditionally would cost every ordinary (non-negative-weight) computation a wasted full
- * edge relaxation pass; it should be gated behind an explicit opt-in once its result is
- * actually consumed by the SSSP loop.
+ * Called from compute() only when the caller opted into negative-weight-safe distances
+ * (Graph::graphDistancesGeodesicSigned()); an ordinary (non-negative-weight) computation never
+ * pays for this pass.
  * @param inverseWeights invert each edge weight before relaxing, same convention as elsewhere
  * @param ds run-scratch state; ds.potentials/ds.negativeCycleDetected are written here
  * @return false if a reachable negative cycle was found, true otherwise
@@ -567,7 +566,7 @@ bool DistanceEngine::bellmanFordPotentials(const bool inverseWeights, DistanceSc
     // Every real vertex starts at potential 0. This is exactly the result a zero-weight edge
     // from an implicit virtual source to each real vertex would produce on round 0 of
     // Bellman-Ford, so the virtual source never needs to be materialized as an actual vertex.
-    ds.potentials.assign(totalV, 0.0);
+    ds.potentials.resize(totalV, 0.0);
     ds.negativeCycleDetected = false;
 
     const int relation = graph.relationCurrent();
