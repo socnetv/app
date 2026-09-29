@@ -60,7 +60,7 @@ Dijkstra path, pre-dating this workstream. Fixed separately (`f6076bc7`).
 
 ## What Remains Open — P4: Structural balance (Heider / Cartwright-Harary)
 
-**Scoped for 3.8** (#305): the classical, undirected, well-defined core with no open design
+**Scoped for 3.9** (#305): the classical, undirected, well-defined core with no open design
 questions.
 
 - Classify each triad as **balanced** or **unbalanced** by the product-of-signs rule (positive

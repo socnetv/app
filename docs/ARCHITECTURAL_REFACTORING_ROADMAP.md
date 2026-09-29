@@ -29,7 +29,7 @@ Algorithm slices / engines
 └── matrices
 ```
 
-The `Graph` object is a façade and state coordinator — not a monolith. Algorithm logic lives in dedicated slices under `src/graph/`. A headless CLI regression harness (9 kernels) guards against silent regressions.
+The `Graph` object is a façade and state coordinator — not a monolith. Algorithm logic lives in dedicated slices under `src/graph/`. A headless CLI regression harness (10 kernels) guards against silent regressions.
 
 ---
 
