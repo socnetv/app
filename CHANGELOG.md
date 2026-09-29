@@ -6,7 +6,13 @@ All notable changes to this project are documented in this file.
 
 ### New Features
 
-  - _TODO: add release notes_
+  - **Structural balance analysis** (WS18 P4, #305): classify triads in undirected signed
+    networks as balanced/unbalanced (Heider/Cartwright-Harary), plus a network-level balance
+    ratio. Available via `socnetv-cli --kernel signed` and a new report writer.
+
+### Fixes
+
+  - Fixed a PPA build failure on Ubuntu 22.04/24.04 caused by a Qt 6.6-only API (#306).
 
 ## [3.8] – Sep 2026
 
