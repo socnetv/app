@@ -1661,7 +1661,9 @@ bool Graph::writeCentralitySignedDegree(const QString fileName,
                   "ratio = pos / (pos+neg), the fraction of a node's ties that are positive "
                   "(0 for a node with no ties either way); net = pos - neg, a single signed "
                   "balance score.<br />"
-                  "Out-degree only: to compute in-degree, use the Degree Prestige measure.")
+                  "Out-degree only: to compute in-degree, use the Degree Prestige measure.<br />"
+                  "If this network has no negative ties, neg will be 0 and ratio 1.0 for every "
+                  "node - a valid result, showing the network has no negative ties to report.")
             << "</p>";
 
     writeScoreTableHTML(outText, {"pos", "neg", "ratio", "net"}, rowValues, isBlanked);
@@ -1775,6 +1777,10 @@ bool Graph::writeCentralityPN(const QString fileName,
                   "someone marginalized - a negative tie from someone universally disliked can "
                   "even read as a positive signal. Considers tie sign only (positive/negative); "
                   "tie strength is not used.<br />"
+                  "If this network has no negative ties, PN still produces a real, meaningful "
+                  "score (not an error) - it uses the same walk-counting formula as Katz "
+                  "Centrality but with a fixed decay parameter, so the numbers won't match a "
+                  "Katz run unless its Alpha happens to equal PN's fixed value.<br />"
                   "Everett, M. and Borgatti, S. (2014). Networks containing negative ties. "
                   "Social Networks 38, 111-120.")
             << "</p>";
@@ -4167,7 +4173,11 @@ bool Graph::writeTriadCensus(const QString fileName,
  *
  * Small fixed-shape table, same shape as writeTriadCensus(): 4 sign sub-types of closed triads
  * (+++/++-/+--/---), plus the open-triad count, plus the collapsed balanced/unbalanced totals
- * and balance ratio. Undirected graphs only - see graphStructuralBalance()'s own doc comment.
+ * and balance ratio. Undirected, signed graphs only - see graphStructuralBalance()'s own doc
+ * comment for both refusal conditions. This function's bool return doesn't distinguish which
+ * one fired; callers that need to show the user a precise reason should pre-check
+ * isDirected()/hasNegativeWeight() themselves before calling this (see
+ * MainWindow::slotAnalyzeCommunitiesStructuralBalance()).
  *
  * @param fileName
  * @param format
@@ -4195,8 +4205,9 @@ bool Graph::writeStructuralBalance(const QString fileName, const int &format)
     {
         if (!graphStructuralBalance())
         {
-            qCDebug(lcReporting) << "Error in graphStructuralBalance() - graph may be directed. "
-                                     "Structural balance requires an undirected graph. Exiting...";
+            qCDebug(lcReporting) << "Error in graphStructuralBalance() - graph may be directed "
+                                     "or unsigned. Structural balance requires an undirected, "
+                                     "signed graph. Exiting...";
             file.close();
             return false;
         }

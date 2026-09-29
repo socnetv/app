@@ -48,6 +48,15 @@
  * transpose-symmetric counterpart of Out. An undirected graph is only ever valid with All; a
  * directed graph must pick Out or In.
  *
+ * Degrades gracefully on an all-positive (i.e. actually unsigned) graph: N=0 so A=P, so PN
+ * becomes the same closed-form walk-counting identity Katz Centrality uses, just with beta
+ * fixed at 1/(2n-2) instead of a user-tunable alpha - it does NOT numerically match a Katz run
+ * unless alpha happens to equal that beta (confirmed empirically: alpha=0.1 default vs.
+ * beta=1/198 on a 100-node network gave visibly different scores). Still a real, meaningful,
+ * non-misleading per-node score on this input - just not literally "the same number as Katz" -
+ * so no refusal needed (contrast graphStructuralBalance(), whose single aggregate ratio would
+ * silently collapse to an uninformative constant on the same input).
+ *
  * @param mode All (undirected graphs only), Out or In (directed graphs only).
  * @param dropIsolates
  */

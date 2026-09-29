@@ -46,6 +46,13 @@
  * DC/SDC - not needed yet, can be added later if a real use case (e.g. a distribution chart)
  * calls for it.
  *
+ * Degrades gracefully on an all-positive (i.e. actually unsigned) graph: neg(i)=0 and
+ * ratio(i)=1.0 for every non-isolate vertex, same as plain degree centrality on a graph with no
+ * special structure - no refusal needed, since the per-vertex values themselves make the absence
+ * of negative ties visible, unlike graphStructuralBalance()'s single aggregate ratio, which would
+ * silently collapse to a misleading 100%-balanced constant on the same input (see its own doc
+ * comment for why that one does refuse).
+ *
  * Parallelization: same shape as centralityDegree() (WS15 P4) - each vertex's four values only
  * read edges and write that vertex's own GraphVertex, independent across vertices, parallelized
  * via QtConcurrent::blockingMap.
