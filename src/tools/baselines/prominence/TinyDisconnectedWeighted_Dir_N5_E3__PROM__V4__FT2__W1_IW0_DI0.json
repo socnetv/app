@@ -193,7 +193,8 @@
         "considerWeights": true,
         "dropIsolates": false,
         "inverseWeights": false,
-        "katzEnabled": false
+        "katzEnabled": false,
+        "pnEnabled": false
     },
     "schema_version": 4
 }

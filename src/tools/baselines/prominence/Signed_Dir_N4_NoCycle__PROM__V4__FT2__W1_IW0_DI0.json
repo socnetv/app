@@ -17,7 +17,7 @@
     "kernel": "prominence",
     "load_report": {
         "fileType_signal": 2,
-        "load_ms": 3,
+        "load_ms": 0,
         "load_msg": "",
         "net_name": "Signed_Dir_N4_NoCycle.paj",
         "ok": true
@@ -161,7 +161,8 @@
         "considerWeights": true,
         "dropIsolates": false,
         "inverseWeights": false,
-        "katzEnabled": false
+        "katzEnabled": false,
+        "pnEnabled": false
     },
     "schema_version": 4
 }

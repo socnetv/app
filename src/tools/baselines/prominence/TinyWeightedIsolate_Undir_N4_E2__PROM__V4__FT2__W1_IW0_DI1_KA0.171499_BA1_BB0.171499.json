@@ -180,7 +180,8 @@
         "dropIsolates": true,
         "inverseWeights": false,
         "katzAlpha": "0.17149900000000001",
-        "katzEnabled": true
+        "katzEnabled": true,
+        "pnEnabled": false
     },
     "schema_version": 4
 }

@@ -129,7 +129,8 @@
         "considerWeights": false,
         "dropIsolates": false,
         "inverseWeights": true,
-        "katzEnabled": false
+        "katzEnabled": false,
+        "pnEnabled": false
     },
     "schema_version": 4
 }

@@ -144,7 +144,8 @@
         "dropIsolates": false,
         "inverseWeights": false,
         "katzAlpha": "1",
-        "katzEnabled": true
+        "katzEnabled": true,
+        "pnEnabled": false
     },
     "schema_version": 4
 }
