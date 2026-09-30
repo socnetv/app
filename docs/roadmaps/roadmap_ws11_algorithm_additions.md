@@ -181,11 +181,17 @@ Three follow-on visualizations surfaced by this work are noted below under What 
   (reject/warn Dijkstra-derived measures on negative weights, instead of silently misapplying) is
   unchanged, but the full signed-network picture (Bellman-Ford shortest paths, PN centrality,
   structural balance on triads) grew large enough to warrant its own workstream rather than staying
-  a single WS11 bullet. **WS18 P0-P2 (parser support, the negative-weight guard, and Bellman-Ford/
-  Johnson's-algorithm negative-weight-safe distances) are complete as of 2026-09-25**; P3 (PN
-  centrality — the natural next WS11-style algorithm addition, once WS18's engine work landed) and
-  P4 (structural balance on triads, extending `graphTriadCensus()`) are next. See WS18 for the
-  complete design and phase breakdown.
+  a single WS11 bullet. **WS18 P0-P3 shipped in v3.8** (parser support, the negative-weight guard,
+  Bellman-Ford/Johnson's-algorithm negative-weight-safe distances, Signed Degree/PN centrality);
+  **P4 (structural balance triad classification, with GUI wiring) is implemented on develop**,
+  pending the 3.9 release. #304 (clusterizable / two-faction test, WS18's strong-theorem
+  follow-on) is scoped, in progress. See WS18 for the complete design and phase breakdown.
+- **Frustration index** (candidate, not filed/scoped) — given an imperfectly-balanced signed
+  network, the minimum number of ties that would need to be flipped/removed to make it fully
+  balanced. Distinct from #304's clusterizability check: that's a polynomial-time yes/no question
+  (BFS/2-coloring, O(V+E)); this is NP-hard, needing an LP/ILP solver rather than a graph walk -
+  a genuinely different algorithm class, not a bigger version of #304. Natural WS11-style
+  algorithm addition once someone wants it; references #304 for the underlying theory.
 
 ### Similarity / Structural Equivalence — `src/graph/similarity/`
 

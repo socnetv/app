@@ -10,8 +10,9 @@ Heider/Cartwright-Harary structural balance analysis on triads.
 
 ## Status
 
-Tracked by #284. **P0-P3 complete** (v3.8-cycle). P4 (structural balance) scoped below, not
-started.
+Tracked by #284. **P0-P4 implemented** (P0-P3 shipped in v3.8; P4 is on develop, pending the 3.9
+release). #304 (clusterizable / two-faction test) in progress. #303 (directed balance semantics)
+and the layout-exploration piece of #307 are scoped but not started - see What Remains Open.
 
 ## What WS18 Delivered
 
@@ -38,6 +39,21 @@ started.
   standardized score), reporting, and WS12 `--interactive-script` commands
   (`report-centrality-degree-signed`, `report-centrality-pn`). Both independently verified against
   an established outside reference implementation, not just self-consistency.
+- **P4 — Structural balance (Heider/Cartwright-Harary)** (#305): classifies each closed triad
+  (all 3 dyads present) as **balanced** or **unbalanced** by the product-of-signs rule (positive
+  product ⇔ balanced; equivalently 0 or 2 negative edges is balanced, 1 or 3 is not), plus a
+  network-level **balance ratio** (fraction of balanced closed triads). Open triads (fewer than 3
+  dyads present) are counted separately, excluded from the ratio. Undirected, signed graphs only
+  - refuses cleanly (`Graph::graphStructuralBalance()`) on a directed graph or one with no
+  negative-weight edge at all (the latter would otherwise trivially report 100%-balanced, a
+  misleading result masking the absence of any signed structure to classify). A deliberately
+  separate O(n³) pass (`graph_structural_balance.cpp`), not a dimension bolted onto
+  `graphTriadCensus()`'s MAN classifier. Wired end-to-end: engine, CLI kernel
+  (`kernel_signed_v10.cpp`), report writer (`writeStructuralBalance()`), GUI (menu action under
+  Communities/Subgroups, Control Panel "Communities" combo entry - #307's non-layout scope).
+  Independently verified against a from-scratch Python triad enumeration and cross-checked
+  against R's `signnet` package's scoping convention (complete triangles only, matching
+  `count_signed_triangles()`/`balance_score()`).
 - Current signed-network architecture (Johnson's engine, `PNMode`, signed matrix construction)
   lives in [`README_DEVELOPER_NOTES.md`](../README_DEVELOPER_NOTES.md), not here.
 
@@ -54,38 +70,41 @@ Dijkstra path, pre-dating this workstream. Fixed separately (`f6076bc7`).
   itself be negative (confirmed on `Signed_Dir_N4_NoCycle.paj`, B→C = -2). Whether "Average
   Distance"/"Diameter" framing/wording still makes sense for a signed graph is undecided; applies
   to all four P2 GUI actions.
-- **Follow-up issue #302** (adjacency-import dialog UX — delimiter dialog and row-mismatch error
-  don't mention trailing delimiters) — found incidentally during P3 manual testing, filed and
-  explicitly deferred, unrelated to signed networks specifically.
 
-## What Remains Open — P4: Structural balance (Heider / Cartwright-Harary)
+## What Remains Open
 
-**Scoped for 3.9** (#305): the classical, undirected, well-defined core with no open design
-questions.
+**In progress — Clusterizable / two-faction test** (#304): structural balance's strong theorem: a
+fully-balanced signed graph is exactly two mutually-hostile, internally-friendly factions.
+**Genuinely distinct from P4's triad ratio above, not a bigger version of it** — a network can
+have zero closed triads at all (e.g. a 4-cycle A-B-C-D-A with signs +,+,+,-, only 4 of 6 pairs
+tied) and still fail clusterizability, because full balance is a property of every cycle in the
+graph, not just 3-vertex ones. Scoped algorithm: BFS/2-coloring walk (same shape as the classic
+bipartite-check algorithm — positive edge means same faction as neighbor, negative edge means
+opposite faction, a forced contradiction means not clusterizable), O(V+E) per component. This is
+the correct/efficient algorithm for the plain yes/no + partition question, not a simplification —
+nothing faster exists because the question itself is polynomial-time easy. GUI wiring (menu +
+Control Panel entry) is in scope for #304 itself, unlike P4 which deferred it to #307.
+Faction-based node coloring on the canvas is explicitly **out** of #304's scope and pushed to
+#307 instead: it doesn't fit the existing "Layout by Prominence Index → Node Color" mechanism,
+which maps a continuous score to a red/blue hue gradient (`graph_layouts_basic.cpp`), not a clean
+fit for a binary 0/1 faction value — needs its own small, dedicated coloring path.
 
-- Classify each triad as **balanced** or **unbalanced** by the product-of-signs rule (positive
-  product ⇔ balanced; equivalently 0 or 2 negative edges is balanced, 1 or 3 is not). Builds on
-  `graphTriadCensus()`'s existing enumeration/MAN classification infrastructure
-  (`src/graph/clustering/graph_triad_census.cpp`) by adding a sign dimension alongside the existing
-  MAN dimension — needs a small design pass on how the two classifications compose (a triad is
-  classified by both dyad-structure type *and* balance status), not a replacement of the existing
-  function.
-- Network-level **balance ratio** (fraction of balanced triads), following the same
-  aggregate-from-per-triad-classification pattern the existing triad census already uses for its
-  type-frequency table.
-- Undirected graphs only for this pass — Cartwright-Harary balance theory is classically defined
-  for undirected signed graphs, matching the classical scope.
-- Compute-first, no UI beyond a report (matching how WS11's other measures shipped): no canvas
-  coloring by balance status, no dedicated signed-network layout.
-
-**Deferred past 3.8**, each needing its own scoping pass before implementation:
+**Scoped, not started**, each needing its own scoping pass before implementation:
 
 - **Directed-graph balance semantics** (#303) — the triad census already handles directed MAN
   types, so extending balance to directed graphs is plausible, but needs an explicit design
   decision (not an assumption) on what "balanced" means for a directed signed triad.
-- **Clusterizable / two-faction test** (#304) — structural balance's strong theorem (a
-  fully-balanced signed graph is exactly two mutually-hostile, internally-friendly factions).
-  Stretch goal once the base classification lands.
+- **#307's layout-exploration remainder** — P4 and #304 both push balance-driven canvas layout
+  out of their own scope; #307 itself only landed the menu/Control Panel wiring for P4, not any
+  layout. Explored once already: no existing layout mechanism fits a per-triad ratio or a binary
+  per-node faction value cleanly (see #304's note above) — revisit once #304's faction data
+  exists, since that's the piece that actually makes a real layout (e.g. positioning by faction)
+  feasible.
+- **Frustration index** — if a network *isn't* fully balanced, the minimum number of ties that
+  would need to be flipped/removed to make it balanced. Deliberately **not** part of #304: this is
+  an NP-hard optimization problem, a different algorithm class entirely (needs an LP/ILP solver,
+  not a graph walk) from the polynomial-time yes/no clusterizability check above. Parked as a
+  future WS11 algorithm-addition candidate, referencing #304, not scoped or filed yet.
 - **Weighted/graded balance measures** beyond the classic ±1 sign model (e.g. degree-of-imbalance
   metrics beyond the simple balance ratio) — not ruled out permanently, just not filed yet.
 

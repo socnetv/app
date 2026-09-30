@@ -134,22 +134,23 @@ First-class support for signed networks (edge sign, not just magnitude). P0-P3 s
 negative-weight parser support, guarding existing distance-based measures against negative
 weights, Bellman-Ford/Johnson's-algorithm negative-weight-safe shortest paths, and signed-specific
 centrality (Signed Degree, PN Centrality). P4 (Heider/Cartwright-Harary structural balance
-analysis on triads, building on the existing MAN triad census) remains, tracked in 3.9.
-
----
+analysis on triads, building on the existing MAN triad census, #305) is implemented on develop,
+with GUI menu/Control Panel wiring (#307's non-layout scope) - both still open pending the 3.9
+release. #304 (clusterizable / two-faction test, the strong-theorem follow-on) is scoped, in
+progress; #303 (directed-graph balance semantics) and #307's remaining balance-driven-layout
+exploration are not yet started.
 
 ---
 
 # Priorities
 
 No workstream is pinned as "the" active focus — work happens on whichever's issue is picked up
-next. `gh issue list --milestone <3.8|3.9|4.0>` is the authoritative view of what's queued where
-(as of 2026-09-28, v3.8 tagged and released: 3.8 has 0 open/25 closed, 3.9 has 17 open, 4.0 has 6
-open); this is a workstream-level summary of the same picture, not a ranking.
+next. `gh issue list --milestone <3.8|3.9|4.0>` is the authoritative view of what's queued where —
+this is a workstream-level summary of that picture, not a ranking, and not a live issue count
+(check the tracker directly for current numbers rather than trusting a snapshot here).
 
 **v3.8 shipped.** WS6 (regression safety) runs continuously underneath every other workstream.
-WS18 (signed networks) tracking (#284) moved to 3.9 for its remaining P4 work (#303, #304, #305 —
-structural balance), since P0-P3 already shipped in 3.8.
+WS18 (signed networks) — see its own entry above for current status, not duplicated here.
 
 **Scoped, not started:** WS8 (IO layer stabilization/`FormatHandler` registry) — roadmap exists,
 zero code written.
