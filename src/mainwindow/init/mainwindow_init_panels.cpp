@@ -474,7 +474,7 @@ void MainWindow::initPanels()
     toolBoxAnalysisCommunitiesSelectLabel->setMinimumWidth(90);
     toolBoxAnalysisCommunitiesSelect = new QComboBox;
     toolBoxAnalysisCommunitiesSelect->setStatusTip(
-        tr("Select a community detection measure / cohesive subgroup algorithm, i.e. cliques, triad census etc."));
+        tr("Select a community detection measure / cohesive subgroup algorithm, i.e. cliques, triad census, structural balance etc."));
     helpMessage = tr("<p><b>Community Analysis</b></p>"
                      "<p>Community detection measures and cohesive subgroup algorithms, "
                      "to identify meaningful subgraphs in the graph.</p>"
@@ -485,13 +485,19 @@ void MainWindow::initPanels()
                      "<p><em>Triad Census:</em><p>"
                      "<p>Computes the Holland, Leinhardt and Davis triad census, which "
                      "counts all different classes of triads coded according to their"
-                     "number of Mutual, Asymmetric and Non-existest dyads (M-A-N scheme)</p>");
+                     "number of Mutual, Asymmetric and Non-existest dyads (M-A-N scheme)</p>"
+                     "<p><em>Structural Balance:</em><p>"
+                     "<p>Classifies every closed triad in an undirected signed network as "
+                     "balanced or unbalanced (Heider/Cartwright-Harary), plus a network-level "
+                     "balance ratio. Requires an undirected network with at least one "
+                     "negative-weight edge.</p>");
     toolBoxAnalysisCommunitiesSelect->setToolTip(helpMessage);
     toolBoxAnalysisCommunitiesSelect->setWhatsThis(helpMessage);
     QStringList communitiesCommands;
     communitiesCommands << "Select"
                         << "Cliques"
-                        << "Triad Census";
+                        << "Triad Census"
+                        << "Structural Balance";
     toolBoxAnalysisCommunitiesSelect->addItems(communitiesCommands);
     toolBoxAnalysisCommunitiesSelect->setMinimumWidth(120);
 

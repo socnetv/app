@@ -2156,6 +2156,17 @@ void MainWindow::initActions()
                                                       "asymmetric and non-existent dyads using the M-A-N labeling scheme. \n"));
     connect(analyzeCommunitiesTriadCensusAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCommunitiesTriadCensus()));
 
+    analyzeCommunitiesStructuralBalanceAct = new QAction(QIcon(":/images/triad.png"), tr("Structural Balance (Heider/Cartwright-Harary)"), this);
+    analyzeCommunitiesStructuralBalanceAct->setShortcut(
+        QKeySequence(Qt::CTRL | Qt::Key_U, Qt::CTRL | Qt::Key_B));
+    analyzeCommunitiesStructuralBalanceAct->setStatusTip(tr("Classify triads as balanced/unbalanced (undirected, signed networks only)."));
+    analyzeCommunitiesStructuralBalanceAct->setWhatsThis(tr("Structural Balance\n\n"
+                                                            "Classifies every closed triad in an undirected signed network as "
+                                                            "balanced or unbalanced, following Heider/Cartwright-Harary structural "
+                                                            "balance theory, plus a network-level balance ratio. "
+                                                            "Requires an undirected network with at least one negative-weight edge.\n"));
+    connect(analyzeCommunitiesStructuralBalanceAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCommunitiesStructuralBalance()));
+
     analyzeStrEquivalencePearsonAct = new QAction(QIcon(":/images/similarity.png"),
                                                   tr("Pearson correlation coefficients"), this);
     analyzeStrEquivalencePearsonAct->setShortcut(

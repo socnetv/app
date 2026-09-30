@@ -164,3 +164,69 @@ void MainWindow::slotAnalyzeCommunitiesTriadCensus()
             statusMessage(tr("Triad Census saved as: ") + QDir::toNativeSeparators(fn));
         });
 }
+
+/**
+ *	Calls Graph to compute and write structural balance into a file, then displays it.
+ *
+ *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
+ *
+ *  Pre-checks isDirected()/hasNegativeWeight() itself (rather than relying on
+ *  writeStructuralBalance()'s plain bool return, which doesn't distinguish the two refusal
+ *  reasons - see its own doc comment) so the user gets a precise, actionable message instead of
+ *  a silent no-op.
+ */
+void MainWindow::slotAnalyzeCommunitiesStructuralBalance()
+{
+
+    if (!activeNodes())
+    {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    if (activeGraph->isDirected())
+    {
+        slotHelpMessageToUserError(
+            tr("Structural balance requires an undirected network. "
+               "This network is directed - directed-graph balance semantics are not yet supported."));
+        return;
+    }
+
+    if (!activeGraph->hasNegativeWeight())
+    {
+        slotHelpMessageToUserError(
+            tr("Structural balance requires a signed network (at least one negative-weight edge). "
+               "This network has no negative ties."));
+        return;
+    }
+
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+    QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-structural-balance-" + dateTime + ext;
+
+    auto success = std::make_shared<bool>(false);
+
+    runGraphOperationAsync(
+        [this, fn, reportFormat, success]() {
+            *success = activeGraph->writeStructuralBalance(fn, reportFormat);
+        },
+        tr("Computing Structural Balance. Please wait..."),
+        [this, fn, reportFormat, success]() {
+            if (!*success)
+            {
+                return;
+            }
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Structural Balance saved as: ") + QDir::toNativeSeparators(fn));
+        });
+}

@@ -491,6 +491,7 @@ public slots:
 
     void slotAnalyzeCommunitiesCliqueCensus();
     void slotAnalyzeCommunitiesTriadCensus();
+    void slotAnalyzeCommunitiesStructuralBalance();
 
     void slotAnalyzeStrEquivalenceClusteringHierarchicalDialog();
     void slotAnalyzeStrEquivalenceClusteringHierarchical(const QString &matrix,
@@ -792,6 +793,7 @@ private:
     QAction *analyzeGraphWalksAct,*analyzeGraphWalksTotalAct, *analyzeMatrixReachabilityAct, *analyzeGraphConnectednessAct;
     QAction *analyzeNodeConnectivityAct, *analyzeConnectivityAct;
     QAction *analyzeCommunitiesCliquesAct, *clusteringCoefAct, *analyzeCommunitiesTriadCensusAct;
+    QAction *analyzeCommunitiesStructuralBalanceAct;
     QAction *analyzeMatrixAdjTransposeAct, *analyzeMatrixAdjInvertAct;
     QAction *analyzeMatrixAdjCocitationAct;
     QAction *analyzeMatrixDegreeAct, *analyzeMatrixLaplacianAct;

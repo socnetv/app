@@ -112,6 +112,9 @@ void MainWindow::toolBoxAnalysisCommunitiesSelectChanged(const int &selectedInde
     case 2:
         slotAnalyzeCommunitiesTriadCensus();
         break;
+    case 3:
+        slotAnalyzeCommunitiesStructuralBalance();
+        break;
     };
     qCDebug(lcMainWindow) << "Calling initComboBoxes() ";
     initComboBoxes();
