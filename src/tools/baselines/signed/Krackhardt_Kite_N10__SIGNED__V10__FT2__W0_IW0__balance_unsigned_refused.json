@@ -1,4 +1,10 @@
 {
+    "clusterizability": {
+        "clusterizable": false,
+        "factions": [
+        ],
+        "refused_reason": "unsigned"
+    },
     "counts": {
         "links_sna": 36,
         "nodes": 10,
@@ -37,7 +43,7 @@
                 "label": "Carol"
             },
             {
-                "BC": "3.6666666666666665",
+                "BC": "3.6666666666666661",
                 "CC": "0.066666666666666666",
                 "distance_sum": "15",
                 "eccentricity": "4",
@@ -61,7 +67,7 @@
                 "label": "Fernando"
             },
             {
-                "BC": "8.3333333333333339",
+                "BC": "8.3333333333333321",
                 "CC": "0.071428571428571425",
                 "distance_sum": "14",
                 "eccentricity": "3",
@@ -102,7 +108,7 @@
     "kernel": "signed",
     "load_report": {
         "fileType_signal": 2,
-        "load_ms": 1,
+        "load_ms": 0,
         "load_msg": "",
         "net_name": "Krackhardt_Kite_N10.paj",
         "ok": true

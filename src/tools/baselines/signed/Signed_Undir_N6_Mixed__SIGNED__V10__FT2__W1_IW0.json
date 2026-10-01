@@ -1,4 +1,10 @@
 {
+    "clusterizability": {
+        "clusterizable": false,
+        "factions": [
+        ],
+        "refused_reason": null
+    },
     "counts": {
         "links_sna": 26,
         "nodes": 6,

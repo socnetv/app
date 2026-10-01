@@ -1,36 +1,60 @@
 {
     "clusterizability": {
-        "clusterizable": false,
+        "clusterizable": true,
         "factions": [
+            {
+                "faction": 0,
+                "id": 1
+            },
+            {
+                "faction": 0,
+                "id": 2
+            },
+            {
+                "faction": 0,
+                "id": 3
+            },
+            {
+                "faction": 1,
+                "id": 4
+            },
+            {
+                "faction": 1,
+                "id": 5
+            },
+            {
+                "faction": 1,
+                "id": 6
+            }
         ],
-        "refused_reason": "directed"
+        "refused_reason": null
     },
     "counts": {
-        "links_sna": 3,
-        "nodes": 5,
-        "ties_graph": 3
+        "links_sna": 18,
+        "nodes": 6,
+        "ties_graph": 9
     },
     "dataset": {
         "filetype": 2,
-        "name": "TinyDisconnectedWeighted_Dir_N5_E3.paj",
-        "path": "src/data/TinyDisconnectedWeighted_Dir_N5_E3.paj"
+        "name": "Signed_Undir_N6_TwoFactions.paj",
+        "path": "src/data/Signed_Undir_N6_TwoFactions.paj"
     },
     "distances": {
-        "negative_cycle_detected": false,
+        "negative_cycle_detected": true,
         "per_node": [
             {
                 "BC": "0",
                 "CC": "0",
-                "distance_sum": "5.5",
-                "eccentricity": "2147483647",
+                "distance_sum": "0",
+                "eccentricity": "0",
                 "id": 1,
                 "label": "A"
             },
             {
-                "BC": "1",
+                "BC": "0",
                 "CC": "0",
-                "distance_sum": "1.5",
-                "eccentricity": "2147483647",
+                "distance_sum": "0",
+                "eccentricity": "0",
                 "id": 2,
                 "label": "B"
             },
@@ -38,15 +62,15 @@
                 "BC": "0",
                 "CC": "0",
                 "distance_sum": "0",
-                "eccentricity": "2147483647",
+                "eccentricity": "0",
                 "id": 3,
                 "label": "C"
             },
             {
                 "BC": "0",
                 "CC": "0",
-                "distance_sum": "3",
-                "eccentricity": "2147483647",
+                "distance_sum": "0",
+                "eccentricity": "0",
                 "id": 4,
                 "label": "D"
             },
@@ -54,15 +78,23 @@
                 "BC": "0",
                 "CC": "0",
                 "distance_sum": "0",
-                "eccentricity": "2147483647",
+                "eccentricity": "0",
                 "id": 5,
                 "label": "E"
+            },
+            {
+                "BC": "0",
+                "CC": "0",
+                "distance_sum": "0",
+                "eccentricity": "0",
+                "id": 6,
+                "label": "F"
             }
         ]
     },
     "graph": {
-        "directed": true,
-        "symmetric": false,
+        "directed": false,
+        "symmetric": true,
         "weighted": true
     },
     "kernel": "signed",
@@ -70,11 +102,11 @@
         "fileType_signal": 2,
         "load_ms": 0,
         "load_msg": "",
-        "net_name": "TinyDisconnectedWeighted_Dir_N5_E3.paj",
+        "net_name": "Signed_Undir_N6_TwoFactions.paj",
         "ok": true
     },
     "potentials": {
-        "negative_cycle_detected": false,
+        "negative_cycle_detected": true,
         "per_node": [
             {
                 "id": 1,
@@ -100,22 +132,27 @@
                 "id": 5,
                 "label": "E",
                 "potential": 0
+            },
+            {
+                "id": 6,
+                "label": "F",
+                "potential": 0
             }
         ]
     },
     "schema_version": 10,
     "structural_balance": {
-        "balance_computed": false,
-        "balance_ratio": "0",
-        "balanced_triads": 0,
+        "balance_computed": true,
+        "balance_ratio": "1",
+        "balanced_triads": 2,
         "classes": {
-            "+++": 0,
+            "+++": 2,
             "++-": 0,
             "+--": 0,
             "---": 0
         },
-        "closed_triads": 0,
-        "open_triads": 0,
+        "closed_triads": 2,
+        "open_triads": 18,
         "unbalanced_triads": 0
     }
 }

@@ -1051,6 +1051,31 @@ run_case_signed \
   -w 0 -x 0 \
   "${BASE_SIGNED}/Krackhardt_Kite_N10__SIGNED__V10__FT2__W0_IW0__balance_unsigned_refused.json"
 
+# Clusterizability / two-faction test (WS18, #304). Distinct question from structural balance's
+# per-triad ratio above: a graph can have zero closed triads and still fail this test, since full
+# balance is a property of every cycle in the graph, not just 3-vertex ones - that's exactly what
+# Signed_Undir_N4_Cycle_NotClusterizable pins (a 4-cycle A-B-C-D-A, signs +,+,+,-; only 4 of 6
+# pairs tied, so structural_balance reports 0 closed triads, but clusterizability correctly finds
+# it not clusterizable - the BFS/2-coloring walk hits a contradiction at D). Reuses
+# Signed_Undir_N6_Mixed above for a second not-clusterizable case (mixed balanced/unbalanced
+# triads). Signed_Undir_N6_TwoFactions is the positive case: two internally-positive triangles
+# joined by all-negative cross edges, cleanly clusterizable into {A,B,C}=0, {D,E,F}=1. All three
+# independently verified two ways: a from-scratch Python BFS/2-coloring script (not reusing any
+# SocNetV logic), and cross-checked against an eigenvalue-based balance score from an outside
+# package - exactly 1.0 on the clusterizable case, strictly below 1.0 on both not-clusterizable
+# cases, confirming both methods agree on which side of the line each case falls.
+run_case_signed \
+  "${DATA}/Signed_Undir_N4_Cycle_NotClusterizable.paj" \
+  2 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/Signed_Undir_N4_Cycle_NotClusterizable__SIGNED__V10__FT2__W1_IW0.json"
+
+run_case_signed \
+  "${DATA}/Signed_Undir_N6_TwoFactions.paj" \
+  2 \
+  -w 1 -x 0 \
+  "${BASE_SIGNED}/Signed_Undir_N6_TwoFactions__SIGNED__V10__FT2__W1_IW0.json"
+
 echo
 if (( UPDATE )); then
   echo "[UPDATE] All registered baselines regenerated. Review the diff before committing."

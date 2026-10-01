@@ -81,6 +81,53 @@ static QJsonObject buildStructuralBalanceObj(Graph &g)
     return obj;
 }
 
+// #304: clusterizability is a separate, whole-graph yes/no question from the per-triad balance
+// ratio above - same undirected/signed guards (Graph::graphClusterizability() refuses cleanly
+// the same way graphStructuralBalance() does), so this reuses the same "uniform shape, check
+// the flag first" convention: refused_reason distinguishes "not applicable" from "computed and
+// found not clusterizable" from "computed and clusterizable", factions is only populated in the
+// last case.
+static QJsonObject buildClusterizabilityObj(Graph &g)
+{
+    QJsonObject obj;
+
+    QString refusedReason;
+    if (g.isDirected())
+        refusedReason = "directed";
+    else if (!g.hasNegativeWeight())
+        refusedReason = "unsigned";
+
+    if (!refusedReason.isEmpty())
+    {
+        obj["refused_reason"] = refusedReason;
+        obj["clusterizable"] = false;
+        obj["factions"] = QJsonArray();
+        return obj;
+    }
+
+    const bool clusterizable = g.graphClusterizability();
+    obj["refused_reason"] = QJsonValue();
+    obj["clusterizable"] = clusterizable;
+
+    QJsonArray factions;
+    if (clusterizable)
+    {
+        const QList<int> verts = g.verticesList();
+        for (int v : verts)
+        {
+            GraphVertex *gv = g.vertexPtr(v);
+            if (!gv) continue;
+            QJsonObject o;
+            o["id"] = v;
+            o["faction"] = gv->faction();
+            factions.append(o);
+        }
+    }
+    obj["factions"] = factions;
+
+    return obj;
+}
+
 static QJsonObject buildGoldenJsonV10(
     const QString     &inputPath,
     int                fileFormat,
@@ -146,6 +193,7 @@ static QJsonObject buildGoldenJsonV10(
     root["distances"] = distancesObj;
 
     root["structural_balance"] = buildStructuralBalanceObj(g);
+    root["clusterizability"] = buildClusterizabilityObj(g);
 
     QJsonObject loadReport;
     loadReport["ok"]               = load.ok;
@@ -258,6 +306,32 @@ static int compareGoldenV10(const QJsonObject &expected, const QJsonObject &actu
     const QJsonObject aClasses = aBal.value("classes").toObject();
     for (const QString &k : {"+++", "++-", "+--", "---"})
         ok &= cmpInt(eClasses, aClasses, k, err);
+
+    const QJsonObject eClu = expected.value("clusterizability").toObject();
+    const QJsonObject aClu = actual.value("clusterizability").toObject();
+    ok &= cmpStr(eClu, aClu, "refused_reason", err);
+    ok &= cmpBool(eClu, aClu, "clusterizable", err);
+    const QJsonArray eFac = eClu.value("factions").toArray();
+    const QJsonArray aFac = aClu.value("factions").toArray();
+    if (eFac.size() != aFac.size()) {
+        err << "MISMATCH clusterizability.factions.size expected=" << eFac.size()
+            << " got=" << aFac.size() << "\n";
+        ok = false;
+    } else {
+        for (int i = 0; i < eFac.size(); ++i) {
+            const QJsonObject e = eFac.at(i).toObject();
+            const QJsonObject a = aFac.at(i).toObject();
+            const int eid = e.value("id").toInt();
+            const int aid = a.value("id").toInt();
+            if (eid != aid) {
+                err << "MISMATCH clusterizability.factions ordering at index=" << i
+                    << " expected_id=" << eid << " got_id=" << aid << "\n";
+                ok = false;
+                continue;
+            }
+            ok &= cmpInt(e, a, "faction", err);
+        }
+    }
 
     if (!ok) return 1;
 
