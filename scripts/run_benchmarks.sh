@@ -9,6 +9,7 @@ set -euo pipefail
 #   ./scripts/run_benchmarks.sh --type prominence
 #   ./scripts/run_benchmarks.sh --type io
 #   ./scripts/run_benchmarks.sh --type clustering
+#   ./scripts/run_benchmarks.sh --type signed
 #   ./scripts/run_benchmarks.sh --strict
 #   ./scripts/run_benchmarks.sh --record
 #   SOCNETV_CLI=./build/socnetv-cli ./scripts/run_benchmarks.sh
@@ -20,7 +21,7 @@ set -euo pipefail
 
 RECORD=0
 STRICT=0
-BENCH_TYPE="all"   # all|distance|prominence|io|clustering
+BENCH_TYPE="all"   # all|distance|prominence|io|clustering|signed
 LARGE_NETS_DIR="${HOME}/socnetv/library/nets/large"
 
 while [[ $# -gt 0 ]]; do
@@ -40,9 +41,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "$BENCH_TYPE" in
-  all|distance|prominence|io|clustering) ;;
+  all|distance|prominence|io|clustering|signed) ;;
   *)
-    echo "ERROR: invalid --type: $BENCH_TYPE (expected: all|distance|prominence|io|clustering)" >&2
+    echo "ERROR: invalid --type: $BENCH_TYPE (expected: all|distance|prominence|io|clustering|signed)" >&2
     exit 2
     ;;
 esac
@@ -148,6 +149,21 @@ if [[ "${RECORD}" != "1" ]]; then
 fi
 
 REC_LINES=()
+
+# Millisecond timestamp, GNU-date (%3N) and BSD-date (macOS, no %3N support) compatible. BSD
+# date doesn't fail on an unsupported %3N - it exits 0 and prints the literal string with a
+# trailing "N" (e.g. "1790842118N"), so a plain "|| date +%s" fallback never triggers and the
+# stray "N" breaks any later arithmetic. Strips a trailing N and falls back to whole-second
+# (*1000) precision whenever that happens, instead of a fragile digit-count heuristic.
+epoch_ms() {
+  local raw
+  raw=$(date +%s%3N 2>/dev/null)
+  if [[ "$raw" == *N ]]; then
+    echo $(( $(date +%s) * 1000 ))
+  else
+    echo "$raw"
+  fi
+}
 
 extract_kv_int() {
   local key="$1"
@@ -430,20 +446,15 @@ run_case_clustering() {
   echo "=== $tag ==="
 
   local start end ms out ok
-  start=$(date +%s%3N 2>/dev/null || date +%s)
+  start=$(epoch_ms)
 
   if ! out="$("$SOCNETV_CLI" --kernel clustering "$@" 2>/dev/null)"; then
     echo "ERROR: socnetv-cli failed for $tag" >&2
     return 2
   fi
 
-  end=$(date +%s%3N 2>/dev/null || date +%s)
-
-  if [[ ${#start} -le 10 ]]; then
-    ms=$(( (end - start) * 1000 ))
-  else
-    ms=$(( end - start ))
-  fi
+  end=$(epoch_ms)
+  ms=$(( end - start ))
 
   ok="$(printf '%s\n' "$out" | extract_kv_int LOAD_OK | tail -n1)"
 
@@ -451,6 +462,44 @@ run_case_clustering() {
 
   if [[ "$ok" != "1" ]]; then
     echo "ERROR: clustering run failed for $tag" >&2
+    return 2
+  fi
+
+  return 0
+}
+
+# ---------------- optional signed-kernel timing (non-bench) ----------------
+# NOTE:
+# - signed kernel does NOT support --bench
+# - this is informational timing only (single run)
+# - not enforced in STRICT mode
+# - runs only with --type signed
+# - structural_balance's triad census (O(n^3), pre-existing from #305) dominates this number;
+#   #304's graphClusterizability() (O(V+E)) is a small fraction of it - see below.
+
+run_case_signed_bench() {
+  local tag="$1"
+  shift
+
+  echo "=== $tag ==="
+
+  local start end ms out ok
+  start=$(epoch_ms)
+
+  if ! out="$("$SOCNETV_CLI" --kernel signed "$@" 2>/dev/null)"; then
+    echo "ERROR: socnetv-cli failed for $tag" >&2
+    return 2
+  fi
+
+  end=$(epoch_ms)
+  ms=$(( end - start ))
+
+  ok="$(printf '%s\n' "$out" | extract_kv_int LOAD_OK | tail -n1)"
+
+  echo "OK=$ok SIGNED_MS=$ms"
+
+  if [[ "$ok" != "1" ]]; then
+    echo "ERROR: signed kernel run failed for $tag" >&2
     return 2
   fi
 
@@ -467,6 +516,20 @@ if should_run_type clustering; then
   run_case_clustering "CLUST_SAMPSON_N18" \
     -i "$ROOT_DIR/src/data/Sampson_Monks_N18.net" \
     -f 2 -w 0 -x 1 -k 0 || fail=1
+fi
+
+if should_run_type signed; then
+  echo "[bench] Running signed-kernel timing probes (informational only)" >&2
+
+  # N=500/E~3438, seeded/reproducible, undirected, two internally-positive factions joined by
+  # negative cross edges (guaranteed clusterizable by construction, same shape used for #304's
+  # correctness fixtures at N=6). Downsized from the N=2000/E~14k graph used to isolate
+  # structural_balance_ms=70251 vs. clusterizability_ms=22 during development - large enough to
+  # produce a real timing signal without making this benchmark impractically slow to run
+  # routinely (the O(n^3) triad census dominates either way).
+  run_case_signed_bench "SIGNED_N500" \
+    -i "$ROOT_DIR/src/data/Benchmark_Signed_Undir_N500.paj" \
+    -f 2 -w 1 -x 0 || fail=1
 fi
 
 echo "=== DONE ==="
