@@ -1399,6 +1399,13 @@ public:
     // --- Clusterizability results (read-only access for CLI / reports) ---
     // Per-vertex 0/1 faction lives on GraphVertex::faction(), same convention as
     // signedDegreePos() etc. - only meaningful when graphClusterizability() returned true.
+    // No "already computed, skip" cache guard anywhere (unlike e.g. structuralBalanceCounts) -
+    // graphClusterizability() is O(V+E) and cheap enough (measured 22ms at 2000 nodes/14k edges)
+    // that callers should just call it every time, not try to cache its bool result. A guard
+    // that skipped recomputing without separately storing what the skipped run found was a real
+    // bug here (found via manual GUI testing: second run on an unmodified graph silently
+    // reported "not clusterizable" regardless of the graph's actual state) - don't reintroduce
+    // one without also storing and correctly reading back the actual outcome.
     bool hasCalculatedClusterizability() const { return calculatedClusterizability; }
 
     //	void eccentr_JordanCenter();    // TODO

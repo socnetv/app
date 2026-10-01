@@ -4375,21 +4375,20 @@ bool Graph::writeClusterizability(const QString fileName, const int &format)
     bool clusterizable = false;
     bool refused = false;
 
-    if (!calculatedClusterizability)
+    // No "already computed, skip" guard: graphClusterizability() is O(V+E), cheap enough to
+    // just call every time - see its own doc comment for why a skip-guard here was a real bug.
+    if (isDirected() || !hasNegativeWeight())
     {
-        if (isDirected() || !hasNegativeWeight())
+        refused = true;
+    }
+    else
+    {
+        clusterizable = graphClusterizability();
+        if (progressCanceled())
         {
-            refused = true;
-        }
-        else
-        {
-            clusterizable = graphClusterizability();
-            if (progressCanceled())
-            {
-                file.close();
-                progressStatus(tr("Computation canceled."));
-                return false;
-            }
+            file.close();
+            progressStatus(tr("Computation canceled."));
+            return false;
         }
     }
 
