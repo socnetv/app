@@ -2167,6 +2167,18 @@ void MainWindow::initActions()
                                                             "Requires an undirected network with at least one negative-weight edge.\n"));
     connect(analyzeCommunitiesStructuralBalanceAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCommunitiesStructuralBalance()));
 
+    analyzeCommunitiesClusterizabilityAct = new QAction(QIcon(":/images/triad.png"), tr("Clusterizability (two-faction test)"), this);
+    analyzeCommunitiesClusterizabilityAct->setShortcut(
+        QKeySequence(Qt::CTRL | Qt::Key_U, Qt::CTRL | Qt::Key_F));
+    analyzeCommunitiesClusterizabilityAct->setStatusTip(tr("Test whether the network splits into two mutually-hostile factions (undirected, signed networks only)."));
+    analyzeCommunitiesClusterizabilityAct->setWhatsThis(tr("Clusterizability (Two-Faction Test)\n\n"
+                                                           "Tests structural balance's strong theorem: whether an undirected signed "
+                                                           "network can be split into exactly two mutually-hostile, internally-friendly "
+                                                           "factions. Distinct from Structural Balance's per-triad ratio - a network can "
+                                                           "have no closed triads at all and still fail this test. "
+                                                           "Requires an undirected network with at least one negative-weight edge.\n"));
+    connect(analyzeCommunitiesClusterizabilityAct, SIGNAL(triggered()), this, SLOT(slotAnalyzeCommunitiesClusterizability()));
+
     analyzeStrEquivalencePearsonAct = new QAction(QIcon(":/images/similarity.png"),
                                                   tr("Pearson correlation coefficients"), this);
     analyzeStrEquivalencePearsonAct->setShortcut(

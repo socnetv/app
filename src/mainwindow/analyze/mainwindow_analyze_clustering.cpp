@@ -230,3 +230,70 @@ void MainWindow::slotAnalyzeCommunitiesStructuralBalance()
             statusMessage(tr("Structural Balance saved as: ") + QDir::toNativeSeparators(fn));
         });
 }
+
+/**
+ *	Calls Graph to compute and write the clusterizability / two-faction test into a file, then
+ *  displays it.
+ *
+ *  Report format (HTML or CSV) follows the Settings > Reports > Output format preference.
+ *
+ *  Same pre-check shape as slotAnalyzeCommunitiesStructuralBalance() - isDirected()/
+ *  hasNegativeWeight() checked here rather than relying on writeClusterizability()'s plain bool
+ *  return, which doesn't distinguish refused/not-clusterizable/clusterizable (see its own doc
+ *  comment).
+ */
+void MainWindow::slotAnalyzeCommunitiesClusterizability()
+{
+
+    if (!activeNodes())
+    {
+        slotHelpMessageToUser(USER_MSG_CRITICAL_NO_NETWORK);
+        return;
+    }
+
+    if (activeGraph->isDirected())
+    {
+        slotHelpMessageToUserError(
+            tr("Clusterizability requires an undirected network. "
+               "This network is directed - directed-graph balance semantics are not yet supported."));
+        return;
+    }
+
+    if (!activeGraph->hasNegativeWeight())
+    {
+        slotHelpMessageToUserError(
+            tr("Clusterizability requires a signed network (at least one negative-weight edge). "
+               "This network has no negative ties."));
+        return;
+    }
+
+    const int reportFormat = appSettings["initReportsOutputFormat"].toInt();
+    const QString ext = (reportFormat == ReportFormat::Csv) ? ".csv" : ".html";
+    QString dateTime = QDateTime::currentDateTime().toString(QString("yy-MM-dd-hhmmss"));
+    QString fn = appSettings["dataDir"] + "socnetv-report-clusterizability-" + dateTime + ext;
+
+    auto success = std::make_shared<bool>(false);
+
+    runGraphOperationAsync(
+        [this, fn, reportFormat, success]() {
+            *success = activeGraph->writeClusterizability(fn, reportFormat);
+        },
+        tr("Testing Clusterizability. Please wait..."),
+        [this, fn, reportFormat, success]() {
+            if (!*success)
+            {
+                return;
+            }
+            if (reportFormat == ReportFormat::Csv || appSettings["viewReportsInSystemBrowser"] == "true")
+            {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(fn));
+            }
+            else
+            {
+                TextEditor *ed = new TextEditor(fn, this, true);
+                ed->show();
+                m_textEditors << ed;
+            }
+            statusMessage(tr("Clusterizability saved as: ") + QDir::toNativeSeparators(fn));
+        });
+}

@@ -312,6 +312,7 @@ void MainWindow::initMenuBar()
     communitiesMenu->addSeparator();
     communitiesMenu->addAction(analyzeCommunitiesTriadCensusAct);
     communitiesMenu->addAction(analyzeCommunitiesStructuralBalanceAct);
+    communitiesMenu->addAction(analyzeCommunitiesClusterizabilityAct);
 
     analysisMenu->addSeparator();
     // STRUCTURAL EQUIVALENCE

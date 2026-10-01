@@ -490,14 +490,21 @@ void MainWindow::initPanels()
                      "<p>Classifies every closed triad in an undirected signed network as "
                      "balanced or unbalanced (Heider/Cartwright-Harary), plus a network-level "
                      "balance ratio. Requires an undirected network with at least one "
-                     "negative-weight edge.</p>");
+                     "negative-weight edge.</p>"
+                     "<p><em>Clusterizability:</em><p>"
+                     "<p>Tests whether an undirected signed network can be split into exactly "
+                     "two mutually-hostile, internally-friendly factions (structural balance's "
+                     "strong theorem). Distinct from Structural Balance's per-triad ratio - a "
+                     "network can have no closed triads at all and still fail this test. "
+                     "Requires an undirected network with at least one negative-weight edge.</p>");
     toolBoxAnalysisCommunitiesSelect->setToolTip(helpMessage);
     toolBoxAnalysisCommunitiesSelect->setWhatsThis(helpMessage);
     QStringList communitiesCommands;
     communitiesCommands << "Select"
                         << "Cliques"
                         << "Triad Census"
-                        << "Structural Balance";
+                        << "Structural Balance"
+                        << "Clusterizability";
     toolBoxAnalysisCommunitiesSelect->addItems(communitiesCommands);
     toolBoxAnalysisCommunitiesSelect->setMinimumWidth(120);
 
