@@ -294,7 +294,7 @@ void Graph::vertexRemoveDummyNode(int i)
  *
  * Returns the vpos or -1
  *
- * Complexity: O(logN) for vpos retrieval
+ * Complexity: average O(1) - vpos is a QHash<int,int>, not a tree-based container.
  *
  * @param vertex number
  * @return vertex pos or -1
