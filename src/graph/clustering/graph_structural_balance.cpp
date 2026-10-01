@@ -16,6 +16,7 @@
 
 #include "graph.h"
 #include <QtConcurrent/QtConcurrent>
+#include <QQueue>
 
 /**
  * @brief Classifies every closed triad (all 3 dyads present) of an undirected signed graph as
@@ -124,4 +125,134 @@ bool Graph::graphStructuralBalance()
     calculatedStructuralBalance = true;
 
     return true;
+}
+
+/**
+ * @brief Tests structural balance's strong theorem (Cartwright-Harary #304): an undirected
+ * signed graph is fully balanced (every cycle positive, not just every closed triad - see
+ * graphStructuralBalance()'s per-triad classification above for the weaker, local question) if
+ * and only if its vertices can be partitioned into exactly two factions such that every positive
+ * edge stays inside a faction and every negative edge crosses between factions.
+ *
+ * Genuinely distinct from graphStructuralBalance(): a graph can have zero closed triads at all
+ * (e.g. a 4-cycle with signs +,+,+,- where only 4 of 6 possible pairs are tied) and still fail
+ * this test, because full balance is a property of every cycle in the graph, not just 3-vertex
+ * ones - graphStructuralBalance() would report "nothing to classify" on such a graph while this
+ * function correctly finds it not clusterizable.
+ *
+ * Algorithm: BFS/2-coloring, the same shape as the classical "is this graph bipartite" check -
+ * pick an unvisited vertex, assign it faction 0; for each of its edges, a positive edge forces
+ * the neighbor onto the same faction, a negative edge forces the opposite faction; if a neighbor
+ * is already assigned and the forced faction contradicts it, the graph is not clusterizable.
+ * Repeats from any remaining unvisited vertex to cover disconnected components (each one
+ * independently 2-colorable; isolated vertices trivially land on faction 0). This reduces the
+ * problem to the classical graph-bipartiteness question, decidable in P (not NP-hard - contrast
+ * the frustration index below); BFS/2-coloring is the standard exact algorithm for it and is
+ * asymptotically optimal, O(V+E) - every edge must be examined at least once to know whether it
+ * violates the coloring, and every vertex at least once to place isolates, so no exact algorithm
+ * can do better in the worst case. (Other signed-graph balance algorithms exist - e.g. an
+ * eigenvalue-based score - but those answer a different, continuous question and are typically
+ * superlinear, not a faster way to answer this yes/no one.)
+ *
+ * Deliberately does NOT compute the frustration index (the minimum number of ties that would
+ * need to change to make an unbalanced graph balanced) - that is a separate, NP-hard question
+ * needing an LP/ILP solver, not a graph walk. See the WS18 roadmap doc.
+ *
+ * Same undirected/signed guards as graphStructuralBalance() - see its own doc comment for why.
+ *
+ * @return false if the graph is directed, has no negative-weight edge, or is not clusterizable
+ * into two factions; true if it is (in which case each GraphVertex::faction() holds its 0/1
+ * assignment - same per-vertex-field convention as signedDegreePos() etc., not a parallel list
+ * on Graph)
+ */
+bool Graph::graphClusterizability()
+{
+    qCDebug(lcClustering) << "Graph::graphClusterizability()";
+
+    if (isDirected())
+    {
+        qCDebug(lcClustering) << "Graph::graphClusterizability() - graph is directed, refusing.";
+        calculatedClusterizability = false;
+        return false;
+    }
+
+    if (!hasNegativeWeight())
+    {
+        qCDebug(lcClustering) << "Graph::graphClusterizability() - graph has no negative-weight "
+                                  "edge, refusing.";
+        calculatedClusterizability = false;
+        return false;
+    }
+
+    const int N = m_graph.size();
+    const int currentRelation = relationCurrent();
+
+    QHash<int, int> faction; // vertex number -> 0/1, only for visited vertices
+    faction.reserve(N);
+
+    bool clusterizable = true;
+
+    for (auto startIt = m_graph.cbegin(); startIt != m_graph.cend() && clusterizable; ++startIt)
+    {
+        const int startNum = (*startIt)->number();
+        if (faction.contains(startNum))
+            continue; // already visited in an earlier component's BFS
+
+        faction[startNum] = 0;
+        QQueue<int> queue;
+        queue.enqueue(startNum);
+
+        while (!queue.isEmpty() && clusterizable)
+        {
+            const int uNum = queue.dequeue();
+            GraphVertex *uVert = vertexPtr(uNum);
+            const int uFaction = faction.value(uNum);
+
+            // Undirected graph (guarded above) stores each tie as symmetric out-edges on both
+            // endpoints (see Graph::edgeCreate()/addOutEdge() for EdgeType::Undirected), so
+            // iterating uVert's own out-edges alone - not every other vertex in the graph -
+            // already finds every neighbor: true O(degree(u)) per dequeue, not O(N). Same single-
+            // pass pattern as graphDistancesGeodesic()'s BFS (graph_distance_facade.cpp): read
+            // relation/weight/enabled straight off the iterator instead of a second hasEdgeTo()
+            // lookup per neighbor.
+            for (auto eit = uVert->outEdges().cbegin(); eit != uVert->outEdges().cend() && clusterizable; ++eit)
+            {
+                if (eit.value().first != currentRelation)
+                    continue; // wrong relation
+                if (!eit.value().second.second)
+                    continue; // edge disabled
+
+                const int vNum = eit.key();
+                const qreal w = eit.value().second.first;
+                if (w == 0)
+                    continue;
+
+                const int forcedFaction = (w > 0) ? uFaction : (1 - uFaction);
+
+                if (faction.contains(vNum))
+                {
+                    if (faction.value(vNum) != forcedFaction)
+                    {
+                        clusterizable = false;
+                        break;
+                    }
+                }
+                else
+                {
+                    faction[vNum] = forcedFaction;
+                    queue.enqueue(vNum);
+                }
+            }
+        }
+    }
+
+    calculatedClusterizability = clusterizable;
+
+    if (clusterizable)
+    {
+        for (auto it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+            (*it)->setFaction(faction.value((*it)->number(), 0));
+    }
+
+    return clusterizable;
 }

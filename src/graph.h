@@ -1162,6 +1162,8 @@ public:
 
     bool writeStructuralBalance(const QString, const int &format = ReportFormat::Html);
 
+    bool writeClusterizability(const QString, const int &format = ReportFormat::Html);
+
     /* DISTANCES, CENTRALITIES & PROMINENCE MEASURES */
 
     int graphConnectednessFull(const bool updateProgress = false);
@@ -1391,6 +1393,13 @@ public:
     // see graph_structural_balance.cpp's own doc comment.
     const QList<int> &graphStructuralBalanceCounts() const { return structuralBalanceCounts; }
     bool hasCalculatedStructuralBalance() const { return calculatedStructuralBalance; }
+
+    bool graphClusterizability();
+
+    // --- Clusterizability results (read-only access for CLI / reports) ---
+    // Per-vertex 0/1 faction lives on GraphVertex::faction(), same convention as
+    // signedDegreePos() etc. - only meaningful when graphClusterizability() returned true.
+    bool hasCalculatedClusterizability() const { return calculatedClusterizability; }
 
     //	void eccentr_JordanCenter();    // TODO
 
@@ -1764,6 +1773,7 @@ private:
     bool calculatedIRCC, calculatedIC, calculatedPRP;
     bool calculatedTriad;
     bool calculatedStructuralBalance;
+    bool calculatedClusterizability;
     bool calculatedGraphSymmetry, calculatedGraphReciprocity;
     bool calculatedGraphDensity, calculatedGraphWeighted;
     bool calculatedGraphHasNegativeWeight;

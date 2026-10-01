@@ -40,6 +40,17 @@ typedef QList<int> L_int;
 typedef QHash<int,QString> H_IntToStr;
 typedef QHash <QString, int> H_StrToInt;
 
+// pair_f_b: (weight, enabled) for one edge.
+// pair_i_fb: (relation, pair_f_b) - which relation this edge entry belongs to, plus its weight/
+// enabled state. A single multirelational network can have several entries for the same
+// neighbor, one per relation, which is exactly why H_edges is a *Multi*Hash, not a plain Hash.
+// H_edges: keyed by the OTHER vertex's number (int), one entry per (relation, edge) pair to
+// that vertex - m_outEdges (source's view, weight/color/label-bearing) and m_inEdges (target's
+// view, weight only) both use this shape. To read straight off an iterator without a second
+// lookup: eit.key() = neighbor vertex number, eit.value().first = relation,
+// eit.value().second.first = weight, eit.value().second.second = enabled. See
+// GraphVertex::hasEdgeTo() for the canonical single-relation lookup, or
+// graph_distance_facade.cpp's BFS for the single-pass iteration pattern.
 typedef QPair <qreal, bool> pair_f_b;
 typedef QPair <int, pair_f_b > pair_i_fb;
 typedef QMultiHash < int, pair_i_fb > H_edges;
@@ -207,6 +218,11 @@ public:
     qreal signedDegreeRatio() { return m_signedDegreeRatio; }
     qreal signedDegreeNet() { return m_signedDegreeNet; }
 
+    /* Structural balance clusterizability faction (WS18 #304) - 0 or 1, only meaningful when
+       Graph::graphClusterizability() returned true. */
+    void setFaction (const int &f) { m_faction=f; }
+    int faction() { return m_faction; }
+
     void setDistanceSum (const qreal &c) { m_distanceSum = c; }
     qreal distanceSum () { return m_distanceSum; }
     void setCC (const qreal &c){ m_CC=c;}		/* sets vertex Closeness Centrality*/
@@ -307,6 +323,7 @@ private:
     qreal m_EC, m_SEC;
     qreal m_DC, m_SDC, m_DP, m_SDP, m_CC, m_SCC, m_BC, m_SBC, m_IRCC, m_SIRCC, m_SC, m_SSC;
     qreal m_signedDegreePos, m_signedDegreeNeg, m_signedDegreeRatio, m_signedDegreeNet;
+    int m_faction = 0;
     qreal m_PC, m_SPC, m_SIC, m_IC, m_SPRC, m_PRC;
     qreal m_PP, m_SPP, m_EVC, m_SEVC;
     qreal m_KC, m_SKC, m_BPC, m_SBPC;
