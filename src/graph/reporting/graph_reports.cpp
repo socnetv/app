@@ -4336,6 +4336,163 @@ bool Graph::writeStructuralBalance(const QString fileName, const int &format)
 }
 
 /**
+ * @brief Writes structural balance's clusterizability / two-faction test (Cartwright-Harary
+ * strong theorem, WS18 #304) to a file.
+ *
+ * Unlike writeStructuralBalance()'s triad ratio, this is a whole-graph yes/no question: can
+ * every vertex be assigned to one of exactly two factions such that every positive tie stays
+ * inside a faction and every negative tie crosses between them? If yes, shows the per-vertex
+ * faction assignment as a score table (GraphVertex::faction(), 0 or 1 - see
+ * Graph::graphClusterizability()'s own doc comment for the algorithm). If no, or if the graph is
+ * directed/unsigned (same guards as writeStructuralBalance()), states that plainly instead of a
+ * table - this function's bool return doesn't distinguish "refused" from "not clusterizable"
+ * from "write failed", callers needing to show the user a precise reason should pre-check
+ * isDirected()/hasNegativeWeight() themselves first (see
+ * MainWindow::slotAnalyzeCommunitiesClusterizability()).
+ *
+ * @param fileName
+ * @param format
+ */
+bool Graph::writeClusterizability(const QString fileName, const int &format)
+{
+    qCDebug(lcReporting) << "Graph::writeClusterizability()";
+
+    QElapsedTimer computationTimer;
+    computationTimer.start();
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qCDebug(lcReporting) << "Could not open file for writing. Abort.";
+        progressStatus(tr("Error. Could not write to ") + fileName);
+        return false;
+    }
+
+    QTextStream outText(&file);
+
+    progressStatus(tr("Testing clusterizability. Please wait...."));
+
+    bool clusterizable = false;
+    bool refused = false;
+
+    if (!calculatedClusterizability)
+    {
+        if (isDirected() || !hasNegativeWeight())
+        {
+            refused = true;
+        }
+        else
+        {
+            clusterizable = graphClusterizability();
+            if (progressCanceled())
+            {
+                file.close();
+                progressStatus(tr("Computation canceled."));
+                return false;
+            }
+        }
+    }
+
+    int N = vertices();
+
+    if (format == ReportFormat::Csv)
+    {
+        if (refused)
+        {
+            outText << tr("Clusterizability requires an undirected, signed network.") << "\n";
+            file.close();
+            return true;
+        }
+        if (!clusterizable)
+        {
+            outText << tr("Not clusterizable into two factions.") << "\n";
+            file.close();
+            return true;
+        }
+        auto rowValues = [](GraphVertex *v) -> QVector<qreal> {
+            return {qreal(v->faction())};
+        };
+        writeScoreTableCSV(outText, {"faction"}, rowValues);
+        file.close();
+        return true;
+    }
+
+    outText << htmlHead;
+
+    outText << "<h1>";
+    outText << tr("CLUSTERIZABILITY REPORT");
+    outText << "</h1>";
+
+    outText << "<p>"
+            << "<span class=\"info\">"
+            << tr("Network name: ")
+            << "</span>"
+            << getName()
+            << "<br />"
+            << "<span class=\"info\">"
+            << tr("Actors: ")
+            << "</span>"
+            << N
+            << "</p>";
+
+    outText << "<p class=\"description\">"
+            << tr("Tests structural balance's strong theorem (Cartwright-Harary): an undirected "
+                  "signed network is fully balanced if and only if its actors can be split into "
+                  "exactly two mutually-hostile, internally-friendly factions - every positive "
+                  "tie stays inside a faction, every negative tie crosses between them. "
+                  "Distinct from the Structural Balance report's per-triad ratio: a network can "
+                  "have no closed triads at all and still fail this test, since full balance is "
+                  "a property of every cycle in the network, not just 3-actor ones.")
+            << "</p>";
+
+    if (refused)
+    {
+        outText << "<p><span class=\"info\">"
+                << tr("Result: ")
+                << "</span>"
+                << tr("Not applicable - requires an undirected, signed network.")
+                << "</p>";
+    }
+    else if (!clusterizable)
+    {
+        outText << "<p><span class=\"info\">"
+                << tr("Result: ")
+                << "</span>"
+                << tr("Not clusterizable into two factions.")
+                << "</p>";
+    }
+    else
+    {
+        outText << "<p><span class=\"info\">"
+                << tr("Result: ")
+                << "</span>"
+                << tr("Clusterizable - see the faction assigned to each actor below (0 or 1).")
+                << "</p>";
+
+        auto rowValues = [](GraphVertex *v) -> QVector<qreal> {
+            return {qreal(v->faction())};
+        };
+        writeScoreTableHTML(outText, {"faction"}, rowValues);
+    }
+
+    outText << "<p>&nbsp;</p>";
+    outText << "<p class=\"small\">";
+    outText << tr("Clusterizability report, <br />");
+    outText << tr("Created by <a href=\"https://socnetv.org\" target=\"_blank\">Social Network Visualizer</a> v%1: %2")
+                   .arg(VERSION)
+                   .arg(actualDateTime.currentDateTime().toString(QString("ddd, dd.MMM.yyyy hh:mm:ss")));
+    outText << "<br />";
+    outText << tr("Computation time: %1 msecs").arg(computationTimer.elapsed());
+    outText << "</p>";
+
+    outText << htmlEnd;
+
+    file.close();
+
+    return true;
+}
+
+/**
  * @brief Calls graphCliques() to compute all cliques (maximal connected subgraphs) of the network.
  * Then writes the results into a file, along with the Actor by clique analysis,
  * the Co-membership matrix and the Hierarchical clustering of overlap matrix
