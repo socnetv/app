@@ -84,6 +84,46 @@ util/
 
 ---
 
+# GraphVertex
+
+`GraphVertex` (`src/graphvertex.h`/`.cpp`) is a **plain QtCore value class, not a `QObject`**
+(WS3 M2 de-QObject'd it) — it represents one vertex and its adjacency, and notifies the UI layer
+of edge-visibility changes via a plain call to its owning `Graph`
+(`Graph::notifyEdgeVisibilityChanged`/`notifyEdgesVisibilityBatch`), not by emitting its own
+signal. `Graph` holds every vertex in `VList m_graph` (`typedef QList<GraphVertex*>`, see
+`graph.h`), plus a number→index lookup `vpos` (`QHash<int,int>`) rebuilt as vertices are
+added/removed.
+
+**Looking up a vertex**: prefer `Graph::vertexPtr(int number)` (`graph_vertices.cpp`) — returns
+`nullptr` if the number doesn't exist, rather than an unchecked index into `m_graph`.
+`Graph::vertexIndexByNumber(int number)` returns the raw `vpos` index (`-1` if absent) for code
+that needs the index itself, not the pointer. Iterate the whole vertex set via
+`Graph::verticesBegin()`/`verticesEnd()` (both just forward to `m_graph`'s iterators).
+
+**Edge storage**: each vertex stores its own out-edges and in-edges separately, `m_outEdges`/
+`m_inEdges` (`H_edges = QMultiHash<int neighborNumber, QPair<int relation, QPair<qreal weight,
+bool enabled>>>`, see the typedef's own doc comment in `graphvertex.h` for the full shape and how
+to read straight off an iterator without a second lookup). It's a *Multi*Hash because a
+multirelational network can have several entries for the same neighbor, one per relation. An
+undirected edge is stored as two symmetric out-edge entries, one on each endpoint (see
+`Graph::edgeCreate()`'s `EdgeType::Undirected` branch) — so for a confirmed-undirected graph,
+iterating one vertex's own `outEdges()` already finds every neighbor; no need to also check
+`inEdges()`. `GraphVertex::hasEdgeTo(int neighborNumber)` is the canonical single-relation
+weight lookup (0 if no edge); `graph_distance_facade.cpp`'s BFS and
+`graph_structural_balance.cpp`'s `graphClusterizability()` (#304) are reference examples of the
+single-pass iterator pattern for walking a vertex's own edges without redundant lookups.
+
+**Per-vertex algorithm results live as fields directly on `GraphVertex`**, each with its own
+`setX()`/`x()` pair (e.g. `setDC()`/`DC()`, `setSignedDegreePos()`/`signedDegreePos()`,
+`setFaction()`/`faction()`) — **not** as a separate list on `Graph` indexed in parallel to
+`m_graph`. The latter was tried and reverted during #304's implementation: a `Graph`-level
+`QList<int>` of per-vertex values is fragile (it can silently misalign if vertex order or count
+changes between the compute pass and whatever reads the list back), and every existing per-vertex
+result in the codebase already uses the `GraphVertex`-field convention — a new measure should
+follow it too, not reintroduce the parallel-list shape.
+
+---
+
 # Structural Boundary Inside `src/graph/`
 
 A strict separation is enforced between computation and rendering.
@@ -139,9 +179,10 @@ Shortest-path algorithms run through a dedicated engine:
 
 ```
 src/engine/
-  distance_engine.cpp
+  distance_engine.h/.cpp
   distance_progress_sink.h
-  graph_distance_progress_sink.cpp
+  graph_distance_progress_sink.h/.cpp
+  null_distance_progress_sink.h
   per_source_scratch.h        ← introduced in WS3 Phase 1
   thread_local_state.h
 ```
@@ -472,7 +513,7 @@ kernel_clustering_v6          — clustering coefficient, triad census, clique c
 kernel_connectivity_v7        — weakly connected components count + per-node IDs
 kernel_matrix_v8              — matrix operations (inverse, spectral radius, ...)
 kernel_vertex_connectivity_v9 — vertex connectivity (kappa(G))
-kernel_signed_v10             — signed-graph Bellman-Ford potentials/negative cycles
+kernel_signed_v10             — signed-graph Bellman-Ford potentials/negative cycles, structural balance, clusterizability
 ```
 
 Each kernel owns its execution logic, JSON schema, and comparison logic.
