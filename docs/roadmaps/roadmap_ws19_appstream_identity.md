@@ -63,9 +63,16 @@ Message sent asking for glob-based `%files`/`%check` that work with both old and
 installed names. Do not land Step 2 before this is confirmed.
 
 ### Step 1 — Fedora spec dry-run
-Build the Fedora spec against a 3.8 tarball and a dev tarball in a container (install a container
-runtime on the Linux build host first). Expected: old spec fails on the dev tree (confirms the
-risk), globbed spec passes on both. Hand the verified diff to the packager if useful.
+Status: ✅ done. Built the Fedora spec in a rawhide container against a 3.8 tarball and a copy
+with the three files renamed (simulated; the app repo was not touched):
+
+| Spec | 3.8 as-is | renamed tree |
+|---|---|---|
+| current (names hardcoded) | pass | **fail** — `%check`: desktop file `socnetv.desktop` does not exist |
+| globbed `%files` + `%check` | pass | pass |
+
+The globbed spec is safe to adopt before 3.9; without it 3.9 would not build on Fedora. `%check`
+fails first, so the `%files` failure itself was not exercised separately.
 
 ### Step 2 — Rename + metadata (on `develop`)
 - `git mv` metainfo, desktop file and icon to `org.socnetv.SocNetV.*`; update all rows above.
