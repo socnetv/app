@@ -142,6 +142,17 @@ exploration are not yet started.
 
 ---
 
+## WS19 — AppStream Identity & Packaging Names (transient, 3.9)
+
+Roadmap: [`docs/roadmaps/roadmap_ws19_appstream_identity.md`](roadmaps/roadmap_ws19_appstream_identity.md)
+
+Standard application ID (`org.socnetv.SocNetV`) for the AppStream metadata file, desktop file,
+icon and window association, correct metadata license, and Flathub readiness (#309, prerequisite
+for #167) — without breaking existing downstream packages (Debian, Fedora, OBS, AppImage). Planned,
+not started; blocked on downstream packagers switching to glob-based file lists first.
+
+---
+
 # Priorities
 
 No workstream is pinned as "the" active focus — work happens on whichever's issue is picked up
@@ -151,6 +162,9 @@ this is a workstream-level summary of that picture, not a ranking, and not a liv
 
 **v3.8 shipped.** WS6 (regression safety) runs continuously underneath every other workstream.
 WS18 (signed networks) — see its own entry above for current status, not duplicated here.
+
+**3.9 packaging:** WS19 (#309) — transient, coordinated with downstream packagers before any
+installed file is renamed.
 
 **Scoped, not started:** WS8 (IO layer stabilization/`FormatHandler` registry) — roadmap exists,
 zero code written.
