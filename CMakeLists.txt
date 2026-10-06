@@ -318,7 +318,7 @@ message(STATUS "Source files to be compiled: ${SOURCES}")
 # 3. Platform-Specific Configurations
 # ==============================================================================
 # Set icons
-set(ICON_FILE src/images/${APP_NAME_LOWER}.png)
+set(ICON_FILE src/images/org.socnetv.SocNetV.png)
 
 if (APPLE)
     set(ICON_FILE src/images/${APP_NAME_LOWER}.icns)
