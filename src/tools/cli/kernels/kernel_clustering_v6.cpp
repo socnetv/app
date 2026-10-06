@@ -549,7 +549,10 @@ namespace cli
             return 2;
         }
 
+        QElapsedTimer cliquesTimer;
+        cliquesTimer.start();
         g.graphCliques(QSet<int>(), QSet<int>(), QSet<int>());
+        printKV("CLIQUES_MS", static_cast<qint64>(cliquesTimer.elapsed()));
 
         Matrix STR_EQUIV;
         if (cfg.clusteringInput == "distances")
