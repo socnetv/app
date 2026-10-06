@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-        <id>org.socnetv.social_network_visualizer</id>
+        <id>org.socnetv.SocNetV</id>
 	<metadata_license>CC0-1.0</metadata_license>
-	<project_license>GPL-2.0+</project_license>
+	<project_license>GPL-3.0-or-later</project_license>
 	<name>Social Network Visualizer</name>
 	<summary>Social Network Analysis and Visualization software application</summary>
 	<description>
@@ -10,7 +10,7 @@
                 <p>With SocNetV you can draw social networks with a few clicks on a virtual canvas, load field data from a file in a supported format (GraphML, GraphViz, Adjacency, EdgeList, GML, Pajek, UCINET, etc) or crawl the internet to create a social network of connected webpages.</p>
                 <p>You can edit actors and ties through point-and-click, analyse graph and social network properties, produce beautiful HTML reports and embed visualization layouts to the network.</p>
 	</description>
-	<launchable type="desktop-id">socnetv.desktop</launchable>
+	<launchable type="desktop-id">org.socnetv.SocNetV.desktop</launchable>
 	<url type="homepage">https://socnetv.org</url>
 	<url type="bugtracker">https://github.com/socnetv/app/issues</url>
 	<screenshots>

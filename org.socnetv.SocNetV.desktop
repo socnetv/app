@@ -6,6 +6,6 @@ Comment=Social Network Analysis and Visualization software
 Exec=socnetv
 Terminal=false
 Type=Application
-Icon=socnetv
+Icon=org.socnetv.SocNetV
 Categories=Education;Science;Math;Qt;
 Keywords=Network Analysis,Social Network Analysis,Visualizer;
