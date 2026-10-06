@@ -304,28 +304,6 @@ bool Graph::graphCliquesRecurse(CliqueSearchContext &ctx,
 }
 
 /**
-    Returns the number of maximal cliques which include a given actor
-*/
-int Graph::graphCliquesContaining(const int &actor, const int &size)
-{
-    qCDebug(lcCohesion) << "*** Graph::graphCliquesContaining(" << actor << ")";
-    int cliqueCounter = 0;
-    foreach (QList<int> clique, m_cliques)
-    {
-        if (size != 0)
-        {
-            if (clique.size() != size)
-                continue;
-        }
-        if (clique.contains(actor))
-        {
-            cliqueCounter++;
-        }
-    }
-    return cliqueCounter;
-}
-
-/**
  * @brief Graph::graphCliquesOfSize
  * Returns the number of maximal cliques of a given size
  * @param size

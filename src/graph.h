@@ -1352,8 +1352,6 @@ public:
 
     void graphCliqueAdd(const QList<int> &clique);
 
-    int graphCliquesContaining(const int &actor, const int &size = 0);
-
     int graphCliquesOfSize(const int &size);
 
     bool graphClusteringHierarchical(Matrix &STR_EQUIV,
