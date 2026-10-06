@@ -131,6 +131,58 @@ Three follow-on visualizations surfaced by this work are noted below under What 
   permutation approaches. Four distinct methods bundled in one issue — likely worth splitting into
   separate issues once one is actually scoped, since they're independent algorithms with different
   complexity profiles (clique-family enumeration is combinatorially expensive at scale).
+- **(not yet filed) Maximum clique and size-bounded clique search.** Today's only clique routine is
+  `Graph::graphCliques()`, Bron–Kerbosch with Tomita pivoting: it enumerates **every maximal
+  clique**. That is the right tool for the census, but it cannot answer the following without
+  enumerating everything first, which is exponentially expensive on dense networks:
+  - the **clique number ω(G)** and one/all **maximum** cliques (today only derivable as
+    `max_clique_size` from a full census);
+  - "does a clique of size ≥ k exist?" and "list all cliques of size k" (size-bounded queries);
+  - (later, optional) **vertex-weighted** maximum clique — maximum total node weight, node weights
+    taken from a numeric node attribute. Edge weights stay out of scope, consistent with the census.
+
+  Maximal-clique enumeration and maximum-clique search are different problems: the first is
+  output-sensitive, the second prunes with a bound. Do **not** replace or extend `graphCliques()`
+  to cover this; add a separate routine.
+
+  **Plan (not approved, nothing implemented):**
+  1. **Compute slice** `src/graph/cohesion/graph_cliques_max.cpp` (QtCore only, no UI). Exact
+     branch-and-bound with a greedy-colouring upper bound (Tomita–Seki MCQ / San Segundo BBMC
+     family; Östergård 2002 is the alternative ordering-based bound). Dense bitset adjacency
+     (`std::vector<quint64>` rows) built once from the same mutual-tie adjacency the census uses
+     (`reciprocalNeighborhoodList()`, active relation, self-loops ignored), so both routines agree
+     on what "adjacent" means. Initial order: degeneracy order. No recursion state on `Graph`
+     (unlike `csRecDepth`/`neighboursHash` in the census): scratch lives in a local struct, in the
+     same spirit as `PerSourceScratch`. Cancellation polled every N nodes of the search, not only
+     at the top level (see #310 for the same weakness in the census).
+  2. **API.** `Graph::graphCliqueNumber()` plus `Graph::graphMaximumCliques(bool findAll)` returning
+     `QList<QList<int>>` by value (no new side-effect state on `Graph`/`GraphVertex`). Size-bounded
+     variants (`minSize`/`maxSize`, existence-only mode) as a second step.
+  3. **CLI + goldens.** Extend the existing `cliques` block of the `clustering` kernel (it already
+     holds the census: `by_size`, `max_clique_size`, `total_cliques`) with the new routine's
+     results (ω, number of maximum cliques, bounded-search counts), compared alongside the
+     census-derived values so the golden itself cross-checks the two algorithms. Additive fields
+     only, `schema_version` stays 6, affected baselines regenerated in the same commit (the
+     precedent is `913fe891`, which added `graph.symmetric` to every kernel). Bounded-search
+     queries need a parameter, so the kernel gains a small option for k. No new kernel family.
+  4. **GUI.** Analyze → Cohesion entry: HTML report (ω, number of maximum cliques, member lists),
+     dispatched via `MainWindow::runGraphOperationAsync()`. Optional: select a maximum clique's
+     nodes on the canvas.
+  5. **Verification (WS6.8/6.9 discipline, standing rule).**
+     - Free internal cross-check: on every dataset in `src/data/`, ω must equal the existing
+       census's `max_clique_size`, and the count of maximum cliques must equal the census's count
+       at that size. Two unrelated algorithms agreeing is strong evidence for both.
+     - Independent outside check: ω and the maximum-clique count on the shipped datasets, plus
+       random graphs across a density sweep, compared against an exact maximum-clique solver run
+       **outside SocNetV**, and against a from-scratch standalone reimplementation as a second
+       method if any result is surprising.
+     - Benchmark: dense random graphs where census-then-max is slow, to confirm the bound actually
+       pays off (verify live, do not assert).
+  6. **Defer** vertex-weighted maximum clique until 1–5 land; it reuses the same search with a
+     weighted bound.
+
+  **Out of scope here:** n-cliques/n-clans/k-plexes (bundled under #3 above — different
+  relaxations, not the strict clique), and fixes to the existing census (tracked in #310).
 - **(not yet filed) Color nodes by strongly connected component.** Extends the existing weak-only
   "Layout → Node Color by Connected Component" action to offer strong too. Tarjan's algorithm
   (`graphStronglyConnectedComponents()`) already computes per-vertex SCC membership as a side
