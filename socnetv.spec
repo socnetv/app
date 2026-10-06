@@ -93,7 +93,7 @@ pwd
 find %{buildroot}
 
 %check
-desktop-file-validate %{buildroot}%{_datadir}/applications/%{name}.desktop
+desktop-file-validate %{buildroot}%{_datadir}/applications/org.socnetv.SocNetV.desktop
 
 ### Debugging: show where we are again
 pwd
@@ -124,9 +124,9 @@ pwd
 %{_datadir}/doc/%{name}/
 %{_bindir}/%{name}
 %{_datadir}/%{name}/%{name}_*.qm
-%{_datadir}/applications/%{name}.desktop
-%{_datadir}/pixmaps/%{name}.png
-%{_datadir}/metainfo/%{name}.appdata.xml
+%{_datadir}/applications/org.socnetv.SocNetV.desktop
+%{_datadir}/pixmaps/org.socnetv.SocNetV.png
+%{_datadir}/metainfo/org.socnetv.SocNetV.metainfo.xml
 %{_mandir}/man1/%{name}.1.gz
 
 

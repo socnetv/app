@@ -8,7 +8,7 @@
 [![license](https://img.shields.io/github/license/socnetv/app.svg)](https://github.com/socnetv/app/blob/master/COPYING)
 [![website](https://img.shields.io/website-up-down-green-red/https/socnetv.org.svg)](https://socnetv.org)
 
-[![socnetv](/src/images/socnetv.png)](https://socnetv.org) SocNetV - Social Network Visualizer
+[![socnetv](/src/images/org.socnetv.SocNetV.png)](https://socnetv.org) SocNetV - Social Network Visualizer
 
 ---
 

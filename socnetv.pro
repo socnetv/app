@@ -313,16 +313,16 @@ unix:!macx{
   TARGET = socnetv
 
   pixmap.path = $${PREFIX}/share/pixmaps
-  pixmap.files = src/images/socnetv.png
+  pixmap.files = src/images/org.socnetv.SocNetV.png
 
   desktop.path = $${PREFIX}/share/applications
-  desktop.files = socnetv.desktop
+  desktop.files = org.socnetv.SocNetV.desktop
 
   manpage.path = $${PREFIX}/share/man/man1
   manpage.files = man/socnetv.1
 
   appstream.path = $${PREFIX}/share/metainfo
-  appstream.files = socnetv.appdata.xml
+  appstream.files = org.socnetv.SocNetV.metainfo.xml
 
   translations.path = $${PREFIX}/share/socnetv
   translations.files = translations/socnetv_*.qm

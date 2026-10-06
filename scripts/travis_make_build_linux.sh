@@ -74,8 +74,8 @@ if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
 
     # Copy application assets
     echo "Copying .desktop and icon files..."
-    cp appdir/usr/share/applications/socnetv.desktop ./appdir
-    cp appdir/usr/share/pixmaps/socnetv.png .
+    cp appdir/usr/share/applications/org.socnetv.SocNetV.desktop ./appdir
+    cp appdir/usr/share/pixmaps/org.socnetv.SocNetV.png .
 
     #echo "copying custom openssl libs to ./appdir/usr/bin..."
     #cp /opt/openssl-1.1.1/lib/libssl.so.1.1 ./appdir/usr/bin/

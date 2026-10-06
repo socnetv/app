@@ -486,12 +486,12 @@ elseif(UNIX AND NOT APPLE)
     )
 
     # Install the pixmap (icon file)
-    install(FILES src/images/socnetv.png
+    install(FILES src/images/org.socnetv.SocNetV.png
         DESTINATION "${CMAKE_INSTALL_DATADIR}/pixmaps"
     )
 
     # Install the desktop entry file
-    install(FILES socnetv.desktop
+    install(FILES org.socnetv.SocNetV.desktop
         DESTINATION "${CMAKE_INSTALL_DATADIR}/applications"
     )
 
@@ -501,7 +501,7 @@ elseif(UNIX AND NOT APPLE)
     )
 
     # Install the AppStream metadata file
-    install(FILES socnetv.appdata.xml
+    install(FILES org.socnetv.SocNetV.metainfo.xml
         DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/metainfo"
     )
 
