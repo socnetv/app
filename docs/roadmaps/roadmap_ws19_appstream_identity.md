@@ -79,12 +79,39 @@ The globbed spec is safe to adopt before 3.9; without it 3.9 would not build on 
 fails first, so the `%files` failure itself was not exercised separately.
 
 ### Step 2 — Rename + metadata (on `develop`)
-- `git mv` metainfo, desktop file and icon to `org.socnetv.SocNetV.*`; update all rows above.
-- Metadata: new `<id>`, `<launchable>`, license `GPL-3.0-or-later`, old ID declared replaced.
-- Desktop file: `Icon=org.socnetv.SocNetV`.
-- `main.cpp`: `setDesktopFileName`.
-*Verify:* AppStream validator (pedantic) on the file and on an installed tree; desktop-file
-validator; no leftover references: `grep -rn` for each old name across app repo, `obs/`, `tools/`.
+
+Status: planned, awaiting approval to start.
+
+Findings that shape it:
+- Old names live in `CMakeLists.txt` (3 install lines), `socnetv.pro` (3), `socnetv.appdata.xml`
+  (`<launchable>`), `scripts/travis_make_build_linux.sh`, `src/images.qrc`, `README.md`, and
+  `socnetv.spec` (via `%{name}.*`).
+- The qrc entry `images/socnetv.png` is the only reference to the icon in `src/`; no code loads it.
+- The installed icon is 64x64 px. Flathub wants 128 px or SVG; the manifest installs its own SVG
+  (Step 8), so the PNG stays as is. Replacing its pixels later is not a path change.
+- The CMake install block is Linux-only (`UNIX AND NOT APPLE`): a macOS build cannot test it.
+- `tools/update-version.sh` `bump_appdata()` skips silently when its hardcoded filename is
+  missing, so after the rename the next release bump would silently drop the `<release>` entry.
+
+Commits (small, separable; none closes #309 — that happens at Step 9):
+1. Rename + build wiring, atomic: `git mv` the desktop file, metainfo and icon to
+   `org.socnetv.SocNetV.*`; update `CMakeLists.txt`, `socnetv.pro`, `images.qrc`, `README.md`,
+   `scripts/travis_make_build_linux.sh`, `socnetv.spec` (`%files` + `%check`).
+2. Metadata contents: new `<id>`, `<launchable>`, license `GPL-3.0-or-later`, old ID declared
+   replaced; desktop file `Icon=org.socnetv.SocNetV`.
+3. `main.cpp`: `app.setDesktopFileName("org.socnetv.SocNetV")` next to `setApplicationName`.
+4. Tools repo (separate): `update-version.sh` (filename in `bump_appdata` and the editor call) and
+   `create-ubuntu-package.sh` (`REQUIRED_FILES`) — together with commit 1.
+5. The last commit of the series carries `[ci]` to trigger the AppImage build for Step 6.
+
+Assumptions to verify, not assume:
+- The replaced-ID element is accepted by the AppStream validator (pedantic) — check on the Linux
+  host before commit 2; drop it if not (the old ID is then simply orphaned).
+- X11 may need `StartupWMClass=` in the desktop file; measure the real `WM_CLASS` first (Step 7).
+- Wayland association via `setDesktopFileName` needs a real check (Step 7).
+
+Verification: repo-wide grep shows no old names left (tools repo greps separately); full macOS
+build + launch (qrc change); `run_golden_compares.sh` (commit 3 is a code change); then Step 3.
 
 ### Step 3 — Install matrix
 CMake install and qmake install into temp directories; the two file listings must be identical.
