@@ -802,7 +802,7 @@ text — worth including once this is revisited.
 
 ## Work Rules
 
-- Keep outputs stable (version schemas when changing format).
+- Keep outputs stable. When a schema changes, regenerate the affected baselines in the same commit and review the diff.
 - Baseline regeneration should be treated as exceptional.
 - Any "FAIL" in benchmarks must be investigated; if it is noise, prefer mitigation via more stable measurement rather than loosening thresholds by default.
 - WS6 work should remain incremental: small changes, deterministic evidence, and consistent scripts.

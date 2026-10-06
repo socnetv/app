@@ -66,9 +66,12 @@ The CLI is a safety harness, not a new analytics engine.
 * Schema isolation per algorithm family
 * Zero silent semantic modification of Graph
 
-Each kernel has its own schema version.
+Each kernel has its own schema; its number (v1, v2, ...) is the order in which the kernels were
+added.
 
-Existing schemas are **never modified**.
+A schema may change (fields added or changed). When it does, the affected baselines are
+regenerated in the same commit and the diff is reviewed — see
+[`BASELINES__README.md`](../src/tools/baselines/BASELINES__README.md).
 
 ---
 
@@ -1595,8 +1598,8 @@ See: [`src/tools/baselines/BASELINES__README.md`](../src/tools/baselines/BASELIN
 
 Rules:
 
-* Never modify existing schema structures
-* New kernel → new schema version
+* Schema changes are allowed; regenerate the affected baselines in the same commit and review the diff
+* New kernel → next number in sequence
 * Deterministic ordering always
 * Explicit failure on mismatch
 * Baselines are updated only for deliberate semantic fixes

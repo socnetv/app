@@ -12,7 +12,8 @@ Baselines are schema-versioned and kernel-specific.
 
 # 1. Schema Versions
 
-Each algorithm family owns a dedicated schema version.
+Each algorithm family has its own kernel, baseline folder and schema. The version number is the
+order in which the kernels were added; it identifies the kernel, it does not freeze its schema.
 
 | Kernel        | Schema | Folder |
 |---------------|--------|--------|
@@ -26,9 +27,11 @@ Each algorithm family owns a dedicated schema version.
 | matrix        | v8     | `src/tools/baselines/matrix/` |
 | vertex_connectivity | v9 | `src/tools/baselines/vertex_connectivity/` |
 
-Schemas are never modified retroactively.
-
-New algorithm families must use a new schema version.
+A kernel's schema may change: adding or changing fields is normal. The rule is that the baselines
+are regenerated in the same commit (`./scripts/run_golden_compares.sh --update`) and the baseline
+diff is reviewed, never updated silently. The `schema_version` value stays the kernel's number and
+is not bumped for such changes; it only guards against comparing a baseline with a different
+kernel's output. A new algorithm family gets its own kernel and the next number in sequence.
 
 ---
 
@@ -382,4 +385,4 @@ disconnected. Same weak/strong split as the Connectivity Kernel above, via `--co
 * Baselines must be generated from identical datasets in `src/data/`.
 * Deterministic ordering is mandatory.
 * Never update baselines silently.
-* Schema structures must remain immutable once committed.
+* When a schema changes, regenerate the affected baselines in the same commit and review the diff.

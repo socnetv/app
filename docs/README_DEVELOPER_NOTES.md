@@ -499,7 +499,7 @@ These must pass after any structural change.
 
 # CLI Kernel Architecture
 
-The harness is organized around **kernel modules**. Each kernel covers a specific algorithm family and emits a versioned, deterministic JSON schema. Schemas are never modified after release.
+The harness is organized around **kernel modules**. Each kernel covers a specific algorithm family and emits a versioned, deterministic JSON schema. A schema may change, but the affected baselines must be regenerated in the same commit and the diff reviewed. The `vN` suffix is the order in which the kernels were added, not a freeze marker.
 
 Current kernels:
 
