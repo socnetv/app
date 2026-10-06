@@ -149,7 +149,8 @@ Roadmap: [`docs/roadmaps/roadmap_ws19_appstream_identity.md`](roadmaps/roadmap_w
 Standard application ID (`org.socnetv.SocNetV`) for the AppStream metadata file, desktop file,
 icon and window association, correct metadata license, and Flathub readiness (#309, prerequisite
 for #167) — without breaking existing downstream packages (Debian, Fedora, OBS, AppImage). Planned,
-not started; blocked on downstream packagers switching to glob-based file lists first.
+not started; the release (not the development work) is gated on downstream packagers
+switching to glob-based file lists first.
 
 ---
 
@@ -163,8 +164,8 @@ this is a workstream-level summary of that picture, not a ranking, and not a liv
 **v3.8 shipped.** WS6 (regression safety) runs continuously underneath every other workstream.
 WS18 (signed networks) — see its own entry above for current status, not duplicated here.
 
-**3.9 packaging:** WS19 (#309) — transient, coordinated with downstream packagers before any
-installed file is renamed.
+**3.9 packaging:** WS19 (#309) — transient, coordinated with downstream packagers before the
+renamed release is tagged.
 
 **Scoped, not started:** WS8 (IO layer stabilization/`FormatHandler` registry) — roadmap exists,
 zero code written.

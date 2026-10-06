@@ -11,7 +11,8 @@ verification matrix) into the release procedure and delete this file once shippe
 
 ## Status
 
-Planned. Nothing implemented. Audit complete; coordination with downstream packagers pending.
+Planned. Nothing implemented. Audit complete. Step 1 done; Steps 2-8 proceed on `develop`; the
+3.9 *release* (Step 9) is gated on downstream packagers (Step 0), not the development work.
 
 ## Decisions (made)
 
@@ -56,11 +57,14 @@ Debian archive stays with the uploader; the Salsa edits are ours to push.
 
 Each step ends with its verification. Do not start the next until it passes.
 
-### Step 0 — Fedora packager: switch to globs (blocking, external)
+### Step 0 — Fedora packager: switch to globs (release gate, external)
 Message sent asking for glob-based `%files`/`%check` that work with both old and new names:
 `%{_metainfodir}/*.xml`, `%{_datadir}/applications/*.desktop`, `%{_datadir}/pixmaps/*.png`.
 *Verify:* their next build (3.8 or later) still succeeds with the globs against the current
-installed names. Do not land Step 2 before this is confirmed.
+installed names. Gates the 3.9 *tag* (Step 9) only: Fedora builds from release tags, so work on `develop` is
+unaffected. If not confirmed in time, options: send them the tested diff as a PR, or defer the
+rename to the next release. Existing Fedora installs are unaffected either way; only a Fedora
+update to the renamed release would fail to build.
 
 ### Step 1 — Fedora spec dry-run
 Status: ✅ done. Built the Fedora spec in a rawhide container against a 3.8 tarball and a copy
@@ -110,7 +114,7 @@ screenshots reachable, release entries valid. Build locally and run Flathub's ma
 linter until clean *before* submitting.
 
 ### Step 9 — Release
-Only after Steps 0–8 pass. 3.9 release notes mention the rename; downstream packagers are
+Only after Steps 0–8 pass and Step 0 is confirmed. 3.9 release notes mention the rename; downstream packagers are
 told in advance (Step 0 already done for Fedora). Fold lasting lessons into
 `README__RELEASE_PROCEDURE.md` (e.g. the checklist of hardcoded names) and delete this file.
 
