@@ -69,6 +69,7 @@ int main(int argc, char *argv[])
     app.setApplicationDisplayName("Social Network Visualizer v" + VERSION);   // Used in widgets
 
     app.setApplicationName("Social Network Visualizer");    // used by windowing system
+    app.setDesktopFileName("org.socnetv.SocNetV");          // associates the window with its .desktop file (Wayland app id)
     app.setApplicationVersion(VERSION);
 
     //
