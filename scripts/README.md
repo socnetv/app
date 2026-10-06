@@ -8,7 +8,7 @@ Index of everything in this directory. Detailed docs are linked where they exist
 
 | Script | Purpose |
 |---|---|
-| `run_golden_compares.sh` | Correctness regression: runs all 8 CLI kernels against committed JSON baselines (`src/tools/baselines/`, see [`BASELINES__README.md`](../src/tools/baselines/BASELINES__README.md)). |
+| `run_golden_compares.sh` | Correctness regression: runs all 10 CLI kernels against committed JSON baselines (`src/tools/baselines/`, see [`BASELINES__README.md`](../src/tools/baselines/BASELINES__README.md)). |
 | `run_benchmarks.sh` | Performance regression: distance/prominence/io baseline-enforced timing, plus optional clustering timing probes. See [`README__run_benchmarks.md`](README__run_benchmarks.md) for the full reference. |
 | `run_golden_io_roundtrip.sh` | Runs the `io_roundtrip` kernel for every baseline under `src/tools/baselines/io_roundtrip/`. `--update` regenerates them in place instead of comparing. |
 | `run_io_roundtrip_shipped_datasets.sh` | Runs `io_roundtrip` across every file in `src/data/` (filetype inferred from extension) as a load smoke-test — no `--compare-json`, no committed baseline. |
@@ -17,6 +17,12 @@ Index of everything in this directory. Detailed docs are linked where they exist
 | `lib/find_socnetv_cli.sh`, `lib/find_socnetv_gui.sh` | Shared binary-discovery helpers sourced by the scripts above. |
 | `perf_baselines/<platform>/perf_expected.env` | Committed performance baselines, one directory per platform (`macos-arm64`, `macos-m5`, `linux-x86_64`). **Only re-recorded against a clean tagged release, never `develop` HEAD** — see [`README__run_benchmarks.md`](README__run_benchmarks.md#baseline-philosophy). |
 | `fixtures/render_perf_script.txt` | `--interactive-script` fixture used by `run_render_perf_bench.sh`. |
+
+## Clique census benchmarking
+
+| Path | Purpose |
+|---|---|
+| [`max-clique/`](max-clique/README.md) | A/B timing of the maximal-clique census (`Graph::graphCliques()`) on seeded dense random networks plus a few real ones. Also checks that two builds produce an identical census. Not part of CI and not baseline-enforced — run it by hand when touching clique code. Will also host the benchmarks for the planned maximum-clique routine (WS11). |
 
 ## Packaging / Release
 
