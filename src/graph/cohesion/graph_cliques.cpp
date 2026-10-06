@@ -15,6 +15,7 @@
 
 #include "graph.h"
 #include <QDebug>
+#include <new>
 
 /**
  * @brief Called from Graph::graphCliques to add a new clique (list of vertices)
@@ -61,8 +62,26 @@ void Graph::graphCliqueAdd(const QList<int> &clique)
 }
 
 /**
+ * Per-run state of the maximal-clique search. Lives on the stack of graphCliques() so a run
+ * never leaves anything behind on Graph.
+ */
+struct Graph::CliqueSearchContext
+{
+    /// Mutual-tie neighbour set of every vertex, built once at the start of the run.
+    QHash<int, QSet<int>> neighbours;
+    /// Set once the user cancels; every recursion level unwinds as soon as it sees it.
+    bool canceled = false;
+};
+
+/**
  * @brief Finds all maximal cliques in the graph using the Bron–Kerbosch algorithm
  *        with Tomita et al. (2006) pivot selection.
+ *
+ * Results are stored in m_cliques (by size), in each vertex's own clique list, and in the
+ * clique co-membership matrix CLQM. If the run is canceled or fails, all three are cleared:
+ * a partial census is never left behind.
+ *
+ * @return true if the census completed; false if it was canceled or ran out of memory.
  *
  * --- Algorithm overview ---
  *
@@ -106,73 +125,92 @@ void Graph::graphCliqueAdd(const QList<int> &clique)
  *       experiments." Theoretical Computer Science, 363(1), 28–42.
  *       https://doi.org/10.1016/j.tcs.2006.06.015
  *
- * @param R  Current clique under construction (vertices already chosen).
- * @param P  Candidate vertices that can extend R.
- * @param X  Excluded vertices (already processed at this level).
+ *
+ * See graphCliquesRecurse() for the recursion itself.
  */
-void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X)
+bool Graph::graphCliques()
 {
-    csRecDepth++;
+    qCDebug(lcCohesion) << "Graph::graphCliques() - STARTS HERE";
 
-    qCDebug(lcCohesion) << "Graph::graphCliques() - STARTS HERE. csRecDepth:"
-             << csRecDepth
-             << " - Check if we are at initialization step";
+    const int V = vertices();
 
-    QList<int> myNeightbors;
+    CLQM.zeroMatrix(V, V);
+    m_cliques.clear();
 
-    // -----------------------------------------------------------------------
-    // Initialisation step (first call only): R, P and X are all empty.
-    // Build the full candidate set P = V(G) and pre-compute the neighbour
-    // sets for all vertices into neighboursHash so that every recursive call
-    // can perform O(1) set lookups instead of traversing edge lists.
-    // -----------------------------------------------------------------------
-    if (R.isEmpty() && P.isEmpty() && X.isEmpty())
+    CliqueSearchContext ctx;
+    ctx.neighbours.reserve(V);
+
+    // Pre-compute the neighbour sets of all vertices so that every recursive call can perform
+    // O(1) set lookups instead of traversing edge lists.
+    for (auto it = m_graph.cbegin(); it != m_graph.cend(); ++it)
     {
-        int V = vertices();
-        P.reserve(V);
-        R.reserve(V);
-        X.reserve(V);
-        P = verticesSet();  // P starts as the full vertex set
+        const int vertex = (*it)->number();
+        // reciprocalNeighborhoodList() returns neighbours connected by edges in BOTH directions
+        // (i.e. mutual ties), which is the correct notion of adjacency for maximal clique
+        // detection in undirected graphs.
+        const QList<int> myNeighbors = (*it)->reciprocalNeighborhoodList();
+        ctx.neighbours[vertex] = QSet<int>(myNeighbors.constBegin(), myNeighbors.constEnd());
 
-        qCDebug(lcCohesion) << "Graph::graphCliques() - initialization step. R, X empty and P=V(G): " << P;
+        qCDebug(lcCohesion) << "Graph::graphCliques() - init. NeighborhoodList of v" << vertex
+                            << ": " << ctx.neighbours[vertex];
+        (*it)->clearCliques();
+    }
 
-        CLQM.zeroMatrix(V, V);  // co-membership matrix reset
+    bool ok = false;
+    try
+    {
+        // R and X start empty, P = V(G).
+        ok = graphCliquesRecurse(ctx, QSet<int>(), verticesSet(), QSet<int>(), 1);
+    }
+    catch (const std::bad_alloc &)
+    {
+        qCDebug(lcCohesion) << "Graph::graphCliques() - out of memory";
+        progressStatus(tr("Clique census failed: out of memory."));
+    }
+
+    if (!ok)
+    {
+        CLQM.zeroMatrix(V, V);
         m_cliques.clear();
-
-        VList::const_iterator it;
-        int vertex = 0;
-        for (it = m_graph.cbegin(); it != m_graph.cend(); ++it)
+        for (auto it = m_graph.cbegin(); it != m_graph.cend(); ++it)
         {
-            vertex = (*it)->number();
-            // reciprocalNeighborhoodList() returns neighbours connected by edges
-            // in BOTH directions (i.e. mutual ties), which is the correct notion
-            // of adjacency for maximal clique detection in undirected graphs.
-            myNeightbors = (*it)->reciprocalNeighborhoodList();
-            neighboursHash[vertex] = QSet<int>(myNeightbors.constBegin(), myNeightbors.constEnd());
-
-            qCDebug(lcCohesion) << "Graph::graphCliques() - init. NeighborhoodList of v" << vertex
-                     << ": " << neighboursHash[vertex];
             (*it)->clearCliques();
         }
     }
+    return ok;
+}
 
-    qCDebug(lcCohesion) << "Graph::graphCliques() - check if P and X are both empty...";
-
+/**
+ * @brief One level of the Bron–Kerbosch recursion behind graphCliques().
+ *
+ * When both P and X are empty, R cannot be extended and no super-set of R was reported before,
+ * so R is a maximal clique and is recorded. Otherwise a pivot u in P∪X maximising |N(u) ∩ P|
+ * is chosen, and the loop branches only on P \ N(u).
+ *
+ * @param ctx    Per-run state (neighbour sets, cancel flag).
+ * @param R      Current clique under construction (vertices already chosen).
+ * @param P      Candidate vertices that can extend R.
+ * @param X      Excluded vertices (already processed at this level).
+ * @param depth  Recursion depth, 1 for the top-level call.
+ * @return false if the run was canceled, true otherwise.
+ */
+bool Graph::graphCliquesRecurse(CliqueSearchContext &ctx,
+                                QSet<int> R, QSet<int> P, QSet<int> X,
+                                int depth)
+{
     // -----------------------------------------------------------------------
     // Base case: P and X are both empty.
     // R is a maximal clique — record it and return.
     // -----------------------------------------------------------------------
     if (P.isEmpty() && X.isEmpty())
     {
-        qCDebug(lcCohesion) << "Graph::graphCliques() - P and X are both empty. MAXIMAL clique R=" << R;
-        QList<int> clique = R.values();
-        graphCliqueAdd(clique);
-        csRecDepth--;
-        return;
+        qCDebug(lcCohesion) << "Graph::graphCliquesRecurse() - P and X are both empty. MAXIMAL clique R=" << R;
+        graphCliqueAdd(R.values());
+        return true;
     }
 
     // -----------------------------------------------------------------------
-    // Pivot selection (Tomita et al., 2006 — see header comment).
+    // Pivot selection (Tomita et al., 2006 — see graphCliques()).
     //
     // Scan every vertex u in P∪X and compute |N(u) ∩ P|.
     // Keep the u that maximises this count.  Ties are broken arbitrarily
@@ -187,7 +225,7 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X)
     for (int u : PunionX)
     {
         // |N(u) ∩ P|: count how many candidate vertices u is adjacent to.
-        const int coverage = (neighboursHash[u] & P).size();
+        const int coverage = (ctx.neighbours[u] & P).size();
 
         if (coverage > bestCoverage)
         {
@@ -198,43 +236,26 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X)
 
     // P \ N(pivot): the vertices we actually need to branch on.
     // Every maximal clique must contain at least one vertex from this set
-    // (see header comment for the correctness argument).
-    const QSet<int> candidates = P - neighboursHash[pivot];
+    // (see graphCliques() for the correctness argument).
+    const QSet<int> candidates = P - ctx.neighbours[pivot];
 
-    qCDebug(lcCohesion) << "Graph::graphCliques() - pivot:" << pivot
-             << " |N(pivot)∩P|:" << bestCoverage
-             << " |P\\N(pivot)|:" << candidates.size()
-             << " (saved" << (P.size() - candidates.size()) << "branches)";
+    qCDebug(lcCohesion) << "Graph::graphCliquesRecurse() - pivot:" << pivot
+                        << " |N(pivot)∩P|:" << bestCoverage
+                        << " |P\\N(pivot)|:" << candidates.size()
+                        << " (saved" << (P.size() - candidates.size()) << "branches)";
 
     // -----------------------------------------------------------------------
     // Main loop: iterate over candidates = P \ N(pivot) only.
     // -----------------------------------------------------------------------
-    QSet<int> NBS;
     QSet<int> Rnext, Pnext, Xnext;
 
     // We need a stable copy to iterate because P is mutated inside the loop
     // (v is moved from P to X after its recursive subtree is explored).
     const QList<int> candidateList = candidates.values();
 
-    qCDebug(lcCohesion) << "Graph::graphCliques() - Start looping over candidates P\\N(pivot)";
-
     for (int v : candidateList)
     {
-        qCDebug(lcCohesion) << "Graph::graphCliques() - CURRENT v:" << v
-                 << " P:" << P << " P.count=" << P.size()
-                 << " R:" << R << " X:" << X;
-
-        NBS = neighboursHash[v];   // neighbours of v (pre-computed at init)
-
-        // Skip self-loops: a vertex with only a tie to itself cannot join any clique.
-        if (NBS.size() == 1 && NBS.contains(v))
-        {
-            qCDebug(lcCohesion) << "Graph::graphCliques() - v:" << v << "has only a self-tie, skip";
-            // Move v from P to X so it is not re-visited.
-            P.remove(v);
-            X.insert(v);
-            continue;
-        }
+        const QSet<int> &NBS = ctx.neighbours[v];   // neighbours of v (pre-computed)
 
         // Build the arguments for the recursive call:
         //   R ∪ {v}   — extend the current clique with v
@@ -245,31 +266,20 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X)
         Pnext = P & NBS;          // P ∩ N(v)
         Xnext = X & NBS;          // X ∩ N(v)
 
-        qCDebug(lcCohesion) << "Graph::graphCliques() - v:" << v
-                 << "RECURSIVE CALL: R⋃{v}=" << Rnext
-                 << " P⋂N(v)=" << Pnext
-                 << " X⋂N(v)=" << Xnext;
-
-        // Emit progress only at recursion depth 1 (top-level branches) to
-        // avoid flooding the event loop on deep recursions.
-        if (csRecDepth == 1)
+        // Emit progress only at the top level to avoid flooding the event loop.
+        if (depth == 1)
         {
             progressStatus(tr("Finding cliques: Recursive backtracking for actor ") + QString::number(v));
             if (progressCanceled())
             {
-                csRecDepth--;
-                return;
+                ctx.canceled = true;
+                return false;
             }
         }
 
-        try
+        if (!graphCliquesRecurse(ctx, Rnext, Pnext, Xnext, depth + 1))
         {
-            graphCliques(Rnext, Pnext, Xnext);
-        }
-        catch (...)
-        {
-            qCDebug(lcCohesion) << "Graph::graphCliques() - ERROR in recursive call";
-            return;
+            return false;
         }
 
         // After exploring all cliques that contain v, move v from P to X.
@@ -277,16 +287,9 @@ void Graph::graphCliques(QSet<int> R, QSet<int> P, QSet<int> X)
         // candidates from forming a clique with exactly the same members as R∪{v}.
         P.remove(v);
         X.insert(v);
+    }
 
-        qCDebug(lcCohesion) << "Graph::graphCliques() - v:" << v
-                 << " returned from recursion. Moved to X."
-                 << " P=" << P << " X=" << X;
-
-    } // end for candidateList
-
-    qCDebug(lcCohesion) << "Graph::graphCliques() - FINISHED candidate loop at csRecDepth:" << csRecDepth;
-
-    csRecDepth--;
+    return true;
 }
 
 /**

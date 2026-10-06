@@ -482,7 +482,11 @@ int runKernelMatrixV8(const CliConfig &cfg,
     // Unlike total walks, clique co-membership stays cheap at scale (Bron-Kerbosch on a
     // sparse graph) - see the kTotalWalksSkipThreshold comment above for the measurement
     // that justified computing this one unconditionally.
-    g.graphCliques();
+    if (!g.graphCliques())
+    {
+        QTextStream(stderr) << "ERROR: graphCliques failed\n";
+        return 2;
+    }
     matrices["clique_comembership"] = dumpMatrixJson(g.matrixCliqueCoMembership(), fullGrid);
 
     const qint64 computeMs = t.elapsed();

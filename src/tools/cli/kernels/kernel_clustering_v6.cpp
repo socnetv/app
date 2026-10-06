@@ -551,7 +551,11 @@ namespace cli
 
         QElapsedTimer cliquesTimer;
         cliquesTimer.start();
-        g.graphCliques(QSet<int>(), QSet<int>(), QSet<int>());
+        if (!g.graphCliques())
+        {
+            QTextStream(stderr) << "ERROR: graphCliques failed\n";
+            return 2;
+        }
         printKV("CLIQUES_MS", static_cast<qint64>(cliquesTimer.elapsed()));
 
         Matrix STR_EQUIV;

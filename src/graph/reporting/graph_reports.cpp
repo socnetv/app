@@ -4538,14 +4538,15 @@ bool Graph::writeCliqueCensus(const QString &fileName,
     progressStatus(pMsg);
     qCDebug(lcReporting) << "Graph::writeCliqueCensus() - calling graphCliques";
 
-    csRecDepth = 0;
-
     // Call graphCliques() to compute all cliques (maximal connected subgraphs) of the network.
-    graphCliques();
-    if (progressCanceled())
+    if (!graphCliques())
     {
         file.close();
-        progressStatus(tr("Computation canceled."));
+        // graphCliques() reports its own failure; only a user cancel needs a message here.
+        if (progressCanceled())
+        {
+            progressStatus(tr("Computation canceled."));
+        }
         return false;
     }
     pMsg = tr("Writing Clique Census to file. Please wait..");

@@ -1348,7 +1348,7 @@ public:
     qreal numberOfTriples(int v1);
 
     /* CLIQUES, CLUSTERING, TRIADS */
-    void graphCliques(QSet<int> R = QSet<int>(), QSet<int> P = QSet<int>(), QSet<int> X = QSet<int>());
+    bool graphCliques();
 
     void graphCliqueAdd(const QList<int> &clique);
 
@@ -1639,7 +1639,13 @@ private:
     QHash<int, int> m_vertexPairsUnilaterallyConnected;
 
     QMultiMap<int, L_int> m_cliques;
-    QHash<int, QSet<int>> neighboursHash;
+
+    // Per-run state of the maximal-clique search (graph_cliques.cpp); lives on the stack of
+    // graphCliques(), never on Graph.
+    struct CliqueSearchContext;
+    bool graphCliquesRecurse(CliqueSearchContext &ctx,
+                             QSet<int> R, QSet<int> P, QSet<int> X,
+                             int depth);
 
     QList<qreal> m_clusteringLevel;
     QMap<int, V_int> m_clustersPerSequence;
@@ -1801,8 +1807,6 @@ private:
     int m_graphWeaklyConnectedComponents;
     int m_graphStronglyConnectedComponents;
     QHash<int,int> m_vertexComponentId;
-
-    int csRecDepth;
 
     QString m_fileName, m_graphName, initEdgeColor, initEdgeColorZero,
         initVertexColor, initVertexNumberColor, initVertexLabelColor;
