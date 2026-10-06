@@ -126,8 +126,9 @@ phase and a serial "apply" phase (`edgeCreate()` mutates shared state) — not a
 **Cancellation gaps found by the same audit, tracked elsewhere**: `prestigePageRank`'s convergence
 loop, `graphTriadCensus`'s O(N³) inner loops (now single-checked before the parallel step, same as
 every P4 candidate), `createMatrixSimilarityMatching` (one opaque uncancellable step),
-`randomNetRegularCreate`'s unbounded retry loop, `graphCliques`' Bron-Kerbosch recursion (checked
-only at recursion depth 1 deliberately). `graphConnectivity()` was the worst — zero
+`randomNetRegularCreate`'s unbounded retry loop. (`graphCliques`' Bron-Kerbosch recursion was on
+this list, checked only at recursion depth 1; #310 now polls the cancel flag every 1024 recursive
+calls at any depth.) `graphConnectivity()` was the worst — zero
 `progressCanceled()` checks on an O(N²) max-flow sweep, confirmed hanging 30+ minutes uncancellable
 on a real N=2000 network — filed as #278, tracked in WS11.
 

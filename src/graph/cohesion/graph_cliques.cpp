@@ -69,9 +69,14 @@ struct Graph::CliqueSearchContext
 {
     /// Mutual-tie neighbour set of every vertex, built once at the start of the run.
     QHash<int, QSet<int>> neighbours;
-    /// Set once the user cancels; every recursion level unwinds as soon as it sees it.
-    bool canceled = false;
+    /// Number of recursive calls so far, used to poll for cancellation at a fixed interval.
+    quint64 calls = 0;
 };
+
+/// The cancel flag is polled once every (kCancelPollMask + 1) recursive calls. The flag is a
+/// std::atomic<bool>, so this keeps the cost of the check negligible next to a call's own
+/// QSet work while bounding the time a cancel request waits, whatever the shape of the search.
+static constexpr quint64 kCancelPollMask = 1023;
 
 /**
  * @brief Finds all maximal cliques in the graph using the Bron–Kerbosch algorithm
@@ -187,7 +192,7 @@ bool Graph::graphCliques()
  * so R is a maximal clique and is recorded. Otherwise a pivot u in P∪X maximising |N(u) ∩ P|
  * is chosen, and the loop branches only on P \ N(u).
  *
- * @param ctx    Per-run state (neighbour sets, cancel flag).
+ * @param ctx    Per-run state (neighbour sets, call counter).
  * @param R      Current clique under construction (vertices already chosen).
  * @param P      Candidate vertices that can extend R.
  * @param X      Excluded vertices (already processed at this level).
@@ -198,6 +203,13 @@ bool Graph::graphCliquesRecurse(CliqueSearchContext &ctx,
                                 QSet<int> R, QSet<int> P, QSet<int> X,
                                 int depth)
 {
+    // Poll for cancellation at every depth, not only at the top level: a single top-level
+    // branch can hold most of the search.
+    if ((++ctx.calls & kCancelPollMask) == 0 && progressCanceled())
+    {
+        return false;
+    }
+
     // -----------------------------------------------------------------------
     // Base case: P and X are both empty.
     // R is a maximal clique — record it and return.
@@ -272,7 +284,6 @@ bool Graph::graphCliquesRecurse(CliqueSearchContext &ctx,
             progressStatus(tr("Finding cliques: Recursive backtracking for actor ") + QString::number(v));
             if (progressCanceled())
             {
-                ctx.canceled = true;
                 return false;
             }
         }
