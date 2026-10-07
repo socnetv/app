@@ -45,4 +45,5 @@
         <provides>
           <binary>socnetv</binary>
         </provides>
+  <replaces><id>org.socnetv.social_network_visualizer</id></replaces>
 </component>
