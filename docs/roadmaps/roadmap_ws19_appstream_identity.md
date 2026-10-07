@@ -126,9 +126,13 @@ Status: done on a Linux host (Qt 6.8.3, source copy from `git archive`).
   main category (validator hint, pre-existing).
 
 ### Step 4 — Debian
-Update `debian/copyright` on Salsa `master` and the `ubuntu` branch for the 3.9 import. Clean-room
-build of the dev tree + Debian package linter: no new errors; the metainfo filename warning
-must be gone.
+Do at release time, with the 3.9 import. `debian/copyright` names the metadata file in a
+`Files:` stanza declaring it CC0-1.0, on both Salsa `master` and the `ubuntu` branch; after the
+rename the stanza must follow it, or the file silently falls under the GPL-3 wildcard. The exact
+procedure (ordering around the Salsa script's resume mode, the `ubuntu` branch timing, a filename
+check against the release tarball) is written down in the release procedure doc, "Step D".
+*Verify:* clean-room build of the 3.9 tree + Debian package linter: no new errors; the metainfo
+filename warning is gone.
 
 ### Step 5 — OBS
 Update `obs/home:oxy86/socnetv/socnetv.spec` together with the `_service` tag pin bump to 3.9
