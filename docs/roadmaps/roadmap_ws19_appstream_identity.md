@@ -80,7 +80,7 @@ fails first, so the `%files` failure itself was not exercised separately.
 
 ### Step 2 — Rename + metadata (on `develop`)
 
-Status: planned, awaiting approval to start.
+Status: done (commits on `develop`; Linux CI configure/build fixed for the icon path).
 
 Findings that shape it:
 - Old names live in `CMakeLists.txt` (3 install lines), `socnetv.pro` (3), `socnetv.appdata.xml`
@@ -114,8 +114,16 @@ Verification: repo-wide grep shows no old names left (tools repo greps separatel
 build + launch (qrc change); `run_golden_compares.sh` (commit 3 is a code change); then Step 3.
 
 ### Step 3 — Install matrix
-CMake install and qmake install into temp directories; the two file listings must be identical.
-Validate both installed trees.
+Status: done on a Linux host (Qt 6.8.3, source copy from `git archive`).
+- CMake and qmake installs are identical except `usr/share/doc/socnetv/*` (CMake installs docs;
+  qmake does not — expected). All three renamed files are present at the same paths in both; no old
+  names remain.
+- AppStream validator on both installed trees: the filename/ID mismatch warning is gone. Only a
+  pedantic-level note remains for the CamelCase ID (decision: keep, Flathub convention). Desktop
+  file validates for both.
+- The replaced-ID element validates (pedantic) and was added.
+- Optional polish, not part of this workstream: the desktop file `Categories=` has more than one
+  main category (validator hint, pre-existing).
 
 ### Step 4 — Debian
 Update `debian/copyright` on Salsa `master` and the `ubuntu` branch for the 3.9 import. Clean-room
