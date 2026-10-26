@@ -14,6 +14,9 @@ All notable changes to this project are documented in this file.
 
   - Fixed a PPA build failure on Ubuntu 22.04/24.04 caused by a Qt 6.6-only API (#306).
 
+  - Fixed the macOS installer requiring macOS 26 (Tahoe), which blocked installation on macOS 14
+    and 15 (#311). The macOS build now sets its deployment target to macOS 14 (Sonoma).
+
 ## [3.8] – Sep 2026
 
 ### Improvements
