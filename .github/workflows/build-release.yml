@@ -295,7 +295,8 @@ jobs:
           cmake -S . -B build \
             -DCMAKE_BUILD_TYPE=${{ env.CMAKE_CONFIG }} \
             -DCMAKE_INSTALL_PREFIX=${{ env.APPDIR_PREFIX }} \
-            -DBUILD_CLI=${{ env.BUILD_CLI }}
+            -DBUILD_CLI=${{ env.BUILD_CLI }} \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0
           if [[ -d "./build" ]]; then
               ls -lh ./build/
           else

@@ -383,7 +383,7 @@ jobs:
           echo "💡 Deleting old build subdirectory..."
           rm -rf build
           echo "🔧 Configuring project using 'cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}} -DBUILD_CLI=${{env.BUILD_CLI}}' ..."
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}} -DBUILD_CLI=${{env.BUILD_CLI}}
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_CONFIG}} -DCMAKE_INSTALL_PREFIX=${{env.APPDIR_PREFIX}} -DBUILD_CLI=${{env.BUILD_CLI}} -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0
           echo "🔎 Verifying ./build directory (before compiling)..."
           if [[ -d "./build" ]]; then
               echo "🎉 ./build directory created! Contents:"
